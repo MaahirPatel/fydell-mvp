@@ -1,0 +1,242 @@
+{
+  "hero-dashboard-preview": {
+    "source": "image(144).png",
+    "crop_box": [
+      665,
+      88,
+      1518,
+      642
+    ],
+    "size": [
+      853,
+      554
+    ],
+    "png": "png/hero-dashboard-preview.png",
+    "webp": "webp/hero-dashboard-preview.webp"
+  },
+  "home-category-row": {
+    "source": "image(144).png",
+    "crop_box": [
+      80,
+      652,
+      1490,
+      735
+    ],
+    "size": [
+      1410,
+      83
+    ],
+    "png": "png/home-category-row.png",
+    "webp": "webp/home-category-row.webp"
+  },
+  "better-way-cards": {
+    "source": "image(144).png",
+    "crop_box": [
+      120,
+      745,
+      1412,
+      970
+    ],
+    "size": [
+      1292,
+      225
+    ],
+    "png": "png/better-way-cards.png",
+    "webp": "webp/better-way-cards.webp"
+  },
+  "product-workbook-preview": {
+    "source": "image(145).png",
+    "crop_box": [
+      572,
+      78,
+      1498,
+      766
+    ],
+    "size": [
+      926,
+      688
+    ],
+    "png": "png/product-workbook-preview.png",
+    "webp": "webp/product-workbook-preview.webp"
+  },
+  "product-how-it-works-row": {
+    "source": "image(145).png",
+    "crop_box": [
+      40,
+      755,
+      580,
+      1010
+    ],
+    "size": [
+      540,
+      255
+    ],
+    "png": "png/product-how-it-works-row.png",
+    "webp": "webp/product-how-it-works-row.webp"
+  },
+  "product-feature-cards": {
+    "source": "image(145).png",
+    "crop_box": [
+      600,
+      760,
+      1490,
+      1008
+    ],
+    "size": [
+      890,
+      248
+    ],
+    "png": "png/product-feature-cards.png",
+    "webp": "webp/product-feature-cards.webp"
+  },
+  "solutions-overview-panel": {
+    "source": "image(146).png",
+    "crop_box": [
+      630,
+      92,
+      1488,
+      542
+    ],
+    "size": [
+      858,
+      450
+    ],
+    "png": "png/solutions-overview-panel.png",
+    "webp": "webp/solutions-overview-panel.webp"
+  },
+  "solutions-team-cards": {
+    "source": "image(146).png",
+    "crop_box": [
+      36,
+      560,
+      1490,
+      775
+    ],
+    "size": [
+      1454,
+      215
+    ],
+    "png": "png/solutions-team-cards.png",
+    "webp": "webp/solutions-team-cards.webp"
+  },
+  "solutions-high-stakes-strip": {
+    "source": "image(146).png",
+    "crop_box": [
+      38,
+      790,
+      1490,
+      982
+    ],
+    "size": [
+      1452,
+      192
+    ],
+    "png": "png/solutions-high-stakes-strip.png",
+    "webp": "webp/solutions-high-stakes-strip.webp"
+  },
+  "resources-hero-analytics": {
+    "source": "image(147).png",
+    "crop_box": [
+      775,
+      80,
+      1490,
+      430
+    ],
+    "size": [
+      715,
+      350
+    ],
+    "png": "png/resources-hero-analytics.png",
+    "webp": "webp/resources-hero-analytics.webp"
+  },
+  "resources-featured-guide": {
+    "source": "image(147).png",
+    "crop_box": [
+      48,
+      450,
+      955,
+      780
+    ],
+    "size": [
+      907,
+      330
+    ],
+    "png": "png/resources-featured-guide.png",
+    "webp": "webp/resources-featured-guide.webp"
+  },
+  "resources-side-cards": {
+    "source": "image(147).png",
+    "crop_box": [
+      975,
+      455,
+      1485,
+      778
+    ],
+    "size": [
+      510,
+      323
+    ],
+    "png": "png/resources-side-cards.png",
+    "webp": "webp/resources-side-cards.webp"
+  },
+  "resources-browse-cards": {
+    "source": "image(147).png",
+    "crop_box": [
+      45,
+      825,
+      1485,
+      1010
+    ],
+    "size": [
+      1440,
+      185
+    ],
+    "png": "png/resources-browse-cards.png",
+    "webp": "webp/resources-browse-cards.webp"
+  },
+  "pricing-cards": {
+    "source": "image(148).png",
+    "crop_box": [
+      160,
+      365,
+      1510,
+      775
+    ],
+    "size": [
+      1350,
+      410
+    ],
+    "png": "png/pricing-cards.png",
+    "webp": "webp/pricing-cards.webp"
+  },
+  "pricing-toggle": {
+    "source": "image(148).png",
+    "crop_box": [
+      950,
+      190,
+      1365,
+      295
+    ],
+    "size": [
+      415,
+      105
+    ],
+    "png": "png/pricing-toggle.png",
+    "webp": "webp/pricing-toggle.webp"
+  },
+  "pricing-feature-strip": {
+    "source": "image(148).png",
+    "crop_box": [
+      160,
+      795,
+      1510,
+      910
+    ],
+    "size": [
+      1350,
+      115
+    ],
+    "png": "png/pricing-feature-strip.png",
+    "webp": "webp/pricing-feature-strip.webp"
+  }
+}

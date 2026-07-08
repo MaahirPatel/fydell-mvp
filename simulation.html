@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>fydell - Project Meridian Simulation</title>
+<meta name="description" content="A live work simulation: evaluate the acquisition of Solstice Logistics for $2.4B as a Senior Financial Analyst.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="fydell-assets/site.css">
+</head>
+<body data-page="simulation">
+
+<div id="site-nav"></div>
+
+<main id="top">
+<div class="sim-shell" id="sim">
+
+  <!-- top bar -->
+  <div class="sim-top">
+    <div class="meta">
+      <h1>Project Meridian <span class="gtext">Acquisition Analysis</span></h1>
+      <p>Role: Senior Financial Analyst, Northwind Capital Partners. Evaluate acquiring Solstice Logistics for $2.4B.</p>
+    </div>
+    <div class="timer" id="simTimer">
+      <div>
+        <div class="clock num" id="simClock">35:00</div>
+        <div class="lab">Time remaining</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- phases -->
+  <div class="phases" role="tablist" aria-label="Simulation phases">
+    <button class="phase-tab on" data-phase="briefing"><span class="ix">1</span>Briefing</button>
+    <button class="phase-tab" data-phase="review"><span class="ix">2</span>Document review</button>
+    <button class="phase-tab" data-phase="analysis"><span class="ix">3</span>Financial analysis</button>
+    <button class="phase-tab" data-phase="risk"><span class="ix">4</span>Risk assessment</button>
+    <button class="phase-tab" data-phase="recommend"><span class="ix">5</span>Final recommendation</button>
+  </div>
+
+  <div class="sim-grid">
+
+    <!-- left rail: resources -->
+    <aside class="rail">
+      <h4>Resources</h4>
+      <button class="res-btn" data-res="memo"><i class="ph ph-file-text"></i>Case Memo</button>
+      <button class="res-btn" data-res="financials"><i class="ph ph-chart-bar"></i>Financial Statements</button>
+      <button class="res-btn" data-res="industry"><i class="ph ph-buildings"></i>Industry Analysis</button>
+      <button class="res-btn" data-res="mgmt"><i class="ph ph-presentation-chart"></i>Management Presentation</button>
+      <button class="res-btn" data-res="market"><i class="ph ph-globe-hemisphere-west"></i>Market Data</button>
+    </aside>
+
+    <!-- center stage -->
+    <section class="stage">
+
+      <!-- briefing -->
+      <div data-panel="briefing">
+        <h2>Welcome to Project Meridian</h2>
+        <p>You are a Senior Financial Analyst at Northwind Capital Partners. The investment committee is considering a full acquisition of Solstice Logistics, a regional last-mile delivery operator, for a headline enterprise value of <b>$2.4 billion</b>.</p>
+        <p>Over the next 35 minutes, work through the materials in the left rail, form a view on the valuation and the risks, and deliver a clear recommendation. Use the scratchpad on the right to capture your thinking as you go. It saves automatically.</p>
+        <div class="callout">Your deliverable: a clear buy, hold, or pass recommendation, the price you would pay, the key risks, and whether the strategic fit justifies the premium. All figures in this exercise are sample data.</div>
+        <h3>Your objectives</h3>
+        <ul class="bullets">
+          <li><i class="ph ph-check-circle"></i>Pressure-test the $2.4B valuation against comparables</li>
+          <li><i class="ph ph-check-circle"></i>Read the financials for growth, margins, and leverage</li>
+          <li><i class="ph ph-check-circle"></i>Identify the risks most likely to break the thesis</li>
+          <li><i class="ph ph-check-circle"></i>Land a defensible recommendation with evidence</li>
+        </ul>
+        <div class="stage-nav">
+          <span></span>
+          <button class="btn btn-grad" data-goto="review">Open the documents <i class="ph ph-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- document review -->
+      <div data-panel="review" style="display:none">
+        <div id="docPanel">
+          <h2>Document review</h2>
+          <p>Select a resource from the left rail to open it. Work through the Case Memo, Financial Statements, Industry Analysis, Management Presentation, and Market Data.</p>
+          <div class="callout">Tip: capture numbers and red flags in the scratchpad as you read. You will reference them in your recommendation.</div>
+        </div>
+        <div class="stage-nav">
+          <button class="btn btn-ghost" data-goto="briefing"><i class="ph ph-arrow-left"></i>Back</button>
+          <button class="btn btn-grad" data-goto="analysis">Go to financial analysis <i class="ph ph-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- financial analysis -->
+      <div data-panel="analysis" style="display:none">
+        <h2>Financial analysis</h2>
+        <p>Pull the threads together. At the $2.4B ask, Solstice is priced at roughly 20x trailing EBITDA while comparable operators trade at 11x to 14x.</p>
+        <div class="kv">
+          <div class="cell"><div class="n">$868M</div><div class="t">FY25 revenue</div></div>
+          <div class="cell"><div class="n">$119M</div><div class="t">FY25 EBITDA</div></div>
+          <div class="cell"><div class="n">13.7%</div><div class="t">EBITDA margin</div></div>
+          <div class="cell"><div class="n">20.2x</div><div class="t">EV / EBITDA at ask</div></div>
+        </div>
+        <h3>Questions worth answering</h3>
+        <ul class="bullets">
+          <li><i class="ph ph-arrow-up-right"></i>What growth and margin path justifies a 45% to 80% premium to comps?</li>
+          <li><i class="ph ph-arrow-up-right"></i>How sensitive is the case to revenue growth slowing from 22% toward 9%?</li>
+          <li><i class="ph ph-arrow-up-right"></i>Does 2.0x net debt leave room for the automation investment management describes?</li>
+        </ul>
+        <div class="callout">Reopen Financial Statements or Market Data from the rail if you need to recheck a figure.</div>
+        <div class="stage-nav">
+          <button class="btn btn-ghost" data-goto="review"><i class="ph ph-arrow-left"></i>Back to documents</button>
+          <button class="btn btn-grad" data-goto="risk">Assess the risks <i class="ph ph-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- risk assessment -->
+      <div data-panel="risk" style="display:none">
+        <h2>Risk assessment</h2>
+        <p>Decide which risks are most likely to break the thesis, and whether they are mitigable in the deal terms.</p>
+        <ul class="bullets">
+          <li><i class="ph ph-warning"></i><b style="color:var(--text)">Customer concentration.</b>&nbsp;Top 5 customers are 41% of revenue; the largest is 16%.</li>
+          <li><i class="ph ph-warning"></i><b style="color:var(--text)">Competitive pressure.</b>&nbsp;Two national carriers are expanding into Solstice's core regions.</li>
+          <li><i class="ph ph-warning"></i><b style="color:var(--text)">Wage inflation.</b>&nbsp;Driver costs are rising faster than pricing power.</li>
+          <li><i class="ph ph-warning"></i><b style="color:var(--text)">Key-person risk.</b>&nbsp;The founder-CEO intends to exit 12 months post-close.</li>
+          <li><i class="ph ph-warning"></i><b style="color:var(--text)">Execution risk.</b>&nbsp;The 17% margin target depends on automation not yet deployed at scale.</li>
+        </ul>
+        <div class="callout">A strong answer names the two or three risks that matter most and says how you would mitigate them, not just lists all five.</div>
+        <div class="stage-nav">
+          <button class="btn btn-ghost" data-goto="analysis"><i class="ph ph-arrow-left"></i>Back</button>
+          <button class="btn btn-grad" data-goto="recommend">Write your recommendation <i class="ph ph-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- recommendation -->
+      <div data-panel="recommend" style="display:none">
+        <h2>Final recommendation</h2>
+        <p>Write your recommendation to the investment committee. State your call (buy, hold, or pass), the price you would pay, your read on valuation, the key risks, and whether the strategic fit justifies the premium.</p>
+        <textarea class="rec-area" id="recText" placeholder="My recommendation to the committee is..."></textarea>
+        <div class="count-hint">
+          <span id="submitWarn" style="display:none;color:var(--bad)">Add a bit more detail (at least ~40 words) before submitting.</span>
+          <span id="recCount">0 words</span>
+        </div>
+        <h3>Covered so far</h3>
+        <div class="checklist" id="recChecklist">
+          <div class="ci" data-dim="recommendation"><i class="ph ph-circle"></i>Clear recommendation and price</div>
+          <div class="ci" data-dim="valuation"><i class="ph ph-circle"></i>Valuation versus comparables</div>
+          <div class="ci" data-dim="financials"><i class="ph ph-circle"></i>Revenue, EBITDA, margins</div>
+          <div class="ci" data-dim="risk"><i class="ph ph-circle"></i>Key risks</div>
+          <div class="ci" data-dim="strategic"><i class="ph ph-circle"></i>Strategic fit</div>
+          <div class="ci" data-dim="assumptions"><i class="ph ph-circle"></i>Assumptions and tradeoffs</div>
+        </div>
+        <div class="stage-nav">
+          <button class="btn btn-ghost" data-goto="risk"><i class="ph ph-arrow-left"></i>Back</button>
+          <button class="btn btn-grad btn-lg" id="simSubmit" data-magnetic>Submit recommendation <i class="ph ph-arrow-right"></i></button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- right column: notes + reset -->
+    <aside>
+      <div class="side-card notes">
+        <h4>Scratchpad <span class="saved-tag" id="notesSaved">Saved</span></h4>
+        <textarea class="notes-area" id="simNotes" placeholder="Jot numbers, red flags, and your working thesis here. Saves automatically and survives reload."></textarea>
+        <div style="margin-top:14px;display:flex;justify-content:flex-end">
+          <button class="btn btn-ghost" id="simReset" style="font-size:13px;padding:8px 16px"><i class="ph ph-arrow-counter-clockwise"></i>Reset simulation</button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+</main>
+
+<div id="site-footer"></div>
+<script src="fydell-assets/site.js"></script>
+</body>
+</html>

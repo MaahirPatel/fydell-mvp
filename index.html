@@ -7,6 +7,381 @@
 <meta name="description" content="Fydell helps companies evaluate candidates through realistic work simulations.">
 <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800&f[]=clash-display@500,600,700&display=swap" rel="stylesheet">
+
+<!-- =====================================================================
+     SUPABASE INTEGRATION (additive / non-breaking)
+     - Loads the supabase-js v2 UMD client from CDN (exposes window.supabase).
+     - Initializes window.fydellSupabase from the CONFIG below.
+     - The anon key is PUBLIC by design (all access is protected by RLS).
+     - If the CDN fails, config is missing, or init throws, window.fydellSupabase
+       stays null and the app transparently falls back to its localStorage
+       behavior (including file:// and offline). Nothing here can blank the page.
+     ===================================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ---- Fydell Supabase CONFIG (safe to embed in the client) ---- */
+window.FYDELL_SUPABASE_URL      = 'https://qtrhwrcxthtqvkeerptp.supabase.co';
+window.FYDELL_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0cmh3cmN4dGh0cXZrZWVycHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1Mzc1MzIsImV4cCI6MjA5OTExMzUzMn0.7bJWWL0o1dT1R2PvYgxa_Fnclc95lUDbt_-9wICMWk8';
+
+/* ---- Initialize the client (guarded; never throws to the page) ---- */
+(function(){
+  window.fydellSupabase = null;
+  try{
+    if(window.supabase && typeof window.supabase.createClient === 'function'
+       && window.FYDELL_SUPABASE_URL && window.FYDELL_SUPABASE_ANON_KEY){
+      window.fydellSupabase = window.supabase.createClient(
+        window.FYDELL_SUPABASE_URL,
+        window.FYDELL_SUPABASE_ANON_KEY,   /* publishable/anon key ONLY — never service_role */
+        { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
+      );
+    }
+  }catch(e){
+    window.fydellSupabase = null;
+    try{ if(window.console&&console.warn) console.warn('[fydell] Supabase init failed — using localStorage fallback', e); }catch(_){}
+  }
+})();
+
+/* =====================================================================
+   window.db — data-access layer (Promise-based).
+   Every function is guarded: if Supabase is unavailable or a call throws,
+   it resolves to null / { error } instead of rejecting, so callers can
+   always fall back to the existing localStorage path. Column names match
+   supabase/schema.sql exactly (snake_case). Candidate identity is by
+   lowercased candidate_email, with candidate_id linked once signed in.
+   ===================================================================== */
+(function(){
+  function sb(){ return window.fydellSupabase || null; }
+  var _cache = { orgId:null, profile:null };
+  function lc(s){ return (s==null?'':String(s)).trim().toLowerCase(); }
+
+  /* ---------- auth ---------- */
+  async function currentUser(){
+    if(!sb()) return null;
+    try{ var r = await sb().auth.getUser(); return (r && r.data && r.data.user) || null; }
+    catch(e){ return null; }
+  }
+  async function getSession(){
+    if(!sb()) return null;
+    try{ var r = await sb().auth.getSession(); return (r && r.data && r.data.session) || null; }
+    catch(e){ return null; }
+  }
+  async function currentProfile(){
+    if(!sb()) return null;
+    try{
+      var u = await currentUser(); if(!u) return null;
+      var r = await sb().from('profiles').select('*').eq('id', u.id).single();
+      if(r.error) return null;
+      _cache.profile = r.data;
+      if(r.data && r.data.organization_id) _cache.orgId = r.data.organization_id;
+      return r.data;
+    }catch(e){ return null; }
+  }
+  async function signUp(o){
+    if(!sb()) return { error:{ message:'Supabase unavailable' } };
+    o = o || {};
+    try{
+      return await sb().auth.signUp({
+        email:o.email, password:o.password,
+        options:{ data:{ username:o.username, role:o.role, workspace:o.workspace } }
+      });
+    }catch(e){ return { error:e }; }
+  }
+  async function signIn(o){
+    if(!sb()) return { error:{ message:'Supabase unavailable' } };
+    o = o || {};
+    try{ return await sb().auth.signInWithPassword({ email:o.email, password:o.password }); }
+    catch(e){ return { error:e }; }
+  }
+  async function signOut(){
+    if(!sb()) return;
+    _cache = { orgId:null, profile:null };
+    try{ await sb().auth.signOut(); }catch(e){}
+  }
+  function onAuth(cb){
+    if(!sb()) return { data:null };
+    try{ return sb().auth.onAuthStateChange(cb); }catch(e){ return { data:null }; }
+  }
+
+  /* ---------- organizations / profiles ---------- */
+  async function getOrgId(){
+    if(_cache.orgId) return _cache.orgId;
+    var p = await currentProfile();
+    return (p && p.organization_id) || null;
+  }
+  async function ensureOrg(){
+    if(!sb()) return null;
+    try{
+      var u = await currentUser(); if(!u) return null;
+      var p = await currentProfile();
+      if(p && p.organization_id){
+        var g = await sb().from('organizations').select('*').eq('id', p.organization_id).single();
+        if(!g.error){ _cache.orgId = g.data.id; return g.data; }
+      }
+      var name = (p && (p.workspace || p.username)) || 'Workspace';
+      var ins = await sb().from('organizations')
+        .insert({ name:name, owner_id:u.id, owner_email:(p && p.email) || u.email })
+        .select().single();
+      if(ins.error) return null;
+      await sb().from('profiles').update({ organization_id: ins.data.id }).eq('id', u.id);
+      _cache.orgId = ins.data.id;
+      return ins.data;
+    }catch(e){ return null; }
+  }
+  async function getOrg(orgId){
+    if(!sb()||!orgId) return null;
+    try{ var r = await sb().from('organizations').select('*').eq('id', orgId).single(); return r.error?null:r.data; }
+    catch(e){ return null; }
+  }
+  async function updateProfile(patch){
+    if(!sb()) return null;
+    try{
+      var u = await currentUser(); if(!u) return null;
+      var r = await sb().from('profiles').update(patch||{}).eq('id', u.id).select().single();
+      return r.error?null:r.data;
+    }catch(e){ return null; }
+  }
+
+  /* ---------- pilots ---------- */
+  async function createPilot(orgId, o){
+    if(!sb()||!orgId) return null; o = o || {};
+    try{
+      var u = await currentUser();
+      var row = {
+        organization_id: orgId,
+        title: o.title || 'Pilot',
+        role_title: o.roleTitle || null,
+        simulation_key: o.simulationKey || 'meridian',
+        simulation_title: o.title || null,
+        department: o.department || null,
+        due_date: o.dueDate || null,
+        priorities: o.priorities || [],
+        status: 'active',
+        created_by: u ? u.id : null
+      };
+      var r = await sb().from('pilots').insert(row).select().single();
+      return r.error?null:r.data;
+    }catch(e){ return null; }
+  }
+  async function listPilots(orgId){
+    if(!sb()||!orgId) return [];
+    try{ var r = await sb().from('pilots').select('*').eq('organization_id', orgId); return r.error?[]:(r.data||[]); }
+    catch(e){ return []; }
+  }
+  async function getPilot(pilotId){
+    if(!sb()||!pilotId) return null;
+    try{ var r = await sb().from('pilots').select('*').eq('id', pilotId).single(); return r.error?null:r.data; }
+    catch(e){ return null; }
+  }
+
+  /* ---------- invites ---------- */
+  async function createInvite(pilotId, orgId, o){
+    if(!sb()||!pilotId||!orgId) return null; o = o || {};
+    try{
+      var row = {
+        pilot_id: pilotId, organization_id: orgId,
+        candidate_name: o.name || null,
+        candidate_email: lc(o.email),
+        token: o.token,
+        simulation_key: o.simulationKey || 'meridian',
+        status: 'invited', progress: 0
+      };
+      /* upsert on token so re-syncs don't duplicate */
+      var r = await sb().from('candidate_invites').upsert(row, { onConflict:'token' }).select().single();
+      return r.error?null:r.data;
+    }catch(e){ return null; }
+  }
+  async function getInviteByToken(token){
+    if(!sb()||!token) return null;
+    try{ var r = await sb().from('candidate_invites').select('*').eq('token', token).single(); return r.error?null:r.data; }
+    catch(e){ return null; }
+  }
+  async function listInvites(orgId){
+    if(!sb()||!orgId) return [];
+    try{ var r = await sb().from('candidate_invites').select('*').eq('organization_id', orgId); return r.error?[]:(r.data||[]); }
+    catch(e){ return []; }
+  }
+  async function updateInvite(token, patch){
+    if(!sb()||!token) return null;
+    try{ var r = await sb().from('candidate_invites').update(patch||{}).eq('token', token).select().single(); return r.error?null:r.data; }
+    catch(e){ return null; }
+  }
+
+  /* ---------- attempts / events ---------- */
+  async function startAttempt(inv){
+    if(!sb()||!inv) return null;
+    try{
+      var u = await currentUser();
+      var row = {
+        invite_id: inv.id, pilot_id: inv.pilot_id, organization_id: inv.organization_id,
+        candidate_id: u ? u.id : null,
+        candidate_email: lc(inv.candidate_email),
+        simulation_key: inv.simulation_key || 'meridian',
+        status: 'in_progress', progress: 5, started_at: new Date().toISOString()
+      };
+      var r = await sb().from('simulation_attempts').insert(row).select().single();
+      if(!r.error){
+        try{ await sb().from('candidate_invites').update({ status:'started', started_at:new Date().toISOString() }).eq('token', inv.token); }catch(_){}
+      }
+      return r.error?null:r.data;
+    }catch(e){ return null; }
+  }
+  async function logEvents(attemptId, orgId, events){
+    if(!sb()||!attemptId||!orgId||!events||!events.length) return null;
+    try{
+      var u = await currentUser();
+      var rows = events.map(function(ev){
+        return {
+          attempt_id: attemptId, organization_id: orgId,
+          candidate_id: u ? u.id : null,
+          client_event_id: ev.id || null,
+          user_email: ev.userId || ev.candidateId || null,
+          type: ev.type, category: ev.category || null, section: ev.section || null,
+          label: ev.label || ev.type, dim: ev.dim || null, detail: ev.detail || null,
+          payload: (ev.payload != null ? ev.payload : null),
+          elapsed_seconds: (typeof ev.t === 'number' ? ev.t : null),
+          visible_to_reviewer: ev.visibleToReviewer !== false
+        };
+      });
+      /* ignore-duplicates: client_event_id has a unique index for dedupe */
+      var r = await sb().from('simulation_events').upsert(rows, { onConflict:'client_event_id', ignoreDuplicates:true });
+      return r.error?null:(r.data||true);
+    }catch(e){ return null; }
+  }
+  async function listEvents(attemptId){
+    if(!sb()||!attemptId) return [];
+    try{ var r = await sb().from('simulation_events').select('*').eq('attempt_id', attemptId).order('elapsed_seconds',{ascending:true}); return r.error?[]:(r.data||[]); }
+    catch(e){ return []; }
+  }
+  async function completeAttempt(inv, res){
+    if(!sb()||!inv) return null; res = res || {};
+    try{
+      var u = await currentUser();
+      /* find the in-progress attempt for this invite, else create one */
+      var att = null;
+      var q = await sb().from('simulation_attempts').select('*')
+        .eq('invite_id', inv.id).order('created_at',{ascending:false}).limit(1);
+      if(!q.error && q.data && q.data.length) att = q.data[0];
+      var attPatch = {
+        status:'submitted', progress:100, fit:(res.fit!=null?res.fit:null),
+        overall:res.overall||null,
+        final_response:(res.answers && res.answers.rationale) || '',
+        submitted_at:new Date().toISOString()
+      };
+      if(att){
+        var up = await sb().from('simulation_attempts').update(attPatch).eq('id', att.id).select().single();
+        if(!up.error) att = up.data;
+      } else {
+        var insRow = Object.assign({
+          invite_id:inv.id, pilot_id:inv.pilot_id, organization_id:inv.organization_id,
+          candidate_id:u?u.id:null, candidate_email:lc(inv.candidate_email),
+          simulation_key:inv.simulation_key||'meridian', started_at:new Date().toISOString()
+        }, attPatch);
+        var insA = await sb().from('simulation_attempts').insert(insRow).select().single();
+        if(insA.error) return null; att = insA.data;
+      }
+      /* batch-insert events */
+      if(res.events && res.events.length){ try{ await logEvents(att.id, inv.organization_id, res.events); }catch(_){} }
+      /* evidence report with full memo in report_json */
+      var memo = null; try{ if(typeof window.generateEvidenceReport==='function') memo = window.generateEvidenceReport(res, res.events, (res.answers||{}).rationale); }catch(_){}
+      var repRow = {
+        attempt_id:att.id, invite_id:inv.id, pilot_id:inv.pilot_id, organization_id:inv.organization_id,
+        candidate_id:u?u.id:null, candidate_email:lc(inv.candidate_email),
+        fit:(res.fit!=null?res.fit:null), overall:res.overall||null,
+        recommendation:(memo && memo.recommendation) || null,
+        confidence:(memo && memo.confidence) || null,
+        report_json: memo || res || {}
+      };
+      var rep = await sb().from('evidence_reports').insert(repRow).select().single();
+      var report = rep.error ? null : rep.data;
+      /* mark the invite completed */
+      try{ await sb().from('candidate_invites').update({ status:'completed', progress:100, fit:(res.fit!=null?res.fit:null), completed_at:new Date().toISOString() }).eq('token', inv.token); }catch(_){}
+      return { attempt:att, report:report };
+    }catch(e){ return null; }
+  }
+
+  /* ---------- reports / decisions ---------- */
+  async function listReports(orgId){
+    if(!sb()||!orgId) return [];
+    try{ var r = await sb().from('evidence_reports').select('*').eq('organization_id', orgId); return r.error?[]:(r.data||[]); }
+    catch(e){ return []; }
+  }
+  async function getReport(reportId){
+    if(!sb()||!reportId) return null;
+    try{ var r = await sb().from('evidence_reports').select('*').eq('id', reportId).single(); return r.error?null:r.data; }
+    catch(e){ return null; }
+  }
+  async function saveDecision(reportId, orgId, o){
+    if(!sb()||!orgId) return null; o = o || {};
+    try{
+      var u = await currentUser();
+      var row = {
+        report_id: reportId || null, organization_id: orgId,
+        invite_id: o.inviteId || null, attempt_id: o.attemptId || null,
+        decision: o.decision, notes: (o.notes!=null?o.notes:null),
+        decided_by: u ? u.id : null
+      };
+      var r;
+      if(reportId){ r = await sb().from('hiring_decisions').upsert(row, { onConflict:'report_id' }).select().single(); }
+      else { r = await sb().from('hiring_decisions').insert(row).select().single(); }
+      return r.error?null:r.data;
+    }catch(e){ return null; }
+  }
+
+  /* ---------- chat / activity / dashboard ---------- */
+  async function sendMessage(inviteId, orgId, sender, body){
+    if(!sb()||!inviteId||!orgId) return null;
+    try{
+      var u = await currentUser();
+      var r = await sb().from('chat_messages').insert({
+        invite_id:inviteId, organization_id:orgId, sender:sender, body:body,
+        sender_id:u?u.id:null
+      }).select().single();
+      return r.error?null:r.data;
+    }catch(e){ return null; }
+  }
+  async function listMessages(inviteId){
+    if(!sb()||!inviteId) return [];
+    try{ var r = await sb().from('chat_messages').select('*').eq('invite_id', inviteId).order('created_at',{ascending:true}); return r.error?[]:(r.data||[]); }
+    catch(e){ return []; }
+  }
+  async function logActivity(orgId, type, text){
+    if(!sb()||!orgId) return null;
+    try{ var r = await sb().from('activity_log').insert({ organization_id:orgId, type:type||null, text:text }); return r.error?null:true; }
+    catch(e){ return null; }
+  }
+  async function getDashboard(orgId){
+    if(!sb()||!orgId) return null;
+    try{
+      var res = await Promise.all([ listPilots(orgId), listInvites(orgId), listReports(orgId),
+        sb().from('hiring_decisions').select('*').eq('organization_id', orgId),
+        sb().from('activity_log').select('*').eq('organization_id', orgId).order('created_at',{ascending:false}).limit(10) ]);
+      var pilots=res[0], invites=res[1], reports=res[2];
+      var decisions=(res[3] && !res[3].error && res[3].data) || [];
+      var activity=(res[4] && !res[4].error && res[4].data) || [];
+      var counts = {
+        invited: invites.length,
+        started: invites.filter(function(i){return i.status==='started'||i.status==='completed'||i.status==='reviewed';}).length,
+        completed: invites.filter(function(i){return i.status==='completed'||i.status==='reviewed';}).length,
+        reviewed: invites.filter(function(i){return i.status==='reviewed';}).length,
+        reportsReady: reports.length
+      };
+      return { pilots:pilots, invites:invites, reports:reports, decisions:decisions, activity:activity, counts:counts };
+    }catch(e){ return null; }
+  }
+
+  window.db = {
+    signUp:signUp, signIn:signIn, signOut:signOut, getSession:getSession,
+    currentUser:currentUser, currentProfile:currentProfile, onAuth:onAuth,
+    ensureOrg:ensureOrg, getOrg:getOrg, getOrgId:getOrgId, updateProfile:updateProfile,
+    createPilot:createPilot, listPilots:listPilots, getPilot:getPilot,
+    createInvite:createInvite, getInviteByToken:getInviteByToken, listInvites:listInvites, updateInvite:updateInvite,
+    startAttempt:startAttempt, completeAttempt:completeAttempt, logEvents:logEvents, listEvents:listEvents,
+    listReports:listReports, getReport:getReport, saveDecision:saveDecision,
+    sendMessage:sendMessage, listMessages:listMessages, logActivity:logActivity, getDashboard:getDashboard
+  };
+})();
+</script>
+
 <style>
 :root{
   --bg:#F7F4EE; --bg-soft:#FFFFFF; --bg-tint:#F2EFE7; --white:#FFFFFF;
@@ -2029,6 +2404,7 @@ function authSubmit(){
     var ws=role==='company'?(document.getElementById('auWorkspace').value||'').trim():'';
     if(!un) return authErr('Enter your name.');
     if(role==='company' && !ws) return authErr('Enter your company / workspace name.');
+    if(window.fydellSupabase){ return sbAuthSignup(email,pw,role,un,ws); }
     if(users.some(function(u){return u.email===email;})) return authErr('An account with this email already exists. Try logging in.');
     var newUser={email:email,username:un,password:pw,role:role,workspace:ws,avatar:auAvatarData||null,createdAt:Date.now()};
     newUser.id=dmId('user');
@@ -2041,6 +2417,7 @@ function authSubmit(){
     if(FD.pendingInvite){var pt=FD.pendingInvite;FD.pendingInvite=null;openInvitation(pt);return;}
     go(role==='candidate'?'candidatehome':'console');
   } else {
+    if(window.fydellSupabase){ return sbAuthLogin(email,pw); }
     var u=users.filter(function(x){return x.email===email;})[0];
     if(!u) return authErr('No account found. Switch to Sign up to create one.');
     if(u.password!==pw) return authErr('Incorrect password.');
@@ -2050,7 +2427,141 @@ function authSubmit(){
     go(u.role==='candidate'?'candidatehome':'console');
   }
 }
-function logout(){ lsSet('fydell_session',null); go('home'); }
+
+/* ===================================================================
+   SUPABASE AUTH (real email/password auth via Supabase Auth).
+   On success we MIRROR a minimal session into localStorage
+   (fydell_session + a fydell_users row WITHOUT the password) so the rest
+   of the synchronous app (currentUser/currentEmail/dashboard) keeps
+   working unchanged. If Supabase is unavailable, authSubmit never reaches
+   here and the legacy localStorage auth above runs instead.
+=================================================================== */
+function sbAuthBtn(disabled,label){ var b=document.getElementById('authSubmit'); if(b){ b.disabled=!!disabled; if(label)b.textContent=label; } }
+function sbAuthMsg(err){
+  var m=(err&&(err.message||err.msg))||'';
+  if(/already registered|already exists|User already/i.test(m)) return 'An account with this email already exists. Try logging in.';
+  if(/Invalid login|invalid credentials/i.test(m)) return 'Incorrect email or password.';
+  if(/Email not confirmed/i.test(m)) return 'Please confirm your email first, then log in.';
+  if(/password/i.test(m)&&/least|short|weak/i.test(m)) return 'Password is too weak — use at least 6 characters.';
+  return m || 'Something went wrong. Please try again.';
+}
+/* keep a fydell_users row in sync so currentUser() works everywhere (no password stored) */
+function fdMirrorUser(u){
+  try{
+    var us=allUsers(); var f=us.filter(function(x){return x.email===u.email;})[0];
+    if(f){ if(u.username)f.username=u.username; if(u.role)f.role=u.role; if(u.workspace)f.workspace=u.workspace; if(u.avatar)f.avatar=u.avatar; if(!f.id)f.id=dmId('user'); }
+    else { us.push({email:u.email,username:u.username||u.email.split('@')[0],role:u.role||'company',workspace:u.workspace||'',avatar:u.avatar||null,createdAt:Date.now(),id:dmId('user')}); }
+    lsSet('fydell_users',us);
+  }catch(e){}
+}
+function sbAuthSignup(email,pw,role,un,ws){
+  sbAuthBtn(true,'Creating account…');
+  window.db.signUp({email:email,password:pw,role:role,username:un,workspace:ws}).then(function(r){
+    sbAuthBtn(false,'Create account');
+    if(r&&r.error){ return authErr(sbAuthMsg(r.error)); }
+    fdMirrorUser({email:email,username:un,role:role,workspace:ws,avatar:auAvatarData||null});
+    /* email-confirmation ON => no session yet; ask the user to confirm */
+    if(r&&r.data&&!r.data.session){ authErr('Account created. Check your email to confirm it, then log in.'); authTab('login'); return; }
+    lsSet('fydell_session',email);
+    lsSet('fydell_data_'+email,{simulations:[],attempts:[],activity:[{text:'Account created',at:Date.now()}]});
+    if(role==='company'){ try{ dmEnsureOrg(currentUser()); }catch(e){} window.db.ensureOrg().catch(function(){}); }
+    fdLog('fydell.html:sbAuthSignup','supabase signup',{email:email,role:role});
+    if(FD.pendingInvite){ var pt=FD.pendingInvite; FD.pendingInvite=null; openInvitation(pt); return; }
+    go(role==='candidate'?'candidatehome':'console');
+  }).catch(function(e){ sbAuthBtn(false,'Create account'); authErr(sbAuthMsg(e)); });
+}
+function sbAuthLogin(email,pw){
+  sbAuthBtn(true,'Logging in…');
+  window.db.signIn({email:email,password:pw}).then(function(r){
+    if(r&&r.error){ sbAuthBtn(false,'Log in'); return authErr(sbAuthMsg(r.error)); }
+    window.db.currentProfile().then(function(p){
+      var role=(p&&p.role)||'company';
+      fdMirrorUser({email:email,username:(p&&p.username)||email.split('@')[0],role:role,workspace:(p&&p.workspace)||''});
+      lsSet('fydell_session',email);
+      if(role==='company'){ try{ dmEnsureOrg(currentUser()); }catch(e){} window.db.ensureOrg().catch(function(){}); }
+      sbAuthBtn(false,'Log in');
+      fdLog('fydell.html:sbAuthLogin','supabase login',{email:email,role:role});
+      if(FD.pendingInvite){ var pt=FD.pendingInvite; FD.pendingInvite=null; openInvitation(pt); return; }
+      go(role==='candidate'?'candidatehome':'console');
+    }).catch(function(){ sbAuthBtn(false,'Log in'); lsSet('fydell_session',email); go('console'); });
+  }).catch(function(e){ sbAuthBtn(false,'Log in'); authErr(sbAuthMsg(e)); });
+}
+/* restore a persisted Supabase session on load and keep the local mirror fresh */
+function fydSbBootstrap(){
+  if(!window.fydellSupabase||!window.db)return;
+  try{
+    window.db.onAuth(function(event,session){
+      try{
+        if(session&&session.user){
+          window.db.currentProfile().then(function(p){
+            var em=(p&&p.email)||session.user.email; if(!em)return;
+            fdMirrorUser({email:em,username:(p&&p.username),role:(p&&p.role)||'company',workspace:(p&&p.workspace)||''});
+            if(!currentEmail()) lsSet('fydell_session',em);
+          }).catch(function(){});
+        }
+      }catch(e){}
+    });
+  }catch(e){}
+}
+function logout(){ try{ if(window.fydellSupabase&&window.db) window.db.signOut(); }catch(e){} lsSet('fydell_session',null); go('home'); }
+
+/* ===================================================================
+   SUPABASE DUAL-WRITE (best-effort mirror).
+   localStorage remains the synchronous source of truth that renders the
+   UI (so nothing ever blocks or breaks). These fire-and-forget helpers
+   additionally persist the same actions to Supabase through window.db.
+   Every call is fully guarded and resolves relationships by the invite
+   token (unique). Candidate-side writes only succeed if the candidate is
+   authenticated (RLS); otherwise they silently no-op.
+=================================================================== */
+function fdSyncOn(){ return !!(window.fydellSupabase && window.db); }
+function fdSyncInvite(pilot,name,email,token){
+  if(!fdSyncOn()||!pilot||!token)return;
+  window.db.ensureOrg().then(function(org){
+    if(!org)return;
+    function withPilot(p){
+      if(!p)return;
+      window.db.createInvite(p.id,org.id,{name:name,email:email,token:token,simulationKey:pilot.simKey}).then(function(inv){
+        if(inv) window.db.logActivity(org.id,'candidate_invited','Invited '+name+' to '+(pilot.title||'the pilot'));
+      }).catch(function(){});
+    }
+    if(pilot._sbId){ withPilot({id:pilot._sbId}); return; }
+    window.db.createPilot(org.id,{simulationKey:pilot.simKey,title:pilot.title,roleTitle:pilot.roleTitle,department:pilot.department,dueDate:pilot.dueDate,priorities:pilot.priorities}).then(function(p){
+      if(p){ pilot._sbId=p.id; try{var ps=dmPilots();ps.forEach(function(x){if(x.id===pilot.id)x._sbId=p.id;});dmSet('pilots',ps);}catch(e){} window.db.logActivity(org.id,'pilot_created','Pilot created: '+(pilot.title||'')); }
+      withPilot(p);
+    }).catch(function(){});
+  }).catch(function(){});
+}
+function fdSyncAttemptStart(token){
+  if(!fdSyncOn()||!token)return;
+  window.db.getInviteByToken(token).then(function(inv){ if(inv) window.db.startAttempt(inv).catch(function(){}); }).catch(function(){});
+}
+function fdSyncComplete(token,res){
+  if(!fdSyncOn()||!token)return;
+  window.db.getInviteByToken(token).then(function(inv){ if(inv) window.db.completeAttempt(inv,res).catch(function(){}); }).catch(function(){});
+}
+function fdSyncDecision(token,decision){
+  if(!fdSyncOn()||!token||!decision)return;
+  window.db.getInviteByToken(token).then(function(inv){
+    if(!inv)return;
+    window.db.getOrgId().then(function(orgId){
+      if(!orgId)return;
+      window.db.listReports(orgId).then(function(reps){
+        var mine=(reps||[]).filter(function(r){return r.invite_id===inv.id;});
+        mine.sort(function(a,b){return String(b.created_at).localeCompare(String(a.created_at));});
+        var rep=mine[0];
+        window.db.saveDecision(rep?rep.id:null,orgId,{decision:decision,inviteId:inv.id,attemptId:rep?rep.attempt_id:null}).then(function(){
+          window.db.updateInvite(token,{status:'reviewed',decision:decision}).catch(function(){});
+          window.db.logActivity(orgId,'decision_saved','Decision for '+(inv.candidate_name||'candidate')+': '+decision);
+        }).catch(function(){});
+      }).catch(function(){});
+    }).catch(function(){});
+  }).catch(function(){});
+}
+function fdSyncChat(token,sender,body){
+  if(!fdSyncOn()||!token||!body)return;
+  window.db.getInviteByToken(token).then(function(inv){ if(inv) window.db.sendMessage(inv.id,inv.organization_id,sender,body).catch(function(){}); }).catch(function(){});
+}
 
 /* ---- persistence of created sims + submitted attempts ---- */
 function saveSim(sim){
@@ -2097,6 +2608,7 @@ function createInvite(simId,name,email){
     if(!pilot){ pilot=dmCreatePilot(org.id,{simKey:key,title:rec.title,roleTitle:rec.role}); }
     inv.pilotId=pilot.id;
     dmCreateInvite(pilot,name,email,token);
+    try{ fdSyncInvite(pilot,name,email,token); }catch(e){}
   }catch(e){ fdLog('fydell.html:createInvite','model wire failed',{err:String(e)}); }
   fdLog('fydell.html:createInvite','invite created',{token:token,sim:rec.title,candidate:email,total:all.length});
   return inv;
@@ -2187,18 +2699,21 @@ function renderChat(token,meSide){
 function postMsg(token,from){
   var input=document.getElementById('chatInput'); if(!input)return; var text=(input.value||'').trim(); if(!text)return;
   invUpdate(token,function(i){i.messages.push({from:from,text:text,at:Date.now()});}); input.value='';
+  try{ fdSyncChat(token,from==='recruiter'?'recruiter':'candidate',text); }catch(e){}
   renderChat(token,from);
 }
 function startInviteRun(token){
   var inv=invFind(token); if(!inv)return;
   invUpdate(token,function(i){if(i.status==='invited')i.status='started';});
   try{ var dmi=dmInviteByToken(token); if(dmi){ if(dmi.status==='invited')dmUpdateInvite(token,function(x){x.status='accepted';x.acceptedAt=Date.now();}); dmStartAttempt(dmInviteByToken(token)); } }catch(e){}
+  try{ fdSyncAttemptStart(token); }catch(e){}
   FD.sim=generateSimulation({role:inv.sim.role,industry:inv.sim.industry,seniority:'Senior',type:inv.sim.type,durationMin:inv.sim.durationMin,difficulty:inv.sim.difficulty,skills:inv.sim.skills});
   launchRun(FD.sim); FD.activeInvite=token;
 }
 function completeInvite(token,res){
   invUpdate(token,function(i){i.status='submitted';i.fit=res.fit;i.res=res;i.messages.push({from:'system',text:'Candidate submitted the simulation. An evidence report (fit '+res.fit+'%) is ready for the hiring team.',at:Date.now()});});
   try{ var dmi=dmInviteByToken(token); if(dmi)dmCompleteAttempt(dmi,res); }catch(e){}
+  try{ fdSyncComplete(token,res); }catch(e){}
   fdLog('fydell.html:completeInvite','invite completed',{token:token,fit:res.fit,level:res.overall});
 }
 function viewInvReport(token){ var inv=invFind(token); if(!inv||!inv.res)return; FD.lastReport=inv.res; FD.reportToken=token; renderReport(inv.res); go('report'); }
@@ -2331,6 +2846,7 @@ function createInviteFull(pilot,name,email){
     messages:[{from:'system',text:'Invitation sent to '+email+'. The candidate opens the simulation from the invite link.',at:Date.now()}]};
   var all=invGet(); all.push(inv); invSet(all);
   try{ dmCreateInvite(pilot,name,email,token); }catch(e){}
+  try{ fdSyncInvite(pilot,name,email,token); }catch(e){}
   addActivity('Invited '+name+' to '+pilot.title);
   return inv;
 }
@@ -3407,7 +3923,8 @@ function saveDecision(key,dec,el){ var d=lsGet('fydell_decisions',{})||{}; d[key
   if(el){el.parentNode.querySelectorAll('.dec').forEach(function(x){x.classList.remove('on');});el.classList.add('on');}
   var s=document.getElementById('decSaved'); if(s)s.textContent='Saved: '+dec;
   if(FD.reportToken){ try{ invUpdate(FD.reportToken,function(i){i.decision=dec;}); }catch(e){}
-    try{ var dmi=dmInviteByToken(FD.reportToken); if(dmi)dmSaveDecision(dmi.reportId||('rep_'+key),FD.reportToken,dec.toLowerCase(),null); }catch(e){} }
+    try{ var dmi=dmInviteByToken(FD.reportToken); if(dmi)dmSaveDecision(dmi.reportId||('rep_'+key),FD.reportToken,dec.toLowerCase(),null); }catch(e){}
+    try{ fdSyncDecision(FD.reportToken,dec.toLowerCase()); }catch(e){} }
 }
 function saveDecisionNote(key,val){ var d=lsGet('fydell_decisions',{})||{}; d[key]=d[key]||{}; d[key].note=val; lsSet('fydell_decisions',d); }
 
@@ -3435,7 +3952,7 @@ function fdReveal(){
     els.forEach(function(el){ io.observe(el); });
   }catch(e){ els.forEach(function(el){el.classList.add('in');}); }
 }
-function fdInit(){ try{fdSelfCheck();}catch(e){} try{checkInviteLink();}catch(e){} try{fdReveal();}catch(e){} }
+function fdInit(){ try{fydSbBootstrap();}catch(e){} try{fdSelfCheck();}catch(e){} try{checkInviteLink();}catch(e){} try{fdReveal();}catch(e){} }
 // #region agent log
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fdInit); else fdInit();
 // #endregion

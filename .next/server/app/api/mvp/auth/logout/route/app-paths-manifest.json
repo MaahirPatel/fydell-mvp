@@ -1,0 +1,3 @@
+{
+  "/api/mvp/auth/logout/route": "app/api/mvp/auth/logout/route.js"
+}

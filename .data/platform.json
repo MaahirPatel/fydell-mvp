@@ -1,0 +1,25 @@
+{
+  "users": [
+    {
+      "id": "a555be6670ad043ea9152b37",
+      "email": "demo@growthpartners.co",
+      "passwordHash": "3c17a470e6e001a1498af53caa949ea610c29e0eeea06eb69e93c3003115bf6f",
+      "passwordSalt": "06044ee6461e30192c53730a1e93fd08",
+      "companyName": "Growth Partners",
+      "createdAt": "2026-06-27T02:01:25.906Z",
+      "onboardingComplete": true,
+      "onboarding": {
+        "hearAbout": "LinkedIn / social",
+        "companySize": "1-50",
+        "yourRole": "Talent / recruiting lead",
+        "hiresPerYear": "Under 10",
+        "primaryUse": "Analyst / finance screening",
+        "hiringFor": "Financial Analyst",
+        "hiringPain": "Hard to assess practical skills in traditional interviews",
+        "simulationPriority": "Real work instead of interviews"
+      }
+    }
+  ],
+  "simulations": [],
+  "roles": []
+}

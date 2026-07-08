@@ -1,0 +1,3 @@
+{
+  "/api/platform/simulations/[id]/route": "app/api/platform/simulations/[id]/route.js"
+}
