@@ -1,0 +1,8 @@
+.scratch/
+terminals/
+.cursor/
+.agents/
+node_modules/
+.env
+.env.*
+*.log
