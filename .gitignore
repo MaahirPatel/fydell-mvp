@@ -3,6 +3,8 @@ terminals/
 .cursor/
 .agents/
 node_modules/
+.next/
+visual-review/
 .env
 .env.*
 *.log
