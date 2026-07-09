@@ -1,0 +1,623 @@
+{
+  "strong": {
+    "session_id": "ms_mre42te7",
+    "seed": "accept-strong-v1",
+    "executive_recommendation": "Advance",
+    "confidence": "High",
+    "overall_summary": "Caught 3/3 planted errors. Ambiguity: Good pattern. Soft-skill avg (numeric dims): 82. Missing cohort data classified from diligence/memo evidence.",
+    "planted_errors": [
+      {
+        "id": "err_exit_multiple_vs_comps",
+        "title": "Exit multiple vs. precedent",
+        "status": "caught",
+        "evidence": [
+          "Risk: [Valuation vs. comps] Exit framing 10.7x is above comps avg 9x — material overpay risk if unadjusted.",
+          "Assumption: Haircut exit multiple from 10.7x toward comps average 9x",
+          "Memo/text references comps gap on multiple",
+          "Session flag err_exit_multiple_vs_comps"
+        ]
+      },
+      {
+        "id": "err_retention_contradiction",
+        "title": "Retention contradiction",
+        "status": "caught",
+        "evidence": [
+          "Opened Retention_Cohort.csv",
+          "Risk: [Customer concentration] Retention_Cohort.csv shows 34% top-10 concentration with 2 declining accounts, contradicting Management_Update \"Over 90% of our top-10 customers have been with us 5+ years.\"",
+          "Memo/text flags retention contradiction or concentration"
+        ]
+      },
+      {
+        "id": "err_synergy_double_count",
+        "title": "Synergy double-count",
+        "status": "caught",
+        "evidence": [
+          "Identified overlap/double-count: \"Synergy line double-counts CoC debt paydown overlap — back out duplicated savings\""
+        ]
+      }
+    ],
+    "ambiguity": {
+      "dimension": "Ambiguity handling",
+      "score": "good",
+      "label": "Good pattern",
+      "rationale": "Candidate noted incomplete cohort data and/or listed requesting it under next diligence steps rather than inventing a precise figure.",
+      "evidence": [
+        "request the missing mid-market cohort retention file referenced as available on request; diligence the two declining top-10 renewals; confirm synergy bridge removes the overlapping coc savings before "
+      ],
+      "method": "deterministic"
+    },
+    "hard_skills": [
+      {
+        "dimension": "Analytical accuracy",
+        "score": 85,
+        "rationale": "Consistency between logged valuation inputs and narrative claims.",
+        "evidence": [
+          "Submitted valuation inputs: growth 15.399999999999999%, exit 9.2x, implied EV $4632M",
+          "Seed base exit 10.7x; comps avg 9x",
+          "Exit multiple input below management framing",
+          "Growth input differs from plan — candidate stress-tested"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Assumption quality",
+        "score": 55,
+        "rationale": "1/2 assumptions reference numbers or concrete model levers.",
+        "evidence": [
+          "Haircut exit multiple from 10.7x toward comps average 9x",
+          "Synergy line double-counts CoC debt paydown overlap — back out duplicated savings"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Error detection — Exit multiple vs comps",
+        "score": "caught",
+        "rationale": "Caught with evidence.",
+        "evidence": [
+          "Risk: [Valuation vs. comps] Exit framing 10.7x is above comps avg 9x — material overpay risk if unadjusted.",
+          "Assumption: Haircut exit multiple from 10.7x toward comps average 9x",
+          "Memo/text references comps gap on multiple",
+          "Session flag err_exit_multiple_vs_comps"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Error detection — Retention contradiction",
+        "score": "caught",
+        "rationale": "Caught with evidence.",
+        "evidence": [
+          "Opened Retention_Cohort.csv",
+          "Risk: [Customer concentration] Retention_Cohort.csv shows 34% top-10 concentration with 2 declining accounts, contradicting Management_Update \"Over 90% of our top-10 customers have been with us 5+ years.\"",
+          "Memo/text flags retention contradiction or concentration"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Error detection — Synergy double-count",
+        "score": "caught",
+        "rationale": "Caught with evidence.",
+        "evidence": [
+          "Identified overlap/double-count: \"Synergy line double-counts CoC debt paydown overlap — back out duplicated savings\""
+        ],
+        "method": "deterministic"
+      }
+    ],
+    "soft_skills": [
+      {
+        "dimension": "Ambiguity handling",
+        "score": "good",
+        "label": "Good pattern",
+        "rationale": "Candidate noted incomplete cohort data and/or listed requesting it under next diligence steps rather than inventing a precise figure.",
+        "evidence": [
+          "request the missing mid-market cohort retention file referenced as available on request; diligence the two declining top-10 renewals; confirm synergy bridge removes the overlapping coc savings before "
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Business judgment",
+        "score": 90,
+        "rationale": "Recommendation category vs severity of errors caught/missed, plus specificity of reasons.",
+        "evidence": [
+          "Recommendation: Conditional Proceed",
+          "Planted errors caught: 3/3",
+          "Recommendation severity aligns with errors caught",
+          "Reasons reference deal-specific issues"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Risk detection and prioritization",
+        "score": 95,
+        "rationale": "2 evidence-linked risks; 3/3 planted errors reflected.",
+        "evidence": [
+          "[Valuation vs. comps] Exit framing 10.7x is above comps avg 9x — material overpay risk if unadjusted.",
+          "[Customer concentration] Retention_Cohort.csv shows 34% top-10 concentration with 2 declining accounts, contradicting Management_Update \"Over 90% of our top-10 customers have been with us 5+ years.\""
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Communication clarity",
+        "score": 95,
+        "rationale": "Heuristic rubric (LLM unavailable): clarity of recommendation, distinct reasons, specificity.",
+        "evidence": [
+          "Recommendation stated up front: Conditional Proceed",
+          "Three distinct reasons: \"Value only clears if we haircut the multiple toward ~9x comp\"; \"Top-10 concentration and declining accounts contradict the m\"; \"Synergy bridge appears to double-count CoC debt paydown with\"",
+          "Uses specific numbers",
+          "Rubric file: communication.v1"
+        ],
+        "method": "heuristic_fallback"
+      },
+      {
+        "dimension": "Adaptability / responsiveness",
+        "score": 75,
+        "rationale": "Engagement with stakeholder prompts and whether final work reflects them.",
+        "evidence": [
+          "Daniel reply: \"The single biggest risk is customer concentration — top accounts are 34% of revenue and two are already declining, which undercuts the management retention claim.\"",
+          "Daniel branch: customer",
+          "Final submission reflects customer concentration raised in chat"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Prioritization and time management",
+        "score": 75,
+        "rationale": "Time allocation vs critical materials and responsiveness to MD prompt.",
+        "evidence": [
+          "Tab seconds: {\"brief\":5,\"data_room\":90,\"financials\":30,\"risks\":30,\"recommend\":10}",
+          "Docs opened: 6",
+          "Opened both critical docs (retention + comps)"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "AI judgment",
+        "score": 60,
+        "label": "Not heavily used",
+        "rationale": "No AI usage logged — neither trap nor blind trust observed.",
+        "evidence": [
+          "ai_usage_log empty"
+        ],
+        "method": "deterministic"
+      }
+    ],
+    "daniel_exchange": [
+      {
+        "id": "msg_mre42te9_w6qj",
+        "timestamp": "2026-07-09T23:01:49.521Z",
+        "triggerId": "D1",
+        "sender": "daniel",
+        "name": "Daniel Chen",
+        "role": "Managing Director",
+        "body": "Before you finalize: what's your read on the single biggest risk in this deal? Reply here when you have a view.",
+        "elapsedSec": 485,
+        "needsReply": true
+      },
+      {
+        "id": "msg_mre42te9_nndg",
+        "timestamp": "2026-07-09T23:01:49.521Z",
+        "triggerId": "D1_reply",
+        "sender": "candidate",
+        "name": "You",
+        "role": "Candidate",
+        "body": "The single biggest risk is customer concentration — top accounts are 34% of revenue and two are already declining, which undercuts the management retention claim.",
+        "elapsedSec": 485,
+        "isReply": true
+      },
+      {
+        "id": "msg_mre42te9_zq6h",
+        "timestamp": "2026-07-09T23:01:49.521Z",
+        "triggerId": "D1_follow",
+        "sender": "daniel",
+        "name": "Daniel Chen",
+        "role": "Managing Director",
+        "body": "Agreed, that's the one I'd underwrite hardest. Make sure the memo says what you'd do about it, not just that it exists.",
+        "elapsedSec": 485
+      }
+    ],
+    "ai_usage_summary": {
+      "events": [],
+      "trap_triggered": false,
+      "trap_caught": null
+    },
+    "benchmark": {
+      "status": "insufficient_data",
+      "comparison_text": "Not enough completed pilot sessions yet to benchmark this candidate against real hiring outcomes."
+    },
+    "final_memo": "Conditional Proceed\n\nValue only clears if we haircut the multiple toward ~9x comps.\n\nTop-10 concentration and declining accounts contradict the management longevity claim.\n\nSynergy bridge appears to double-count CoC debt paydown with G&A savings.\n\nRequest the missing mid-market cohort retention file referenced as available on request; diligence the two declining top-10 renewals; confirm synergy bridge removes the overlapping CoC savings before signing.",
+    "timeline": [
+      {
+        "t": 0,
+        "label": "Started Project Meridian",
+        "type": "simulation_started"
+      },
+      {
+        "t": 0,
+        "label": "Viewed CFO brief",
+        "type": "brief_viewed"
+      },
+      {
+        "t": 0,
+        "label": "Opened Executive_Brief.pdf",
+        "type": "resource_opened"
+      },
+      {
+        "t": 0,
+        "label": "Opened Financial_Model.xlsx",
+        "type": "resource_opened"
+      },
+      {
+        "t": 0,
+        "label": "Opened Market_Memo.pdf",
+        "type": "resource_opened"
+      },
+      {
+        "t": 0,
+        "label": "Opened Retention_Cohort.csv",
+        "type": "resource_opened"
+      },
+      {
+        "t": 0,
+        "label": "Opened Management_Update.pptx",
+        "type": "resource_opened"
+      },
+      {
+        "t": 0,
+        "label": "Opened Comps_Precedents.pdf",
+        "type": "resource_opened"
+      },
+      {
+        "t": 0,
+        "label": "Viewed Financials tab",
+        "type": "financials_viewed"
+      },
+      {
+        "t": 0,
+        "label": "Adjusted valuation inputs",
+        "type": "model_edited"
+      },
+      {
+        "t": 0,
+        "label": "Assumption: Haircut exit multiple from 10.7x toward comps average 9x",
+        "type": "assumption_added"
+      },
+      {
+        "t": 0,
+        "label": "Assumption: Synergy line double-counts CoC debt paydown overlap — back out duplicated saving",
+        "type": "assumption_added"
+      },
+      {
+        "t": 0,
+        "label": "Risk: Valuation vs. comps",
+        "type": "risk_added"
+      },
+      {
+        "t": 0,
+        "label": "Risk: Customer concentration",
+        "type": "risk_added"
+      },
+      {
+        "t": 485,
+        "label": "Priya Shah: Hey — I pulled the comps and the entry multiple looks rich v",
+        "type": "stakeholder_message"
+      },
+      {
+        "t": 485,
+        "label": "Daniel Chen: Before you finalize: what's your read on the single biggest ",
+        "type": "stakeholder_message"
+      },
+      {
+        "t": 485,
+        "label": "Candidate chat reply",
+        "type": "chat_message_sent"
+      },
+      {
+        "t": 485,
+        "label": "Daniel follow-up",
+        "type": "stakeholder_message"
+      },
+      {
+        "t": 485,
+        "label": "Selected Conditional Proceed",
+        "type": "recommendation_selected"
+      },
+      {
+        "t": 485,
+        "label": "Submitted final investment memo",
+        "type": "final_submitted"
+      },
+      {
+        "t": 485,
+        "label": "Priya Shah: Nice work getting through that under time pressure. For what",
+        "type": "stakeholder_message"
+      }
+    ]
+  },
+  "weak": {
+    "session_id": "ms_mre42tei",
+    "seed": "accept-weak-v1",
+    "executive_recommendation": "Reject",
+    "confidence": "High",
+    "overall_summary": "Caught 0/3 planted errors. Ambiguity: Poor pattern. Soft-skill avg (numeric dims): 42. Missing cohort data classified from diligence/memo evidence.",
+    "planted_errors": [
+      {
+        "id": "err_exit_multiple_vs_comps",
+        "title": "Exit multiple vs. precedent",
+        "status": "missed",
+        "evidence": [
+          "No risk/assumption/memo evidence of reconciling 10.8x vs comps avg 9.3x"
+        ]
+      },
+      {
+        "id": "err_retention_contradiction",
+        "title": "Retention contradiction",
+        "status": "missed",
+        "evidence": [
+          "Retention_Cohort.csv was never opened — cannot credit contradiction catch (Part D rule)"
+        ]
+      },
+      {
+        "id": "err_synergy_double_count",
+        "title": "Synergy double-count",
+        "status": "missed",
+        "evidence": [
+          "No assumption/memo language identifying synergy / CoC debt paydown double-count"
+        ]
+      }
+    ],
+    "ambiguity": {
+      "dimension": "Ambiguity handling",
+      "score": "poor",
+      "label": "Poor pattern",
+      "rationale": "Candidate stated a specific retention conclusion despite missing cohort file / without flagging the data gap.",
+      "evidence": [
+        "net retention is 96% across the book so concentration is not a real issue for underwriting this deal at the offer price.\nproceed\n\nstrong franchise.\n\nsynergies will be realized.\n\ncompelling opportunity for shareholders.\n\n"
+      ],
+      "method": "deterministic"
+    },
+    "hard_skills": [
+      {
+        "dimension": "Analytical accuracy",
+        "score": 55,
+        "rationale": "Consistency between logged valuation inputs and narrative claims.",
+        "evidence": [
+          "Submitted valuation inputs: growth 14.5%, exit 10.8x, implied EV $5462M",
+          "Seed base exit 10.8x; comps avg 9.3x"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Assumption quality",
+        "score": 10,
+        "rationale": "0/1 assumptions reference numbers or concrete model levers.",
+        "evidence": [
+          "I think its fine"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Error detection — Exit multiple vs comps",
+        "score": "missed",
+        "rationale": "Missed.",
+        "evidence": [
+          "No risk/assumption/memo evidence of reconciling 10.8x vs comps avg 9.3x"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Error detection — Retention contradiction",
+        "score": "missed",
+        "rationale": "Missed.",
+        "evidence": [
+          "Retention_Cohort.csv was never opened — cannot credit contradiction catch (Part D rule)"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Error detection — Synergy double-count",
+        "score": "missed",
+        "rationale": "Missed.",
+        "evidence": [
+          "No assumption/memo language identifying synergy / CoC debt paydown double-count"
+        ],
+        "method": "deterministic"
+      }
+    ],
+    "soft_skills": [
+      {
+        "dimension": "Ambiguity handling",
+        "score": "poor",
+        "label": "Poor pattern",
+        "rationale": "Candidate stated a specific retention conclusion despite missing cohort file / without flagging the data gap.",
+        "evidence": [
+          "net retention is 96% across the book so concentration is not a real issue for underwriting this deal at the offer price.\nproceed\n\nstrong franchise.\n\nsynergies will be realized.\n\ncompelling opportunity for shareholders.\n\n"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Business judgment",
+        "score": 15,
+        "rationale": "Recommendation category vs severity of errors caught/missed, plus specificity of reasons.",
+        "evidence": [
+          "Recommendation: Proceed",
+          "Planted errors caught: 0/3",
+          "Proceed with no planted errors caught — weak judgment"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Risk detection and prioritization",
+        "score": 0,
+        "rationale": "0 evidence-linked risks; 0/3 planted errors reflected.",
+        "evidence": [
+          "[Market/macro] Market risk exists in any deal."
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Communication clarity",
+        "score": 70,
+        "rationale": "Heuristic rubric (LLM unavailable): clarity of recommendation, distinct reasons, specificity.",
+        "evidence": [
+          "Recommendation stated up front: Proceed",
+          "Three distinct reasons: \"Strong franchise.\"; \"Synergies will be realized.\"; \"Compelling opportunity for shareholders.\"",
+          "Contains vague corporate language",
+          "Uses specific numbers",
+          "Rubric file: communication.v1"
+        ],
+        "method": "heuristic_fallback"
+      },
+      {
+        "dimension": "Adaptability / responsiveness",
+        "score": 55,
+        "rationale": "Engagement with stakeholder prompts and whether final work reflects them.",
+        "evidence": [
+          "Daniel reply: \"I think the deal looks fine overall and we should move ahead.\"",
+          "Daniel branch: generic",
+          "Replied to Daniel but memo linkage weak"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Prioritization and time management",
+        "score": 50,
+        "rationale": "Time allocation vs critical materials and responsiveness to MD prompt.",
+        "evidence": [
+          "Tab seconds: {\"brief\":5,\"data_room\":30,\"financials\":30,\"recommend\":10,\"risks\":15}",
+          "Docs opened: 2"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "AI judgment",
+        "score": 60,
+        "label": "Not heavily used",
+        "rationale": "No AI usage logged — neither trap nor blind trust observed.",
+        "evidence": [
+          "ai_usage_log empty"
+        ],
+        "method": "deterministic"
+      }
+    ],
+    "daniel_exchange": [
+      {
+        "id": "msg_mre42tei_bpzh",
+        "timestamp": "2026-07-09T23:01:49.530Z",
+        "triggerId": "D1",
+        "sender": "daniel",
+        "name": "Daniel Chen",
+        "role": "Managing Director",
+        "body": "Before you finalize: what's your read on the single biggest risk in this deal? Reply here when you have a view.",
+        "elapsedSec": 485,
+        "needsReply": true
+      },
+      {
+        "id": "msg_mre42tei_4bp7",
+        "timestamp": "2026-07-09T23:01:49.530Z",
+        "triggerId": "D1_reply",
+        "sender": "candidate",
+        "name": "You",
+        "role": "Candidate",
+        "body": "I think the deal looks fine overall and we should move ahead.",
+        "elapsedSec": 485,
+        "isReply": true
+      },
+      {
+        "id": "msg_mre42tei_b08z",
+        "timestamp": "2026-07-09T23:01:49.530Z",
+        "triggerId": "D1_follow",
+        "sender": "daniel",
+        "name": "Daniel Chen",
+        "role": "Managing Director",
+        "body": "Okay — make sure whatever you flagged shows up clearly in your final recommendation. I'll be reading for it.",
+        "elapsedSec": 485
+      }
+    ],
+    "ai_usage_summary": {
+      "events": [],
+      "trap_triggered": false,
+      "trap_caught": null
+    },
+    "benchmark": {
+      "status": "insufficient_data",
+      "comparison_text": "Not enough completed pilot sessions yet to benchmark this candidate against real hiring outcomes."
+    },
+    "final_memo": "Proceed\n\nStrong franchise.\n\nSynergies will be realized.\n\nCompelling opportunity for shareholders.\n\nNet retention is 96% across the book so concentration is not a real issue for underwriting this deal at the offer price.",
+    "timeline": [
+      {
+        "t": 0,
+        "label": "Started Project Meridian",
+        "type": "simulation_started"
+      },
+      {
+        "t": 0,
+        "label": "Viewed CFO brief",
+        "type": "brief_viewed"
+      },
+      {
+        "t": 0,
+        "label": "Opened Executive_Brief.pdf",
+        "type": "resource_opened"
+      },
+      {
+        "t": 0,
+        "label": "Opened Management_Update.pptx",
+        "type": "resource_opened"
+      },
+      {
+        "t": 0,
+        "label": "Viewed Financials tab",
+        "type": "financials_viewed"
+      },
+      {
+        "t": 0,
+        "label": "Adjusted valuation inputs",
+        "type": "model_edited"
+      },
+      {
+        "t": 485,
+        "label": "Priya Shah: Hey — I pulled the comps and the entry multiple looks rich v",
+        "type": "stakeholder_message"
+      },
+      {
+        "t": 485,
+        "label": "Daniel Chen: Before you finalize: what's your read on the single biggest ",
+        "type": "stakeholder_message"
+      },
+      {
+        "t": 485,
+        "label": "Candidate chat reply",
+        "type": "chat_message_sent"
+      },
+      {
+        "t": 485,
+        "label": "Daniel follow-up",
+        "type": "stakeholder_message"
+      },
+      {
+        "t": 485,
+        "label": "Selected Proceed",
+        "type": "recommendation_selected"
+      },
+      {
+        "t": 485,
+        "label": "Assumption: I think its fine",
+        "type": "assumption_added"
+      },
+      {
+        "t": 485,
+        "label": "Risk: Market/macro",
+        "type": "risk_added"
+      },
+      {
+        "t": 485,
+        "label": "Submitted final investment memo",
+        "type": "final_submitted"
+      },
+      {
+        "t": 485,
+        "label": "Priya Shah: Nice work getting through that under time pressure. For what",
+        "type": "stakeholder_message"
+      }
+    ]
+  }
+}

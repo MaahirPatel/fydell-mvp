@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "installCommand": "echo 'no install needed'",
-  "buildCommand": "echo 'static site - no build step'",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build:sim",
   "outputDirectory": "."
 }

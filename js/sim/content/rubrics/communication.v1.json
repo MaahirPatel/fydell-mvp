@@ -1,0 +1,11 @@
+{
+  "id": "communication.v1",
+  "dimension": "Communication clarity",
+  "version": "1.0.0",
+  "anchors": {
+    "strong": "Conditional Proceed. Standalone value is ~$2.05B vs the $2.4B offer after haircutting the exit multiple toward the 9.5x comps average. Top-10 concentration at 34% with two declining accounts contradicts the management longevity claim — diligence the renewals before signing.",
+    "weak": "This is a compelling opportunity with strong synergies and a great franchise. We should proceed and unlock value for shareholders."
+  },
+  "rubric_prompt": "Score communication clarity 0-100. Require JSON {score, rationale, quoted_evidence}. Strong = recommendation up front, three distinct non-redundant reasons, specific numbers. Weak = vague corporate language, no clear call.",
+  "required_elements": ["clear_recommendation", "distinct_reasons", "specific_language"]
+}

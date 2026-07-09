@@ -4,7 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run build:sim",
+    "build:sim": "esbuild js/sim/browser-entry.js --bundle --format=iife --outfile=sim-engine.js --platform=browser --target=es2018 --loader:.ts=ts --loader:.json=json",
+    "build:sim:node": "esbuild js/sim/index.js --bundle --format=cjs --outfile=sim-engine.cjs --platform=node --target=node18 --loader:.ts=ts --loader:.json=json",
+    "smoke:sim": "node scripts/smoke-meridian.js",
+    "eval:session": "node scripts/eval-session.js",
+    "accept:meridian": "node scripts/accept-meridian.mjs both",
+    "accept:strong": "node scripts/accept-meridian.mjs strong",
+    "accept:weak": "node scripts/accept-meridian.mjs weak",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"
@@ -30,6 +37,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "esbuild": "^0.25.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
     "tailwindcss": "^4",

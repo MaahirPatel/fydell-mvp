@@ -1,0 +1,371 @@
+{
+  "id": "meridian",
+  "title": "Project Meridian",
+  "role_context": "Finance Analyst / FP&A supporting the CFO",
+  "status": "flagship",
+  "time_limit_minutes": 35,
+  "mandate_text": "You are supporting the CFO on Project Meridian, a proposed acquisition of Meridian Analytics, a B2B SaaS company. The investment committee meets in 35 minutes. Your mandate is to (1) review the data room and challenge management's case, (2) build or stress a simple valuation bridge using the interactive financial model, (3) surface material risks—especially retention, concentration, and exit multiple—and (4) deliver a clear recommendation: Proceed at offer, Conditional Proceed, Hold / renegotiate, or Pass. Cite exhibits. Do not hide known risks. If data is incomplete, state your assumption explicitly.",
+  "evaluated_dimensions": [
+    "Analytical accuracy",
+    "Business judgment",
+    "Risk detection",
+    "Communication clarity",
+    "Adaptability",
+    "AI judgment",
+    "Integrity"
+  ],
+  "objectives": [
+    {
+      "id": "obj_brief",
+      "label": "Review the executive brief and understand the deal mandate",
+      "event_types": ["brief_viewed", "document_opened"]
+    },
+    {
+      "id": "obj_model",
+      "label": "Inspect the financial model and key valuation assumptions",
+      "event_types": ["model_opened", "assumption_viewed", "scenario_changed"]
+    },
+    {
+      "id": "obj_retention",
+      "label": "Analyze customer retention and concentration risk",
+      "event_types": ["retention_csv_opened", "document_opened"]
+    },
+    {
+      "id": "obj_risks",
+      "label": "Log material risks with evidence from the data room",
+      "event_types": ["risk_added", "risk_memo_opened"]
+    },
+    {
+      "id": "obj_downside",
+      "label": "Run a downside / sensitivity case before recommending",
+      "event_types": ["scenario_changed", "assumption_added"]
+    },
+    {
+      "id": "obj_stakeholders",
+      "label": "Respond to stakeholder questions with evidence-backed answers",
+      "event_types": ["stakeholder_replied", "message_sent"]
+    },
+    {
+      "id": "obj_memo",
+      "label": "Submit a recommendation memo tied to valuation and risk",
+      "event_types": ["memo_submitted", "recommendation_selected"]
+    },
+    {
+      "id": "obj_integrity",
+      "label": "Disclose known risks rather than sanitizing the story",
+      "event_types": ["integrity_response", "risk_added"]
+    }
+  ],
+  "documents": [
+    {
+      "id": "exec_brief",
+      "title": "Executive Brief.pdf",
+      "tag": "Brief",
+      "body": "PROJECT MERIDIAN — EXECUTIVE BRIEF\nConfidential | Investment Committee Pre-Read\nPrepared for: CFO / Investment Committee\nRole context: Finance Analyst / FP&A support\n\n1. Situation\nHorizon Capital is evaluating the acquisition of Meridian Analytics (\"Meridian\"), a vertical SaaS platform serving mid-market and enterprise customers in financial operations and analytics. Management has proposed an all-cash enterprise value of ${{offer_price}} million. LTM revenue is ${{revenue_ltm}} million. FY2023 revenue was ${{revenue_fy2023}} million and FY2024 revenue was ${{revenue_fy2024}} million, implying strong recent growth.\n\nThe committee has asked FP&A to pressure-test the seller case before the IC session. You have approximately 35 minutes. Materials in the data room include this brief, a financial model note (use the interactive Model tab), a market / comps memo, customer retention extracts, a risk memo, and a management update.\n\n2. Mandate\nDeliver a recommendation on whether to Proceed at offer, Proceed with conditions, Hold / renegotiate, or Pass. Your work product should include:\n• A view on whether ${{offer_price}}M is supportable given growth, margins, retention, and exit multiple.\n• Explicit downside sensitivity (growth, retention, exit multiple, and EBITDA margin).\n• Material risks with citations to exhibits.\n• Clear communication suitable for the CFO to take into committee.\n\n3. Management headline case\nManagement's base plan assumes revenue growth of approximately {{growth_rate}}%, EBITDA margin of {{ebitda_margin}}%, gross margin of {{gross_margin}}%, and net revenue retention of {{net_retention}}%. The valuation bridge uses an exit multiple of {{exit_multiple}}x EBITDA. At plan, management argues the ${{offer_price}}M offer is roughly in line with fair value.\n\n4. What the committee cares about\n• Is growth durable or dependent on a thin set of large accounts?\n• Does headline retention ({{net_retention}}%) mask weaker performance in the top cohort?\n• Is {{exit_multiple}}x consistent with precedent, or aggressive?\n• Are claimed synergies incremental to the organic plan, or double-counted?\n• What happens to implied value if growth, retention, and multiple all move against us?\n\n5. Working instructions\nOpen the Financial Model tab for live assumptions. Do not treat management slides as gospel. Flag incomplete data rather than inventing precision. If colleagues pressure you to \"keep the story clean,\" disclose known risks anyway—integrity is evaluated.\n\n6. Decision frame (for your memo)\nProceed at offer — only if value and risk are acceptable as-is.\nConditional Proceed — preferred when value is close but diligence items (retention, multiple, synergies) need protection via price, earnout, or reps.\nHold / renegotiate — when downside value or risk asymmetry argues for a lower entry price.\nPass — when risk or valuation gap is too wide for this process.\n\nEnd of brief. Begin with the model and retention file; then reconcile market memo claims against precedents."
+    },
+    {
+      "id": "financial_model_note",
+      "title": "Financial Model.xlsx",
+      "tag": "Model",
+      "body": "PROJECT MERIDIAN — FINANCIAL MODEL NOTE\nFile reference: Meridian_IC_Model_v3.xlsx (interactive version available in the Model tab)\nOwner: Corporate Development / FP&A\n\nIMPORTANT\nThis PDF/note is a static summary of the workbook structure. For live calculations, scenario toggles (Base / Downside / Upside), and assumption edits, switch to the interactive Financial Model tab in the workstation. Do not rely solely on the printed figures below—randomized session assumptions may differ slightly from prior IC packs.\n\n1. Model architecture\nSheet A — Assumptions: revenue_ltm, growth_rate, ebitda_margin, gross_margin, opex_growth, net_retention, exit_multiple, offer_price, top10_retention, top10_arr_pct.\nSheet B — P&L bridge: projects revenue from LTM ${{revenue_ltm}}M at {{growth_rate}}% growth; applies {{ebitda_margin}}% EBITDA margin; opex grows at {{opex_growth}}%.\nSheet C — Valuation: Exit-year EBITDA × {{exit_multiple}}x = Implied Enterprise Value. Compare Implied EV to Offer ${{offer_price}}M.\nSheet D — Scenarios: Base (plan), Downside (growth −7pp, net retention −8pp, exit multiple −2.0x, EBITDA margin −3pp), Upside (growth +3pp, net retention +3pp, exit multiple +1.0x, EBITDA margin +2pp).\n\n2. Base assumption snapshot (session values)\n• Revenue LTM: ${{revenue_ltm}}M\n• Revenue FY2023 / FY2024: ${{revenue_fy2023}}M / ${{revenue_fy2024}}M\n• Growth rate: {{growth_rate}}%\n• Gross margin: {{gross_margin}}%\n• EBITDA margin: {{ebitda_margin}}%\n• OpEx growth: {{opex_growth}}%\n• Net retention (blended): {{net_retention}}%\n• Top-10 retention: {{top10_retention}}%\n• Top-10 ARR share: {{top10_arr_pct}}%\n• Exit multiple: {{exit_multiple}}x\n• Offer price (EV): ${{offer_price}}M\n\n3. Correct relationships to verify\n• Implied EV should equal exit-year EBITDA × exit multiple (ev_from_ebitda).\n• Approximate customer churn ≈ 100 − net retention (churn_from_retention). Note: NRR is not identical to logo retention; treat as a directional check.\n• Concentration: if top-10 is {{top10_arr_pct}}% of ARR and retains at only {{top10_retention}}%, blended {{net_retention}}% can look healthy while downside risk is concentrated.\n\n4. Analyst checklist\n□ Open Model tab and confirm session assumptions match this note (or note deltas).\n□ Toggle Downside; record Implied EV vs ${{offer_price}}M offer.\n□ Stress exit multiple toward precedent mid-range if management's {{exit_multiple}}x looks high.\n□ Document which assumption changes drive the recommendation.\n□ Do not paste AI output into the memo without checking precedents and retention.\n\n5. Known model limitations\nMid-market cohort retention is incomplete in the retention extract. The model does not auto-adjust for an uncertain large-customer renewal—update assumptions manually if new information arrives mid-session.\n\nUse the interactive Model tab now."
+    },
+    {
+      "id": "market_memo",
+      "title": "Market Memo.pdf",
+      "tag": "Market",
+      "body": "PROJECT MERIDIAN — MARKET & VALUATION MEMO\nPrepared by: Corporate Development\nAudience: CFO / IC\nClassification: Internal — Working Draft\n\n1. Sector backdrop\nVertical SaaS trading multiples have compressed from 2021 peaks but remain supported for assets with durable net retention, expanding gross margins, and clear path to mid-20s EBITDA. Peer set for Meridian includes mid-cap financial ops / analytics software names and selected take-private precedents.\n\n2. Precedent transaction range\nRecent relevant transactions and take-privates in adjacent vertical SaaS have cleared at approximately 8.5x–10.0x forward EBITDA when growth is mid-teens and NRR is low-to-mid 90s. A minority of premium assets with NRR >105% and low concentration have cleared above 10x; those facts do not clearly apply to Meridian's current cohort mix.\n\n3. Management valuation stance\nManagement's IC pack applies an exit multiple of {{exit_multiple}}x EBITDA and concludes that fair value is broadly consistent with the ${{offer_price}}M offer when growth is held at {{growth_rate}}% and EBITDA margin at {{ebitda_margin}}%. Management cites \"sector recovery\" and \"strategic scarcity\" as justification for a multiple above the 8.5x–10.0x precedent band.\n\nFP&A note: An exit multiple of {{exit_multiple}}x sits above the cited precedent range of 8.5x–10.0x. Candidates should test whether the premium is earned or simply asserted.\n\n4. Synergy narrative (review carefully)\nThe seller materials claim $28–35M of run-rate EBITDA synergies by Year 3 from (a) cross-sell of Horizon's distribution into Meridian's installed base, (b) overlapping G&A, and (c) \"accelerated expansion revenue already contemplated in Meridian's organic plan.\" Item (c) appears to double-count expansion that is already embedded in the organic growth and net retention trajectory used in the base model. If organic NRR of {{net_retention}}% already includes upsell/expansion, treating the same expansion as incremental synergy inflates pro forma value.\n\nRecommended diligence question: Which synergy dollars are truly incremental to the organic plan that supports {{growth_rate}}% growth and {{net_retention}}% NRR?\n\n5. Offer vs implied value\nAt plan assumptions (growth {{growth_rate}}%, EBITDA margin {{ebitda_margin}}%, exit {{exit_multiple}}x), management's bridge shows Implied EV near the ${{offer_price}}M offer. Sensitivity to a 8.5x–10.0x exit band and to weaker retention (see retention extract: top-10 retention {{top10_retention}}% vs blended {{net_retention}}%) can open a material gap below offer.\n\n6. Market memo conclusion (Corp Dev draft — not IC-approved)\n\"Proceed is supportable if growth holds and synergies are realized.\" FP&A should independently assess whether that sentence survives downside retention, a precedent-consistent multiple, and removal of double-counted synergy.\n\nExhibits referenced: Precedent table (Appendix A — not attached in this extract), Management IC deck p.14–19, Retention CSV."
+    },
+    {
+      "id": "retention_csv",
+      "title": "Customer Retention Data.csv",
+      "tag": "Retention",
+      "body": "PROJECT MERIDIAN — CUSTOMER RETENTION EXTRACT\nSource: CS Ops / RevOps export (partial)\nAs-of: LTM period aligned to revenue ${{revenue_ltm}}M\nNote: Mid-market cohort rows are incomplete — see flags below.\n\n--- CSV-LIKE TABLE ---\nsegment,arr_share_pct,logo_count,gross_retention_pct,net_retention_pct,expansion_pct,notes\nEnterprise_Top10,{{top10_arr_pct}},10,91,{{top10_retention}},-3,Largest logos; two at-risk renewals flagged by CS\nEnterprise_Other,22,28,94,96,2,Stable; multi-year contracts common\nMid_Market,24,140,88,NULL,NULL,INCOMPLETE — renewal outcomes missing for 37% of logos\nSMB,13,410,84,90,6,Higher logo churn; low ARR share\nBlended_Reported,100,588,90,{{net_retention}},3,Headline NRR used in management model\n\ncohort_year,starting_arr_m,ending_arr_m,net_retention_pct,top10_overlap_flag\n2022,210.4,198.2,94.2,partial\n2023,312.8,289.1,92.4,yes\n2024_YTD,401.5,372.6,{{net_retention}},yes\n\nrisk_flags,detail\nconcentration,Top-10 accounts = {{top10_arr_pct}}% of ARR\ntop10_nrr_gap,Top-10 NRR {{top10_retention}}% vs blended {{net_retention}}%\nchurn_proxy,Directional churn ≈ 100 - {{net_retention}} = approx for blended only\nmid_market_gap,Cannot precisely size mid-market retention risk without further diligence\nlargest_renewal,CS notes \"watch\" on largest logo; status may change during IC prep\n\n--- END TABLE ---\n\nAnalyst guidance\nHeadline blended net retention of {{net_retention}}% can mask weaker top-10 cohort retention of {{top10_retention}}%. With {{top10_arr_pct}}% of ARR in the top 10, a further deterioration in large-account renewals has outsized impact on downside revenue and on any exit multiple the market will pay.\n\nAmbiguity: Mid-market net retention is not fully populated. A precise company-wide retention impact cannot be stated without additional diligence. Flag the gap; do not invent a single-point estimate and present it as fact.\n\nRecommended actions in-session: Open this file, log concentration / top-10 retention as a risk, and stress net_retention in the Downside scenario. If stakeholders ask for a precise mid-market impact, ask a clarifying question or state an explicit assumption."
+    },
+    {
+      "id": "risk_memo",
+      "title": "Risk Memo.pdf",
+      "tag": "Risk",
+      "body": "PROJECT MERIDIAN — PRELIMINARY RISK MEMO\nAuthor: FP&A (working draft for analyst completion)\nStatus: Incomplete — candidate expected to enrich with evidence\n\n1. Purpose\nThis memo catalogs diligence risks that could change valuation, structure, or the go / no-go call on the ${{offer_price}}M offer. Each risk should be tied to an exhibit and, where possible, to a model sensitivity.\n\n2. Valuation / multiple risk\nManagement exit multiple: {{exit_multiple}}x EBITDA.\nPrecedent band cited in Market Memo: ~8.5x–10.0x.\nImplication: If the market clears closer to 9.0x–9.5x given Meridian's retention and concentration profile, Implied EV may fall below the ${{offer_price}}M offer even if growth near {{growth_rate}}% is achieved. This is a primary IC debate point.\n\n3. Retention and concentration risk\nBlended NRR: {{net_retention}}%.\nTop-10 NRR: {{top10_retention}}%.\nTop-10 ARR: {{top10_arr_pct}}%.\nImplication: Headline retention overstates durability if large accounts underperform. Downside case should move net retention materially (session downside preset applies −8pp to NRR) and reconsider growth.\nData gap: Mid-market cohort incomplete — size of risk is directionally clear, not precisely quantifiable from the extract alone.\n\n4. Synergy / double-count risk\nMarket Memo describes synergy that includes expansion \"already contemplated in Meridian's organic plan.\" If organic growth of {{growth_rate}}% and NRR of {{net_retention}}% already embed that expansion, counting it again as synergy overstates pro forma EBITDA and can unjustifiably support both price and multiple.\n\n5. Margin and operating risk\nBase EBITDA margin {{ebitda_margin}}% with gross margin {{gross_margin}}% and OpEx growth {{opex_growth}}%. Integration spend, retention remediation, and sales capacity to replace churned ARR could pressure margins below plan. Downside preset applies −3pp to EBITDA margin.\n\n6. Process / information risk\nMaterials are a working data room, not a fully audited CIM. Figures may be session-randomized within defined bands (e.g., growth, exit multiple, NRR). Always read the live Model tab.\n\n7. Integrity note for the deal team\nKnown risks (above-precedent multiple, top-10 retention gap, synergy double-count) should appear in the IC memo. \"Keeping retention flat for a cleaner story\" is not acceptable professional practice when evidence of risk exists.\n\n8. Suggested risk register entries (complete / edit)\n• R1 Exit multiple above precedent ({{exit_multiple}}x vs 8.5–10x) — cite Market Memo.\n• R2 Top-10 retention {{top10_retention}}% vs blended {{net_retention}}%; concentration {{top10_arr_pct}}% — cite Retention CSV.\n• R3 Synergy double-count vs organic plan — cite Market Memo §4.\n• R4 Incomplete mid-market cohort data — cite Retention CSV gap.\n• R5 Large-customer renewal uncertainty — monitor Management Update / live CFO messages.\n\nAttach model downside output before finalizing."
+    },
+    {
+      "id": "management_update",
+      "title": "Management Update.pdf",
+      "tag": "Update",
+      "body": "PROJECT MERIDIAN — MANAGEMENT UPDATE\nFrom: Meridian CEO / CFO (seller)\nTo: Horizon Capital deal team\nRe: Soft update ahead of IC\n\nColleagues,\n\nThank you for the continued diligence on Project Meridian. We wanted to provide a brief update aligned to the figures in your model pack.\n\nCommercial\nWe remain comfortable with the growth trajectory supporting approximately {{growth_rate}}% revenue growth off LTM revenue of ${{revenue_ltm}}M (FY2024 ${{revenue_fy2024}}M vs FY2023 ${{revenue_fy2023}}M). Pipeline coverage for the next two quarters is consistent with plan. Gross margin is expected to hold near {{gross_margin}}% as we mix toward enterprise.\n\nRetention\nCompany-wide net retention continues to track near {{net_retention}}% on a blended basis. We acknowledge that our largest accounts require active attention; top-account retention has been softer than the blend. Our CS team is running executive sponsorship on the top cohort. We do not believe this changes the strategic thesis, though we understand buyers will diligence concentration (top accounts represent roughly {{top10_arr_pct}}% of ARR).\n\nProfitability\nWe reaffirm a path to ~{{ebitda_margin}}% EBITDA margin under the operating plan, with disciplined OpEx growth near {{opex_growth}}%.\n\nValuation\nWe continue to view ${{offer_price}}M as a fair outcome reflecting scarcity of scaled vertical assets and an exit framework around {{exit_multiple}}x EBITDA. We are aware buyers may reference a wider precedent band; we believe Meridian's product depth and customer ROI support a premium.\n\nSynergies\nWe remain excited about distribution synergies with Horizon and believe cross-sell and G&A overlap are incremental. Expansion within the existing base is already a core part of how we run the business organically.\n\nOpen items\n• Final customer cohort detail for mid-market renewals is still being assembled by RevOps.\n• One large renewal is in active commercial discussion; we will update Horizon if status changes materially before signing.\n\nWe look forward to a constructive IC discussion.\n\n— Meridian Management\n\nFP&A overlay (internal): Treat seller comfort on {{exit_multiple}}x and blended {{net_retention}}% as advocacy, not conclusion. Reconcile against Market Memo precedents (8.5–10x) and Retention CSV top-10 {{top10_retention}}%. If a live update arrives that the largest renewal is uncertain, revisit the Downside case before submitting your memo."
+    }
+  ],
+  "financial_model": {
+    "base_assumptions": {
+      "revenue_ltm": 1038.2,
+      "revenue_fy2023": 903.0,
+      "revenue_fy2024": 1038.2,
+      "ebitda_margin": 20,
+      "growth_rate": 15,
+      "gross_margin": 62,
+      "opex_growth": 10,
+      "net_retention": 93,
+      "exit_multiple": 11,
+      "offer_price": 2400,
+      "top10_retention": 88,
+      "top10_arr_pct": 41
+    },
+    "randomization_rules": {
+      "growth_rate": { "min": 12, "max": 18, "decimals": 0 },
+      "exit_multiple": { "min": 9.5, "max": 12.0, "decimals": 1 },
+      "net_retention": { "min": 90, "max": 95, "decimals": 0 }
+    },
+    "correct_relationships": [
+      {
+        "id": "ev_from_ebitda",
+        "description": "Implied EV should equal exit-year EBITDA times exit multiple"
+      },
+      {
+        "id": "churn_from_retention",
+        "description": "Customer churn approximates 100 - net retention"
+      }
+    ],
+    "scenario_presets": {
+      "base": {},
+      "downside": {
+        "growth_rate_delta": -7,
+        "net_retention_delta": -8,
+        "exit_multiple_delta": -2,
+        "ebitda_margin_delta": -3
+      },
+      "upside": {
+        "growth_rate_delta": 3,
+        "net_retention_delta": 3,
+        "exit_multiple_delta": 1,
+        "ebitda_margin_delta": 2
+      }
+    }
+  },
+  "planted_errors": [
+    {
+      "id": "err_exit_multiple",
+      "location": "financial_model / market_memo",
+      "description": "Management exit multiple above precedent range 8.5-10x",
+      "detection_criteria": {
+        "risk_keywords": ["multiple", "precedent", "11x", "valuation", "exit"],
+        "memo_keywords": ["multiple", "precedent", "valuation"],
+        "assumption_keywords": ["multiple", "exit"]
+      },
+      "weight": 1.2
+    },
+    {
+      "id": "err_top10_retention",
+      "location": "retention_csv",
+      "description": "Headline retention masks weaker top-10 cohort retention",
+      "detection_criteria": {
+        "resource_ids": ["retention_csv"],
+        "risk_keywords": ["retention", "top-10", "top 10", "concentration", "churn"],
+        "memo_keywords": ["retention", "top-10", "concentration", "churn"]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "err_synergy_doublecount",
+      "location": "market_memo",
+      "description": "Synergy claim double-counts expansion already in organic plan",
+      "detection_criteria": {
+        "risk_keywords": ["synergy", "double", "organic"],
+        "memo_keywords": ["synergy", "double-count", "organic"]
+      },
+      "weight": 1.0
+    }
+  ],
+  "ambiguity_points": [
+    {
+      "id": "amb_cohort_gap",
+      "trigger_condition": "retention_csv_opened",
+      "description": "Cohort data incomplete for mid-market segment; cannot precisely size retention risk without more diligence",
+      "good_response_pattern": "asks clarifying question OR flags insufficient information OR logs assumption about incomplete cohort data",
+      "poor_response_pattern": "confidently states precise retention impact without acknowledging data gap",
+      "good_keywords": ["unclear", "incomplete", "missing", "need more", "diligence", "clarif", "insufficient", "cannot tell", "gap"],
+      "poor_keywords": ["exactly", "precisely", "definitely will", "will decline by"]
+    }
+  ],
+  "stakeholder_script": [
+    {
+      "id": "cfo_retention",
+      "stakeholder_name": "CFO",
+      "stakeholder_role": "CFO",
+      "trigger_condition": { "type": "on_start", "delay_ms": 0 },
+      "requires_reply": true,
+      "related_signal": "communication",
+      "message_variants": [
+        "Can you explain whether retention risk changes the recommendation?",
+        "Does the retention picture change how you would advise the committee?",
+        "Before we go further — does retention risk alter your call?"
+      ],
+      "reply_followups": [
+        {
+          "candidate_reply_pattern": "retention|churn|customer|concentration",
+          "follow_up_message": "Good. Make sure your final memo explains how that changes downside risk and valuation."
+        },
+        {
+          "candidate_reply_pattern": "downside|sensitivity|scenario",
+          "follow_up_message": "Useful. Tie the downside case to the recommendation, not just the model output."
+        },
+        {
+          "candidate_reply_pattern": "clarif|\\?|missing|incomplete",
+          "follow_up_message": "Good clarification. State your assumption clearly if the data is incomplete."
+        },
+        {
+          "candidate_reply_pattern": "ok|sure|will look|got it",
+          "follow_up_message": "Can you be more specific about the evidence driving your view?"
+        }
+      ]
+    },
+    {
+      "id": "fm_downside",
+      "stakeholder_name": "Finance Manager",
+      "stakeholder_role": "Finance Manager",
+      "trigger_condition": { "type": "on_start", "delay_ms": 800 },
+      "requires_reply": true,
+      "related_signal": "ownership",
+      "message_variants": [
+        "Please run the downside case before you lock a recommendation — growth, retention, and exit multiple together.",
+        "Can you stress the model on downside (growth / NRR / multiple) and tell me what that does to value vs the $2.4B offer?",
+        "I need a downside sensitivity on my desk: don't submit off base case alone."
+      ],
+      "reply_followups": [
+        {
+          "candidate_reply_pattern": "downside|sensitivity|scenario|stress|will run|running",
+          "follow_up_message": "Thanks. When you have it, compare Implied EV under downside to the offer and say whether that changes structure or price."
+        },
+        {
+          "candidate_reply_pattern": "retention|multiple|growth|margin",
+          "follow_up_message": "Good levers. Show the combined case, not one assumption in isolation."
+        },
+        {
+          "candidate_reply_pattern": "already|done|finished|completed",
+          "follow_up_message": "Great — paste the key delta vs offer into the memo so the CFO can use it in IC."
+        },
+        {
+          "candidate_reply_pattern": "ok|sure|will look|got it|on it",
+          "follow_up_message": "Appreciate it. Flag me if downside value gaps the offer by more than a rounding error."
+        },
+        {
+          "candidate_reply_pattern": "clarif|which|what case|\\?",
+          "follow_up_message": "Use the model Downside preset first, then adjust if the large renewal update changes your view."
+        }
+      ]
+    },
+    {
+      "id": "strategy_weigh",
+      "stakeholder_name": "Strategy Lead",
+      "stakeholder_role": "Strategy Lead",
+      "trigger_condition": { "type": "on_start", "delay_ms": 1600 },
+      "requires_reply": false,
+      "related_signal": "business_judgment",
+      "message_variants": [
+        "Strategy still likes the growth story — but don't let that override what the customer data is telling you.",
+        "We're bullish on the product wedge; still, weigh growth narrative against retention and concentration before you recommend.",
+        "Growth vs customer quality is the real debate. Make sure your call reflects both, not just the top-line plan."
+      ],
+      "reply_followups": [
+        {
+          "candidate_reply_pattern": "retention|concentration|top.?10|churn",
+          "follow_up_message": "Exactly the tension. If you proceed, say what conditions protect us on customer quality."
+        },
+        {
+          "candidate_reply_pattern": "growth|upside|strategic",
+          "follow_up_message": "Fair — just quantify how much of that growth depends on the top accounts holding."
+        },
+        {
+          "candidate_reply_pattern": "conditional|renegotiate|hold|pass|proceed",
+          "follow_up_message": "Noted. Be explicit in the memo about which evidence drove that recommendation."
+        }
+      ]
+    },
+    {
+      "id": "mgr_integrity",
+      "stakeholder_name": "Manager",
+      "stakeholder_role": "Deal Lead",
+      "trigger_condition": {
+        "type": "after_events",
+        "any": ["assumption_added", "risk_added", "scenario_changed"],
+        "min_elapsed_sec": 90
+      },
+      "requires_reply": false,
+      "related_signal": "integrity",
+      "integrity_pressure": true,
+      "message_variants": [
+        "Leadership prefers a cleaner recommendation. Can we keep retention flat unless someone asks?",
+        "The committee likes a clean story. Should we leave retention flat unless they ask?",
+        "Can we keep the retention line flat for the memo unless someone presses?"
+      ],
+      "reply_followups": [
+        {
+          "candidate_reply_pattern": "hide|keep flat|leave retention|cleaner|won't mention|omit",
+          "follow_up_message": "That creates a professional judgment concern. Known risk should not be hidden from the analysis.",
+          "integrity_concern": true
+        },
+        {
+          "candidate_reply_pattern": "transparent|disclose|base and downside|cannot hide|must include|flag retention|honest",
+          "follow_up_message": "Agreed. Show the base case and downside case clearly rather than hiding known risk.",
+          "integrity_strong": true
+        }
+      ]
+    },
+    {
+      "id": "mgmt_curveball",
+      "stakeholder_name": "CFO",
+      "stakeholder_role": "CFO",
+      "trigger_condition": { "type": "after_elapsed_sec", "sec": 180 },
+      "requires_reply": true,
+      "is_curveball": true,
+      "related_signal": "adaptability",
+      "message_variants": [
+        "Update: our largest customer renewal is now uncertain. Revisit the downside case before you submit.",
+        "New information — top customer renewal looks shaky. Please revisit downside before submitting.",
+        "Curveball: largest renewal is uncertain. Revisit downside risk before the memo goes out."
+      ],
+      "reply_followups": [
+        {
+          "candidate_reply_pattern": "downside|revisit|update|will run|adjust",
+          "follow_up_message": "Thanks. Reflect the update in assumptions, risks, and the final memo."
+        },
+        {
+          "candidate_reply_pattern": "retention|concentration|top.?10|churn|renewal",
+          "follow_up_message": "Yes — connect the renewal uncertainty to concentration risk and valuation, not just a narrative note."
+        },
+        {
+          "candidate_reply_pattern": "ok|sure|got it|will do|on it",
+          "follow_up_message": "Be specific: what assumption are you changing and does the recommendation move?"
+        }
+      ]
+    }
+  ],
+  "ai_assistant": {
+    "enabled": true,
+    "deliberate_error": {
+      "id": "ai_err_multiple",
+      "trigger_keywords": ["valuation", "multiple", "enterprise value", "what should i recommend"],
+      "response_with_error": "Based on the materials, an 11x exit multiple looks well supported by precedent. Fair value is roughly in line with the $2.4B offer if you hold growth at plan.",
+      "error_description": "AI incorrectly endorses above-precedent multiple and ignores retention risk",
+      "catch_keywords": ["precedent", "8.5", "10x", "too high", "aggressive", "retention"]
+    },
+    "safe_responses": [
+      {
+        "pattern": "retention|churn",
+        "response": "Check the retention CSV carefully — headline blended retention can mask concentration in the top accounts."
+      },
+      {
+        "pattern": "risk|downside",
+        "response": "A downside case typically stresses growth, retention, and exit multiple together, then ties the output to the recommendation."
+      },
+      {
+        "pattern": ".*",
+        "response": "Ground your view in the data room. Cite the specific exhibit that drives each assumption."
+      }
+    ]
+  },
+  "recommendation_options": [
+    { "v": "proceed", "label": "Proceed at offer", "quality": "weak" },
+    { "v": "conditional", "label": "Conditional Proceed", "quality": "best" },
+    { "v": "hold", "label": "Hold / renegotiate", "quality": "ok" },
+    { "v": "pass", "label": "Pass", "quality": "ok" }
+  ]
+}
