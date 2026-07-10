@@ -68,7 +68,7 @@
 
 html {
   min-height: 100%;
-  /* Lenis owns smooth scrolling — native smooth conflicts and feels janky */
+  /* Native scroll — CSS smooth + Lenis both felt worse than other sites */
   scroll-behavior: auto;
   background: var(--bg);
 }
