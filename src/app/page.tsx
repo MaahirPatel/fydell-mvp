@@ -64,10 +64,10 @@ export default function HomePage() {
 
           <Reveal delay={0.12} className="relative mx-auto mt-14 max-w-[1320px] sm:mt-16 lg:mt-20">
             <div
-              className="pointer-events-none absolute -inset-8 rounded-[40px] opacity-70 blur-3xl"
+              className="pointer-events-none absolute -inset-8 rounded-[40px] opacity-80"
               style={{
                 background:
-                  "radial-gradient(ellipse at 50% 40%, rgba(59,91,255,0.14), transparent 65%)",
+                  "radial-gradient(ellipse at 50% 40%, rgba(59,91,255,0.12), transparent 65%)",
               }}
               aria-hidden
             />

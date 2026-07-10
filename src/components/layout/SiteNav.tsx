@@ -21,7 +21,7 @@ export default function SiteNav() {
   const pathname = usePathname();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-white/[0.08] bg-[#050609]/55 shadow-[0_8px_32px_rgba(0,0,0,0.28)] backdrop-blur-2xl backdrop-saturate-150 supports-[backdrop-filter]:bg-[#050609]/45">
+    <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-white/[0.08] bg-[#050609]/88 shadow-[0_8px_32px_rgba(0,0,0,0.28)] backdrop-blur-md supports-[backdrop-filter]:bg-[#050609]/72">
       <div className="mx-auto grid h-full max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-12">
         <FydellBrand markSize={36} className="shrink-0" />
 
@@ -74,7 +74,7 @@ export default function SiteNav() {
       </div>
 
       {open && (
-        <div className="border-t border-white/[0.06] bg-[#050609]/95 px-6 py-4 backdrop-blur-2xl lg:hidden">
+        <div className="border-t border-white/[0.06] bg-[#050609] px-6 py-4 lg:hidden">
           <nav className="mx-auto flex max-w-[1280px] flex-col gap-0.5" aria-label="Mobile">
             {LINKS.map((item) => (
               <Link

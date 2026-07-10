@@ -40,7 +40,7 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary:
     "bg-[#3B5BFF] text-white hover:bg-[#2f4fe0] border border-transparent",
   secondary:
-    "border border-white/[0.14] bg-white/[0.06] text-white backdrop-blur-md hover:bg-white/[0.1]",
+    "border border-white/[0.14] bg-white/[0.06] text-white hover:bg-white/[0.1]",
   white: "bg-white border border-transparent hover:bg-white/90",
 };
 

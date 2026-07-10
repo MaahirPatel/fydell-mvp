@@ -88,10 +88,21 @@ html.lenis body {
   scroll-behavior: auto !important;
 }
 
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* Keep scroll paints cheap while Lenis is animating */
+html.lenis-scrolling,
+html.lenis-scrolling body {
+  pointer-events: auto;
+}
+
 body {
   min-height: 100%;
   margin: 0;
-  overflow-x: hidden;
+  /* clip avoids creating a second scrollport (hidden forces overflow-y:auto) */
+  overflow-x: clip;
   background:
     radial-gradient(circle at 78% 12%, rgba(59, 91, 255, 0.04), transparent 26%),
     radial-gradient(circle at 18% 24%, rgba(100, 60, 200, 0.03), transparent 22%),

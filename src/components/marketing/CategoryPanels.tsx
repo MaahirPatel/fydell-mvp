@@ -171,7 +171,7 @@ export default function CategoryPanels() {
       {PANELS.map(({ id, title, copy, Schematic }) => (
         <div
           key={id}
-          className="flex flex-col overflow-hidden rounded-[16px] border border-white/[0.12] bg-white/[0.035] shadow-[0_16px_48px_rgba(0,0,0,0.28)] backdrop-blur-xl transition-transform duration-300 ease-out hover:-translate-y-0.5"
+          className="flex flex-col overflow-hidden rounded-[16px] border border-white/[0.12] bg-[#0a0e17] shadow-[0_16px_48px_rgba(0,0,0,0.28)] transition-transform duration-300 ease-out hover:-translate-y-0.5"
         >
           {/* Schematic area */}
           <div className="border-b border-white/[0.06] bg-[#080B12] px-4 py-5">
