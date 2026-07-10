@@ -115,7 +115,9 @@ export default function ProjectMeridianWindow() {
       {/* Header bar */}
       <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <FydellMark width={22} />
+          <span className="inline-flex h-7 w-9 items-center justify-center rounded-md border border-white/[0.10] bg-white/[0.04]">
+            <FydellMark width={22} />
+          </span>
           <span className="text-[13px] font-semibold text-white">
             Project Meridian{" "}
             <span className="text-white/[0.42] font-normal">— FP&amp;A Work Trial</span>

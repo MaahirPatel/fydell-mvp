@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * Official Fydell interlocking-chain mark (transparent PNG).
  * Aspect ratio matches the cropped brand asset (~1300×901).
@@ -23,32 +21,6 @@ export default function FydellMark({
       style={{ width, height, objectFit: "contain" }}
       aria-hidden="true"
       draggable={false}
-      // #region agent log
-      onLoad={(e) => {
-        const img = e.currentTarget;
-        fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "dc0a6c" },
-          body: JSON.stringify({
-            sessionId: "dc0a6c",
-            runId: "post-fix",
-            hypothesisId: "F",
-            location: "FydellMark.tsx:onLoad",
-            message: "Transparent mark loaded with correct aspect",
-            data: {
-              src: img.currentSrc || img.src,
-              naturalWidth: img.naturalWidth,
-              naturalHeight: img.naturalHeight,
-              displayW: img.clientWidth,
-              displayH: img.clientHeight,
-              aspect: img.naturalWidth && img.naturalHeight ? Number((img.naturalWidth / img.naturalHeight).toFixed(3)) : null,
-              displayAspect: img.clientHeight ? Number((img.clientWidth / img.clientHeight).toFixed(3)) : null,
-            },
-            timestamp: Date.now(),
-          }),
-        }).catch(() => {});
-      }}
-      // #endregion
     />
   );
 }
