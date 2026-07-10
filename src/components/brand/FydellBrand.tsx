@@ -3,7 +3,7 @@ import FydellMark from "@/components/brand/FydellMark";
 
 export default function FydellBrand({
   className = "",
-  markSize = 32,
+  markSize = 34,
   sheen = false
 }: {
   className?: string;
@@ -21,9 +21,9 @@ export default function FydellBrand({
         className="shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.04]"
       />
       <span
-        className={`font-bold leading-none text-white ${sheen ? "wordmark-sheen" : ""}`}
+        className={`font-bold leading-none ${sheen ? "wordmark-sheen" : ""}`}
         style={{
-          fontSize: Math.max(18, Math.round(markSize * 0.72)),
+          fontSize: Math.max(18, Math.round(markSize * 0.68)),
           fontWeight: 700,
           letterSpacing: "-0.04em",
           color: "#FFFFFF",

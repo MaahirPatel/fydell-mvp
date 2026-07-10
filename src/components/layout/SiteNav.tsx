@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -20,49 +20,10 @@ export default function SiteNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  // #region agent log
-  useEffect(() => {
-    const cta = document.querySelector<HTMLAnchorElement>('a[href="/request-pilot"]');
-    const mark = document.querySelector<HTMLImageElement>('header img[src*="fydell"]');
-    const ctaStyle = cta ? getComputedStyle(cta) : null;
-    const html = document.documentElement;
-    const hasLenis = Boolean(
-      (window as unknown as { lenis?: unknown }).lenis ||
-        document.documentElement.classList.contains("lenis") ||
-        document.querySelector("[data-lenis-prevent], .lenis")
-    );
-    fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "dc0a6c" },
-      body: JSON.stringify({
-        sessionId: "dc0a6c",
-        runId: "post-fix",
-        hypothesisId: "B-C",
-        location: "SiteNav.tsx:useEffect",
-        message: "Nav CTA + scroll runtime probe",
-        data: {
-          ctaFound: Boolean(cta),
-          ctaColor: ctaStyle?.color ?? null,
-          ctaBg: ctaStyle?.backgroundColor ?? null,
-          ctaClass: cta?.className ?? null,
-          markSrc: mark?.currentSrc || mark?.src || null,
-          markNaturalWidth: mark?.naturalWidth ?? null,
-          markComplete: mark?.complete ?? null,
-          htmlScrollBehavior: getComputedStyle(html).scrollBehavior,
-          hasLenisClass: html.className.includes("lenis"),
-          hasLenisHint: hasLenis,
-          bodyOverflow: getComputedStyle(document.body).overflow,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-  }, []);
-  // #endregion
-
   return (
     <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-white/[0.08] bg-[#050609]/55 shadow-[0_8px_32px_rgba(0,0,0,0.28)] backdrop-blur-2xl backdrop-saturate-150 supports-[backdrop-filter]:bg-[#050609]/45">
       <div className="mx-auto grid h-full max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-12">
-        <FydellBrand markSize={28} className="shrink-0" />
+        <FydellBrand markSize={32} className="shrink-0" />
 
         <nav className="hidden items-center justify-start gap-0.5 lg:flex lg:pl-6" aria-label="Primary">
           {LINKS.map((item) => {
@@ -96,7 +57,6 @@ export default function SiteNav() {
           <Link
             href="/request-pilot"
             className={PRIMARY_BTN}
-            data-debug-cta="nav-pilot"
             style={{ color: "#050609" }}
           >
             Request a pilot
