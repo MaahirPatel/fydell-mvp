@@ -14,14 +14,14 @@ const LINKS = [
 ];
 
 const PRIMARY_BTN =
-  "inline-flex h-10 min-h-10 items-center justify-center rounded-[10px] bg-white px-5 text-[14px] font-semibold transition-[transform,background,opacity] duration-200 ease-out hover:bg-white/90 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50";
+  "inline-flex h-10 min-h-10 items-center justify-center rounded-[11px] bg-white px-5 text-[14px] font-semibold transition-[transform,background,opacity] duration-200 ease-out hover:bg-white/90 hover:-translate-y-px active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50";
 
 export default function SiteNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-white/[0.08] bg-[#050609]/96">
+    <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-white/[0.06] bg-[rgba(5,6,9,0.82)] backdrop-blur-[18px]">
       <div className="mx-auto grid h-full max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-12">
         <FydellBrand markSize={36} className="shrink-0" />
 
@@ -35,13 +35,17 @@ export default function SiteNav() {
                 key={item.label}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`rounded-lg px-3.5 py-2 text-[13.5px] font-medium transition-colors duration-150 ease-out ${
-                  active
-                    ? "text-white"
-                    : "text-white/50 hover:text-white/90"
+                className={`relative rounded-lg px-3.5 py-2 text-[13.5px] font-medium transition-colors duration-150 ease-out ${
+                  active ? "text-white" : "text-white/50 hover:text-white/90"
                 }`}
               >
                 {item.label}
+                {active && (
+                  <span
+                    className="absolute inset-x-3.5 -bottom-0.5 h-[2px] rounded-full bg-gradient-to-r from-[#315CFF] to-[#7B5CFF]"
+                    aria-hidden
+                  />
+                )}
               </Link>
             );
           })}
@@ -54,11 +58,7 @@ export default function SiteNav() {
           >
             Log in
           </Link>
-          <Link
-            href="/request-pilot"
-            className={PRIMARY_BTN}
-            style={{ color: "#050609" }}
-          >
+          <Link href="/request-pilot" className={PRIMARY_BTN} style={{ color: "#050609" }}>
             Request a pilot
           </Link>
           <button

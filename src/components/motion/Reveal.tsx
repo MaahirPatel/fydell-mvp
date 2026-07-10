@@ -21,7 +21,7 @@ export function Reveal({
   children,
   className,
   delay = 0,
-  y = 0,
+  y = 16,
   once = true
 }: RevealProps) {
   const reduce = useReducedMotion();
@@ -36,7 +36,7 @@ export function Reveal({
       initial={{ opacity: 1, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once, amount: 0.12, margin: "80px 0px 0px 0px" }}
-      transition={{ duration: 0.55, ease: EASE, delay }}
+      transition={{ duration: 0.6, ease: EASE, delay }}
     >
       {children}
     </motion.div>
@@ -49,8 +49,8 @@ const containerVariants: Variants = {
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 22 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } }
+  hidden: { opacity: 1, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } }
 };
 
 type StaggerProps = {

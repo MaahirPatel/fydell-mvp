@@ -1,7 +1,7 @@
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
 export const metadata = {
-  title: "Dashboard · Fydell",
+  title: "Fydell",
 };
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

@@ -1,41 +1,50 @@
 import MarketingShell from "@/components/layout/MarketingShell";
+import { Reveal } from "@/components/motion/Reveal";
 import { Container, ButtonLink, SectionHeading } from "@/components/marketing/ui";
+import FydellAurora, { FydellGrid } from "@/components/marketing/FydellAurora";
 import ProjectMeridianWindow from "@/components/marketing/ProjectMeridianWindow";
 import CategoryPanels from "@/components/marketing/CategoryPanels";
+import EvidenceCaptureSection from "@/components/marketing/EvidenceCaptureSection";
 import WorkroomMockup from "@/components/marketing/WorkroomMockup";
 import EvidenceReportMockup from "@/components/marketing/EvidenceReportMockup";
 import FeedbackLoop from "@/components/marketing/FeedbackLoop";
 import FinalCTA from "@/components/marketing/FinalCTA";
 
 export const metadata = {
-  title: "Fydell — Hire on real work, not polished resumes",
+  title: "Fydell",
   description:
     "Fydell lets finance teams run realistic FP&A work trials and review structured evidence before deciding who to interview.",
 };
 
-const WORKROOM_FEATURES = [
-  "Real documents",
-  "Live manager updates",
-  "Forecast model changes",
-  "AI allowed with verification",
-  "Final recommendation memo",
+const WORKROOM_BLOCKS = [
+  {
+    title: "Brief + data room",
+    body: "Business context, stakeholder ask, and the financial materials the candidate needs.",
+  },
+  {
+    title: "Forecast model",
+    body: "A working model with realistic inputs and embedded ambiguities.",
+  },
+  {
+    title: "Manager update",
+    body: "A mid-session data drop that changes the picture.",
+  },
+  {
+    title: "Written memo",
+    body: "An executive recommendation with rationale.",
+  },
 ];
 
 export default function HomePage() {
   return (
     <MarketingShell>
-      {/* ─── 1. HERO ───────────────────────────────────────────── */}
+      {/* 1. Centered hero + product visual below */}
       <section className="relative overflow-hidden pt-[120px] pb-16 sm:pt-[140px] sm:pb-24 lg:pt-[150px]">
-        <div
-          className="pointer-events-none absolute left-1/2 top-[10%] h-[520px] w-[900px] -translate-x-1/2 rounded-full opacity-90"
-          style={{
-            background: "radial-gradient(ellipse at center, rgba(59,91,255,0.10), transparent 68%)",
-          }}
-          aria-hidden
-        />
+        <FydellGrid />
+        <FydellAurora variant="hero" className="top-[28%] opacity-90" />
 
         <Container wide className="relative z-10">
-          <div className="mx-auto max-w-[980px] text-center">
+          <Reveal y={20} className="mx-auto max-w-[980px] text-center">
             <h1
               className="text-white"
               style={{
@@ -52,123 +61,136 @@ export default function HomePage() {
               evidence before deciding who to interview.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-              <ButtonLink href="/request-pilot" variant="primary" className="h-11 min-w-[148px] px-5 text-[15px]">
+              <ButtonLink
+                href="/request-pilot"
+                variant="primary"
+                className="h-11 min-w-[148px] px-5 text-[15px]"
+              >
                 Request a pilot
               </ButtonLink>
-              <ButtonLink href="/sample-report" variant="secondary" className="h-11 min-w-[148px] px-5 text-[15px]">
+              <ButtonLink
+                href="/sample-report"
+                variant="secondary"
+                className="h-11 min-w-[148px] px-5 text-[15px]"
+              >
                 See sample report
               </ButtonLink>
             </div>
-          </div>
+          </Reveal>
 
-          <div className="relative mx-auto mt-14 max-w-[1320px] sm:mt-16 lg:mt-20">
+          <Reveal delay={0.15} y={28} className="relative mx-auto mt-14 max-w-[1320px] sm:mt-16 lg:mt-20">
             <div
-              className="pointer-events-none absolute -inset-8 rounded-[40px] opacity-80"
+              className="pointer-events-none absolute -inset-10 rounded-[40px] opacity-80"
               style={{
                 background:
-                  "radial-gradient(ellipse at 50% 40%, rgba(59,91,255,0.10), transparent 65%)",
+                  "radial-gradient(ellipse at 50% 40%, rgba(49,92,255,0.10), transparent 65%)",
               }}
               aria-hidden
             />
-            {/* overflow-x only on small screens — overflow-x:auto creates a scrollport that fights wheel */}
             <div className="relative max-lg:overflow-x-auto lg:overflow-x-clip rounded-[20px]">
-              <div className="min-w-[860px] lg:min-w-0">
+              <div className="min-w-[900px] lg:min-w-0">
                 <ProjectMeridianWindow />
               </div>
             </div>
-          </div>
+          </Reveal>
         </Container>
       </section>
 
-      {/* ─── 2. CATEGORY / PHILOSOPHY ──────────────────────────── */}
-      <section className="mkt-section border-t border-white/[0.06]" style={{ contentVisibility: "auto", containIntrinsicSize: "1px 900px" }}>
-        <Container>
-          <div className="max-w-[820px]">
-            <h2
-              className="text-white"
-              style={{
-                fontSize: "clamp(2rem, 4vw, 3.5rem)",
-                lineHeight: 1.05,
-                letterSpacing: "-0.04em",
-                fontWeight: 620,
-              }}
-            >
-              A new hiring signal for the AI era.
-            </h2>
-            <p className="mt-5 max-w-[640px] text-[17px] leading-[1.7] text-white/[0.66] sm:text-[18px]">
-              Resumes show claims. Interviews show polish. Fydell shows how someone works through
-              the actual job.
-            </p>
-          </div>
-          <div className="mt-14 sm:mt-16">
+      {/* 2. Three artifact cards */}
+      <section className="relative mkt-section border-t border-white/[0.06]">
+        <FydellAurora variant="section" className="opacity-50" />
+        <Container className="relative z-10">
+          <Reveal>
+            <SectionHeading
+              title="What the trial produces."
+              subtitle="Every completed workroom generates three structured objects your hiring team can read, share, and act on."
+            />
+          </Reveal>
+          <Reveal delay={0.08} className="mt-12 sm:mt-14">
             <CategoryPanels />
-          </div>
+          </Reveal>
         </Container>
       </section>
 
-      {/* ─── 3. WORKROOM ───────────────────────────────────────── */}
-      <section className="mkt-section border-t border-white/[0.06]" style={{ contentVisibility: "auto", containIntrinsicSize: "1px 1000px" }}>
+      {/* 3. Split evidence capture */}
+      <section className="mkt-section border-t border-white/[0.06]">
         <Container wide>
-          <div className="grid items-start gap-12 lg:grid-cols-[0.9fr_1.35fr] lg:gap-16 xl:gap-20">
-            <div>
-              <SectionHeading
-                title="The workroom mirrors the job."
-                subtitle="Candidates review documents, update assumptions, respond to new information, use AI carefully, and write a recommendation."
-              />
-              <ul className="mt-10 space-y-3.5">
-                {WORKROOM_FEATURES.map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-[15px] text-white/[0.78]">
-                    <span
-                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#3B5BFF]"
-                      aria-hidden
-                    />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="relative min-w-0">
-              <div className="max-lg:overflow-x-auto lg:overflow-x-clip rounded-[20px]">
-                <div className="min-w-[780px] lg:min-w-0">
-                  <WorkroomMockup />
-                </div>
+          <Reveal className="mb-10 max-w-[720px] sm:mb-12">
+            <SectionHeading
+              title="What gets captured."
+              subtitle="Every action inside the workroom is logged as evidence — not scored by algorithm alone, but reviewed before the report is delivered."
+            />
+          </Reveal>
+          <Reveal delay={0.06}>
+            <EvidenceCaptureSection />
+          </Reveal>
+        </Container>
+      </section>
+
+      {/* 4. Full-width workroom + explanation blocks below */}
+      <section className="mkt-section border-t border-white/[0.06]">
+        <Container wide>
+          <Reveal className="mb-10 max-w-[720px] sm:mb-12">
+            <SectionHeading
+              title="The workroom mirrors the job."
+              subtitle="Candidates review documents, update assumptions, respond to new information, use AI carefully, and write a recommendation."
+            />
+          </Reveal>
+          <Reveal delay={0.08}>
+            <div className="max-lg:overflow-x-auto lg:overflow-x-clip rounded-[20px]">
+              <div className="min-w-[860px] lg:min-w-0">
+                <WorkroomMockup />
               </div>
             </div>
+          </Reveal>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {WORKROOM_BLOCKS.map((block, i) => (
+              <Reveal key={block.title} delay={0.05 + i * 0.05}>
+                <div className="rounded-[14px] border border-white/[0.09] bg-[#0B0F18] px-4 py-4">
+                  <h3 className="text-[13px] font-semibold text-white">{block.title}</h3>
+                  <p className="mt-2 text-[12px] leading-[1.6] text-white/[0.52]">{block.body}</p>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </Container>
       </section>
 
-      {/* ─── 4. EVIDENCE REPORT ────────────────────────────────── */}
-      <section className="mkt-section border-t border-white/[0.06]" style={{ contentVisibility: "auto", containIntrinsicSize: "1px 1200px" }}>
-        <Container wide>
-          <div className="mb-12 max-w-[720px] sm:mb-14">
+      {/* 5. Large report artifact */}
+      <section className="relative mkt-section border-t border-white/[0.06]">
+        <FydellAurora variant="report" className="opacity-40" />
+        <Container wide className="relative z-10">
+          <Reveal className="mb-10 max-w-[720px] sm:mb-12">
             <SectionHeading
-              title="Evidence your hiring team can act on."
-              subtitle="See what the candidate changed, what they missed, how they reasoned, and what to ask next."
+              title="What your hiring team receives."
+              subtitle="Within 24 hours of a candidate submitting, you get a structured evidence report. Advance, Hold, or Review — with the reasoning behind it."
             />
-          </div>
-          <div className="max-lg:overflow-x-auto lg:overflow-x-clip rounded-[20px]">
-            <div className="min-w-[720px] lg:min-w-0">
-              <EvidenceReportMockup />
+          </Reveal>
+          <Reveal delay={0.08}>
+            <div className="max-lg:overflow-x-auto lg:overflow-x-clip rounded-[20px]">
+              <div className="min-w-[760px] lg:min-w-0">
+                <EvidenceReportMockup />
+              </div>
             </div>
-          </div>
+          </Reveal>
         </Container>
       </section>
 
-      {/* ─── 5. FEEDBACK LOOP ──────────────────────────────────── */}
-      <section className="mkt-section border-t border-white/[0.06]" style={{ contentVisibility: "auto", containIntrinsicSize: "1px 900px" }}>
+      {/* 6. Pipeline / loop */}
+      <section className="mkt-section border-t border-white/[0.06]">
         <Container>
-          <div className="mb-12 max-w-[720px] sm:mb-14">
+          <Reveal className="mb-10 max-w-[720px] sm:mb-12">
             <SectionHeading
               title="Every hiring decision improves the signal."
               subtitle="Fydell connects work-trial evidence with interview feedback and post-hire outcomes so the signal gets sharper over time."
             />
-          </div>
-          <FeedbackLoop />
+          </Reveal>
+          <Reveal delay={0.06}>
+            <FeedbackLoop />
+          </Reveal>
         </Container>
       </section>
 
-      {/* ─── 6. FINAL CTA ──────────────────────────────────────── */}
       <FinalCTA />
     </MarketingShell>
   );

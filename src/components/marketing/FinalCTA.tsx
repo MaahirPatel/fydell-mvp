@@ -5,7 +5,7 @@ export default function FinalCTA() {
     <section className="border-t border-white/[0.08] bg-[#080B12]">
       <div className="mx-auto max-w-[1180px] px-5 py-20 sm:px-8 sm:py-28">
         <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="max-w-[480px]">
+          <div className="max-w-[520px]">
             <h2
               className="text-white"
               style={{

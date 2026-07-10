@@ -38,10 +38,10 @@ interface ButtonLinkProps {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-[#3B5BFF] text-white hover:bg-[#2f4fe0] border border-transparent",
+    "bg-[#315CFF] text-white hover:bg-[#4B6FFF] border border-transparent hover:-translate-y-px",
   secondary:
-    "border border-white/[0.14] bg-white/[0.06] text-white hover:bg-white/[0.1]",
-  white: "bg-white border border-transparent hover:bg-white/90",
+    "border border-white/[0.12] bg-[#080B12] text-white/[0.88] hover:border-white/[0.22] hover:bg-white/[0.04] hover:-translate-y-px",
+  white: "bg-white border border-transparent hover:bg-white/90 hover:-translate-y-px",
 };
 
 export function ButtonLink({
@@ -55,9 +55,9 @@ export function ButtonLink({
       href={href}
       className={[
         "inline-flex items-center justify-center gap-2",
-        "rounded-[10px] px-4 py-2.5",
-        "text-[14px] font-medium leading-none",
-        "transition-colors duration-150",
+        "rounded-[11px] px-5 py-[13px]",
+        "text-[14px] font-semibold leading-none",
+        "transition-[color,background,border-color,transform] duration-200 ease-out",
         variantStyles[variant],
         className,
       ]

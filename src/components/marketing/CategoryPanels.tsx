@@ -1,17 +1,10 @@
 "use client";
 
-// ─── SVG Schematics ───────────────────────────────────────────────────────────
+import { Stagger, StaggerItem } from "@/components/motion/Reveal";
 
 function WorkroomSchematic() {
   return (
-    <svg
-      viewBox="0 0 260 140"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full"
-      aria-hidden
-    >
-      {/* Stage rail */}
+    <svg viewBox="0 0 260 140" fill="none" className="w-full" aria-hidden>
       <rect x="8" y="8" width="52" height="124" rx="6" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
       {["Brief", "Data Room", "Forecast", "Memo"].map((label, i) => (
         <g key={label}>
@@ -21,15 +14,15 @@ function WorkroomSchematic() {
             width="44"
             height="18"
             rx="4"
-            fill={i === 2 ? "rgba(59,91,255,0.18)" : "rgba(255,255,255,0.03)"}
-            stroke={i === 2 ? "rgba(59,91,255,0.28)" : "rgba(255,255,255,0.07)"}
+            fill={i === 2 ? "rgba(49,92,255,0.18)" : "rgba(255,255,255,0.03)"}
+            stroke={i === 2 ? "rgba(49,92,255,0.28)" : "rgba(255,255,255,0.07)"}
             strokeWidth="1"
           />
           <text
             x="34"
             y={28 + i * 26}
             textAnchor="middle"
-            fill={i === 2 ? "rgba(59,91,255,0.9)" : "rgba(255,255,255,0.3)"}
+            fill={i === 2 ? "rgba(75,111,255,0.95)" : "rgba(255,255,255,0.3)"}
             fontSize="6"
             fontFamily="ui-sans-serif, system-ui"
           >
@@ -37,62 +30,66 @@ function WorkroomSchematic() {
           </text>
         </g>
       ))}
-      {/* Table area */}
       <rect x="70" y="8" width="182" height="124" rx="6" stroke="rgba(255,255,255,0.10)" strokeWidth="1" />
-      {/* Table header */}
       <rect x="70" y="8" width="182" height="22" rx="6" fill="rgba(255,255,255,0.04)" />
-      <rect x="70" y="26" width="182" height="2" fill="rgba(255,255,255,0.06)" />
-      {["Metric","Value","Base","Var"].map((h, i) => (
-        <text key={h} x={82 + i * 44} y={23} fill="rgba(255,255,255,0.28)" fontSize="5.5" fontFamily="ui-sans-serif">
-          {h}
-        </text>
-      ))}
-      {/* Table rows */}
-      {[0,1,2,3,4].map((r) => (
+      {[0, 1, 2, 3, 4].map((r) => (
         <g key={r}>
+          <rect x="74" y={34 + r * 18} width="40" height="6" rx="2" fill="rgba(255,255,255,0.10)" />
           <rect
-            x="70" y={30 + r * 20} width="182" height="18"
-            fill={r % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent"}
+            x="120"
+            y={34 + r * 18}
+            width="20"
+            height="6"
+            rx="2"
+            fill={r === 2 ? "rgba(230,76,135,0.25)" : "rgba(49,92,255,0.18)"}
           />
-          <rect x="74" y={34 + r * 20} width="40" height="6" rx="2" fill="rgba(255,255,255,0.10)" />
-          <rect x="120" y={34 + r * 20} width="20" height="6" rx="2" fill={r === 2 ? "rgba(240,98,146,0.25)" : "rgba(59,91,255,0.18)"} />
-          <rect x="146" y={34 + r * 20} width="20" height="6" rx="2" fill="rgba(255,255,255,0.07)" />
-          <rect x="172" y={34 + r * 20} width="18" height="6" rx="2" fill={r === 2 ? "rgba(240,98,146,0.22)" : "rgba(255,255,255,0.06)"} />
+          <rect x="146" y={34 + r * 18} width="20" height="6" rx="2" fill="rgba(255,255,255,0.07)" />
+          <rect
+            x="172"
+            y={34 + r * 18}
+            width="18"
+            height="6"
+            rx="2"
+            fill={r === 2 ? "rgba(230,76,135,0.22)" : "rgba(255,255,255,0.06)"}
+          />
         </g>
       ))}
-      {/* Blue accent dot */}
-      <circle cx="245" cy="18" r="4" fill="rgba(59,91,255,0.6)" />
+      <polyline
+        points="200,110 210,98 220,104 232,88 244,92"
+        fill="none"
+        stroke="rgba(49,92,255,0.55)"
+        strokeWidth="1.2"
+      />
     </svg>
   );
 }
 
 function EvidenceSchematic() {
+  const nodes = [
+    { y: 22, label: "Opened data room", color: "rgba(49,92,255,0.85)" },
+    { y: 48, label: "Changed assumption", color: "rgba(255,255,255,0.5)" },
+    { y: 74, label: "Flagged churn risk", color: "rgba(230,76,135,0.85)" },
+    { y: 100, label: "Submitted memo draft", color: "rgba(54,214,138,0.85)" },
+    { y: 126, label: "Updated revenue logic", color: "rgba(33,199,217,0.8)" },
+  ];
   return (
-    <svg
-      viewBox="0 0 260 140"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full"
-      aria-hidden
-    >
-      {/* Vertical timeline spine */}
-      <line x1="40" y1="12" x2="40" y2="128" stroke="rgba(255,255,255,0.10)" strokeWidth="1" strokeDasharray="3 3" />
-      {/* Timeline nodes */}
-      {[
-        { y: 22, label: "Opened data room", color: "rgba(59,91,255,0.8)", accent: "rgba(59,91,255,0.18)" },
-        { y: 52, label: "Changed assumption × 2", color: "rgba(255,255,255,0.5)", accent: "rgba(255,255,255,0.06)" },
-        { y: 82, label: "Flagged churn risk", color: "rgba(240,98,146,0.8)", accent: "rgba(240,98,146,0.12)" },
-        { y: 112, label: "Submitted memo draft", color: "rgba(57,217,138,0.8)", accent: "rgba(57,217,138,0.12)" },
-      ].map(({ y, label, color, accent }) => (
-        <g key={y}>
-          <circle cx="40" cy={y} r="5" fill={accent} stroke={color} strokeWidth="1.2" />
-          <circle cx="40" cy={y} r="2" fill={color} />
-          <rect x="54" y={y - 10} width="168" height="20" rx="4" fill="rgba(255,255,255,0.035)" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-          <text x="62" y={y + 4} fill="rgba(255,255,255,0.55)" fontSize="6" fontFamily="ui-sans-serif">
+    <svg viewBox="0 0 260 140" fill="none" className="w-full" aria-hidden>
+      <line x1="36" y1="14" x2="36" y2="130" stroke="rgba(255,255,255,0.10)" strokeWidth="1" />
+      {nodes.map(({ y, label, color }) => (
+        <g key={label}>
+          <circle cx="36" cy={y} r="4.5" fill="rgba(8,11,18,1)" stroke={color} strokeWidth="1.2" />
+          <circle cx="36" cy={y} r="1.8" fill={color} />
+          <rect
+            x="50"
+            y={y - 9}
+            width="190"
+            height="18"
+            rx="4"
+            fill="rgba(255,255,255,0.035)"
+            stroke="rgba(255,255,255,0.08)"
+          />
+          <text x="58" y={y + 3.5} fill="rgba(255,255,255,0.58)" fontSize="6" fontFamily="ui-sans-serif">
             {label}
-          </text>
-          <text x="208" y={y + 4} fill="rgba(255,255,255,0.25)" fontSize="5.5" fontFamily="ui-sans-serif">
-            {["09:12","12:47","18:03","24:11"][Math.round((y - 22) / 30)]}
           </text>
         </g>
       ))}
@@ -102,45 +99,35 @@ function EvidenceSchematic() {
 
 function MemoSchematic() {
   return (
-    <svg
-      viewBox="0 0 260 140"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full"
-      aria-hidden
-    >
-      {/* Document outline */}
+    <svg viewBox="0 0 260 140" fill="none" className="w-full" aria-hidden>
       <rect x="16" y="8" width="228" height="124" rx="8" stroke="rgba(255,255,255,0.10)" strokeWidth="1" />
-      {/* Header band */}
       <rect x="16" y="8" width="228" height="28" rx="8" fill="rgba(255,255,255,0.04)" />
-      <rect x="16" y="32" width="228" height="1" fill="rgba(255,255,255,0.07)" />
       <text x="28" y="26" fill="rgba(255,255,255,0.65)" fontSize="7.5" fontWeight="600" fontFamily="ui-sans-serif">
         Hiring Evidence Report
       </text>
-      {/* Recommendation tag */}
-      <rect x="180" y="14" width="56" height="14" rx="4" fill="rgba(57,217,138,0.14)" stroke="rgba(57,217,138,0.28)" strokeWidth="1" />
-      <text x="208" y="23.5" textAnchor="middle" fill="rgba(57,217,138,0.9)" fontSize="5.5" fontFamily="ui-sans-serif">Advance</text>
-      {/* Section lines */}
-      {[0,1,2,3,4,5].map((r) => (
-        <g key={r}>
-          <rect x="28" y={46 + r * 14} width={r === 0 ? 60 : 100 + Math.sin(r) * 40} height="6" rx="2" fill="rgba(255,255,255,0.08)" />
+      <rect
+        x="158"
+        y="14"
+        width="74"
+        height="14"
+        rx="4"
+        fill="rgba(54,214,138,0.12)"
+        stroke="rgba(54,214,138,0.28)"
+      />
+      <text x="195" y="23.5" textAnchor="middle" fill="rgba(110,231,183,0.95)" fontSize="5.5" fontFamily="ui-sans-serif">
+        Advance to Interview
+      </text>
+      {["Summary", "Key takeaways", "Risks", "Evidence"].map((label, i) => (
+        <g key={label}>
+          <text x="28" y={48 + i * 20} fill="rgba(255,255,255,0.45)" fontSize="6" fontFamily="ui-sans-serif">
+            {label}
+          </text>
+          <rect x="28" y={52 + i * 20} width={90 + (i % 2) * 30} height="5" rx="2" fill="rgba(255,255,255,0.08)" />
         </g>
       ))}
-      {/* Two column lower section */}
-      <line x1="144" y1="50" x2="144" y2="126" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-      {[0,1,2].map((r) => (
-        <g key={r}>
-          <rect x="152" y={54 + r * 22} width="72" height="14" rx="3" fill="rgba(59,91,255,0.06)" stroke="rgba(59,91,255,0.12)" strokeWidth="1" />
-          <rect x="156" y={58 + r * 22} width={32 + r * 8} height="5" rx="1.5" fill="rgba(59,91,255,0.22)" />
-        </g>
-      ))}
-      {/* Green accent line */}
-      <rect x="16" y="130" width="80" height="2" rx="1" fill="rgba(57,217,138,0.5)" />
     </svg>
   );
 }
-
-// ─── Panel data ───────────────────────────────────────────────────────────────
 
 const PANELS = [
   {
@@ -163,27 +150,22 @@ const PANELS = [
   },
 ];
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function CategoryPanels() {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <Stagger className="grid grid-cols-1 gap-4 sm:grid-cols-3" amount={0.15}>
       {PANELS.map(({ id, title, copy, Schematic }) => (
-        <div
-          key={id}
-          className="flex flex-col overflow-hidden rounded-[16px] border border-white/[0.12] bg-[#0a0e17] shadow-[0_8px_28px_rgba(0,0,0,0.22)] transition-transform duration-300 ease-out hover:-translate-y-0.5"
-        >
-          {/* Schematic area */}
-          <div className="border-b border-white/[0.06] bg-[#080B12] px-4 py-5">
-            <Schematic />
+        <StaggerItem key={id}>
+          <div className="flex h-full flex-col overflow-hidden rounded-[16px] border border-white/[0.10] bg-[#0B0F18] transition-[transform,border-color] duration-300 ease-out hover:-translate-y-1 hover:border-white/[0.18]">
+            <div className="border-b border-white/[0.06] bg-[#080B12] px-4 py-5">
+              <Schematic />
+            </div>
+            <div className="flex flex-col gap-2 px-5 py-5">
+              <h3 className="text-[15px] font-semibold text-white">{title}</h3>
+              <p className="text-[13px] leading-[1.6] text-white/[0.55]">{copy}</p>
+            </div>
           </div>
-          {/* Text area */}
-          <div className="flex flex-col gap-2 px-5 py-5">
-            <h3 className="text-[15px] font-semibold text-white">{title}</h3>
-            <p className="text-[13px] leading-[1.6] text-white/[0.55]">{copy}</p>
-          </div>
-        </div>
+        </StaggerItem>
       ))}
-    </div>
+    </Stagger>
   );
 }

@@ -18,7 +18,7 @@ import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
 import PerformanceSummary from "@/components/company/PerformanceSummary";
 
 export const metadata = {
-  title: "Company | Fydell"
+  title: "Fydell"
 };
 
 const MISSION_CARDS: { title: string; body: string }[] = [

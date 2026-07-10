@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Fydell — Know who can do finance work before the interview",
+  title: "Fydell",
   description:
     "Fydell runs FP&A candidates through a realistic 25-minute work trial and gives hiring teams an evidence memo showing how they model, catch risk, use AI, and communicate judgment.",
   icons: {

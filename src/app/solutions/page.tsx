@@ -16,7 +16,7 @@ import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
 import SolutionOverviewCard from "@/components/solutions/SolutionOverviewCard";
 
 export const metadata = {
-  title: "Solutions - Fydell",
+  title: "Fydell",
   description:
     "From recruiting to final-round evaluation, Fydell helps modern hiring teams replace guesswork with real evidence."
 };

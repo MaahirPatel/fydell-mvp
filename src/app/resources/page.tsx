@@ -14,7 +14,7 @@ import ResourcesBrandPanel from "@/components/resources/ResourcesBrandPanel";
 import FeaturedGuideCard from "@/components/resources/FeaturedGuideCard";
 
 export const metadata = {
-  title: "Resources - Fydell",
+  title: "Fydell",
   description:
     "Research, guides, and practical frameworks to help modern hiring teams hire with more confidence and less guesswork."
 };
