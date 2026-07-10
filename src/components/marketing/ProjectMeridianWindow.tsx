@@ -109,7 +109,7 @@ function VarianceCell({ value, dir }: { value: string; dir: VarianceDir }) {
 export default function ProjectMeridianWindow() {
   return (
     <div
-      className="w-full overflow-hidden rounded-[20px] border border-white/[0.10] bg-[#080B12]"
+      className="w-full overflow-hidden rounded-[20px] border border-white/[0.12] bg-[#080B12]/85 shadow-[0_32px_100px_rgba(0,0,0,0.45)] backdrop-blur-xl"
       style={{ fontFamily: "var(--font-geist-sans, ui-sans-serif)" }}
     >
       {/* Header bar */}

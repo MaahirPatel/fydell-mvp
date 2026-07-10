@@ -73,7 +73,7 @@ export default function RequestPilotPage() {
 
             {/* Right — form */}
             <Reveal delay={0.1}>
-              <div className="rounded-[20px] border border-white/[0.10] bg-[#080B12] p-6 lg:p-8">
+              <div className="rounded-[20px] border border-white/[0.12] bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl lg:p-8">
                 <p className="mb-6 text-[15px] font-semibold text-white">
                   Tell us about your role
                 </p>
@@ -96,7 +96,7 @@ export default function RequestPilotPage() {
                         name="name"
                         type="text"
                         required
-                        placeholder="Alex Chen"
+                        placeholder="Your name"
                         className="w-full rounded-[12px] border border-white/[0.10] bg-white/[0.03] px-4 py-3 text-[14px] text-white placeholder-white/[0.25] outline-none transition-colors focus:border-[#3B5BFF]/50 focus:bg-white/[0.05]"
                       />
                     </div>
@@ -112,7 +112,7 @@ export default function RequestPilotPage() {
                         name="email"
                         type="email"
                         required
-                        placeholder="alex@company.com"
+                        placeholder="you@company.com"
                         className="w-full rounded-[12px] border border-white/[0.10] bg-white/[0.03] px-4 py-3 text-[14px] text-white placeholder-white/[0.25] outline-none transition-colors focus:border-[#3B5BFF]/50 focus:bg-white/[0.05]"
                       />
                     </div>
@@ -130,7 +130,7 @@ export default function RequestPilotPage() {
                       name="company"
                       type="text"
                       required
-                      placeholder="Acme Corp"
+                      placeholder="Company name"
                       className="w-full rounded-[12px] border border-white/[0.10] bg-white/[0.03] px-4 py-3 text-[14px] text-white placeholder-white/[0.25] outline-none transition-colors focus:border-[#3B5BFF]/50 focus:bg-white/[0.05]"
                     />
                   </div>
@@ -147,7 +147,7 @@ export default function RequestPilotPage() {
                       name="role"
                       type="text"
                       required
-                      placeholder="Senior FP&A Analyst"
+                      placeholder="Role title"
                       className="w-full rounded-[12px] border border-white/[0.10] bg-white/[0.03] px-4 py-3 text-[14px] text-white placeholder-white/[0.25] outline-none transition-colors focus:border-[#3B5BFF]/50 focus:bg-white/[0.05]"
                     />
                   </div>

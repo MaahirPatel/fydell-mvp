@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -14,14 +14,53 @@ const LINKS = [
 ];
 
 const PRIMARY_BTN =
-  "inline-flex h-10 items-center justify-center rounded-[10px] bg-white px-5 text-[14px] font-semibold text-black transition-[transform,background,opacity] duration-200 ease-out hover:bg-white/90 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50";
+  "inline-flex h-10 min-h-10 items-center justify-center rounded-[10px] bg-white px-5 text-[14px] font-semibold transition-[transform,background,opacity] duration-200 ease-out hover:bg-white/90 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50";
 
 export default function SiteNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
+  // #region agent log
+  useEffect(() => {
+    const cta = document.querySelector<HTMLAnchorElement>('a[href="/request-pilot"]');
+    const mark = document.querySelector<HTMLImageElement>('header img[src*="fydell"]');
+    const ctaStyle = cta ? getComputedStyle(cta) : null;
+    const html = document.documentElement;
+    const hasLenis = Boolean(
+      (window as unknown as { lenis?: unknown }).lenis ||
+        document.documentElement.classList.contains("lenis") ||
+        document.querySelector("[data-lenis-prevent], .lenis")
+    );
+    fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "dc0a6c" },
+      body: JSON.stringify({
+        sessionId: "dc0a6c",
+        runId: "post-fix",
+        hypothesisId: "B-C",
+        location: "SiteNav.tsx:useEffect",
+        message: "Nav CTA + scroll runtime probe",
+        data: {
+          ctaFound: Boolean(cta),
+          ctaColor: ctaStyle?.color ?? null,
+          ctaBg: ctaStyle?.backgroundColor ?? null,
+          ctaClass: cta?.className ?? null,
+          markSrc: mark?.currentSrc || mark?.src || null,
+          markNaturalWidth: mark?.naturalWidth ?? null,
+          markComplete: mark?.complete ?? null,
+          htmlScrollBehavior: getComputedStyle(html).scrollBehavior,
+          hasLenisClass: html.className.includes("lenis"),
+          hasLenisHint: hasLenis,
+          bodyOverflow: getComputedStyle(document.body).overflow,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+  }, []);
+  // #endregion
+
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-white/[0.06] bg-[#050609]/70 backdrop-blur-xl backdrop-saturate-150">
+    <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-white/[0.08] bg-[#050609]/55 shadow-[0_8px_32px_rgba(0,0,0,0.28)] backdrop-blur-2xl backdrop-saturate-150 supports-[backdrop-filter]:bg-[#050609]/45">
       <div className="mx-auto grid h-full max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-12">
         <FydellBrand markSize={28} className="shrink-0" />
 
@@ -54,7 +93,12 @@ export default function SiteNav() {
           >
             Log in
           </Link>
-          <Link href="/request-pilot" className={PRIMARY_BTN}>
+          <Link
+            href="/request-pilot"
+            className={PRIMARY_BTN}
+            data-debug-cta="nav-pilot"
+            style={{ color: "#050609" }}
+          >
             Request a pilot
           </Link>
           <button

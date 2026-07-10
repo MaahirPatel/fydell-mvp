@@ -1,15 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 30" fill="none" aria-hidden="true">
   <defs>
-    <linearGradient id="fy-ring-l" x1="2" y1="2" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+    <linearGradient id="fy-ring-l" x1="4" y1="2" x2="24" y2="28" gradientUnits="userSpaceOnUse">
       <stop stop-color="#2DD4BF"/>
+      <stop offset="0.55" stop-color="#3B82F6"/>
       <stop offset="1" stop-color="#2563EB"/>
     </linearGradient>
-    <linearGradient id="fy-ring-r" x1="22" y1="28" x2="46" y2="2" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#EC4899"/>
-      <stop offset="1" stop-color="#9333EA"/>
+    <linearGradient id="fy-ring-r" x1="24" y1="2" x2="44" y2="28" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A855F7"/>
+      <stop offset="0.55" stop-color="#EC4899"/>
+      <stop offset="1" stop-color="#F43F5E"/>
     </linearGradient>
   </defs>
-  <circle cx="16" cy="15" r="11.5" stroke="url(#fy-ring-l)" stroke-width="4.4"/>
-  <circle cx="32" cy="15" r="11.5" stroke="url(#fy-ring-r)" stroke-width="4.4"/>
-  <path d="M 22.7 5.7 A 11.5 11.5 0 0 1 27.3 9.6" stroke="url(#fy-ring-l)" stroke-width="4.4" stroke-linecap="round"/>
+  <!-- Left ring -->
+  <circle cx="16.5" cy="15" r="11" stroke="url(#fy-ring-l)" stroke-width="4.6"/>
+  <!-- Right ring -->
+  <circle cx="31.5" cy="15" r="11" stroke="url(#fy-ring-r)" stroke-width="4.6"/>
+  <!-- Interlock cut to suggest chain depth -->
+  <path
+    d="M 22.2 7.2 A 11 11 0 0 1 25.8 10.4"
+    stroke="url(#fy-ring-l)"
+    stroke-width="4.6"
+    stroke-linecap="round"
+  />
+  <path
+    d="M 22.2 22.8 A 11 11 0 0 0 25.8 19.6"
+    stroke="url(#fy-ring-r)"
+    stroke-width="4.6"
+    stroke-linecap="round"
+  />
 </svg>

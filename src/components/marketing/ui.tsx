@@ -40,9 +40,8 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary:
     "bg-[#3B5BFF] text-white hover:bg-[#2f4fe0] border border-transparent",
   secondary:
-    "bg-white/[0.04] text-white border border-white/[0.14] hover:bg-white/[0.07]",
-  white:
-    "bg-white text-black border border-transparent hover:bg-white/90",
+    "border border-white/[0.14] bg-white/[0.06] text-white backdrop-blur-md hover:bg-white/[0.1]",
+  white: "bg-white border border-transparent hover:bg-white/90",
 };
 
 export function ButtonLink({
@@ -64,6 +63,7 @@ export function ButtonLink({
       ]
         .filter(Boolean)
         .join(" ")}
+      style={variant === "white" ? { color: "#050609" } : undefined}
     >
       {children}
     </Link>
