@@ -109,7 +109,7 @@ function VarianceCell({ value, dir }: { value: string; dir: VarianceDir }) {
 export default function ProjectMeridianWindow() {
   return (
     <div
-      className="w-full overflow-hidden rounded-[20px] border border-white/[0.12] bg-[#080B12] shadow-[0_32px_100px_rgba(0,0,0,0.45)]"
+      className="w-full overflow-hidden rounded-[20px] border border-white/[0.12] bg-[#080B12] shadow-[0_16px_48px_rgba(0,0,0,0.35)]"
       style={{ fontFamily: "var(--font-geist-sans, ui-sans-serif)" }}
     >
       {/* Header bar */}
@@ -167,7 +167,7 @@ export default function ProjectMeridianWindow() {
               Forecast Model
             </p>
           </div>
-          <div className="overflow-x-auto flex-1">
+          <div className="overflow-x-clip flex-1">
             <table className="w-full border-collapse text-[12px]">
               <thead>
                 <tr className="border-b border-white/[0.06]">

@@ -74,7 +74,7 @@ export default function WorkroomMockup() {
         </div>
 
         {/* Center — table */}
-        <div className="overflow-x-auto border-r border-white/[0.07]">
+        <div className="overflow-x-clip border-r border-white/[0.07]">
           <div className="border-b border-white/[0.06] px-4 py-2">
             <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/[0.38]">
               Forecast Model

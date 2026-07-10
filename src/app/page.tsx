@@ -1,5 +1,4 @@
 import MarketingShell from "@/components/layout/MarketingShell";
-import { Reveal } from "@/components/motion/Reveal";
 import { Container, ButtonLink, SectionHeading } from "@/components/marketing/ui";
 import ProjectMeridianWindow from "@/components/marketing/ProjectMeridianWindow";
 import CategoryPanels from "@/components/marketing/CategoryPanels";
@@ -28,15 +27,15 @@ export default function HomePage() {
       {/* ─── 1. HERO ───────────────────────────────────────────── */}
       <section className="relative overflow-hidden pt-[120px] pb-16 sm:pt-[140px] sm:pb-24 lg:pt-[150px]">
         <div
-          className="pointer-events-none absolute left-1/2 top-[18%] h-[420px] w-[720px] -translate-x-1/2 rounded-full opacity-60 blur-[120px]"
+          className="pointer-events-none absolute left-1/2 top-[10%] h-[520px] w-[900px] -translate-x-1/2 rounded-full opacity-90"
           style={{
-            background: "radial-gradient(ellipse at center, rgba(59,91,255,0.12), transparent 70%)",
+            background: "radial-gradient(ellipse at center, rgba(59,91,255,0.10), transparent 68%)",
           }}
           aria-hidden
         />
 
         <Container wide className="relative z-10">
-          <Reveal className="mx-auto max-w-[980px] text-center">
+          <div className="mx-auto max-w-[980px] text-center">
             <h1
               className="text-white"
               style={{
@@ -60,59 +59,58 @@ export default function HomePage() {
                 See sample report
               </ButtonLink>
             </div>
-          </Reveal>
+          </div>
 
-          <Reveal delay={0.12} className="relative mx-auto mt-14 max-w-[1320px] sm:mt-16 lg:mt-20">
+          <div className="relative mx-auto mt-14 max-w-[1320px] sm:mt-16 lg:mt-20">
             <div
               className="pointer-events-none absolute -inset-8 rounded-[40px] opacity-80"
               style={{
                 background:
-                  "radial-gradient(ellipse at 50% 40%, rgba(59,91,255,0.12), transparent 65%)",
+                  "radial-gradient(ellipse at 50% 40%, rgba(59,91,255,0.10), transparent 65%)",
               }}
               aria-hidden
             />
-            <div className="relative overflow-x-auto rounded-[20px]">
+            {/* overflow-x only on small screens — overflow-x:auto creates a scrollport that fights wheel */}
+            <div className="relative max-lg:overflow-x-auto lg:overflow-x-clip rounded-[20px]">
               <div className="min-w-[860px] lg:min-w-0">
                 <ProjectMeridianWindow />
               </div>
             </div>
-          </Reveal>
+          </div>
         </Container>
       </section>
 
       {/* ─── 2. CATEGORY / PHILOSOPHY ──────────────────────────── */}
-      <section className="mkt-section border-t border-white/[0.06]">
+      <section className="mkt-section border-t border-white/[0.06]" style={{ contentVisibility: "auto", containIntrinsicSize: "1px 900px" }}>
         <Container>
-          <Reveal>
-            <div className="max-w-[820px]">
-              <h2
-                className="text-white"
-                style={{
-                  fontSize: "clamp(2rem, 4vw, 3.5rem)",
-                  lineHeight: 1.05,
-                  letterSpacing: "-0.04em",
-                  fontWeight: 620,
-                }}
-              >
-                A new hiring signal for the AI era.
-              </h2>
-              <p className="mt-5 max-w-[640px] text-[17px] leading-[1.7] text-white/[0.66] sm:text-[18px]">
-                Resumes show claims. Interviews show polish. Fydell shows how someone works through
-                the actual job.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1} className="mt-14 sm:mt-16">
+          <div className="max-w-[820px]">
+            <h2
+              className="text-white"
+              style={{
+                fontSize: "clamp(2rem, 4vw, 3.5rem)",
+                lineHeight: 1.05,
+                letterSpacing: "-0.04em",
+                fontWeight: 620,
+              }}
+            >
+              A new hiring signal for the AI era.
+            </h2>
+            <p className="mt-5 max-w-[640px] text-[17px] leading-[1.7] text-white/[0.66] sm:text-[18px]">
+              Resumes show claims. Interviews show polish. Fydell shows how someone works through
+              the actual job.
+            </p>
+          </div>
+          <div className="mt-14 sm:mt-16">
             <CategoryPanels />
-          </Reveal>
+          </div>
         </Container>
       </section>
 
       {/* ─── 3. WORKROOM ───────────────────────────────────────── */}
-      <section className="mkt-section border-t border-white/[0.06]">
+      <section className="mkt-section border-t border-white/[0.06]" style={{ contentVisibility: "auto", containIntrinsicSize: "1px 1000px" }}>
         <Container wide>
           <div className="grid items-start gap-12 lg:grid-cols-[0.9fr_1.35fr] lg:gap-16 xl:gap-20">
-            <Reveal>
+            <div>
               <SectionHeading
                 title="The workroom mirrors the job."
                 subtitle="Candidates review documents, update assumptions, respond to new information, use AI carefully, and write a recommendation."
@@ -128,49 +126,45 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-            </Reveal>
-            <Reveal delay={0.1} className="relative min-w-0">
-              <div className="overflow-x-auto rounded-[20px]">
+            </div>
+            <div className="relative min-w-0">
+              <div className="max-lg:overflow-x-auto lg:overflow-x-clip rounded-[20px]">
                 <div className="min-w-[780px] lg:min-w-0">
                   <WorkroomMockup />
                 </div>
               </div>
-            </Reveal>
+            </div>
           </div>
         </Container>
       </section>
 
       {/* ─── 4. EVIDENCE REPORT ────────────────────────────────── */}
-      <section className="mkt-section border-t border-white/[0.06]">
+      <section className="mkt-section border-t border-white/[0.06]" style={{ contentVisibility: "auto", containIntrinsicSize: "1px 1200px" }}>
         <Container wide>
-          <Reveal className="mb-12 max-w-[720px] sm:mb-14">
+          <div className="mb-12 max-w-[720px] sm:mb-14">
             <SectionHeading
               title="Evidence your hiring team can act on."
               subtitle="See what the candidate changed, what they missed, how they reasoned, and what to ask next."
             />
-          </Reveal>
-          <Reveal delay={0.08}>
-            <div className="overflow-x-auto rounded-[20px]">
-              <div className="min-w-[720px] lg:min-w-0">
-                <EvidenceReportMockup />
-              </div>
+          </div>
+          <div className="max-lg:overflow-x-auto lg:overflow-x-clip rounded-[20px]">
+            <div className="min-w-[720px] lg:min-w-0">
+              <EvidenceReportMockup />
             </div>
-          </Reveal>
+          </div>
         </Container>
       </section>
 
       {/* ─── 5. FEEDBACK LOOP ──────────────────────────────────── */}
-      <section className="mkt-section border-t border-white/[0.06]">
+      <section className="mkt-section border-t border-white/[0.06]" style={{ contentVisibility: "auto", containIntrinsicSize: "1px 900px" }}>
         <Container>
-          <Reveal className="mb-12 max-w-[720px] sm:mb-14">
+          <div className="mb-12 max-w-[720px] sm:mb-14">
             <SectionHeading
               title="Every hiring decision improves the signal."
               subtitle="Fydell connects work-trial evidence with interview feedback and post-hire outcomes so the signal gets sharper over time."
             />
-          </Reveal>
-          <Reveal delay={0.08}>
-            <FeedbackLoop />
-          </Reveal>
+          </div>
+          <FeedbackLoop />
         </Container>
       </section>
 
