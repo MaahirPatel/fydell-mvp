@@ -14,28 +14,29 @@ type RevealProps = {
 };
 
 /**
- * Single scroll-reveal element. Animates transform + opacity only, collapses to
- * static under prefers-reduced-motion. Motivation: progressive disclosure of
- * content as the reader scrolls, establishing reading hierarchy.
- * Content is visible by default so above-the-fold never ships blank if IO stalls.
+ * Scroll-reveal that never blanks content. Starts fully visible and only
+ * eases a short translate so above-the-fold never ships invisible if IO stalls.
  */
 export function Reveal({
   children,
   className,
   delay = 0,
-  y = 28,
+  y = 16,
   once = true
 }: RevealProps) {
   const reduce = useReducedMotion();
 
+  if (reduce) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
       className={className}
-      initial={reduce ? false : { opacity: 0.001, y }}
-      whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
-      viewport={{ once, amount: 0.15, margin: "0px 0px -40px 0px" }}
-      transition={{ duration: 0.7, ease: EASE, delay }}
-      style={{ opacity: 1 }}
+      initial={{ opacity: 1, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once, amount: 0.12, margin: "80px 0px 0px 0px" }}
+      transition={{ duration: 0.55, ease: EASE, delay }}
     >
       {children}
     </motion.div>

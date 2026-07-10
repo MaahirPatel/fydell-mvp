@@ -1,216 +1,247 @@
 import MarketingShell from "@/components/layout/MarketingShell";
-import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
-import Link from "next/link";
-import { ArrowRight, Send, CheckCircle2, FileText, Layers } from "lucide-react";
+import { Reveal } from "@/components/motion/Reveal";
+import { Container, ButtonLink, SectionHeading } from "@/components/marketing/ui";
+import WorkroomMockup from "@/components/marketing/WorkroomMockup";
+import EvidenceReportMockup from "@/components/marketing/EvidenceReportMockup";
+import FinalCTA from "@/components/marketing/FinalCTA";
 
 export const metadata = {
   title: "How It Works | Fydell",
   description:
-    "Invite candidates, they complete the FP&A workroom, you get an evidence memo. Here's how every step works.",
+    "Invite candidates, they complete the FP&A workroom, you get an evidence report. Three steps. No training required for your team.",
 };
-
-const SOLID_CTA =
-  "inline-flex h-12 items-center gap-2.5 rounded-xl bg-[#2563FF] px-6 text-[15px] font-semibold text-white shadow-[0_8px_28px_rgba(37,99,255,0.32)] transition-[transform,background] duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#1D4ED8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8ab4ff]";
-
-const GHOST_CTA =
-  "inline-flex h-12 items-center gap-2 rounded-xl border border-white/[0.14] bg-white/[0.04] px-5 text-[15px] font-semibold text-white/88 transition-colors duration-200 ease-out hover:border-white/25 hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8ab4ff]";
-
-const PHASES = [
-  {
-    phase: "Phase 1",
-    title: "Invite",
-    icon: Send,
-    color: "#2563FF",
-    steps: [
-      {
-        step: "1",
-        label: "Tell us about the role",
-        desc: "Share the FP&A role title, level, and any specific modeling focus. We configure the workroom to match the complexity of the actual job.",
-      },
-      {
-        step: "2",
-        label: "We create a private link",
-        desc: "Each candidate gets a unique, private workroom link. They never see each other's results. You invite them through your normal process.",
-      },
-      {
-        step: "3",
-        label: "Candidates accept and schedule",
-        desc: "The workroom is asynchronous. Candidates can complete it on their own time within a window you define — typically 48–72 hours.",
-      },
-    ],
-  },
-  {
-    phase: "Phase 2",
-    title: "Workroom",
-    icon: Layers,
-    color: "#7C3DFF",
-    steps: [
-      {
-        step: "4",
-        label: "Brief and data room",
-        desc: "Candidates receive the business context, a stakeholder ask, and a data room with the financial materials they need — modeled on a real FP&A assignment.",
-      },
-      {
-        step: "5",
-        label: "25-minute structured session",
-        desc: "They build, extend, or review the model; document assumptions; respond to a mid-session data update; and write an executive recommendation.",
-      },
-      {
-        step: "6",
-        label: "Behavioral data captured throughout",
-        desc: "Every key decision is logged: what they built, what they changed, what they ignored, how they used AI tools. Not just the final output.",
-      },
-    ],
-  },
-  {
-    phase: "Phase 3",
-    title: "Report",
-    icon: FileText,
-    color: "#2563FF",
-    steps: [
-      {
-        step: "7",
-        label: "Evidence memo generated",
-        desc: "Within 24 hours of submission, you receive a structured evidence memo: decision, confidence level, signal scores, timeline, and follow-up interview questions.",
-      },
-      {
-        step: "8",
-        label: "Your hiring panel reviews",
-        desc: "The memo is designed to be read in five minutes. No interpretation guide needed. Your panel can align on a decision before the first interview.",
-      },
-      {
-        step: "9",
-        label: "Calibrated interview if needed",
-        desc: "The memo includes suggested interview questions targeted at the gaps or ambiguities it found — so your live interview adds signal rather than repeating screening.",
-      },
-    ],
-  },
-];
 
 export default function HowItWorksPage() {
   return (
     <MarketingShell>
-      {/* Glows */}
-      <div className="pointer-events-none fixed left-[8%] top-[15%] h-[360px] w-[480px] rounded-full bg-[#2563FF]/10 blur-[150px]" />
-      <div className="pointer-events-none fixed right-[5%] bottom-[20%] h-[320px] w-[440px] rounded-full bg-[#7C3DFF]/10 blur-[150px]" />
-
-      {/* Hero */}
-      <section className="relative overflow-hidden pt-[120px] pb-16 lg:pt-[148px] lg:pb-20">
-        <div className="relative mx-auto max-w-[1240px] px-6 sm:px-8">
-          <Reveal className="max-w-[640px]">
-            <p className="eyebrow">How it works</p>
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="mkt-section pt-[100px] lg:pt-[136px]">
+        <Container>
+          <Reveal className="max-w-[600px]">
             <h1
-              className="mt-6 text-white"
-              style={{
-                fontSize: "clamp(2.8rem,4.8vw,4.6rem)",
-                lineHeight: 1.0,
-                letterSpacing: "-0.04em",
-                fontWeight: 800,
-              }}
+              className="text-white"
+              style={{ letterSpacing: "-0.04em" }}
             >
-              Invite. Workroom.{" "}
-              <span className="text-[#2563FF]">Report.</span>
+              Invite. Workroom. Report.
             </h1>
-            <p className="mt-6 max-w-[520px] text-[18px] leading-[1.65] text-[#A7B0C0]">
-              Three phases. No training required for your team. Candidates complete the workroom
-              on their own schedule and you get a structured evidence memo the next day.
+            <p className="mt-6 max-w-[480px] text-[18px] leading-[1.65] text-white/[0.66]">
+              Three steps. No training required for your team.
             </p>
-            <div className="mt-9 flex flex-wrap items-center gap-3.5">
-              <Link href="/request-pilot" className={SOLID_CTA}>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <ButtonLink href="/request-pilot" variant="primary">
                 Request a pilot
-                <ArrowRight className="h-[18px] w-[18px]" strokeWidth={1.9} />
-              </Link>
-              <Link href="/sample-report" className={GHOST_CTA}>
+              </ButtonLink>
+              <ButtonLink href="/sample-report" variant="secondary">
                 View sample report
-              </Link>
+              </ButtonLink>
             </div>
           </Reveal>
-        </div>
+        </Container>
       </section>
 
-      {/* Phase steps */}
-      {PHASES.map((phase, pi) => {
-        const PhaseIcon = phase.icon;
-        return (
-          <section key={phase.phase} className="relative py-16 lg:py-20">
-            <div className="mx-auto max-w-[1240px] px-6 sm:px-8">
-              <Reveal className="mb-10 flex items-center gap-4">
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                  style={{ background: `${phase.color}18`, border: `1px solid ${phase.color}28` }}
-                >
-                  <PhaseIcon className="h-5 w-5" style={{ color: phase.color }} strokeWidth={1.7} />
+      {/* ── Step 1: Invite ───────────────────────────────────────────────── */}
+      <section className="mkt-section border-t border-white/[0.06]">
+        <Container>
+          <div className="grid items-start gap-16 lg:grid-cols-[1fr_1.1fr] lg:gap-24">
+            <Reveal>
+              <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/[0.38]">
+                Step 1
+              </p>
+              <h2
+                className="text-white"
+                style={{ letterSpacing: "-0.04em" }}
+              >
+                Invite.
+              </h2>
+              <div className="mt-6 space-y-6">
+                <div>
+                  <h3 className="text-[16px] font-semibold text-white">
+                    No candidate account needed
+                  </h3>
+                  <p className="mt-2 text-[15px] leading-[1.65] text-white/[0.66]">
+                    Each candidate receives a private workroom link. They click it and start —
+                    no registration, no login, no app download. You control who gets invited
+                    through your existing hiring process.
+                  </p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.09em]" style={{ color: phase.color }}>
-                    {phase.phase}
+                  <h3 className="text-[16px] font-semibold text-white">
+                    Configured for your FP&A role
+                  </h3>
+                  <p className="mt-2 text-[15px] leading-[1.65] text-white/[0.66]">
+                    Tell us the level and focus of the role. Fydell configures the workroom to
+                    match — the brief complexity, data room depth, and scenario framing are
+                    aligned to what your candidate would actually do on the job.
                   </p>
-                  <h2
-                    className="text-white"
-                    style={{ fontSize: "clamp(1.6rem,2.4vw,2.2rem)", lineHeight: 1.1, letterSpacing: "-0.04em", fontWeight: 800 }}
-                  >
-                    {phase.title}
-                  </h2>
                 </div>
-              </Reveal>
+                <div>
+                  <h3 className="text-[16px] font-semibold text-white">
+                    Asynchronous — their schedule, your window
+                  </h3>
+                  <p className="mt-2 text-[15px] leading-[1.65] text-white/[0.66]">
+                    You set a completion window — typically 48 to 72 hours. Candidates complete
+                    the workroom when they are ready. No scheduling, no coordination required
+                    from your team.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
 
-              <Stagger className="grid gap-5 sm:grid-cols-3">
-                {phase.steps.map((s) => (
-                  <StaggerItem key={s.step}>
-                    <div className="flex h-full flex-col rounded-[18px] border border-white/[0.08] bg-white/[0.025] p-6">
-                      <div className="mb-4 flex items-center gap-3">
-                        <span
-                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[12px] font-bold"
-                          style={{
-                            background: `${phase.color}18`,
-                            border: `1px solid ${phase.color}25`,
-                            color: phase.color,
-                          }}
-                        >
-                          {s.step}
-                        </span>
-                        <h3 className="text-[14.5px] font-bold tracking-[-0.02em] text-white">{s.label}</h3>
-                      </div>
-                      <p className="text-[13.5px] leading-[1.6] text-[#A7B0C0]">{s.desc}</p>
-                    </div>
-                  </StaggerItem>
-                ))}
-              </Stagger>
-            </div>
-          </section>
-        );
-      })}
+            <Reveal delay={0.1}>
+              <div className="overflow-hidden rounded-[16px] border border-white/[0.08] bg-[#080B12]">
+                <div className="border-b border-white/[0.07] px-6 py-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-white/[0.38]">
+                    Candidate invite
+                  </p>
+                </div>
+                <div className="px-6 py-5 space-y-4">
+                  <div>
+                    <p className="text-[11px] text-white/[0.38] mb-1">Role</p>
+                    <p className="text-[14px] font-medium text-white">Senior FP&A Analyst</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-white/[0.38] mb-1">Workroom</p>
+                    <p className="text-[14px] font-medium text-white">Project Meridian</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-white/[0.38] mb-1">Completion window</p>
+                    <p className="text-[14px] font-medium text-white">48 hours</p>
+                  </div>
+                  <div className="rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
+                    <p className="text-[11px] text-white/[0.42] mb-1">Private link</p>
+                    <p className="text-[12px] font-mono text-[#3B5BFF] break-all">
+                      fydell.com/c/pm-a7x9k2…
+                    </p>
+                  </div>
+                  <p className="text-[11px] text-white/[0.30]">
+                    Link is single-use and expires after the window closes.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </Container>
+      </section>
 
-      {/* FAQ */}
-      <section className="relative py-20 lg:py-28">
-        <div className="mx-auto max-w-[1240px] px-6 sm:px-8">
-          <Reveal className="mb-10 max-w-[480px]">
-            <p className="eyebrow">Common questions</p>
-            <h2
-              className="mt-5 text-white"
-              style={{ fontSize: "clamp(2rem,3vw,2.8rem)", lineHeight: 1.04, letterSpacing: "-0.04em", fontWeight: 800 }}
-            >
-              Before you ask.
-            </h2>
+      {/* ── Step 2: Workroom ─────────────────────────────────────────────── */}
+      <section className="mkt-section border-t border-white/[0.06]">
+        <Container>
+          <Reveal className="mb-12">
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/[0.38]">
+              Step 2
+            </p>
+            <SectionHeading
+              title="Workroom."
+              subtitle="The candidate works through a structured FP&A scenario — a brief, a data room, a forecast model, a manager update, and a final memo. Every decision is captured."
+            />
           </Reveal>
 
-          <Stagger className="grid gap-5 sm:grid-cols-2">
+          <Reveal delay={0.08}>
+            <WorkroomMockup />
+          </Reveal>
+
+          <Reveal delay={0.12}>
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  label: "Brief + data room",
+                  desc: "Business context, stakeholder ask, and the financial materials the candidate needs.",
+                },
+                {
+                  label: "Forecast model",
+                  desc: "Build, extend, or review a financial model with realistic inputs and embedded ambiguities.",
+                },
+                {
+                  label: "Manager update",
+                  desc: "A mid-session data drop that changes the picture. Does the candidate adapt?",
+                },
+                {
+                  label: "Written memo",
+                  desc: "An executive recommendation to a CFO-level stakeholder, with rationale.",
+                },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[14px] border border-white/[0.07] bg-white/[0.025] px-5 py-4"
+                >
+                  <p className="text-[14px] font-semibold text-white">{item.label}</p>
+                  <p className="mt-2 text-[13px] leading-[1.6] text-white/[0.55]">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </Container>
+      </section>
+
+      {/* ── Step 3: Report ───────────────────────────────────────────────── */}
+      <section className="mkt-section border-t border-white/[0.06]">
+        <Container>
+          <Reveal className="mb-12">
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/[0.38]">
+              Step 3
+            </p>
+            <SectionHeading
+              title="Report."
+              subtitle="Within 24 hours of submission, your hiring team receives a structured evidence report. No calibration required — the decision is stated, with confidence level and reasoning."
+            />
+          </Reveal>
+
+          <Reveal delay={0.08}>
+            <EvidenceReportMockup />
+          </Reveal>
+
+          <Reveal delay={0.12}>
+            <div className="mt-10 grid gap-5 sm:grid-cols-3">
+              {[
+                {
+                  label: "Advance / Hold / Review",
+                  desc: "A clear decision recommendation, not a raw score.",
+                },
+                {
+                  label: "Assumptions and risks",
+                  desc: "What the candidate changed, what they flagged, and what they missed.",
+                },
+                {
+                  label: "Interview questions",
+                  desc: "Three to five targeted questions to probe the gaps the workroom found.",
+                },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[14px] border border-white/[0.07] bg-white/[0.025] px-5 py-4"
+                >
+                  <p className="text-[14px] font-semibold text-white">{item.label}</p>
+                  <p className="mt-2 text-[13px] leading-[1.6] text-white/[0.55]">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </Container>
+      </section>
+
+      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+      <section className="mkt-section border-t border-white/[0.06]">
+        <Container>
+          <Reveal className="mb-10">
+            <SectionHeading title="Common questions." />
+          </Reveal>
+          <div className="grid gap-5 sm:grid-cols-2">
             {[
               {
                 q: "Does this replace the technical interview?",
-                a: "Not necessarily. It replaces the screening round and gives you targeted questions for the interview that follows. Many teams run fewer interviews overall because the memo resolves most of the uncertainty upfront.",
+                a: "It replaces the screening round and gives you targeted questions for the interview that follows. Many teams run fewer interviews because the report resolves most uncertainty upfront.",
               },
               {
-                q: "How long does the workroom take?",
-                a: "The session is timed at 25 minutes. We capture time-in-workroom and stage progression as signals in the evidence memo.",
+                q: "How long does the workroom take candidates?",
+                a: "The session is time-limited. We capture time-in-workroom and stage progression as evidence signals — not just the final output.",
               },
               {
                 q: "Do candidates need to install anything?",
-                a: "No. The workroom runs in the browser. They need a spreadsheet tool (Excel or Google Sheets) for the modeling portion, which they already have.",
+                a: "No. The workroom runs in the browser. They need a spreadsheet tool for the modeling section, which they already have.",
               },
               {
                 q: "Can I use my own scenario?",
-                a: "In the pilot phase, Fydell provides the scenario (Project Meridian) configured to the level and focus you specify. Custom scenarios are available once the pilot is complete.",
+                a: "The pilot uses Project Meridian, configured to your role level. Custom scenarios are available after the pilot.",
               },
               {
                 q: "What if a candidate drops out partway through?",
@@ -218,47 +249,24 @@ export default function HowItWorksPage() {
               },
               {
                 q: "Is this FP&A only?",
-                a: "The current pilot is FP&A only — specifically for financial modeling, forecasting, and analysis roles. Adjacent finance roles are in development.",
+                a: "The current pilot is FP&A only — for financial modeling, forecasting, and analysis roles. Adjacent finance roles are in development.",
               },
             ].map((faq) => (
-              <StaggerItem key={faq.q}>
-                <div className="rounded-[18px] border border-white/[0.08] bg-white/[0.025] p-6">
-                  <h3 className="text-[14.5px] font-bold tracking-[-0.02em] text-white">{faq.q}</h3>
-                  <p className="mt-2.5 text-[13.5px] leading-[1.6] text-[#A7B0C0]">{faq.a}</p>
+              <Reveal key={faq.q}>
+                <div className="rounded-[16px] border border-white/[0.07] bg-white/[0.025] px-6 py-5">
+                  <h3 className="text-[15px] font-semibold tracking-[-0.02em] text-white">
+                    {faq.q}
+                  </h3>
+                  <p className="mt-2.5 text-[14px] leading-[1.65] text-white/[0.55]">{faq.a}</p>
                 </div>
-              </StaggerItem>
+              </Reveal>
             ))}
-          </Stagger>
-        </div>
+          </div>
+        </Container>
       </section>
 
-      {/* CTA */}
-      <section className="relative py-20 lg:py-28">
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[380px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2563FF]/8 blur-[110px]" />
-        <div className="relative mx-auto max-w-[680px] px-6 text-center sm:px-8">
-          <Reveal>
-            <h2
-              className="text-white"
-              style={{ fontSize: "clamp(2.2rem,3.8vw,3.4rem)", lineHeight: 1.04, letterSpacing: "-0.04em", fontWeight: 800 }}
-            >
-              Ready to run your first workroom?
-            </h2>
-            <p className="mx-auto mt-5 max-w-[460px] text-[17px] leading-[1.65] text-[#A7B0C0]">
-              It takes five minutes to set up. Your first evidence memo arrives within 24 hours
-              of each candidate completing the workroom.
-            </p>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3.5">
-              <Link href="/request-pilot" className={SOLID_CTA}>
-                Request a pilot
-                <ArrowRight className="h-[18px] w-[18px]" strokeWidth={1.9} />
-              </Link>
-              <Link href="/pricing" className={GHOST_CTA}>
-                See pricing
-              </Link>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      {/* ── Final CTA ────────────────────────────────────────────────────── */}
+      <FinalCTA />
     </MarketingShell>
   );
 }
