@@ -1,24 +1,25 @@
 import Link from "next/link";
-import Logo from "@/components/Logo";
+import FydellBrand from "@/components/brand/FydellBrand";
 
 export default function SiteFooter() {
   return (
-    <footer className="relative z-10 border-t border-white/[0.06] py-12">
-      <div className="mx-auto flex max-w-[1536px] flex-col items-start justify-between gap-8 px-6 md:flex-row md:items-center lg:px-12">
+    <footer className="relative z-10 border-t border-white/[0.08] py-14">
+      <div className="mx-auto flex max-w-[1280px] flex-col items-start justify-between gap-8 px-6 sm:px-12 md:flex-row md:items-center">
         <div>
-          <Logo size={20} variant="dark" />
-          <p className="mt-2 text-xs text-white/36">Real work, not polished resumes.</p>
+          <FydellBrand markSize={26} />
+          <p className="mt-3 max-w-[280px] text-[13px] leading-relaxed text-[#6F7A8C]">
+            Know who can actually do finance work before the first interview.
+          </p>
         </div>
-        <div className="flex flex-wrap gap-6 text-xs font-semibold text-white/44">
-          <Link href="/#product" className="transition hover:text-white/70">Product</Link>
-          <Link href="/solutions" className="transition hover:text-white/70">Solutions</Link>
-          <Link href="/resources" className="transition hover:text-white/70">Resources</Link>
-          <Link href="/company" className="transition hover:text-white/70">Company</Link>
-          <Link href="/pricing" className="transition hover:text-white/70">Pricing</Link>
-          <Link href="/platform" className="transition hover:text-white/70">Dashboard</Link>
-          <Link href="/simulation" className="transition hover:text-white/70">Live simulation</Link>
+        <div className="flex flex-wrap gap-6 text-[13px] font-medium text-[#A7B0C0]">
+          <Link href="/product" className="transition hover:text-white">Product</Link>
+          <Link href="/how-it-works" className="transition hover:text-white">How It Works</Link>
+          <Link href="/pricing" className="transition hover:text-white">Pricing</Link>
+          <Link href="/request-pilot" className="transition hover:text-white">Request a pilot</Link>
+          <Link href="/dashboard" className="transition hover:text-white">Dashboard</Link>
+          <Link href="/sample-report" className="transition hover:text-white">Sample report</Link>
         </div>
-        <p className="text-[10px] text-white/28">© {new Date().getFullYear()} Fydell</p>
+        <p className="text-[12px] text-[#6F7A8C]">© {new Date().getFullYear()} Fydell</p>
       </div>
     </footer>
   );

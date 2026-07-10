@@ -1,11 +1,12 @@
 {
   "id": "communication.v1",
-  "dimension": "Communication clarity",
-  "version": "1.0.0",
+  "dimension": "Communication Clarity",
+  "version": "2.0.0",
+  "context": "FP&A Forecast Review — VP Finance memo on Q3 hiring/marketing plan",
   "anchors": {
-    "strong": "Conditional Proceed. Standalone value is ~$2.05B vs the $2.4B offer after haircutting the exit multiple toward the 9.5x comps average. Top-10 concentration at 34% with two declining accounts contradicts the management longevity claim — diligence the renewals before signing.",
-    "weak": "This is a compelling opportunity with strong synergies and a great franchise. We should proceed and unlock value for shareholders."
+    "strong": "Revise. The 12% growth target is not credible at 7% gross churn without an explicit pipeline build — the plan shows neither the expansion revenue nor the new logo math required to offset attrition. Opex at 18% growth vs 12% revenue will compress EBITDA margin ~3pp; the plan treats margin as flat. After the VP Sales update (sales cycle +30 days), Q3 hires cannot contribute Q3 revenue — the hiring revenue uplift belongs in Q4. Verify: (1) ARR breakdown for two at-risk enterprise renewals with account managers, (2) net retention math behind the growth target, (3) updated hiring plan with Q4 pipeline contribution.",
+    "weak": "Go. Strong franchise with experienced management. Synergies will be realized and the plan represents a compelling opportunity for the business to unlock value for shareholders."
   },
-  "rubric_prompt": "Score communication clarity 0-100. Require JSON {score, rationale, quoted_evidence}. Strong = recommendation up front, three distinct non-redundant reasons, specific numbers. Weak = vague corporate language, no clear call.",
-  "required_elements": ["clear_recommendation", "distinct_reasons", "specific_language"]
+  "rubric_prompt": "Score communication clarity 0-100. Require JSON {score, rationale, quoted_evidence}. Strong = recommendation stated up front, three distinct non-redundant reasons with specific numbers (%, days, $), no vague corporate language. Weak = vague language, no clear call, no specific metrics.",
+  "required_elements": ["clear_recommendation", "distinct_reasons", "specific_language", "verification_steps"]
 }

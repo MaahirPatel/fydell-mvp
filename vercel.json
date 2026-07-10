@@ -1,6 +1,5 @@
 {
-  "framework": null,
+  "framework": "nextjs",
   "installCommand": "npm install",
-  "buildCommand": "npm run build:sim",
-  "outputDirectory": "."
+  "buildCommand": "npm run build:sim && next build"
 }

@@ -1,12 +1,15 @@
 /**
- * Part C — Chat state machine (Priya, Daniel, Marcus).
- * Exact triggers, no repeats, D1 substantive reply gate.
+ * Part C — Chat state machine for FP&A Forecast Review.
+ * Stakeholders: Casey (Finance Analyst), Alex Kim (CFO), Jordan Lee (VP Sales).
+ *
+ * Alex at 8 min = D1 analog (asks about biggest concern — requires substantive reply).
+ * Jordan at 12 min = M1 analog (delivers manager update: sales cycle +30 days, 2 at-risk customers).
  */
 
 export type ChatMessage = {
   id: string;
   triggerId: string;
-  sender: 'priya' | 'daniel' | 'marcus' | 'candidate' | 'system';
+  sender: 'casey' | 'alex' | 'jordan' | 'candidate' | 'system';
   name: string;
   role: string;
   body: string;
@@ -41,7 +44,7 @@ export function isSubstantiveReply(text: string): boolean {
 }
 
 export function hasRepliedToD1AndSubstantive(session: ChatSessionSlice): boolean {
-  if (!session.d1_fired) return true; // D1 not yet fired — don't block early
+  if (!session.d1_fired) return true; // A1 not yet fired — don't block early
   return isSubstantiveReply(session.d1_reply_text || '');
 }
 
@@ -64,7 +67,6 @@ function pushMsg(
     ...msg,
   };
   if (!session.chatMessages) session.chatMessages = [];
-  // no verbatim body repeat
   if (session.chatMessages.some((m) => m.body === full.body)) return full;
   session.chatMessages.push(full);
   return full;
@@ -77,141 +79,139 @@ function pushMsg(
 export function tickChatTriggers(session: ChatSessionSlice): ChatMessage[] {
   const out: ChatMessage[] = [];
   const elapsed = session._elapsedSec || 0;
-  const finSec = session.tabSeconds?.financials || session.tabSeconds?.Financials || 0;
+  const modelSec = session.tabSeconds?.financials || session.tabSeconds?.Financials || 0;
   const opened = session.openedDocs || [];
   const assumptions = (session.assumptionTexts || []).join(' ').toLowerCase();
 
-  // P1 — 90s
-  if (!already(session, 'P1') && elapsed >= 90) {
-    mark(session, 'P1');
+  // ── C1 — 90s: Casey tips on churn math ──────────────────────────────────
+  if (!already(session, 'C1') && elapsed >= 90) {
+    mark(session, 'C1');
     out.push(
       pushMsg(session, {
-        triggerId: 'P1',
-        sender: 'priya',
-        name: 'Priya Shah',
-        role: 'Associate, deal team',
-        body: "Hey — I pulled the comps and the entry multiple looks rich versus peers. Curious what you think once you've been through the model.",
+        triggerId: 'C1',
+        sender: 'casey',
+        name: 'Casey Park',
+        role: 'Finance Analyst',
+        body: "Quick heads-up — the Churn Update doc has some interesting math on growth vs. attrition that might affect how you read the revenue forecast. Worth a look before you stress-test the model.",
         elapsedSec: elapsed,
       })
     );
   }
 
-  // P2 — 4+ min on Financials without Comps
+  // ── C2 — 4+ min on Forecast Model without opening Churn Update ──────────
   if (
-    !already(session, 'P2') &&
-    finSec >= 240 &&
-    !opened.includes('comps_precedents')
+    !already(session, 'C2') &&
+    modelSec >= 240 &&
+    !opened.includes('churn_update')
   ) {
-    mark(session, 'P2');
+    mark(session, 'C2');
     out.push(
       pushMsg(session, {
-        triggerId: 'P2',
-        sender: 'priya',
-        name: 'Priya Shah',
-        role: 'Associate, deal team',
-        body: "Have you had a chance to look at the comp set yet? It's in the Data Room if not — might change your read on valuation.",
+        triggerId: 'C2',
+        sender: 'casey',
+        name: 'Casey Park',
+        role: 'Finance Analyst',
+        body: "Are you cross-checking against the Churn Update? The growth target makes a lot of assumptions about how much attrition the new logo pipeline has to overcome. It's in the data room if you haven't pulled it.",
         elapsedSec: elapsed,
       })
     );
   }
 
-  // P3 — assumption with growth/terminal
+  // ── C3 — assumption with growth or margin ───────────────────────────────
   if (
-    !already(session, 'P3') &&
-    (/growth|terminal/.test(assumptions))
+    !already(session, 'C3') &&
+    (/growth|margin|opex|churn/.test(assumptions))
   ) {
-    mark(session, 'P3');
+    mark(session, 'C3');
     out.push(
       pushMsg(session, {
-        triggerId: 'P3',
-        sender: 'priya',
-        name: 'Priya Shah',
-        role: 'Associate, deal team',
-        body: 'Saw you flagged something on growth — want a second pair of eyes before you finalize? Happy to sanity check.',
+        triggerId: 'C3',
+        sender: 'casey',
+        name: 'Casey Park',
+        role: 'Finance Analyst',
+        body: "Saw you're logging assumptions on growth or margins — want me to pull the Q2 actuals breakdown? Happy to sanity-check the numbers before you finalize.",
         elapsedSec: elapsed,
       })
     );
   }
 
-  // P4 — Risks not opened by minute 15
+  // ── C4 — 15 min, risks tab not opened ───────────────────────────────────
   const risksOpened = !!(session.tabSeconds?.risks || session.tabSeconds?.Risks);
-  if (!already(session, 'P4') && elapsed >= 15 * 60 && !risksOpened) {
-    mark(session, 'P4');
+  if (!already(session, 'C4') && elapsed >= 15 * 60 && !risksOpened) {
+    mark(session, 'C4');
     out.push(
       pushMsg(session, {
-        triggerId: 'P4',
-        sender: 'priya',
-        name: 'Priya Shah',
-        role: 'Associate, deal team',
-        body: "One thing I'd flag before you wrap up — have you looked at customer concentration? Worth at least a line in the memo.",
+        triggerId: 'C4',
+        sender: 'casey',
+        name: 'Casey Park',
+        role: 'Finance Analyst',
+        body: "Just flagging — have you looked at the Customer Concentration note? The enterprise renewal situation seems relevant before you sign off on the hiring budget.",
         elapsedSec: elapsed,
       })
     );
   }
 
-  // P5 — after submit
-  if (!already(session, 'P5') && session.submitted) {
-    mark(session, 'P5');
+  // ── C5 — after submit ────────────────────────────────────────────────────
+  if (!already(session, 'C5') && session.submitted) {
+    mark(session, 'C5');
     const cat = session.recommendation_category || 'your call';
     out.push(
       pushMsg(session, {
-        triggerId: 'P5',
-        sender: 'priya',
-        name: 'Priya Shah',
-        role: 'Associate, deal team',
-        body: `Nice work getting through that under time pressure. For what it's worth, my read matched yours on ${cat}.`,
+        triggerId: 'C5',
+        sender: 'casey',
+        name: 'Casey Park',
+        role: 'Finance Analyst',
+        body: `Nice work — I thought ${cat} made sense given what the data was showing. The churn math alone would have given me pause on the original plan.`,
         elapsedSec: elapsed,
       })
     );
   }
 
-  // D1 — 8 min
-  if (!already(session, 'D1') && elapsed >= 8 * 60) {
-    mark(session, 'D1');
+  // ── A1 — 8 min: Alex Kim (CFO) asks about biggest concern ───────────────
+  // This is the D1 analog — substantive reply required to unlock submit.
+  if (!already(session, 'A1') && elapsed >= 8 * 60) {
+    mark(session, 'A1');
     session.d1_fired = true;
     out.push(
       pushMsg(session, {
-        triggerId: 'D1',
-        sender: 'daniel',
-        name: 'Daniel Chen',
-        role: 'Managing Director',
-        body: "Before you finalize: what's your read on the single biggest risk in this deal? Reply here when you have a view.",
+        triggerId: 'A1',
+        sender: 'alex',
+        name: 'Alex Kim',
+        role: 'CFO',
+        body: "Before you finalize: what's your single biggest concern about the Q3 plan? I want your honest read — reply here when you have a view.",
         elapsedSec: elapsed,
         needsReply: true,
       })
     );
   }
 
-  // M1 — 12 min, Retention CSV not opened
-  if (
-    !already(session, 'M1') &&
-    elapsed >= 12 * 60 &&
-    !opened.includes('retention_csv')
-  ) {
-    mark(session, 'M1');
+  // ── J1 — 12 min: Jordan Lee (VP Sales) delivers the manager update ───────
+  // This is the M1 analog — sales cycle +30 days, 2 customers at risk.
+  if (!already(session, 'J1') && elapsed >= 12 * 60) {
+    mark(session, 'J1');
     out.push(
       pushMsg(session, {
-        triggerId: 'M1',
-        sender: 'marcus',
-        name: 'Marcus Patel',
-        role: 'Finance Manager',
-        body: 'Quick note — the management deck is pretty bullish on customer retention. Worth cross-checking against the underlying data before you lean on that in your recommendation.',
+        triggerId: 'J1',
+        sender: 'jordan',
+        name: 'Jordan Lee',
+        role: 'VP Sales',
+        body: "Heads-up from my end before you wrap the forecast review: just came off a call with two of our largest enterprise accounts. Both have flagged extended procurement timelines — I'd add 30 days to your sales cycle assumption. Also treating both renewals as at-risk until their procurement teams confirm. Worth factoring into whatever you're recommending on the hiring side.",
         elapsedSec: elapsed,
       })
     );
   }
 
-  // M2 — AI 2+ times in 90s window
+  // ── J2 — AI used 2+ times in 90s window ─────────────────────────────────
   const win = session.aiAskCountWindow || { t: 0, count: 0 };
-  if (!already(session, 'M2') && win.count >= 2 && elapsed - win.t <= 90) {
-    mark(session, 'M2');
+  if (!already(session, 'J2') && win.count >= 2 && elapsed - win.t <= 90) {
+    mark(session, 'J2');
     out.push(
       pushMsg(session, {
-        triggerId: 'M2',
-        sender: 'marcus',
-        name: 'Marcus Patel',
-        role: 'Finance Manager',
-        body: "No judgment on using the tools — just make sure you're checking what it gives you before it goes in the model. I've seen it miss things.",
+        triggerId: 'J2',
+        sender: 'jordan',
+        name: 'Jordan Lee',
+        role: 'VP Sales',
+        body: "No issue with using the AI tools — just make sure you're checking what it outputs against the actual data room figures before it goes in the recommendation. I've seen it miss context.",
         elapsedSec: elapsed,
       })
     );
@@ -228,7 +228,7 @@ export type D1BranchResult = {
 };
 
 /**
- * Candidate reply to Daniel D1 (or general chat). Enforces substantive check for D1.
+ * Candidate reply to Alex A1 (or general chat). Enforces substantive check for A1 (D1 analog).
  */
 export function handleCandidateChatReply(
   session: ChatSessionSlice,
@@ -237,18 +237,18 @@ export function handleCandidateChatReply(
   const body = String(text || '').trim();
   const elapsed = session._elapsedSec || 0;
 
-  // If D1 needs reply and this is the reply attempt
+  // If A1 needs reply and this is the reply attempt
   if (session.d1_fired && !isSubstantiveReply(session.d1_reply_text || '')) {
     if (!isSubstantiveReply(body)) {
       return {
         accepted: false,
         rejectReason:
-          "Give me a bit more than that — what specifically worries you?",
+          "Give me a bit more than that — what specifically worries you about the plan?",
       };
     }
     session.d1_reply_text = body;
     pushMsg(session, {
-      triggerId: 'D1_reply',
+      triggerId: 'A1_reply',
       sender: 'candidate',
       name: 'You',
       role: 'Candidate',
@@ -260,31 +260,35 @@ export function handleCandidateChatReply(
     const lower = body.toLowerCase();
     let follow: string;
     let branch: string;
-    if (/customer|concentration|retention/.test(lower)) {
+    if (/churn|retention|attrition|growth.*gap/.test(lower)) {
+      branch = 'churn';
+      follow =
+        "That's the one I keep coming back to too. Make sure the memo is explicit about what the pipeline math requires — not just that churn is a risk, but what it means for the growth target.";
+    } else if (/opex|margin|compress|expense/.test(lower)) {
+      branch = 'margin';
+      follow =
+        'Fair call. If you\'re flagging margin compression, show me the numbers — how many pp of margin are we talking? That changes the hiring conversation.';
+    } else if (/cash|runway|burn/.test(lower)) {
+      branch = 'cash';
+      follow =
+        "Good instinct. 9 months is tight if Q3 revenue misses. Make sure your recommendation reflects what happens to runway in the downside case.";
+    } else if (/renewal|customer|concentration|enterprise/.test(lower)) {
       branch = 'customer';
       follow =
-        "Agreed, that's the one I'd underwrite hardest. Make sure the memo says what you'd do about it, not just that it exists.";
-    } else if (/multiple|valuation|price|overpay/.test(lower)) {
-      branch = 'valuation';
-      follow =
-        'Fair. Just make sure that view is reflected in your recommendation, not buried in a footnote.';
-    } else if (/growth|terminal|forecast/.test(lower)) {
-      branch = 'growth';
-      follow =
-        "That's a real one. Did you stress-test what happens if that assumption is wrong?";
+        "Agreed. The enterprise concentration is real. Make sure you're specific in the memo about what you'd verify before approving the hiring.";
     } else {
       branch = 'generic';
       follow =
-        "Okay — make sure whatever you flagged shows up clearly in your final recommendation. I'll be reading for it.";
+        "Okay — make sure that concern shows up clearly in your VP Memo. I'll be reading for it.";
     }
     session.d1_branch = branch;
-    if (!already(session, 'D1_follow')) {
-      mark(session, 'D1_follow');
+    if (!already(session, 'A1_follow')) {
+      mark(session, 'A1_follow');
       const followUp = pushMsg(session, {
-        triggerId: 'D1_follow',
-        sender: 'daniel',
-        name: 'Daniel Chen',
-        role: 'Managing Director',
+        triggerId: 'A1_follow',
+        sender: 'alex',
+        name: 'Alex Kim',
+        role: 'CFO',
         body: follow,
         elapsedSec: elapsed,
       });
@@ -306,7 +310,7 @@ export function handleCandidateChatReply(
   return { accepted: true };
 }
 
-/** Record AI ask for M2 window */
+/** Record AI ask for J2 window */
 export function recordAiAsk(session: ChatSessionSlice): void {
   const t = session._elapsedSec || 0;
   if (!session.aiAskCountWindow || t - session.aiAskCountWindow.t > 90) {

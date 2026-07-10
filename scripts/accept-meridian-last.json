@@ -1,38 +1,44 @@
 {
   "strong": {
-    "session_id": "ms_mre42te7",
-    "seed": "accept-strong-v1",
+    "session_id": "ms_mreap449",
+    "seed": "accept-strong-fpa-v1",
     "executive_recommendation": "Advance",
     "confidence": "High",
-    "overall_summary": "Caught 3/3 planted errors. Ambiguity: Good pattern. Soft-skill avg (numeric dims): 82. Missing cohort data classified from diligence/memo evidence.",
+    "overall_summary": "Caught 3/3 FP&A concerns. Ambiguity handling: Good pattern. Soft-skill numeric avg: 86. At-risk customer ARR unknown classified from verification-steps/memo evidence. Manager update (VP Sales): received and actioned.",
     "planted_errors": [
       {
-        "id": "err_exit_multiple_vs_comps",
-        "title": "Exit multiple vs. precedent",
+        "id": "err_growth_churn_mismatch",
+        "title": "Revenue growth vs. churn rate",
         "status": "caught",
         "evidence": [
-          "Risk: [Valuation vs. comps] Exit framing 10.7x is above comps avg 9x — material overpay risk if unadjusted.",
-          "Assumption: Haircut exit multiple from 10.7x toward comps average 9x",
-          "Memo/text references comps gap on multiple",
-          "Session flag err_exit_multiple_vs_comps"
+          "Opened Churn_Update.pdf",
+          "Risk: [Churn vs. growth] 7.5% gross churn rate is 2.7pp above peer average. Reaching 12.8% net growth requires ~21% gross new logo + expansion — pipeline is not shown in the plan.",
+          "Assumption: 12.8% revenue growth at 7.5% gross churn requires net expansion > churn — plan does not show this pipeline math. Flagging as optimistic.",
+          "Memo/text addresses churn vs. growth math",
+          "Session flag: err_growth_churn_mismatch"
         ]
       },
       {
-        "id": "err_retention_contradiction",
-        "title": "Retention contradiction",
+        "id": "err_opex_margin_compression",
+        "title": "Opex growth vs. revenue growth",
         "status": "caught",
         "evidence": [
-          "Opened Retention_Cohort.csv",
-          "Risk: [Customer concentration] Retention_Cohort.csv shows 34% top-10 concentration with 2 declining accounts, contradicting Management_Update \"Over 90% of our top-10 customers have been with us 5+ years.\"",
-          "Memo/text flags retention contradiction or concentration"
+          "Risk: [Margin compression] Opex 18.8% growth vs revenue 12.8% will shrink EBITDA margin by ~3pp in Q3. Approve the headcount only if the margin plan is revised.",
+          "Assumption: Opex growing 18.8% vs revenue 12.8% compresses EBITDA margin by ~3pp — plan treats margin as flat, which is unsupported.",
+          "Model: gross margin adjusted down to 60.8% (plan: 63.8%)",
+          "Memo/text addresses opex vs. revenue divergence",
+          "Session flag: err_opex_margin_compression"
         ]
       },
       {
-        "id": "err_synergy_double_count",
-        "title": "Synergy double-count",
+        "id": "err_ramp_sales_cycle_mismatch",
+        "title": "Hire ramp vs. extended sales cycle",
         "status": "caught",
         "evidence": [
-          "Identified overlap/double-count: \"Synergy line double-counts CoC debt paydown overlap — back out duplicated savings\""
+          "Manager update received: VP Sales flagged sales cycle +30 days, 2 at-risk renewals",
+          "Risk: [Revenue risk — hiring plan] After VP Sales update: sales cycles extended to 75 days. Q3 hires (July start, 30-day ramp + 75-day cycle = 105 days) cannot contribute Q3 revenue — uplift belongs in Q4.",
+          "Memo/text addresses ramp vs. extended sales cycle",
+          "Session flag: err_ramp_sales_cycle_mismatch"
         ]
       }
     ],
@@ -40,64 +46,71 @@
       "dimension": "Ambiguity handling",
       "score": "good",
       "label": "Good pattern",
-      "rationale": "Candidate noted incomplete cohort data and/or listed requesting it under next diligence steps rather than inventing a precise figure.",
+      "rationale": "Candidate noted the at-risk ARR gap and/or listed requesting ARR breakdown from account managers in verification steps.",
       "evidence": [
-        "request the missing mid-market cohort retention file referenced as available on request; diligence the two declining top-10 renewals; confirm synergy bridge removes the overlapping coc savings before "
+        "verify: (1) request arr breakdown for two at-risk enterprise renewals from account managers before approving budget; (2) get net retention math behind the 12.8% growth target; (3) revise hiring plan t"
       ],
       "method": "deterministic"
     },
     "hard_skills": [
       {
-        "dimension": "Analytical accuracy",
-        "score": 85,
-        "rationale": "Consistency between logged valuation inputs and narrative claims.",
+        "dimension": "Modeling Discipline",
+        "score": 95,
+        "rationale": "Extent to which candidate adjusted forecast model inputs to reflect identified risks.",
         "evidence": [
-          "Submitted valuation inputs: growth 15.399999999999999%, exit 9.2x, implied EV $4632M",
-          "Seed base exit 10.7x; comps avg 9x",
-          "Exit multiple input below management framing",
-          "Growth input differs from plan — candidate stress-tested"
+          "Model inputs submitted: revenue growth 9.8%, gross margin 60.8%, opex growth 20.8%",
+          "Plan defaults: growth 12.8%, GM 63.8%, opex 18.8%",
+          "Growth input lowered below plan — candidate stress-tested",
+          "Gross margin input lowered below plan — candidate reflected compression",
+          "Opex growth input raised above plan — conservative scenario tested"
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Assumption quality",
-        "score": 55,
-        "rationale": "1/2 assumptions reference numbers or concrete model levers.",
+        "dimension": "Assumption Checking",
+        "score": 86,
+        "rationale": "2/2 assumptions reference concrete forecast levers (numbers, rates, days, or named metrics).",
         "evidence": [
-          "Haircut exit multiple from 10.7x toward comps average 9x",
-          "Synergy line double-counts CoC debt paydown overlap — back out duplicated savings"
+          "12.8% revenue growth at 7.5% gross churn requires net expansion > churn — plan does not show this pipeline math. Flagging as optimistic.",
+          "Opex growing 18.8% vs revenue 12.8% compresses EBITDA margin by ~3pp — plan treats margin as flat, which is unsupported."
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Error detection — Exit multiple vs comps",
+        "dimension": "Concern detection — Revenue growth vs. churn",
         "score": "caught",
         "rationale": "Caught with evidence.",
         "evidence": [
-          "Risk: [Valuation vs. comps] Exit framing 10.7x is above comps avg 9x — material overpay risk if unadjusted.",
-          "Assumption: Haircut exit multiple from 10.7x toward comps average 9x",
-          "Memo/text references comps gap on multiple",
-          "Session flag err_exit_multiple_vs_comps"
+          "Opened Churn_Update.pdf",
+          "Risk: [Churn vs. growth] 7.5% gross churn rate is 2.7pp above peer average. Reaching 12.8% net growth requires ~21% gross new logo + expansion — pipeline is not shown in the plan.",
+          "Assumption: 12.8% revenue growth at 7.5% gross churn requires net expansion > churn — plan does not show this pipeline math. Flagging as optimistic.",
+          "Memo/text addresses churn vs. growth math",
+          "Session flag: err_growth_churn_mismatch"
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Error detection — Retention contradiction",
+        "dimension": "Concern detection — Opex vs. revenue (margin compression)",
         "score": "caught",
         "rationale": "Caught with evidence.",
         "evidence": [
-          "Opened Retention_Cohort.csv",
-          "Risk: [Customer concentration] Retention_Cohort.csv shows 34% top-10 concentration with 2 declining accounts, contradicting Management_Update \"Over 90% of our top-10 customers have been with us 5+ years.\"",
-          "Memo/text flags retention contradiction or concentration"
+          "Risk: [Margin compression] Opex 18.8% growth vs revenue 12.8% will shrink EBITDA margin by ~3pp in Q3. Approve the headcount only if the margin plan is revised.",
+          "Assumption: Opex growing 18.8% vs revenue 12.8% compresses EBITDA margin by ~3pp — plan treats margin as flat, which is unsupported.",
+          "Model: gross margin adjusted down to 60.8% (plan: 63.8%)",
+          "Memo/text addresses opex vs. revenue divergence",
+          "Session flag: err_opex_margin_compression"
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Error detection — Synergy double-count",
+        "dimension": "Concern detection — Hire ramp vs. extended sales cycle",
         "score": "caught",
         "rationale": "Caught with evidence.",
         "evidence": [
-          "Identified overlap/double-count: \"Synergy line double-counts CoC debt paydown overlap — back out duplicated savings\""
+          "Manager update received: VP Sales flagged sales cycle +30 days, 2 at-risk renewals",
+          "Risk: [Revenue risk — hiring plan] After VP Sales update: sales cycles extended to 75 days. Q3 hires (July start, 30-day ramp + 75-day cycle = 105 days) cannot contribute Q3 revenue — uplift belongs in Q4.",
+          "Memo/text addresses ramp vs. extended sales cycle",
+          "Session flag: err_ramp_sales_cycle_mismatch"
         ],
         "method": "deterministic"
       }
@@ -107,73 +120,52 @@
         "dimension": "Ambiguity handling",
         "score": "good",
         "label": "Good pattern",
-        "rationale": "Candidate noted incomplete cohort data and/or listed requesting it under next diligence steps rather than inventing a precise figure.",
+        "rationale": "Candidate noted the at-risk ARR gap and/or listed requesting ARR breakdown from account managers in verification steps.",
         "evidence": [
-          "request the missing mid-market cohort retention file referenced as available on request; diligence the two declining top-10 renewals; confirm synergy bridge removes the overlapping coc savings before "
+          "verify: (1) request arr breakdown for two at-risk enterprise renewals from account managers before approving budget; (2) get net retention math behind the 12.8% growth target; (3) revise hiring plan t"
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Business judgment",
+        "dimension": "Business Judgment",
         "score": 90,
-        "rationale": "Recommendation category vs severity of errors caught/missed, plus specificity of reasons.",
+        "rationale": "Alignment between recommendation severity and FP&A concerns caught/missed, plus specificity of reasoning.",
         "evidence": [
-          "Recommendation: Conditional Proceed",
-          "Planted errors caught: 3/3",
-          "Recommendation severity aligns with errors caught",
-          "Reasons reference deal-specific issues"
+          "Recommendation: Revise",
+          "Planted concerns caught: 3/3",
+          "Revise/Hold recommendation aligns with ≥2 concerns caught",
+          "Reasons reference plan-specific FP&A concerns"
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Risk detection and prioritization",
-        "score": 95,
-        "rationale": "2 evidence-linked risks; 3/3 planted errors reflected.",
+        "dimension": "Risk Detection",
+        "score": 100,
+        "rationale": "3 FP&A-relevant risks logged; 3/3 planted concerns reflected in evaluation.",
         "evidence": [
-          "[Valuation vs. comps] Exit framing 10.7x is above comps avg 9x — material overpay risk if unadjusted.",
-          "[Customer concentration] Retention_Cohort.csv shows 34% top-10 concentration with 2 declining accounts, contradicting Management_Update \"Over 90% of our top-10 customers have been with us 5+ years.\""
+          "[Revenue risk — hiring plan] After VP Sales update: sales cycles extended to 75 days. Q3 hires (July start, 30-day ramp + 75-day cycle = 105 days) cannot contribute Q3 revenue — uplift belongs in Q4.",
+          "[Churn vs. growth] 7.5% gross churn rate is 2.7pp above peer average. Reaching 12.8% net growth requires ~21% gross new logo + expansion — pipeline is not shown in the plan.",
+          "[Margin compression] Opex 18.8% growth vs revenue 12.8% will shrink EBITDA margin by ~3pp in Q3. Approve the headcount only if the margin plan is revised."
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Communication clarity",
+        "dimension": "Communication Clarity",
         "score": 95,
-        "rationale": "Heuristic rubric (LLM unavailable): clarity of recommendation, distinct reasons, specificity.",
+        "rationale": "Clarity of recommendation, three distinct non-redundant reasons, use of specific data.",
         "evidence": [
-          "Recommendation stated up front: Conditional Proceed",
-          "Three distinct reasons: \"Value only clears if we haircut the multiple toward ~9x comp\"; \"Top-10 concentration and declining accounts contradict the m\"; \"Synergy bridge appears to double-count CoC debt paydown with\"",
-          "Uses specific numbers",
-          "Rubric file: communication.v1"
+          "Recommendation stated up front: Revise",
+          "Three distinct reasons: \"12.8% growth target is not credible given 7.5% gro\"; \"Opex at 18.8% vs revenue at 12.8% compresses EBITD\"; \"After VP Sales update (sales cycle +30 days), Q3 n\"",
+          "Uses specific numbers / metrics in memo",
+          "Rubric: communication.v1"
         ],
         "method": "heuristic_fallback"
       },
       {
-        "dimension": "Adaptability / responsiveness",
-        "score": 75,
-        "rationale": "Engagement with stakeholder prompts and whether final work reflects them.",
-        "evidence": [
-          "Daniel reply: \"The single biggest risk is customer concentration — top accounts are 34% of revenue and two are already declining, which undercuts the management retention claim.\"",
-          "Daniel branch: customer",
-          "Final submission reflects customer concentration raised in chat"
-        ],
-        "method": "deterministic"
-      },
-      {
-        "dimension": "Prioritization and time management",
-        "score": 75,
-        "rationale": "Time allocation vs critical materials and responsiveness to MD prompt.",
-        "evidence": [
-          "Tab seconds: {\"brief\":5,\"data_room\":90,\"financials\":30,\"risks\":30,\"recommend\":10}",
-          "Docs opened: 6",
-          "Opened both critical docs (retention + comps)"
-        ],
-        "method": "deterministic"
-      },
-      {
-        "dimension": "AI judgment",
+        "dimension": "AI Verification Behavior",
         "score": 60,
         "label": "Not heavily used",
-        "rationale": "No AI usage logged — neither trap nor blind trust observed.",
+        "rationale": "No AI usage recorded — neither trap triggered nor blind trust observed.",
         "evidence": [
           "ai_usage_log empty"
         ],
@@ -182,36 +174,36 @@
     ],
     "daniel_exchange": [
       {
-        "id": "msg_mre42te9_w6qj",
-        "timestamp": "2026-07-09T23:01:49.521Z",
-        "triggerId": "D1",
-        "sender": "daniel",
-        "name": "Daniel Chen",
-        "role": "Managing Director",
-        "body": "Before you finalize: what's your read on the single biggest risk in this deal? Reply here when you have a view.",
-        "elapsedSec": 485,
+        "id": "msg_mreap44b_6qfr",
+        "timestamp": "2026-07-10T02:07:07.547Z",
+        "triggerId": "A1",
+        "sender": "alex",
+        "name": "Alex Kim",
+        "role": "CFO",
+        "body": "Before you finalize: what's your single biggest concern about the Q3 plan? I want your honest read — reply here when you have a view.",
+        "elapsedSec": 510,
         "needsReply": true
       },
       {
-        "id": "msg_mre42te9_nndg",
-        "timestamp": "2026-07-09T23:01:49.521Z",
-        "triggerId": "D1_reply",
+        "id": "msg_mreap44b_yudc",
+        "timestamp": "2026-07-10T02:07:07.547Z",
+        "triggerId": "A1_reply",
         "sender": "candidate",
         "name": "You",
         "role": "Candidate",
-        "body": "The single biggest risk is customer concentration — top accounts are 34% of revenue and two are already declining, which undercuts the management retention claim.",
-        "elapsedSec": 485,
+        "body": "Biggest concern is the churn rate — 7.5% gross churn with a 12.8% growth target requires significant net expansion that is not in the plan. Without that math, the growth case is not credible.",
+        "elapsedSec": 510,
         "isReply": true
       },
       {
-        "id": "msg_mre42te9_zq6h",
-        "timestamp": "2026-07-09T23:01:49.521Z",
-        "triggerId": "D1_follow",
-        "sender": "daniel",
-        "name": "Daniel Chen",
-        "role": "Managing Director",
-        "body": "Agreed, that's the one I'd underwrite hardest. Make sure the memo says what you'd do about it, not just that it exists.",
-        "elapsedSec": 485
+        "id": "msg_mreap44b_yehw",
+        "timestamp": "2026-07-10T02:07:07.547Z",
+        "triggerId": "A1_follow",
+        "sender": "alex",
+        "name": "Alex Kim",
+        "role": "CFO",
+        "body": "That's the one I keep coming back to too. Make sure the memo is explicit about what the pipeline math requires — not just that churn is a risk, but what it means for the growth target.",
+        "elapsedSec": 510
       }
     ],
     "ai_usage_summary": {
@@ -223,144 +215,164 @@
       "status": "insufficient_data",
       "comparison_text": "Not enough completed pilot sessions yet to benchmark this candidate against real hiring outcomes."
     },
-    "final_memo": "Conditional Proceed\n\nValue only clears if we haircut the multiple toward ~9x comps.\n\nTop-10 concentration and declining accounts contradict the management longevity claim.\n\nSynergy bridge appears to double-count CoC debt paydown with G&A savings.\n\nRequest the missing mid-market cohort retention file referenced as available on request; diligence the two declining top-10 renewals; confirm synergy bridge removes the overlapping CoC savings before signing.",
+    "final_memo": "Revise\n\n12.8% growth target is not credible given 7.5% gross churn — plan lacks the pipeline math to offset attrition.\n\nOpex at 18.8% vs revenue at 12.8% compresses EBITDA margin ~3pp; plan shows stable margin.\n\nAfter VP Sales update (sales cycle +30 days), Q3 new hires cannot contribute Q3 revenue — hiring revenue uplift shifts to Q4 at earliest.\n\nVerify: (1) request ARR breakdown for two at-risk enterprise renewals from account managers before approving budget; (2) get net retention math behind the 12.8% growth target; (3) revise hiring plan to show Q4 pipeline contribution given 75-day extended cycle.",
     "timeline": [
       {
         "t": 0,
-        "label": "Started Project Meridian",
+        "label": "Started Project Meridian — FP&A Forecast Review",
         "type": "simulation_started"
       },
       {
         "t": 0,
-        "label": "Viewed CFO brief",
+        "label": "Viewed CFO Brief",
         "type": "brief_viewed"
       },
       {
         "t": 0,
-        "label": "Opened Executive_Brief.pdf",
+        "label": "Opened CFO_Brief.pdf",
         "type": "resource_opened"
       },
       {
         "t": 0,
-        "label": "Opened Financial_Model.xlsx",
+        "label": "Opened Revenue_Forecast.xlsx",
         "type": "resource_opened"
       },
       {
         "t": 0,
-        "label": "Opened Market_Memo.pdf",
+        "label": "Opened Churn_Update.pdf",
         "type": "resource_opened"
       },
       {
         "t": 0,
-        "label": "Opened Retention_Cohort.csv",
+        "label": "Opened Hiring_Plan.xlsx",
         "type": "resource_opened"
       },
       {
         "t": 0,
-        "label": "Opened Management_Update.pptx",
+        "label": "Opened Customer_Concentration.pdf",
         "type": "resource_opened"
       },
       {
         "t": 0,
-        "label": "Opened Comps_Precedents.pdf",
-        "type": "resource_opened"
-      },
-      {
-        "t": 0,
-        "label": "Viewed Financials tab",
+        "label": "Viewed Forecast Model tab",
         "type": "financials_viewed"
       },
       {
         "t": 0,
-        "label": "Adjusted valuation inputs",
+        "label": "Adjusted forecast model inputs",
         "type": "model_edited"
       },
       {
         "t": 0,
-        "label": "Assumption: Haircut exit multiple from 10.7x toward comps average 9x",
+        "label": "Assumption: 12.8% revenue growth at 7.5% gross churn requires net expansion > churn — plan d",
         "type": "assumption_added"
       },
       {
         "t": 0,
-        "label": "Assumption: Synergy line double-counts CoC debt paydown overlap — back out duplicated saving",
+        "label": "Casey Park: Saw you're logging assumptions on growth or margins — want m",
+        "type": "stakeholder_message"
+      },
+      {
+        "t": 0,
+        "label": "Assumption: Opex growing 18.8% vs revenue 12.8% compresses EBITDA margin by ~3pp — plan trea",
         "type": "assumption_added"
       },
       {
-        "t": 0,
-        "label": "Risk: Valuation vs. comps",
-        "type": "risk_added"
-      },
-      {
-        "t": 0,
-        "label": "Risk: Customer concentration",
-        "type": "risk_added"
-      },
-      {
-        "t": 485,
-        "label": "Priya Shah: Hey — I pulled the comps and the entry multiple looks rich v",
+        "t": 510,
+        "label": "Casey Park: Quick heads-up — the Churn Update doc has some interesting m",
         "type": "stakeholder_message"
       },
       {
-        "t": 485,
-        "label": "Daniel Chen: Before you finalize: what's your read on the single biggest ",
+        "t": 510,
+        "label": "Alex Kim: Before you finalize: what's your single biggest concern abou",
         "type": "stakeholder_message"
       },
       {
-        "t": 485,
+        "t": 510,
         "label": "Candidate chat reply",
         "type": "chat_message_sent"
       },
       {
-        "t": 485,
-        "label": "Daniel follow-up",
+        "t": 510,
+        "label": "Alex Kim follow-up",
         "type": "stakeholder_message"
       },
       {
-        "t": 485,
-        "label": "Selected Conditional Proceed",
+        "t": 750,
+        "label": "Jordan Lee: Heads-up from my end before you wrap the forecast review: ju",
+        "type": "stakeholder_message"
+      },
+      {
+        "t": 750,
+        "label": "VP Sales update: sales cycle +30 days, 2 at-risk renewals",
+        "type": "manager_update"
+      },
+      {
+        "t": 750,
+        "label": "Risk: Revenue risk — hiring plan",
+        "type": "risk_added"
+      },
+      {
+        "t": 750,
+        "label": "Risk: Churn vs. growth",
+        "type": "risk_added"
+      },
+      {
+        "t": 750,
+        "label": "Risk: Margin compression",
+        "type": "risk_added"
+      },
+      {
+        "t": 750,
+        "label": "Selected Revise",
         "type": "recommendation_selected"
       },
       {
-        "t": 485,
-        "label": "Submitted final investment memo",
+        "t": 750,
+        "label": "Submitted VP Memo — FP&A Forecast Review",
         "type": "final_submitted"
       },
       {
-        "t": 485,
-        "label": "Priya Shah: Nice work getting through that under time pressure. For what",
+        "t": 750,
+        "label": "Casey Park: Nice work — I thought Revise made sense given what the data ",
         "type": "stakeholder_message"
       }
+    ],
+    "interview_questions": [
+      "You flagged the churn/growth tension — if you were the CFO, what specific change to the Q3 plan would you require before approving it?",
+      "You noted the hire ramp and sales cycle conflict. How would you restructure the Q3 headcount plan to still hit the year-end target?",
+      "You recommended Revise. What is the minimum set of changes to the Q3 plan that would get you comfortable enough to say Go?"
     ]
   },
   "weak": {
-    "session_id": "ms_mre42tei",
-    "seed": "accept-weak-v1",
+    "session_id": "ms_mreap44g",
+    "seed": "accept-weak-fpa-v1",
     "executive_recommendation": "Reject",
     "confidence": "High",
-    "overall_summary": "Caught 0/3 planted errors. Ambiguity: Poor pattern. Soft-skill avg (numeric dims): 42. Missing cohort data classified from diligence/memo evidence.",
+    "overall_summary": "Caught 0/3 FP&A concerns. Ambiguity handling: Poor pattern. Soft-skill numeric avg: 36. At-risk customer ARR unknown classified from verification-steps/memo evidence. Manager update (VP Sales): not yet received.",
     "planted_errors": [
       {
-        "id": "err_exit_multiple_vs_comps",
-        "title": "Exit multiple vs. precedent",
+        "id": "err_growth_churn_mismatch",
+        "title": "Revenue growth vs. churn rate",
         "status": "missed",
         "evidence": [
-          "No risk/assumption/memo evidence of reconciling 10.8x vs comps avg 9.3x"
+          "No risk/assumption/memo evidence linking 7.3% gross churn to the 12.3% revenue growth target"
         ]
       },
       {
-        "id": "err_retention_contradiction",
-        "title": "Retention contradiction",
+        "id": "err_opex_margin_compression",
+        "title": "Opex growth vs. revenue growth",
         "status": "missed",
         "evidence": [
-          "Retention_Cohort.csv was never opened — cannot credit contradiction catch (Part D rule)"
+          "No evidence of noting 18.7% opex growth vs 12.3% revenue growth — EBITDA margin compression not flagged"
         ]
       },
       {
-        "id": "err_synergy_double_count",
-        "title": "Synergy double-count",
+        "id": "err_ramp_sales_cycle_mismatch",
+        "title": "Hire ramp vs. extended sales cycle",
         "status": "missed",
         "evidence": [
-          "No assumption/memo language identifying synergy / CoC debt paydown double-count"
+          "VP Sales manager update not received — ramp/cycle extension could not be detected"
         ]
       }
     ],
@@ -368,56 +380,57 @@
       "dimension": "Ambiguity handling",
       "score": "poor",
       "label": "Poor pattern",
-      "rationale": "Candidate stated a specific retention conclusion despite missing cohort file / without flagging the data gap.",
+      "rationale": "Candidate stated a specific revenue/ARR impact for at-risk customers without verifying the ARR breakdown with account managers or opening the concentration note.",
       "evidence": [
-        "net retention is 96% across the book so concentration is not a real issue for underwriting this deal at the offer price.\nproceed\n\nstrong franchise.\n\nsynergies will be realized.\n\ncompelling opportunity for shareholders.\n\n"
+        "we will lose approximately $2.3m arr from the two at-risk enterprise renewals but this is manageable given the current 9-month cash runway.\ngo\n\nstrong franchise with experienced management team.\n\nsynergies will be realiz"
       ],
       "method": "deterministic"
     },
     "hard_skills": [
       {
-        "dimension": "Analytical accuracy",
-        "score": 55,
-        "rationale": "Consistency between logged valuation inputs and narrative claims.",
-        "evidence": [
-          "Submitted valuation inputs: growth 14.5%, exit 10.8x, implied EV $5462M",
-          "Seed base exit 10.8x; comps avg 9.3x"
-        ],
-        "method": "deterministic"
-      },
-      {
-        "dimension": "Assumption quality",
+        "dimension": "Modeling Discipline",
         "score": 10,
-        "rationale": "0/1 assumptions reference numbers or concrete model levers.",
+        "rationale": "Extent to which candidate adjusted forecast model inputs to reflect identified risks.",
         "evidence": [
-          "I think its fine"
+          "Model inputs submitted: revenue growth 12.3%, gross margin 64%, opex growth 18.7%",
+          "Plan defaults: growth 12.3%, GM 64%, opex 18.7%",
+          "Model left unchanged from plan defaults — no stress-test performed"
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Error detection — Exit multiple vs comps",
-        "score": "missed",
-        "rationale": "Missed.",
+        "dimension": "Assumption Checking",
+        "score": 13,
+        "rationale": "0/1 assumptions reference concrete forecast levers (numbers, rates, days, or named metrics).",
         "evidence": [
-          "No risk/assumption/memo evidence of reconciling 10.8x vs comps avg 9.3x"
+          "Management plan looks reasonable overall"
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Error detection — Retention contradiction",
+        "dimension": "Concern detection — Revenue growth vs. churn",
         "score": "missed",
         "rationale": "Missed.",
         "evidence": [
-          "Retention_Cohort.csv was never opened — cannot credit contradiction catch (Part D rule)"
+          "No risk/assumption/memo evidence linking 7.3% gross churn to the 12.3% revenue growth target"
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Error detection — Synergy double-count",
+        "dimension": "Concern detection — Opex vs. revenue (margin compression)",
         "score": "missed",
         "rationale": "Missed.",
         "evidence": [
-          "No assumption/memo language identifying synergy / CoC debt paydown double-count"
+          "No evidence of noting 18.7% opex growth vs 12.3% revenue growth — EBITDA margin compression not flagged"
+        ],
+        "method": "deterministic"
+      },
+      {
+        "dimension": "Concern detection — Hire ramp vs. extended sales cycle",
+        "score": "missed",
+        "rationale": "Missed.",
+        "evidence": [
+          "VP Sales manager update not received — ramp/cycle extension could not be detected"
         ],
         "method": "deterministic"
       }
@@ -427,71 +440,50 @@
         "dimension": "Ambiguity handling",
         "score": "poor",
         "label": "Poor pattern",
-        "rationale": "Candidate stated a specific retention conclusion despite missing cohort file / without flagging the data gap.",
+        "rationale": "Candidate stated a specific revenue/ARR impact for at-risk customers without verifying the ARR breakdown with account managers or opening the concentration note.",
         "evidence": [
-          "net retention is 96% across the book so concentration is not a real issue for underwriting this deal at the offer price.\nproceed\n\nstrong franchise.\n\nsynergies will be realized.\n\ncompelling opportunity for shareholders.\n\n"
+          "we will lose approximately $2.3m arr from the two at-risk enterprise renewals but this is manageable given the current 9-month cash runway.\ngo\n\nstrong franchise with experienced management team.\n\nsynergies will be realiz"
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Business judgment",
+        "dimension": "Business Judgment",
         "score": 15,
-        "rationale": "Recommendation category vs severity of errors caught/missed, plus specificity of reasons.",
+        "rationale": "Alignment between recommendation severity and FP&A concerns caught/missed, plus specificity of reasoning.",
         "evidence": [
-          "Recommendation: Proceed",
-          "Planted errors caught: 0/3",
-          "Proceed with no planted errors caught — weak judgment"
+          "Recommendation: Go",
+          "Planted concerns caught: 0/3",
+          "Go/Proceed with no concerns caught — weak judgment"
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Risk detection and prioritization",
+        "dimension": "Risk Detection",
         "score": 0,
-        "rationale": "0 evidence-linked risks; 0/3 planted errors reflected.",
+        "rationale": "0 FP&A-relevant risks logged; 0/3 planted concerns reflected in evaluation.",
         "evidence": [
-          "[Market/macro] Market risk exists in any deal."
+          "[Market risk] Market conditions could affect business performance."
         ],
         "method": "deterministic"
       },
       {
-        "dimension": "Communication clarity",
+        "dimension": "Communication Clarity",
         "score": 70,
-        "rationale": "Heuristic rubric (LLM unavailable): clarity of recommendation, distinct reasons, specificity.",
+        "rationale": "Clarity of recommendation, three distinct non-redundant reasons, use of specific data.",
         "evidence": [
-          "Recommendation stated up front: Proceed",
-          "Three distinct reasons: \"Strong franchise.\"; \"Synergies will be realized.\"; \"Compelling opportunity for shareholders.\"",
-          "Contains vague corporate language",
-          "Uses specific numbers",
-          "Rubric file: communication.v1"
+          "Recommendation stated up front: Go",
+          "Three distinct reasons: \"Strong franchise with experienced management team.\"; \"Synergies will be realized and the plan is a compe\"; \"The Q3 hiring investment positions us well for yea\"",
+          "Contains vague corporate language without specific numbers",
+          "Uses specific numbers / metrics in memo",
+          "Rubric: communication.v1"
         ],
         "method": "heuristic_fallback"
       },
       {
-        "dimension": "Adaptability / responsiveness",
-        "score": 55,
-        "rationale": "Engagement with stakeholder prompts and whether final work reflects them.",
-        "evidence": [
-          "Daniel reply: \"I think the deal looks fine overall and we should move ahead.\"",
-          "Daniel branch: generic",
-          "Replied to Daniel but memo linkage weak"
-        ],
-        "method": "deterministic"
-      },
-      {
-        "dimension": "Prioritization and time management",
-        "score": 50,
-        "rationale": "Time allocation vs critical materials and responsiveness to MD prompt.",
-        "evidence": [
-          "Tab seconds: {\"brief\":5,\"data_room\":30,\"financials\":30,\"recommend\":10,\"risks\":15}",
-          "Docs opened: 2"
-        ],
-        "method": "deterministic"
-      },
-      {
-        "dimension": "AI judgment",
+        "dimension": "AI Verification Behavior",
         "score": 60,
         "label": "Not heavily used",
-        "rationale": "No AI usage logged — neither trap nor blind trust observed.",
+        "rationale": "No AI usage recorded — neither trap triggered nor blind trust observed.",
         "evidence": [
           "ai_usage_log empty"
         ],
@@ -500,36 +492,36 @@
     ],
     "daniel_exchange": [
       {
-        "id": "msg_mre42tei_bpzh",
-        "timestamp": "2026-07-09T23:01:49.530Z",
-        "triggerId": "D1",
-        "sender": "daniel",
-        "name": "Daniel Chen",
-        "role": "Managing Director",
-        "body": "Before you finalize: what's your read on the single biggest risk in this deal? Reply here when you have a view.",
-        "elapsedSec": 485,
+        "id": "msg_mreap44g_rwxy",
+        "timestamp": "2026-07-10T02:07:07.552Z",
+        "triggerId": "A1",
+        "sender": "alex",
+        "name": "Alex Kim",
+        "role": "CFO",
+        "body": "Before you finalize: what's your single biggest concern about the Q3 plan? I want your honest read — reply here when you have a view.",
+        "elapsedSec": 510,
         "needsReply": true
       },
       {
-        "id": "msg_mre42tei_4bp7",
-        "timestamp": "2026-07-09T23:01:49.530Z",
-        "triggerId": "D1_reply",
+        "id": "msg_mreap44g_5yib",
+        "timestamp": "2026-07-10T02:07:07.552Z",
+        "triggerId": "A1_reply",
         "sender": "candidate",
         "name": "You",
         "role": "Candidate",
-        "body": "I think the deal looks fine overall and we should move ahead.",
-        "elapsedSec": 485,
+        "body": "I think the forecast looks solid overall and we should proceed with the Q3 plan as proposed.",
+        "elapsedSec": 510,
         "isReply": true
       },
       {
-        "id": "msg_mre42tei_b08z",
-        "timestamp": "2026-07-09T23:01:49.530Z",
-        "triggerId": "D1_follow",
-        "sender": "daniel",
-        "name": "Daniel Chen",
-        "role": "Managing Director",
-        "body": "Okay — make sure whatever you flagged shows up clearly in your final recommendation. I'll be reading for it.",
-        "elapsedSec": 485
+        "id": "msg_mreap44g_im0d",
+        "timestamp": "2026-07-10T02:07:07.552Z",
+        "triggerId": "A1_follow",
+        "sender": "alex",
+        "name": "Alex Kim",
+        "role": "CFO",
+        "body": "Okay — make sure that concern shows up clearly in your VP Memo. I'll be reading for it.",
+        "elapsedSec": 510
       }
     ],
     "ai_usage_summary": {
@@ -541,83 +533,89 @@
       "status": "insufficient_data",
       "comparison_text": "Not enough completed pilot sessions yet to benchmark this candidate against real hiring outcomes."
     },
-    "final_memo": "Proceed\n\nStrong franchise.\n\nSynergies will be realized.\n\nCompelling opportunity for shareholders.\n\nNet retention is 96% across the book so concentration is not a real issue for underwriting this deal at the offer price.",
+    "final_memo": "Go\n\nStrong franchise with experienced management team.\n\nSynergies will be realized and the plan is a compelling opportunity.\n\nThe Q3 hiring investment positions us well for year-end performance.\n\nWe will lose approximately $2.3M ARR from the two at-risk enterprise renewals but this is manageable given the current 9-month cash runway.",
     "timeline": [
       {
         "t": 0,
-        "label": "Started Project Meridian",
+        "label": "Started Project Meridian — FP&A Forecast Review",
         "type": "simulation_started"
       },
       {
         "t": 0,
-        "label": "Viewed CFO brief",
+        "label": "Viewed CFO Brief",
         "type": "brief_viewed"
       },
       {
         "t": 0,
-        "label": "Opened Executive_Brief.pdf",
+        "label": "Opened CFO_Brief.pdf",
         "type": "resource_opened"
       },
       {
         "t": 0,
-        "label": "Opened Management_Update.pptx",
+        "label": "Opened Revenue_Forecast.xlsx",
         "type": "resource_opened"
       },
       {
         "t": 0,
-        "label": "Viewed Financials tab",
+        "label": "Viewed Forecast Model tab",
         "type": "financials_viewed"
       },
       {
         "t": 0,
-        "label": "Adjusted valuation inputs",
+        "label": "Adjusted forecast model inputs",
         "type": "model_edited"
       },
       {
-        "t": 485,
-        "label": "Priya Shah: Hey — I pulled the comps and the entry multiple looks rich v",
+        "t": 510,
+        "label": "Casey Park: Quick heads-up — the Churn Update doc has some interesting m",
         "type": "stakeholder_message"
       },
       {
-        "t": 485,
-        "label": "Daniel Chen: Before you finalize: what's your read on the single biggest ",
+        "t": 510,
+        "label": "Alex Kim: Before you finalize: what's your single biggest concern abou",
         "type": "stakeholder_message"
       },
       {
-        "t": 485,
+        "t": 510,
         "label": "Candidate chat reply",
         "type": "chat_message_sent"
       },
       {
-        "t": 485,
-        "label": "Daniel follow-up",
+        "t": 510,
+        "label": "Alex Kim follow-up",
         "type": "stakeholder_message"
       },
       {
-        "t": 485,
-        "label": "Selected Proceed",
-        "type": "recommendation_selected"
-      },
-      {
-        "t": 485,
-        "label": "Assumption: I think its fine",
+        "t": 510,
+        "label": "Assumption: Management plan looks reasonable overall",
         "type": "assumption_added"
       },
       {
-        "t": 485,
-        "label": "Risk: Market/macro",
+        "t": 510,
+        "label": "Risk: Market risk",
         "type": "risk_added"
       },
       {
-        "t": 485,
-        "label": "Submitted final investment memo",
+        "t": 510,
+        "label": "Selected Go",
+        "type": "recommendation_selected"
+      },
+      {
+        "t": 510,
+        "label": "Submitted VP Memo — FP&A Forecast Review",
         "type": "final_submitted"
       },
       {
-        "t": 485,
-        "label": "Priya Shah: Nice work getting through that under time pressure. For what",
+        "t": 510,
+        "label": "Casey Park: Nice work — I thought Go made sense given what the data was ",
         "type": "stakeholder_message"
       }
+    ],
+    "interview_questions": [
+      "Walk me through how you'd pressure-test a 12.3% revenue growth target when gross churn is running at 7.3%. What pipeline math would you need to see?",
+      "If operating expenses grow 18.7% but revenue only grows 12.3%, what happens to EBITDA margin? Would you approve the hiring plan anyway?",
+      "The VP Sales just told you the sales cycle extended by 30 days. You have 8 new hires starting in July with a 30-day ramp. What does that mean for Q3 revenue projections?",
+      "Your recommendation is to proceed. What single data point would make you change that view before the board meeting?"
     ]
   }
 }

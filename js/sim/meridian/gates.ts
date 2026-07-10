@@ -1,5 +1,6 @@
 /**
- * Part F — submission gate + progress. Explicit boolean checks.
+ * Part F — submission gate + progress for FP&A Forecast Review.
+ * Stages: Brief → Data Room → Forecast Model → Assumptions Review → Final Recommendation.
  */
 
 import { hasRepliedToD1AndSubstantive, type ChatSessionSlice } from './chatMachine.js';
@@ -27,9 +28,11 @@ export type MissingItem = { id: string; label: string; blocking: boolean };
 
 export function getMeridianMissingRequirements(session: MeridianSessionState): MissingItem[] {
   const missing: MissingItem[] = [];
+
   if (!session._briefViewed) {
-    missing.push({ id: 'brief', label: 'View the Brief (CFO mandate)', blocking: true });
+    missing.push({ id: 'brief', label: 'View the CFO Brief', blocking: true });
   }
+
   const docs = session.openedDocs || [];
   if (docs.length < 2) {
     missing.push({
@@ -38,42 +41,47 @@ export function getMeridianMissingRequirements(session: MeridianSessionState): M
       blocking: true,
     });
   }
+
   if (!session._financialsViewed || !session._valuationAdjusted) {
     missing.push({
       id: 'financials',
-      label: 'View Financials and adjust at least one valuation input',
+      label: 'View the Forecast Model and adjust at least one assumption',
       blocking: true,
     });
   }
+
   if (!(session.assumptions && session.assumptions.length >= 1)) {
     missing.push({ id: 'assumption', label: 'Log at least 1 assumption', blocking: true });
   }
+
   if (!(session.risks && session.risks.some((r) => (r.text || '').trim().length >= 8))) {
-    missing.push({ id: 'risk', label: 'Select at least 1 risk with elaboration', blocking: true });
+    missing.push({ id: 'risk', label: 'Flag at least 1 risk with elaboration', blocking: true });
   }
+
+  // A1 (CFO Alex Kim) reply gate — same mechanism as D1
   if (session.d1_fired && !hasRepliedToD1AndSubstantive(session)) {
     missing.push({
       id: 'd1',
-      label: "Reply substantively to Daniel Chen's risk question (15+ characters)",
+      label: "Reply substantively to Alex Kim's question (15+ characters)",
       blocking: true,
     });
   }
-  // M1 acknowledgment — non-blocking but listed
+
+  // J1 (VP Sales Jordan Lee) acknowledgment — non-blocking but listed
   if (
-    (session.used_trigger_ids || []).includes('M1') &&
-    !docs.includes('retention_csv') &&
+    (session.used_trigger_ids || []).includes('J1') &&
     !session.m1_acknowledged
   ) {
     missing.push({
       id: 'm1',
-      label: 'Acknowledged: open Retention_Cohort.csv or address retention in risks/memo (Marcus)',
+      label: "Acknowledge VP Sales update: address the sales cycle extension and at-risk renewals in your risks or assumptions",
       blocking: false,
     });
   }
 
   const rec = session.recommendation || {};
   if (!rec.category) {
-    missing.push({ id: 'rec_cat', label: 'Select a recommendation category', blocking: true });
+    missing.push({ id: 'rec_cat', label: 'Select a recommendation (Go / Hold / Revise)', blocking: true });
   }
   if (!(rec.reason1 || '').trim() || !(rec.reason2 || '').trim() || !(rec.reason3 || '').trim()) {
     missing.push({ id: 'rec_reasons', label: 'Fill all three key reasons', blocking: true });
@@ -91,10 +99,11 @@ export function getMeridianMissingRequirements(session: MeridianSessionState): M
   if ((rec.diligence || '').trim().length < 40) {
     missing.push({
       id: 'diligence',
-      label: 'Next diligence steps must be at least 40 characters',
+      label: 'Verification steps must be at least 40 characters',
       blocking: true,
     });
   }
+
   return missing;
 }
 

@@ -17,6 +17,7 @@ type RevealProps = {
  * Single scroll-reveal element. Animates transform + opacity only, collapses to
  * static under prefers-reduced-motion. Motivation: progressive disclosure of
  * content as the reader scrolls, establishing reading hierarchy.
+ * Content is visible by default so above-the-fold never ships blank if IO stalls.
  */
 export function Reveal({
   children,
@@ -30,10 +31,11 @@ export function Reveal({
   return (
     <motion.div
       className={className}
-      initial={reduce ? false : { opacity: 0, y }}
+      initial={reduce ? false : { opacity: 0.001, y }}
       whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
-      viewport={{ once, amount: 0.25, margin: "-60px" }}
+      viewport={{ once, amount: 0.15, margin: "0px 0px -40px 0px" }}
       transition={{ duration: 0.7, ease: EASE, delay }}
+      style={{ opacity: 1 }}
     >
       {children}
     </motion.div>

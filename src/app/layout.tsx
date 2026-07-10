@@ -13,9 +13,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Fydell - Hire with Conviction",
+  title: "Fydell — Know who can do finance work before the interview",
   description:
-    "Immersive simulations reveal how people think, decide, and perform so teams can hire based on real work.",
+    "Fydell runs FP&A candidates through a realistic 25-minute work trial and gives hiring teams an evidence memo showing how they model, catch risk, use AI, and communicate judgment.",
   icons: {
     icon: [{ url: "/brand/fydell-chain-mark.png" }]
   }

@@ -1,5 +1,9 @@
 /**
- * Part E — AI assistant with deliberate exit-multiple trap + AIUsageEvent logging.
+ * Part E — AI assistant with deliberate revenue-growth trap + AIUsageEvent logging.
+ *
+ * FP&A version: trap fires when candidate asks about revenue growth forecast
+ * WITHOUT asking about churn rate. The AI returns an uncritical endorsement of
+ * the 12% growth target without mentioning the churn/pipeline math.
  */
 
 import type { MeridianSeedParams } from './seed.js';
@@ -21,19 +25,20 @@ export type AiAskResult = {
   event: AIUsageEvent;
 };
 
-function asksExitMultiple(prompt: string): boolean {
+function asksRevenueGrowth(prompt: string): boolean {
   const p = prompt.toLowerCase();
-  return /exit multiple|what multiple|which multiple|multiple should|ev\/ebitda|entry multiple/.test(p);
+  return /revenue.*growth|growth.*target|growth.*forecast|q3.*growth|forecast.*growth|growth.*rate|revenue.*plan/.test(p);
 }
 
-function asksCompsCheck(prompt: string): boolean {
+function asksChurnCheck(prompt: string): boolean {
   const p = prompt.toLowerCase();
-  return /comp|precedent|peer|versus|vs\.?|against the comps|check.*multiple/.test(p);
+  return /churn|retention|net.*retention|gross.*retention|attrition|customer.*health/.test(p);
 }
 
 /**
- * Deliberate trap: if candidate asks what exit multiple to use WITHOUT asking to check comps,
- * return a plausible uncritical answer that does NOT mention the comps gap.
+ * Deliberate trap: if candidate asks about the revenue growth forecast WITHOUT
+ * asking about churn rate, return a plausible uncritical answer that endorses
+ * the plan without flagging the churn/pipeline gap.
  */
 export function askMeridianAI(
   session: ChatSessionSlice & { ai_usage_log?: AIUsageEvent[]; plantedErrorFlags?: Record<string, boolean> },
@@ -41,19 +46,23 @@ export function askMeridianAI(
   prompt: string
 ): AiAskResult {
   recordAiAsk(session);
-  const trap = asksExitMultiple(prompt) && !asksCompsCheck(prompt);
+  const trap = asksRevenueGrowth(prompt) && !asksChurnCheck(prompt);
   let response: string;
 
   if (trap) {
-    response = `For a mid-market consumer platform with ${params.forward_growth}% forward growth and LTM EBITDA margin around ${params.ebitda_margin_ltm}%, a ${params.exit_multiple}x EBITDA exit framing is commonly used in IC packs and is consistent with how management has positioned the ${params.deal_value_label} offer. You can use ${params.exit_multiple}x as your base case unless you have a specific reason to haircut it.`;
-  } else if (asksCompsCheck(prompt) || /comp|precedent/.test(prompt.toLowerCase())) {
-    response = `The comps set averages about ${params.comps_avg_multiple}x EV/EBITDA, while the base materials frame closer to ${params.exit_multiple}x. That gap is material — haircut toward the comps mid-point unless you can underwrite a clear premium.`;
-  } else if (/retention|customer|concentration/.test(prompt.toLowerCase())) {
-    response = `Check Retention_Cohort.csv against the management deck. Concentration and any declining top accounts should be explicit in risks — don't rely on headline longevity claims alone.`;
-  } else if (/growth|sector/.test(prompt.toLowerCase())) {
-    response = `Plan growth is ${params.forward_growth}% vs sector roughly ${params.sector_growth_low}–${params.sector_growth_high}%. Quantify that gap in your memo if you keep the plan case.`;
+    response = `${params.q3_revenue_growth}% Q3 revenue growth is consistent with the ${params.company} plan and the Q2 momentum visible in the historical data. The hiring investment in Sales and Marketing supports the growth case, and the plan is within the range seen in comparable outdoor/B2B businesses. Use ${params.q3_revenue_growth}% as your base case unless you identify a specific downside driver.`;
+  } else if (asksChurnCheck(prompt) || /churn|attrition/.test(prompt.toLowerCase())) {
+    response = `Gross churn at ${params.churn_rate}% is above the peer average of ~${params.industry_churn_avg}%. To hit ${params.q3_revenue_growth}% net revenue growth from a ${params.churn_rate}% gross churn base, you need strong expansion revenue and/or new logo pipeline that offsets attrition. The plan should show that math explicitly — if it doesn't, that's a flag.`;
+  } else if (/opex|margin|compress|expense/.test(prompt.toLowerCase())) {
+    response = `Opex growing at ${params.opex_growth}% versus ${params.q3_revenue_growth}% revenue growth means EBITDA margin compression of roughly ${Math.round((params.opex_growth - params.q3_revenue_growth) / 2)}pp. The plan should reflect that — if the margin line looks flat, the model hasn't accounted for the cost growth. Adjust the gross margin input down to reflect the real squeeze before finalizing.`;
+  } else if (/sales.*cycle|cycle|ramp/.test(prompt.toLowerCase())) {
+    response = `With a ${params.sales_cycle_days}-day sales cycle and ${params.new_hire_ramp_days}-day ramp, July hires can contribute deals closed by around day ${params.sales_cycle_days + params.new_hire_ramp_days}. If the sales cycle extends at all — say by 30 days — that math shifts meaningfully and Q3 hires might not close anything until Q4.`;
+  } else if (/cash|runway|burn/.test(prompt.toLowerCase())) {
+    response = `${params.cash_runway_months} months runway at plan spend is tight. If Q3 revenue misses by 3+ pp, runway shortens materially. The two at-risk enterprise renewals add another layer of uncertainty — flag the downside scenario in your recommendation.`;
+  } else if (/hire|hiring|headcount/.test(prompt.toLowerCase())) {
+    response = `The hiring plan adds 8 net new sales and marketing FTEs in Q3. The key assumption is that ${params.sales_cycle_days}-day cycle + ${params.new_hire_ramp_days}-day ramp allows Q3 revenue contribution. If anything stretches that timeline — like a sales cycle extension — the Q3 revenue case for the new hires evaporates.`;
   } else {
-    response = `Focus on (1) whether ${params.deal_value_label} clears a comps-consistent multiple, (2) customer concentration / retention evidence, and (3) whether synergies are incremental. Cite exhibits; don't invent missing cohort detail.`;
+    response = `Focus on three things: (1) whether the ${params.q3_revenue_growth}% growth target is achievable given ${params.churn_rate}% gross churn, (2) whether opex growth at ${params.opex_growth}% is sustainable versus ${params.q3_revenue_growth}% revenue, and (3) whether Q3 hires can realistically contribute Q3 revenue given the sales cycle. Cross-reference the Churn Update and Hiring Plan with the Forecast Model.`;
   }
 
   const event: AIUsageEvent = {
@@ -72,6 +81,8 @@ export function askMeridianAI(
 
 /**
  * After final submission, derive candidate_action_after and whether trap was caught.
+ * Trap catch = candidate eventually flagged the churn/growth mismatch despite getting
+ * the uncritical AI endorsement of the growth rate.
  */
 export function finalizeAiUsage(
   session: {
@@ -83,7 +94,7 @@ export function finalizeAiUsage(
   },
   params: MeridianSeedParams
 ): void {
-  const corpus = [
+  const corpusText = [
     session.finalMemo || '',
     ...(session.assumptions || []).map((a) => `${a.title || ''} ${a.text || ''}`),
     ...(session.risks || []).map((r) => `${r.category || ''} ${r.title || ''} ${r.text || ''}`),
@@ -91,23 +102,24 @@ export function finalizeAiUsage(
     .join('\n')
     .toLowerCase();
 
-  const caughtComps =
-    !!session.plantedErrorFlags?.err_exit_multiple_vs_comps ||
-    (/(comp|precedent)/.test(corpus) && /(multiple|haircut|rich|above)/.test(corpus));
+  // Trap is "caught" if candidate ultimately flagged churn vs growth
+  const caughtChurn =
+    !!session.plantedErrorFlags?.err_growth_churn_mismatch ||
+    (/churn|attrition|net.*retention/.test(corpusText) && /growth|target|forecast/.test(corpusText));
 
   for (const ev of session.ai_usage_log || []) {
     if (ev.trap_triggered) {
-      ev.trap_caught = caughtComps;
+      ev.trap_caught = caughtChurn;
     }
     const snippet = (ev.ai_response_summary || '').slice(0, 40).toLowerCase();
-    if (snippet && corpus.includes(snippet.slice(0, 24))) {
+    if (snippet && corpusText.includes(snippet.slice(0, 24))) {
       ev.candidate_action_after = 'accepted_as_is';
-    } else if (ev.trap_triggered && caughtComps) {
+    } else if (ev.trap_triggered && caughtChurn) {
       ev.candidate_action_after = 'edited';
-    } else if (ev.trap_triggered && !caughtComps && corpus.includes(String(params.exit_multiple))) {
+    } else if (ev.trap_triggered && !caughtChurn && corpusText.includes(String(params.q3_revenue_growth))) {
       ev.candidate_action_after = 'accepted_as_is';
     } else {
-      ev.candidate_action_after = corpus.length > 40 ? 'edited' : 'rejected';
+      ev.candidate_action_after = corpusText.length > 40 ? 'edited' : 'rejected';
     }
   }
 }

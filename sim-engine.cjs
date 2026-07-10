@@ -3008,11 +3008,11 @@ __export(meridian_exports, {
 
 // js/sim/meridian/seed.ts
 var TARGET_COMPANIES = [
-  "NorthBridge Brands",
-  "Calder & Vine",
-  "Ashworth Consumer Group",
-  "Meridian Home Co",
-  "Halcyon Consumer Partners"
+  "Meridian Outdoor",
+  "Meridian Outdoor Co",
+  "Meridian Outdoor Group",
+  "Meridian Outdoor Inc",
+  "Meridian Outdoor LLC"
 ];
 function mulberry322(a) {
   let t = a >>> 0;
@@ -3040,277 +3040,295 @@ function round(n, d) {
 function range(rand, min, max, decimals) {
   return round(min + (max - min) * rand(), decimals);
 }
-function buildHistory(ltmRev, rand) {
-  const cagr = range(rand, 0.08, 0.14, 4);
-  const y2024 = round(ltmRev / (1 + cagr * 0.15), 0);
-  const y2023 = round(y2024 / (1 + cagr), 0);
-  const y2022 = round(y2023 / (1 + cagr), 0);
-  const y2021 = round(y2022 / (1 + cagr), 0);
-  const years = [
-    { year: 2021, revenue: y2021 },
-    { year: 2022, revenue: y2022 },
-    { year: 2023, revenue: y2023 },
-    { year: 2024, revenue: y2024 },
-    { year: 0, revenue: ltmRev, label: "LTM" }
-  ];
-  const marginBase = range(rand, 0.165, 0.195, 4);
-  return years.map((y, i) => {
-    const margin = round(marginBase + i * 5e-3, 3);
-    const ebitda = round(y.revenue * margin, 0);
-    const ni = round(ebitda * 0.62, 0);
-    const netDebt = round(210 + i * 45 + rand() * 20, 0);
-    return {
-      year: y.year === 0 ? "LTM" : y.year,
-      revenue: y.revenue,
-      ebitda,
-      ebitda_margin: round(margin * 100, 1),
-      net_income: ni,
-      net_debt: netDebt
-    };
-  });
+function buildHistory(q2_revenue, q2_arr, q2_headcount, q2_ebitda_margin, rand) {
+  const rev_cagr = range(rand, 0.09, 0.14, 4);
+  const arr_cagr = range(rand, 0.1, 0.16, 4);
+  const quarters = ["Q2 2024", "Q3 2024", "Q4 2024", "Q1 2025", "Q2 2025"];
+  const result = [];
+  for (let i = 0; i < 5; i++) {
+    const factor = (1 + rev_cagr) ** (i / 4);
+    const rev = round(q2_revenue * factor * (0.95 + rand() * 0.1), 2);
+    const arr = round(q2_arr * (1 + arr_cagr) ** (i / 4), 1);
+    const em = round(q2_ebitda_margin - (4 - i) * 0.8 + (rand() - 0.5) * 1.5, 1);
+    const hc = Math.round(q2_headcount * (1 + rev_cagr) ** (i / 4) * (0.95 + rand() * 0.1));
+    const churn = round(6.5 + (rand() - 0.5) * 1.5, 1);
+    result.push({ quarter: quarters[i], revenue: rev, arr, ebitda_margin: em, headcount: hc, churn_rate: churn });
+  }
+  return result;
 }
-var COMP_NAMES = [
-  "Pinnacle Goods take-private",
-  "Riverstone Brands / PE",
-  "Oak & Ember acquisition",
-  "Summit Consumer / strategic",
-  "Lumen Home Co / sponsor"
+var PEER_NAMES = [
+  "Alpine Sports Direct (outdoor peer)",
+  "TrailHead Gear Co",
+  "Summit Outdoors Group",
+  "Base Camp Equipment",
+  "Ridge Line Brands"
 ];
 function instantiateMeridianSeed(seedInput) {
   const seed = String(seedInput ?? "meridian-default");
   const rand = mulberry322(seedToUint322(seed));
-  const target_company = TARGET_COMPANIES[Math.floor(rand() * TARGET_COMPANIES.length)];
-  const deal_value_b = range(rand, 1.8, 3.1, 1);
-  const deal_value_label = `$${deal_value_b.toFixed(1)}B`;
-  const ltm_revenue = range(rand, 1050, 1400, 0);
-  const hist = buildHistory(ltm_revenue, rand);
-  const forward_growth = range(rand, 14, 22, 1);
+  const companyIndex = Math.floor(rand() * TARGET_COMPANIES.length);
+  const company = TARGET_COMPANIES[companyIndex];
+  const quarter = "Q3 2025";
+  const q3_revenue_growth = range(rand, 11, 13, 1);
+  const gross_margin = range(rand, 62, 64, 1);
+  const churn_rate = range(rand, 6.5, 7.5, 1);
+  const sales_cycle_days = 45;
+  const new_hire_ramp_days = 30;
+  const opex_growth = range(rand, 17, 19, 1);
+  const cash_runway_months = 9;
+  const enterprise_renewal_prob = range(rand, 83, 87, 1);
+  const q2_revenue = range(rand, 3.2, 3.8, 2);
+  const q2_arr = range(rand, 14, 20, 1);
+  const q2_headcount = Math.round(range(rand, 42, 68, 0));
+  const q2_ebitda_margin = range(rand, 10, 16, 1);
+  const industry_churn_avg = range(rand, 4.5, 5.5, 1);
+  const industry_sales_cycle_avg = range(rand, 50, 62, 0);
+  const updated_sales_cycle_days = sales_cycle_days + 30;
+  const at_risk_customer_count = 2;
+  const at_risk_arr_pct = range(rand, 22, 32, 1);
+  const hist = buildHistory(q2_revenue, q2_arr, q2_headcount, q2_ebitda_margin, rand);
   const sector_growth_low = range(rand, 7, 9, 1);
-  let sector_growth_high = range(rand, sector_growth_low + 0.5, 10, 1);
-  if (sector_growth_high >= forward_growth) sector_growth_high = Math.min(10, forward_growth - 1);
-  const exit_multiple = range(rand, 10.5, 12.5, 1);
-  let comps_avg_multiple = range(rand, 9, 10.2, 1);
-  if (comps_avg_multiple >= exit_multiple) comps_avg_multiple = round(exit_multiple - 1.2, 1);
-  const comps = COMP_NAMES.map((name, i) => {
-    const jitter = (i - 2) * 0.25 + (rand() - 0.5) * 0.3;
-    let m = round(comps_avg_multiple + jitter, 1);
-    if (m >= exit_multiple) m = round(exit_multiple - 0.8, 1);
-    if (m < 8.5) m = 8.5;
+  const sector_growth_high = range(rand, 9.5, 12, 1);
+  const comps = PEER_NAMES.map((name, i) => {
+    const jitter = (i - 2) * 0.3 + (rand() - 0.5) * 0.4;
+    const nrr = round(108 + jitter * 5, 1);
     return {
       name,
-      year: 2022 + i % 3,
-      ev_ebitda: m,
-      note: i % 2 === 0 ? "Sponsor take-private" : "Strategic acquisition"
+      year: 2024 + i % 2,
+      ev_ebitda: nrr,
+      // repurposed: peer NRR
+      note: i % 2 === 0 ? "SaaS/outdoor peer" : "B2B subscription peer"
     };
   });
-  const avg = Math.round(comps.reduce((s, c) => s + c.ev_ebitda, 0) / comps.length * 10) / 10;
-  const ltm = hist[hist.length - 1];
+  const avg = round(comps.reduce((s, c) => s + c.ev_ebitda, 0) / comps.length, 1);
   return {
     seed,
-    target_company,
-    deal_value_b,
-    deal_value_label,
-    ltm_revenue,
+    company,
+    quarter,
+    q3_revenue_growth,
+    gross_margin,
+    churn_rate,
+    sales_cycle_days,
+    new_hire_ramp_days,
+    opex_growth,
+    cash_runway_months,
+    enterprise_renewal_prob,
+    q2_revenue,
+    q2_arr,
+    q2_headcount,
+    q2_ebitda_margin,
+    industry_churn_avg,
+    industry_sales_cycle_avg,
+    updated_sales_cycle_days,
+    at_risk_customer_count,
+    at_risk_arr_pct,
     hist,
-    forward_growth,
+    // ── Compat aliases ──
+    forward_growth: q3_revenue_growth,
+    exit_multiple: gross_margin,
+    comps_avg_multiple: avg,
+    deal_value_label: `${quarter} Plan`,
+    deal_value_b: round(q2_arr / 1e3, 2),
+    ltm_revenue: round(q2_revenue * 4, 1),
+    top10_concentration: at_risk_arr_pct,
+    declining_top10_count: at_risk_customer_count,
     sector_growth_low,
     sector_growth_high,
-    exit_multiple,
-    comps_avg_multiple: avg,
-    comps,
-    top10_concentration: 34,
-    declining_top10_count: 2,
-    ebitda_margin_ltm: ltm.ebitda_margin
+    ebitda_margin_ltm: q2_ebitda_margin,
+    comps
   };
 }
 function calculateValuation(input) {
-  const years = input.years ?? 5;
-  const g = input.growth_rate / 100;
-  const r = input.discount_rate / 100;
-  const exitEbitda = input.ltm_ebitda * Math.pow(1 + g, years);
-  const implied_ev = round(exitEbitda * input.exit_multiple, 0);
-  let pv = 0;
-  let ebitda = input.ltm_ebitda;
-  for (let t = 1; t <= years; t++) {
-    ebitda = ebitda * (1 + g);
-    const fcf = ebitda * 0.7;
-    pv += fcf / Math.pow(1 + r, t);
-  }
-  const terminal = ebitda * input.exit_multiple / Math.pow(1 + r, years);
-  const dcf_ev = round(pv + terminal, 0);
-  const range_low = Math.min(implied_ev, dcf_ev);
-  const range_high = Math.max(implied_ev, dcf_ev);
-  return { implied_ev, dcf_ev, range_low, range_high };
+  const q3_rev = round(input.ltm_ebitda * (1 + input.growth_rate / 100), 2);
+  const margin_compression = Math.max(0, (input.discount_rate - input.growth_rate) / 2) / 100;
+  const effective_margin = Math.max(0, input.exit_multiple / 100 - margin_compression);
+  const q3_ebitda = round(q3_rev * effective_margin, 2);
+  const bear = round(input.ltm_ebitda * (1 + (input.growth_rate - 4) / 100), 2);
+  const bull = round(input.ltm_ebitda * (1 + (input.growth_rate + 2) / 100), 2);
+  return {
+    implied_ev: q3_rev,
+    dcf_ev: q3_ebitda,
+    range_low: Math.min(bear, q3_rev),
+    range_high: Math.max(bull, q3_rev)
+  };
 }
 
 // js/sim/meridian/documents.ts
 function buildMeridianDocuments(p) {
-  const histRows = p.hist.map((h) => {
-    const label = h.year === "LTM" || String(h.year) === "LTM" ? "LTM" : String(h.year);
-    return `${label}	$${h.revenue}M	$${h.ebitda}M	${h.ebitda_margin}%	$${h.net_income}M	$${h.net_debt}M`;
-  }).join("\n");
-  const compsRows = p.comps.map((c) => `${c.name}	${c.year}	${c.ev_ebitda}x	${c.note}`).join("\n");
-  const mandate = `FROM: Office of the CFO
-RE: ${p.target_company} acquisition \u2014 Investment Committee review
+  const histRows = p.hist.map(
+    (h) => `${h.quarter}	$${h.revenue}M	${h.arr}M ARR	${h.ebitda_margin}%	${h.headcount} FTE	${h.churn_rate}% churn`
+  ).join("\n");
+  const peerRows = p.comps.map((c) => `${c.name}	${c.year}	${c.ev_ebitda}% NRR	${c.note}`).join("\n");
+  const briefMandate = `FROM: CFO, ${p.company}
+RE: ${p.quarter} Hiring & Marketing Plan \u2014 VP Finance review
 
-You are advising the CFO on whether we should proceed with the acquisition of ${p.target_company}, a mid-market consumer goods business. An offer of ${p.deal_value_label} is on the table and the Investment Committee meets at the end of this session.
+You are the VP of Finance at ${p.company}. The Q3 plan includes a significant investment in new hires (Sales and Marketing) and an expanded demand-generation spend. Before we present to the board, you need to pressure-test the forecast underlying these investments.
 
-Review the materials, analyze the financial and strategic case, identify the key risks, and submit a short investment memo. Your deliverable should state a clear recommendation (Proceed / Conditional Proceed / Hold / Pass), your three key reasons, the key risks, the most important assumptions behind your view, and the next diligence steps you would take before signing.
+Your job: review the supporting data room materials, stress-test the key assumptions, identify the material risks, and deliver a short VP Memo. Your deliverable should state a clear recommendation (Go / Hold / Revise), your three key reasons, the risks you would flag, the assumptions you changed or questioned, and the verification steps you would take before approving the plan.
 
-This is a real decision with real money behind it. We care as much about how you reason as about the final call.`;
+This is a real budget decision. We care as much about how you reason as about the final call.`;
   return [
+    // ── 1. CFO Brief ─────────────────────────────────────────────────────
     {
-      id: "exec_brief",
-      title: "Executive_Brief.pdf",
+      id: "cfo_brief",
+      title: "CFO_Brief.pdf",
       tag: "Brief",
       kind: "pdf",
-      body: `${mandate}
+      body: `${briefMandate}
 
-DEAL CONTEXT
-The buyer is under timeline pressure: the seller has a competing process and wants a signed LOI within the week. Strategic rationale cited by Corp Dev: category adjacency, distribution leverage, and a path to mid-teens EBITDA margins. Your job is not to rubber-stamp that story \u2014 it is to pressure-test it against the data room before IC.
+PLAN CONTEXT
+The Q3 plan assumes ${p.q3_revenue_growth}% revenue growth, gross margin of ${p.gross_margin}%, and adds 8 net new hires in Sales and Marketing. Operating expenses are projected to grow ${p.opex_growth}% to support the hiring and demand-generation ramp. Cash runway is ${p.cash_runway_months} months at plan.
 
-Working time: 25 minutes. Materials: Financial Model, Market Memo, Retention Cohort, Management Update, Comps & Precedents.`
+Working time: 25 minutes. Materials: Revenue Forecast, Churn Update, Hiring Plan, Customer Concentration Note.`
     },
+    // ── 2. Revenue Forecast ───────────────────────────────────────────────
     {
-      id: "financial_model",
-      title: "Financial_Model.xlsx",
-      tag: "Model",
+      id: "revenue_forecast",
+      title: "Revenue_Forecast.xlsx",
+      tag: "Forecast",
       kind: "xlsx",
-      body: `FINANCIAL MODEL \u2014 ${p.target_company}
-Interactive version is in the Financials tab. Static snapshot:
+      body: `REVENUE FORECAST \u2014 ${p.company} ${p.quarter}
 
-Metric	2021	2022	2023	2024	LTM
+Quarterly trend:
+Quarter	Revenue	ARR	EBITDA Margin	Headcount	Gross Churn
 ${histRows}
 
-Base case materials assume forward growth ${p.forward_growth}% and exit multiple ${p.exit_multiple}x EBITDA.
-Use the Financials tab to adjust growth, exit multiple, and discount rate \u2014 implied EV recalculates live.`,
-      table: { hist: p.hist, forward_growth: p.forward_growth, exit_multiple: p.exit_multiple }
+PLAN ASSUMPTIONS (management base case)
+\u2022 Q3 revenue growth target: ${p.q3_revenue_growth}%
+\u2022 Gross margin target: ${p.gross_margin}%
+\u2022 Gross churn rate: ${p.churn_rate}%
+\u2022 Operating expense growth: ${p.opex_growth}%
+\u2022 Cash runway at plan spend: ${p.cash_runway_months} months
+
+Note: The Forecast Model tab lets you adjust growth rate, gross margin, and opex growth \u2014 outputs recalculate live. Use it to stress-test management's base case against the data room evidence.`,
+      table: { hist: p.hist, q3_revenue_growth: p.q3_revenue_growth, gross_margin: p.gross_margin }
     },
+    // ── 3. Churn Update ───────────────────────────────────────────────────
     {
-      id: "market_memo",
-      title: "Market_Memo.pdf",
-      tag: "Market",
+      id: "churn_update",
+      title: "Churn_Update.pdf",
+      tag: "Churn",
       kind: "pdf",
-      body: `MARKET MEMO \u2014 Sector context for ${p.target_company}
+      body: `CHURN UPDATE \u2014 ${p.company} Customer Health Report (Q2 2025)
 
-Sector growth (consumer mid-market / branded goods): approximately ${p.sector_growth_low}\u2013${p.sector_growth_high}% CAGR over the next three years (third-party research pack).
+GROSS CHURN: ${p.churn_rate}% annually (${round1(p.churn_rate / 4)}% quarterly)
+Note: Gross churn is measured at the account level. Net revenue retention is not broken out in this extract.
 
-Management's forward growth assumption embedded in the base materials is ${p.forward_growth}%.
-That is ${round1(p.forward_growth - p.sector_growth_high)}\u2013${round1(p.forward_growth - p.sector_growth_low)} percentage points above the sector band.
+PLAN MATH CHECK (internal FP&A working note)
+Management's ${p.q3_revenue_growth}% revenue growth target sits ${round1(p.q3_revenue_growth - p.sector_growth_high)}\u2013${round1(p.q3_revenue_growth - p.sector_growth_low)} pp above outdoor/B2B market growth of ${p.sector_growth_low}\u2013${p.sector_growth_high}%.
 
-Implication for diligence: if the plan assumes ${p.forward_growth}% while the sector clears closer to ${p.sector_growth_low}\u2013${p.sector_growth_high}%, the growth premium must be earned by share gains, pricing, or mix \u2014 not asserted. Live Insights will surface the computed gap; verify it yourself against this memo.`
+With ${p.churn_rate}% gross churn, reaching ${p.q3_revenue_growth}% net revenue growth requires expansion revenue (upsell + cross-sell) and new logos to more than offset attrition. The plan does not explicitly show this pipeline build.
+
+PEER BENCHMARKS
+Peer group average gross churn: ~${p.industry_churn_avg}%
+Implication: ${p.company} is running ${round1(p.churn_rate - p.industry_churn_avg)} pp above peer-average gross churn while targeting above-market growth.
+
+PLANTED CONCERN 1: Is the ${p.q3_revenue_growth}% growth target achievable given the ${p.churn_rate}% gross churn rate? Do not assert the answer \u2014 verify the pipeline.`
     },
+    // ── 4. Hiring Plan ────────────────────────────────────────────────────
     {
-      id: "retention_csv",
-      title: "Retention_Cohort.csv",
-      tag: "Retention",
-      kind: "csv",
-      body: `RETENTION COHORT EXTRACT \u2014 ${p.target_company}
-Source: RevOps / CS export (partial)
+      id: "hiring_plan",
+      title: "Hiring_Plan.xlsx",
+      tag: "Hiring",
+      kind: "xlsx",
+      body: `HIRING PLAN \u2014 ${p.company} ${p.quarter}
 
-customer_rank,arr_share_pct,years_with_us,revenue_trend_3yr,status
-1,6.2,7,flat,active
-2,5.1,6,declining,watch
-3,4.4,8,up,active
-4,3.8,5,flat,active
-5,3.5,4,declining,at_risk
-6,3.1,9,flat,active
-7,2.8,6,up,active
-8,2.5,3,flat,active
-9,2.2,5,flat,active
-10,2.0,2,up,active
+Q3 PROPOSED HEADCOUNT ADDITIONS
+Role	Count	Start Month	Ramp (days)	Revenue Contribution
+AE (Enterprise)	3	July	${p.new_hire_ramp_days}	Q3 pipeline assumed
+AE (Mid-Market)	2	July	${p.new_hire_ramp_days}	Q3 pipeline assumed
+SDR	2	July	${p.new_hire_ramp_days}	Q3 pipeline assumed
+Marketing Manager	1	August	${p.new_hire_ramp_days}	Demand gen support
 
-SUMMARY
-Top-10 customer revenue concentration: ${p.top10_concentration}% of total revenue.
-Customers in top-10 with declining multi-year revenue: ${p.declining_top10_count} of 10 (ranks #2 and #5).
+PLAN ASSUMPTIONS
+\u2022 Sales cycle length: ${p.sales_cycle_days} days
+\u2022 Ramp-to-productivity: ${p.new_hire_ramp_days} days
+\u2022 Revenue contribution window: Q3 (assumed, based on July start + ${p.new_hire_ramp_days}-day ramp)
+\u2022 Q3 hiring cost impact: increases opex by ~${round1(p.opex_growth - 12)}pp above revenue growth
 
-NOTE: Full mid-market cohort retention detail is "available on request" \u2014 not attached in this data room. Do not invent a company-wide retention percentage from incomplete files.
+MATH CHECK (internal): A ${p.new_hire_ramp_days}-day ramp + ${p.sales_cycle_days}-day cycle = ${p.new_hire_ramp_days + p.sales_cycle_days} days until first closed deal.
+July start + ${p.new_hire_ramp_days + p.sales_cycle_days} days = ${dateOffset("July 1 2025", p.new_hire_ramp_days + p.sales_cycle_days)}.
 
-CONTRADICTION CHECK
-Compare this extract to Management_Update.pptx claims about top-10 longevity and strength.`,
+PLANTED CONCERN 3 (only visible after Manager Update): If the sales cycle extends by 30 days, the math becomes ${p.new_hire_ramp_days}-day ramp + ${p.updated_sales_cycle_days}-day cycle = ${p.new_hire_ramp_days + p.updated_sales_cycle_days} days. Q3 hires will not generate Q3 revenue.`,
       table: {
-        top10_concentration: p.top10_concentration,
-        declining: p.declining_top10_count,
-        rows: [
-          { rank: 2, trend: "declining" },
-          { rank: 5, trend: "declining" }
-        ]
+        sales_cycle: p.sales_cycle_days,
+        ramp: p.new_hire_ramp_days,
+        updated_cycle: p.updated_sales_cycle_days
       }
     },
+    // ── 5. Customer Concentration Note ───────────────────────────────────
     {
-      id: "management_update",
-      title: "Management_Update.pptx",
-      tag: "Update",
-      kind: "pptx",
-      body: `MANAGEMENT UPDATE \u2014 ${p.target_company}
-Slide-style extract (seller materials)
-
-SLIDE 1 \u2014 Headline
-"${p.target_company} enters this process from a position of strength."
-
-SLIDE 2 \u2014 Customer franchise (stated with confidence, no caveats)
-"Over 90% of our top-10 customers have been with us 5+ years."
-
-SLIDE 3 \u2014 Growth
-Management reaffirms the ${p.forward_growth}% forward growth case supporting the ${p.deal_value_label} offer.
-
-SLIDE 4 \u2014 Ask
-Proceed to exclusivity at ${p.deal_value_label}.
-
-FP&A note (internal): Treat slide 2 as advocacy. Cross-check against Retention_Cohort.csv before leaning on retention in your recommendation.`
-    },
-    {
-      id: "comps_precedents",
-      title: "Comps_Precedents.pdf",
-      tag: "Comps",
+      id: "concentration_note",
+      title: "Customer_Concentration.pdf",
+      tag: "Customers",
       kind: "pdf",
-      body: `COMPS & PRECEDENTS \u2014 EV/EBITDA
-Relevant mid-market consumer / branded goods transactions
+      body: `CUSTOMER CONCENTRATION NOTE \u2014 ${p.company} Enterprise Account Summary
 
-Name	Year	EV/EBITDA	Note
-${compsRows}
+CONCENTRATION SNAPSHOT
+Top-2 enterprise accounts: ~${p.at_risk_arr_pct}% of total ARR
+Top-10 accounts: estimated 55\u201365% of total ARR
+Peer-average top-10 concentration for comparable B2B firms: 40\u201350%
 
-Average EV/EBITDA (simple mean): ${p.comps_avg_multiple}x
+${p.company} is more concentrated than peers. Two of its largest accounts are approaching renewal this quarter.
 
-Base case materials imply an exit / entry framing near ${p.exit_multiple}x.
-The comps average (${p.comps_avg_multiple}x) is below that framing \u2014 Planted Error 1 if unexamined.
+RENEWAL STATUS
+Account A (enterprise, multi-year): Contract expires Q3 2025. Renewal decision pending.
+Account B (enterprise, strategic): Annual renewal Q3 2025. Procurement review in progress.
 
-Do not accept ${p.exit_multiple}x without reconciling to this table.`,
-      table: { comps: p.comps, avg: p.comps_avg_multiple, exit: p.exit_multiple }
+NOTE: ARR breakdown by account is NOT included in this document.
+The VP Sales team holds the detailed account-level ARR data. Do not estimate specific renewal revenue impact without verifying with account managers.
+
+PEER BENCHMARKS
+${peerRows}
+
+AMBIGUITY FLAG: The ${p.at_risk_arr_pct}% concentration figure is visible here, but the ARR amounts for Account A and Account B are not. Any specific dollar impact should be flagged as an estimate pending account manager confirmation.`,
+      table: { at_risk_arr_pct: p.at_risk_arr_pct, at_risk_count: p.at_risk_customer_count }
     }
   ];
 }
 function round1(n) {
   return Math.round(n * 10) / 10;
 }
+function dateOffset(startStr, days) {
+  try {
+    const d = new Date(startStr);
+    d.setDate(d.getDate() + days);
+    return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  } catch {
+    return `~${days} days from July 1`;
+  }
+}
 var PLANTED_ERRORS = [
   {
-    id: "err_exit_multiple_vs_comps",
-    title: "Exit multiple vs. precedent",
-    description: "Base materials use an exit multiple above the comps average. Detection requires flagging the gap in Risks, memo, or an assumption that haircuts the multiple toward comps."
+    id: "err_growth_churn_mismatch",
+    title: "Revenue growth vs. churn rate",
+    description: `${12}% revenue growth with ${7}% gross churn requires significant net expansion or new logo pipeline not shown in the plan. Detection requires flagging the churn/growth math in risks, memo, or an assumption that questions the growth premise.`
   },
   {
-    id: "err_retention_contradiction",
-    title: "Retention contradiction",
-    description: "Management claims 90%+ of top-10 customers have 5+ year tenure; Retention_Cohort.csv shows 34% concentration with 2 of 10 declining. Detection requires opening the CSV AND flagging the contradiction."
+    id: "err_opex_margin_compression",
+    title: "Opex growth vs. revenue growth",
+    description: "Operating expenses growing 18% while revenue grows 12% will compress EBITDA margins by ~3-4pp. The plan treats margins as stable. Detection requires flagging the divergence in risks, memo, or adjusting the model to reflect compression."
   },
   {
-    id: "err_synergy_double_count",
-    title: "Synergy double-count",
-    description: "Cost synergies overlap with a separately stated reduction in change-of-control debt paydown, double-counting the same savings."
+    id: "err_ramp_sales_cycle_mismatch",
+    title: "Hire ramp vs. extended sales cycle",
+    description: "After the VP Sales update (+30 days on sales cycle), Q3 new hires cannot contribute Q3 revenue (30-day ramp + 75-day cycle = 105 days). The hiring plan revenue uplift should shift to Q4. Detection requires noting this conflict in risks or assumptions after the manager update fires."
   }
 ];
 var AMBIGUITY_POINT = {
-  id: "amb_missing_cohort",
-  title: "Missing cohort data",
-  description: "A Data Room document references cohort retention data available on request with no such file provided. Good: note the gap / request it in diligence steps. Poor: state a specific retention conclusion as fact."
+  id: "amb_at_risk_arr",
+  title: "At-risk customer ARR unknown",
+  description: 'Manager update flags two enterprise renewals as at risk but does not provide ARR breakdown. Good: note the data gap and list requesting ARR detail as a verification step. Poor: state a specific revenue impact (e.g., "$2.3M ARR at risk") as fact without verifying with account managers.'
 };
 function synergyDoubleCountNote(p) {
-  return `SYNERGY BRIDGE (seller) \u2014 review carefully
-Line A: G&A cost synergies $42M run-rate by Year 3.
-Line B: "Change-of-control debt paydown savings" $28M (presented as separate value creation).
-Overlap: $18M of Line B is the same cash interest / fee reduction already counted inside Line A's G&A synergy build. Counting both inflates pro forma EBITDA supporting the ${p.deal_value_label} offer.
-Detection: call out the overlap in assumptions or memo, or back the duplicated amount out of your valuation.`;
+  const q3_rev_projected = round1(p.q2_revenue * (1 + p.q3_revenue_growth / 100));
+  const opex_ratio = round1(p.opex_growth / p.q3_revenue_growth);
+  return `CASH RUNWAY & OPEX STRESS \u2014 review carefully
+Current cash runway: ${p.cash_runway_months} months at plan spend.
+Q3 opex growth: ${p.opex_growth}% vs revenue growth ${p.q3_revenue_growth}% (ratio ${opex_ratio}x \u2014 expenses growing faster than revenue).
+If Q3 revenue misses plan by 3pp (${round1(p.q3_revenue_growth - 3)}% actual), EBITDA loss widens and runway shortens.
+At-risk enterprise renewals (~${p.at_risk_arr_pct}% of ARR) could accelerate the runway problem if lost.
+Detection: flag the opex/revenue divergence and model a downside scenario before approving the hiring plan.`;
 }
 
 // js/sim/meridian/chatMachine.ts
@@ -3346,114 +3364,114 @@ function pushMsg(session, msg) {
 function tickChatTriggers(session) {
   const out = [];
   const elapsed = session._elapsedSec || 0;
-  const finSec = session.tabSeconds?.financials || session.tabSeconds?.Financials || 0;
+  const modelSec = session.tabSeconds?.financials || session.tabSeconds?.Financials || 0;
   const opened = session.openedDocs || [];
   const assumptions = (session.assumptionTexts || []).join(" ").toLowerCase();
-  if (!already(session, "P1") && elapsed >= 90) {
-    mark(session, "P1");
+  if (!already(session, "C1") && elapsed >= 90) {
+    mark(session, "C1");
     out.push(
       pushMsg(session, {
-        triggerId: "P1",
-        sender: "priya",
-        name: "Priya Shah",
-        role: "Associate, deal team",
-        body: "Hey \u2014 I pulled the comps and the entry multiple looks rich versus peers. Curious what you think once you've been through the model.",
+        triggerId: "C1",
+        sender: "casey",
+        name: "Casey Park",
+        role: "Finance Analyst",
+        body: "Quick heads-up \u2014 the Churn Update doc has some interesting math on growth vs. attrition that might affect how you read the revenue forecast. Worth a look before you stress-test the model.",
         elapsedSec: elapsed
       })
     );
   }
-  if (!already(session, "P2") && finSec >= 240 && !opened.includes("comps_precedents")) {
-    mark(session, "P2");
+  if (!already(session, "C2") && modelSec >= 240 && !opened.includes("churn_update")) {
+    mark(session, "C2");
     out.push(
       pushMsg(session, {
-        triggerId: "P2",
-        sender: "priya",
-        name: "Priya Shah",
-        role: "Associate, deal team",
-        body: "Have you had a chance to look at the comp set yet? It's in the Data Room if not \u2014 might change your read on valuation.",
+        triggerId: "C2",
+        sender: "casey",
+        name: "Casey Park",
+        role: "Finance Analyst",
+        body: "Are you cross-checking against the Churn Update? The growth target makes a lot of assumptions about how much attrition the new logo pipeline has to overcome. It's in the data room if you haven't pulled it.",
         elapsedSec: elapsed
       })
     );
   }
-  if (!already(session, "P3") && /growth|terminal/.test(assumptions)) {
-    mark(session, "P3");
+  if (!already(session, "C3") && /growth|margin|opex|churn/.test(assumptions)) {
+    mark(session, "C3");
     out.push(
       pushMsg(session, {
-        triggerId: "P3",
-        sender: "priya",
-        name: "Priya Shah",
-        role: "Associate, deal team",
-        body: "Saw you flagged something on growth \u2014 want a second pair of eyes before you finalize? Happy to sanity check.",
+        triggerId: "C3",
+        sender: "casey",
+        name: "Casey Park",
+        role: "Finance Analyst",
+        body: "Saw you're logging assumptions on growth or margins \u2014 want me to pull the Q2 actuals breakdown? Happy to sanity-check the numbers before you finalize.",
         elapsedSec: elapsed
       })
     );
   }
   const risksOpened = !!(session.tabSeconds?.risks || session.tabSeconds?.Risks);
-  if (!already(session, "P4") && elapsed >= 15 * 60 && !risksOpened) {
-    mark(session, "P4");
+  if (!already(session, "C4") && elapsed >= 15 * 60 && !risksOpened) {
+    mark(session, "C4");
     out.push(
       pushMsg(session, {
-        triggerId: "P4",
-        sender: "priya",
-        name: "Priya Shah",
-        role: "Associate, deal team",
-        body: "One thing I'd flag before you wrap up \u2014 have you looked at customer concentration? Worth at least a line in the memo.",
+        triggerId: "C4",
+        sender: "casey",
+        name: "Casey Park",
+        role: "Finance Analyst",
+        body: "Just flagging \u2014 have you looked at the Customer Concentration note? The enterprise renewal situation seems relevant before you sign off on the hiring budget.",
         elapsedSec: elapsed
       })
     );
   }
-  if (!already(session, "P5") && session.submitted) {
-    mark(session, "P5");
+  if (!already(session, "C5") && session.submitted) {
+    mark(session, "C5");
     const cat = session.recommendation_category || "your call";
     out.push(
       pushMsg(session, {
-        triggerId: "P5",
-        sender: "priya",
-        name: "Priya Shah",
-        role: "Associate, deal team",
-        body: `Nice work getting through that under time pressure. For what it's worth, my read matched yours on ${cat}.`,
+        triggerId: "C5",
+        sender: "casey",
+        name: "Casey Park",
+        role: "Finance Analyst",
+        body: `Nice work \u2014 I thought ${cat} made sense given what the data was showing. The churn math alone would have given me pause on the original plan.`,
         elapsedSec: elapsed
       })
     );
   }
-  if (!already(session, "D1") && elapsed >= 8 * 60) {
-    mark(session, "D1");
+  if (!already(session, "A1") && elapsed >= 8 * 60) {
+    mark(session, "A1");
     session.d1_fired = true;
     out.push(
       pushMsg(session, {
-        triggerId: "D1",
-        sender: "daniel",
-        name: "Daniel Chen",
-        role: "Managing Director",
-        body: "Before you finalize: what's your read on the single biggest risk in this deal? Reply here when you have a view.",
+        triggerId: "A1",
+        sender: "alex",
+        name: "Alex Kim",
+        role: "CFO",
+        body: "Before you finalize: what's your single biggest concern about the Q3 plan? I want your honest read \u2014 reply here when you have a view.",
         elapsedSec: elapsed,
         needsReply: true
       })
     );
   }
-  if (!already(session, "M1") && elapsed >= 12 * 60 && !opened.includes("retention_csv")) {
-    mark(session, "M1");
+  if (!already(session, "J1") && elapsed >= 12 * 60) {
+    mark(session, "J1");
     out.push(
       pushMsg(session, {
-        triggerId: "M1",
-        sender: "marcus",
-        name: "Marcus Patel",
-        role: "Finance Manager",
-        body: "Quick note \u2014 the management deck is pretty bullish on customer retention. Worth cross-checking against the underlying data before you lean on that in your recommendation.",
+        triggerId: "J1",
+        sender: "jordan",
+        name: "Jordan Lee",
+        role: "VP Sales",
+        body: "Heads-up from my end before you wrap the forecast review: just came off a call with two of our largest enterprise accounts. Both have flagged extended procurement timelines \u2014 I'd add 30 days to your sales cycle assumption. Also treating both renewals as at-risk until their procurement teams confirm. Worth factoring into whatever you're recommending on the hiring side.",
         elapsedSec: elapsed
       })
     );
   }
   const win = session.aiAskCountWindow || { t: 0, count: 0 };
-  if (!already(session, "M2") && win.count >= 2 && elapsed - win.t <= 90) {
-    mark(session, "M2");
+  if (!already(session, "J2") && win.count >= 2 && elapsed - win.t <= 90) {
+    mark(session, "J2");
     out.push(
       pushMsg(session, {
-        triggerId: "M2",
-        sender: "marcus",
-        name: "Marcus Patel",
-        role: "Finance Manager",
-        body: "No judgment on using the tools \u2014 just make sure you're checking what it gives you before it goes in the model. I've seen it miss things.",
+        triggerId: "J2",
+        sender: "jordan",
+        name: "Jordan Lee",
+        role: "VP Sales",
+        body: "No issue with using the AI tools \u2014 just make sure you're checking what it outputs against the actual data room figures before it goes in the recommendation. I've seen it miss context.",
         elapsedSec: elapsed
       })
     );
@@ -3467,12 +3485,12 @@ function handleCandidateChatReply(session, text) {
     if (!isSubstantiveReply(body)) {
       return {
         accepted: false,
-        rejectReason: "Give me a bit more than that \u2014 what specifically worries you?"
+        rejectReason: "Give me a bit more than that \u2014 what specifically worries you about the plan?"
       };
     }
     session.d1_reply_text = body;
     pushMsg(session, {
-      triggerId: "D1_reply",
+      triggerId: "A1_reply",
       sender: "candidate",
       name: "You",
       role: "Candidate",
@@ -3483,27 +3501,30 @@ function handleCandidateChatReply(session, text) {
     const lower = body.toLowerCase();
     let follow;
     let branch;
-    if (/customer|concentration|retention/.test(lower)) {
+    if (/churn|retention|attrition|growth.*gap/.test(lower)) {
+      branch = "churn";
+      follow = "That's the one I keep coming back to too. Make sure the memo is explicit about what the pipeline math requires \u2014 not just that churn is a risk, but what it means for the growth target.";
+    } else if (/opex|margin|compress|expense/.test(lower)) {
+      branch = "margin";
+      follow = "Fair call. If you're flagging margin compression, show me the numbers \u2014 how many pp of margin are we talking? That changes the hiring conversation.";
+    } else if (/cash|runway|burn/.test(lower)) {
+      branch = "cash";
+      follow = "Good instinct. 9 months is tight if Q3 revenue misses. Make sure your recommendation reflects what happens to runway in the downside case.";
+    } else if (/renewal|customer|concentration|enterprise/.test(lower)) {
       branch = "customer";
-      follow = "Agreed, that's the one I'd underwrite hardest. Make sure the memo says what you'd do about it, not just that it exists.";
-    } else if (/multiple|valuation|price|overpay/.test(lower)) {
-      branch = "valuation";
-      follow = "Fair. Just make sure that view is reflected in your recommendation, not buried in a footnote.";
-    } else if (/growth|terminal|forecast/.test(lower)) {
-      branch = "growth";
-      follow = "That's a real one. Did you stress-test what happens if that assumption is wrong?";
+      follow = "Agreed. The enterprise concentration is real. Make sure you're specific in the memo about what you'd verify before approving the hiring.";
     } else {
       branch = "generic";
-      follow = "Okay \u2014 make sure whatever you flagged shows up clearly in your final recommendation. I'll be reading for it.";
+      follow = "Okay \u2014 make sure that concern shows up clearly in your VP Memo. I'll be reading for it.";
     }
     session.d1_branch = branch;
-    if (!already(session, "D1_follow")) {
-      mark(session, "D1_follow");
+    if (!already(session, "A1_follow")) {
+      mark(session, "A1_follow");
       const followUp = pushMsg(session, {
-        triggerId: "D1_follow",
-        sender: "daniel",
-        name: "Daniel Chen",
-        role: "Managing Director",
+        triggerId: "A1_follow",
+        sender: "alex",
+        name: "Alex Kim",
+        role: "CFO",
         body: follow,
         elapsedSec: elapsed
       });
@@ -3532,28 +3553,32 @@ function recordAiAsk(session) {
 }
 
 // js/sim/meridian/ai.ts
-function asksExitMultiple(prompt) {
+function asksRevenueGrowth(prompt) {
   const p = prompt.toLowerCase();
-  return /exit multiple|what multiple|which multiple|multiple should|ev\/ebitda|entry multiple/.test(p);
+  return /revenue.*growth|growth.*target|growth.*forecast|q3.*growth|forecast.*growth|growth.*rate|revenue.*plan/.test(p);
 }
-function asksCompsCheck(prompt) {
+function asksChurnCheck(prompt) {
   const p = prompt.toLowerCase();
-  return /comp|precedent|peer|versus|vs\.?|against the comps|check.*multiple/.test(p);
+  return /churn|retention|net.*retention|gross.*retention|attrition|customer.*health/.test(p);
 }
 function askMeridianAI(session, params, prompt) {
   recordAiAsk(session);
-  const trap = asksExitMultiple(prompt) && !asksCompsCheck(prompt);
+  const trap = asksRevenueGrowth(prompt) && !asksChurnCheck(prompt);
   let response;
   if (trap) {
-    response = `For a mid-market consumer platform with ${params.forward_growth}% forward growth and LTM EBITDA margin around ${params.ebitda_margin_ltm}%, a ${params.exit_multiple}x EBITDA exit framing is commonly used in IC packs and is consistent with how management has positioned the ${params.deal_value_label} offer. You can use ${params.exit_multiple}x as your base case unless you have a specific reason to haircut it.`;
-  } else if (asksCompsCheck(prompt) || /comp|precedent/.test(prompt.toLowerCase())) {
-    response = `The comps set averages about ${params.comps_avg_multiple}x EV/EBITDA, while the base materials frame closer to ${params.exit_multiple}x. That gap is material \u2014 haircut toward the comps mid-point unless you can underwrite a clear premium.`;
-  } else if (/retention|customer|concentration/.test(prompt.toLowerCase())) {
-    response = `Check Retention_Cohort.csv against the management deck. Concentration and any declining top accounts should be explicit in risks \u2014 don't rely on headline longevity claims alone.`;
-  } else if (/growth|sector/.test(prompt.toLowerCase())) {
-    response = `Plan growth is ${params.forward_growth}% vs sector roughly ${params.sector_growth_low}\u2013${params.sector_growth_high}%. Quantify that gap in your memo if you keep the plan case.`;
+    response = `${params.q3_revenue_growth}% Q3 revenue growth is consistent with the ${params.company} plan and the Q2 momentum visible in the historical data. The hiring investment in Sales and Marketing supports the growth case, and the plan is within the range seen in comparable outdoor/B2B businesses. Use ${params.q3_revenue_growth}% as your base case unless you identify a specific downside driver.`;
+  } else if (asksChurnCheck(prompt) || /churn|attrition/.test(prompt.toLowerCase())) {
+    response = `Gross churn at ${params.churn_rate}% is above the peer average of ~${params.industry_churn_avg}%. To hit ${params.q3_revenue_growth}% net revenue growth from a ${params.churn_rate}% gross churn base, you need strong expansion revenue and/or new logo pipeline that offsets attrition. The plan should show that math explicitly \u2014 if it doesn't, that's a flag.`;
+  } else if (/opex|margin|compress|expense/.test(prompt.toLowerCase())) {
+    response = `Opex growing at ${params.opex_growth}% versus ${params.q3_revenue_growth}% revenue growth means EBITDA margin compression of roughly ${Math.round((params.opex_growth - params.q3_revenue_growth) / 2)}pp. The plan should reflect that \u2014 if the margin line looks flat, the model hasn't accounted for the cost growth. Adjust the gross margin input down to reflect the real squeeze before finalizing.`;
+  } else if (/sales.*cycle|cycle|ramp/.test(prompt.toLowerCase())) {
+    response = `With a ${params.sales_cycle_days}-day sales cycle and ${params.new_hire_ramp_days}-day ramp, July hires can contribute deals closed by around day ${params.sales_cycle_days + params.new_hire_ramp_days}. If the sales cycle extends at all \u2014 say by 30 days \u2014 that math shifts meaningfully and Q3 hires might not close anything until Q4.`;
+  } else if (/cash|runway|burn/.test(prompt.toLowerCase())) {
+    response = `${params.cash_runway_months} months runway at plan spend is tight. If Q3 revenue misses by 3+ pp, runway shortens materially. The two at-risk enterprise renewals add another layer of uncertainty \u2014 flag the downside scenario in your recommendation.`;
+  } else if (/hire|hiring|headcount/.test(prompt.toLowerCase())) {
+    response = `The hiring plan adds 8 net new sales and marketing FTEs in Q3. The key assumption is that ${params.sales_cycle_days}-day cycle + ${params.new_hire_ramp_days}-day ramp allows Q3 revenue contribution. If anything stretches that timeline \u2014 like a sales cycle extension \u2014 the Q3 revenue case for the new hires evaporates.`;
   } else {
-    response = `Focus on (1) whether ${params.deal_value_label} clears a comps-consistent multiple, (2) customer concentration / retention evidence, and (3) whether synergies are incremental. Cite exhibits; don't invent missing cohort detail.`;
+    response = `Focus on three things: (1) whether the ${params.q3_revenue_growth}% growth target is achievable given ${params.churn_rate}% gross churn, (2) whether opex growth at ${params.opex_growth}% is sustainable versus ${params.q3_revenue_growth}% revenue, and (3) whether Q3 hires can realistically contribute Q3 revenue given the sales cycle. Cross-reference the Churn Update and Hiring Plan with the Forecast Model.`;
   }
   const event = {
     id: `ai_${Date.now().toString(36)}`,
@@ -3569,25 +3594,25 @@ function askMeridianAI(session, params, prompt) {
   return { response, trap_triggered: trap, event };
 }
 function finalizeAiUsage(session, params) {
-  const corpus2 = [
+  const corpusText2 = [
     session.finalMemo || "",
     ...(session.assumptions || []).map((a) => `${a.title || ""} ${a.text || ""}`),
     ...(session.risks || []).map((r) => `${r.category || ""} ${r.title || ""} ${r.text || ""}`)
   ].join("\n").toLowerCase();
-  const caughtComps = !!session.plantedErrorFlags?.err_exit_multiple_vs_comps || /(comp|precedent)/.test(corpus2) && /(multiple|haircut|rich|above)/.test(corpus2);
+  const caughtChurn = !!session.plantedErrorFlags?.err_growth_churn_mismatch || /churn|attrition|net.*retention/.test(corpusText2) && /growth|target|forecast/.test(corpusText2);
   for (const ev of session.ai_usage_log || []) {
     if (ev.trap_triggered) {
-      ev.trap_caught = caughtComps;
+      ev.trap_caught = caughtChurn;
     }
     const snippet = (ev.ai_response_summary || "").slice(0, 40).toLowerCase();
-    if (snippet && corpus2.includes(snippet.slice(0, 24))) {
+    if (snippet && corpusText2.includes(snippet.slice(0, 24))) {
       ev.candidate_action_after = "accepted_as_is";
-    } else if (ev.trap_triggered && caughtComps) {
+    } else if (ev.trap_triggered && caughtChurn) {
       ev.candidate_action_after = "edited";
-    } else if (ev.trap_triggered && !caughtComps && corpus2.includes(String(params.exit_multiple))) {
+    } else if (ev.trap_triggered && !caughtChurn && corpusText2.includes(String(params.q3_revenue_growth))) {
       ev.candidate_action_after = "accepted_as_is";
     } else {
-      ev.candidate_action_after = corpus2.length > 40 ? "edited" : "rejected";
+      ev.candidate_action_after = corpusText2.length > 40 ? "edited" : "rejected";
     }
   }
 }
@@ -3596,7 +3621,7 @@ function finalizeAiUsage(session, params) {
 function getMeridianMissingRequirements(session) {
   const missing = [];
   if (!session._briefViewed) {
-    missing.push({ id: "brief", label: "View the Brief (CFO mandate)", blocking: true });
+    missing.push({ id: "brief", label: "View the CFO Brief", blocking: true });
   }
   const docs = session.openedDocs || [];
   if (docs.length < 2) {
@@ -3609,7 +3634,7 @@ function getMeridianMissingRequirements(session) {
   if (!session._financialsViewed || !session._valuationAdjusted) {
     missing.push({
       id: "financials",
-      label: "View Financials and adjust at least one valuation input",
+      label: "View the Forecast Model and adjust at least one assumption",
       blocking: true
     });
   }
@@ -3617,25 +3642,25 @@ function getMeridianMissingRequirements(session) {
     missing.push({ id: "assumption", label: "Log at least 1 assumption", blocking: true });
   }
   if (!(session.risks && session.risks.some((r) => (r.text || "").trim().length >= 8))) {
-    missing.push({ id: "risk", label: "Select at least 1 risk with elaboration", blocking: true });
+    missing.push({ id: "risk", label: "Flag at least 1 risk with elaboration", blocking: true });
   }
   if (session.d1_fired && !hasRepliedToD1AndSubstantive(session)) {
     missing.push({
       id: "d1",
-      label: "Reply substantively to Daniel Chen's risk question (15+ characters)",
+      label: "Reply substantively to Alex Kim's question (15+ characters)",
       blocking: true
     });
   }
-  if ((session.used_trigger_ids || []).includes("M1") && !docs.includes("retention_csv") && !session.m1_acknowledged) {
+  if ((session.used_trigger_ids || []).includes("J1") && !session.m1_acknowledged) {
     missing.push({
       id: "m1",
-      label: "Acknowledged: open Retention_Cohort.csv or address retention in risks/memo (Marcus)",
+      label: "Acknowledge VP Sales update: address the sales cycle extension and at-risk renewals in your risks or assumptions",
       blocking: false
     });
   }
   const rec = session.recommendation || {};
   if (!rec.category) {
-    missing.push({ id: "rec_cat", label: "Select a recommendation category", blocking: true });
+    missing.push({ id: "rec_cat", label: "Select a recommendation (Go / Hold / Revise)", blocking: true });
   }
   if (!(rec.reason1 || "").trim() || !(rec.reason2 || "").trim() || !(rec.reason3 || "").trim()) {
     missing.push({ id: "rec_reasons", label: "Fill all three key reasons", blocking: true });
@@ -3653,7 +3678,7 @@ function getMeridianMissingRequirements(session) {
   if ((rec.diligence || "").trim().length < 40) {
     missing.push({
       id: "diligence",
-      label: "Next diligence steps must be at least 40 characters",
+      label: "Verification steps must be at least 40 characters",
       blocking: true
     });
   }
@@ -3689,14 +3714,15 @@ function getStageCompletion(session) {
 // js/sim/content/rubrics/communication.v1.json
 var communication_v1_default = {
   id: "communication.v1",
-  dimension: "Communication clarity",
-  version: "1.0.0",
+  dimension: "Communication Clarity",
+  version: "2.0.0",
+  context: "FP&A Forecast Review \u2014 VP Finance memo on Q3 hiring/marketing plan",
   anchors: {
-    strong: "Conditional Proceed. Standalone value is ~$2.05B vs the $2.4B offer after haircutting the exit multiple toward the 9.5x comps average. Top-10 concentration at 34% with two declining accounts contradicts the management longevity claim \u2014 diligence the renewals before signing.",
-    weak: "This is a compelling opportunity with strong synergies and a great franchise. We should proceed and unlock value for shareholders."
+    strong: "Revise. The 12% growth target is not credible at 7% gross churn without an explicit pipeline build \u2014 the plan shows neither the expansion revenue nor the new logo math required to offset attrition. Opex at 18% growth vs 12% revenue will compress EBITDA margin ~3pp; the plan treats margin as flat. After the VP Sales update (sales cycle +30 days), Q3 hires cannot contribute Q3 revenue \u2014 the hiring revenue uplift belongs in Q4. Verify: (1) ARR breakdown for two at-risk enterprise renewals with account managers, (2) net retention math behind the growth target, (3) updated hiring plan with Q4 pipeline contribution.",
+    weak: "Go. Strong franchise with experienced management. Synergies will be realized and the plan represents a compelling opportunity for the business to unlock value for shareholders."
   },
-  rubric_prompt: "Score communication clarity 0-100. Require JSON {score, rationale, quoted_evidence}. Strong = recommendation up front, three distinct non-redundant reasons, specific numbers. Weak = vague corporate language, no clear call.",
-  required_elements: ["clear_recommendation", "distinct_reasons", "specific_language"]
+  rubric_prompt: "Score communication clarity 0-100. Require JSON {score, rationale, quoted_evidence}. Strong = recommendation stated up front, three distinct non-redundant reasons with specific numbers (%, days, $), no vague corporate language. Weak = vague language, no clear call, no specific metrics.",
+  required_elements: ["clear_recommendation", "distinct_reasons", "specific_language", "verification_steps"]
 };
 
 // js/sim/meridian/evaluate.ts
@@ -3712,75 +3738,94 @@ function corpus(session) {
     ...(session.risks || []).map((r) => `${r.category} ${r.text}`)
   ].filter(Boolean).join("\n").toLowerCase();
 }
-function detectError1(session, params) {
+function detectError1(session) {
   const text = corpus(session);
-  const evidence = [];
+  const openedChurn = (session.openedDocs || []).includes("churn_update");
   const flaggedRisk = (session.risks || []).find(
-    (r) => /multiple|valuation|comp|precedent|overpay|price/.test(`${r.category} ${r.text}`.toLowerCase())
+    (r) => /churn|net.*retention|gross.*retention|attrition|growth.*gap|growth.*require|pipeline/.test(
+      `${r.category} ${r.text}`.toLowerCase()
+    )
   );
+  const flaggedAssumption = (session.assumptions || []).find(
+    (a) => /churn|net.*retention|gross.*retention|attrition|growth.*require|pipeline/i.test(a.text)
+  );
+  const inMemo = /churn.*growth|growth.*churn|attrition.*growth|net.*retention.*target|pipeline.*offset/.test(text);
+  const evidence = [];
+  if (openedChurn) evidence.push("Opened Churn_Update.pdf");
   if (flaggedRisk) evidence.push(`Risk: [${flaggedRisk.category}] ${flaggedRisk.text}`);
-  const haircut = (session.assumptions || []).find(
-    (a) => /multiple|haircut|comp|precedent|10\.|9\./i.test(a.text)
-  );
-  if (haircut) evidence.push(`Assumption: ${haircut.text}`);
-  if (/comp|precedent/.test(text) && /multiple|haircut|rich|above|inflat/.test(text)) {
-    evidence.push("Memo/text references comps gap on multiple");
-  }
-  if (session.plantedErrorFlags?.err_exit_multiple_vs_comps) {
-    evidence.push("Session flag err_exit_multiple_vs_comps");
-  }
-  const mentionsGap = evidence.length > 0 && (flaggedRisk || haircut || /comp|precedent/.test(text) && /multiple/.test(text));
-  if (mentionsGap) return { status: "caught", evidence };
+  if (flaggedAssumption) evidence.push(`Assumption: ${flaggedAssumption.text}`);
+  if (inMemo) evidence.push("Memo/text addresses churn vs. growth math");
+  if (session.plantedErrorFlags?.err_growth_churn_mismatch) evidence.push("Session flag: err_growth_churn_mismatch");
+  const caught = evidence.length > 0 && (flaggedRisk !== void 0 || flaggedAssumption !== void 0 || session.plantedErrorFlags?.err_growth_churn_mismatch || inMemo);
+  if (caught) return { status: "caught", evidence };
   return {
     status: "missed",
     evidence: [
-      `No risk/assumption/memo evidence of reconciling ${params.exit_multiple}x vs comps avg ${params.comps_avg_multiple}x`
+      `No risk/assumption/memo evidence linking ${session.params?.churn_rate ?? 7}% gross churn to the ${session.params?.q3_revenue_growth ?? 12}% revenue growth target`
     ]
   };
 }
 function detectError2(session) {
-  const opened = (session.openedDocs || []).includes("retention_csv");
-  if (!opened) {
-    return {
-      status: "missed",
-      evidence: [
-        "Retention_Cohort.csv was never opened \u2014 cannot credit contradiction catch (Part D rule)"
-      ]
-    };
-  }
   const text = corpus(session);
-  const risk = (session.risks || []).find(
-    (r) => /retention|customer|concentration|contradict|management|90%|top-?10|declin/.test(
+  const params = session.params;
+  const flaggedRisk = (session.risks || []).find(
+    (r) => /opex|margin.*compres|operating.*expense|expense.*faster|compress|squeeze/.test(
       `${r.category} ${r.text}`.toLowerCase()
     )
   );
-  const evidence = ["Opened Retention_Cohort.csv"];
-  if (risk) evidence.push(`Risk: [${risk.category}] ${risk.text}`);
-  if (/contradict|management.*(claim|deck|update)|90%|declin|concentration/.test(text)) {
-    evidence.push("Memo/text flags retention contradiction or concentration");
-  }
-  if (risk || /contradict|declin|concentration/.test(text)) {
-    return { status: "caught", evidence };
-  }
+  const flaggedAssumption = (session.assumptions || []).find(
+    (a) => /opex|margin.*compres|operating.*expense.*revenue|expense.*faster|18.*12|faster.*revenue/i.test(a.text)
+  );
+  const modelLowered = session.valuation !== void 0 && params !== void 0 && session.valuation.exit_multiple <= params.gross_margin - 2;
+  const inMemo = /opex.*revenue|margin.*compres|18.*12|expense.*grow.*faster|ebitda.*shrink/.test(text);
+  const evidence = [];
+  if (flaggedRisk) evidence.push(`Risk: [${flaggedRisk.category}] ${flaggedRisk.text}`);
+  if (flaggedAssumption) evidence.push(`Assumption: ${flaggedAssumption.text}`);
+  if (modelLowered) evidence.push(`Model: gross margin adjusted down to ${session.valuation?.exit_multiple}% (plan: ${params?.gross_margin}%)`);
+  if (inMemo) evidence.push("Memo/text addresses opex vs. revenue divergence");
+  if (session.plantedErrorFlags?.err_opex_margin_compression) evidence.push("Session flag: err_opex_margin_compression");
+  const caught = evidence.length > 0 && (flaggedRisk !== void 0 || flaggedAssumption !== void 0 || modelLowered || session.plantedErrorFlags?.err_opex_margin_compression || inMemo);
+  if (caught) return { status: "caught", evidence };
   return {
     status: "missed",
     evidence: [
-      "Opened Retention_Cohort.csv but did not flag the contradiction with Management_Update in risks or memo"
+      `No evidence of noting ${session.params?.opex_growth ?? 18}% opex growth vs ${session.params?.q3_revenue_growth ?? 12}% revenue growth \u2014 EBITDA margin compression not flagged`
     ]
   };
 }
 function detectError3(session) {
   const text = corpus(session);
-  const hit = (session.assumptions || []).concat([]).map((a) => a.text).concat((session.risks || []).map((r) => r.text)).concat([session.finalMemo || ""]).find((t) => /synergy|double[- ]?count|overlap|debt paydown|duplicat/.test((t || "").toLowerCase()));
-  if (hit) {
-    return { status: "caught", evidence: [`Identified overlap/double-count: "${String(hit).slice(0, 160)}"`] };
-  }
-  if (session.plantedErrorFlags?.err_synergy_double_count) {
-    return { status: "caught", evidence: ["Session flag err_synergy_double_count"] };
+  const m1Fired = session.m1_fired || (session.used_trigger_ids || []).includes("J1");
+  const flaggedRisk = (session.risks || []).find(
+    (r) => /ramp|sales.*cycle.*ext|cycle.*ext|75.*day|q4.*hire|hire.*q4|hire.*contribut|no.*q3.*rev/.test(
+      `${r.category} ${r.text}`.toLowerCase()
+    )
+  );
+  const flaggedAssumption = (session.assumptions || []).find(
+    (a) => /ramp|sales.*cycle.*ext|cycle.*extend|75.*day|q[34].*revenue|hire.*contribut/i.test(a.text)
+  );
+  const inMemo = /ramp.*cycle|cycle.*ramp|75.*day|cycle.*extend.*hire|hire.*revenue.*q[34]/.test(text);
+  const anticipatedEarly = /ramp.*sales.*cycle|sales.*cycle.*ramp|hire.*pipeline|75.*day/.test(text) && !m1Fired;
+  const evidence = [];
+  if (m1Fired) evidence.push("Manager update received: VP Sales flagged sales cycle +30 days, 2 at-risk renewals");
+  if (flaggedRisk) evidence.push(`Risk: [${flaggedRisk.category}] ${flaggedRisk.text}`);
+  if (flaggedAssumption) evidence.push(`Assumption: ${flaggedAssumption.text}`);
+  if (inMemo) evidence.push("Memo/text addresses ramp vs. extended sales cycle");
+  if (session.plantedErrorFlags?.err_ramp_sales_cycle_mismatch) evidence.push("Session flag: err_ramp_sales_cycle_mismatch");
+  if (anticipatedEarly) evidence.push("Candidate anticipated ramp/cycle conflict before manager update");
+  const caught = session.plantedErrorFlags?.err_ramp_sales_cycle_mismatch || anticipatedEarly || m1Fired && (flaggedRisk !== void 0 || flaggedAssumption !== void 0 || inMemo);
+  if (caught) return { status: "caught", evidence: evidence.length ? evidence : ["Caught via plantedErrorFlags"] };
+  if (!m1Fired) {
+    return {
+      status: "missed",
+      evidence: ["VP Sales manager update not received \u2014 ramp/cycle extension could not be detected"]
+    };
   }
   return {
     status: "missed",
-    evidence: ["No assumption/memo language identifying synergy / CoC debt paydown double-count"]
+    evidence: [
+      "Manager update received but candidate did not note that extended sales cycle (75 days) + ramp (30 days) = Q3 hires cannot contribute Q3 revenue"
+    ]
   };
 }
 function scoreAmbiguity2(session) {
@@ -3788,26 +3833,29 @@ function scoreAmbiguity2(session) {
   const memo = (session.finalMemo || "").toLowerCase();
   const text = `${diligence}
 ${memo}`;
-  const requestsGap = /available on request|request.*(cohort|retention)|missing.*(cohort|data)|incomplete.*(cohort|retention)|diligence.*(cohort|retention)/.test(
+  const openedConcentration = (session.openedDocs || []).includes("concentration_note");
+  const requestsAtRiskData = /request.*arr|arr.*request|verify.*renewal|confirm.*account|arr.*breakdown|account.*arr|at.?risk.*arr.*unknown|unknown.*at.?risk|get.*arr|confirm.*arr/i.test(
     text
   );
-  const inventsFact = /\d+\s*%\s*(net )?retention/.test(text) && !/incomplete|missing|request|cannot|unknown|gap/.test(text) && !(session.openedDocs || []).includes("retention_csv");
-  if (requestsGap) {
+  const inventsFact = /\$\d+(\.\d+)?\s*(m|million|k|b)\s*(arr|at.?risk|renewal|customer)|lose \d+%\s*(arr|revenue)|impact.*\$\d+/i.test(
+    text
+  ) && !openedConcentration;
+  if (requestsAtRiskData) {
     return {
       dimension: "Ambiguity handling",
       score: "good",
       label: "Good pattern",
-      rationale: "Candidate noted incomplete cohort data and/or listed requesting it under next diligence steps rather than inventing a precise figure.",
+      rationale: "Candidate noted the at-risk ARR gap and/or listed requesting ARR breakdown from account managers in verification steps.",
       evidence: [diligence.slice(0, 200) || memo.slice(0, 200)],
       method: "deterministic"
     };
   }
-  if (inventsFact || /retention is \d+|retention of \d+/.test(text) && !/gap|incomplete|request/.test(text)) {
+  if (inventsFact) {
     return {
       dimension: "Ambiguity handling",
       score: "poor",
       label: "Poor pattern",
-      rationale: "Candidate stated a specific retention conclusion despite missing cohort file / without flagging the data gap.",
+      rationale: "Candidate stated a specific revenue/ARR impact for at-risk customers without verifying the ARR breakdown with account managers or opening the concentration note.",
       evidence: [text.slice(0, 220)],
       method: "deterministic"
     };
@@ -3816,7 +3864,7 @@ ${memo}`;
     return {
       dimension: "Ambiguity handling",
       score: "insufficient_data",
-      rationale: "No diligence-steps text to classify ambiguity handling.",
+      rationale: "No verification steps text to classify ambiguity handling.",
       evidence: [],
       method: "deterministic"
     };
@@ -3824,79 +3872,152 @@ ${memo}`;
   return {
     dimension: "Ambiguity handling",
     score: "insufficient_data",
-    rationale: "Diligence text present but neither clearly requests missing cohort data nor invents a retention fact.",
+    rationale: "Verification steps present but neither clearly requests at-risk ARR data nor invents a specific revenue figure.",
     evidence: [diligence.slice(0, 200)],
     method: "deterministic"
   };
 }
-function scoreAssumptions(session) {
+function scoreModelingDiscipline(session) {
+  const v = session.valuation;
+  if (!v) {
+    return {
+      dimension: "Modeling Discipline",
+      score: "insufficient_data",
+      rationale: "No forecast model adjustment recorded.",
+      evidence: [],
+      method: "deterministic"
+    };
+  }
+  const params = session.params;
+  const evidence = [
+    `Model inputs submitted: revenue growth ${v.growth_rate}%, gross margin ${v.exit_multiple}%, opex growth ${v.discount_rate ?? params?.opex_growth ?? 18}%`,
+    `Plan defaults: growth ${params?.q3_revenue_growth}%, GM ${params?.gross_margin}%, opex ${params?.opex_growth}%`
+  ];
+  let score = 40;
+  if (params && v.growth_rate < params.q3_revenue_growth - 1) {
+    score += 20;
+    evidence.push("Growth input lowered below plan \u2014 candidate stress-tested");
+  }
+  if (params && v.exit_multiple < params.gross_margin - 1) {
+    score += 20;
+    evidence.push("Gross margin input lowered below plan \u2014 candidate reflected compression");
+  }
+  if (params && v.discount_rate !== void 0 && v.discount_rate > params.opex_growth) {
+    score += 15;
+    evidence.push("Opex growth input raised above plan \u2014 conservative scenario tested");
+  }
+  if (params && Math.abs(v.growth_rate - params.q3_revenue_growth) < 0.1 && Math.abs(v.exit_multiple - params.gross_margin) < 0.1) {
+    score = Math.max(10, score - 30);
+    evidence.push("Model left unchanged from plan defaults \u2014 no stress-test performed");
+  }
+  return {
+    dimension: "Modeling Discipline",
+    score: Math.min(100, score),
+    rationale: "Extent to which candidate adjusted forecast model inputs to reflect identified risks.",
+    evidence,
+    method: "deterministic"
+  };
+}
+function scoreAssumptionChecking(session) {
   const list = session.assumptions || [];
   if (!list.length) {
     return {
-      dimension: "Assumption quality",
+      dimension: "Assumption Checking",
       score: "insufficient_data",
       rationale: "No assumptions logged.",
       evidence: [],
       method: "deterministic"
     };
   }
-  const specific = list.filter((a) => /\d|%|x\b|multiple|comp|growth|margin/i.test(a.text));
-  const score = Math.round(specific.length / list.length * 70 + Math.min(30, list.length * 10));
+  const specific = list.filter(
+    (a) => /\d|%|day|week|month|churn|opex|margin|growth|ramp|cycle|arr|revenue/i.test(a.text)
+  );
+  const score = Math.round(specific.length / list.length * 60 + Math.min(40, list.length * 13));
   return {
-    dimension: "Assumption quality",
+    dimension: "Assumption Checking",
     score: Math.min(100, score),
-    rationale: `${specific.length}/${list.length} assumptions reference numbers or concrete model levers.`,
+    rationale: `${specific.length}/${list.length} assumptions reference concrete forecast levers (numbers, rates, days, or named metrics).`,
     evidence: list.map((a) => a.text).slice(0, 5),
     method: "deterministic"
   };
 }
-function scoreAnalytical(session, params) {
-  const v = session.valuation;
-  if (!v) {
+function scoreRiskDetection(session, errors) {
+  const risks = session.risks || [];
+  if (!risks.length) {
     return {
-      dimension: "Analytical accuracy",
+      dimension: "Risk Detection",
       score: "insufficient_data",
-      rationale: "No interactive valuation adjustment recorded.",
+      rationale: "No risks logged.",
       evidence: [],
       method: "deterministic"
     };
   }
-  const evidence = [
-    `Submitted valuation inputs: growth ${v.growth_rate}%, exit ${v.exit_multiple}x, implied EV $${v.implied_ev}M`,
-    `Seed base exit ${params.exit_multiple}x; comps avg ${params.comps_avg_multiple}x`
-  ];
-  const haircutClaim = corpus(session).includes("haircut") || /haircut|toward comp/.test(corpus(session));
-  let score = 55;
-  if (v.exit_multiple < params.exit_multiple) {
-    score += 20;
-    evidence.push("Exit multiple input below management framing");
-  }
-  if (haircutClaim && v.exit_multiple >= params.exit_multiple) {
-    score -= 25;
-    evidence.push("Narrative claims haircut but valuation still at/above inflated multiple \u2014 internal inconsistency");
-  }
-  if (Math.abs(v.growth_rate - params.forward_growth) > 0.05) {
-    score += 10;
-    evidence.push("Growth input differs from plan \u2014 candidate stress-tested");
-  }
+  const fpaConcerns = risks.filter(
+    (r) => /churn|retention|opex|margin|compres|ramp|cycle|extend|renewal|concentration|runway/i.test(
+      `${r.category} ${r.text}`
+    )
+  );
+  const evidence = risks.slice(0, 4).map((r) => `[${r.category}] ${r.text}`);
+  const caught = errors.filter((e) => e.status === "caught").length;
+  const score = Math.min(100, fpaConcerns.length * 20 + caught * 15);
   return {
-    dimension: "Analytical accuracy",
-    score: Math.max(0, Math.min(100, score)),
-    rationale: "Consistency between logged valuation inputs and narrative claims.",
+    dimension: "Risk Detection",
+    score,
+    rationale: `${fpaConcerns.length} FP&A-relevant risks logged; ${caught}/3 planted concerns reflected in evaluation.`,
     evidence,
     method: "deterministic"
   };
 }
-function scoreCommunication(session) {
+function scoreBusinessJudgment(session, errors) {
+  const cat = session.recommendation?.category || "";
+  const caught = errors.filter((e) => e.status === "caught").length;
+  const evidence = [`Recommendation: ${cat || "(none)"}`, `Planted concerns caught: ${caught}/3`];
+  let score = 40;
+  if (!cat) {
+    return {
+      dimension: "Business Judgment",
+      score: "insufficient_data",
+      rationale: "No recommendation category submitted.",
+      evidence: [],
+      method: "deterministic"
+    };
+  }
+  const catLower = cat.toLowerCase();
+  if ((catLower === "go" || catLower === "proceed") && caught === 0) {
+    score = 15;
+    evidence.push("Go/Proceed with no concerns caught \u2014 weak judgment");
+  } else if ((catLower === "revise" || catLower === "hold") && caught >= 2) {
+    score = 85;
+    evidence.push("Revise/Hold recommendation aligns with \u22652 concerns caught");
+  } else if ((catLower === "revise" || catLower === "hold") && caught >= 1) {
+    score = 70;
+    evidence.push("Revise/Hold tied to at least one real concern");
+  } else {
+    score = 45 + caught * 12;
+  }
+  const reasons = `${session.recommendation?.reason1 || ""} ${session.recommendation?.reason2 || ""}`.toLowerCase();
+  if (/churn|opex|margin|ramp|cycle|renewal|concentration|runway/.test(reasons)) {
+    score += 5;
+    evidence.push("Reasons reference plan-specific FP&A concerns");
+  }
+  return {
+    dimension: "Business Judgment",
+    score: Math.min(100, score),
+    rationale: "Alignment between recommendation severity and FP&A concerns caught/missed, plus specificity of reasoning.",
+    evidence,
+    method: "deterministic"
+  };
+}
+function scoreCommunicationClarity(session) {
   const r1 = (session.recommendation?.reason1 || "").trim();
   const r2 = (session.recommendation?.reason2 || "").trim();
   const r3 = (session.recommendation?.reason3 || "").trim();
   const memo = (session.finalMemo || [r1, r2, r3].join(" ")).trim();
   if (!memo || memo.length < 40) {
     return {
-      dimension: "Communication clarity",
+      dimension: "Communication Clarity",
       score: "insufficient_data",
-      rationale: "Insufficient memo/reasons text for communication scoring.",
+      rationale: "Insufficient VP Memo / reasons text for communication scoring.",
       evidence: [],
       method: "heuristic_fallback"
     };
@@ -3910,207 +4031,117 @@ function scoreCommunication(session) {
   const reasons = [r1, r2, r3].filter(Boolean);
   if (reasons.length === 3) {
     score += 20;
-    evidence.push(`Three distinct reasons: "${r1.slice(0, 60)}"; "${r2.slice(0, 60)}"; "${r3.slice(0, 60)}"`);
+    evidence.push(`Three distinct reasons: "${r1.slice(0, 50)}"; "${r2.slice(0, 50)}"; "${r3.slice(0, 50)}"`);
   }
-  const vague = /synergies will be realized|strong franchise|compelling opportunity|unlock value/i;
+  const vague = /synergies will be realized|strong franchise|compelling opportunity|unlock value|management.*experienced/i;
   if (vague.test(memo)) {
     score -= 15;
-    evidence.push("Contains vague corporate language");
+    evidence.push("Contains vague corporate language without specific numbers");
   } else {
     score += 10;
   }
-  if (/\d|%|\$|x\b/.test(memo)) {
+  if (/\d|%|\$|pp\b|days?/.test(memo)) {
     score += 10;
-    evidence.push("Uses specific numbers");
+    evidence.push("Uses specific numbers / metrics in memo");
   }
-  evidence.push(`Rubric file: ${communication_v1_default.id || "communication.v1"}`);
+  evidence.push(`Rubric: ${communication_v1_default.id || "communication.v1"}`);
   return {
-    dimension: "Communication clarity",
+    dimension: "Communication Clarity",
     score: Math.max(0, Math.min(100, score)),
-    rationale: "Heuristic rubric (LLM unavailable): clarity of recommendation, distinct reasons, specificity.",
+    rationale: "Clarity of recommendation, three distinct non-redundant reasons, use of specific data.",
     evidence,
     method: "heuristic_fallback"
   };
 }
-function scoreBusinessJudgment(session, errors) {
-  const cat = session.recommendation?.category || "";
-  const caught = errors.filter((e) => e.status === "caught").length;
-  const evidence = [`Recommendation: ${cat || "(none)"}`, `Planted errors caught: ${caught}/3`];
-  let score = 40;
-  if (cat === "Proceed" && caught === 0) {
-    score = 15;
-    evidence.push("Proceed with no planted errors caught \u2014 weak judgment");
-  } else if ((cat === "Conditional Proceed" || cat === "Hold" || cat === "Pass") && caught >= 2) {
-    score = 85;
-    evidence.push("Recommendation severity aligns with errors caught");
-  } else if (cat === "Conditional Proceed" && caught >= 1) {
-    score = 75;
-    evidence.push("Conditional Proceed tied to at least one real issue");
-  } else if (cat) {
-    score = 45 + caught * 12;
-  } else {
+function scoreAiVerificationBehavior(session) {
+  const aiLog = session.ai_usage_log || [];
+  if (!aiLog.length) {
     return {
-      dimension: "Business judgment",
-      score: "insufficient_data",
-      rationale: "No recommendation category.",
-      evidence: [],
-      method: "deterministic"
-    };
-  }
-  const reasons = `${session.recommendation?.reason1} ${session.recommendation?.reason2}`.toLowerCase();
-  if (/retention|multiple|comp|concentration|synergy/.test(reasons)) {
-    score += 5;
-    evidence.push("Reasons reference deal-specific issues");
-  }
-  return {
-    dimension: "Business judgment",
-    score: Math.min(100, score),
-    rationale: "Recommendation category vs severity of errors caught/missed, plus specificity of reasons.",
-    evidence,
-    method: "deterministic"
-  };
-}
-function scoreRiskDetection(session, errors) {
-  const risks = session.risks || [];
-  if (!risks.length) {
-    return {
-      dimension: "Risk detection and prioritization",
-      score: "insufficient_data",
-      rationale: "No risks logged.",
-      evidence: [],
-      method: "deterministic"
-    };
-  }
-  const specific = risks.filter(
-    (r) => /retention|concentration|multiple|comp|synergy|double|cohort|declin/i.test(`${r.category} ${r.text}`)
-  );
-  const evidence = risks.slice(0, 4).map((r) => `[${r.category}] ${r.text}`);
-  const caught = errors.filter((e) => e.status === "caught").length;
-  const score = Math.min(100, specific.length * 25 + caught * 15);
-  return {
-    dimension: "Risk detection and prioritization",
-    score,
-    rationale: `${specific.length} evidence-linked risks; ${caught}/3 planted errors reflected.`,
-    evidence,
-    method: "deterministic"
-  };
-}
-function scoreAdaptability(session) {
-  const replies = (session.chatMessages || []).filter((m) => m.sender === "candidate");
-  if (!replies.length && !session.d1_reply_text) {
-    return {
-      dimension: "Adaptability / responsiveness",
-      score: "insufficient_data",
-      rationale: "No candidate chat engagement recorded.",
-      evidence: [],
-      method: "deterministic"
-    };
-  }
-  const evidence = [];
-  if (session.d1_reply_text) evidence.push(`Daniel reply: "${session.d1_reply_text}"`);
-  if (session.d1_branch) evidence.push(`Daniel branch: ${session.d1_branch}`);
-  const memo = corpus(session);
-  let score = 40;
-  if (session.d1_branch === "customer" && /concentration|retention|customer/.test(memo)) {
-    score += 35;
-    evidence.push("Final submission reflects customer concentration raised in chat");
-  } else if (session.d1_reply_text) {
-    score += 15;
-    evidence.push("Replied to Daniel but memo linkage weak");
-  }
-  if (replies.length >= 2) score += 10;
-  return {
-    dimension: "Adaptability / responsiveness",
-    score: Math.min(100, score),
-    rationale: "Engagement with stakeholder prompts and whether final work reflects them.",
-    evidence,
-    method: "deterministic"
-  };
-}
-function scorePrioritization(session) {
-  const tabs = session.tabSeconds || {};
-  const total = Object.values(tabs).reduce((a, b) => a + b, 0) || session._elapsedSec || 0;
-  if (!total) {
-    return {
-      dimension: "Prioritization and time management",
-      score: "insufficient_data",
-      rationale: "No tab timing data.",
-      evidence: [],
-      method: "deterministic"
-    };
-  }
-  const dataRoom = (tabs.data_room || tabs.DataRoom || 0) + (tabs.brief || 0);
-  const financials = tabs.financials || tabs.Financials || 0;
-  const evidence = [
-    `Tab seconds: ${JSON.stringify(tabs)}`,
-    `Docs opened: ${(session.openedDocs || []).length}`
-  ];
-  let score = 50;
-  if (financials < 60 && (session.openedDocs || []).length < 2) {
-    score = 25;
-    evidence.push("Little time on Financials/Data Room");
-  }
-  if ((session.openedDocs || []).includes("retention_csv") && (session.openedDocs || []).includes("comps_precedents")) {
-    score += 25;
-    evidence.push("Opened both critical docs (retention + comps)");
-  }
-  if (session.d1_fired && session.d1_reply_text) {
-    const d1msg = (session.chatMessages || []).find((m) => m.triggerId === "D1");
-    const reply = (session.chatMessages || []).find((m) => m.triggerId === "D1_reply");
-    if (d1msg && reply && reply.elapsedSec - d1msg.elapsedSec < 180) {
-      score += 10;
-      evidence.push("Responded to Daniel within 3 minutes");
-    }
-  }
-  return {
-    dimension: "Prioritization and time management",
-    score: Math.min(100, score),
-    rationale: "Time allocation vs critical materials and responsiveness to MD prompt.",
-    evidence,
-    method: "deterministic"
-  };
-}
-function scoreAiJudgment(session) {
-  const log2 = session.ai_usage_log || [];
-  if (!log2.length) {
-    return {
-      dimension: "AI judgment",
+      dimension: "AI Verification Behavior",
       score: 60,
       label: "Not heavily used",
-      rationale: "No AI usage logged \u2014 neither trap nor blind trust observed.",
+      rationale: "No AI usage recorded \u2014 neither trap triggered nor blind trust observed.",
       evidence: ["ai_usage_log empty"],
       method: "deterministic"
     };
   }
-  const trap = log2.find((e) => e.trap_triggered);
-  const evidence = log2.map(
+  const trap = aiLog.find((e) => e.trap_triggered);
+  const evidence = aiLog.map(
     (e) => `${e.timestamp}: trap=${e.trap_triggered} caught=${e.trap_caught} action=${e.candidate_action_after} | ${e.prompt_text.slice(0, 80)}`
   );
   if (trap && trap.trap_caught === false) {
     return {
-      dimension: "AI judgment",
+      dimension: "AI Verification Behavior",
       score: 25,
-      rationale: "Triggered exit-multiple trap and did not catch comps gap afterward.",
+      rationale: "Received AI endorsement of optimistic growth forecast without churn cross-check, and did not subsequently flag the churn/growth mismatch.",
       evidence,
       method: "deterministic"
     };
   }
   if (trap && trap.trap_caught === true) {
     return {
-      dimension: "AI judgment",
+      dimension: "AI Verification Behavior",
       score: 90,
-      rationale: "Triggered trap but verified against comps / caught the gap.",
+      rationale: "Received AI growth endorsement but verified against churn data and caught the mismatch.",
       evidence,
       method: "deterministic"
     };
   }
   return {
-    dimension: "AI judgment",
+    dimension: "AI Verification Behavior",
     score: 70,
-    rationale: "Used AI without hitting the uncritical exit-multiple trap path.",
+    rationale: "Used AI without triggering the uncritical growth forecast trap path.",
     evidence,
     method: "deterministic"
   };
+}
+function generateInterviewQuestions(errors, session) {
+  const questions = [];
+  const missed = errors.filter((e) => e.status === "missed");
+  const caught = errors.filter((e) => e.status === "caught");
+  for (const e of missed) {
+    if (e.id === "err_growth_churn_mismatch") {
+      questions.push(
+        `Walk me through how you'd pressure-test a ${session.params?.q3_revenue_growth ?? 12}% revenue growth target when gross churn is running at ${session.params?.churn_rate ?? 7}%. What pipeline math would you need to see?`
+      );
+    }
+    if (e.id === "err_opex_margin_compression") {
+      questions.push(
+        `If operating expenses grow ${session.params?.opex_growth ?? 18}% but revenue only grows ${session.params?.q3_revenue_growth ?? 12}%, what happens to EBITDA margin? Would you approve the hiring plan anyway?`
+      );
+    }
+    if (e.id === "err_ramp_sales_cycle_mismatch") {
+      questions.push(
+        `The VP Sales just told you the sales cycle extended by 30 days. You have 8 new hires starting in July with a 30-day ramp. What does that mean for Q3 revenue projections?`
+      );
+    }
+  }
+  for (const e of caught) {
+    if (e.id === "err_growth_churn_mismatch") {
+      questions.push(
+        `You flagged the churn/growth tension \u2014 if you were the CFO, what specific change to the Q3 plan would you require before approving it?`
+      );
+    }
+    if (e.id === "err_ramp_sales_cycle_mismatch") {
+      questions.push(
+        `You noted the hire ramp and sales cycle conflict. How would you restructure the Q3 headcount plan to still hit the year-end target?`
+      );
+    }
+  }
+  const cat = (session.recommendation?.category || "").toLowerCase();
+  if (cat === "go" || cat === "proceed") {
+    questions.push(
+      `Your recommendation is to proceed. What single data point would make you change that view before the board meeting?`
+    );
+  } else if (cat === "revise") {
+    questions.push(
+      `You recommended Revise. What is the minimum set of changes to the Q3 plan that would get you comfortable enough to say Go?`
+    );
+  }
+  if (!questions.length) {
+    questions.push("What was your biggest uncertainty in this forecast review, and how did you decide to handle it?");
+  }
+  return questions.slice(0, 4);
 }
 function requireEvidence(dim) {
   if ((!dim.evidence || !dim.evidence.length) && dim.score !== "insufficient_data") {
@@ -4125,7 +4156,7 @@ function requireEvidence(dim) {
 }
 function evaluateMeridianSession(session) {
   const params = session.params;
-  const e1 = detectError1(session, params);
+  const e1 = detectError1(session);
   const e2 = detectError2(session);
   const e3 = detectError3(session);
   const planted = [
@@ -4135,24 +4166,24 @@ function evaluateMeridianSession(session) {
   ];
   const ambiguity = requireEvidence(scoreAmbiguity2(session));
   const hard = [
-    requireEvidence(scoreAnalytical(session, params)),
-    requireEvidence(scoreAssumptions(session)),
+    requireEvidence(scoreModelingDiscipline(session)),
+    requireEvidence(scoreAssumptionChecking(session)),
     {
-      dimension: "Error detection \u2014 Exit multiple vs comps",
+      dimension: "Concern detection \u2014 Revenue growth vs. churn",
       score: e1.status,
       rationale: e1.status === "caught" ? "Caught with evidence." : "Missed.",
       evidence: e1.evidence,
       method: "deterministic"
     },
     {
-      dimension: "Error detection \u2014 Retention contradiction",
+      dimension: "Concern detection \u2014 Opex vs. revenue (margin compression)",
       score: e2.status,
       rationale: e2.status === "caught" ? "Caught with evidence." : "Missed.",
       evidence: e2.evidence,
       method: "deterministic"
     },
     {
-      dimension: "Error detection \u2014 Synergy double-count",
+      dimension: "Concern detection \u2014 Hire ramp vs. extended sales cycle",
       score: e3.status,
       rationale: e3.status === "caught" ? "Caught with evidence." : "Missed.",
       evidence: e3.evidence,
@@ -4163,24 +4194,23 @@ function evaluateMeridianSession(session) {
     ambiguity,
     requireEvidence(scoreBusinessJudgment(session, planted)),
     requireEvidence(scoreRiskDetection(session, planted)),
-    requireEvidence(scoreCommunication(session)),
-    requireEvidence(scoreAdaptability(session)),
-    requireEvidence(scorePrioritization(session)),
-    requireEvidence(scoreAiJudgment(session))
+    requireEvidence(scoreCommunicationClarity(session)),
+    requireEvidence(scoreAiVerificationBehavior(session))
   ];
   const caughtN = planted.filter((p) => p.status === "caught").length;
   let executive_recommendation = "Hold";
   if (caughtN >= 2 && ambiguity.score === "good") executive_recommendation = "Advance";
   if (caughtN === 0 && ambiguity.score === "poor") executive_recommendation = "Reject";
+  const confidence = (session.event_log || []).length >= 12 ? "High" : (session.event_log || []).length >= 6 ? "Medium" : "Low";
   const numericSoft = soft.filter((s) => typeof s.score === "number");
   const avg = numericSoft.length > 0 ? numericSoft.reduce((a, s) => a + s.score, 0) / numericSoft.length : 50;
-  const confidence = (session.event_log || []).length >= 12 ? "High" : (session.event_log || []).length >= 6 ? "Medium" : "Low";
-  const trapEv = (session.ai_usage_log || []).find((e) => e.trap_triggered);
-  const daniel = (session.chatMessages || []).filter(
-    (m) => m.sender === "daniel" || m.triggerId === "D1_reply" || m.sender === "candidate" && m.triggerId === "D1_reply"
+  const alexExchange = (session.chatMessages || []).filter(
+    (m) => m.sender === "alex" || m.triggerId === "A1_reply" || m.sender === "candidate" && m.triggerId === "A1_reply"
   );
+  const trapEv = (session.ai_usage_log || []).find((e) => e.trap_triggered);
   const timeline = (session.event_log || []).slice().sort((a, b) => (a.t || 0) - (b.t || 0)).map((e) => ({ t: e.t || 0, label: e.label || e.type, type: e.type }));
-  const overall_summary = `Caught ${caughtN}/3 planted errors. Ambiguity: ${ambiguity.label || ambiguity.score}. Soft-skill avg (numeric dims): ${Math.round(avg)}. ${AMBIGUITY_POINT.title} classified from diligence/memo evidence.`;
+  const overall_summary = `Caught ${caughtN}/3 FP&A concerns. Ambiguity handling: ${ambiguity.label || ambiguity.score}. Soft-skill numeric avg: ${Math.round(avg)}. ${AMBIGUITY_POINT.title} classified from verification-steps/memo evidence. Manager update (VP Sales): ${session.m1_fired ? "received and actioned" : "not yet received"}.`;
+  const interviewQuestions = generateInterviewQuestions(planted, session);
   return {
     session_id: session.id,
     seed: params.seed,
@@ -4191,7 +4221,8 @@ function evaluateMeridianSession(session) {
     ambiguity,
     hard_skills: hard,
     soft_skills: soft,
-    daniel_exchange: daniel,
+    daniel_exchange: alexExchange,
+    // kept as 'daniel_exchange' for API compat — now represents Alex Kim (CFO)
     ai_usage_summary: {
       events: session.ai_usage_log || [],
       trap_triggered: !!trapEv,
@@ -4208,46 +4239,56 @@ function evaluateMeridianSession(session) {
       session.recommendation?.reason3,
       session.recommendation?.diligence
     ].filter(Boolean).join("\n"),
-    timeline
+    timeline,
+    interview_questions: interviewQuestions
   };
 }
 function formatMeridianReport(ev) {
   const lines = [];
-  lines.push(`# Evidence report \u2014 Project Meridian`);
-  lines.push(`Recommendation: ${ev.executive_recommendation} (${ev.confidence})`);
+  lines.push(`# Evidence Report \u2014 Project Meridian: FP&A Forecast Review`);
+  lines.push(`Recommendation: **${ev.executive_recommendation}** (confidence: ${ev.confidence})`);
   lines.push(ev.overall_summary);
   lines.push("");
-  lines.push("## Final memo");
+  lines.push("## VP Memo");
   lines.push(ev.final_memo || "(empty)");
   lines.push("");
-  lines.push("## Planted errors");
+  lines.push("## Planted Concerns");
   for (const p of ev.planted_errors) {
-    lines.push(`- ${p.title}: ${p.status.toUpperCase()}`);
+    lines.push(`- ${p.title}: **${p.status.toUpperCase()}**`);
     p.evidence.forEach((e) => lines.push(`  evidence: ${e}`));
   }
   lines.push("");
-  lines.push("## Ambiguity");
+  lines.push(`## Ambiguity Handling (${AMBIGUITY_POINT.title})`);
   lines.push(`${ev.ambiguity.score} \u2014 ${ev.ambiguity.rationale}`);
   ev.ambiguity.evidence.forEach((e) => lines.push(`  evidence: ${e}`));
   lines.push("");
-  lines.push("## Soft skills");
-  for (const s of ev.soft_skills) {
+  lines.push("## Hard Skills");
+  for (const s of ev.hard_skills) {
     lines.push(`- ${s.dimension}: ${s.score} \u2014 ${s.rationale}`);
-    (s.evidence || []).forEach((e) => lines.push(`  evidence: ${e}`));
+    (s.evidence || []).slice(0, 2).forEach((e) => lines.push(`  evidence: ${e}`));
   }
   lines.push("");
-  lines.push("## Daniel Chen exchange");
+  lines.push("## Soft Skills");
+  for (const s of ev.soft_skills) {
+    lines.push(`- ${s.dimension}: ${s.score} \u2014 ${s.rationale}`);
+    (s.evidence || []).slice(0, 2).forEach((e) => lines.push(`  evidence: ${e}`));
+  }
+  lines.push("");
+  lines.push("## CFO Exchange (Alex Kim)");
   for (const m of ev.daniel_exchange) {
     lines.push(`[${m.name}] ${m.body}`);
   }
   lines.push("");
-  lines.push("## AI usage");
+  lines.push("## AI Usage");
   lines.push(
     `trap_triggered=${ev.ai_usage_summary.trap_triggered} trap_caught=${ev.ai_usage_summary.trap_caught}`
   );
   lines.push("");
   lines.push("## Benchmark");
   lines.push(`${ev.benchmark.status}: ${ev.benchmark.comparison_text}`);
+  lines.push("");
+  lines.push("## Interview Questions");
+  ev.interview_questions.forEach((q, i) => lines.push(`${i + 1}. ${q}`));
   return lines.join("\n");
 }
 
@@ -4259,12 +4300,11 @@ function createMeridianSession(opts) {
   const seed = opts.seed || opts.inviteToken || `meridian_${Date.now().toString(36)}`;
   const params = instantiateMeridianSeed(seed);
   const documents = buildMeridianDocuments(params);
-  const ltm = params.hist[params.hist.length - 1];
   const val = calculateValuation({
-    ltm_ebitda: ltm.ebitda,
-    exit_multiple: params.exit_multiple,
-    growth_rate: params.forward_growth,
-    discount_rate: 10
+    ltm_ebitda: params.q2_revenue,
+    exit_multiple: params.gross_margin,
+    growth_rate: params.q3_revenue_growth,
+    discount_rate: params.opex_growth
   });
   const session = {
     id: `ms_${Date.now().toString(36)}`,
@@ -4289,9 +4329,9 @@ function createMeridianSession(opts) {
     aiAskCountWindow: { t: 0, count: 0 },
     _elapsedSec: 0,
     valuation: {
-      growth_rate: params.forward_growth,
-      exit_multiple: params.exit_multiple,
-      discount_rate: 10,
+      growth_rate: params.q3_revenue_growth,
+      exit_multiple: params.gross_margin,
+      discount_rate: params.opex_growth,
       ...val
     },
     ai_usage_log: [],
@@ -4299,27 +4339,28 @@ function createMeridianSession(opts) {
     last_saved_at: null,
     plantedErrorFlags: {}
   };
-  log(session, "simulation_started", "Started Project Meridian", { seed: params.seed });
+  log(session, "simulation_started", "Started Project Meridian \u2014 FP&A Forecast Review", { seed: params.seed });
   return session;
 }
 function buildLiveInsights(p) {
-  const gapLow = Math.round((p.forward_growth - p.sector_growth_high) * 10) / 10;
-  const gapHigh = Math.round((p.forward_growth - p.sector_growth_low) * 10) / 10;
+  const churnGap = Math.round((p.churn_rate - p.industry_churn_avg) * 10) / 10;
+  const opexGap = Math.round((p.opex_growth - p.q3_revenue_growth) * 10) / 10;
+  const rampCycleDays = p.new_hire_ramp_days + p.sales_cycle_days;
   return [
     {
-      id: "ins_growth",
-      title: "Forward growth vs sector",
-      body: `Plan assumes ${p.forward_growth}% vs sector ${p.sector_growth_low}\u2013${p.sector_growth_high}% (gap ${gapLow}\u2013${gapHigh} pp).`
+      id: "ins_churn",
+      title: "Churn rate vs. industry avg",
+      body: `Plan churn ${p.churn_rate}% vs. peer avg ${p.industry_churn_avg}% (${churnGap > 0 ? "+" : ""}${churnGap} pp above peers). At ${p.churn_rate}% gross churn, the ${p.q3_revenue_growth}% growth target requires strong net expansion.`
     },
     {
-      id: "ins_multiple",
-      title: "Exit multiple vs comps",
-      body: `Materials frame ${p.exit_multiple}x vs comps average ${p.comps_avg_multiple}x.`
+      id: "ins_opex",
+      title: "Opex growth vs. revenue growth",
+      body: `Opex growing ${p.opex_growth}% vs. revenue ${p.q3_revenue_growth}% \u2014 a ${opexGap > 0 ? "+" : ""}${opexGap} pp divergence. EBITDA margin will compress unless revenue outperforms plan.`
     },
     {
-      id: "ins_concentration",
-      title: "Customer concentration",
-      body: `Top-10 concentration is ${p.top10_concentration}% \u2014 check Retention_Cohort.csv before leaning on management longevity claims.`
+      id: "ins_ramp",
+      title: "Hire ramp + sales cycle math",
+      body: `${p.new_hire_ramp_days}-day ramp + ${p.sales_cycle_days}-day cycle = ${rampCycleDays} days to first deal. If cycle extends 30 days (${p.updated_sales_cycle_days} days total), Q3 hires don't contribute Q3 revenue.`
     }
   ];
 }
@@ -4348,7 +4389,7 @@ function syncElapsed(session) {
 }
 function viewBrief(session) {
   session._briefViewed = true;
-  log(session, "brief_viewed", "Viewed CFO brief");
+  log(session, "brief_viewed", "Viewed CFO Brief");
   bumpTab(session, "brief", 5);
 }
 function openDocument(session, docId) {
@@ -4356,30 +4397,33 @@ function openDocument(session, docId) {
   if (!doc) return null;
   if (!session.openedDocs.includes(docId)) session.openedDocs.push(docId);
   log(session, "resource_opened", `Opened ${doc.title}`, { resourceId: docId });
-  if (docId === "retention_csv") session.m1_acknowledged = true;
+  if (docId === "concentration_note") session.m1_acknowledged = true;
   bumpTab(session, "data_room", 15);
   tick(session);
   return doc;
 }
 function viewFinancials(session) {
   session._financialsViewed = true;
-  log(session, "financials_viewed", "Viewed Financials tab");
+  log(session, "financials_viewed", "Viewed Forecast Model tab");
   bumpTab(session, "financials", 10);
 }
 function adjustValuation(session, patch) {
   session._financialsViewed = true;
   session._valuationAdjusted = true;
   const next = { ...session.valuation, ...patch };
-  const ltm = session.params.hist[session.params.hist.length - 1];
   const calc = calculateValuation({
-    ltm_ebitda: ltm.ebitda,
+    ltm_ebitda: session.params.q2_revenue,
     exit_multiple: next.exit_multiple,
     growth_rate: next.growth_rate,
     discount_rate: next.discount_rate
   });
   session.valuation = { ...next, ...calc };
-  log(session, "model_edited", "Adjusted valuation inputs", { ...session.valuation });
+  log(session, "model_edited", "Adjusted forecast model inputs", { ...session.valuation });
   bumpTab(session, "financials", 20);
+  if (session.params && next.exit_multiple <= session.params.gross_margin - 2) {
+    session.plantedErrorFlags = session.plantedErrorFlags || {};
+    session.plantedErrorFlags.err_opex_margin_compression = true;
+  }
   return session.valuation;
 }
 function addAssumption(session, text, affects) {
@@ -4393,13 +4437,16 @@ function addAssumption(session, text, affects) {
   session.assumptions.push(row);
   session.assumptionTexts = session.assumptions.map((a) => a.text);
   log(session, "assumption_added", `Assumption: ${row.text.slice(0, 80)}`, row);
-  if (/multiple|haircut|comp|precedent/i.test(row.text)) {
-    session.plantedErrorFlags = session.plantedErrorFlags || {};
-    session.plantedErrorFlags.err_exit_multiple_vs_comps = true;
+  session.plantedErrorFlags = session.plantedErrorFlags || {};
+  if (/churn|net.*retention|gross.*retention|attrition|growth.*gap|growth.*require/i.test(row.text)) {
+    session.plantedErrorFlags.err_growth_churn_mismatch = true;
   }
-  if (/synergy|double|overlap|paydown/i.test(row.text)) {
-    session.plantedErrorFlags = session.plantedErrorFlags || {};
-    session.plantedErrorFlags.err_synergy_double_count = true;
+  if (/opex|margin.*compres|operating.*expense.*revenue|expense.*grow.*faster|18.*12|faster.*revenue/i.test(row.text)) {
+    session.plantedErrorFlags.err_opex_margin_compression = true;
+  }
+  if (/ramp|sales.*cycle.*extend|cycle.*extend|75.*day|q4.*revenue.*hire|hire.*q4|hire.*contribut/i.test(row.text)) {
+    session.plantedErrorFlags.err_ramp_sales_cycle_mismatch = true;
+    session.m1_acknowledged = true;
   }
   tick(session);
 }
@@ -4414,19 +4461,16 @@ function addRisk(session, category, text) {
   session.risks.push(row);
   log(session, "risk_added", `Risk: ${category}`, row);
   const blob = `${category} ${row.text}`.toLowerCase();
-  if (/multiple|comp|precedent|valuation|overpay/.test(blob)) {
-    session.plantedErrorFlags = session.plantedErrorFlags || {};
-    session.plantedErrorFlags.err_exit_multiple_vs_comps = true;
+  session.plantedErrorFlags = session.plantedErrorFlags || {};
+  if (/churn|net.*retention|gross.*retention|attrition|growth.*gap|growth.*require/.test(blob)) {
+    session.plantedErrorFlags.err_growth_churn_mismatch = true;
   }
-  if (/retention|concentration|contradict|management|90%|declin/.test(blob)) {
-    if (session.openedDocs.includes("retention_csv")) {
-      session.plantedErrorFlags = session.plantedErrorFlags || {};
-      session.plantedErrorFlags.err_retention_contradiction = true;
-    }
+  if (/opex|margin.*compres|operating.*expense|expense.*faster|revenue.*faster|compress/.test(blob)) {
+    session.plantedErrorFlags.err_opex_margin_compression = true;
   }
-  if (/synergy|double|overlap|paydown/.test(blob)) {
-    session.plantedErrorFlags = session.plantedErrorFlags || {};
-    session.plantedErrorFlags.err_synergy_double_count = true;
+  if (/ramp|sales.*cycle.*extend|cycle.*extend|75.*day|q4.*hire|hire.*q4|hire.*contribut|no.*q3.*revenue/.test(blob)) {
+    session.plantedErrorFlags.err_ramp_sales_cycle_mismatch = true;
+    session.m1_acknowledged = true;
   }
   bumpTab(session, "risks", 15);
   tick(session);
@@ -4460,10 +4504,12 @@ function tick(session) {
       triggerId: m.triggerId,
       sender: m.sender
     });
+    if (m.triggerId === "J1") {
+      session.m1_fired = true;
+      log(session, "manager_update", "VP Sales update: sales cycle +30 days, 2 at-risk renewals");
+    }
   }
   const rem = getRemainingSec(session);
-  if (rem <= 60 && rem > 0 && !session.toast_5min_shown) {
-  }
   if (rem <= 5 * 60 && !session.toast_5min_shown) {
     session.toast_5min_shown = true;
     log(session, "timer_warning", "5 minutes left \u2014 make sure your recommendation is ready to submit.");
@@ -4477,7 +4523,7 @@ function replyToChat(session, text) {
   if (result.accepted) {
     log(session, "chat_message_sent", "Candidate chat reply", { text });
     if (result.followUp) {
-      log(session, "stakeholder_message", `Daniel follow-up`, { triggerId: result.followUp.triggerId });
+      log(session, "stakeholder_message", `Alex Kim follow-up`, { triggerId: result.followUp.triggerId });
     }
   }
   return result;
@@ -4505,7 +4551,7 @@ function submitMeridian(session) {
     );
   }
   session.submitted = true;
-  log(session, "final_submitted", "Submitted final investment memo");
+  log(session, "final_submitted", "Submitted VP Memo \u2014 FP&A Forecast Review");
   finalizeAiUsage(session, session.params);
   tick(session);
   const evaluation = evaluateMeridianSession({
@@ -4525,7 +4571,9 @@ function submitMeridian(session) {
     d1_branch: session.d1_branch,
     tabSeconds: session.tabSeconds,
     _elapsedSec: session._elapsedSec,
-    plantedErrorFlags: session.plantedErrorFlags
+    plantedErrorFlags: session.plantedErrorFlags,
+    used_trigger_ids: session.used_trigger_ids,
+    m1_fired: session.m1_fired
   });
   session.last_saved_at = Date.now();
   return evaluation;

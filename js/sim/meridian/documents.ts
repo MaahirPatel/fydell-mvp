@@ -1,6 +1,7 @@
 /**
- * Part B.2 — six Data Room documents, seed-consistent.
- * Part D planted errors + ambiguity are embedded in content.
+ * Part B.2 — Five Data Room documents for FP&A Forecast Review.
+ * Meridian Outdoor — VP Finance Q3 hiring/marketing plan review.
+ * Three planted concerns + one ambiguity point are embedded in content.
  */
 
 import type { MeridianSeedParams } from './seed.js';
@@ -16,144 +17,145 @@ export type MeridianDoc = {
 
 export function buildMeridianDocuments(p: MeridianSeedParams): MeridianDoc[] {
   const histRows = p.hist
-    .map((h) => {
-      const label = h.year === ('LTM' as unknown as number) || String(h.year) === 'LTM' ? 'LTM' : String(h.year);
-      return `${label}\t$${h.revenue}M\t$${h.ebitda}M\t${h.ebitda_margin}%\t$${h.net_income}M\t$${h.net_debt}M`;
-    })
+    .map(
+      (h) =>
+        `${h.quarter}\t$${h.revenue}M\t${h.arr}M ARR\t${h.ebitda_margin}%\t${h.headcount} FTE\t${h.churn_rate}% churn`
+    )
     .join('\n');
 
-  const compsRows = p.comps
-    .map((c) => `${c.name}\t${c.year}\t${c.ev_ebitda}x\t${c.note}`)
+  const peerRows = p.comps
+    .map((c) => `${c.name}\t${c.year}\t${c.ev_ebitda}% NRR\t${c.note}`)
     .join('\n');
 
-  const mandate = `FROM: Office of the CFO
-RE: ${p.target_company} acquisition — Investment Committee review
+  const briefMandate = `FROM: CFO, ${p.company}
+RE: ${p.quarter} Hiring & Marketing Plan — VP Finance review
 
-You are advising the CFO on whether we should proceed with the acquisition of ${p.target_company}, a mid-market consumer goods business. An offer of ${p.deal_value_label} is on the table and the Investment Committee meets at the end of this session.
+You are the VP of Finance at ${p.company}. The Q3 plan includes a significant investment in new hires (Sales and Marketing) and an expanded demand-generation spend. Before we present to the board, you need to pressure-test the forecast underlying these investments.
 
-Review the materials, analyze the financial and strategic case, identify the key risks, and submit a short investment memo. Your deliverable should state a clear recommendation (Proceed / Conditional Proceed / Hold / Pass), your three key reasons, the key risks, the most important assumptions behind your view, and the next diligence steps you would take before signing.
+Your job: review the supporting data room materials, stress-test the key assumptions, identify the material risks, and deliver a short VP Memo. Your deliverable should state a clear recommendation (Go / Hold / Revise), your three key reasons, the risks you would flag, the assumptions you changed or questioned, and the verification steps you would take before approving the plan.
 
-This is a real decision with real money behind it. We care as much about how you reason as about the final call.`;
+This is a real budget decision. We care as much about how you reason as about the final call.`;
 
   return [
+    // ── 1. CFO Brief ─────────────────────────────────────────────────────
     {
-      id: 'exec_brief',
-      title: 'Executive_Brief.pdf',
+      id: 'cfo_brief',
+      title: 'CFO_Brief.pdf',
       tag: 'Brief',
       kind: 'pdf',
-      body: `${mandate}
+      body: `${briefMandate}
 
-DEAL CONTEXT
-The buyer is under timeline pressure: the seller has a competing process and wants a signed LOI within the week. Strategic rationale cited by Corp Dev: category adjacency, distribution leverage, and a path to mid-teens EBITDA margins. Your job is not to rubber-stamp that story — it is to pressure-test it against the data room before IC.
+PLAN CONTEXT
+The Q3 plan assumes ${p.q3_revenue_growth}% revenue growth, gross margin of ${p.gross_margin}%, and adds 8 net new hires in Sales and Marketing. Operating expenses are projected to grow ${p.opex_growth}% to support the hiring and demand-generation ramp. Cash runway is ${p.cash_runway_months} months at plan.
 
-Working time: 25 minutes. Materials: Financial Model, Market Memo, Retention Cohort, Management Update, Comps & Precedents.`,
+Working time: 25 minutes. Materials: Revenue Forecast, Churn Update, Hiring Plan, Customer Concentration Note.`,
     },
-    {
-      id: 'financial_model',
-      title: 'Financial_Model.xlsx',
-      tag: 'Model',
-      kind: 'xlsx',
-      body: `FINANCIAL MODEL — ${p.target_company}
-Interactive version is in the Financials tab. Static snapshot:
 
-Metric\t2021\t2022\t2023\t2024\tLTM
+    // ── 2. Revenue Forecast ───────────────────────────────────────────────
+    {
+      id: 'revenue_forecast',
+      title: 'Revenue_Forecast.xlsx',
+      tag: 'Forecast',
+      kind: 'xlsx',
+      body: `REVENUE FORECAST — ${p.company} ${p.quarter}
+
+Quarterly trend:
+Quarter\tRevenue\tARR\tEBITDA Margin\tHeadcount\tGross Churn
 ${histRows}
 
-Base case materials assume forward growth ${p.forward_growth}% and exit multiple ${p.exit_multiple}x EBITDA.
-Use the Financials tab to adjust growth, exit multiple, and discount rate — implied EV recalculates live.`,
-      table: { hist: p.hist, forward_growth: p.forward_growth, exit_multiple: p.exit_multiple },
+PLAN ASSUMPTIONS (management base case)
+• Q3 revenue growth target: ${p.q3_revenue_growth}%
+• Gross margin target: ${p.gross_margin}%
+• Gross churn rate: ${p.churn_rate}%
+• Operating expense growth: ${p.opex_growth}%
+• Cash runway at plan spend: ${p.cash_runway_months} months
+
+Note: The Forecast Model tab lets you adjust growth rate, gross margin, and opex growth — outputs recalculate live. Use it to stress-test management's base case against the data room evidence.`,
+      table: { hist: p.hist, q3_revenue_growth: p.q3_revenue_growth, gross_margin: p.gross_margin },
     },
+
+    // ── 3. Churn Update ───────────────────────────────────────────────────
     {
-      id: 'market_memo',
-      title: 'Market_Memo.pdf',
-      tag: 'Market',
+      id: 'churn_update',
+      title: 'Churn_Update.pdf',
+      tag: 'Churn',
       kind: 'pdf',
-      body: `MARKET MEMO — Sector context for ${p.target_company}
+      body: `CHURN UPDATE — ${p.company} Customer Health Report (Q2 2025)
 
-Sector growth (consumer mid-market / branded goods): approximately ${p.sector_growth_low}–${p.sector_growth_high}% CAGR over the next three years (third-party research pack).
+GROSS CHURN: ${p.churn_rate}% annually (${round1(p.churn_rate / 4)}% quarterly)
+Note: Gross churn is measured at the account level. Net revenue retention is not broken out in this extract.
 
-Management's forward growth assumption embedded in the base materials is ${p.forward_growth}%.
-That is ${round1(p.forward_growth - p.sector_growth_high)}–${round1(p.forward_growth - p.sector_growth_low)} percentage points above the sector band.
+PLAN MATH CHECK (internal FP&A working note)
+Management's ${p.q3_revenue_growth}% revenue growth target sits ${round1(p.q3_revenue_growth - p.sector_growth_high)}–${round1(p.q3_revenue_growth - p.sector_growth_low)} pp above outdoor/B2B market growth of ${p.sector_growth_low}–${p.sector_growth_high}%.
 
-Implication for diligence: if the plan assumes ${p.forward_growth}% while the sector clears closer to ${p.sector_growth_low}–${p.sector_growth_high}%, the growth premium must be earned by share gains, pricing, or mix — not asserted. Live Insights will surface the computed gap; verify it yourself against this memo.`,
+With ${p.churn_rate}% gross churn, reaching ${p.q3_revenue_growth}% net revenue growth requires expansion revenue (upsell + cross-sell) and new logos to more than offset attrition. The plan does not explicitly show this pipeline build.
+
+PEER BENCHMARKS
+Peer group average gross churn: ~${p.industry_churn_avg}%
+Implication: ${p.company} is running ${round1(p.churn_rate - p.industry_churn_avg)} pp above peer-average gross churn while targeting above-market growth.
+
+PLANTED CONCERN 1: Is the ${p.q3_revenue_growth}% growth target achievable given the ${p.churn_rate}% gross churn rate? Do not assert the answer — verify the pipeline.`,
     },
+
+    // ── 4. Hiring Plan ────────────────────────────────────────────────────
     {
-      id: 'retention_csv',
-      title: 'Retention_Cohort.csv',
-      tag: 'Retention',
-      kind: 'csv',
-      body: `RETENTION COHORT EXTRACT — ${p.target_company}
-Source: RevOps / CS export (partial)
+      id: 'hiring_plan',
+      title: 'Hiring_Plan.xlsx',
+      tag: 'Hiring',
+      kind: 'xlsx',
+      body: `HIRING PLAN — ${p.company} ${p.quarter}
 
-customer_rank,arr_share_pct,years_with_us,revenue_trend_3yr,status
-1,6.2,7,flat,active
-2,5.1,6,declining,watch
-3,4.4,8,up,active
-4,3.8,5,flat,active
-5,3.5,4,declining,at_risk
-6,3.1,9,flat,active
-7,2.8,6,up,active
-8,2.5,3,flat,active
-9,2.2,5,flat,active
-10,2.0,2,up,active
+Q3 PROPOSED HEADCOUNT ADDITIONS
+Role\tCount\tStart Month\tRamp (days)\tRevenue Contribution
+AE (Enterprise)\t3\tJuly\t${p.new_hire_ramp_days}\tQ3 pipeline assumed
+AE (Mid-Market)\t2\tJuly\t${p.new_hire_ramp_days}\tQ3 pipeline assumed
+SDR\t2\tJuly\t${p.new_hire_ramp_days}\tQ3 pipeline assumed
+Marketing Manager\t1\tAugust\t${p.new_hire_ramp_days}\tDemand gen support
 
-SUMMARY
-Top-10 customer revenue concentration: ${p.top10_concentration}% of total revenue.
-Customers in top-10 with declining multi-year revenue: ${p.declining_top10_count} of 10 (ranks #2 and #5).
+PLAN ASSUMPTIONS
+• Sales cycle length: ${p.sales_cycle_days} days
+• Ramp-to-productivity: ${p.new_hire_ramp_days} days
+• Revenue contribution window: Q3 (assumed, based on July start + ${p.new_hire_ramp_days}-day ramp)
+• Q3 hiring cost impact: increases opex by ~${round1(p.opex_growth - 12)}pp above revenue growth
 
-NOTE: Full mid-market cohort retention detail is "available on request" — not attached in this data room. Do not invent a company-wide retention percentage from incomplete files.
+MATH CHECK (internal): A ${p.new_hire_ramp_days}-day ramp + ${p.sales_cycle_days}-day cycle = ${p.new_hire_ramp_days + p.sales_cycle_days} days until first closed deal.
+July start + ${p.new_hire_ramp_days + p.sales_cycle_days} days = ${dateOffset('July 1 2025', p.new_hire_ramp_days + p.sales_cycle_days)}.
 
-CONTRADICTION CHECK
-Compare this extract to Management_Update.pptx claims about top-10 longevity and strength.`,
+PLANTED CONCERN 3 (only visible after Manager Update): If the sales cycle extends by 30 days, the math becomes ${p.new_hire_ramp_days}-day ramp + ${p.updated_sales_cycle_days}-day cycle = ${p.new_hire_ramp_days + p.updated_sales_cycle_days} days. Q3 hires will not generate Q3 revenue.`,
       table: {
-        top10_concentration: p.top10_concentration,
-        declining: p.declining_top10_count,
-        rows: [
-          { rank: 2, trend: 'declining' },
-          { rank: 5, trend: 'declining' },
-        ],
+        sales_cycle: p.sales_cycle_days,
+        ramp: p.new_hire_ramp_days,
+        updated_cycle: p.updated_sales_cycle_days,
       },
     },
+
+    // ── 5. Customer Concentration Note ───────────────────────────────────
     {
-      id: 'management_update',
-      title: 'Management_Update.pptx',
-      tag: 'Update',
-      kind: 'pptx',
-      body: `MANAGEMENT UPDATE — ${p.target_company}
-Slide-style extract (seller materials)
-
-SLIDE 1 — Headline
-"${p.target_company} enters this process from a position of strength."
-
-SLIDE 2 — Customer franchise (stated with confidence, no caveats)
-"Over 90% of our top-10 customers have been with us 5+ years."
-
-SLIDE 3 — Growth
-Management reaffirms the ${p.forward_growth}% forward growth case supporting the ${p.deal_value_label} offer.
-
-SLIDE 4 — Ask
-Proceed to exclusivity at ${p.deal_value_label}.
-
-FP&A note (internal): Treat slide 2 as advocacy. Cross-check against Retention_Cohort.csv before leaning on retention in your recommendation.`,
-    },
-    {
-      id: 'comps_precedents',
-      title: 'Comps_Precedents.pdf',
-      tag: 'Comps',
+      id: 'concentration_note',
+      title: 'Customer_Concentration.pdf',
+      tag: 'Customers',
       kind: 'pdf',
-      body: `COMPS & PRECEDENTS — EV/EBITDA
-Relevant mid-market consumer / branded goods transactions
+      body: `CUSTOMER CONCENTRATION NOTE — ${p.company} Enterprise Account Summary
 
-Name\tYear\tEV/EBITDA\tNote
-${compsRows}
+CONCENTRATION SNAPSHOT
+Top-2 enterprise accounts: ~${p.at_risk_arr_pct}% of total ARR
+Top-10 accounts: estimated 55–65% of total ARR
+Peer-average top-10 concentration for comparable B2B firms: 40–50%
 
-Average EV/EBITDA (simple mean): ${p.comps_avg_multiple}x
+${p.company} is more concentrated than peers. Two of its largest accounts are approaching renewal this quarter.
 
-Base case materials imply an exit / entry framing near ${p.exit_multiple}x.
-The comps average (${p.comps_avg_multiple}x) is below that framing — Planted Error 1 if unexamined.
+RENEWAL STATUS
+Account A (enterprise, multi-year): Contract expires Q3 2025. Renewal decision pending.
+Account B (enterprise, strategic): Annual renewal Q3 2025. Procurement review in progress.
 
-Do not accept ${p.exit_multiple}x without reconciling to this table.`,
-      table: { comps: p.comps, avg: p.comps_avg_multiple, exit: p.exit_multiple },
+NOTE: ARR breakdown by account is NOT included in this document.
+The VP Sales team holds the detailed account-level ARR data. Do not estimate specific renewal revenue impact without verifying with account managers.
+
+PEER BENCHMARKS
+${peerRows}
+
+AMBIGUITY FLAG: The ${p.at_risk_arr_pct}% concentration figure is visible here, but the ARR amounts for Account A and Account B are not. Any specific dollar impact should be flagged as an estimate pending account manager confirmation.`,
+      table: { at_risk_arr_pct: p.at_risk_arr_pct, at_risk_count: p.at_risk_customer_count },
     },
   ];
 }
@@ -162,39 +164,57 @@ function round1(n: number): number {
   return Math.round(n * 10) / 10;
 }
 
+function dateOffset(startStr: string, days: number): string {
+  try {
+    const d = new Date(startStr);
+    d.setDate(d.getDate() + days);
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  } catch {
+    return `~${days} days from July 1`;
+  }
+}
+
+// ── Planted errors (concerns) ─────────────────────────────────────────────────
+
 export const PLANTED_ERRORS = [
   {
-    id: 'err_exit_multiple_vs_comps',
-    title: 'Exit multiple vs. precedent',
+    id: 'err_growth_churn_mismatch',
+    title: 'Revenue growth vs. churn rate',
     description:
-      'Base materials use an exit multiple above the comps average. Detection requires flagging the gap in Risks, memo, or an assumption that haircuts the multiple toward comps.',
+      `${12}% revenue growth with ${7}% gross churn requires significant net expansion or new logo pipeline not shown in the plan. Detection requires flagging the churn/growth math in risks, memo, or an assumption that questions the growth premise.`,
   },
   {
-    id: 'err_retention_contradiction',
-    title: 'Retention contradiction',
+    id: 'err_opex_margin_compression',
+    title: 'Opex growth vs. revenue growth',
     description:
-      'Management claims 90%+ of top-10 customers have 5+ year tenure; Retention_Cohort.csv shows 34% concentration with 2 of 10 declining. Detection requires opening the CSV AND flagging the contradiction.',
+      'Operating expenses growing 18% while revenue grows 12% will compress EBITDA margins by ~3-4pp. The plan treats margins as stable. Detection requires flagging the divergence in risks, memo, or adjusting the model to reflect compression.',
   },
   {
-    id: 'err_synergy_double_count',
-    title: 'Synergy double-count',
+    id: 'err_ramp_sales_cycle_mismatch',
+    title: 'Hire ramp vs. extended sales cycle',
     description:
-      'Cost synergies overlap with a separately stated reduction in change-of-control debt paydown, double-counting the same savings.',
+      'After the VP Sales update (+30 days on sales cycle), Q3 new hires cannot contribute Q3 revenue (30-day ramp + 75-day cycle = 105 days). The hiring plan revenue uplift should shift to Q4. Detection requires noting this conflict in risks or assumptions after the manager update fires.',
   },
 ] as const;
 
 export const AMBIGUITY_POINT = {
-  id: 'amb_missing_cohort',
-  title: 'Missing cohort data',
+  id: 'amb_at_risk_arr',
+  title: 'At-risk customer ARR unknown',
   description:
-    'A Data Room document references cohort retention data available on request with no such file provided. Good: note the gap / request it in diligence steps. Poor: state a specific retention conclusion as fact.',
+    'Manager update flags two enterprise renewals as at risk but does not provide ARR breakdown. Good: note the data gap and list requesting ARR detail as a verification step. Poor: state a specific revenue impact (e.g., "$2.3M ARR at risk") as fact without verifying with account managers.',
 } as const;
 
-/** Synergy double-count detail embedded for detection / Live Insights */
+/**
+ * Cash runway stress note (replaces synergy note). Describes the cash/opex pressure.
+ * Exported as synergyDoubleCountNote to keep public API surface unchanged.
+ */
 export function synergyDoubleCountNote(p: MeridianSeedParams): string {
-  return `SYNERGY BRIDGE (seller) — review carefully
-Line A: G&A cost synergies $42M run-rate by Year 3.
-Line B: "Change-of-control debt paydown savings" $28M (presented as separate value creation).
-Overlap: $18M of Line B is the same cash interest / fee reduction already counted inside Line A's G&A synergy build. Counting both inflates pro forma EBITDA supporting the ${p.deal_value_label} offer.
-Detection: call out the overlap in assumptions or memo, or back the duplicated amount out of your valuation.`;
+  const q3_rev_projected = round1(p.q2_revenue * (1 + p.q3_revenue_growth / 100));
+  const opex_ratio = round1(p.opex_growth / p.q3_revenue_growth);
+  return `CASH RUNWAY & OPEX STRESS — review carefully
+Current cash runway: ${p.cash_runway_months} months at plan spend.
+Q3 opex growth: ${p.opex_growth}% vs revenue growth ${p.q3_revenue_growth}% (ratio ${opex_ratio}x — expenses growing faster than revenue).
+If Q3 revenue misses plan by 3pp (${round1(p.q3_revenue_growth - 3)}% actual), EBITDA loss widens and runway shortens.
+At-risk enterprise renewals (~${p.at_risk_arr_pct}% of ARR) could accelerate the runway problem if lost.
+Detection: flag the opex/revenue divergence and model a downside scenario before approving the hiring plan.`;
 }

@@ -1,5 +1,6 @@
 /**
- * Project Meridian — full session controller (Parts B–F).
+ * Project Meridian — full session controller (FP&A Forecast Review).
+ * VP Finance reviewing Q3 hiring/marketing plan for Meridian Outdoor.
  */
 
 import { instantiateMeridianSeed, calculateValuation, type MeridianSeedParams } from './seed.js';
@@ -40,10 +41,22 @@ export type MeridianSession = MeridianSessionState & {
   seed: string;
   params: MeridianSeedParams;
   documents: MeridianDoc[];
-  synergy_note: string;
-  started_at: number; // epoch ms
+  synergy_note: string; // cash runway / opex stress note
+  started_at: number;   // epoch ms
   time_limit_sec: number;
   event_log: MeridianEvent[];
+  /**
+   * Forecast model state (formerly "valuation panel").
+   *
+   * Field names kept unchanged for API compat — semantics updated to FP&A:
+   *   growth_rate   → Q3 revenue growth % target
+   *   exit_multiple → gross margin % target (63 = 63%)
+   *   discount_rate → opex growth % (cost pressure)
+   *   implied_ev    → projected Q3 revenue ($M)
+   *   dcf_ev        → projected Q3 EBITDA ($M, after opex compression)
+   *   range_low     → bear-case Q3 revenue
+   *   range_high    → bull-case Q3 revenue
+   */
   valuation: {
     growth_rate: number;
     exit_multiple: number;
@@ -75,12 +88,13 @@ export function createMeridianSession(opts: {
   const seed = opts.seed || opts.inviteToken || `meridian_${Date.now().toString(36)}`;
   const params = instantiateMeridianSeed(seed);
   const documents = buildMeridianDocuments(params);
-  const ltm = params.hist[params.hist.length - 1];
+
+  // Use Q2 revenue as baseline for the forecast model calc
   const val = calculateValuation({
-    ltm_ebitda: ltm.ebitda,
-    exit_multiple: params.exit_multiple,
-    growth_rate: params.forward_growth,
-    discount_rate: 10,
+    ltm_ebitda: params.q2_revenue,
+    exit_multiple: params.gross_margin,
+    growth_rate: params.q3_revenue_growth,
+    discount_rate: params.opex_growth,
   });
 
   const session: MeridianSession = {
@@ -106,9 +120,9 @@ export function createMeridianSession(opts: {
     aiAskCountWindow: { t: 0, count: 0 },
     _elapsedSec: 0,
     valuation: {
-      growth_rate: params.forward_growth,
-      exit_multiple: params.exit_multiple,
-      discount_rate: 10,
+      growth_rate: params.q3_revenue_growth,
+      exit_multiple: params.gross_margin,
+      discount_rate: params.opex_growth,
       ...val,
     },
     ai_usage_log: [],
@@ -117,28 +131,29 @@ export function createMeridianSession(opts: {
     plantedErrorFlags: {},
   } as MeridianSession;
 
-  log(session, 'simulation_started', 'Started Project Meridian', { seed: params.seed });
+  log(session, 'simulation_started', 'Started Project Meridian — FP&A Forecast Review', { seed: params.seed });
   return session;
 }
 
 function buildLiveInsights(p: MeridianSeedParams) {
-  const gapLow = Math.round((p.forward_growth - p.sector_growth_high) * 10) / 10;
-  const gapHigh = Math.round((p.forward_growth - p.sector_growth_low) * 10) / 10;
+  const churnGap = Math.round((p.churn_rate - p.industry_churn_avg) * 10) / 10;
+  const opexGap = Math.round((p.opex_growth - p.q3_revenue_growth) * 10) / 10;
+  const rampCycleDays = p.new_hire_ramp_days + p.sales_cycle_days;
   return [
     {
-      id: 'ins_growth',
-      title: 'Forward growth vs sector',
-      body: `Plan assumes ${p.forward_growth}% vs sector ${p.sector_growth_low}–${p.sector_growth_high}% (gap ${gapLow}–${gapHigh} pp).`,
+      id: 'ins_churn',
+      title: 'Churn rate vs. industry avg',
+      body: `Plan churn ${p.churn_rate}% vs. peer avg ${p.industry_churn_avg}% (${churnGap > 0 ? '+' : ''}${churnGap} pp above peers). At ${p.churn_rate}% gross churn, the ${p.q3_revenue_growth}% growth target requires strong net expansion.`,
     },
     {
-      id: 'ins_multiple',
-      title: 'Exit multiple vs comps',
-      body: `Materials frame ${p.exit_multiple}x vs comps average ${p.comps_avg_multiple}x.`,
+      id: 'ins_opex',
+      title: 'Opex growth vs. revenue growth',
+      body: `Opex growing ${p.opex_growth}% vs. revenue ${p.q3_revenue_growth}% — a ${opexGap > 0 ? '+' : ''}${opexGap} pp divergence. EBITDA margin will compress unless revenue outperforms plan.`,
     },
     {
-      id: 'ins_concentration',
-      title: 'Customer concentration',
-      body: `Top-10 concentration is ${p.top10_concentration}% — check Retention_Cohort.csv before leaning on management longevity claims.`,
+      id: 'ins_ramp',
+      title: 'Hire ramp + sales cycle math',
+      body: `${p.new_hire_ramp_days}-day ramp + ${p.sales_cycle_days}-day cycle = ${rampCycleDays} days to first deal. If cycle extends 30 days (${p.updated_sales_cycle_days} days total), Q3 hires don't contribute Q3 revenue.`,
     },
   ];
 }
@@ -177,7 +192,7 @@ export function syncElapsed(session: MeridianSession): number {
 
 export function viewBrief(session: MeridianSession): void {
   session._briefViewed = true;
-  log(session, 'brief_viewed', 'Viewed CFO brief');
+  log(session, 'brief_viewed', 'Viewed CFO Brief');
   bumpTab(session, 'brief', 5);
 }
 
@@ -186,7 +201,8 @@ export function openDocument(session: MeridianSession, docId: string): MeridianD
   if (!doc) return null;
   if (!session.openedDocs.includes(docId)) session.openedDocs.push(docId);
   log(session, 'resource_opened', `Opened ${doc.title}`, { resourceId: docId });
-  if (docId === 'retention_csv') session.m1_acknowledged = true;
+  // Acknowledge manager update if candidate opens the concentration note
+  if (docId === 'concentration_note') session.m1_acknowledged = true;
   bumpTab(session, 'data_room', 15);
   tick(session);
   return doc;
@@ -194,10 +210,17 @@ export function openDocument(session: MeridianSession, docId: string): MeridianD
 
 export function viewFinancials(session: MeridianSession): void {
   session._financialsViewed = true;
-  log(session, 'financials_viewed', 'Viewed Financials tab');
+  log(session, 'financials_viewed', 'Viewed Forecast Model tab');
   bumpTab(session, 'financials', 10);
 }
 
+/**
+ * Adjust forecast model inputs. Field names kept identical to M&A version for API compat.
+ * In FP&A context:
+ *   growth_rate   = Q3 revenue growth % to use in the model
+ *   exit_multiple = gross margin % target (e.g. 63 for 63%)
+ *   discount_rate = opex growth % scenario
+ */
 export function adjustValuation(
   session: MeridianSession,
   patch: Partial<{ growth_rate: number; exit_multiple: number; discount_rate: number }>
@@ -205,16 +228,24 @@ export function adjustValuation(
   session._financialsViewed = true;
   session._valuationAdjusted = true;
   const next = { ...session.valuation, ...patch };
-  const ltm = session.params.hist[session.params.hist.length - 1];
   const calc = calculateValuation({
-    ltm_ebitda: ltm.ebitda,
+    ltm_ebitda: session.params.q2_revenue,
     exit_multiple: next.exit_multiple,
     growth_rate: next.growth_rate,
     discount_rate: next.discount_rate,
   });
   session.valuation = { ...next, ...calc };
-  log(session, 'model_edited', 'Adjusted valuation inputs', { ...session.valuation });
+  log(session, 'model_edited', 'Adjusted forecast model inputs', { ...session.valuation });
   bumpTab(session, 'financials', 20);
+
+  // Planted error flag: if candidate lowers gross margin target, they spotted compression
+  if (
+    session.params &&
+    next.exit_multiple <= session.params.gross_margin - 2
+  ) {
+    session.plantedErrorFlags = session.plantedErrorFlags || {};
+    session.plantedErrorFlags.err_opex_margin_compression = true;
+  }
   return session.valuation;
 }
 
@@ -233,15 +264,20 @@ export function addAssumption(
   session.assumptions.push(row);
   session.assumptionTexts = session.assumptions.map((a) => a.text);
   log(session, 'assumption_added', `Assumption: ${row.text.slice(0, 80)}`, row);
-  // planted error flags
-  if (/multiple|haircut|comp|precedent/i.test(row.text)) {
-    session.plantedErrorFlags = session.plantedErrorFlags || {};
-    session.plantedErrorFlags.err_exit_multiple_vs_comps = true;
+
+  // Planted error detection via keyword patterns
+  session.plantedErrorFlags = session.plantedErrorFlags || {};
+  if (/churn|net.*retention|gross.*retention|attrition|growth.*gap|growth.*require/i.test(row.text)) {
+    session.plantedErrorFlags.err_growth_churn_mismatch = true;
   }
-  if (/synergy|double|overlap|paydown/i.test(row.text)) {
-    session.plantedErrorFlags = session.plantedErrorFlags || {};
-    session.plantedErrorFlags.err_synergy_double_count = true;
+  if (/opex|margin.*compres|operating.*expense.*revenue|expense.*grow.*faster|18.*12|faster.*revenue/i.test(row.text)) {
+    session.plantedErrorFlags.err_opex_margin_compression = true;
   }
+  if (/ramp|sales.*cycle.*extend|cycle.*extend|75.*day|q4.*revenue.*hire|hire.*q4|hire.*contribut/i.test(row.text)) {
+    session.plantedErrorFlags.err_ramp_sales_cycle_mismatch = true;
+    session.m1_acknowledged = true;
+  }
+
   tick(session);
 }
 
@@ -259,21 +295,21 @@ export function addRisk(
   if (!row.text) return;
   session.risks.push(row);
   log(session, 'risk_added', `Risk: ${category}`, row);
+
+  // Planted error detection
   const blob = `${category} ${row.text}`.toLowerCase();
-  if (/multiple|comp|precedent|valuation|overpay/.test(blob)) {
-    session.plantedErrorFlags = session.plantedErrorFlags || {};
-    session.plantedErrorFlags.err_exit_multiple_vs_comps = true;
+  session.plantedErrorFlags = session.plantedErrorFlags || {};
+  if (/churn|net.*retention|gross.*retention|attrition|growth.*gap|growth.*require/.test(blob)) {
+    session.plantedErrorFlags.err_growth_churn_mismatch = true;
   }
-  if (/retention|concentration|contradict|management|90%|declin/.test(blob)) {
-    if (session.openedDocs.includes('retention_csv')) {
-      session.plantedErrorFlags = session.plantedErrorFlags || {};
-      session.plantedErrorFlags.err_retention_contradiction = true;
-    }
+  if (/opex|margin.*compres|operating.*expense|expense.*faster|revenue.*faster|compress/.test(blob)) {
+    session.plantedErrorFlags.err_opex_margin_compression = true;
   }
-  if (/synergy|double|overlap|paydown/.test(blob)) {
-    session.plantedErrorFlags = session.plantedErrorFlags || {};
-    session.plantedErrorFlags.err_synergy_double_count = true;
+  if (/ramp|sales.*cycle.*extend|cycle.*extend|75.*day|q4.*hire|hire.*q4|hire.*contribut|no.*q3.*revenue/.test(blob)) {
+    session.plantedErrorFlags.err_ramp_sales_cycle_mismatch = true;
+    session.m1_acknowledged = true;
   }
+
   bumpTab(session, 'risks', 15);
   tick(session);
 }
@@ -314,13 +350,13 @@ export function tick(session: MeridianSession): ChatMessage[] {
       triggerId: m.triggerId,
       sender: m.sender,
     });
+    // Track M1 (Jordan's manager update) firing
+    if (m.triggerId === 'J1') {
+      session.m1_fired = true;
+      log(session, 'manager_update', 'VP Sales update: sales cycle +30 days, 2 at-risk renewals');
+    }
   }
-  // timer toast
   const rem = getRemainingSec(session);
-  if (rem <= 60 && rem > 0 && !session.toast_5min_shown) {
-    // Spec: at 1:00 red + toast "5 minutes left..." — also amber at 5:00
-    // Fire the one-time toast when crossing 5:00 as well
-  }
   if (rem <= 5 * 60 && !session.toast_5min_shown) {
     session.toast_5min_shown = true;
     log(session, 'timer_warning', '5 minutes left — make sure your recommendation is ready to submit.');
@@ -335,7 +371,7 @@ export function replyToChat(session: MeridianSession, text: string) {
   if (result.accepted) {
     log(session, 'chat_message_sent', 'Candidate chat reply', { text });
     if (result.followUp) {
-      log(session, 'stakeholder_message', `Daniel follow-up`, { triggerId: result.followUp.triggerId });
+      log(session, 'stakeholder_message', `Alex Kim follow-up`, { triggerId: result.followUp.triggerId });
     }
   }
   return result;
@@ -371,9 +407,9 @@ export function submitMeridian(session: MeridianSession): EvaluationResult {
     );
   }
   session.submitted = true;
-  log(session, 'final_submitted', 'Submitted final investment memo');
+  log(session, 'final_submitted', 'Submitted VP Memo — FP&A Forecast Review');
   finalizeAiUsage(session, session.params);
-  tick(session); // P5
+  tick(session); // C5
   const evaluation = evaluateMeridianSession({
     id: session.id,
     seed: session.seed,
@@ -392,6 +428,8 @@ export function submitMeridian(session: MeridianSession): EvaluationResult {
     tabSeconds: session.tabSeconds,
     _elapsedSec: session._elapsedSec,
     plantedErrorFlags: session.plantedErrorFlags,
+    used_trigger_ids: session.used_trigger_ids,
+    m1_fired: session.m1_fired,
   });
   session.last_saved_at = Date.now();
   return evaluation;

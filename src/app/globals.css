@@ -2,55 +2,63 @@
 
 /* Fydell visual system - dark enterprise product */
 @theme {
-  --color-fydell-bg: #03050d;
-  --color-fydell-surface: #060914;
-  --color-fydell-elevated: #0a0f1f;
-  --color-midnight: #03050d;
-  --color-surface-mid: #0a0f1f;
-  --color-surface-2: #111827;
-  --color-violet-accent: #7c5cff;
-  --color-violet-2: #9b5cff;
-  --color-blue-accent: #5b8cff;
-  --color-blue-2: #3b82f6;
-  --color-cyan-accent: #67e8f9;
-  --color-muted-slate: #9aa4b8;
-  --color-success: #3dd68c;
-  --color-warning: #f5b942;
-  --color-danger: #fb7185;
+  --color-fydell-bg: #05070d;
+  --color-fydell-surface: #0b101a;
+  --color-fydell-elevated: #101624;
+  --color-midnight: #05070d;
+  --color-surface-mid: #101624;
+  --color-surface-2: #151c2b;
+  --color-violet-accent: #7c3dff;
+  --color-violet-2: #8b5cf6;
+  --color-blue-accent: #2563ff;
+  --color-blue-2: #1d4ed8;
+  --color-cyan-accent: #2ed3d0;
+  --color-muted-slate: #a7b0c0;
+  --color-success: #34d399;
+  --color-warning: #f59e0b;
+  --color-danger: #f87171;
 
   --font-sans: var(--font-geist-sans), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-geist-sans), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-  --shadow-card: 0 24px 80px rgba(0, 0, 0, 0.32);
-  --shadow-dashboard: 0 80px 180px rgba(0, 0, 0, 0.7), 0 0 100px rgba(124, 92, 255, 0.18);
+  --shadow-card: 0 24px 80px rgba(0, 0, 0, 0.28);
+  --shadow-dashboard: 0 40px 100px rgba(0, 0, 0, 0.45), 0 0 80px rgba(37, 99, 255, 0.12);
 }
 
 :root {
-  --bg: #03050d;
-  --bg-2: #060914;
-  --bg-3: #0a0f1f;
-  --panel: rgba(12, 16, 30, 0.78);
-  --panel-strong: rgba(15, 20, 36, 0.92);
+  --bg: #05070d;
+  --bg-soft: #080b13;
+  --bg-2: #080b13;
+  --bg-3: #0b101a;
+  --surface: #0b101a;
+  --surface-2: #101624;
+  --surface-3: #151c2b;
+  --panel: rgba(16, 22, 36, 0.94);
+  --panel-strong: rgba(16, 22, 36, 0.98);
   --panel-soft: rgba(255, 255, 255, 0.035);
-  --border: rgba(255, 255, 255, 0.095);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
   --border-soft: rgba(255, 255, 255, 0.055);
-  --text: #f8fafc;
-  --muted: #9aa4b8;
-  --muted-2: #667085;
-  --violet: #7c5cff;
-  --violet-2: #9b5cff;
-  --blue: #5b8cff;
-  --blue-2: #3b82f6;
-  --cyan: #67e8f9;
-  --green: #3dd68c;
-  --warning: #f5b942;
-  --danger: #fb7185;
+  --text: #f7f8fb;
+  --muted: #a7b0c0;
+  --faint: #6f7a8c;
+  --muted-2: #6f7a8c;
+  --violet: #7c3dff;
+  --violet-2: #8b5cf6;
+  --blue: #2563ff;
+  --blue-2: #1d4ed8;
+  --blue-hover: #1d4ed8;
+  --cyan: #2ed3d0;
+  --pink: #ec4899;
+  --green: #34d399;
+  --warning: #f59e0b;
+  --danger: #f87171;
   --radius-xs: 8px;
   --radius-sm: 12px;
   --radius-md: 18px;
   --radius-lg: 24px;
   --radius-xl: 30px;
-  --shadow: 0 30px 100px rgba(0, 0, 0, 0.55);
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -69,13 +77,13 @@ body {
   margin: 0;
   overflow-x: hidden;
   background:
-    radial-gradient(980px 620px at 72% 18%, rgba(124, 92, 255, 0.17), transparent 64%),
-    radial-gradient(820px 560px at 18% 26%, rgba(38, 99, 235, 0.16), transparent 62%),
-    radial-gradient(900px 760px at 48% 108%, rgba(91, 140, 255, 0.08), transparent 62%),
-    linear-gradient(180deg, #03050d 0%, #050817 50%, #02030a 100%);
+    radial-gradient(circle at 78% 12%, rgba(37, 99, 255, 0.12), transparent 28%),
+    radial-gradient(circle at 18% 24%, rgba(124, 61, 255, 0.08), transparent 24%),
+    linear-gradient(180deg, #05070d 0%, #070a12 48%, #05070d 100%);
   color: var(--text);
   font-family: var(--font-sans);
-  line-height: 1.55;
+  font-size: 17px;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
 }
@@ -87,8 +95,29 @@ body {
   h4 {
     margin: 0;
     font-family: var(--font-display);
-    letter-spacing: -0.045em;
+    letter-spacing: -0.04em;
     color: var(--text);
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: clamp(2.75rem, 6vw, 4.75rem);
+    line-height: 0.92;
+    font-weight: 650;
+    letter-spacing: -0.04em;
+  }
+  h2 {
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    line-height: 0.98;
+    font-weight: 620;
+    letter-spacing: -0.04em;
+  }
+  h3 {
+    font-size: 1.35rem;
+    line-height: 1.15;
+    font-weight: 600;
+  }
+  p {
+    text-wrap: pretty;
   }
 }
 

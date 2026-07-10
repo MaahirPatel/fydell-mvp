@@ -1,33 +1,75 @@
 /**
- * Part D — per-session randomization. Single seed drives all numbers so the
- * dataset stays internally consistent.
+ * Part D — per-session randomization for FP&A Forecast Review.
+ * Meridian Outdoor, VP Finance deciding Q3 hiring/marketing plan.
+ * Single seed drives all numbers so the dataset stays internally consistent.
  */
 
 export const TARGET_COMPANIES = [
-  'NorthBridge Brands',
-  'Calder & Vine',
-  'Ashworth Consumer Group',
-  'Meridian Home Co',
-  'Halcyon Consumer Partners',
+  'Meridian Outdoor',
+  'Meridian Outdoor Co',
+  'Meridian Outdoor Group',
+  'Meridian Outdoor Inc',
+  'Meridian Outdoor LLC',
 ] as const;
 
 export type MeridianSeedParams = {
   seed: string;
-  target_company: string;
-  deal_value_b: number; // billions, 1 decimal
-  deal_value_label: string; // e.g. "$2.4B"
-  ltm_revenue: number;
-  hist: { year: number | 'LTM'; revenue: number; ebitda: number; ebitda_margin: number; net_income: number; net_debt: number }[];
-  forward_growth: number; // 14–22
-  sector_growth_low: number; // 7–10 band
-  sector_growth_high: number;
-  exit_multiple: number; // 10.5–12.5
-  comps_avg_multiple: number; // 9.0–10.2, always < exit
+  company: string;
+  quarter: string;
+
+  // ── Editable forecast defaults (the "model knobs") ──────────────────────
+  q3_revenue_growth: number;        // ~12%  — Q3 revenue growth target
+  gross_margin: number;             // ~63%  — gross margin target
+  churn_rate: number;               // ~7%   — gross annual churn rate
+  sales_cycle_days: number;         // 45    — avg sales cycle length
+  new_hire_ramp_days: number;       // 30    — ramp-to-productivity days
+  opex_growth: number;              // ~18%  — operating expense growth
+  cash_runway_months: number;       // 9     — months of cash runway
+  enterprise_renewal_prob: number;  // ~85%  — enterprise renewal probability
+
+  // ── Q2 actuals (seeded) ──────────────────────────────────────────────────
+  q2_revenue: number;               // Q2 quarterly revenue ($M)
+  q2_arr: number;                   // ARR at end of Q2 ($M)
+  q2_headcount: number;             // headcount
+  q2_ebitda_margin: number;         // Q2 EBITDA margin %
+
+  // ── Industry benchmarks ─────────────────────────────────────────────────
+  industry_churn_avg: number;       // ~5%  peer average gross churn
+  industry_sales_cycle_avg: number; // ~55 days peer average sales cycle
+
+  // ── Post-manager-update values ──────────────────────────────────────────
+  updated_sales_cycle_days: number; // sales_cycle_days + 30
+  at_risk_customer_count: number;   // 2 at-risk enterprise renewals
+  at_risk_arr_pct: number;          // % of ARR concentrated in those accounts
+
+  // ── Quarterly history (5 quarters) ──────────────────────────────────────
+  hist: {
+    quarter: string;
+    revenue: number;
+    arr: number;
+    ebitda_margin: number;
+    headcount: number;
+    churn_rate: number;
+  }[];
+
+  // ── Compatibility aliases used by session.ts / evaluate.ts ──────────────
+  // These map FP&A concepts onto existing field names so session.ts and
+  // evaluate.ts require minimal structural change.
+  forward_growth: number;         // = q3_revenue_growth
+  exit_multiple: number;          // = gross_margin (semantic alias)
+  comps_avg_multiple: number;     // = industry_churn_avg (peer benchmark alias)
+  deal_value_label: string;       // e.g. "Q3 2025 Plan"
+  deal_value_b: number;           // = q2_arr / 1000 (ARR in $B-equivalent)
+  ltm_revenue: number;            // = q2_revenue * 4 (annualized proxy)
+  top10_concentration: number;    // = at_risk_arr_pct
+  declining_top10_count: number;  // = 2 (at-risk enterprise accounts)
+  sector_growth_low: number;      // market growth low %
+  sector_growth_high: number;     // market growth high %
+  ebitda_margin_ltm: number;      // = q2_ebitda_margin
   comps: { name: string; year: number; ev_ebitda: number; note: string }[];
-  top10_concentration: number; // fixed 34
-  declining_top10_count: number; // fixed 2
-  ebitda_margin_ltm: number;
 };
+
+// ── PRNG ─────────────────────────────────────────────────────────────────────
 
 function mulberry32(a: number): () => number {
   let t = a >>> 0;
@@ -59,128 +101,171 @@ function range(rand: () => number, min: number, max: number, decimals: number): 
   return round(min + (max - min) * rand(), decimals);
 }
 
-/**
- * Build a consistent historical P&L ending at LTM revenue, with a smooth CAGR.
- */
-function buildHistory(ltmRev: number, rand: () => number) {
-  const cagr = range(rand, 0.08, 0.14, 4); // implied historical growth
-  const y2024 = round(ltmRev / (1 + cagr * 0.15), 0); // LTM slightly above FY2024
-  const y2023 = round(y2024 / (1 + cagr), 0);
-  const y2022 = round(y2023 / (1 + cagr), 0);
-  const y2021 = round(y2022 / (1 + cagr), 0);
-  const years = [
-    { year: 2021, revenue: y2021 },
-    { year: 2022, revenue: y2022 },
-    { year: 2023, revenue: y2023 },
-    { year: 2024, revenue: y2024 },
-    { year: 0, revenue: ltmRev, label: 'LTM' as const },
-  ];
-  const marginBase = range(rand, 0.165, 0.195, 4);
-  return years.map((y, i) => {
-    const margin = round(marginBase + i * 0.005, 3);
-    const ebitda = round(y.revenue * margin, 0);
-    const ni = round(ebitda * 0.62, 0);
-    const netDebt = round(210 + i * 45 + rand() * 20, 0);
-    return {
-      year: (y.year === 0 ? 'LTM' : y.year) as number | 'LTM',
-      revenue: y.revenue,
-      ebitda,
-      ebitda_margin: round(margin * 100, 1),
-      net_income: ni,
-      net_debt: netDebt,
-    };
-  });
+// ── Quarterly history builder ─────────────────────────────────────────────────
+
+function buildHistory(
+  q2_revenue: number,
+  q2_arr: number,
+  q2_headcount: number,
+  q2_ebitda_margin: number,
+  rand: () => number
+): MeridianSeedParams['hist'] {
+  const rev_cagr = range(rand, 0.09, 0.14, 4);
+  const arr_cagr = range(rand, 0.10, 0.16, 4);
+  const quarters = ['Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025'];
+  const result = [];
+  for (let i = 0; i < 5; i++) {
+    const factor = (1 + rev_cagr) ** (i / 4);
+    const rev = round(q2_revenue * factor * (0.95 + rand() * 0.1), 2);
+    const arr = round(q2_arr * ((1 + arr_cagr) ** (i / 4)), 1);
+    const em = round(q2_ebitda_margin - (4 - i) * 0.8 + (rand() - 0.5) * 1.5, 1);
+    const hc = Math.round(q2_headcount * ((1 + rev_cagr) ** (i / 4)) * (0.95 + rand() * 0.1));
+    const churn = round(6.5 + (rand() - 0.5) * 1.5, 1);
+    result.push({ quarter: quarters[i], revenue: rev, arr, ebitda_margin: em, headcount: hc, churn_rate: churn });
+  }
+  return result;
 }
 
-const COMP_NAMES = [
-  'Pinnacle Goods take-private',
-  'Riverstone Brands / PE',
-  'Oak & Ember acquisition',
-  'Summit Consumer / strategic',
-  'Lumen Home Co / sponsor',
+// ── Peer benchmark names ───────────────────────────────────────────────────────
+
+const PEER_NAMES = [
+  'Alpine Sports Direct (outdoor peer)',
+  'TrailHead Gear Co',
+  'Summit Outdoors Group',
+  'Base Camp Equipment',
+  'Ridge Line Brands',
 ];
+
+// ── Main seed instantiation ───────────────────────────────────────────────────
 
 export function instantiateMeridianSeed(seedInput: string | number): MeridianSeedParams {
   const seed = String(seedInput ?? 'meridian-default');
   const rand = mulberry32(seedToUint32(seed));
 
-  const target_company = TARGET_COMPANIES[Math.floor(rand() * TARGET_COMPANIES.length)];
-  const deal_value_b = range(rand, 1.8, 3.1, 1);
-  const deal_value_label = `$${deal_value_b.toFixed(1)}B`;
+  const companyIndex = Math.floor(rand() * TARGET_COMPANIES.length);
+  const company = TARGET_COMPANIES[companyIndex];
+  const quarter = 'Q3 2025';
 
-  const ltm_revenue = range(rand, 1050, 1400, 0);
-  const hist = buildHistory(ltm_revenue, rand) as MeridianSeedParams['hist'];
+  // ── Forecast model defaults (seeded variation around brief defaults) ──
+  const q3_revenue_growth = range(rand, 11.0, 13.0, 1);  // ~12%
+  const gross_margin = range(rand, 62.0, 64.0, 1);        // ~63%
+  const churn_rate = range(rand, 6.5, 7.5, 1);            // ~7%
+  const sales_cycle_days = 45;
+  const new_hire_ramp_days = 30;
+  const opex_growth = range(rand, 17.0, 19.0, 1);         // ~18%
+  const cash_runway_months = 9;
+  const enterprise_renewal_prob = range(rand, 83.0, 87.0, 1); // ~85%
 
-  const forward_growth = range(rand, 14, 22, 1);
+  // ── Q2 actuals ──
+  const q2_revenue = range(rand, 3.2, 3.8, 2);            // quarterly revenue $M
+  const q2_arr = range(rand, 14.0, 20.0, 1);              // ARR $M
+  const q2_headcount = Math.round(range(rand, 42, 68, 0));
+  const q2_ebitda_margin = range(rand, 10.0, 16.0, 1);
+
+  // ── Industry benchmarks ──
+  const industry_churn_avg = range(rand, 4.5, 5.5, 1);
+  const industry_sales_cycle_avg = range(rand, 50, 62, 0);
+
+  // ── Post-manager-update ──
+  const updated_sales_cycle_days = sales_cycle_days + 30; // 75 days
+  const at_risk_customer_count = 2;
+  const at_risk_arr_pct = range(rand, 22, 32, 1); // % of ARR in those 2 accounts
+
+  // ── Quarterly history ──
+  const hist = buildHistory(q2_revenue, q2_arr, q2_headcount, q2_ebitda_margin, rand);
+
+  // ── Market growth band ──
   const sector_growth_low = range(rand, 7, 9, 1);
-  let sector_growth_high = range(rand, sector_growth_low + 0.5, 10, 1);
-  if (sector_growth_high >= forward_growth) sector_growth_high = Math.min(10, forward_growth - 1);
+  const sector_growth_high = range(rand, 9.5, 12.0, 1);
 
-  const exit_multiple = range(rand, 10.5, 12.5, 1);
-  let comps_avg_multiple = range(rand, 9.0, 10.2, 1);
-  if (comps_avg_multiple >= exit_multiple) comps_avg_multiple = round(exit_multiple - 1.2, 1);
-
-  // Spread five comps around the average, all below exit multiple
-  const comps = COMP_NAMES.map((name, i) => {
-    const jitter = (i - 2) * 0.25 + (rand() - 0.5) * 0.3;
-    let m = round(comps_avg_multiple + jitter, 1);
-    if (m >= exit_multiple) m = round(exit_multiple - 0.8, 1);
-    if (m < 8.5) m = 8.5;
+  // ── Peer benchmarks (comps analog) ──
+  const comps = PEER_NAMES.map((name, i) => {
+    const jitter = (i - 2) * 0.3 + (rand() - 0.5) * 0.4;
+    const nrr = round(108 + jitter * 5, 1); // net revenue retention %
     return {
       name,
-      year: 2022 + (i % 3),
-      ev_ebitda: m,
-      note: i % 2 === 0 ? 'Sponsor take-private' : 'Strategic acquisition',
+      year: 2024 + (i % 2),
+      ev_ebitda: nrr, // repurposed: peer NRR
+      note: i % 2 === 0 ? 'SaaS/outdoor peer' : 'B2B subscription peer',
     };
   });
-  const avg =
-    Math.round((comps.reduce((s, c) => s + c.ev_ebitda, 0) / comps.length) * 10) / 10;
+  const avg = round(comps.reduce((s, c) => s + c.ev_ebitda, 0) / comps.length, 1);
 
-  const ltm = hist[hist.length - 1];
   return {
     seed,
-    target_company,
-    deal_value_b,
-    deal_value_label,
-    ltm_revenue,
+    company,
+    quarter,
+    q3_revenue_growth,
+    gross_margin,
+    churn_rate,
+    sales_cycle_days,
+    new_hire_ramp_days,
+    opex_growth,
+    cash_runway_months,
+    enterprise_renewal_prob,
+    q2_revenue,
+    q2_arr,
+    q2_headcount,
+    q2_ebitda_margin,
+    industry_churn_avg,
+    industry_sales_cycle_avg,
+    updated_sales_cycle_days,
+    at_risk_customer_count,
+    at_risk_arr_pct,
     hist,
-    forward_growth,
+    // ── Compat aliases ──
+    forward_growth: q3_revenue_growth,
+    exit_multiple: gross_margin,
+    comps_avg_multiple: avg,
+    deal_value_label: `${quarter} Plan`,
+    deal_value_b: round(q2_arr / 1000, 2),
+    ltm_revenue: round(q2_revenue * 4, 1),
+    top10_concentration: at_risk_arr_pct,
+    declining_top10_count: at_risk_customer_count,
     sector_growth_low,
     sector_growth_high,
-    exit_multiple,
-    comps_avg_multiple: avg,
+    ebitda_margin_ltm: q2_ebitda_margin,
     comps,
-    top10_concentration: 34,
-    declining_top10_count: 2,
-    ebitda_margin_ltm: ltm.ebitda_margin,
   };
 }
 
-/** Simple multiple-based EV + optional DCF-lite for interactive panel */
+/**
+ * Forecast scenario calculator (formerly "valuation" calculator).
+ * Repurposed for FP&A: given Q2 baseline and growth/margin/opex assumptions,
+ * returns projected Q3 revenue and EBITDA range.
+ *
+ * Field names kept identical to M&A version for backward-compatibility with
+ * session.ts callers — semantics updated to FP&A.
+ *
+ *   ltm_ebitda    → Q2 quarterly revenue baseline ($M)
+ *   exit_multiple → gross margin target % (e.g. 63)
+ *   growth_rate   → Q3 revenue growth % vs Q2
+ *   discount_rate → opex growth % (the cost pressure factor)
+ *
+ * Outputs:
+ *   implied_ev  → projected Q3 revenue ($M)
+ *   dcf_ev      → projected Q3 EBITDA ($M) — reflects opex compression
+ *   range_low   → bear-case Q3 revenue (growth - 4pp)
+ *   range_high  → bull-case Q3 revenue (growth + 2pp)
+ */
 export function calculateValuation(input: {
   ltm_ebitda: number;
   exit_multiple: number;
-  growth_rate: number; // percent
-  discount_rate: number; // percent
+  growth_rate: number;
+  discount_rate: number;
   years?: number;
 }): { implied_ev: number; dcf_ev: number; range_low: number; range_high: number } {
-  const years = input.years ?? 5;
-  const g = input.growth_rate / 100;
-  const r = input.discount_rate / 100;
-  const exitEbitda = input.ltm_ebitda * Math.pow(1 + g, years);
-  const implied_ev = round(exitEbitda * input.exit_multiple, 0);
-
-  // DCF-lite: grow EBITDA, apply 70% FCF conversion, discount, + terminal
-  let pv = 0;
-  let ebitda = input.ltm_ebitda;
-  for (let t = 1; t <= years; t++) {
-    ebitda = ebitda * (1 + g);
-    const fcf = ebitda * 0.7;
-    pv += fcf / Math.pow(1 + r, t);
-  }
-  const terminal = (ebitda * input.exit_multiple) / Math.pow(1 + r, years);
-  const dcf_ev = round(pv + terminal, 0);
-  const range_low = Math.min(implied_ev, dcf_ev);
-  const range_high = Math.max(implied_ev, dcf_ev);
-  return { implied_ev, dcf_ev, range_low, range_high };
+  const q3_rev = round(input.ltm_ebitda * (1 + input.growth_rate / 100), 2);
+  // Margin compression: opex growing faster than revenue squeezes EBITDA margin
+  const margin_compression = Math.max(0, (input.discount_rate - input.growth_rate) / 2) / 100;
+  const effective_margin = Math.max(0, input.exit_multiple / 100 - margin_compression);
+  const q3_ebitda = round(q3_rev * effective_margin, 2);
+  const bear = round(input.ltm_ebitda * (1 + (input.growth_rate - 4) / 100), 2);
+  const bull = round(input.ltm_ebitda * (1 + (input.growth_rate + 2) / 100), 2);
+  return {
+    implied_ev: q3_rev,
+    dcf_ev: q3_ebitda,
+    range_low: Math.min(bear, q3_rev),
+    range_high: Math.max(bull, q3_rev),
+  };
 }
