@@ -83,7 +83,7 @@ export default function ReportsPage() {
           overallSignal: r.overallSignal,
           score: r.score,
           summary: r.summary,
-          submittedAt: r.submittedAt,
+          submittedAt: "",
         }))
       );
       setUsingDemo(true);
