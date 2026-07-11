@@ -52,7 +52,7 @@ export default async function AdminOverviewPage() {
             key={card.label}
             className="rounded-[12px] border border-[rgba(255,255,255,0.095)] px-4 py-4"
           >
-            <p className="text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+            <p className="text-[11px] uppercase tracking-[0.05em] text-white/55">
               {card.label}
             </p>
             <p className="mt-2 text-[28px] tabular-nums" style={{ fontWeight: 540 }}>
@@ -65,10 +65,10 @@ export default async function AdminOverviewPage() {
       <div className="mt-10 grid gap-6 lg:grid-cols-2">
         <section className="rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-[13px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+            <h2 className="text-[13px] uppercase tracking-[0.05em] text-white/55">
               Recent pilot requests
             </h2>
-            <Link href="/admin/pilot-requests" className="text-[12px] text-[rgba(244,245,247,0.62)]">
+            <Link href="/admin/pilot-requests" className="text-[12px] text-white/70 hover:text-white">
               View all
             </Link>
           </div>
@@ -100,10 +100,10 @@ export default async function AdminOverviewPage() {
 
         <section className="rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-[13px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+            <h2 className="text-[13px] uppercase tracking-[0.05em] text-white/55">
               Requires attention
             </h2>
-            <Link href="/admin/email" className="text-[12px] text-[rgba(244,245,247,0.62)]">
+            <Link href="/admin/email" className="text-[12px] text-white/70 hover:text-white">
               Email center
             </Link>
           </div>

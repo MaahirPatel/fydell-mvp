@@ -161,9 +161,19 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
               {error && (
                 <p
                   role="alert"
-                  className="rounded-[10px] border border-[#fb7185]/30 bg-[#fb7185]/10 px-3.5 py-2.5 text-[13px] font-medium text-[#fda4b0]"
+                  className="rounded-[10px] border border-[#fb7185]/40 bg-[#fb7185]/15 px-3.5 py-2.5 text-[13px] font-medium text-[#fecdd3]"
                 >
                   {error}
+                  {!isSignup && email.trim().toLowerCase() === "admin@fydell.com" ? (
+                    <>
+                      {" "}
+                      Platform admin uses a separate sign-in at{" "}
+                      <Link href="/admin" className="underline text-white">
+                        /admin
+                      </Link>
+                      .
+                    </>
+                  ) : null}
                 </p>
               )}
 
@@ -179,7 +189,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
               </button>
             </form>
 
-            <p className="mt-6 text-center text-[13px] text-white/[0.38]">
+            <p className="mt-6 text-center text-[13px] text-white/50">
               {isSignup ? "Already have an account? " : "New to Fydell? "}
               <Link
                 href={isSignup ? "/login" : "/signup"}
@@ -188,6 +198,14 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
                 {isSignup ? "Sign in" : "Create an account"}
               </Link>
             </p>
+            {!isSignup ? (
+              <p className="mt-3 text-center text-[12px] text-white/40">
+                Fydell staff:{" "}
+                <Link href="/admin" className="text-white/70 underline-offset-2 hover:text-white hover:underline">
+                  Platform admin sign in
+                </Link>
+              </p>
+            ) : null}
           </div>
         </section>
       </main>

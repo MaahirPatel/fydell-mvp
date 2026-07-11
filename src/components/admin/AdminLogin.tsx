@@ -36,7 +36,7 @@ export default function AdminLogin() {
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
       <label className="block">
-        <span className="text-[13px] font-medium text-white/[0.66]">Email</span>
+        <span className="text-[13px] font-medium text-white/75">Email</span>
         <input
           type="email"
           value={email}
@@ -48,7 +48,7 @@ export default function AdminLogin() {
         />
       </label>
       <label className="block">
-        <span className="text-[13px] font-medium text-white/[0.66]">Password</span>
+        <span className="text-[13px] font-medium text-white/75">Password</span>
         <input
           type="password"
           value={password}
