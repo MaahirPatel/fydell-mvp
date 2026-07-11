@@ -27,6 +27,15 @@ function useLocal() {
   return !isSupabaseConfigured();
 }
 
+/** Vercel serverless cannot persist the local file store across requests. */
+function assertLoopStorage() {
+  if (useLocal() && process.env.VERCEL) {
+    throw new Error(
+      "Hiring loop storage requires Supabase on Vercel. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY, then apply supabase/migrations/001_mvp_core.sql and 003_pilot_requests.sql."
+    );
+  }
+}
+
 
 function db() {
   return getSupabaseAdmin();
@@ -157,6 +166,7 @@ export interface CreateInviteInput {
 export async function createCandidateInvite(
   input: CreateInviteInput
 ): Promise<CandidateInvite> {
+  assertLoopStorage();
   if (useLocal()) {
     const invite = local.localCreateCandidateInvite(input);
     debugLog("db.ts:createCandidateInvite", "Local invite", { tokenPrefix: invite.token.slice(0, 6), isDemo: invite.token.startsWith("demo") }, "H1");
@@ -235,6 +245,7 @@ export async function validateCandidateInvite(
 
 /** Begin (or resume) the single attempt tied to an invite token. */
 export async function startSimulationAttempt(token: string): Promise<SimulationAttempt | null> {
+  assertLoopStorage();
   if (useLocal()) {
     const attempt = local.localStartSimulationAttempt(token);
     debugLog("db.ts:startSimulationAttempt", "Local start", { ok: Boolean(attempt), attemptId: attempt?.id ?? null }, "H2");

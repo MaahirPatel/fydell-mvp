@@ -315,9 +315,36 @@ export default function WorkroomRunner({ token, candidateName, simulationTitle, 
   // Start attempt
   useEffect(() => {
     if (demo) return;
+    let cancelled = false;
     postJson("/api/mvp/attempts/start", { token }).then((data) => {
+      // #region agent log
+      fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "dc0a6c" },
+        body: JSON.stringify({
+          sessionId: "dc0a6c",
+          runId: "loop-verify",
+          hypothesisId: "H4",
+          location: "WorkroomRunner.tsx:start",
+          message: "Attempt start result",
+          data: {
+            demo,
+            hasAttemptId: Boolean(data?.attempt?.id),
+            error: typeof data?.error === "string" ? data.error : null,
+            tokenPrefix: token.slice(0, 8),
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
+      if (cancelled) return;
       if (data?.attempt?.id) setAttemptId(data.attempt.id);
+      else if (data?.error) setError(String(data.error));
+      else setError("Could not start this work trial. Ask for a fresh invite link.");
     });
+    return () => {
+      cancelled = true;
+    };
   }, [token, demo]);
 
   function recordEvent(eventType: string, payload: Record<string, unknown> = {}) {
@@ -392,8 +419,63 @@ export default function WorkroomRunner({ token, candidateName, simulationTitle, 
 
     const fullRec = `VERDICT: ${verdict.toUpperCase()}\n\nRISKS:\n${risks}\n\nKEY ASSUMPTIONS:\n${assumptions}\n\nQUESTIONS FOR MANAGEMENT:\n${questions}\n\nEXECUTIVE MEMO:\n${memo}`;
 
-    if (!demo && attemptId) {
-      await postJson(`/api/mvp/attempts/${attemptId}/submit`, { recommendation: fullRec });
+    if (!demo) {
+      let id = attemptId;
+      if (!id) {
+        const started = await postJson("/api/mvp/attempts/start", { token });
+        id = started?.attempt?.id ?? null;
+        if (id) setAttemptId(id);
+      }
+      if (!id) {
+        // #region agent log
+        fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "dc0a6c" },
+          body: JSON.stringify({
+            sessionId: "dc0a6c",
+            runId: "loop-verify",
+            hypothesisId: "H4",
+            location: "WorkroomRunner.tsx:submit",
+            message: "Submit blocked — no attempt id",
+            data: { demo, tokenPrefix: token.slice(0, 8) },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+        // #endregion
+        setBusy(false);
+        setError("This session never started on the server. Refresh the invite link and try again.");
+        return;
+      }
+      const result = await postJson(`/api/mvp/attempts/${id}/submit`, { recommendation: fullRec });
+      // #region agent log
+      fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "dc0a6c" },
+        body: JSON.stringify({
+          sessionId: "dc0a6c",
+          runId: "loop-verify",
+          hypothesisId: "H4",
+          location: "WorkroomRunner.tsx:submit",
+          message: "Submit API result",
+          data: {
+            ok: Boolean(result?.ok),
+            score: result?.overall_score ?? null,
+            error: typeof result?.error === "string" ? result.error : null,
+            attemptId: id,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
+      if (!result?.ok) {
+        setBusy(false);
+        setError(
+          typeof result?.error === "string"
+            ? result.error
+            : "Could not save your recommendation. Please try again."
+        );
+        return;
+      }
     }
     setBusy(false);
     setSubmitted(true);

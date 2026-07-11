@@ -4,7 +4,7 @@ import { createCandidateInvite } from "@/lib/mvp/db";
 
 function inviteUrl(token: string): string {
   const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  return `${base}/c/${token}`;
+  return `${base}/workroom/${token}`;
 }
 
 export async function POST(req: Request) {
