@@ -1,7 +1,8 @@
 import "server-only";
 import { randomBytes } from "crypto";
-import { getSupabaseAdmin } from "../supabase";
+import { getSupabaseAdmin, isSupabaseConfigured } from "../supabase";
 import { scoreAttempt, type ScoringResult } from "./scoring";
+import * as local from "./local-mvp-store";
 import type {
   CandidateInvite,
   CandidateReport,
@@ -18,11 +19,14 @@ import type {
 } from "./types";
 
 // ===========================================================================
-// MVP data-access layer. Everything here runs server-side with the
-// service-role client (RLS-bypassing). Candidate (token) access is mediated
-// entirely through these server functions + token validation — there are no
-// anon candidate RLS policies by design.
+// MVP data-access layer. Service-role Supabase when configured; otherwise a
+// server-only local file store so the Meridian loop still works.
 // ===========================================================================
+
+function useLocal() {
+  return !isSupabaseConfigured();
+}
+
 
 function db() {
   return getSupabaseAdmin();
@@ -30,6 +34,32 @@ function db() {
 
 function makeToken(bytes = 18): string {
   return randomBytes(bytes).toString("base64url");
+}
+
+function debugLog(
+  location: string,
+  message: string,
+  data: Record<string, unknown>,
+  hypothesisId: string
+) {
+  // #region agent log
+  fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "dc0a6c",
+    },
+    body: JSON.stringify({
+      sessionId: "dc0a6c",
+      runId: "loop-fix",
+      hypothesisId,
+      location,
+      message,
+      data,
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
 }
 
 // ---------------------------------------------------------------------------
@@ -41,6 +71,12 @@ export async function createWorkspaceIfMissing(
   userId: string,
   name = "Your workspace"
 ): Promise<Workspace> {
+  if (useLocal()) {
+    const ws = local.localCreateWorkspaceIfMissing(userId, name);
+    debugLog("db.ts:createWorkspaceIfMissing", "Local workspace", { userIdPrefix: userId.slice(0, 8), wsId: ws.id }, "H1");
+    return ws;
+  }
+
   const existing = await getCurrentWorkspace(userId);
   if (existing) return existing;
 
@@ -61,6 +97,8 @@ export async function createWorkspaceIfMissing(
 
 /** The user's primary workspace (owner membership preferred), or null. */
 export async function getCurrentWorkspace(userId: string): Promise<Workspace | null> {
+  if (useLocal()) return local.localGetCurrentWorkspace(userId);
+
   const { data: memberships } = await db()
     .from("workspace_members")
     .select("workspace_id, role, created_at, workspaces(*)")
@@ -85,6 +123,8 @@ export async function getCurrentWorkspace(userId: string): Promise<Workspace | n
 export async function getWorkspaceSimulations(
   workspaceId: string
 ): Promise<Simulation[]> {
+  if (useLocal()) return local.localGetWorkspaceSimulations(workspaceId);
+
   const { data, error } = await db()
     .from("simulations")
     .select("*")
@@ -95,6 +135,8 @@ export async function getWorkspaceSimulations(
 }
 
 export async function getSimulation(id: string): Promise<Simulation | null> {
+  if (useLocal()) return local.localGetSimulation(id);
+
   const { data } = await db().from("simulations").select("*").eq("id", id).maybeSingle();
   return (data as Simulation) ?? null;
 }
@@ -115,6 +157,12 @@ export interface CreateInviteInput {
 export async function createCandidateInvite(
   input: CreateInviteInput
 ): Promise<CandidateInvite> {
+  if (useLocal()) {
+    const invite = local.localCreateCandidateInvite(input);
+    debugLog("db.ts:createCandidateInvite", "Local invite", { tokenPrefix: invite.token.slice(0, 6), isDemo: invite.token.startsWith("demo") }, "H1");
+    return invite;
+  }
+
   const token = makeToken();
   const expires_at = input.expiresInDays
     ? new Date(Date.now() + input.expiresInDays * 86_400_000).toISOString()
@@ -150,6 +198,12 @@ export interface ValidatedInvite {
 export async function validateCandidateInvite(
   token: string
 ): Promise<ValidatedInvite | null> {
+  if (useLocal()) {
+    const result = local.localValidateCandidateInvite(token);
+    debugLog("db.ts:validateCandidateInvite", "Local validate", { ok: Boolean(result), tokenPrefix: token.slice(0, 8) }, "H2");
+    return result;
+  }
+
   const { data: invite } = await db()
     .from("candidate_invites")
     .select("*")
@@ -181,6 +235,12 @@ export async function validateCandidateInvite(
 
 /** Begin (or resume) the single attempt tied to an invite token. */
 export async function startSimulationAttempt(token: string): Promise<SimulationAttempt | null> {
+  if (useLocal()) {
+    const attempt = local.localStartSimulationAttempt(token);
+    debugLog("db.ts:startSimulationAttempt", "Local start", { ok: Boolean(attempt), attemptId: attempt?.id ?? null }, "H2");
+    return attempt;
+  }
+
   const validated = await validateCandidateInvite(token);
   if (!validated) return null;
   const { invite } = validated;
@@ -224,6 +284,8 @@ export async function startSimulationAttempt(token: string): Promise<SimulationA
 }
 
 export async function getAttempt(attemptId: string): Promise<SimulationAttempt | null> {
+  if (useLocal()) return local.localGetAttempt(attemptId);
+
   const { data } = await db()
     .from("simulation_attempts")
     .select("*")
@@ -237,6 +299,7 @@ export async function recordSimulationEvent(
   eventType: SimulationEventType | string,
   payload: Record<string, unknown> = {}
 ): Promise<SimulationEvent | null> {
+  if (useLocal()) return local.localRecordSimulationEvent(attemptId, eventType, payload);
   const attempt = await getAttempt(attemptId);
   if (!attempt) return null;
   const { data, error } = await db()
@@ -254,6 +317,8 @@ export async function recordSimulationEvent(
 }
 
 export async function getAttemptEvents(attemptId: string): Promise<SimulationEvent[]> {
+  if (useLocal()) return local.localGetAttemptEvents(attemptId);
+
   const { data } = await db()
     .from("simulation_events")
     .select("*")
@@ -266,6 +331,11 @@ export async function updateCandidateNotes(
   attemptId: string,
   notes: string
 ): Promise<void> {
+  if (useLocal()) {
+    local.localUpdateCandidateNotes(attemptId, notes);
+    return;
+  }
+
   await db()
     .from("simulation_attempts")
     .update({ candidate_notes: notes })
@@ -278,6 +348,12 @@ export async function submitFinalRecommendation(
   attemptId: string,
   recommendation: string
 ): Promise<SimulationAttempt | null> {
+  if (useLocal()) {
+    const attempt = local.localSubmitFinalRecommendation(attemptId, recommendation);
+    debugLog("db.ts:submitFinalRecommendation", "Local submit", { ok: Boolean(attempt), attemptId, recLen: recommendation.length }, "H4");
+    return attempt;
+  }
+
   const now = new Date().toISOString();
   await db()
     .from("simulation_attempts")
@@ -310,6 +386,8 @@ export async function submitFinalRecommendation(
 export async function generateAttemptScore(
   attemptId: string
 ): Promise<ScoringResult | null> {
+  if (useLocal()) return local.localGenerateAttemptScore(attemptId);
+
   const attempt = await getAttempt(attemptId);
   if (!attempt) return null;
   const events = await getAttemptEvents(attemptId);
@@ -337,6 +415,12 @@ export async function generateAttemptScore(
 export async function generateCandidateReport(
   attemptId: string
 ): Promise<CandidateReport | null> {
+  if (useLocal()) {
+    const report = local.localGenerateCandidateReport(attemptId);
+    debugLog("db.ts:generateCandidateReport", "Local report", { ok: Boolean(report), attemptId, signal: report?.overall_signal ?? null }, "H4");
+    return report;
+  }
+
   let attempt = await getAttempt(attemptId);
   if (!attempt) return null;
 
@@ -376,6 +460,8 @@ export async function updateHiringDecision(
   attemptId: string,
   decision: HiringDecision
 ): Promise<SimulationAttempt | null> {
+  if (useLocal()) return local.localUpdateHiringDecision(attemptId, decision);
+
   const patch: Record<string, unknown> = { hiring_decision: decision };
   if (decision === "hired") {
     const attempt = await getAttempt(attemptId);
@@ -403,6 +489,8 @@ export interface OutcomeFeedbackInput {
 export async function createOutcomeFeedback(
   input: OutcomeFeedbackInput
 ): Promise<OutcomeFeedback | null> {
+  if (useLocal()) return local.localCreateOutcomeFeedback(input);
+
   const attempt = await getAttempt(input.attemptId);
   if (!attempt) return null;
 
@@ -499,6 +587,12 @@ function computeCalibration(
 }
 
 export async function getDashboardData(workspaceId: string): Promise<DashboardData> {
+  if (useLocal()) {
+    const data = local.localGetDashboardData(workspaceId);
+    debugLog("db.ts:getDashboardData", "Local dashboard", { attempts: data.attempts.length, invites: data.invites.length, completed: data.stats.completedAttempts }, "H3");
+    return data;
+  }
+
   const [{ data: ws }, simulations, { data: attempts }, { data: invites }, { data: feedback }] =
     await Promise.all([
       db().from("workspaces").select("*").eq("id", workspaceId).maybeSingle(),
@@ -546,6 +640,8 @@ export interface AttemptReport {
 }
 
 export async function getAttemptReport(attemptId: string): Promise<AttemptReport | null> {
+  if (useLocal()) return local.localGetAttemptReport(attemptId);
+
   const attempt = await getAttempt(attemptId);
   if (!attempt) return null;
 

@@ -15,7 +15,7 @@ export default function CandidatesPage() {
         const res = await fetch("/api/mvp/dashboard");
         if (res.ok) {
           const data = await res.json();
-          if (data.attempts?.length) {
+          if (data.attempts) {
             const mapped: DemoCandidate[] = data.attempts.map(
               (a: {
                 id: string;
@@ -32,8 +32,14 @@ export default function CandidatesPage() {
                 name: a.candidate_name ?? a.candidate_email ?? "Candidate",
                 email: a.candidate_email ?? "",
                 role: "FP&A Analyst",
-                status: a.status,
-                decision: a.hiring_decision,
+                status: (a.status === "reviewed"
+                  ? "reviewed"
+                  : a.status === "submitted"
+                    ? "submitted"
+                    : "in_progress") as DemoCandidate["status"],
+                decision: (["advance", "hold", "reject"].includes(a.hiring_decision)
+                  ? a.hiring_decision
+                  : "not_decided") as DemoCandidate["decision"],
                 score: a.score ?? 0,
                 signal:
                   (a.report_json?.overall_signal as "strong" | "moderate" | "weak") ?? "weak",

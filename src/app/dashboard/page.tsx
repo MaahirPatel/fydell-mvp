@@ -13,21 +13,41 @@ export default function DashboardOverview() {
 
   useEffect(() => {
     let cancelled = false;
-    // Show demo data immediately so the overview never looks empty while auth/API resolves.
-    setCandidates(DEMO_CANDIDATES);
-    setStats(DEMO_STATS);
-    setLoading(false);
+    setLoading(true);
 
     async function load() {
       try {
         const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 2500);
+        const timer = setTimeout(() => ctrl.abort(), 4000);
         const res = await fetch("/api/mvp/dashboard", { signal: ctrl.signal });
         clearTimeout(timer);
-        if (!res.ok || cancelled) return;
+        // #region agent log
+        fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "dc0a6c" },
+          body: JSON.stringify({
+            sessionId: "dc0a6c",
+            runId: "loop-fix",
+            hypothesisId: "H3",
+            location: "dashboard/page.tsx:load",
+            message: "Dashboard API response",
+            data: { status: res.status, ok: res.ok },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+        // #endregion
+        if (!res.ok) {
+          // Keep demo sample only when unauthorized / unavailable
+          if (!cancelled) {
+            setCandidates(DEMO_CANDIDATES);
+            setStats(DEMO_STATS);
+            setLoading(false);
+          }
+          return;
+        }
         const data = await res.json();
-        if (!data.attempts?.length || cancelled) return;
-        const mapped: DemoCandidate[] = data.attempts.map(
+        if (cancelled) return;
+        const mapped: DemoCandidate[] = (data.attempts ?? []).map(
           (a: {
             id: string;
             candidate_name: string | null;
@@ -43,8 +63,14 @@ export default function DashboardOverview() {
             name: a.candidate_name ?? a.candidate_email ?? "Candidate",
             email: a.candidate_email ?? "",
             role: "FP&A Analyst",
-            status: a.status,
-            decision: a.hiring_decision,
+            status: (a.status === "reviewed"
+              ? "reviewed"
+              : a.status === "submitted"
+                ? "submitted"
+                : "in_progress") as DemoCandidate["status"],
+            decision: (["advance", "hold", "reject"].includes(a.hiring_decision)
+              ? a.hiring_decision
+              : "not_decided") as DemoCandidate["decision"],
             score: a.score ?? 0,
             signal:
               (a.report_json?.overall_signal as "strong" | "moderate" | "weak") ??
@@ -63,7 +89,6 @@ export default function DashboardOverview() {
             modelEdits: 0,
           })
         );
-        if (cancelled) return;
         setCandidates(mapped);
         setStats({
           activeSimulations: data.stats?.totalSimulations ?? 1,
@@ -72,7 +97,12 @@ export default function DashboardOverview() {
           advanceRecommendations: mapped.filter((c) => c.decision === "advance").length,
         });
       } catch {
-        // Keep demo data
+        if (!cancelled) {
+          setCandidates(DEMO_CANDIDATES);
+          setStats(DEMO_STATS);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
     load();

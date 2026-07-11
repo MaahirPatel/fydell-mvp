@@ -40,16 +40,19 @@ export function SimulationCard({
         body: JSON.stringify({ simulationId: id }),
       });
       const data = await res.json().catch(() => ({}));
-      const token = data.token ?? `demo-${Math.random().toString(36).slice(2, 10)}`;
+      const token = data.token || data.invite?.token;
+      if (!token) {
+        setPreviewLink(null);
+        setInviting(false);
+        return;
+      }
       const link = `${window.location.origin}/workroom/${token}`;
       await navigator.clipboard.writeText(link).catch(() => {});
       setPreviewLink(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      const token = `demo-${Math.random().toString(36).slice(2, 10)}`;
-      const link = `${window.location.origin}/workroom/${token}`;
-      setPreviewLink(link);
+      setPreviewLink(null);
     }
     setInviting(false);
   }

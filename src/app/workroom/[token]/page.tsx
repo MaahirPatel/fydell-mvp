@@ -1,15 +1,32 @@
 import { Suspense } from "react";
 import WorkroomRunner from "@/components/workroom/WorkroomRunner";
 
-// Validate token server-side if Supabase is available; fall back to demo mode.
+// Validate token server-side. Only explicit demo-* tokens run without persistence.
 async function resolveToken(token: string): Promise<{
   valid: boolean;
   demo: boolean;
   candidateName?: string | null;
   simulationTitle?: string;
 }> {
-  // Demo tokens (no DB needed)
-  if (token.startsWith("demo") || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  if (token.startsWith("demo")) {
+    // #region agent log
+    fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "dc0a6c",
+      },
+      body: JSON.stringify({
+        sessionId: "dc0a6c",
+        runId: "loop-fix",
+        hypothesisId: "H2",
+        location: "workroom/page.tsx:resolveToken",
+        message: "Explicit demo token",
+        data: { demo: true, tokenPrefix: token.slice(0, 8) },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
     return {
       valid: true,
       demo: true,
@@ -19,10 +36,30 @@ async function resolveToken(token: string): Promise<{
   }
 
   try {
-    // Dynamic import keeps this out of edge bundles and avoids issues when
-    // SUPABASE_URL isn't configured.
     const { validateCandidateInvite } = await import("@/lib/mvp/db");
     const result = await validateCandidateInvite(token);
+    // #region agent log
+    fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "dc0a6c",
+      },
+      body: JSON.stringify({
+        sessionId: "dc0a6c",
+        runId: "loop-fix",
+        hypothesisId: "H2",
+        location: "workroom/page.tsx:resolveToken",
+        message: "Invite validation result",
+        data: {
+          ok: Boolean(result),
+          demo: false,
+          tokenPrefix: token.slice(0, 8),
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
     if (!result) return { valid: false, demo: false };
     return {
       valid: true,
@@ -30,14 +67,29 @@ async function resolveToken(token: string): Promise<{
       candidateName: result.invite.candidate_name,
       simulationTitle: result.simulation.title,
     };
-  } catch {
-    // Supabase not configured — run in demo mode
-    return {
-      valid: true,
-      demo: true,
-      candidateName: null,
-      simulationTitle: "Project Meridian — FP&A Forecast Review",
-    };
+  } catch (err) {
+    // #region agent log
+    fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "dc0a6c",
+      },
+      body: JSON.stringify({
+        sessionId: "dc0a6c",
+        runId: "loop-fix",
+        hypothesisId: "H2",
+        location: "workroom/page.tsx:resolveToken",
+        message: "Validation threw",
+        data: {
+          error: err instanceof Error ? err.message : "unknown",
+          tokenPrefix: token.slice(0, 8),
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    return { valid: false, demo: false };
   }
 }
 
@@ -74,21 +126,20 @@ export default async function WorkroomPage({ params }: PageProps) {
             backdropFilter: "blur(22px)",
           }}
         >
-          <div style={{ fontSize: 32, marginBottom: 16 }}>🔒</div>
           <h1
             style={{
               fontSize: 22,
               fontWeight: 700,
-              color: "#f7f8fb",
+              color: "#fff",
               margin: "0 0 10px",
               letterSpacing: "-0.03em",
             }}
           >
-            Invalid or expired link
+            Invitation not found
           </h1>
-          <p style={{ fontSize: 14, color: "#a7b0c0", margin: 0, lineHeight: 1.6 }}>
-            This simulation link is no longer valid. Please contact the hiring team
-            for a new invite link.
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, margin: 0 }}>
+            This link is invalid, expired, or has already been cancelled. Ask your hiring contact
+            for a new invite.
           </p>
         </div>
       </div>
@@ -96,7 +147,7 @@ export default async function WorkroomPage({ params }: PageProps) {
   }
 
   return (
-    <Suspense fallback={<WorkroomLoadingShell />}>
+    <Suspense fallback={null}>
       <WorkroomRunner
         token={token}
         candidateName={ctx.candidateName}
@@ -106,41 +157,3 @@ export default async function WorkroomPage({ params }: PageProps) {
     </Suspense>
   );
 }
-
-function WorkroomLoadingShell() {
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#05070d",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 13,
-          color: "#a7b0c0",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <div
-          style={{
-            width: 16,
-            height: 16,
-            border: "2px solid rgba(124,61,255,0.4)",
-            borderTopColor: "#7c3dff",
-            borderRadius: "50%",
-            animation: "spin 0.8s linear infinite",
-          }}
-        />
-        Loading workroom…
-      </div>
-    </div>
-  );
-}
-
-export const dynamic = "force-dynamic";

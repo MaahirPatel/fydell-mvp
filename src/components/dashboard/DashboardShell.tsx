@@ -52,19 +52,35 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         }),
       });
       const data = await res.json().catch(() => ({}));
+      // #region agent log
+      fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "dc0a6c" },
+        body: JSON.stringify({
+          sessionId: "dc0a6c",
+          runId: "loop-fix",
+          hypothesisId: "H1",
+          location: "DashboardShell.tsx:sendInvite",
+          message: "Invite API response",
+          data: {
+            status: res.status,
+            hasToken: Boolean(data.token || data.invite?.token),
+            isDemoFallback: false,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       if (data.token || data.invite?.token) {
         const token = data.token || data.invite.token;
         setInviteLink(`${window.location.origin}/workroom/${token}`);
       } else if (data.url) {
         setInviteLink(data.url);
       } else {
-        // Demo fallback — generate a local preview link
-        const fakeToken = `demo-${Math.random().toString(36).slice(2, 10)}`;
-        setInviteLink(`${window.location.origin}/workroom/${fakeToken}`);
+        setErr(data.error || "Could not create invite. Sign in and try again.");
       }
     } catch {
-      const fakeToken = `demo-${Math.random().toString(36).slice(2, 10)}`;
-      setInviteLink(`${window.location.origin}/workroom/${fakeToken}`);
+      setErr("Network error creating invite.");
     }
     setBusy(false);
   }
