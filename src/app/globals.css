@@ -27,19 +27,20 @@
 
 :root {
   --page-bg: #07080b;
-  --surface-0: #090b10;
-  --surface-1: #0d1016;
-  --surface-2: #11151d;
-  --surface-hover: #151a24;
+  --page-max-width: 1160px;
+  --surface-0: #0b0d12;
+  --surface-1: #0f1218;
+  --surface-elevated: #12151c;
+  --surface-hover: #161a22;
 
   --border-subtle: rgba(255, 255, 255, 0.065);
-  --border-default: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-default: rgba(255, 255, 255, 0.095);
+  --border-strong: rgba(255, 255, 255, 0.14);
 
   --text-primary: #f4f5f7;
-  --text-secondary: #a3a7b2;
-  --text-tertiary: #717682;
-  --text-disabled: #555a65;
+  --text-secondary: rgba(244, 245, 247, 0.62);
+  --text-tertiary: rgba(244, 245, 247, 0.4);
+  --text-disabled: rgba(244, 245, 247, 0.28);
 
   --brand-blue: #5662ff;
   --brand-violet: #8657f4;
@@ -47,33 +48,46 @@
   --positive: #67d9a0;
   --risk: #f26b82;
 
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 80px;
+  --space-10: 96px;
+  --space-11: 120px;
+  --space-12: 144px;
+  --space-13: 168px;
+  --space-14: 192px;
+
   --bg: #07080b;
   --bg-main: #07080b;
   --bg-deep: #050609;
-  --bg-soft: #090b10;
-  --bg-2: #090b10;
-  --bg-3: #0d1016;
-  --bg-panel: #090b10;
-  --bg-panel-2: #0d1016;
-  --bg-panel-3: #11151d;
-  --surface: #0d1016;
-  --surface-2: #11151d;
-  --surface-3: #151a24;
-  --panel: rgba(9, 11, 16, 0.94);
-  --panel-strong: rgba(9, 11, 16, 0.98);
+  --bg-soft: #0b0d12;
+  --bg-2: #0b0d12;
+  --bg-3: #0f1218;
+  --bg-panel: #0b0d12;
+  --bg-panel-2: #0f1218;
+  --bg-panel-3: #12151c;
+  --surface: #0f1218;
+  --surface-2: #12151c;
+  --surface-3: #161a22;
+  --panel: rgba(11, 13, 18, 0.94);
+  --panel-strong: rgba(11, 13, 18, 0.98);
   --panel-soft: rgba(255, 255, 255, 0.03);
   --border: rgba(255, 255, 255, 0.065);
   --border-soft: rgba(255, 255, 255, 0.065);
-  --border-medium: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-medium: rgba(255, 255, 255, 0.095);
   --text: #f4f5f7;
   --text-main: #f4f5f7;
-  --text-secondary: #a3a7b2;
-  --text-muted: #717682;
-  --text-faint: #555a65;
-  --muted: #a3a7b2;
-  --faint: #717682;
-  --muted-2: #555a65;
+  --text-muted: rgba(244, 245, 247, 0.4);
+  --text-faint: rgba(244, 245, 247, 0.28);
+  --muted: rgba(244, 245, 247, 0.62);
+  --faint: rgba(244, 245, 247, 0.4);
+  --muted-2: rgba(244, 245, 247, 0.28);
   --violet: #8657f4;
   --violet-2: #9b5cff;
   --blue: #5662ff;
@@ -88,13 +102,13 @@
   --danger: #f26b82;
   --yellow: #e9b949;
   --radius-xs: 8px;
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-xl: 24px;
-  --shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+  --radius-sm: 9px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --content-max: 1180px;
+  --content-max: 1160px;
 }
 
 * {
@@ -136,23 +150,23 @@ html.lenis-scrolling body {
 body {
   min-height: 100%;
   margin: 0;
-  /* clip avoids creating a second scrollport (hidden forces overflow-y:auto) */
   overflow-x: clip;
   background:
-    radial-gradient(circle at 78% 10%, rgba(86, 98, 255, 0.11), transparent 28%),
-    radial-gradient(circle at 18% 18%, rgba(134, 87, 244, 0.09), transparent 24%),
-    radial-gradient(circle at 52% 8%, rgba(242, 107, 130, 0.07), transparent 22%),
-    linear-gradient(180deg, #07080b 0%, #080a10 48%, #07080b 100%);
+    radial-gradient(70% 45% at 50% 48%, rgba(86, 98, 255, 0.075), transparent 72%),
+    radial-gradient(45% 36% at 72% 42%, rgba(134, 87, 244, 0.045), transparent 75%),
+    linear-gradient(to bottom, #07080b, #080a0f);
   color: var(--text);
-  font-family: var(--font-sans);
-  font-size: 17px;
-  line-height: 1.65;
+  font-family: var(--font-geist-sans), var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  font-optical-sizing: auto;
+  font-feature-settings: "cv02" 1, "cv03" 1, "cv04" 1, "cv11" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* Flat solid type — no gradient fills, no sheen, no clipped backgrounds */
+/* Flat solid type — no gradient fills */
 .flat-type,
 .fydell-page h1,
 .fydell-page h2,
@@ -167,76 +181,169 @@ body {
 }
 
 /*
- * Hero display — Linear-like formatting (not Linear copy):
- * left-aligned, large, ~2 lines, full word visible, breathing room.
+ * Hero — Linear-like rhythm, Fydell content.
+ * Nav 56px + ~150px calm opening → heading near y 205–220.
  */
 .hero-display {
   margin: 0;
-  max-width: 920px;
+  max-width: 790px;
   color: #f4f5f7;
-  font-size: clamp(2.5rem, 5.2vw, 4.5rem);
-  font-weight: 650;
-  line-height: 1.02;
-  letter-spacing: -0.04em;
-  text-wrap: balance;
+  font-size: clamp(2.75rem, 4.2vw, 3.875rem); /* 44–62px */
+  font-weight: 560;
+  line-height: 0.99;
+  letter-spacing: -0.047em;
   white-space: normal;
   overflow: visible;
 }
 
+/* Ensure marketing H1 does not inherit heavier defaults */
+h1.hero-display {
+  font-size: clamp(2.75rem, 4.2vw, 3.875rem) !important;
+  font-weight: 560 !important;
+  line-height: 0.99 !important;
+  letter-spacing: -0.047em !important;
+  max-width: 790px;
+  text-wrap: wrap !important;
+  font-family: var(--font-geist-sans), var(--font-inter), system-ui, sans-serif !important;
+}
+
 .hero-sub {
-  margin: 1.25rem 0 0;
-  max-width: 34rem;
-  color: #a3a7b2;
-  font-size: clamp(1.05rem, 1.35vw, 1.2rem);
+  margin: 30px 0 0;
+  max-width: 620px;
+  color: rgba(244, 245, 247, 0.62);
+  font-size: 17px;
   font-weight: 450;
   line-height: 1.55;
+  letter-spacing: -0.012em;
+}
+
+.hero-context-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  color: rgba(244, 245, 247, 0.62);
+  font-size: 13px;
+  font-weight: 500;
   letter-spacing: -0.01em;
+  transition: color 160ms var(--ease);
+}
+
+.hero-context-link:hover {
+  color: #f4f5f7;
+}
+
+.hero-context-link .accent {
+  color: #f4f5f7;
+}
+
+.hero-context-link .arrow {
+  display: inline-block;
+  transition: transform 160ms var(--ease);
+}
+
+.hero-context-link:hover .arrow {
+  transform: translateX(3px);
 }
 
 .hero-product-stage {
   width: 100%;
+  margin-top: 68px;
 }
 
 .hero-product-glow {
   position: absolute;
   left: 50%;
-  top: 8%;
+  top: 12%;
   z-index: 0;
   width: min(1100px, 100%);
-  height: 85%;
+  height: 80%;
   transform: translateX(-50%);
   pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 35%, rgba(86, 98, 255, 0.18), transparent 70%),
-    radial-gradient(ellipse 60% 50% at 58% 55%, rgba(242, 107, 130, 0.12), transparent 68%);
-  filter: blur(2px);
-}
-
-.hero-product-perspective {
-  position: relative;
-  z-index: 1;
-  perspective: 2400px;
-  perspective-origin: 50% 0%;
+    radial-gradient(ellipse 70% 50% at 50% 40%, rgba(86, 98, 255, 0.09), transparent 72%),
+    radial-gradient(ellipse 50% 40% at 62% 55%, rgba(134, 87, 244, 0.05), transparent 75%);
 }
 
 .hero-product-frame {
   position: relative;
-  transform: rotateX(10deg) translateZ(0);
-  transform-origin: center top;
-  border-radius: 16px;
-  will-change: transform;
+  z-index: 1;
+  border-radius: 15px;
+  /* No cinematic tilt — usable product frame */
+  transform: none;
 }
 
-@media (max-width: 768px) {
-  .hero-product-frame {
-    transform: none;
+.mkt-content {
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--page-max-width);
+  padding-inline: 18px;
+}
+
+@media (min-width: 640px) {
+  .mkt-content {
+    padding-inline: 24px;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-product-frame {
-    transform: none;
+@media (min-width: 1024px) {
+  .mkt-content {
+    padding-inline: 28px;
   }
+}
+
+@media (min-width: 1500px) {
+  .mkt-content {
+    max-width: 1180px;
+  }
+}
+
+.section-major {
+  padding-top: var(--space-13);
+  padding-bottom: var(--space-12);
+}
+
+.section-compact {
+  padding-top: var(--space-11);
+  padding-bottom: var(--space-10);
+}
+
+.section-editorial {
+  padding-top: var(--space-13);
+  padding-bottom: var(--space-11);
+}
+
+.section-heading {
+  max-width: 500px;
+  color: #f4f5f7;
+  font-size: clamp(2.375rem, 3.2vw, 2.875rem);
+  font-weight: 540;
+  line-height: 1.06;
+  letter-spacing: -0.038em;
+}
+
+.section-desc {
+  max-width: 510px;
+  color: rgba(244, 245, 247, 0.62);
+  font-size: 20px;
+  font-weight: 430;
+  line-height: 1.44;
+  letter-spacing: -0.022em;
+}
+
+.stage-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  color: rgba(244, 245, 247, 0.4);
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 160ms var(--ease);
+}
+
+.stage-label:hover {
+  color: #f4f5f7;
 }
 
 @layer base {
@@ -255,6 +362,13 @@ body {
     line-height: 0.92;
     font-weight: 650;
     letter-spacing: -0.04em;
+  }
+  h1.hero-display {
+    font-size: clamp(2.75rem, 4.2vw, 3.875rem);
+    line-height: 0.99;
+    font-weight: 560;
+    letter-spacing: -0.047em;
+    text-wrap: wrap;
   }
   h2 {
     font-size: clamp(2rem, 4vw, 3.25rem);
@@ -549,28 +663,16 @@ nextjs-portal,
   text-transform: uppercase;
 }
 
-/* Marketing section & muted helpers */
+/* Marketing section rhythm */
 .mkt-section {
-  padding-top: clamp(72px, 9vw, 120px);
-  padding-bottom: clamp(72px, 9vw, 120px);
-}
-
-.mkt-content {
-  margin-inline: auto;
-  width: 100%;
-  max-width: var(--content-max);
-  padding-inline: 18px;
-}
-
-@media (min-width: 640px) {
-  .mkt-content {
-    padding-inline: 24px;
-  }
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
 }
 
 @media (min-width: 1024px) {
-  .mkt-content {
-    padding-inline: 28px;
+  .mkt-section {
+    padding-top: var(--space-13);
+    padding-bottom: var(--space-12);
   }
 }
 
@@ -650,12 +752,12 @@ nextjs-portal,
 
 .fydell-product-frame {
   position: relative;
-  border-radius: 16px;
-  background: #090c12;
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 15px;
+  background: #090b10;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow:
-    0 24px 70px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(90, 100, 255, 0.04);
+    0 28px 90px rgba(0, 0, 0, 0.46),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 
 .fydell-product-frame::before {
@@ -663,23 +765,12 @@ nextjs-portal,
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    135deg,
-    rgba(86, 98, 255, 0.45),
-    rgba(134, 87, 244, 0.32),
-    rgba(242, 107, 130, 0.22)
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask-composite: exclude;
   pointer-events: none;
   z-index: 2;
+  /* Quiet edge accents only — not a full purple frame */
+  box-shadow:
+    inset 1px 0 0 rgba(86, 98, 255, 0.08),
+    inset 0 -1px 0 rgba(134, 87, 244, 0.05);
 }
 
 @media (prefers-reduced-motion: reduce) {

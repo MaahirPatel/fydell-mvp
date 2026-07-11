@@ -14,13 +14,49 @@ export function Container({ children, wide, className = "" }: ContainerProps) {
     <div
       className={[
         "mx-auto w-full px-[18px] sm:px-6 lg:px-7",
-        wide ? "max-w-[1200px]" : "max-w-[1180px]",
+        wide ? "max-w-[1180px]" : "max-w-[1160px]",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
     >
       {children}
+    </div>
+  );
+}
+
+/** Editorial two-column heading row used across major product sections */
+export function EditorialHeader({
+  heading,
+  description,
+  stageHref,
+  stageLabel,
+}: {
+  heading: string;
+  description: string;
+  stageHref?: string;
+  stageLabel?: string;
+}) {
+  return (
+    <div className="grid items-start gap-8 lg:grid-cols-12 lg:gap-6">
+      <h2 className="section-heading flat-type lg:col-span-5">{heading}</h2>
+      <div className="lg:col-span-5 lg:col-start-7">
+        <p className="section-desc">{description}</p>
+        {stageHref && stageLabel ? (
+          <Link
+            href={stageHref}
+            className="stage-label group"
+          >
+            {stageLabel}
+            <span
+              aria-hidden
+              className="transition-transform duration-160 group-hover:translate-x-[3px]"
+            >
+              →
+            </span>
+          </Link>
+        ) : null}
+      </div>
     </div>
   );
 }

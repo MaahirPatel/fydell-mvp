@@ -24,16 +24,17 @@ interface ForecastRow {
   varDir: VarianceDir;
   notes: string;
   highlight?: boolean;
+  animateKey?: "churn" | "runway";
 }
 
-const TABLE_ROWS: ForecastRow[] = [
+const BASE_ROWS: ForecastRow[] = [
   {
     metric: "Revenue Growth",
     candidate: "8.2%",
     base: "12.0%",
     variance: "−3.8pp",
     varDir: "warn",
-    notes: "Revised after renewal note",
+    notes: "Revised after renewal review",
   },
   {
     metric: "Gross Margin",
@@ -41,16 +42,17 @@ const TABLE_ROWS: ForecastRow[] = [
     base: "45.0%",
     variance: "−2.9pp",
     varDir: "warn",
-    notes: "COGS uplift assumption",
+    notes: "COGS assumption updated",
   },
   {
     metric: "Churn Rate",
-    candidate: "6.3%",
+    candidate: "3.5%",
     base: "3.5%",
-    variance: "+2.8pp",
-    varDir: "danger",
-    notes: "Risk flagged in assumptions",
+    variance: "0.0pp",
+    varDir: "neutral",
+    notes: "",
     highlight: true,
+    animateKey: "churn",
   },
   {
     metric: "Sales Cycle",
@@ -58,7 +60,7 @@ const TABLE_ROWS: ForecastRow[] = [
     base: "58 days",
     variance: "+14 days",
     varDir: "warn",
-    notes: "Extended for SMB segment",
+    notes: "SMB segment extended",
   },
   {
     metric: "Hiring Ramp",
@@ -66,7 +68,7 @@ const TABLE_ROWS: ForecastRow[] = [
     base: "100%",
     variance: "−16pp",
     varDir: "warn",
-    notes: "Q3 headcount delayed",
+    notes: "Q3 hiring delayed",
   },
   {
     metric: "OpEx Growth",
@@ -74,18 +76,33 @@ const TABLE_ROWS: ForecastRow[] = [
     base: "8%",
     variance: "+3pp",
     varDir: "warn",
-    notes: "",
+    notes: "Department requests reviewed",
   },
   {
     metric: "Cash Runway",
-    candidate: "9.1 mo",
+    candidate: "14.0 mo",
     base: "14.0 mo",
-    variance: "−4.9 mo",
-    varDir: "danger",
-    notes: "Stress scenario applied",
+    variance: "0.0 mo",
+    varDir: "neutral",
+    notes: "",
     highlight: true,
+    animateKey: "runway",
   },
 ];
+
+const CHURN_FINAL = {
+  candidate: "6.3%",
+  variance: "+2.8pp",
+  varDir: "danger" as const,
+  notes: "Renewal risk identified",
+};
+
+const RUNWAY_FINAL = {
+  candidate: "9.1 mo",
+  variance: "−4.9 mo",
+  varDir: "danger" as const,
+  notes: "Stress scenario applied",
+};
 
 const EVIDENCE_METRICS = [
   { label: "Documents reviewed", value: 7 },
@@ -95,10 +112,9 @@ const EVIDENCE_METRICS = [
   { label: "Sources verified", value: 5 },
 ];
 
-const RECENT_EVIDENCE = [
+const INITIAL_EVIDENCE = [
   { time: "18:03", text: "Flagged a cash-runway risk" },
   { time: "12:47", text: "Revised the revenue drivers" },
-  { time: "09:12", text: "Increased churn after reviewing renewals" },
 ];
 
 function VarianceCell({ value, dir }: { value: string; dir: VarianceDir }) {
@@ -106,53 +122,69 @@ function VarianceCell({ value, dir }: { value: string; dir: VarianceDir }) {
     dir === "danger"
       ? "text-[#F26B82]"
       : dir === "warn"
-        ? "text-[#A3A7B2]"
-        : "text-[#717682]";
+        ? "text-[rgba(244,245,247,0.62)]"
+        : "text-[rgba(244,245,247,0.4)]";
   return <span className={`tabular-nums ${color}`}>{value}</span>;
 }
 
-const DATA_ROOM_FILES = [
-  { name: "Management Deck", ext: "PDF" },
-  { name: "Forecast Export", ext: "XLSX" },
-  { name: "Customer Renewal Note", ext: "PDF", highlight: true },
-  { name: "Hiring Plan", ext: "XLSX" },
-  { name: "Market Research", ext: "PDF" },
-];
-
-function DataRoomPanel() {
+function ForecastPanel({
+  rows,
+}: {
+  rows: ForecastRow[];
+}) {
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-w-0 flex-col overflow-hidden">
       <div className="flex h-[42px] items-center border-b border-[var(--border-subtle)] px-4">
         <p
-          className="text-[10px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]"
-          style={{ fontWeight: 550 }}
+          className="text-[10.5px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
+          style={{ fontWeight: 500 }}
         >
-          Data Room
+          Forecast Model
         </p>
       </div>
-      <div className="space-y-1 px-3 py-3">
-        {DATA_ROOM_FILES.map((f) => (
+      <div className="flex-1 overflow-hidden">
+        <div
+          className="grid h-[42px] items-center border-b border-[var(--border-subtle)] text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
+          style={{
+            gridTemplateColumns: "1.15fr 1fr 0.9fr 0.85fr 1.35fr",
+            fontWeight: 500,
+            paddingInline: 16,
+          }}
+        >
+          <span>Metric</span>
+          <span>Candidate forecast</span>
+          <span>Company base</span>
+          <span>Variance</span>
+          <span>Notes</span>
+        </div>
+        {rows.map((row) => (
           <div
-            key={f.name}
+            key={row.metric}
             className={[
-              "flex items-center gap-2.5 rounded-[8px] px-3 py-2.5 text-[12px]",
-              f.highlight
-                ? "border border-[rgba(242,107,130,0.22)] bg-[rgba(242,107,130,0.06)]"
-                : "border border-transparent bg-white/[0.02]",
+              "grid h-[52px] items-center border-b border-white/[0.035] text-[12px] transition-[background-color,color] duration-300",
+              row.highlight && row.varDir === "danger"
+                ? "bg-[rgba(242,107,130,0.045)]"
+                : "",
             ].join(" ")}
+            style={{
+              gridTemplateColumns: "1.15fr 1fr 0.9fr 0.85fr 1.35fr",
+              paddingInline: 16,
+            }}
           >
-            <span
-              className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] ${
-                f.ext === "XLSX"
-                  ? "bg-[rgba(103,217,160,0.14)] text-[#8EE4B8]"
-                  : "bg-white/[0.06] text-[var(--text-tertiary)]"
-              }`}
-              style={{ fontWeight: 600 }}
-            >
-              {f.ext}
+            <span className="text-[12.5px] text-[#F4F5F7]" style={{ fontWeight: 550 }}>
+              {row.metric}
             </span>
-            <span className={f.highlight ? "text-[#F7B0BC]" : "text-[var(--text-secondary)]"}>
-              {f.name}
+            <span className="tabular-nums text-[#5662FF]" style={{ fontWeight: 600 }}>
+              {row.candidate}
+            </span>
+            <span className="tabular-nums text-[rgba(244,245,247,0.4)]">{row.base}</span>
+            <VarianceCell value={row.variance} dir={row.varDir} />
+            <span
+              className={`text-[11.5px] text-[rgba(244,245,247,0.4)] ${
+                row.notes.includes("Renewal") || row.notes.includes("Stress") ? "italic" : ""
+              }`}
+            >
+              {row.notes}
             </span>
           </div>
         ))}
@@ -161,195 +193,134 @@ function DataRoomPanel() {
   );
 }
 
-function ManagerPanel() {
-  return (
-    <div className="flex h-full flex-col px-5 py-5">
-      <p
-        className="text-[10px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]"
-        style={{ fontWeight: 550 }}
-      >
-        Manager Update
-      </p>
-      <div className="mt-4 rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-1)] px-4 py-4">
-        <p className="text-[13px] leading-[1.55] text-[var(--text-secondary)]">
-          Renewal risk increased for the SMB segment. Review the customer renewal note before
-          submitting your recommendation.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function MemoPanel() {
-  return (
-    <div className="flex h-full flex-col px-5 py-5">
-      <p
-        className="text-[10px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]"
-        style={{ fontWeight: 550 }}
-      >
-        Write Memo
-      </p>
-      <div className="mt-4 min-h-[160px] flex-1 rounded-[10px] border border-[var(--border-default)] bg-white/[0.02] px-4 py-3 text-[13px] leading-[1.55] text-[var(--text-tertiary)] italic">
-        Start writing your memo here
-      </div>
-    </div>
-  );
-}
-
-function ForecastPanel() {
-  return (
-    <div className="flex h-full min-w-0 flex-col overflow-hidden">
-      <div className="flex h-[42px] items-center border-b border-[var(--border-subtle)] px-4">
-        <p
-          className="text-[10px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]"
-          style={{ fontWeight: 550 }}
-        >
-          Forecast Model
-        </p>
-      </div>
-      <div className="flex-1 overflow-hidden">
-        <table className="w-full border-collapse text-[12px]">
-          <thead>
-            <tr className="h-[42px] border-b border-[var(--border-subtle)]">
-              {["Metric", "Candidate", "Company base", "Variance", "Notes"].map((h) => (
-                <th
-                  key={h}
-                  className="whitespace-nowrap px-4 text-left text-[10px] uppercase tracking-[0.07em] text-[var(--text-tertiary)]"
-                  style={{ fontWeight: 550 }}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {TABLE_ROWS.map((row) => (
-              <tr
-                key={row.metric}
-                className={[
-                  "h-[54px] border-b border-white/[0.035] transition-colors duration-150 hover:bg-white/[0.015]",
-                  row.highlight ? "bg-[rgba(242,107,130,0.04)]" : "",
-                ].join(" ")}
-              >
-                <td className="px-4 text-[13px] text-[var(--text-primary)]" style={{ fontWeight: 520 }}>
-                  {row.metric}
-                </td>
-                <td className="px-4 text-[13px] tabular-nums text-[#5662FF]" style={{ fontWeight: 600 }}>
-                  {row.candidate}
-                </td>
-                <td className="px-4 text-[13px] tabular-nums text-[var(--text-tertiary)]">
-                  {row.base}
-                </td>
-                <td className="px-4 text-[13px]">
-                  <VarianceCell value={row.variance} dir={row.varDir} />
-                </td>
-                <td className="px-4 text-[12px] italic text-[var(--text-tertiary)]">{row.notes}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
 export default function ProjectMeridianWindow({
-  cycle = false,
   showToast = true,
 }: {
   cycle?: boolean;
   showToast?: boolean;
 }) {
   const reduce = useReducedMotion();
-  const [active, setActive] = useState<StageId>("forecast");
-  const [toastVisible, setToastVisible] = useState(false);
+  const [active] = useState<StageId>("forecast");
+  const [rows, setRows] = useState<ForecastRow[]>(() =>
+    reduce
+      ? BASE_ROWS.map((r) => {
+          if (r.animateKey === "churn") return { ...r, ...CHURN_FINAL };
+          if (r.animateKey === "runway") return { ...r, ...RUNWAY_FINAL };
+          return r;
+        })
+      : BASE_ROWS
+  );
+  const [evidence, setEvidence] = useState(() =>
+    reduce
+      ? [
+          { time: "09:12", text: "Increased churn after reviewing renewals" },
+          ...INITIAL_EVIDENCE,
+        ]
+      : INITIAL_EVIDENCE
+  );
+  const [toastVisible, setToastVisible] = useState(Boolean(reduce && showToast));
 
   useEffect(() => {
-    if (!showToast || reduce) return;
-    const show = window.setTimeout(() => setToastVisible(true), 2200);
-    const hide = window.setTimeout(() => setToastVisible(false), 7200);
+    if (reduce) return;
+
+    const t1 = window.setTimeout(() => {
+      setRows((prev) =>
+        prev.map((r) => (r.animateKey === "churn" ? { ...r, ...CHURN_FINAL } : r))
+      );
+    }, 1200);
+
+    const t2 = window.setTimeout(() => {
+      setEvidence((prev) => [
+        { time: "09:12", text: "Increased churn after reviewing renewals" },
+        ...prev,
+      ]);
+    }, 1800);
+
+    const t3 = window.setTimeout(() => {
+      setRows((prev) =>
+        prev.map((r) => (r.animateKey === "runway" ? { ...r, ...RUNWAY_FINAL } : r))
+      );
+    }, 2400);
+
+    const t4 = window.setTimeout(() => {
+      if (showToast) setToastVisible(true);
+    }, 3000);
+
     return () => {
-      window.clearTimeout(show);
-      window.clearTimeout(hide);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      window.clearTimeout(t3);
+      window.clearTimeout(t4);
     };
-  }, [showToast, reduce]);
-
-  useEffect(() => {
-    if (!cycle || reduce) return;
-    const id = window.setInterval(() => {
-      setActive((prev) => {
-        const order: StageId[] = ["forecast", "dataroom", "update", "memo"];
-        const idx = order.indexOf(prev);
-        return order[(idx + 1) % order.length];
-      });
-    }, 5000);
-    return () => window.clearInterval(id);
-  }, [cycle, reduce]);
+  }, [reduce, showToast]);
 
   return (
     <div
-      className="fydell-product-frame relative w-full overflow-hidden"
+      className="fydell-product-frame relative w-full overflow-hidden border border-[rgba(255,255,255,0.10)] bg-[#090B10] shadow-[0_28px_90px_rgba(0,0,0,0.46)]"
       style={{
-        fontFamily: "var(--font-geist-sans, ui-sans-serif)",
-        minHeight: 640,
+        fontFamily: "var(--font-geist-sans), var(--font-inter), system-ui, sans-serif",
+        minHeight: 620,
+        borderRadius: 15,
+        boxShadow: "0 28px 90px rgba(0,0,0,0.46), inset 0 1px 0 rgba(255,255,255,0.025)",
       }}
       aria-hidden
     >
       {/* Top bar */}
-      <div className="relative z-[1] flex h-[56px] items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[#0A0D14] px-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="inline-flex h-8 w-9 items-center justify-center rounded-[8px] border border-[var(--border-default)] bg-[#11151D]">
-            <FydellMark width={22} />
+      <div className="relative z-[1] flex h-[51px] items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[#0A0D14] px-4">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <FydellMark width={19} />
+          <p className="truncate text-[12.5px] text-[#F4F5F7]" style={{ fontWeight: 580 }}>
+            Project Meridian
+          </p>
+          <span className="hidden text-[rgba(244,245,247,0.28)] sm:inline" aria-hidden>
+            ·
           </span>
-          <div className="min-w-0">
-            <p className="truncate text-[13px] text-[#F4F5F7]" style={{ fontWeight: 600 }}>
-              Project Meridian{" "}
-              <span className="font-normal text-[#717682]">— FP&amp;A Work Trial</span>
-            </p>
-          </div>
+          <span className="hidden text-[12px] text-[rgba(244,245,247,0.4)] sm:inline">
+            FP&amp;A Work Trial
+          </span>
           <span
-            className="ml-1 inline-flex h-6 items-center gap-1.5 rounded-[7px] border border-[rgba(103,217,160,0.28)] bg-[rgba(103,217,160,0.12)] px-2.5 text-[11px] text-[#8EE4B8]"
-            style={{ fontWeight: 600 }}
+            className="ml-1 inline-flex h-6 items-center gap-1.5 rounded-full border border-[rgba(103,217,160,0.22)] bg-[rgba(103,217,160,0.10)] px-2.5 text-[11px] text-[#8EE4B8]"
+            style={{ fontWeight: 550 }}
           >
-            <span className="fydell-status-dot h-1.5 w-1.5 rounded-full bg-[#67D9A0]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#67D9A0]" />
             Session Active
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <div className="hidden text-right sm:block">
-            <p className="text-[11px] text-[#717682]">Time remaining</p>
-            <p className="text-[13px] tabular-nums text-[#F4F5F7]" style={{ fontWeight: 600 }}>
+            <p className="text-[10px] text-[rgba(244,245,247,0.4)]">Time remaining</p>
+            <p className="text-[12px] tabular-nums text-[#F4F5F7]" style={{ fontWeight: 560 }}>
               32:14
             </p>
           </div>
           <span
-            className="inline-flex h-9 items-center rounded-[8px] bg-[#5662FF] px-3.5 text-[13px] text-white"
-            style={{ fontWeight: 600 }}
+            className="inline-flex h-[34px] items-center rounded-[8px] bg-[#5662FF] px-[13px] text-[12px] text-white"
+            style={{ fontWeight: 560 }}
           >
             Submit Work
           </span>
         </div>
       </div>
 
-      <div className="relative z-[1] grid min-h-[584px] grid-cols-[165px_minmax(0,1fr)_232px]">
+      <div className="relative z-[1] grid min-h-[568px] grid-cols-[152px_minmax(0,1fr)_222px]">
         {/* Left nav */}
-        <div className="flex flex-col border-r border-[var(--border-subtle)] bg-[#090C12] py-2.5">
+        <div className="flex flex-col border-r border-[var(--border-subtle)] bg-[#080A0F] py-2">
           {STAGES.map((s) => {
             const isActive = s.id === active;
             return (
               <div
                 key={s.id}
                 className={[
-                  "relative mx-2 mb-0.5 flex h-[42px] max-h-[42px] cursor-default items-center rounded-[8px] px-3 text-[13px] transition-colors duration-150",
+                  "relative mx-2 mb-0.5 flex h-[39px] cursor-default items-center rounded-[7px] px-3.5 text-[12px] transition-colors duration-150",
                   isActive
-                    ? "bg-[rgba(86,98,255,0.14)] text-[#F4F5F7]"
-                    : "text-[#717682]",
+                    ? "bg-[rgba(86,98,255,0.12)] text-[#F4F5F7]"
+                    : "text-[rgba(244,245,247,0.4)]",
                 ].join(" ")}
-                style={{ fontWeight: isActive ? 580 : 450 }}
+                style={{ fontWeight: isActive ? 550 : 450 }}
               >
                 {isActive && (
                   <span
-                    className="absolute left-0 top-1/2 h-[18px] w-[2px] -translate-y-1/2 rounded-full bg-[#5662FF]"
+                    className="absolute left-0 top-1/2 h-[16px] w-[2px] -translate-y-1/2 rounded-full bg-[#5662FF]"
                     aria-hidden
                   />
                 )}
@@ -357,10 +328,10 @@ export default function ProjectMeridianWindow({
               </div>
             );
           })}
-          <div className="mt-auto border-t border-[var(--border-subtle)] px-3 py-3.5">
+          <div className="mt-auto border-t border-[var(--border-subtle)] px-3.5 py-3">
             <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-[11px] text-[#717682]">Session progress</span>
-              <span className="text-[12px] tabular-nums text-[#F4F5F7]" style={{ fontWeight: 600 }}>
+              <span className="text-[11px] text-[rgba(244,245,247,0.4)]">Session progress</span>
+              <span className="text-[11.5px] tabular-nums text-[#F4F5F7]" style={{ fontWeight: 560 }}>
                 68%
               </span>
             </div>
@@ -378,73 +349,73 @@ export default function ProjectMeridianWindow({
 
         {/* Main work area */}
         <div className="relative min-w-[650px] overflow-hidden border-r border-[var(--border-subtle)] bg-[#0B0F16] lg:min-w-0">
-          {active === "dataroom" ? (
-            <DataRoomPanel />
-          ) : active === "update" ? (
-            <ManagerPanel />
-          ) : active === "memo" ? (
-            <MemoPanel />
-          ) : (
-            <ForecastPanel />
-          )}
+          <ForecastPanel rows={rows} />
 
           {toastVisible && (
             <div
-              className="absolute bottom-4 left-4 z-[3] w-[250px] rounded-[10px] border border-[rgba(134,87,244,0.28)] bg-[#11151D] px-3.5 py-3 shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+              className="absolute bottom-4 left-4 z-[3] w-[268px] rounded-[10px] border border-[rgba(134,87,244,0.24)] bg-[#11151D] px-3.5 py-3 shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
               style={{
                 animation: reduce ? undefined : "fydell-toast-in 280ms var(--ease) both",
               }}
             >
-              <p className="text-[12px] text-[#F4F5F7]" style={{ fontWeight: 600 }}>
+              <p className="text-[12px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
                 Manager update
               </p>
-              <p className="mt-1 text-[12px] leading-[1.45] text-[#A3A7B2]">
-                Renewal risk increased for the SMB segment.
+              <p className="mt-1 text-[12px] leading-[1.45] text-[rgba(244,245,247,0.62)]">
+                SMB renewal risk has increased. Revisit the downside forecast.
               </p>
             </div>
           )}
         </div>
 
         {/* Evidence panel */}
-        <div className="flex min-w-0 flex-col bg-[#090C12]">
+        <div className="flex min-w-0 flex-col bg-[#080A0F]">
           <div className="flex h-[42px] items-center border-b border-[var(--border-subtle)] px-4">
             <p
-              className="text-[10px] uppercase tracking-[0.08em] text-[#717682]"
-              style={{ fontWeight: 600 }}
+              className="text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
+              style={{ fontWeight: 500 }}
             >
               Evidence Captured
             </p>
           </div>
-          <div className="flex-1 space-y-3 px-4 py-3.5">
+          <div className="flex-1 space-y-2.5 px-4 py-3.5">
             {EVIDENCE_METRICS.map((item) => (
               <div key={item.label} className="flex items-baseline justify-between gap-2">
-                <span className="text-[12px] text-[#A3A7B2]">{item.label}</span>
-                <span className="text-[13px] tabular-nums text-[#F4F5F7]" style={{ fontWeight: 600 }}>
+                <span className="text-[11px] text-[rgba(244,245,247,0.62)]">{item.label}</span>
+                <span
+                  className="text-[11.5px] tabular-nums text-[#F4F5F7]"
+                  style={{ fontWeight: 550 }}
+                >
                   {item.value}
                 </span>
               </div>
             ))}
             <div className="pt-3">
               <p
-                className="mb-3 text-[10px] uppercase tracking-[0.08em] text-[#717682]"
-                style={{ fontWeight: 600 }}
+                className="mb-2.5 text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
+                style={{ fontWeight: 500 }}
               >
                 Recent evidence
               </p>
-              <div className="space-y-3">
-                {RECENT_EVIDENCE.map((row) => (
-                  <div key={row.time} className="flex gap-2.5">
-                    <span className="w-9 shrink-0 text-[11px] tabular-nums text-[#717682]">
+              <div className="space-y-2.5">
+                {evidence.map((row) => (
+                  <div
+                    key={`${row.time}-${row.text}`}
+                    className="flex gap-2.5"
+                    style={{
+                      animation: reduce ? undefined : "fydell-toast-in 260ms var(--ease) both",
+                    }}
+                  >
+                    <span className="w-9 shrink-0 text-[10px] tabular-nums text-[rgba(244,245,247,0.4)]">
                       {row.time}
                     </span>
-                    <span className="text-[12px] leading-[1.4] text-[#A3A7B2]">{row.text}</span>
+                    <span className="text-[11px] leading-[1.4] text-[rgba(244,245,247,0.62)]">
+                      {row.text}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
-          <div className="border-t border-[var(--border-subtle)] px-4 py-2.5">
-            <p className="text-[11px] text-[#717682]">Saved just now</p>
           </div>
         </div>
       </div>

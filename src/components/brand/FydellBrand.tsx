@@ -30,7 +30,7 @@ export default function FydellBrand({
         style={{
           fontFamily: "var(--font-geist-sans), var(--font-inter), ui-sans-serif, system-ui, sans-serif",
           fontSize: textSize,
-          fontWeight: 650,
+          fontWeight: 560,
           letterSpacing: "-0.045em",
           color: "#F4F5F7",
           background: "none",

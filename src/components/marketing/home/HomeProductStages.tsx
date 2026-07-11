@@ -1,71 +1,99 @@
 import { Container } from "@/components/marketing/ui";
 import { Reveal } from "@/components/motion/Reveal";
 
-const STAGES = [
+const PRINCIPLES = [
   {
-    n: "01",
-    title: "Define the role",
-    body: "Map the job to the outcomes the hire must own.",
+    title: "Observe the work",
+    body: "Capture decisions, assumptions, revisions, and tradeoffs.",
+    diagram: (
+      <svg viewBox="0 0 120 72" className="h-[72px] w-[120px]" aria-hidden>
+        <rect x="8" y="14" width="48" height="44" rx="4" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+        <rect x="16" y="22" width="32" height="3" rx="1" fill="rgba(255,255,255,0.18)" />
+        <rect x="16" y="30" width="24" height="3" rx="1" fill="rgba(255,255,255,0.1)" />
+        <rect x="16" y="38" width="28" height="3" rx="1" fill="rgba(255,255,255,0.1)" />
+        <circle cx="86" cy="36" r="18" fill="none" stroke="rgba(86,98,255,0.45)" strokeWidth="1.2" />
+        <circle cx="86" cy="36" r="6" fill="rgba(86,98,255,0.35)" />
+        <path d="M56 36h12" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+      </svg>
+    ),
   },
   {
-    n: "02",
-    title: "Run the work trial",
-    body: "Candidates complete realistic finance work under changing conditions.",
+    title: "Introduce change",
+    body: "Test how candidates respond when the information moves.",
+    diagram: (
+      <svg viewBox="0 0 120 72" className="h-[72px] w-[120px]" aria-hidden>
+        <path
+          d="M12 48 L36 28 L60 40 L84 18 L108 32"
+          fill="none"
+          stroke="rgba(255,255,255,0.14)"
+          strokeWidth="1.2"
+        />
+        <path
+          d="M12 48 L36 28 L60 40 L84 18 L108 32"
+          fill="none"
+          stroke="rgba(134,87,244,0.55)"
+          strokeWidth="1.2"
+          strokeDasharray="4 4"
+          transform="translate(0,8)"
+        />
+        <circle cx="84" cy="18" r="3.5" fill="#5662FF" />
+        <circle cx="84" cy="26" r="3.5" fill="rgba(134,87,244,0.7)" />
+      </svg>
+    ),
   },
   {
-    n: "03",
-    title: "Review the evidence",
-    body: "See assumptions, decisions, risks, communication, and AI judgment.",
-  },
-  {
-    n: "04",
-    title: "Focus the interview",
-    body: "Use questions generated from what the candidate actually did.",
+    title: "Trace the evidence",
+    body: "Connect every conclusion to something the candidate actually did.",
+    diagram: (
+      <svg viewBox="0 0 120 72" className="h-[72px] w-[120px]" aria-hidden>
+        <circle cx="24" cy="36" r="5" fill="rgba(86,98,255,0.5)" />
+        <circle cx="60" cy="22" r="4" fill="rgba(255,255,255,0.2)" />
+        <circle cx="60" cy="50" r="4" fill="rgba(255,255,255,0.2)" />
+        <circle cx="96" cy="36" r="5" fill="rgba(134,87,244,0.55)" />
+        <path d="M29 36 L55 24 M29 36 L55 48 M65 24 L91 36 M65 48 L91 36" stroke="rgba(255,255,255,0.16)" strokeWidth="1" />
+      </svg>
+    ),
   },
 ];
 
 export default function HomeProductStages() {
   return (
-    <section className="mkt-section border-t border-[var(--border-subtle)]">
+    <section className="section-editorial border-t border-[var(--border-subtle)]">
       <Container>
         <Reveal>
-          <h2
-            className="max-w-[720px] text-[var(--text-primary)] text-balance"
+          <p
+            className="max-w-[900px] text-balance"
             style={{
-              fontSize: "clamp(1.75rem, 3vw, 2.5rem)",
-              lineHeight: 1.12,
-              letterSpacing: "-0.035em",
-              fontWeight: 650,
+              fontSize: "clamp(2rem, 3.6vw, 2.875rem)",
+              lineHeight: 1.08,
+              letterSpacing: "-0.038em",
+              fontWeight: 520,
             }}
           >
-            From role requirements to interview evidence.
-          </h2>
+            <span className="text-[rgba(244,245,247,0.62)]">
+              Hiring systems record what candidates claim.
+            </span>
+            <br />
+            <span className="text-[#F4F5F7]">Fydell records how they work.</span>
+          </p>
         </Reveal>
 
-        <div className="mt-12 grid gap-0 sm:mt-14 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-          {STAGES.map((stage, i) => (
-            <Reveal key={stage.n} delay={0.04 * i}>
-              <div
-                className={[
-                  "border-t border-[var(--border-default)] pt-5",
-                  i > 0 ? "mt-8 sm:mt-0" : "",
-                  "sm:border-t sm:pt-5",
-                ].join(" ")}
-              >
-                <p className="text-[12px] tabular-nums text-[var(--text-tertiary)]" style={{ fontWeight: 520 }}>
-                  {stage.n}
-                </p>
+        <div className="mt-14 grid gap-10 sm:mt-16 sm:grid-cols-3 sm:gap-8 lg:gap-12">
+          {PRINCIPLES.map((p, i) => (
+            <Reveal key={p.title} delay={0.04 * i}>
+              <div>
+                <div className="mb-5 opacity-90">{p.diagram}</div>
                 <h3
-                  className="mt-3 text-[15px] text-[var(--text-primary)] sm:text-[16px]"
-                  style={{ fontWeight: 580, letterSpacing: "-0.02em" }}
+                  className="text-[15px] text-[#F4F5F7]"
+                  style={{ fontWeight: 560, letterSpacing: "-0.015em" }}
                 >
-                  {stage.title}
+                  {p.title}
                 </h3>
                 <p
-                  className="mt-2 text-[13px] leading-[1.55] text-[var(--text-secondary)] sm:text-[14px]"
-                  style={{ fontWeight: 450 }}
+                  className="mt-2 max-w-[280px] text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]"
+                  style={{ fontWeight: 430 }}
                 >
-                  {stage.body}
+                  {p.body}
                 </p>
               </div>
             </Reveal>

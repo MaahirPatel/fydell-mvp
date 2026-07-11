@@ -9,3 +9,5 @@ visual-review/
 .env
 .env.*
 *.log
+.vercel
+.env*

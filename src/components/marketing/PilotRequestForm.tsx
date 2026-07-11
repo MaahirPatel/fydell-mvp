@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 
 const inputClass =
-  "h-11 w-full rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-0)] px-3.5 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] outline-none transition-[border-color,background] duration-150 focus:border-[var(--brand-blue)] focus:bg-[var(--surface-1)]";
+  "h-[43px] w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-0)] px-3.5 text-[14px] text-[var(--text-primary)] placeholder:text-[rgba(244,245,247,0.28)] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[var(--brand-blue)] focus:shadow-[0_0_0_2px_rgba(86,98,255,0.22)]";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
