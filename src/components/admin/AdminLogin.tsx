@@ -24,7 +24,7 @@ export default function AdminLogin() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? "Invalid email or password.");
       }
-      router.push("/admin/dashboard");
+      router.push("/admin/pilot-requests");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed.");

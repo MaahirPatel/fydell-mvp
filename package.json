@@ -15,7 +15,13 @@
     "accept:weak": "node scripts/accept-meridian.mjs weak",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:unit": "npx tsx scripts/test-pilot-validation.ts",
+    "test:e2e": "playwright test",
+    "bootstrap:admin": "npx tsx scripts/bootstrap-platform-admin.ts",
+    "admin:password": "npx tsx scripts/set-admin-password.ts --write",
+    "verify:prod": "npx tsx scripts/verify-production-readiness.ts",
+    "seed:dev": "ALLOW_DEV_SEED=true npx tsx scripts/seed-development.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

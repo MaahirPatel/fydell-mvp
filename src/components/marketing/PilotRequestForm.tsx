@@ -1,84 +1,35 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
+import Link from "next/link";
+import TurnstileField from "@/components/security/TurnstileField";
 
 const inputClass =
   "h-[43px] w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-0)] px-3.5 text-[14px] text-[var(--text-primary)] placeholder:text-[rgba(244,245,247,0.28)] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[var(--brand-blue)] focus:shadow-[0_0_0_2px_rgba(86,98,255,0.22)]";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-function debugLog(
-  location: string,
-  message: string,
-  data: Record<string, unknown>,
-  hypothesisId: string
-) {
-  // #region agent log
-  fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "dc0a6c",
-    },
-    body: JSON.stringify({
-      sessionId: "dc0a6c",
-      runId: "pre-fix",
-      hypothesisId,
-      location,
-      message,
-      data,
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
-}
+type SuccessState = {
+  publicReference: string;
+  workEmail: string;
+};
 
 export function PilotRequestForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const form = document.getElementById("pilot-request-form") as HTMLFormElement | null;
-    debugLog(
-      "PilotRequestForm.tsx:mount",
-      "Form security probe on mount",
-      {
-        protocol: typeof window !== "undefined" ? window.location.protocol : null,
-        host: typeof window !== "undefined" ? window.location.host : null,
-        action: form?.getAttribute("action") ?? null,
-        method: form?.getAttribute("method") ?? null,
-        isMailto: Boolean(form?.getAttribute("action")?.startsWith("mailto:")),
-        isGet: (form?.getAttribute("method") ?? "").toLowerCase() === "get",
-        hasPasswordField: Boolean(form?.querySelector('input[type="password"]')),
-        fieldCount: form ? form.querySelectorAll("input, textarea").length : 0,
-      },
-      "A"
-    );
-  }, []);
+  const [success, setSuccess] = useState<SuccessState | null>(null);
+  const [captchaToken, setCaptchaToken] = useState("");
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
-    const action = form.getAttribute("action");
-    const method = form.getAttribute("method");
-
-    debugLog(
-      "PilotRequestForm.tsx:submit",
-      "Submit intercepted",
-      {
-        action,
-        method,
-        isMailto: Boolean(action?.startsWith("mailto:")),
-        protocol: window.location.protocol,
-        willPostJson: true,
-      },
-      "A"
-    );
 
     setStatus("submitting");
     setError(null);
+    setSuccess(null);
 
     const fd = new FormData(form);
+    const token = String(fd.get("captchaToken") ?? captchaToken ?? "").trim();
     const payload = {
       name: String(fd.get("name") ?? "").trim(),
       email: String(fd.get("email") ?? "").trim(),
@@ -86,44 +37,18 @@ export function PilotRequestForm() {
       role: String(fd.get("role") ?? "").trim(),
       candidates: String(fd.get("candidates") ?? "").trim(),
       note: String(fd.get("note") ?? "").trim(),
+      captchaToken: token,
     };
 
-    debugLog(
-      "PilotRequestForm.tsx:before-api",
-      "About to POST pilot request (no PII values)",
-      {
-        hasName: Boolean(payload.name),
-        hasEmail: Boolean(payload.email),
-        hasCompany: Boolean(payload.company),
-        hasRole: Boolean(payload.role),
-        hasCandidates: Boolean(payload.candidates),
-        hasNote: Boolean(payload.note),
-        endpoint: "/api/mvp/pilot-requests",
-      },
-      "B"
-    );
-
     try {
-      const res = await fetch("/api/mvp/pilot-requests", {
+      const res = await fetch("/api/public/pilot-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
 
-      debugLog(
-        "PilotRequestForm.tsx:after-api",
-        "API response received",
-        {
-          ok: res.ok,
-          status: res.status,
-          hasId: Boolean(data?.id),
-          error: typeof data?.error === "string" ? data.error : null,
-        },
-        "B"
-      );
-
-      if (!res.ok) {
+      if (!res.ok || !data?.success || !data?.publicReference) {
         setStatus("error");
         setError(
           typeof data?.error === "string"
@@ -133,35 +58,57 @@ export function PilotRequestForm() {
         return;
       }
 
+      setSuccess({
+        publicReference: String(data.publicReference),
+        workEmail: String(data.workEmail || payload.email),
+      });
       setStatus("success");
       form.reset();
-    } catch (err) {
-      debugLog(
-        "PilotRequestForm.tsx:network-error",
-        "Fetch failed",
-        { message: err instanceof Error ? err.message : "unknown" },
-        "B"
-      );
+      setCaptchaToken("");
+    } catch {
       setStatus("error");
       setError("Network error. Please check your connection and try again.");
     }
   }
 
-  if (status === "success") {
+  if (status === "success" && success) {
     return (
-      <div className="rounded-[12px] border border-[#39D98A]/25 bg-[#39D98A]/08 px-5 py-6 text-center">
-        <p className="text-[15px] font-semibold text-white">Request received</p>
-        <p className="mt-2 text-[13px] text-white/[0.66]">
-          We will reply within one business day to confirm setup details. You can also{" "}
-          <a href="/login" className="text-[#24C7D9] underline-offset-2 hover:underline">
-            create a workspace
-          </a>{" "}
-          and explore the employer dashboard now — no payment required.
+      <div className="rounded-[12px] border border-[rgba(103,217,160,0.25)] bg-[rgba(103,217,160,0.08)] px-5 py-6">
+        <p className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+          Request received
         </p>
+        <p className="mt-2 text-[13px] text-[rgba(244,245,247,0.72)]">
+          Reference:{" "}
+          <span className="tabular-nums text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+            {success.publicReference}
+          </span>
+        </p>
+        <p className="mt-3 text-[13px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
+          A confirmation email is being sent to {success.workEmail}. A member of the Fydell team
+          will reply within one business day.
+        </p>
+        <div className="mt-5 flex flex-wrap items-center gap-4">
+          <Link
+            href="/signup"
+            className="inline-flex h-9 items-center rounded-[8px] bg-[#F1F2F4] px-3.5 text-[13px] text-[#08090C]"
+            style={{ fontWeight: 560 }}
+          >
+            Create a workspace
+          </Link>
+          <Link
+            href="/"
+            className="text-[13px] text-[rgba(244,245,247,0.62)] transition-colors hover:text-[#F4F5F7]"
+          >
+            Return to homepage →
+          </Link>
+        </div>
         <button
           type="button"
-          onClick={() => setStatus("idle")}
-          className="mt-4 text-[13px] text-white/[0.46] hover:text-white/[0.68]"
+          onClick={() => {
+            setStatus("idle");
+            setSuccess(null);
+          }}
+          className="mt-4 text-[13px] text-[rgba(244,245,247,0.4)] hover:text-[rgba(244,245,247,0.7)]"
         >
           Submit another request
         </button>
@@ -172,7 +119,7 @@ export function PilotRequestForm() {
   return (
     <form
       id="pilot-request-form"
-      action="/api/mvp/pilot-requests"
+      action="/api/public/pilot-requests"
       method="POST"
       onSubmit={onSubmit}
       className="space-y-4"
@@ -295,13 +242,15 @@ export function PilotRequestForm() {
         </p>
       ) : null}
 
+      <TurnstileField onToken={setCaptchaToken} />
+
       <button
         type="submit"
         disabled={status === "submitting"}
         className="inline-flex h-11 w-full items-center justify-center rounded-[9px] bg-[#F2F3F5] px-6 text-[14px] text-[#090A0D] transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
         style={{ fontWeight: 580 }}
       >
-        {status === "submitting" ? "Sending…" : "Request a pilot"}
+        {status === "submitting" ? "Saving…" : "Request a pilot"}
       </button>
     </form>
   );

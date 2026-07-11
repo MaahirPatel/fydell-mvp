@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminSession, verifyAdminCredentials } from "@/lib/auth";
+import { ensureBootstrapRole } from "@/lib/ops/platform-roles";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
@@ -13,6 +14,12 @@ export async function POST(req: Request) {
     );
   }
 
+  try {
+    await ensureBootstrapRole(email);
+  } catch {
+    // Login still proceeds; role grant can be retried via bootstrap script.
+  }
+
   await createAdminSession(email);
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, redirectTo: "/admin/pilot-requests" });
 }

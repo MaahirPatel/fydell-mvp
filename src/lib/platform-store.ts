@@ -312,7 +312,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
     throw new Error("Password reset requires Supabase Auth to be configured.");
   }
   const auth = getSupabaseAuthClient();
-  const redirectTo = `${appUrl()}/reset-password`;
+  const redirectTo = `${appUrl()}/auth/update-password`;
   const { error } = await auth.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
     redirectTo
   });

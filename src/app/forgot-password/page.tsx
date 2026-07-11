@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import FydellBrand from "@/components/brand/FydellBrand";
+import TurnstileField from "@/components/security/TurnstileField";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -19,7 +21,7 @@ export default function ForgotPasswordPage() {
       const res = await fetch("/api/platform/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, captchaToken }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Request failed");
@@ -36,7 +38,10 @@ export default function ForgotPasswordPage() {
       <div className="pointer-events-none absolute right-[-8%] top-[-8%] h-[480px] w-[580px] rounded-full bg-[#3B5BFF]/[0.06] blur-[160px]" />
       <header className="relative z-10 mx-auto flex h-[72px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
         <FydellBrand markSize={34} />
-        <Link href="/login" className="text-[14px] font-medium text-white/[0.55] transition hover:text-white">
+        <Link
+          href="/login"
+          className="text-[14px] font-medium text-white/[0.55] transition hover:text-white"
+        >
           Sign in
         </Link>
       </header>
@@ -53,10 +58,13 @@ export default function ForgotPasswordPage() {
           {sent ? (
             <div className="mt-7 space-y-4">
               <p className="rounded-[10px] border border-[#3B5BFF]/30 bg-[#3B5BFF]/10 px-3.5 py-2.5 text-[13px] font-medium text-[#a8b8ff]">
-                If an account exists for that email, a reset link is on the way. Check your inbox
+                If an account exists for that email, a reset link has been sent. Check your inbox
                 (and spam).
               </p>
-              <Link href="/login" className="inline-flex text-[13px] font-semibold text-white hover:underline">
+              <Link
+                href="/login"
+                className="inline-flex text-[13px] font-semibold text-white hover:underline"
+              >
                 Back to sign in
               </Link>
             </div>
@@ -73,6 +81,7 @@ export default function ForgotPasswordPage() {
                   required
                 />
               </label>
+              <TurnstileField onToken={setCaptchaToken} />
               {error && (
                 <p
                   role="alert"

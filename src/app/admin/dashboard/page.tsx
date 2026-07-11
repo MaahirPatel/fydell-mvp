@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import Logo from "@/components/Logo";
 import LogoutButton from "@/components/admin/LogoutButton";
 import InviteModal from "@/components/admin/InviteModal";
-import { getAdminSession } from "@/lib/auth";
+import { requirePlatformRole } from "@/lib/ops/require-platform-role";
 import { listCandidatesForAdmin, type AdminCandidateRow } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -43,8 +42,13 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default async function DashboardPage() {
-  const session = await getAdminSession();
-  if (!session) redirect("/admin");
+  const session = await requirePlatformRole([
+    "super_admin",
+    "admin",
+    "operator",
+    "reviewer",
+    "support",
+  ]);
 
   let rows: AdminCandidateRow[] = [];
   let dbError = false;
@@ -63,6 +67,12 @@ export default async function DashboardPage() {
             <span className="hidden text-sm text-muted sm:inline">Admin</span>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              href="/admin/pilot-requests"
+              className="text-sm text-ink hover:underline"
+            >
+              Pilot requests
+            </Link>
             <span className="hidden text-sm text-muted md:inline">{session.email}</span>
             <LogoutButton />
           </div>

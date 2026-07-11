@@ -21,21 +21,6 @@ export default function DashboardOverview() {
         const timer = setTimeout(() => ctrl.abort(), 4000);
         const res = await fetch("/api/mvp/dashboard", { signal: ctrl.signal });
         clearTimeout(timer);
-        // #region agent log
-        fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "dc0a6c" },
-          body: JSON.stringify({
-            sessionId: "dc0a6c",
-            runId: "loop-fix",
-            hypothesisId: "H3",
-            location: "dashboard/page.tsx:load",
-            message: "Dashboard API response",
-            data: { status: res.status, ok: res.ok },
-            timestamp: Date.now(),
-          }),
-        }).catch(() => {});
-        // #endregion
         if (!res.ok) {
           // Keep demo sample only when unauthorized / unavailable
           if (!cancelled) {
