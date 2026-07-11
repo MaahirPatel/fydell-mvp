@@ -36,7 +36,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Request failed");
-      router.push(data.onboardingComplete ? "/platform" : "/onboarding");
+      router.push(data.onboardingComplete ? "/dashboard" : "/onboarding");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);

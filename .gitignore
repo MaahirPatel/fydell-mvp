@@ -5,6 +5,7 @@ terminals/
 node_modules/
 .next/
 visual-review/
+.data/
 .env
 .env.*
 *.log

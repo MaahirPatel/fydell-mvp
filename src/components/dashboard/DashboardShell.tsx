@@ -52,8 +52,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (data.token) {
-        setInviteLink(`${window.location.origin}/workroom/${data.token}`);
+      if (data.token || data.invite?.token) {
+        const token = data.token || data.invite.token;
+        setInviteLink(`${window.location.origin}/workroom/${token}`);
+      } else if (data.url) {
+        setInviteLink(data.url);
       } else {
         // Demo fallback — generate a local preview link
         const fakeToken = `demo-${Math.random().toString(36).slice(2, 10)}`;

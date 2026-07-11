@@ -1,9 +1,11 @@
 import "server-only";
-import { getSupabaseAdmin } from "./supabase";
+import { getSupabaseAdmin, isSupabaseConfigured } from "./supabase";
 import type { CompanyUser, GeneratedSimulation, OnboardingAnswers } from "./platform-types";
 
 function supabaseReady(): boolean {
-  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
+  // Accept both legacy (SUPABASE_URL / SUPABASE_SERVICE_KEY) and standard
+  // (NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY) env names.
+  return isSupabaseConfigured();
 }
 
 function rowToUser(row: Record<string, unknown>): CompanyUser {

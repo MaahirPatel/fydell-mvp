@@ -25,7 +25,11 @@ export async function POST(req: Request) {
       createdBy: ctx.userId,
       expiresInDays: expiresInDays ? Number(expiresInDays) : undefined
     });
-    return NextResponse.json({ invite, url: inviteUrl(invite.token) });
+    return NextResponse.json({
+      invite,
+      token: invite.token,
+      url: inviteUrl(invite.token),
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Could not create invite.";
     return NextResponse.json({ error: msg }, { status: 400 });

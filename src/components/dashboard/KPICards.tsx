@@ -11,44 +11,44 @@ interface KPI {
 }
 
 interface Props {
-  activeSimulations: number;
-  invitesSent: number;
-  completedReports: number;
+  invited: number;
+  inProgress: number;
+  reportsReady: number;
   advanceRecommendations: number;
 }
 
 export function KPICards({
-  activeSimulations,
-  invitesSent,
-  completedReports,
+  invited,
+  inProgress,
+  reportsReady,
   advanceRecommendations,
 }: Props) {
   const kpis: KPI[] = [
     {
-      label: "Active simulation",
-      value: activeSimulations,
-      sub: "Project Meridian",
-      icon: <TrendingUp size={18} />,
+      label: "Candidates invited",
+      value: invited,
+      sub: "Across the active FP&A role",
+      icon: <Send size={18} />,
       accent: "var(--blue)",
     },
     {
-      label: "Invites sent",
-      value: invitesSent,
-      sub: "last 30 days",
-      icon: <Send size={18} />,
+      label: "In progress",
+      value: inProgress,
+      sub: "Work trial underway",
+      icon: <TrendingUp size={18} />,
       accent: "var(--violet)",
     },
     {
-      label: "Completed reports",
-      value: completedReports,
-      sub: `of ${invitesSent} invited`,
+      label: "Reports ready",
+      value: reportsReady,
+      sub: "Evidence available to review",
       icon: <FileCheck size={18} />,
       accent: "var(--cyan)",
     },
     {
-      label: "Advance recommendations",
+      label: "Recommended to advance",
       value: advanceRecommendations,
-      sub: `${completedReports > 0 ? Math.round((advanceRecommendations / completedReports) * 100) : 0}% advance rate`,
+      sub: "Based on completed work",
       icon: <ThumbsUp size={18} />,
       accent: "var(--green)",
     },

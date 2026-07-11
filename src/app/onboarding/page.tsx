@@ -7,6 +7,6 @@ export default async function OnboardingPage() {
   const session = await getCompanySession();
   if (!session) redirect("/login");
   const user = await getUserById(session.userId);
-  if (user?.onboardingComplete) redirect("/platform");
+  if (user?.onboardingComplete) redirect("/dashboard");
   return <OnboardingWizard />;
 }

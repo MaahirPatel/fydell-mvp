@@ -109,7 +109,7 @@ export default function OnboardingWizard() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not save");
-      router.push("/platform");
+      router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);

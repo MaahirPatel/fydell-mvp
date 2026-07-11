@@ -1,16 +1,17 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
 import { Container } from "@/components/marketing/ui";
+import { PilotRequestForm } from "@/components/marketing/PilotRequestForm";
 import { Mail } from "lucide-react";
 
 export const metadata = {
   title: "Fydell",
   description:
-    "Run a pilot with one FP&A role. $10 per completed report, no setup fee, founder-managed.",
+    "Request a Project Meridian pilot for your FP&A hiring process. No payment required to start — explore the employer dashboard first.",
 };
 
 const PILOT_DETAILS = [
-  { label: "Cost", value: "$10 per completed report" },
+  { label: "To start", value: "No payment required" },
   { label: "Setup fee", value: "None" },
   { label: "Contract required", value: "No" },
   { label: "Typical turnaround", value: "Reports ready within 24 hours" },
@@ -24,74 +25,58 @@ const SETUP_STEPS = [
   { n: "3", title: "Reports reviewed before delivery", body: "Every evidence report is checked before you see it." },
 ];
 
-const inputClass =
-  "w-full rounded-[12px] border border-white/[0.10] bg-[#080B12] px-4 py-3 text-[14px] text-white placeholder-white/[0.25] outline-none transition-colors focus:border-[#315CFF]/50 focus:bg-[#0B0F18]";
-
 export default function RequestPilotPage() {
   return (
     <MarketingShell>
-      <section className="mkt-section pb-24 pt-[100px] lg:pt-[136px]">
+      <section className="relative overflow-hidden pb-24 pt-16 lg:pb-32 lg:pt-20">
         <Container>
-          <div className="grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+          <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_1.05fr] lg:items-start lg:gap-14">
             <Reveal>
-              <h1 className="text-white" style={{ letterSpacing: "-0.04em" }}>
-                Run a pilot with one FP&A role.
-              </h1>
-              <p className="mt-5 max-w-[480px] text-[17px] leading-[1.65] text-white/[0.66]">
-                Tell us what role you are hiring for. We will configure Project Meridian and send
-                private candidate links.
-              </p>
-              <p className="mt-3 max-w-[480px] text-[17px] leading-[1.65] text-white/[0.66]">
-                Pilots are founder-managed — you work directly with the Fydell team, not a sales
-                process.
-              </p>
+              <div>
+                <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.14em] text-white/[0.40]">
+                  Request a pilot
+                </p>
+                <h1 className="text-[34px] font-semibold leading-[1.12] tracking-[-0.035em] text-white sm:text-[40px]">
+                  Run Project Meridian on a real FP&A hire
+                </h1>
+                <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/[0.58]">
+                  Tell us about the role. We set up your workspace, configure the work trial,
+                  and give you a dashboard to invite candidates and review evidence — before
+                  any billing.
+                </p>
 
-              <div className="mt-8 overflow-hidden rounded-[16px] border border-white/[0.09] bg-[#080B12]">
-                <div className="border-b border-white/[0.07] px-5 py-3.5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-white/[0.38]">
-                    Pilot Details
-                  </p>
-                </div>
-                <div className="divide-y divide-white/[0.05]">
-                  {PILOT_DETAILS.map((row) => (
-                    <div key={row.label} className="flex items-center justify-between px-5 py-3">
-                      <span className="text-[13.5px] text-white/[0.55]">{row.label}</span>
-                      <span className="text-[13.5px] font-semibold text-white">{row.value}</span>
-                    </div>
+                <ul className="mt-8 space-y-3">
+                  {PILOT_DETAILS.map((d) => (
+                    <li
+                      key={d.label}
+                      className="flex items-baseline justify-between gap-4 border-b border-white/[0.06] pb-3 text-[13.5px]"
+                    >
+                      <span className="text-white/[0.46]">{d.label}</span>
+                      <span className="text-right font-medium text-white/[0.88]">{d.value}</span>
+                    </li>
                   ))}
-                </div>
-              </div>
+                </ul>
 
-              <div className="mt-5 overflow-hidden rounded-[16px] border border-white/[0.09] bg-[#0B0F18]">
-                <div className="border-b border-white/[0.07] px-5 py-3.5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-white/[0.38]">
-                    Pilot Setup
-                  </p>
-                </div>
-                <div className="space-y-4 px-5 py-5">
-                  {SETUP_STEPS.map((step) => (
-                    <div key={step.n} className="flex gap-3">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/[0.10] text-[11px] font-semibold text-white/[0.55]">
-                        {step.n}
+                <div className="mt-10 space-y-5">
+                  {SETUP_STEPS.map((s) => (
+                    <div key={s.n} className="flex gap-3">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/[0.12] text-[12px] font-semibold text-white/[0.70]">
+                        {s.n}
                       </span>
                       <div>
-                        <p className="text-[13px] font-semibold text-white">{step.title}</p>
-                        <p className="mt-1 text-[12px] leading-[1.55] text-white/[0.50]">
-                          {step.body}
-                        </p>
+                        <p className="text-[14px] font-semibold text-white">{s.title}</p>
+                        <p className="mt-0.5 text-[13px] text-white/[0.46]">{s.body}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
 
-              <div className="mt-5 flex items-center gap-3 rounded-[12px] border border-white/[0.08] px-4 py-3.5">
-                <Mail className="h-4 w-4 shrink-0 text-white/[0.38]" strokeWidth={1.7} />
-                <p className="text-[13.5px] text-white/[0.55]">
-                  Questions? Email{" "}
+                <p className="mt-10 flex items-center gap-2 text-[13px] text-white/[0.40]">
+                  <Mail className="h-3.5 w-3.5" aria-hidden />
+                  Or email{" "}
                   <a
                     href="mailto:hello@fydell.com"
-                    className="font-semibold text-white hover:underline"
+                    className="text-white/[0.66] underline-offset-2 hover:underline"
                   >
                     hello@fydell.com
                   </a>
@@ -102,124 +87,9 @@ export default function RequestPilotPage() {
             <Reveal delay={0.1}>
               <div className="rounded-[20px] border border-white/[0.11] bg-[#080B12] p-6 lg:p-8">
                 <p className="mb-6 text-[15px] font-semibold text-white">Tell us about your role</p>
-
-                <form
-                  action="mailto:hello@fydell.com?subject=Fydell Pilot Request"
-                  method="GET"
-                  className="space-y-4"
-                >
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label
-                        htmlFor="name"
-                        className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
-                      >
-                        Name
-                      </label>
-                      <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        required
-                        placeholder="Your name"
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
-                      >
-                        Work email
-                      </label>
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        required
-                        placeholder="you@company.com"
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="company"
-                      className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
-                    >
-                      Company
-                    </label>
-                    <input
-                      id="company"
-                      name="company"
-                      type="text"
-                      required
-                      placeholder="Company name"
-                      className={inputClass}
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="role"
-                      className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
-                    >
-                      Role you are hiring for
-                    </label>
-                    <input
-                      id="role"
-                      name="role"
-                      type="text"
-                      required
-                      placeholder="Role title"
-                      className={inputClass}
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="candidates"
-                      className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
-                    >
-                      Approximate number of candidates
-                    </label>
-                    <input
-                      id="candidates"
-                      name="candidates"
-                      type="text"
-                      placeholder="e.g. 5–10"
-                      className={inputClass}
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="note"
-                      className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
-                    >
-                      Anything we should know?{" "}
-                      <span className="text-white/[0.30]">(optional)</span>
-                    </label>
-                    <textarea
-                      id="note"
-                      name="note"
-                      rows={4}
-                      placeholder="Timeline, specific focus areas, anything else relevant..."
-                      className={`${inputClass} resize-none`}
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="inline-flex h-12 w-full items-center justify-center rounded-[11px] bg-[#315CFF] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-[#4B6FFF]"
-                  >
-                    Request pilot
-                  </button>
-                </form>
-
+                <PilotRequestForm />
                 <p className="mt-4 text-center text-[12px] text-white/[0.30]">
-                  We will reply within one business day to confirm setup details.
+                  Submitted securely over HTTPS. We will reply within one business day.
                 </p>
               </div>
             </Reveal>

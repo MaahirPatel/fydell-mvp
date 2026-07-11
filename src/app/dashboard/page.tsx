@@ -81,23 +81,59 @@ export default function DashboardOverview() {
     };
   }, []);
 
+  const inProgress = candidates.filter((c) => c.status === "in_progress").length;
+  const reportsReady = stats.completedReports;
+  const feedbackNeeded = candidates.filter((c) => c.decision === "not_decided").length;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
       {/* Page header */}
-      <div>
-        <p className="eyebrow" style={{ marginBottom: 10 }}>
-          Employer dashboard
-        </p>
-        <h1
-          style={{
-            fontSize: 26,
-            fontWeight: 700,
-            letterSpacing: "-0.035em",
-            margin: 0,
-          }}
-        >
-          Overview
-        </h1>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <p className="eyebrow" style={{ marginBottom: 10 }}>
+            Employer operating system
+          </p>
+          <h1
+            style={{
+              fontSize: 28,
+              fontWeight: 700,
+              letterSpacing: "-0.035em",
+              margin: 0,
+            }}
+          >
+            Finance Hiring Overview
+          </h1>
+          <p style={{ fontSize: 14, color: "var(--muted)", margin: "8px 0 0", maxWidth: 520 }}>
+            Track candidate progress, review evidence, and prepare interviews.
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <Link
+            href="/dashboard/simulations"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              height: 40,
+              padding: "0 16px",
+              borderRadius: 10,
+              border: "1px solid var(--border)",
+              color: "var(--text)",
+              fontSize: 13,
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
+            View Work Trial
+          </Link>
+        </div>
       </div>
 
       {/* KPI cards */}
@@ -105,12 +141,110 @@ export default function DashboardOverview() {
         <KPISkeletons />
       ) : (
         <KPICards
-          activeSimulations={stats.activeSimulations}
-          invitesSent={stats.invitesSent}
-          completedReports={stats.completedReports}
+          invited={stats.invitesSent}
+          inProgress={inProgress}
+          reportsReady={reportsReady}
           advanceRecommendations={stats.advanceRecommendations}
         />
       )}
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)",
+          gap: 16,
+        }}
+      >
+        <div className="glass-card" style={{ padding: "22px 24px" }}>
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.10em",
+              textTransform: "uppercase",
+              color: "var(--faint)",
+              margin: "0 0 12px",
+            }}
+          >
+            Active role summary
+          </p>
+          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
+            FP&A Analyst
+          </h2>
+          <p style={{ fontSize: 13, color: "var(--muted)", margin: "6px 0 0" }}>
+            Simulation: Project Meridian — FP&A Forecast Review
+          </p>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 12,
+              marginTop: 18,
+            }}
+          >
+            <div>
+              <p style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "-0.03em" }}>
+                {stats.invitesSent}
+              </p>
+              <p style={{ fontSize: 12, color: "var(--faint)", margin: "2px 0 0" }}>Invited</p>
+            </div>
+            <div>
+              <p style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "-0.03em" }}>
+                {inProgress}
+              </p>
+              <p style={{ fontSize: 12, color: "var(--faint)", margin: "2px 0 0" }}>In progress</p>
+            </div>
+            <div>
+              <p style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "-0.03em" }}>
+                {reportsReady}
+              </p>
+              <p style={{ fontSize: 12, color: "var(--faint)", margin: "2px 0 0" }}>Reports ready</p>
+            </div>
+          </div>
+          <p style={{ fontSize: 12, color: "var(--muted)", margin: "16px 0 0" }}>
+            Status: Active · No payment required to explore this workspace
+          </p>
+        </div>
+
+        <div className="glass-card" style={{ padding: "22px 24px" }}>
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.10em",
+              textTransform: "uppercase",
+              color: "var(--faint)",
+              margin: "0 0 12px",
+            }}
+          >
+            Next actions
+          </p>
+          <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+            <li style={{ fontSize: 13, color: "var(--text)" }}>
+              Invite candidates to Project Meridian
+            </li>
+            <li style={{ fontSize: 13, color: "var(--text)" }}>
+              Review evidence reports as they complete
+            </li>
+            <li style={{ fontSize: 13, color: "var(--muted)" }}>
+              Feedback needed: {feedbackNeeded || "—"}
+            </li>
+          </ul>
+          <Link
+            href="/dashboard/reports"
+            style={{
+              display: "inline-flex",
+              marginTop: 18,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--blue)",
+              textDecoration: "none",
+            }}
+          >
+            Review reports →
+          </Link>
+        </div>
+      </div>
 
       {/* Recent candidates */}
       <div className="glass-card" style={{ overflow: "hidden" }}>
