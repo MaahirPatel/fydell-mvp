@@ -11,7 +11,6 @@ const PRODUCT = [
 const COMPANY = [
   { label: "Contact", href: "mailto:hello@fydell.com" },
   { label: "Log in", href: "/login" },
-  { label: "Request a pilot", href: "/request-pilot" },
 ];
 
 const LEGAL = [

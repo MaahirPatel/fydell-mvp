@@ -139,15 +139,31 @@ body {
   /* clip avoids creating a second scrollport (hidden forces overflow-y:auto) */
   overflow-x: clip;
   background:
-    radial-gradient(circle at 78% 12%, rgba(59, 91, 255, 0.04), transparent 26%),
-    radial-gradient(circle at 18% 24%, rgba(100, 60, 200, 0.03), transparent 22%),
-    linear-gradient(180deg, #050609 0%, #070a10 48%, #050609 100%);
+    radial-gradient(circle at 78% 10%, rgba(86, 98, 255, 0.11), transparent 28%),
+    radial-gradient(circle at 18% 18%, rgba(134, 87, 244, 0.09), transparent 24%),
+    radial-gradient(circle at 52% 8%, rgba(242, 107, 130, 0.07), transparent 22%),
+    linear-gradient(180deg, #07080b 0%, #080a10 48%, #07080b 100%);
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 17px;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* Flat solid type — no gradient fills, no sheen, no clipped backgrounds */
+.flat-type,
+.fydell-page h1,
+.fydell-page h2,
+.marketing-page h1,
+.marketing-page h2 {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: #f4f5f7;
 }
 
 @layer base {
@@ -561,11 +577,12 @@ nextjs-portal,
 
 .fydell-product-frame {
   position: relative;
-  border-radius: 20px;
-  background: #080b12;
+  border-radius: 16px;
+  background: #090c12;
+  border: 1px solid rgba(255, 255, 255, 0.11);
   box-shadow:
-    0 32px 120px rgba(49, 92, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 24px 70px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(90, 100, 255, 0.04);
 }
 
 .fydell-product-frame::before {
@@ -576,9 +593,9 @@ nextjs-portal,
   padding: 1px;
   background: linear-gradient(
     135deg,
-    rgba(33, 199, 217, 0.35),
-    rgba(123, 92, 255, 0.28),
-    rgba(230, 76, 135, 0.18)
+    rgba(86, 98, 255, 0.45),
+    rgba(134, 87, 244, 0.32),
+    rgba(242, 107, 130, 0.22)
   );
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -589,6 +606,7 @@ nextjs-portal,
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
   pointer-events: none;
+  z-index: 2;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -104,10 +104,10 @@ const RECENT_EVIDENCE = [
 function VarianceCell({ value, dir }: { value: string; dir: VarianceDir }) {
   const color =
     dir === "danger"
-      ? "text-[var(--risk)]"
+      ? "text-[#F26B82]"
       : dir === "warn"
-        ? "text-[var(--text-secondary)]"
-        : "text-[var(--text-tertiary)]";
+        ? "text-[#A3A7B2]"
+        : "text-[#717682]";
   return <span className={`tabular-nums ${color}`}>{value}</span>;
 }
 
@@ -234,7 +234,7 @@ function ForecastPanel() {
                 <td className="px-4 text-[13px] text-[var(--text-primary)]" style={{ fontWeight: 520 }}>
                   {row.metric}
                 </td>
-                <td className="px-4 text-[13px] tabular-nums text-[var(--brand-blue)]" style={{ fontWeight: 550 }}>
+                <td className="px-4 text-[13px] tabular-nums text-[#5662FF]" style={{ fontWeight: 600 }}>
                   {row.candidate}
                 </td>
                 <td className="px-4 text-[13px] tabular-nums text-[var(--text-tertiary)]">
@@ -288,63 +288,68 @@ export default function ProjectMeridianWindow({
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-[16px] border border-white/[0.11] bg-[#090C12]"
+      className="fydell-product-frame relative w-full overflow-hidden"
       style={{
         fontFamily: "var(--font-geist-sans, ui-sans-serif)",
-        boxShadow: "0 24px 70px rgba(0,0,0,0.45), 0 0 0 1px rgba(90,100,255,0.04)",
-        minHeight: 610,
+        minHeight: 640,
       }}
       aria-hidden
     >
       {/* Top bar */}
-      <div className="relative flex h-[54px] items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span className="inline-flex h-7 w-8 items-center justify-center rounded-[7px] border border-[var(--border-subtle)] bg-white/[0.03]">
-            <FydellMark width={20} />
+      <div className="relative z-[1] flex h-[56px] items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[#0A0D14] px-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="inline-flex h-8 w-9 items-center justify-center rounded-[8px] border border-[var(--border-default)] bg-[#11151D]">
+            <FydellMark width={22} />
           </span>
           <div className="min-w-0">
-            <p className="truncate text-[13px] text-[var(--text-primary)]" style={{ fontWeight: 580 }}>
-              Project Meridian
+            <p className="truncate text-[13px] text-[#F4F5F7]" style={{ fontWeight: 600 }}>
+              Project Meridian{" "}
+              <span className="font-normal text-[#717682]">— FP&amp;A Work Trial</span>
             </p>
-            <p className="text-[12px] text-[var(--text-tertiary)]">FP&amp;A Work Trial</p>
           </div>
-          <span className="ml-1 inline-flex h-6 items-center gap-1.5 rounded-[7px] border border-[rgba(103,217,160,0.22)] bg-[rgba(103,217,160,0.10)] px-2 text-[11px] text-[#8EE4B8]" style={{ fontWeight: 550 }}>
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--positive)]" />
+          <span
+            className="ml-1 inline-flex h-6 items-center gap-1.5 rounded-[7px] border border-[rgba(103,217,160,0.28)] bg-[rgba(103,217,160,0.12)] px-2.5 text-[11px] text-[#8EE4B8]"
+            style={{ fontWeight: 600 }}
+          >
+            <span className="fydell-status-dot h-1.5 w-1.5 rounded-full bg-[#67D9A0]" />
             Session Active
           </span>
         </div>
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-4">
           <div className="hidden text-right sm:block">
-            <p className="text-[12px] text-[var(--text-tertiary)]">Time remaining</p>
-            <p className="text-[13px] tabular-nums text-[var(--text-primary)]" style={{ fontWeight: 550 }}>
+            <p className="text-[11px] text-[#717682]">Time remaining</p>
+            <p className="text-[13px] tabular-nums text-[#F4F5F7]" style={{ fontWeight: 600 }}>
               32:14
             </p>
           </div>
-          <span className="inline-flex h-[34px] items-center rounded-[8px] bg-[var(--brand-blue)] px-3 text-[13px] text-white" style={{ fontWeight: 580 }}>
+          <span
+            className="inline-flex h-9 items-center rounded-[8px] bg-[#5662FF] px-3.5 text-[13px] text-white"
+            style={{ fontWeight: 600 }}
+          >
             Submit Work
           </span>
         </div>
       </div>
 
-      <div className="grid min-h-[556px] grid-cols-[158px_minmax(0,1fr)_228px]">
+      <div className="relative z-[1] grid min-h-[584px] grid-cols-[165px_minmax(0,1fr)_232px]">
         {/* Left nav */}
-        <div className="flex flex-col border-r border-[var(--border-subtle)] py-2">
+        <div className="flex flex-col border-r border-[var(--border-subtle)] bg-[#090C12] py-2.5">
           {STAGES.map((s) => {
             const isActive = s.id === active;
             return (
               <div
                 key={s.id}
                 className={[
-                  "relative mx-1.5 mb-0.5 flex h-[42px] max-h-[42px] cursor-default items-center rounded-[8px] px-3 text-[13px] transition-colors duration-150",
+                  "relative mx-2 mb-0.5 flex h-[42px] max-h-[42px] cursor-default items-center rounded-[8px] px-3 text-[13px] transition-colors duration-150",
                   isActive
-                    ? "bg-[rgba(86,98,255,0.12)] text-[var(--text-primary)]"
-                    : "text-[var(--text-tertiary)]",
+                    ? "bg-[rgba(86,98,255,0.14)] text-[#F4F5F7]"
+                    : "text-[#717682]",
                 ].join(" ")}
-                style={{ fontWeight: isActive ? 550 : 450 }}
+                style={{ fontWeight: isActive ? 580 : 450 }}
               >
                 {isActive && (
                   <span
-                    className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-[var(--brand-blue)]"
+                    className="absolute left-0 top-1/2 h-[18px] w-[2px] -translate-y-1/2 rounded-full bg-[#5662FF]"
                     aria-hidden
                   />
                 )}
@@ -352,10 +357,10 @@ export default function ProjectMeridianWindow({
               </div>
             );
           })}
-          <div className="mt-auto border-t border-[var(--border-subtle)] px-3 py-3">
+          <div className="mt-auto border-t border-[var(--border-subtle)] px-3 py-3.5">
             <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-[11px] text-[var(--text-tertiary)]">Session progress</span>
-              <span className="text-[12px] tabular-nums text-[var(--text-primary)]" style={{ fontWeight: 550 }}>
+              <span className="text-[11px] text-[#717682]">Session progress</span>
+              <span className="text-[12px] tabular-nums text-[#F4F5F7]" style={{ fontWeight: 600 }}>
                 68%
               </span>
             </div>
@@ -364,7 +369,7 @@ export default function ProjectMeridianWindow({
                 className="h-full rounded-full"
                 style={{
                   width: "68%",
-                  background: "linear-gradient(90deg, var(--brand-blue), var(--brand-violet))",
+                  background: "linear-gradient(90deg, #5662FF, #8657F4)",
                 }}
               />
             </div>
@@ -372,7 +377,7 @@ export default function ProjectMeridianWindow({
         </div>
 
         {/* Main work area */}
-        <div className="relative min-w-[650px] overflow-hidden border-r border-[var(--border-subtle)] lg:min-w-0">
+        <div className="relative min-w-[650px] overflow-hidden border-r border-[var(--border-subtle)] bg-[#0B0F16] lg:min-w-0">
           {active === "dataroom" ? (
             <DataRoomPanel />
           ) : active === "update" ? (
@@ -385,15 +390,15 @@ export default function ProjectMeridianWindow({
 
           {toastVisible && (
             <div
-              className="absolute bottom-4 left-4 w-[240px] rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-1)] px-3.5 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
+              className="absolute bottom-4 left-4 z-[3] w-[250px] rounded-[10px] border border-[rgba(134,87,244,0.28)] bg-[#11151D] px-3.5 py-3 shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
               style={{
                 animation: reduce ? undefined : "fydell-toast-in 280ms var(--ease) both",
               }}
             >
-              <p className="text-[12px] text-[var(--text-primary)]" style={{ fontWeight: 580 }}>
+              <p className="text-[12px] text-[#F4F5F7]" style={{ fontWeight: 600 }}>
                 Manager update
               </p>
-              <p className="mt-1 text-[12px] leading-[1.45] text-[var(--text-secondary)]">
+              <p className="mt-1 text-[12px] leading-[1.45] text-[#A3A7B2]">
                 Renewal risk increased for the SMB segment.
               </p>
             </div>
@@ -401,47 +406,45 @@ export default function ProjectMeridianWindow({
         </div>
 
         {/* Evidence panel */}
-        <div className="flex min-w-0 flex-col">
+        <div className="flex min-w-0 flex-col bg-[#090C12]">
           <div className="flex h-[42px] items-center border-b border-[var(--border-subtle)] px-4">
             <p
-              className="text-[10px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]"
-              style={{ fontWeight: 550 }}
+              className="text-[10px] uppercase tracking-[0.08em] text-[#717682]"
+              style={{ fontWeight: 600 }}
             >
               Evidence Captured
             </p>
           </div>
-          <div className="flex-1 space-y-2.5 px-4 py-3">
+          <div className="flex-1 space-y-3 px-4 py-3.5">
             {EVIDENCE_METRICS.map((item) => (
               <div key={item.label} className="flex items-baseline justify-between gap-2">
-                <span className="text-[11px] text-[var(--text-secondary)]">{item.label}</span>
-                <span className="text-[13px] tabular-nums text-[var(--text-primary)]" style={{ fontWeight: 550 }}>
+                <span className="text-[12px] text-[#A3A7B2]">{item.label}</span>
+                <span className="text-[13px] tabular-nums text-[#F4F5F7]" style={{ fontWeight: 600 }}>
                   {item.value}
                 </span>
               </div>
             ))}
             <div className="pt-3">
               <p
-                className="mb-2.5 text-[10px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]"
-                style={{ fontWeight: 550 }}
+                className="mb-3 text-[10px] uppercase tracking-[0.08em] text-[#717682]"
+                style={{ fontWeight: 600 }}
               >
                 Recent evidence
               </p>
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {RECENT_EVIDENCE.map((row) => (
                   <div key={row.time} className="flex gap-2.5">
-                    <span className="w-9 shrink-0 text-[11px] tabular-nums text-[var(--text-tertiary)]">
+                    <span className="w-9 shrink-0 text-[11px] tabular-nums text-[#717682]">
                       {row.time}
                     </span>
-                    <span className="text-[12px] leading-[1.4] text-[var(--text-secondary)]">
-                      {row.text}
-                    </span>
+                    <span className="text-[12px] leading-[1.4] text-[#A3A7B2]">{row.text}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
           <div className="border-t border-[var(--border-subtle)] px-4 py-2.5">
-            <p className="text-[11px] text-[var(--text-tertiary)]">Saved just now</p>
+            <p className="text-[11px] text-[#717682]">Saved just now</p>
           </div>
         </div>
       </div>

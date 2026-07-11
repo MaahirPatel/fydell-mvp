@@ -19,19 +19,26 @@ export const metadata = {
 export default function HomePage() {
   return (
     <MarketingShell>
-      {/* Hero — left-aligned product composition */}
       <section className="relative overflow-hidden pt-[70px] pb-14 sm:pt-[78px] sm:pb-16 lg:pt-[82px] lg:pb-[60px]">
+        {/* Brand atmosphere: blue / violet / red — no white washes */}
         <div
-          className="pointer-events-none absolute left-[12%] top-[8%] h-[420px] w-[520px] rounded-full"
+          className="pointer-events-none absolute left-[-4%] top-[0%] h-[520px] w-[640px]"
           style={{
-            background: "radial-gradient(circle, rgba(86,98,255,0.10), transparent 70%)",
+            background: "radial-gradient(circle, rgba(86,98,255,0.18), transparent 68%)",
           }}
           aria-hidden
         />
         <div
-          className="pointer-events-none absolute right-[18%] top-[42%] h-[360px] w-[480px] rounded-full"
+          className="pointer-events-none absolute right-[-2%] top-[8%] h-[480px] w-[560px]"
           style={{
-            background: "radial-gradient(circle, rgba(255,255,255,0.035), transparent 68%)",
+            background: "radial-gradient(circle, rgba(134,87,244,0.16), transparent 70%)",
+          }}
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute left-[35%] top-[22%] h-[400px] w-[480px]"
+          style={{
+            background: "radial-gradient(circle, rgba(242,107,130,0.12), transparent 68%)",
           }}
           aria-hidden
         />
@@ -39,7 +46,7 @@ export default function HomePage() {
         <Container className="relative z-10">
           <Reveal y={12} className="max-w-[780px]">
             <p
-              className="text-[12px] text-[var(--text-secondary)]"
+              className="text-[12px] text-[#A3A7B2]"
               style={{ fontWeight: 550, letterSpacing: "0.02em" }}
             >
               Finance-first hiring
@@ -47,12 +54,15 @@ export default function HomePage() {
 
             <div className="mt-4 flex items-start justify-between gap-8">
               <h1
-                className="max-w-[780px] text-[var(--text-primary)] text-balance"
+                className="flat-type max-w-[780px] text-balance"
                 style={{
                   fontSize: "clamp(2.375rem, 5vw, 4.25rem)",
                   lineHeight: 1.0,
                   letterSpacing: "-0.04em",
                   fontWeight: 650,
+                  color: "#F4F5F7",
+                  background: "none",
+                  WebkitTextFillColor: "#F4F5F7",
                 }}
               >
                 See how finance candidates work before the interview.
@@ -66,7 +76,7 @@ export default function HomePage() {
             </div>
 
             <p
-              className="mt-5 max-w-[620px] text-[17px] leading-[1.55] text-[var(--text-secondary)] sm:text-[18px]"
+              className="mt-5 max-w-[620px] text-[17px] leading-[1.55] text-[#A3A7B2] sm:text-[18px]"
               style={{ letterSpacing: "-0.01em", fontWeight: 450 }}
             >
               Fydell runs realistic FP&amp;A work trials and turns each decision, assumption, and
@@ -80,26 +90,26 @@ export default function HomePage() {
               <TextLink href="/sample-report">View sample report</TextLink>
             </div>
 
-            <p className="mt-6 text-[12px] text-[var(--text-tertiary)]">
+            <p className="mt-6 text-[12px] text-[#717682]">
               Private candidate links
-              <span className="mx-2 text-[var(--text-disabled)]">·</span>
+              <span className="mx-2 text-[#555A65]">·</span>
               No public test bank
-              <span className="mx-2 text-[var(--text-disabled)]">·</span>
+              <span className="mx-2 text-[#555A65]">·</span>
               Evidence you can inspect
             </p>
           </Reveal>
 
           <Reveal delay={0.1} y={14} className="relative mt-12 sm:mt-14">
             <div
-              className="pointer-events-none absolute -inset-x-8 -bottom-10 top-1/3 rounded-[40px]"
+              className="pointer-events-none absolute -inset-x-6 -bottom-8 top-1/4 rounded-[40px]"
               style={{
                 background:
-                  "radial-gradient(ellipse at 50% 70%, rgba(255,255,255,0.04), transparent 65%), radial-gradient(ellipse at 80% 30%, rgba(86,98,255,0.07), transparent 55%)",
+                  "radial-gradient(ellipse at 70% 20%, rgba(86,98,255,0.14), transparent 55%), radial-gradient(ellipse at 20% 80%, rgba(134,87,244,0.10), transparent 50%), radial-gradient(ellipse at 55% 60%, rgba(242,107,130,0.08), transparent 55%)",
               }}
               aria-hidden
             />
             <div className="relative overflow-hidden rounded-[16px] max-md:overflow-x-auto">
-              <div className="min-w-[720px] md:min-w-0">
+              <div className="min-w-[760px] md:min-w-0">
                 <ProjectMeridianWindow />
               </div>
             </div>
