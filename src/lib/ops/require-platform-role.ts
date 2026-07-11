@@ -36,7 +36,7 @@ export async function requirePlatformRole(
   const ctx = await resolveAdminContext(allowedRoles);
   if (!ctx) {
     const session = await getAdminSession();
-    if (!session) redirect("/admin");
+    if (!session) redirect("/login?next=admin");
     redirect("/admin/forbidden");
   }
   return ctx;

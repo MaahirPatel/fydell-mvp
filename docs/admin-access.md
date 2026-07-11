@@ -1,12 +1,18 @@
 # Founder admin access checklist
 
-## Admin portal login (transitional)
+## How to sign in (one login)
+
+There is **no separate admin login page**. Use the main site:
 
 | Field | Value |
 | --- | --- |
-| URL | https://www.fydell.com/admin |
+| URL | https://www.fydell.com/login |
 | Email | `admin@fydell.com` (must match `ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_EMAIL`) |
 | Password | Set via `ADMIN_PASSWORD` in Vercel / `.env.local` — **not stored in git** |
+
+After a successful sign-in with those credentials, you are redirected to `/admin/overview`.
+
+`/admin` with no session redirects to `/login?next=admin`. Employers still use the same `/login` form and land on `/dashboard` or `/onboarding`.
 
 Generate and save a password locally:
 
@@ -16,7 +22,7 @@ npm run admin:password
 
 Then copy the same `ADMIN_EMAIL` + `ADMIN_PASSWORD` into **Vercel → Project → Settings → Environment Variables** and redeploy.
 
-After login you land on `/admin/pilot-requests`. Sidebar: Overview, Pilot Requests, Organizations, Users, Invitations, Email Center, Audit, Settings, Security/MFA.
+Sidebar after login: Overview, Pilot requests, Organizations, Users, Invitations, Email center, Audit, Settings, Security, Legacy candidates.
 
 ## Required one-time setup
 
@@ -71,7 +77,7 @@ npm run test:unit
 
 1. Submit https://www.fydell.com/request-pilot → see `FYD-…` reference
 2. Confirm row in Supabase `pilot_requests`
-3. Sign in at `/admin` → request visible
+3. Sign in at `/login` with admin credentials → request visible under Pilot requests
 4. Process email queue / wait for cron → Email Center shows sent/failed
 5. Approve pilot → organization appears under Organizations
 

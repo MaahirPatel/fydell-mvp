@@ -23,6 +23,8 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
 
   const isSignup = mode === "signup";
   const resetOk = !isSignup && searchParams.get("reset") === "1";
+  const next = searchParams.get("next");
+  const fromAdmin = !isSignup && next === "admin";
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,19 +82,25 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
           >
             {isSignup
               ? "Create your Fydell workspace."
-              : "Sign in to your Fydell workspace."}
+              : fromAdmin
+                ? "Sign in to Fydell."
+                : "Sign in to your Fydell workspace."}
           </h1>
           <p className="mt-5 text-[17px] leading-[1.65] text-white/[0.55]">
-            Review work trials, evidence reports, and candidate progress.
+            {fromAdmin
+              ? "Use your Fydell account. Platform operators land in ops; employers land in their workspace."
+              : "Review work trials, evidence reports, and candidate progress."}
           </p>
-          <ul className="mt-8 space-y-4">
-            {HIGHLIGHTS.map((item) => (
-              <li key={item} className="flex items-start gap-3 text-[15px] text-white/[0.66]">
-                <span className="mt-2 h-1 w-3 shrink-0 rounded-full bg-[#3B5BFF]" />
-                {item}
-              </li>
-            ))}
-          </ul>
+          {!fromAdmin ? (
+            <ul className="mt-8 space-y-4">
+              {HIGHLIGHTS.map((item) => (
+                <li key={item} className="flex items-start gap-3 text-[15px] text-white/[0.66]">
+                  <span className="mt-2 h-1 w-3 shrink-0 rounded-full bg-[#3B5BFF]" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </section>
 
         {/* Form side */}
@@ -104,7 +112,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
             <p className="mt-2 text-[14px] leading-relaxed text-white/[0.55]">
               {isSignup
                 ? "Start with one FP&A role."
-                : "Sign in to your Fydell workspace."}
+                : "One login for employers and platform operators."}
             </p>
 
             <form onSubmit={submit} className="mt-7 grid gap-4">
