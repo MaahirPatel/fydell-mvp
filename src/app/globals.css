@@ -166,6 +166,32 @@ body {
   color: #f4f5f7;
 }
 
+/* Full-width single-line hero headline — fills the content rail horizontally */
+.hero-oneline {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-wrap: nowrap;
+  /* ~55 chars across the content width; scales with viewport */
+  font-size: clamp(1.05rem, 3.55vw, 3.35rem);
+}
+
+@media (min-width: 1180px) {
+  .hero-oneline {
+    font-size: clamp(2.35rem, 2.85vw, 3.35rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-oneline {
+    /* Still one line; slightly smaller so it fits phone width */
+    font-size: clamp(0.78rem, 4.2vw, 1.15rem);
+  }
+}
+
 @layer base {
   h1,
   h2,

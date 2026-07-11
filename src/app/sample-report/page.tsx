@@ -1,6 +1,6 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
-import { Container, ButtonLink } from "@/components/marketing/ui";
+import { Container } from "@/components/marketing/ui";
 import FydellAurora from "@/components/marketing/FydellAurora";
 import EvidenceReportMockup from "@/components/marketing/EvidenceReportMockup";
 
@@ -69,14 +69,6 @@ export default function SampleReportPage() {
             <p className="mt-4 text-[17px] leading-[1.65] text-white/[0.66]">
               Start with one role. Review structured evidence. Decide who is worth interviewing.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <ButtonLink href="/request-pilot" variant="primary">
-                Request a pilot
-              </ButtonLink>
-              <ButtonLink href="/product" variant="secondary">
-                See the product
-              </ButtonLink>
-            </div>
           </Reveal>
         </Container>
       </section>

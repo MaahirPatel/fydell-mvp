@@ -1,4 +1,4 @@
-import { Container, TextLink } from "@/components/marketing/ui";
+import { Container } from "@/components/marketing/ui";
 import { Reveal } from "@/components/motion/Reveal";
 import { PilotRequestForm } from "@/components/marketing/PilotRequestForm";
 
@@ -34,9 +34,6 @@ export default function HomePilotCta() {
                 hello@fydell.com
               </a>
             </p>
-            <div className="mt-4">
-              <TextLink href="/sample-report">View sample report</TextLink>
-            </div>
           </Reveal>
 
           <Reveal delay={0.06}>

@@ -1,6 +1,6 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
-import { Container, ButtonLink, SectionHeading } from "@/components/marketing/ui";
+import { Container, SectionHeading } from "@/components/marketing/ui";
 import FydellAurora, { FydellGrid } from "@/components/marketing/FydellAurora";
 import ProjectMeridianWindow from "@/components/marketing/ProjectMeridianWindow";
 import EvidenceReportMockup from "@/components/marketing/EvidenceReportMockup";
@@ -28,14 +28,6 @@ export default function ProductPage() {
               Fydell gives candidates a realistic FP&A task and gives hiring teams structured
               evidence from how the work was done.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <ButtonLink href="/request-pilot" variant="primary">
-                Request a pilot
-              </ButtonLink>
-              <ButtonLink href="/how-it-works" variant="secondary">
-                See how it works
-              </ButtonLink>
-            </div>
           </Reveal>
         </Container>
       </section>
@@ -94,13 +86,6 @@ export default function ProductPage() {
               <div className="min-w-[760px] lg:min-w-0">
                 <EvidenceReportMockup />
               </div>
-            </div>
-          </Reveal>
-          <Reveal delay={0.12}>
-            <div className="mt-8">
-              <ButtonLink href="/sample-report" variant="primary">
-                View a full sample report
-              </ButtonLink>
             </div>
           </Reveal>
         </Container>

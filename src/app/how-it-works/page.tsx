@@ -1,6 +1,6 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
-import { Container, ButtonLink, SectionHeading } from "@/components/marketing/ui";
+import { Container, SectionHeading } from "@/components/marketing/ui";
 import FydellAurora, { FydellGrid } from "@/components/marketing/FydellAurora";
 import WorkroomMockup from "@/components/marketing/WorkroomMockup";
 import EvidenceReportMockup from "@/components/marketing/EvidenceReportMockup";
@@ -25,14 +25,6 @@ export default function HowItWorksPage() {
             <p className="mt-6 max-w-[480px] text-[18px] leading-[1.65] text-white/[0.66]">
               Three steps. No training required for your team.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <ButtonLink href="/request-pilot" variant="primary">
-                Request a pilot
-              </ButtonLink>
-              <ButtonLink href="/sample-report" variant="secondary">
-                View sample report
-              </ButtonLink>
-            </div>
           </Reveal>
         </Container>
       </section>
