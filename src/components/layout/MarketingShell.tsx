@@ -5,8 +5,8 @@ import SiteFooter from "@/components/layout/SiteFooter";
 
 /**
  * Shared shell for all marketing pages: smooth scroll, ambient background,
- * fixed top nav (54px), and the site footer. Page bodies render inside <main>.
- * The first section of a page should add its own top padding (e.g. pt-[78px])
+ * fixed top nav (64px), and the site footer. Page bodies render inside <main>.
+ * The first section of a page should add its own top padding (e.g. pt-[80px])
  * so the hero clears the fixed nav.
  */
 export default function MarketingShell({ children }: { children: React.ReactNode }) {

@@ -18,9 +18,9 @@ export default function SiteNav() {
   const pathname = usePathname();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-[52px] border-b border-[var(--border-subtle)] bg-[rgba(7,8,11,0.88)] backdrop-blur-[14px] sm:h-[54px]">
+    <header className="fixed inset-x-0 top-0 z-50 h-[60px] border-b border-[var(--border-subtle)] bg-[rgba(7,8,11,0.88)] backdrop-blur-[14px] sm:h-[64px]">
       <div className="mkt-content grid h-full grid-cols-[auto_1fr_auto] items-center gap-4">
-        <FydellBrand markSize={22} className="gap-2 shrink-0" />
+        <FydellBrand markSize={34} wordmarkSize={24} className="gap-2.5 shrink-0" />
 
         <nav
           className="hidden items-center justify-center gap-7 xl:gap-8 lg:flex"
@@ -35,12 +35,12 @@ export default function SiteNav() {
                 key={item.label}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative text-[13px] transition-colors duration-150 ease-out ${
+                className={`relative text-[14px] transition-colors duration-150 ease-out ${
                   active
                     ? "text-[#F4F5F7]"
                     : "text-[#717682] hover:text-[#F4F5F7]"
                 }`}
-                style={{ fontWeight: 520, letterSpacing: "-0.005em" }}
+                style={{ fontWeight: 520, letterSpacing: "-0.01em" }}
               >
                 {item.label}
                 {active && (
@@ -57,8 +57,8 @@ export default function SiteNav() {
         <div className="flex items-center gap-4">
           <Link
             href="/login"
-            className="text-[13px] text-[#717682] transition-colors duration-150 hover:text-[#F4F5F7]"
-            style={{ fontWeight: 520, letterSpacing: "-0.005em" }}
+            className="text-[14px] text-[#717682] transition-colors duration-150 hover:text-[#F4F5F7]"
+            style={{ fontWeight: 520, letterSpacing: "-0.01em" }}
           >
             Log in
           </Link>

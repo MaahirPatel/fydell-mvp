@@ -19,7 +19,7 @@ export const metadata = {
 export default function HomePage() {
   return (
     <MarketingShell>
-      <section className="relative overflow-hidden pt-[72px] pb-10 sm:pt-[80px] sm:pb-12 lg:pb-14">
+      <section className="relative overflow-hidden pt-[80px] pb-10 sm:pt-[88px] sm:pb-12 lg:pb-14">
         <div
           className="pointer-events-none absolute left-[-4%] top-[0%] h-[520px] w-[640px]"
           style={{

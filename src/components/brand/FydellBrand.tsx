@@ -4,12 +4,17 @@ import FydellMark from "@/components/brand/FydellMark";
 export default function FydellBrand({
   className = "",
   markSize = 34,
-  sheen = false
+  wordmarkSize,
+  sheen = false,
 }: {
   className?: string;
   markSize?: number;
+  /** Explicit wordmark size in px. Defaults to a readable scale from the mark. */
+  wordmarkSize?: number;
   sheen?: boolean;
 }) {
+  const textSize = wordmarkSize ?? Math.max(22, Math.round(markSize * 0.72));
+
   return (
     <Link
       href="/"
@@ -18,15 +23,18 @@ export default function FydellBrand({
     >
       <FydellMark
         width={markSize}
-        className="shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.04]"
+        className="shrink-0 transition-transform duration-200 ease-out group-hover:scale-[1.03]"
       />
       <span
-        className={`font-bold leading-none ${sheen ? "wordmark-sheen" : ""}`}
+        className={`leading-none ${sheen ? "wordmark-sheen" : ""}`}
         style={{
-          fontSize: Math.max(18, Math.round(markSize * 0.68)),
-          fontWeight: 700,
-          letterSpacing: "-0.04em",
-          color: "#FFFFFF",
+          fontFamily: "var(--font-geist-sans), var(--font-inter), ui-sans-serif, system-ui, sans-serif",
+          fontSize: textSize,
+          fontWeight: 650,
+          letterSpacing: "-0.045em",
+          color: "#F4F5F7",
+          background: "none",
+          WebkitTextFillColor: "#F4F5F7",
         }}
       >
         fydell
