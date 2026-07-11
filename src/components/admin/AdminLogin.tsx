@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function AdminLogin() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -34,44 +35,49 @@ export default function AdminLogin() {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
-      <label className="grid gap-1.5">
-        <span className="text-sm font-semibold text-ink-2">Email</span>
+      <label className="block">
+        <span className="text-[13px] font-medium text-white/[0.66]">Email</span>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           autoComplete="username"
-          className="rounded-xl border border-line bg-bg px-4 py-3 outline-none transition-colors focus:border-blue"
+          placeholder="admin@fydell.com"
+          className="platform-input mt-1.5"
         />
       </label>
-      <label className="grid gap-1.5">
-        <span className="text-sm font-semibold text-ink-2">Password</span>
+      <label className="block">
+        <span className="text-[13px] font-medium text-white/[0.66]">Password</span>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           autoComplete="current-password"
-          className="rounded-xl border border-line bg-bg px-4 py-3 outline-none transition-colors focus:border-blue"
+          placeholder="••••••••"
+          className="platform-input mt-1.5"
         />
       </label>
 
-      {error && (
-        <div className="rounded-xl border border-coral/30 bg-coral/5 px-4 py-2.5 text-sm text-coral-600">
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-[10px] border border-[#fb7185]/30 bg-[#fb7185]/10 px-3.5 py-2.5 text-[13px] font-medium text-[#fda4b0]"
+        >
           {error}
-        </div>
-      )}
+        </p>
+      ) : null}
 
       <button
         type="submit"
         disabled={loading}
-        className="mt-1 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-navy px-5 font-semibold text-white transition-all duration-200 enabled:hover:-translate-y-0.5 enabled:hover:bg-teal disabled:opacity-45"
+        className="group mt-1 inline-flex h-12 items-center justify-center gap-2.5 rounded-[10px] bg-[#F1F2F4] px-6 text-[15px] font-semibold text-[#08090C] transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading && (
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-        )}
-        Sign in
+        {loading ? "Signing in…" : "Sign in"}
+        {!loading ? (
+          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+        ) : null}
       </button>
     </form>
   );
