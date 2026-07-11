@@ -39,9 +39,11 @@ function mapAttemptToDemoReport(data: {
 }): DemoReport {
   const a = data.attempt;
   const rj = a.report_json ?? {};
-  const signal = (rj.overall_signal ??
-    data.report?.overall_signal ??
-    "weak") as DemoReport["overallSignal"];
+  const rawSignal = String(rj.overall_signal ?? data.report?.overall_signal ?? "weak");
+  const signal: DemoReport["overallSignal"] =
+    rawSignal === "strong" || rawSignal === "moderate" || rawSignal === "weak"
+      ? rawSignal
+      : "weak";
   const score = a.score ?? 0;
   const strengths = rj.strengths ?? data.report?.strengths_json ?? [];
   const risks = rj.risks ?? data.report?.risks_json ?? [];
@@ -82,7 +84,7 @@ function mapAttemptToDemoReport(data: {
     id: a.id,
     candidateId: a.id,
     candidateName: a.candidate_name ?? a.candidate_email ?? "Candidate",
-    overallSignal: signal === "insufficient" ? "weak" : signal,
+    overallSignal: signal,
     score,
     verdict,
     summary: rj.summary ?? data.report?.summary ?? "Evidence report ready.",
