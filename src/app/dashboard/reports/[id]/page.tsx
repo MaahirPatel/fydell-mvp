@@ -8,6 +8,10 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+function toDemoReportSignal(signal: string | null | undefined): DemoReport["overallSignal"] {
+  return signal === "strong" || signal === "moderate" ? signal : "weak";
+}
+
 function mapAttemptToDemoReport(data: {
   attempt: {
     id: string;
@@ -39,11 +43,7 @@ function mapAttemptToDemoReport(data: {
 }): DemoReport {
   const a = data.attempt;
   const rj = a.report_json ?? {};
-  const rawSignal = String(rj.overall_signal ?? data.report?.overall_signal ?? "weak");
-  const signal: DemoReport["overallSignal"] =
-    rawSignal === "strong" || rawSignal === "moderate" || rawSignal === "weak"
-      ? rawSignal
-      : "weak";
+  const signal = toDemoReportSignal(rj.overall_signal ?? data.report?.overall_signal);
   const score = a.score ?? 0;
   const strengths = rj.strengths ?? data.report?.strengths_json ?? [];
   const risks = rj.risks ?? data.report?.risks_json ?? [];

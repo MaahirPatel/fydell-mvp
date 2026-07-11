@@ -116,6 +116,7 @@ export interface DemoReport {
   score: number;
   verdict: "go" | "hold" | "revise";
   summary: string;
+  submittedAt?: string;
   execSummary: {
     headline: string;
     signalLabel: string;
