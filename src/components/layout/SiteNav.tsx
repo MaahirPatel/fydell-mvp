@@ -13,19 +13,19 @@ const LINKS = [
   { label: "Pricing", href: "/pricing" },
 ];
 
-const PRIMARY_BTN =
-  "inline-flex h-10 min-h-10 items-center justify-center rounded-[11px] bg-white px-5 text-[14px] font-semibold transition-[transform,background,opacity] duration-200 ease-out hover:bg-white/90 hover:-translate-y-px active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50";
-
 export default function SiteNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-white/[0.06] bg-[rgba(5,6,9,0.82)] backdrop-blur-[18px]">
-      <div className="mx-auto grid h-full max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-12">
-        <FydellBrand markSize={36} className="shrink-0" />
+    <header className="fixed inset-x-0 top-0 z-50 h-[52px] border-b border-[var(--border-subtle)] bg-[rgba(7,8,11,0.82)] backdrop-blur-[14px] sm:h-[54px]">
+      <div className="mkt-content grid h-full grid-cols-[auto_1fr_auto] items-center gap-4">
+        <FydellBrand markSize={22} className="gap-2 shrink-0" />
 
-        <nav className="hidden items-center justify-start gap-0.5 lg:flex lg:pl-6" aria-label="Primary">
+        <nav
+          className="hidden items-center justify-center gap-7 xl:gap-8 lg:flex"
+          aria-label="Primary"
+        >
           {LINKS.map((item) => {
             const active =
               pathname === item.href ||
@@ -35,14 +35,17 @@ export default function SiteNav() {
                 key={item.label}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative rounded-lg px-3.5 py-2 text-[13.5px] font-medium transition-colors duration-150 ease-out ${
-                  active ? "text-white" : "text-white/50 hover:text-white/90"
+                className={`relative text-[13px] transition-colors duration-150 ease-out ${
+                  active
+                    ? "text-[var(--text-primary)]"
+                    : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
                 }`}
+                style={{ fontWeight: 520, letterSpacing: "-0.005em" }}
               >
                 {item.label}
                 {active && (
                   <span
-                    className="absolute inset-x-3.5 -bottom-0.5 h-[2px] rounded-full bg-gradient-to-r from-[#315CFF] to-[#7B5CFF]"
+                    className="absolute inset-x-0 -bottom-[3px] h-px bg-[var(--text-primary)]/70"
                     aria-hidden
                   />
                 )}
@@ -51,14 +54,19 @@ export default function SiteNav() {
           })}
         </nav>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-5">
           <Link
             href="/login"
-            className="hidden whitespace-nowrap rounded-lg px-3 py-2 text-[13.5px] font-medium text-white/50 transition-colors duration-150 ease-out hover:text-white/90 sm:inline-flex"
+            className="hidden text-[13px] text-[var(--text-tertiary)] transition-colors duration-150 hover:text-[var(--text-primary)] sm:inline-flex"
+            style={{ fontWeight: 520, letterSpacing: "-0.005em" }}
           >
             Log in
           </Link>
-          <Link href="/request-pilot" className={PRIMARY_BTN} style={{ color: "#050609" }}>
+          <Link
+            href="/request-pilot"
+            className="inline-flex h-[34px] items-center justify-center rounded-[9px] bg-[#F2F3F5] px-[15px] text-[13px] text-[#090A0D] transition-[transform,filter] duration-150 ease-out hover:-translate-y-px hover:brightness-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
+            style={{ fontWeight: 580 }}
+          >
             Request a pilot
           </Link>
           <button
@@ -66,22 +74,23 @@ export default function SiteNav() {
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-white/[0.08] bg-white/[0.03] text-white/70 transition-colors duration-150 ease-out hover:bg-white/[0.06] hover:text-white lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-[8px] border border-[var(--border-subtle)] text-[var(--text-secondary)] transition-colors duration-150 hover:text-[var(--text-primary)] lg:hidden"
           >
-            {open ? <X className="h-4.5 w-4.5" strokeWidth={1.7} /> : <Menu className="h-4.5 w-4.5" strokeWidth={1.7} />}
+            {open ? <X className="h-4 w-4" strokeWidth={1.7} /> : <Menu className="h-4 w-4" strokeWidth={1.7} />}
           </button>
         </div>
       </div>
 
       {open && (
-        <div className="border-t border-white/[0.06] bg-[#050609] px-6 py-4 lg:hidden">
-          <nav className="mx-auto flex max-w-[1280px] flex-col gap-0.5" aria-label="Mobile">
+        <div className="border-t border-[var(--border-subtle)] bg-[var(--page-bg)] px-[18px] py-3 lg:hidden">
+          <nav className="mkt-content flex flex-col gap-0.5 !px-0" aria-label="Mobile">
             {LINKS.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="rounded-xl px-3 py-3 text-[15px] font-medium text-white/60 transition-colors duration-150 ease-out hover:bg-white/[0.04] hover:text-white"
+                className="rounded-[8px] px-3 py-2.5 text-[14px] text-[var(--text-secondary)] transition-colors duration-150 hover:bg-white/[0.03] hover:text-[var(--text-primary)]"
+                style={{ fontWeight: 520 }}
               >
                 {item.label}
               </Link>
@@ -89,7 +98,8 @@ export default function SiteNav() {
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="rounded-xl px-3 py-3 text-[15px] font-medium text-white/60 transition-colors duration-150 ease-out hover:bg-white/[0.04] hover:text-white sm:hidden"
+              className="rounded-[8px] px-3 py-2.5 text-[14px] text-[var(--text-secondary)] transition-colors duration-150 hover:bg-white/[0.03] hover:text-[var(--text-primary)] sm:hidden"
+              style={{ fontWeight: 520 }}
             >
               Log in
             </Link>

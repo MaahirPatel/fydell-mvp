@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 
 const inputClass =
-  "w-full rounded-[12px] border border-white/[0.10] bg-[#080B12] px-4 py-3 text-[14px] text-white placeholder-white/[0.25] outline-none transition-colors focus:border-[#315CFF]/50 focus:bg-[#0B0F18]";
+  "h-11 w-full rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-0)] px-3.5 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-disabled)] outline-none transition-[border-color,background] duration-150 focus:border-[var(--brand-blue)] focus:bg-[var(--surface-1)]";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -182,7 +182,8 @@ export function PilotRequestForm() {
         <div>
           <label
             htmlFor="name"
-            className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
+            className="mb-1.5 block text-[12px] text-[var(--text-secondary)]"
+            style={{ fontWeight: 520 }}
           >
             Name
           </label>
@@ -199,7 +200,8 @@ export function PilotRequestForm() {
         <div>
           <label
             htmlFor="email"
-            className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
+            className="mb-1.5 block text-[12px] text-[var(--text-secondary)]"
+            style={{ fontWeight: 520 }}
           >
             Work email
           </label>
@@ -218,7 +220,8 @@ export function PilotRequestForm() {
       <div>
         <label
           htmlFor="company"
-          className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
+          className="mb-1.5 block text-[12px] text-[var(--text-secondary)]"
+          style={{ fontWeight: 520 }}
         >
           Company
         </label>
@@ -236,7 +239,8 @@ export function PilotRequestForm() {
       <div>
         <label
           htmlFor="role"
-          className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
+          className="mb-1.5 block text-[12px] text-[var(--text-secondary)]"
+          style={{ fontWeight: 520 }}
         >
           Role you are hiring for
         </label>
@@ -253,7 +257,8 @@ export function PilotRequestForm() {
       <div>
         <label
           htmlFor="candidates"
-          className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
+          className="mb-1.5 block text-[12px] text-[var(--text-secondary)]"
+          style={{ fontWeight: 520 }}
         >
           Approximate number of candidates
         </label>
@@ -269,22 +274,23 @@ export function PilotRequestForm() {
       <div>
         <label
           htmlFor="note"
-          className="mb-1.5 block text-[12.5px] font-medium text-white/[0.66]"
+          className="mb-1.5 block text-[12px] text-[var(--text-secondary)]"
+          style={{ fontWeight: 520 }}
         >
           Anything we should know?{" "}
-          <span className="text-white/[0.30]">(optional)</span>
+          <span className="text-[var(--text-disabled)]">(optional)</span>
         </label>
         <textarea
           id="note"
           name="note"
-          rows={4}
-          placeholder="Timeline, specific focus areas, anything else relevant..."
-          className={`${inputClass} resize-none`}
+          rows={3}
+          placeholder="Timeline, focus areas, anything else relevant..."
+          className={`${inputClass} h-auto min-h-[88px] resize-none py-3`}
         />
       </div>
 
       {error ? (
-        <p className="rounded-[10px] border border-[#F2596D]/30 bg-[#F2596D]/10 px-3 py-2 text-[13px] text-[#F2596D]">
+        <p className="rounded-[10px] border border-[rgba(242,107,130,0.30)] bg-[rgba(242,107,130,0.10)] px-3 py-2 text-[13px] text-[var(--risk)]">
           {error}
         </p>
       ) : null}
@@ -292,9 +298,10 @@ export function PilotRequestForm() {
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="inline-flex h-12 w-full items-center justify-center rounded-[11px] bg-[#315CFF] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-[#4B6FFF] disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex h-11 w-full items-center justify-center rounded-[9px] bg-[#F2F3F5] px-6 text-[14px] text-[#090A0D] transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
+        style={{ fontWeight: 580 }}
       >
-        {status === "submitting" ? "Sending…" : "Request pilot"}
+        {status === "submitting" ? "Sending…" : "Request a pilot"}
       </button>
     </form>
   );

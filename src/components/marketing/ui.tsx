@@ -13,8 +13,8 @@ export function Container({ children, wide, className = "" }: ContainerProps) {
   return (
     <div
       className={[
-        "mx-auto w-full px-5 sm:px-8",
-        wide ? "max-w-[1320px]" : "max-w-[1180px]",
+        "mx-auto w-full px-[18px] sm:px-6 lg:px-7",
+        wide ? "max-w-[1200px]" : "max-w-[1180px]",
         className,
       ]
         .filter(Boolean)
@@ -38,10 +38,11 @@ interface ButtonLinkProps {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-[#315CFF] text-white hover:bg-[#4B6FFF] border border-transparent hover:-translate-y-px",
+    "h-10 rounded-[9px] border border-transparent bg-[#F2F3F5] px-[17px] text-[14px] text-[#090A0D] hover:brightness-[0.97] hover:-translate-y-px",
   secondary:
-    "border border-white/[0.12] bg-[#080B12] text-white/[0.88] hover:border-white/[0.22] hover:bg-white/[0.04] hover:-translate-y-px",
-  white: "bg-white border border-transparent hover:bg-white/90 hover:-translate-y-px",
+    "h-10 rounded-[9px] border border-[var(--border-default)] bg-transparent px-[17px] text-[14px] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] hover:-translate-y-px",
+  white:
+    "h-10 rounded-[9px] border border-transparent bg-[#F2F3F5] px-[17px] text-[14px] text-[#090A0D] hover:brightness-[0.97] hover:-translate-y-px",
 };
 
 export function ButtonLink({
@@ -55,17 +56,47 @@ export function ButtonLink({
       href={href}
       className={[
         "inline-flex items-center justify-center gap-2",
-        "rounded-[11px] px-5 py-[13px]",
-        "text-[14px] font-semibold leading-none",
-        "transition-[color,background,border-color,transform] duration-200 ease-out",
+        "leading-none",
+        "transition-[color,background,border-color,transform,filter] duration-160 ease-out",
         variantStyles[variant],
         className,
       ]
         .filter(Boolean)
         .join(" ")}
-      style={variant === "white" ? { color: "#050609" } : undefined}
+      style={{ fontWeight: 580 }}
     >
       {children}
+    </Link>
+  );
+}
+
+export function TextLink({
+  href,
+  children,
+  className = "",
+}: {
+  href: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={[
+        "group inline-flex items-center gap-1.5 text-[14px] text-[var(--text-secondary)] transition-colors duration-160 hover:text-[var(--text-primary)]",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={{ fontWeight: 520 }}
+    >
+      {children}
+      <span
+        aria-hidden
+        className="transition-transform duration-160 group-hover:translate-x-[3px]"
+      >
+        →
+      </span>
     </Link>
   );
 }
