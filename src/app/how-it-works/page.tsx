@@ -1,103 +1,147 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
-import { Container, SectionHeading } from "@/components/marketing/ui";
-import FydellAurora, { FydellGrid } from "@/components/marketing/FydellAurora";
-import WorkroomMockup from "@/components/marketing/WorkroomMockup";
+import { Container, EditorialHeader } from "@/components/marketing/ui";
+import PageHero from "@/components/marketing/PageHero";
+import ProjectMeridianWindow from "@/components/marketing/ProjectMeridianWindow";
 import EvidenceReportMockup from "@/components/marketing/EvidenceReportMockup";
 import FinalCTA from "@/components/marketing/FinalCTA";
+import FydellMark from "@/components/brand/FydellMark";
 
 export const metadata = {
-  title: "Fydell",
+  title: "How It Works · Fydell",
   description:
     "Invite candidates, they complete the FP&A workroom, you get an evidence report. Three steps. No training required for your team.",
 };
 
+const STEPS: {
+  n: string;
+  title: string;
+  body: string;
+  points?: { title: string; body: string }[];
+}[] = [
+  {
+    n: "1.0",
+    title: "Invite.",
+    body: "Each candidate receives a private workroom link. No registration, no login, no app download.",
+    points: [
+      {
+        title: "No candidate account needed",
+        body: "They click the link and start.",
+      },
+      {
+        title: "Configured for your FP&A role",
+        body: "We align Project Meridian to the level and focus of the hire.",
+      },
+      {
+        title: "Asynchronous completion window",
+        body: "Typically 48–72 hours. Candidates work when ready.",
+      },
+    ],
+  },
+  {
+    n: "2.0",
+    title: "Workroom.",
+    body: "Candidates move through brief, data room, forecast model, manager update, and memo — under realistic constraints.",
+  },
+  {
+    n: "3.0",
+    title: "Report.",
+    body: "Within 24 hours of submission, your team receives recommendation, confidence, strengths, gaps, and interview questions.",
+  },
+];
+
+const FAQ = [
+  {
+    q: "Does this replace the technical interview?",
+    a: "It replaces the screening round and gives you targeted questions for the interview that follows.",
+  },
+  {
+    q: "How long does the workroom take?",
+    a: "The session is time-limited. Time-in-workroom and stage progression are captured as evidence.",
+  },
+  {
+    q: "Do candidates need to install anything?",
+    a: "No. The workroom runs in the browser.",
+  },
+  {
+    q: "Can I use my own scenario?",
+    a: "The pilot uses Project Meridian configured to your role. Custom scenarios are available after the pilot.",
+  },
+  {
+    q: "What if a candidate drops out?",
+    a: "Partial completions are not billed. You only pay for completed submissions.",
+  },
+  {
+    q: "Is this FP&A only?",
+    a: "The current pilot is FP&A only — modeling, forecasting, and analysis roles.",
+  },
+];
+
 export default function HowItWorksPage() {
   return (
     <MarketingShell>
-      <section className="relative mkt-section overflow-hidden pt-[100px] lg:pt-[136px]">
-        <FydellGrid />
-        <Container className="relative z-10">
-          <Reveal className="max-w-[640px]">
-            <h1 className="text-white" style={{ letterSpacing: "-0.04em" }}>
-              Invite. Workroom. Report.
-            </h1>
-            <p className="mt-6 max-w-[480px] text-[18px] leading-[1.65] text-white/[0.66]">
-              Three steps. No training required for your team.
-            </p>
-          </Reveal>
-        </Container>
-      </section>
+      <PageHero
+        title="Invite. Workroom. Report."
+        description="Three steps. No training required for your team."
+        narrow
+      />
 
-      <section className="mkt-section border-t border-white/[0.06]">
+      {/* Step 1 */}
+      <section className="mkt-section border-t border-[var(--border-subtle)]">
         <Container>
-          <div className="grid items-start gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20">
-            <Reveal>
-              <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/[0.38]">
-                Step 1
+          <div className="grid items-start gap-12 lg:grid-cols-12 lg:gap-6">
+            <Reveal className="lg:col-span-5">
+              <p className="text-[13px] text-[rgba(244,245,247,0.4)]" style={{ fontWeight: 500 }}>
+                {STEPS[0].n} · Invite
               </p>
-              <h2 className="text-white" style={{ letterSpacing: "-0.04em" }}>
-                Invite.
-              </h2>
-              <div className="mt-6 space-y-6">
-                <div>
-                  <h3 className="text-[16px] font-semibold text-white">No candidate account needed</h3>
-                  <p className="mt-2 text-[15px] leading-[1.65] text-white/[0.66]">
-                    Each candidate receives a private workroom link. They click it and start — no
-                    registration, no login, no app download.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-[16px] font-semibold text-white">Configured for your FP&A role</h3>
-                  <p className="mt-2 text-[15px] leading-[1.65] text-white/[0.66]">
-                    Tell us the level and focus of the role. Fydell configures the workroom to match
-                    what your candidate would actually do on the job.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-[16px] font-semibold text-white">
-                    Asynchronous — their schedule, your window
-                  </h3>
-                  <p className="mt-2 text-[15px] leading-[1.65] text-white/[0.66]">
-                    You set a completion window — typically 48 to 72 hours. Candidates complete the
-                    workroom when they are ready.
-                  </p>
-                </div>
+              <h2 className="section-heading flat-type mt-3">{STEPS[0].title}</h2>
+              <p className="section-desc mt-5">{STEPS[0].body}</p>
+              <div className="mt-10 space-y-0 border-t border-[var(--border-subtle)]">
+                {STEPS[0].points?.map((p) => (
+                  <div key={p.title} className="border-b border-[var(--border-subtle)] py-4">
+                    <h3 className="text-[14px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+                      {p.title}
+                    </h3>
+                    <p className="mt-1.5 text-[13px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
+                      {p.body}
+                    </p>
+                  </div>
+                ))}
               </div>
             </Reveal>
 
-            <Reveal delay={0.1}>
-              <div className="fydell-product-frame overflow-hidden">
-                <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-white/[0.38]">
-                    Candidate Invite
-                  </p>
-                  <span className="rounded-full border border-[#36D68A]/[0.24] bg-[#36D68A]/[0.10] px-2.5 py-0.5 text-[11px] font-semibold text-[#6EE7B7]">
-                    Report Ready
+            <Reveal delay={0.08} className="lg:col-span-6 lg:col-start-7">
+              <div className="mkt-panel overflow-hidden">
+                <div className="flex h-[50px] items-center justify-between border-b border-[var(--border-subtle)] px-4">
+                  <div className="flex items-center gap-2.5">
+                    <FydellMark width={18} />
+                    <p className="text-[12.5px] text-[#F4F5F7]" style={{ fontWeight: 580 }}>
+                      Candidate invite
+                    </p>
+                  </div>
+                  <span className="inline-flex h-6 items-center rounded-full border border-[rgba(103,217,160,0.22)] bg-[rgba(103,217,160,0.10)] px-2.5 text-[11px] text-[#8EE4B8]">
+                    Ready
                   </span>
                 </div>
-                <div className="space-y-4 px-6 py-5">
-                  <div>
-                    <p className="mb-1 text-[11px] text-white/[0.38]">Role</p>
-                    <p className="text-[14px] font-medium text-white">Senior FP&A Analyst</p>
-                  </div>
-                  <div>
-                    <p className="mb-1 text-[11px] text-white/[0.38]">Workroom</p>
-                    <p className="text-[14px] font-medium text-white">Project Meridian</p>
-                  </div>
-                  <div>
-                    <p className="mb-1 text-[11px] text-white/[0.38]">Completion window</p>
-                    <p className="text-[14px] font-medium text-white">48 hours</p>
-                  </div>
-                  <div className="rounded-[10px] border border-white/[0.07] bg-white/[0.025] px-4 py-3">
-                    <p className="mb-1 text-[11px] text-white/[0.42]">Private link</p>
-                    <p className="break-all font-mono text-[12px] text-[#4B6FFF]">
+                <div className="space-y-4 px-5 py-5">
+                  {[
+                    ["Role", "Senior FP&A Analyst"],
+                    ["Workroom", "Project Meridian"],
+                    ["Completion window", "48 hours"],
+                  ].map(([label, value]) => (
+                    <div key={label} className="border-b border-white/[0.04] pb-3">
+                      <p className="text-[11px] text-[rgba(244,245,247,0.4)]">{label}</p>
+                      <p className="mt-1 text-[14px] text-[#F4F5F7]" style={{ fontWeight: 520 }}>
+                        {value}
+                      </p>
+                    </div>
+                  ))}
+                  <div className="rounded-[8px] border border-[var(--border-subtle)] bg-white/[0.02] px-3.5 py-3">
+                    <p className="text-[11px] text-[rgba(244,245,247,0.4)]">Private link</p>
+                    <p className="mt-1 break-all font-mono text-[12px] text-[#5662FF]">
                       fydell.com/c/pm-a7x9k2…
                     </p>
                   </div>
-                  <p className="text-[11px] text-white/[0.30]">
-                    Access expires after the window closes.
-                  </p>
                 </div>
               </div>
             </Reveal>
@@ -105,69 +149,58 @@ export default function HowItWorksPage() {
         </Container>
       </section>
 
-      <section className="relative mkt-section border-t border-white/[0.06]">
-        <FydellAurora variant="section" className="opacity-40" />
-        <Container wide className="relative z-10">
-          <Reveal className="mb-12 max-w-[720px]">
-            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/[0.38]">
-              Step 2
-            </p>
-            <SectionHeading
-              title="Workroom."
-              subtitle="The candidate works through a structured FP&A scenario — brief, data room, forecast model, manager update, and final memo. Every decision is captured."
+      {/* Step 2 */}
+      <section className="mkt-section border-t border-[var(--border-subtle)]">
+        <Container>
+          <Reveal>
+            <EditorialHeader
+              heading="Workroom."
+              description={STEPS[1].body}
+              stageHref="/#project-meridian"
+              stageLabel={`${STEPS[1].n} · Work trial`}
             />
           </Reveal>
-          <Reveal delay={0.08}>
-            <div className="max-lg:overflow-x-auto lg:overflow-x-clip rounded-[20px]">
-              <div className="min-w-[860px] lg:min-w-0">
-                <WorkroomMockup />
+          <Reveal delay={0.08} className="mt-[72px] lg:mt-20">
+            <div className="overflow-hidden rounded-[15px] border border-[rgba(255,255,255,0.10)] max-md:overflow-x-auto">
+              <div className="min-w-[720px] md:min-w-0">
+                <ProjectMeridianWindow />
               </div>
             </div>
           </Reveal>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-0 border-t border-[var(--border-subtle)] sm:grid-cols-2 lg:grid-cols-4">
             {[
-              {
-                label: "Brief + data room",
-                desc: "Business context, stakeholder ask, and the financial materials the candidate needs.",
-              },
-              {
-                label: "Forecast model",
-                desc: "A working model with realistic inputs and embedded ambiguities.",
-              },
-              {
-                label: "Manager update",
-                desc: "A mid-session data drop that changes the picture.",
-              },
-              {
-                label: "Written memo",
-                desc: "An executive recommendation with rationale.",
-              },
-            ].map((item) => (
-              <Reveal key={item.label}>
-                <div className="rounded-[14px] border border-white/[0.09] bg-[#0B0F18] px-5 py-4">
-                  <p className="text-[14px] font-semibold text-white">{item.label}</p>
-                  <p className="mt-2 text-[13px] leading-[1.6] text-white/[0.55]">{item.desc}</p>
-                </div>
-              </Reveal>
+              ["Brief + data room", "Context, stakeholder ask, and source materials."],
+              ["Forecast model", "A working model with realistic ambiguities."],
+              ["Manager update", "A mid-session change that forces revision."],
+              ["Written memo", "An executive recommendation with rationale."],
+            ].map(([title, body]) => (
+              <div key={title} className="border-b border-[var(--border-subtle)] py-5 sm:border-b-0 sm:border-r sm:px-5 sm:first:pl-0 sm:last:border-r-0 sm:last:pr-0">
+                <h3 className="text-[14px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+                  {title}
+                </h3>
+                <p className="mt-2 text-[13px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
+                  {body}
+                </p>
+              </div>
             ))}
           </div>
         </Container>
       </section>
 
-      <section className="mkt-section border-t border-white/[0.06]">
-        <Container wide>
-          <Reveal className="mb-12 max-w-[720px]">
-            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/[0.38]">
-              Step 3
-            </p>
-            <SectionHeading
-              title="Report."
-              subtitle="Within 24 hours of submission, your hiring team receives a structured evidence report — with recommendation, confidence, and follow-up questions."
+      {/* Step 3 */}
+      <section className="mkt-section border-t border-[var(--border-subtle)]">
+        <Container>
+          <Reveal>
+            <EditorialHeader
+              heading="Report."
+              description={STEPS[2].body}
+              stageHref="/sample-report"
+              stageLabel={`${STEPS[2].n} · Evidence report`}
             />
           </Reveal>
-          <Reveal delay={0.08}>
-            <div className="max-lg:overflow-x-auto lg:overflow-x-clip rounded-[20px]">
-              <div className="min-w-[760px] lg:min-w-0">
+          <Reveal delay={0.08} className="mt-[72px] lg:mt-20">
+            <div className="overflow-hidden rounded-[15px] border border-[rgba(255,255,255,0.10)] max-md:overflow-x-auto">
+              <div className="min-w-[720px] md:min-w-0">
                 <EvidenceReportMockup />
               </div>
             </div>
@@ -175,42 +208,21 @@ export default function HowItWorksPage() {
         </Container>
       </section>
 
-      <section className="mkt-section border-t border-white/[0.06]">
+      <section className="mkt-section border-t border-[var(--border-subtle)]">
         <Container>
-          <Reveal className="mb-10">
-            <SectionHeading title="Common questions." />
+          <Reveal className="max-w-[500px]">
+            <h2 className="section-heading flat-type">Common questions.</h2>
           </Reveal>
-          <div className="grid gap-5 sm:grid-cols-2">
-            {[
-              {
-                q: "Does this replace the technical interview?",
-                a: "It replaces the screening round and gives you targeted questions for the interview that follows.",
-              },
-              {
-                q: "How long does the workroom take candidates?",
-                a: "The session is time-limited. We capture time-in-workroom and stage progression as evidence signals.",
-              },
-              {
-                q: "Do candidates need to install anything?",
-                a: "No. The workroom runs in the browser. They need a spreadsheet tool for the modeling section.",
-              },
-              {
-                q: "Can I use my own scenario?",
-                a: "The pilot uses Project Meridian, configured to your role level. Custom scenarios are available after the pilot.",
-              },
-              {
-                q: "What if a candidate drops out partway through?",
-                a: "Partial completions are not billed. You only pay for candidates who submit a completed workroom.",
-              },
-              {
-                q: "Is this FP&A only?",
-                a: "The current pilot is FP&A only — for financial modeling, forecasting, and analysis roles.",
-              },
-            ].map((faq) => (
-              <Reveal key={faq.q}>
-                <div className="rounded-[16px] border border-white/[0.09] bg-[#0B0F18] px-6 py-5">
-                  <h3 className="text-[15px] font-semibold tracking-[-0.02em] text-white">{faq.q}</h3>
-                  <p className="mt-2.5 text-[14px] leading-[1.65] text-white/[0.55]">{faq.a}</p>
+          <div className="mt-12 border-t border-[var(--border-subtle)]">
+            {FAQ.map((faq, i) => (
+              <Reveal key={faq.q} delay={0.02 * i}>
+                <div className="grid gap-3 border-b border-[var(--border-subtle)] py-5 sm:grid-cols-[0.9fr_1.4fr] sm:gap-8">
+                  <h3 className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+                    {faq.q}
+                  </h3>
+                  <p className="text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
+                    {faq.a}
+                  </p>
                 </div>
               </Reveal>
             ))}

@@ -2,15 +2,10 @@ import Link from "next/link";
 import FydellBrand from "@/components/brand/FydellBrand";
 
 const PRODUCT = [
+  { label: "Product", href: "/product" },
   { label: "Project Meridian", href: "/#project-meridian" },
-  { label: "Evidence Reports", href: "/product" },
-  { label: "Outcome Calibration", href: "/how-it-works" },
-  { label: "Pricing", href: "/pricing" },
-];
-
-const FINANCE = [
-  { label: "For Finance Teams", href: "/for-finance" },
   { label: "How It Works", href: "/how-it-works" },
+  { label: "Pricing", href: "/pricing" },
   { label: "Request a Pilot", href: "/#request-pilot" },
 ];
 
@@ -68,9 +63,8 @@ export default function SiteFooter() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 sm:gap-10">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-12">
             <FooterCol title="Product" links={PRODUCT} />
-            <FooterCol title="Finance Teams" links={FINANCE} />
             <FooterCol title="Company" links={COMPANY} />
             <FooterCol title="Legal" links={LEGAL} />
           </div>

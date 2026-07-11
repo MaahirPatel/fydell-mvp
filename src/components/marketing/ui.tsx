@@ -155,22 +155,8 @@ export function SectionHeading({
   const textAlign = align === "center" ? "text-center mx-auto" : "text-left";
   return (
     <div className={["max-w-[820px]", textAlign, className].join(" ")}>
-      <h2
-        className="text-white"
-        style={{
-          fontSize: "clamp(1.85rem, 3.8vw, 3.25rem)",
-          lineHeight: 1.08,
-          letterSpacing: "-0.04em",
-          fontWeight: 620,
-        }}
-      >
-        {title}
-      </h2>
-      {subtitle && (
-        <p className="mt-4 max-w-[560px] text-[16px] leading-[1.7] text-white/[0.66] sm:text-[17px]">
-          {subtitle}
-        </p>
-      )}
+      <h2 className="section-heading flat-type">{title}</h2>
+      {subtitle && <p className="section-desc mt-5">{subtitle}</p>}
     </div>
   );
 }

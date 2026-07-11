@@ -1,95 +1,114 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
 import { Container } from "@/components/marketing/ui";
+import PageHero from "@/components/marketing/PageHero";
 import { PilotRequestForm } from "@/components/marketing/PilotRequestForm";
-import { Mail } from "lucide-react";
 
 export const metadata = {
-  title: "Fydell",
+  title: "Request a Pilot · Fydell",
   description:
-    "Request a Project Meridian pilot for your FP&A hiring process. No payment required to start — explore the employer dashboard first.",
+    "Request a Project Meridian pilot for your FP&A hiring process. No payment required to start.",
 };
 
-const PILOT_DETAILS = [
+const DETAILS = [
   { label: "To start", value: "No payment required" },
   { label: "Setup fee", value: "None" },
-  { label: "Contract required", value: "No" },
-  { label: "Typical turnaround", value: "Reports ready within 24 hours" },
+  { label: "Contract", value: "Not required" },
+  { label: "Turnaround", value: "Reports within 24 hours" },
   { label: "Managed by", value: "Fydell founder directly" },
   { label: "Minimum candidates", value: "1" },
 ];
 
-const SETUP_STEPS = [
-  { n: "1", title: "Role configured", body: "We align Project Meridian to your FP&A level and focus." },
-  { n: "2", title: "Private links generated", body: "You receive single-use candidate invite links." },
-  { n: "3", title: "Reports reviewed before delivery", body: "Every evidence report is checked before you see it." },
+const STEPS = [
+  {
+    n: "1",
+    title: "Role configured",
+    body: "We align Project Meridian to your FP&A level and focus.",
+  },
+  {
+    n: "2",
+    title: "Private links generated",
+    body: "You receive single-use candidate invite links.",
+  },
+  {
+    n: "3",
+    title: "Reports reviewed before delivery",
+    body: "Every evidence report is checked before you see it.",
+  },
 ];
 
 export default function RequestPilotPage() {
   return (
     <MarketingShell>
-      <section className="relative overflow-hidden pb-24 pt-16 lg:pb-32 lg:pt-20">
+      <PageHero
+        title="Run Project Meridian on a real FP&A hire."
+        description="Tell us about the role. We set up your workspace, configure the work trial, and give you a dashboard to invite candidates — before any billing."
+      />
+
+      <section className="pb-20 lg:pb-28">
         <Container>
-          <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_1.05fr] lg:items-start lg:gap-14">
-            <Reveal>
-              <div>
-                <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.14em] text-white/[0.40]">
-                  Request a pilot
-                </p>
-                <h1 className="text-[34px] font-semibold leading-[1.12] tracking-[-0.035em] text-white sm:text-[40px]">
-                  Run Project Meridian on a real FP&A hire
-                </h1>
-                <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/[0.58]">
-                  Tell us about the role. We set up your workspace, configure the work trial,
-                  and give you a dashboard to invite candidates and review evidence — before
-                  any billing.
-                </p>
-
-                <ul className="mt-8 space-y-3">
-                  {PILOT_DETAILS.map((d) => (
-                    <li
-                      key={d.label}
-                      className="flex items-baseline justify-between gap-4 border-b border-white/[0.06] pb-3 text-[13.5px]"
-                    >
-                      <span className="text-white/[0.46]">{d.label}</span>
-                      <span className="text-right font-medium text-white/[0.88]">{d.value}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-10 space-y-5">
-                  {SETUP_STEPS.map((s) => (
-                    <div key={s.n} className="flex gap-3">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/[0.12] text-[12px] font-semibold text-white/[0.70]">
-                        {s.n}
-                      </span>
-                      <div>
-                        <p className="text-[14px] font-semibold text-white">{s.title}</p>
-                        <p className="mt-0.5 text-[13px] text-white/[0.46]">{s.body}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <p className="mt-10 flex items-center gap-2 text-[13px] text-white/[0.40]">
-                  <Mail className="h-3.5 w-3.5" aria-hidden />
-                  Or email{" "}
-                  <a
-                    href="mailto:hello@fydell.com"
-                    className="text-white/[0.66] underline-offset-2 hover:underline"
+          <div className="grid items-start gap-12 lg:grid-cols-12 lg:gap-8">
+            <Reveal className="lg:col-span-5">
+              <div className="border-t border-[var(--border-subtle)]">
+                {DETAILS.map((d) => (
+                  <div
+                    key={d.label}
+                    className="flex items-baseline justify-between gap-4 border-b border-[var(--border-subtle)] py-3.5"
                   >
-                    hello@fydell.com
-                  </a>
-                </p>
+                    <span className="text-[13px] text-[rgba(244,245,247,0.4)]">{d.label}</span>
+                    <span
+                      className="text-right text-[13px] text-[#F4F5F7]"
+                      style={{ fontWeight: 520 }}
+                    >
+                      {d.value}
+                    </span>
+                  </div>
+                ))}
               </div>
+
+              <div className="mt-10 space-y-0 border-t border-[var(--border-subtle)]">
+                {STEPS.map((s) => (
+                  <div key={s.n} className="flex gap-3 border-b border-[var(--border-subtle)] py-4">
+                    <span
+                      className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] border border-[var(--border-subtle)] text-[11px] text-[rgba(244,245,247,0.62)]"
+                      style={{ fontWeight: 560 }}
+                    >
+                      {s.n}
+                    </span>
+                    <div>
+                      <p className="text-[14px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+                        {s.title}
+                      </p>
+                      <p className="mt-1 text-[13px] leading-[1.5] text-[rgba(244,245,247,0.62)]">
+                        {s.body}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="mt-8 text-[13px] text-[rgba(244,245,247,0.4)]">
+                Or email{" "}
+                <a
+                  href="mailto:hello@fydell.com"
+                  className="text-[rgba(244,245,247,0.62)] transition-colors hover:text-[#F4F5F7]"
+                >
+                  hello@fydell.com
+                </a>
+              </p>
             </Reveal>
 
-            <Reveal delay={0.1}>
-              <div className="rounded-[20px] border border-white/[0.11] bg-[#080B12] p-6 lg:p-8">
-                <p className="mb-6 text-[15px] font-semibold text-white">Tell us about your role</p>
+            <Reveal delay={0.08} className="lg:col-span-6 lg:col-start-7">
+              <div className="mkt-panel p-5 sm:p-6">
+                <p
+                  className="mb-5 text-[13px] text-[#F4F5F7]"
+                  style={{ fontWeight: 560 }}
+                >
+                  Tell us about your role
+                </p>
                 <PilotRequestForm />
-                <p className="mt-4 text-center text-[12px] text-white/[0.30]">
-                  Submitted securely over HTTPS. We will reply within one business day.
+                <p className="mt-4 text-center text-[12px] text-[rgba(244,245,247,0.4)]">
+                  Submitted securely over HTTPS. We reply within one business day.
                 </p>
               </div>
             </Reveal>

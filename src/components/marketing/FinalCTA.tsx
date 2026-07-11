@@ -1,24 +1,26 @@
+import { Container, ButtonLink, TextLink } from "@/components/marketing/ui";
+import { Reveal } from "@/components/motion/Reveal";
+
 export default function FinalCTA() {
   return (
-    <section className="border-t border-white/[0.08] bg-[#080B12]">
-      <div className="mx-auto max-w-[1180px] px-5 py-20 sm:px-8 sm:py-28">
-        <div className="max-w-[520px]">
-          <h2
-            className="flat-type text-white"
-            style={{
-              fontSize: "clamp(1.85rem, 3.5vw, 2.75rem)",
-              lineHeight: 1.12,
-              letterSpacing: "-0.04em",
-              fontWeight: 620,
-            }}
-          >
-            Run one FP&amp;A work trial.
-          </h2>
-          <p className="mt-4 max-w-[480px] text-[16px] leading-[1.65] text-white/[0.66]">
-            Start with one role. Review structured evidence. Decide who is worth interviewing.
+    <section className="border-t border-[var(--border-subtle)] pt-[120px] pb-[96px] lg:pt-[160px] lg:pb-[120px]">
+      <Container>
+        <Reveal className="max-w-[520px]">
+          <h2 className="section-heading flat-type">See the work before the interview.</h2>
+          <p className="section-desc mt-5">
+            Run a founder-led Fydell pilot for one active FP&amp;A role.
           </p>
-        </div>
-      </div>
+          <div className="mt-8 flex flex-wrap items-center gap-5">
+            <ButtonLink href="/#request-pilot" variant="primary">
+              Request a pilot
+            </ButtonLink>
+            <TextLink href="/#project-meridian">View Project Meridian</TextLink>
+          </div>
+          <p className="mt-6 text-[13px] text-[rgba(244,245,247,0.4)]">
+            Configured around your role · No ATS replacement required
+          </p>
+        </Reveal>
+      </Container>
     </section>
   );
 }

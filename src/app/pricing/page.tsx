@@ -1,175 +1,175 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
-import { Container, ButtonLink, SectionHeading } from "@/components/marketing/ui";
+import { Container, ButtonLink, TextLink } from "@/components/marketing/ui";
+import PageHero from "@/components/marketing/PageHero";
 import FinalCTA from "@/components/marketing/FinalCTA";
-import Link from "next/link";
 
 export const metadata = {
-  title: "Fydell",
+  title: "Pricing · Fydell",
   description:
     "No setup fee. No subscription. Pay only when a candidate completes the workroom and you receive a report.",
 };
 
-const PILOT_INCLUDES = [
+const INCLUDES = [
   "One FP&A role, configured to your level and focus",
   "Private invite links — no limit per pilot",
   "Evidence report per completed workroom",
   "24-hour turnaround after submission",
   "Founder-led pilot — direct access throughout",
   "Every report reviewed before delivery",
-  "Advance / Hold / Review recommendation with confidence level",
+  "Advance / Hold / Review with confidence level",
   "Cancel any time — no contract",
 ];
 
 const FAQS = [
   {
     q: "What does $10 per report include?",
-    a: "Everything: workroom configuration, candidate invite links, evidence report generation, and the follow-up interview questions. You pay only for candidates who submit a completed workroom.",
+    a: "Workroom configuration, invite links, evidence report generation, and follow-up interview questions. You pay only for completed submissions.",
   },
   {
-    q: "Is there a minimum spend or minimum number of candidates?",
-    a: "No minimum. You can run a single candidate for $10 to see how the report looks before scaling to a full cohort.",
+    q: "Is there a minimum spend?",
+    a: "No. You can run a single candidate for $10 before scaling to a full cohort.",
   },
   {
     q: "How do I pay?",
-    a: "Pilots are invoiced at the end of the cohort. We send a simple invoice for the number of completed reports. No credit card required upfront.",
+    a: "Pilots are invoiced at the end of the cohort. No credit card required upfront.",
   },
   {
     q: "What happens after the pilot?",
-    a: "If you want to run more roles or larger cohorts, we will set that up directly. Pricing stays flat per report — no platform fees, no per-seat pricing.",
+    a: "Pricing stays flat per report — no platform fees, no per-seat pricing.",
   },
   {
-    q: "What if a candidate drops out or does not complete the workroom?",
-    a: "You are only billed for completed submissions. Partial completions and no-shows are not charged.",
+    q: "What if a candidate does not complete?",
+    a: "Partial completions and no-shows are not charged.",
   },
   {
-    q: "Can I run multiple roles at once?",
-    a: "The pilot covers one FP&A role. Once you have seen the signal quality, we can run multiple roles in parallel.",
+    q: "Can I run multiple roles?",
+    a: "The pilot covers one FP&A role. Multiple roles can run in parallel after the pilot.",
   },
 ];
 
 export default function PricingPage() {
   return (
     <MarketingShell>
-      <section className="mkt-section pt-[100px] lg:pt-[136px]">
-        <Container>
-          <Reveal className="max-w-[640px]">
-            <h1 className="text-white" style={{ letterSpacing: "-0.04em" }}>
-              Simple, transparent pricing.
-            </h1>
-            <p className="mt-6 max-w-[520px] text-[18px] leading-[1.65] text-white/[0.66]">
-              No setup fee. No subscription. Pay only when a candidate completes the workroom and
-              you receive a report.
-            </p>
-          </Reveal>
-        </Container>
-      </section>
+      <PageHero
+        title="Simple, transparent pricing."
+        description="No setup fee. No subscription. Pay only when a candidate completes the workroom and you receive a report."
+      />
 
-      <section className="pb-20 lg:pb-28">
+      <section className="pb-16 sm:pb-20 lg:pb-24">
         <Container>
           <Reveal>
-            <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr] lg:gap-10">
-              <div className="fydell-product-frame overflow-hidden">
-                <div className="border-b border-white/[0.08] px-8 py-7">
-                  <p className="text-[12px] font-semibold uppercase tracking-[0.09em] text-white/[0.38]">
+            <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
+              <div className="mkt-panel overflow-hidden lg:col-span-7">
+                <div className="border-b border-[var(--border-subtle)] px-6 py-6 sm:px-8 sm:py-7">
+                  <p
+                    className="text-[11px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
+                    style={{ fontWeight: 500 }}
+                  >
                     FP&A Pilot
                   </p>
                   <div className="mt-3 flex items-end gap-2">
                     <span
-                      className="text-white"
+                      className="text-[#F4F5F7]"
                       style={{
-                        fontSize: "clamp(3rem,5vw,4rem)",
+                        fontSize: "clamp(2.75rem, 4vw, 3.5rem)",
                         lineHeight: 1,
                         letterSpacing: "-0.04em",
-                        fontWeight: 650,
+                        fontWeight: 560,
                       }}
                     >
                       $10
                     </span>
-                    <span className="mb-1.5 text-[15px] text-white/[0.55]">
+                    <span className="mb-1.5 text-[15px] text-[rgba(244,245,247,0.62)]">
                       per completed report
                     </span>
                   </div>
-                  <p className="mt-4 max-w-[480px] text-[15px] leading-[1.65] text-white/[0.55]">
-                    One role, as many candidates as you need. Pay per completed workroom.
-                    Founder-managed throughout the pilot.
+                  <p className="mt-4 max-w-[480px] text-[15px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
+                    One role, as many candidates as you need. Founder-managed throughout the pilot.
                   </p>
                 </div>
 
-                <div className="px-8 py-6">
-                  <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.09em] text-white/[0.38]">
-                    What Is Included
+                <div className="px-6 py-6 sm:px-8">
+                  <p
+                    className="mb-4 text-[11px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
+                    style={{ fontWeight: 500 }}
+                  >
+                    Included
                   </p>
-                  <ul className="space-y-3">
-                    {PILOT_INCLUDES.map((item) => (
-                      <li key={item} className="flex items-start gap-3">
-                        <span className="mt-2 h-px w-3.5 shrink-0 bg-gradient-to-r from-[#315CFF] to-[#7B5CFF]" />
-                        <span className="text-[14px] leading-[1.6] text-white/[0.66]">{item}</span>
+                  <ul className="space-y-0">
+                    {INCLUDES.map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-start gap-3 border-b border-white/[0.04] py-3 text-[14px] leading-[1.5] text-[rgba(244,245,247,0.72)]"
+                      >
+                        <span className="mt-2 h-px w-3 shrink-0 bg-[#5662FF]" aria-hidden />
+                        {item}
                       </li>
                     ))}
                   </ul>
-                  <div className="mt-8">
-                    <ButtonLink
-                      href="/request-pilot"
-                      variant="primary"
-                      className="w-full justify-center"
-                    >
+                  <div className="mt-8 flex flex-wrap items-center gap-5">
+                    <ButtonLink href="/#request-pilot" variant="primary">
                       Request a pilot
                     </ButtonLink>
+                    <TextLink href="/sample-report">View a sample report</TextLink>
                   </div>
-                  <p className="mt-4 text-center text-[12px] text-white/[0.30]">
+                  <p className="mt-5 text-[12px] text-[rgba(244,245,247,0.4)]">
                     No credit card required. We invoice after the pilot.
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-5">
-                <div className="rounded-[16px] border border-white/[0.09] bg-[#0B0F18] p-6">
-                  <p className="mb-2 text-[14px] font-semibold text-white">Why pay-per-report?</p>
-                  <p className="text-[13.5px] leading-[1.65] text-white/[0.55]">
-                    You should not pay for access to a tool that has not proven its value yet.
-                    Fydell earns only when a candidate completes the workroom and you receive a
-                    usable report.
-                  </p>
-                </div>
-                <div className="rounded-[16px] border border-white/[0.09] bg-[#0B0F18] p-6">
-                  <p className="mb-2 text-[14px] font-semibold text-white">Founder-led</p>
-                  <p className="text-[13.5px] leading-[1.65] text-white/[0.55]">
-                    During the pilot, we configure the workroom and review every report before
-                    delivery.
-                  </p>
-                </div>
-                <div className="rounded-[16px] border border-white/[0.09] bg-[#0B0F18] p-6">
-                  <p className="mb-2 text-[14px] font-semibold text-white">After the pilot</p>
-                  <p className="text-[13.5px] leading-[1.65] text-white/[0.55]">
-                    Pricing stays at $10 per report. No switch to a platform subscription model.
-                  </p>
-                  <Link
-                    href="/sample-report"
-                    className="mt-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-[#4B6FFF] hover:underline"
+              <div className="flex flex-col justify-between gap-0 border-t border-[var(--border-subtle)] lg:col-span-4 lg:col-start-9 lg:border-t-0">
+                {[
+                  {
+                    title: "Why pay-per-report?",
+                    body: "You should not pay for access before the product has proven its value. Fydell earns when you receive a usable report.",
+                  },
+                  {
+                    title: "Founder-led",
+                    body: "During the pilot, we configure the workroom and review every report before delivery.",
+                  },
+                  {
+                    title: "After the pilot",
+                    body: "Pricing stays at $10 per report. No switch to a platform subscription model.",
+                  },
+                ].map((item, i, arr) => (
+                  <div
+                    key={item.title}
+                    className={[
+                      "py-6",
+                      i < arr.length - 1 ? "border-b border-[var(--border-subtle)]" : "",
+                    ].join(" ")}
                   >
-                    View a sample report
-                  </Link>
-                </div>
+                    <h3 className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+                      {item.title}
+                    </h3>
+                    <p className="mt-2 text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
+                      {item.body}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </Reveal>
         </Container>
       </section>
 
-      <section className="mkt-section border-t border-white/[0.06]">
+      <section className="mkt-section border-t border-[var(--border-subtle)]">
         <Container>
-          <Reveal className="mb-10">
-            <SectionHeading title="Questions about the pilot." />
+          <Reveal className="max-w-[500px]">
+            <h2 className="section-heading flat-type">Questions about the pilot.</h2>
           </Reveal>
-          <div className="grid gap-5 sm:grid-cols-2">
-            {FAQS.map((faq) => (
-              <Reveal key={faq.q}>
-                <div className="rounded-[16px] border border-white/[0.09] bg-[#0B0F18] px-6 py-5">
-                  <h3 className="text-[15px] font-semibold tracking-[-0.02em] text-white">
+          <div className="mt-12 border-t border-[var(--border-subtle)]">
+            {FAQS.map((faq, i) => (
+              <Reveal key={faq.q} delay={0.02 * i}>
+                <div className="grid gap-3 border-b border-[var(--border-subtle)] py-5 sm:grid-cols-[0.9fr_1.4fr] sm:gap-8">
+                  <h3 className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
                     {faq.q}
                   </h3>
-                  <p className="mt-2.5 text-[14px] leading-[1.65] text-white/[0.55]">{faq.a}</p>
+                  <p className="text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
+                    {faq.a}
+                  </p>
                 </div>
               </Reveal>
             ))}

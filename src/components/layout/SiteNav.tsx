@@ -8,7 +8,6 @@ import FydellBrand from "@/components/brand/FydellBrand";
 
 const LINKS = [
   { label: "Product", href: "/product" },
-  { label: "For Finance Teams", href: "/for-finance" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Pricing", href: "/pricing" },
 ];
@@ -29,7 +28,7 @@ export default function SiteNav() {
           {LINKS.map((item) => {
             const active =
               pathname === item.href ||
-              (item.href === "/for-finance" && pathname === "/product");
+              (item.href === "/product" && pathname === "/for-finance");
             return (
               <Link
                 key={item.label}
@@ -63,7 +62,7 @@ export default function SiteNav() {
             Log in
           </Link>
           <Link
-            href="#request-pilot"
+            href="/#request-pilot"
             className="hidden h-[33px] items-center rounded-[8px] bg-[#F1F2F4] px-[14px] text-[12.5px] leading-none text-[#08090C] transition-[transform,filter] duration-160 hover:-translate-y-px hover:brightness-[1.02] sm:inline-flex"
             style={{ fontWeight: 560 }}
           >
@@ -104,7 +103,7 @@ export default function SiteNav() {
               Log in
             </Link>
             <Link
-              href="#request-pilot"
+              href="/#request-pilot"
               onClick={() => setOpen(false)}
               className="mt-1 inline-flex h-[36px] items-center justify-center rounded-[8px] bg-[#F1F2F4] px-4 text-[13px] text-[#08090C]"
               style={{ fontWeight: 560 }}

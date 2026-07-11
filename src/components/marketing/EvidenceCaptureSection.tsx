@@ -76,11 +76,11 @@ export default function EvidenceCaptureSection() {
   return (
     <div className="grid items-start gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
       <div>
-        <ul className="mt-2 space-y-3.5">
+        <ul className="mt-2 space-y-0 border-t border-[var(--border-subtle)]">
           {CAPTURE_ITEMS.map((item) => (
-            <li key={item} className="flex items-start gap-3 text-[15px] leading-[1.55] text-white/[0.78]">
+            <li key={item} className="flex items-start gap-3 border-b border-[var(--border-subtle)] py-3.5 text-[14px] leading-[1.55] text-[rgba(244,245,247,0.72)]">
               <span
-                className="mt-[0.55em] h-px w-3.5 shrink-0 bg-gradient-to-r from-[#315CFF] to-[#7B5CFF]"
+                className="mt-[0.55em] h-px w-3 shrink-0 bg-[#5662FF]"
                 aria-hidden
               />
               {item}
@@ -89,21 +89,24 @@ export default function EvidenceCaptureSection() {
         </ul>
       </div>
 
-      <div className="fydell-product-frame overflow-hidden">
-        <div className="border-b border-white/[0.08] px-5 py-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-white/[0.38]">
-            Evidence Panel — In Session
+      <div className="mkt-panel overflow-hidden">
+        <div className="border-b border-[var(--border-subtle)] px-5 py-4">
+          <p
+            className="text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
+            style={{ fontWeight: 500 }}
+          >
+            Evidence panel — in session
           </p>
         </div>
 
         <div className="grid gap-0 sm:grid-cols-2">
-          <div className="space-y-2.5 border-b border-white/[0.06] px-5 py-5 sm:border-b-0 sm:border-r">
+          <div className="space-y-2.5 border-b border-[var(--border-subtle)] px-5 py-5 sm:border-b-0 sm:border-r">
             {EVIDENCE_COUNTS.map((item) => (
               <div key={item.label} className="flex items-center justify-between gap-3">
-                <span className="text-[12px] text-white/[0.52]">{item.label}</span>
+                <span className="text-[12px] text-[rgba(244,245,247,0.62)]">{item.label}</span>
                 <CountUp
                   value={item.value}
-                  className="text-[14px] font-semibold tabular-nums text-white"
+                  className="text-[13px] tabular-nums text-[#F4F5F7]"
                   duration={1.0}
                 />
               </div>
@@ -111,7 +114,10 @@ export default function EvidenceCaptureSection() {
           </div>
 
           <div className="px-5 py-5">
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/[0.38]">
+            <p
+              className="mb-3 text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
+              style={{ fontWeight: 500 }}
+            >
               Activity
             </p>
             <div className="space-y-3">
@@ -124,19 +130,21 @@ export default function EvidenceCaptureSection() {
                   viewport={{ once: true, amount: 0.4 }}
                   transition={{ duration: 0.45, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <span className="w-10 shrink-0 text-[11px] tabular-nums text-white/[0.35]">
+                  <span className="w-10 shrink-0 text-[11px] tabular-nums text-[rgba(244,245,247,0.4)]">
                     {row.time}
                   </span>
-                  <span className="text-[12px] leading-[1.5] text-white/[0.68]">{row.text}</span>
+                  <span className="text-[12px] leading-[1.5] text-[rgba(244,245,247,0.62)]">
+                    {row.text}
+                  </span>
                 </motion.div>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="border-t border-white/[0.06] px-5 py-4">
+        <div className="border-t border-[var(--border-subtle)] px-5 py-4">
           <ProgressBar />
-          <p className="mt-2 text-[10px] text-white/[0.30]">Auto-saved just now</p>
+          <p className="mt-2 text-[10px] text-[rgba(244,245,247,0.28)]">Auto-saved just now</p>
         </div>
       </div>
     </div>
