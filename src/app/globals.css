@@ -166,29 +166,76 @@ body {
   color: #f4f5f7;
 }
 
-/* Full-width single-line hero headline — fills the content rail horizontally */
-.hero-oneline {
-  display: block;
-  width: 100%;
-  max-width: 100%;
+/*
+ * Hero display — Linear-like formatting (not Linear copy):
+ * left-aligned, large, ~2 lines, full word visible, breathing room.
+ */
+.hero-display {
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-wrap: nowrap;
-  /* ~55 chars across the content width; scales with viewport */
-  font-size: clamp(1.05rem, 3.55vw, 3.35rem);
+  max-width: 920px;
+  color: #f4f5f7;
+  font-size: clamp(2.5rem, 5.2vw, 4.5rem);
+  font-weight: 650;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+  white-space: normal;
+  overflow: visible;
 }
 
-@media (min-width: 1180px) {
-  .hero-oneline {
-    font-size: clamp(2.35rem, 2.85vw, 3.35rem);
+.hero-sub {
+  margin: 1.25rem 0 0;
+  max-width: 34rem;
+  color: #a3a7b2;
+  font-size: clamp(1.05rem, 1.35vw, 1.2rem);
+  font-weight: 450;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+}
+
+.hero-product-stage {
+  width: 100%;
+}
+
+.hero-product-glow {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  z-index: 0;
+  width: min(1100px, 100%);
+  height: 85%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 35%, rgba(86, 98, 255, 0.18), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 58% 55%, rgba(242, 107, 130, 0.12), transparent 68%);
+  filter: blur(2px);
+}
+
+.hero-product-perspective {
+  position: relative;
+  z-index: 1;
+  perspective: 2400px;
+  perspective-origin: 50% 0%;
+}
+
+.hero-product-frame {
+  position: relative;
+  transform: rotateX(10deg) translateZ(0);
+  transform-origin: center top;
+  border-radius: 16px;
+  will-change: transform;
+}
+
+@media (max-width: 768px) {
+  .hero-product-frame {
+    transform: none;
   }
 }
 
-@media (max-width: 640px) {
-  .hero-oneline {
-    /* Still one line; slightly smaller so it fits phone width */
-    font-size: clamp(0.78rem, 4.2vw, 1.15rem);
+@media (prefers-reduced-motion: reduce) {
+  .hero-product-frame {
+    transform: none;
   }
 }
 
