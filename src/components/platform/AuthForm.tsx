@@ -59,7 +59,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
 
       {/* Nav */}
       <header className="relative z-10 mx-auto flex h-[72px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
-        <FydellBrand markSize={34} />
+        <FydellBrand markSize={42} wordmarkSize={24} />
         <Link
           href={isSignup ? "/login" : "/signup"}
           className="text-[14px] font-medium text-white/[0.55] transition hover:text-white"

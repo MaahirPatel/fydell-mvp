@@ -58,7 +58,7 @@ export default function AdminShell({
       <div className="relative mx-auto flex min-h-screen max-w-[1480px]">
         <aside className="hidden w-[260px] shrink-0 flex-col border-r border-white/[0.08] bg-[#07080B]/90 px-4 py-5 backdrop-blur-sm md:flex">
           <div className="px-2 pt-1">
-            <FydellBrand markSize={30} wordmarkSize={20} />
+            <FydellBrand markSize={40} wordmarkSize={22} />
           </div>
 
           <nav className="mt-8 flex flex-1 flex-col gap-6 overflow-y-auto pb-4">
@@ -110,7 +110,7 @@ export default function AdminShell({
 
         <div className="min-w-0 flex-1">
           <header className="flex items-center justify-between border-b border-white/[0.08] bg-[#07080B]/85 px-4 py-3 backdrop-blur-sm md:hidden">
-            <FydellBrand markSize={26} wordmarkSize={17} />
+            <FydellBrand markSize={34} wordmarkSize={18} />
             <div className="w-[108px]">
               <LogoutButton />
             </div>
