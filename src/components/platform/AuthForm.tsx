@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import FydellBrand from "@/components/brand/FydellBrand";
 
@@ -14,6 +14,7 @@ const HIGHLIGHTS = [
 
 export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -21,6 +22,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
   const [loading, setLoading] = useState(false);
 
   const isSignup = mode === "signup";
+  const resetOk = !isSignup && searchParams.get("reset") === "1";
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -128,7 +130,17 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
                 />
               </label>
               <label className="block">
-                <span className="text-[13px] font-medium text-white/[0.66]">Password</span>
+                <span className="flex items-center justify-between text-[13px] font-medium text-white/[0.66]">
+                  Password
+                  {!isSignup && (
+                    <Link
+                      href="/forgot-password"
+                      className="font-medium text-white/[0.45] transition hover:text-white"
+                    >
+                      Forgot password?
+                    </Link>
+                  )}
+                </span>
                 <input
                   className="platform-input mt-1.5"
                   type="password"
@@ -139,6 +151,12 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
                   required
                 />
               </label>
+
+              {resetOk && !error && (
+                <p className="rounded-[10px] border border-[#3B5BFF]/30 bg-[#3B5BFF]/10 px-3.5 py-2.5 text-[13px] font-medium text-[#a8b8ff]">
+                  Password updated. Sign in with your new password.
+                </p>
+              )}
 
               {error && (
                 <p

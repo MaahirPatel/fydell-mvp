@@ -17,7 +17,9 @@ export async function POST(req: Request) {
       ok: true,
       onboardingComplete: user.onboardingComplete
     });
-  } catch {
-    return NextResponse.json({ error: "Could not sign in." }, { status: 500 });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Could not sign in.";
+    const status = /confirm your email/i.test(msg) ? 403 : 500;
+    return NextResponse.json({ error: msg }, { status });
   }
 }

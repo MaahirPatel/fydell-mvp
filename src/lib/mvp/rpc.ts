@@ -181,3 +181,41 @@ export async function rpcSavePilotRequest(input: {
     p_note: input.note ?? null,
   });
 }
+
+export async function rpcUpsertCompanyProfile(input: {
+  userId: string;
+  email: string;
+  companyName: string;
+}) {
+  return callRpc<Record<string, unknown>>("upsert_company_profile", {
+    p_secret: secret(),
+    p_user_id: input.userId,
+    p_email: input.email,
+    p_company_name: input.companyName,
+  });
+}
+
+export async function rpcGetCompanyProfile(userId: string) {
+  return callRpc<Record<string, unknown> | null>("get_company_profile", {
+    p_secret: secret(),
+    p_user_id: userId,
+  });
+}
+
+export async function rpcGetCompanyProfileByEmail(email: string) {
+  return callRpc<Record<string, unknown> | null>("get_company_profile_by_email", {
+    p_secret: secret(),
+    p_email: email,
+  });
+}
+
+export async function rpcCompleteCompanyOnboarding(
+  userId: string,
+  onboarding: Record<string, unknown>
+) {
+  return callRpc<Record<string, unknown>>("complete_company_onboarding", {
+    p_secret: secret(),
+    p_user_id: userId,
+    p_onboarding: onboarding,
+  });
+}

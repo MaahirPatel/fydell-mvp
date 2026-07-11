@@ -1,0 +1,6 @@
+-- Company employer profiles for Supabase Auth-backed signup/login.
+-- Applied via Supabase MCP (company_profiles_auth). Kept here for repo history.
+--
+-- Tables: mvp.company_profiles
+-- RPCs: mvp_upsert_company_profile, mvp_get_company_profile,
+--       mvp_get_company_profile_by_email, mvp_complete_company_onboarding
