@@ -38,6 +38,10 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Request failed");
+      if (typeof data.redirectTo === "string" && data.redirectTo) {
+        router.push(data.redirectTo);
+        return;
+      }
       router.push(data.onboardingComplete ? "/dashboard" : "/onboarding");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -164,16 +168,6 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
                   className="rounded-[10px] border border-[#fb7185]/40 bg-[#fb7185]/15 px-3.5 py-2.5 text-[13px] font-medium text-[#fecdd3]"
                 >
                   {error}
-                  {!isSignup && email.trim().toLowerCase() === "admin@fydell.com" ? (
-                    <>
-                      {" "}
-                      Platform admin uses a separate sign-in at{" "}
-                      <Link href="/admin" className="underline text-white">
-                        /admin
-                      </Link>
-                      .
-                    </>
-                  ) : null}
                 </p>
               )}
 
@@ -198,14 +192,6 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
                 {isSignup ? "Sign in" : "Create an account"}
               </Link>
             </p>
-            {!isSignup ? (
-              <p className="mt-3 text-center text-[12px] text-white/40">
-                Fydell staff:{" "}
-                <Link href="/admin" className="text-white/70 underline-offset-2 hover:text-white hover:underline">
-                  Platform admin sign in
-                </Link>
-              </p>
-            ) : null}
           </div>
         </section>
       </main>

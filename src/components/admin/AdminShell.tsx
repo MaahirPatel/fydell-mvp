@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import FydellBrand from "@/components/brand/FydellBrand";
+import { usePathname } from "next/navigation";
+import FydellMark from "@/components/brand/FydellMark";
 import LogoutButton from "@/components/admin/LogoutButton";
 import type { PlatformAdminContext } from "@/lib/ops/platform-roles";
 
@@ -23,45 +26,78 @@ export default function AdminShell({
   admin: PlatformAdminContext;
   children: React.ReactNode;
 }) {
-  const role = admin.roles[0] || "admin";
+  const pathname = usePathname();
+  const role = (admin.roles[0] || "admin").replace("_", " ");
 
   return (
-    <div className="min-h-screen bg-[#050609] text-[#F4F5F7]">
-      <div className="mx-auto flex min-h-screen max-w-[1400px]">
-        <aside className="hidden w-[232px] shrink-0 border-r border-white/[0.08] px-4 py-6 md:flex md:flex-col">
-          <div className="px-2">
-            <FydellBrand markSize={22} wordmarkSize={16} className="gap-2" />
-            <p className="mt-3 text-[11px] uppercase tracking-[0.08em] text-white/50">
-              Admin
-            </p>
-          </div>
-          <nav className="mt-7 flex flex-1 flex-col gap-0.5">
-            {NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-[8px] px-2.5 py-2 text-[13px] text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white"
+    <div className="min-h-screen bg-[#050609] text-white">
+      <div className="mx-auto flex min-h-screen max-w-[1440px]">
+        <aside className="hidden w-[248px] shrink-0 flex-col border-r border-white/[0.08] bg-[#07080B] px-4 py-5 md:flex">
+          <Link href="/admin/overview" className="flex items-center gap-2.5 px-2 py-1">
+            <FydellMark width={26} />
+            <div className="min-w-0">
+              <p
+                className="text-[17px] leading-none text-white"
+                style={{ fontWeight: 600, letterSpacing: "-0.03em" }}
               >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="mt-auto border-t border-white/[0.08] px-2 pt-4">
-            <p className="truncate text-[12px] text-white">{admin.email}</p>
-            <p className="mt-1 text-[11px] capitalize text-white/50">
-              {role.replace("_", " ")} · MFA pending
-            </p>
-            <div className="mt-3">
-              <LogoutButton variant="dark" />
+                fydell
+              </p>
+              <p className="mt-1.5 text-[11px] uppercase tracking-[0.08em] text-white/55">
+                Operations
+              </p>
             </div>
+          </Link>
+
+          <nav className="mt-8 flex flex-1 flex-col gap-0.5">
+            {NAV.map((item) => {
+              const active =
+                pathname === item.href ||
+                (item.href !== "/admin/overview" && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`rounded-[9px] px-3 py-2 text-[13px] transition-colors ${
+                    active
+                      ? "bg-white/[0.08] text-white"
+                      : "text-white/65 hover:bg-white/[0.04] hover:text-white"
+                  }`}
+                  style={{ fontWeight: active ? 560 : 450 }}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="mt-auto space-y-3 border-t border-white/[0.08] px-1 pt-4">
+            <div>
+              <p className="truncate text-[12.5px] text-white">{admin.email}</p>
+              <p className="mt-1 text-[11px] capitalize text-white/55">{role}</p>
+            </div>
+            <LogoutButton />
+            <Link
+              href="/"
+              className="block px-1 text-[12px] text-white/45 transition-colors hover:text-white/80"
+            >
+              ← Back to fydell.com
+            </Link>
           </div>
         </aside>
+
         <div className="min-w-0 flex-1">
           <header className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3 md:hidden">
-            <FydellBrand markSize={20} wordmarkSize={15} className="gap-2" />
-            <LogoutButton variant="dark" />
+            <Link href="/admin/overview" className="flex items-center gap-2">
+              <FydellMark width={22} />
+              <span className="text-[15px]" style={{ fontWeight: 600 }}>
+                fydell ops
+              </span>
+            </Link>
+            <div className="w-[108px]">
+              <LogoutButton />
+            </div>
           </header>
-          <div className="px-5 py-7 sm:px-7">{children}</div>
+          <div className="px-5 py-7 sm:px-8">{children}</div>
         </div>
       </div>
     </div>
