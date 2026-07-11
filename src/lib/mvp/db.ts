@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 import { getSupabaseAdmin, isSupabaseConfigured } from "../supabase";
 import { scoreAttempt, type ScoringResult } from "./scoring";
 import * as local from "./local-mvp-store";
+import * as rpc from "./rpc";
 import type {
   CandidateInvite,
   CandidateReport,
@@ -23,22 +24,34 @@ import type {
 // server-only local file store so the Meridian loop still works.
 // ===========================================================================
 
+function storageMode(): "service" | "rpc" | "local" {
+  if (isSupabaseConfigured()) return "service";
+  if (rpc.isMvpRpcConfigured()) return "rpc";
+  return "local";
+}
+
 function useLocal() {
-  return !isSupabaseConfigured();
+  return storageMode() === "local";
+}
+
+function useRpc() {
+  return storageMode() === "rpc";
 }
 
 /** Vercel serverless cannot persist the local file store across requests. */
 function assertLoopStorage() {
-  if (useLocal() && process.env.VERCEL) {
+  if (storageMode() === "local" && process.env.VERCEL) {
     throw new Error(
-      "Hiring loop storage requires Supabase on Vercel. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY, then apply supabase/migrations/001_mvp_core.sql and 003_pilot_requests.sql."
+      "Hiring loop storage requires Supabase on Vercel. Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and FYDELL_MVP_DB_SECRET."
     );
   }
 }
 
 
 function db() {
-  return getSupabaseAdmin();
+  // Hiring-loop tables live in the isolated `mvp` schema so they do not
+  // collide with the legacy public organizations/pilots model.
+  return getSupabaseAdmin().schema("mvp");
 }
 
 function makeToken(bytes = 18): string {
@@ -80,6 +93,11 @@ export async function createWorkspaceIfMissing(
   userId: string,
   name = "Your workspace"
 ): Promise<Workspace> {
+  if (useRpc()) {
+    const ws = await rpc.rpcEnsureWorkspace(userId, name);
+    debugLog("db.ts:createWorkspaceIfMissing", "RPC workspace", { userIdPrefix: userId.slice(0, 8), wsId: ws.id }, "H1");
+    return ws as unknown as Workspace;
+  }
   if (useLocal()) {
     const ws = local.localCreateWorkspaceIfMissing(userId, name);
     debugLog("db.ts:createWorkspaceIfMissing", "Local workspace", { userIdPrefix: userId.slice(0, 8), wsId: ws.id }, "H1");
@@ -106,6 +124,10 @@ export async function createWorkspaceIfMissing(
 
 /** The user's primary workspace (owner membership preferred), or null. */
 export async function getCurrentWorkspace(userId: string): Promise<Workspace | null> {
+  if (useRpc()) {
+    const ws = await rpc.rpcEnsureWorkspace(userId, "Your workspace");
+    return ws as unknown as Workspace;
+  }
   if (useLocal()) return local.localGetCurrentWorkspace(userId);
 
   const { data: memberships } = await db()
@@ -167,6 +189,17 @@ export async function createCandidateInvite(
   input: CreateInviteInput
 ): Promise<CandidateInvite> {
   assertLoopStorage();
+  if (useRpc()) {
+    const invite = await rpc.rpcCreateInvite({
+      workspaceId: input.workspaceId,
+      userId: input.createdBy || "unknown",
+      simulationId: input.simulationId,
+      candidateName: input.candidateName,
+      candidateEmail: input.candidateEmail,
+    });
+    debugLog("db.ts:createCandidateInvite", "RPC invite", { tokenPrefix: String(invite.token).slice(0, 6) }, "H1");
+    return invite as unknown as CandidateInvite;
+  }
   if (useLocal()) {
     const invite = local.localCreateCandidateInvite(input);
     debugLog("db.ts:createCandidateInvite", "Local invite", { tokenPrefix: invite.token.slice(0, 6), isDemo: invite.token.startsWith("demo") }, "H1");
@@ -208,6 +241,12 @@ export interface ValidatedInvite {
 export async function validateCandidateInvite(
   token: string
 ): Promise<ValidatedInvite | null> {
+  if (useRpc()) {
+    const result = await rpc.rpcValidateInvite(token);
+    debugLog("db.ts:validateCandidateInvite", "RPC validate", { ok: Boolean(result) }, "H2");
+    if (!result) return null;
+    return result as unknown as ValidatedInvite;
+  }
   if (useLocal()) {
     const result = local.localValidateCandidateInvite(token);
     debugLog("db.ts:validateCandidateInvite", "Local validate", { ok: Boolean(result), tokenPrefix: token.slice(0, 8) }, "H2");
@@ -246,6 +285,11 @@ export async function validateCandidateInvite(
 /** Begin (or resume) the single attempt tied to an invite token. */
 export async function startSimulationAttempt(token: string): Promise<SimulationAttempt | null> {
   assertLoopStorage();
+  if (useRpc()) {
+    const attempt = await rpc.rpcStartAttempt(token);
+    debugLog("db.ts:startSimulationAttempt", "RPC start", { ok: Boolean(attempt), attemptId: attempt?.id ?? null }, "H2");
+    return (attempt as unknown as SimulationAttempt) ?? null;
+  }
   if (useLocal()) {
     const attempt = local.localStartSimulationAttempt(token);
     debugLog("db.ts:startSimulationAttempt", "Local start", { ok: Boolean(attempt), attemptId: attempt?.id ?? null }, "H2");
@@ -295,6 +339,10 @@ export async function startSimulationAttempt(token: string): Promise<SimulationA
 }
 
 export async function getAttempt(attemptId: string): Promise<SimulationAttempt | null> {
+  if (useRpc()) {
+    const attempt = await rpc.rpcGetAttempt(attemptId);
+    return (attempt as unknown as SimulationAttempt) ?? null;
+  }
   if (useLocal()) return local.localGetAttempt(attemptId);
 
   const { data } = await db()
@@ -310,6 +358,10 @@ export async function recordSimulationEvent(
   eventType: SimulationEventType | string,
   payload: Record<string, unknown> = {}
 ): Promise<SimulationEvent | null> {
+  if (useRpc()) {
+    const event = await rpc.rpcRecordEventServer(attemptId, String(eventType), payload);
+    return (event as unknown as SimulationEvent) ?? null;
+  }
   if (useLocal()) return local.localRecordSimulationEvent(attemptId, eventType, payload);
   const attempt = await getAttempt(attemptId);
   if (!attempt) return null;
@@ -328,6 +380,10 @@ export async function recordSimulationEvent(
 }
 
 export async function getAttemptEvents(attemptId: string): Promise<SimulationEvent[]> {
+  if (useRpc()) {
+    const events = await rpc.rpcGetAttemptEvents(attemptId);
+    return (events as unknown as SimulationEvent[]) ?? [];
+  }
   if (useLocal()) return local.localGetAttemptEvents(attemptId);
 
   const { data } = await db()
@@ -342,6 +398,10 @@ export async function updateCandidateNotes(
   attemptId: string,
   notes: string
 ): Promise<void> {
+  if (useRpc()) {
+    await rpc.rpcUpdateNotes(attemptId, notes);
+    return;
+  }
   if (useLocal()) {
     local.localUpdateCandidateNotes(attemptId, notes);
     return;
@@ -597,7 +657,46 @@ function computeCalibration(
   };
 }
 
+export async function getDashboardDataForUser(userId: string): Promise<DashboardData> {
+  if (useRpc()) {
+    const data = await rpc.rpcDashboard(userId);
+    const attempts = (data.attempts as SimulationAttempt[]) ?? [];
+    const invites = (data.invites as CandidateInvite[]) ?? [];
+    const simulations = (data.simulations as Simulation[]) ?? [];
+    const stats = (data.stats as DashboardData["stats"]) ?? {
+      totalSimulations: simulations.length,
+      totalInvites: invites.length,
+      totalAttempts: attempts.length,
+      completedAttempts: attempts.filter((a) => a.status === "submitted" || a.status === "reviewed").length,
+      hires: attempts.filter((a) => a.hiring_decision === "hired").length
+    };
+    debugLog("db.ts:getDashboardDataForUser", "RPC dashboard", { attempts: attempts.length, invites: invites.length }, "H3");
+    return {
+      workspace: (data.workspace as Workspace) ?? null,
+      simulations,
+      attempts,
+      invites,
+      stats,
+      calibration: {
+        hiredCount: attempts.filter((a) => a.hired_at).length,
+        checkInsDue: 0,
+        feedbackCollected: 0,
+        message: "Outcome tracking ready when you record a hire.",
+        disclaimer:
+          "Outcome data is collected to calibrate signal over time. We do not claim a validated correlation between simulation scores and on-the-job performance."
+      }
+    };
+  }
+  const ws = await createWorkspaceIfMissing(userId);
+  return getDashboardData(ws.id);
+}
+
 export async function getDashboardData(workspaceId: string): Promise<DashboardData> {
+  if (useRpc()) {
+    // workspaceId is unused; membership is resolved by caller user via guard context.
+    // Callers must pass workspace created for the same user.
+    throw new Error("Use getDashboardDataForUser in RPC mode");
+  }
   if (useLocal()) {
     const data = local.localGetDashboardData(workspaceId);
     debugLog("db.ts:getDashboardData", "Local dashboard", { attempts: data.attempts.length, invites: data.invites.length, completed: data.stats.completedAttempts }, "H3");
@@ -650,7 +749,22 @@ export interface AttemptReport {
   events: SimulationEvent[];
 }
 
+export async function getAttemptReportForUser(
+  userId: string,
+  attemptId: string
+): Promise<AttemptReport | null> {
+  if (useRpc()) {
+    const data = await rpc.rpcAttemptReport(userId, attemptId);
+    if (!data) return null;
+    return data as unknown as AttemptReport;
+  }
+  return getAttemptReport(attemptId);
+}
+
 export async function getAttemptReport(attemptId: string): Promise<AttemptReport | null> {
+  if (useRpc()) {
+    throw new Error("Use getAttemptReportForUser in RPC mode");
+  }
   if (useLocal()) return local.localGetAttemptReport(attemptId);
 
   const attempt = await getAttempt(attemptId);
@@ -668,4 +782,37 @@ export async function getAttemptReport(attemptId: string): Promise<AttemptReport
     report: (report as CandidateReport) ?? null,
     events
   };
+}
+
+
+/** RPC/local/service helper used by the submit route to score + persist in one step. */
+export async function finalizeAttemptWithScore(
+  attemptId: string,
+  recommendation: string
+): Promise<{ overall_score: number | null }> {
+  if (useRpc()) {
+    const attempt = await getAttempt(attemptId);
+    if (!attempt) return { overall_score: null };
+    const events = await getAttemptEvents(attemptId);
+    const result = scoreAttempt({
+      finalRecommendation: recommendation,
+      candidateNotes: attempt.candidate_notes,
+      events
+    });
+    await rpc.rpcFinalizeAttempt({
+      attemptId,
+      recommendation,
+      score: result.overall_score,
+      scoreJson: result.score_json as unknown as Record<string, unknown>,
+      reportJson: result.report_json as unknown as Record<string, unknown>
+    });
+    debugLog("db.ts:finalizeAttemptWithScore", "RPC finalize", { attemptId, score: result.overall_score }, "H4");
+    return { overall_score: result.overall_score };
+  }
+
+  const attempt = await submitFinalRecommendation(attemptId, recommendation);
+  if (!attempt) return { overall_score: null };
+  const score = await generateAttemptScore(attemptId);
+  await generateCandidateReport(attemptId);
+  return { overall_score: score?.overall_score ?? null };
 }

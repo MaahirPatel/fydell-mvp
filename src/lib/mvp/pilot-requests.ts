@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
+import { isMvpRpcConfigured, rpcSavePilotRequest } from "@/lib/mvp/rpc";
 
 export type PilotRequestInput = {
   name: string;
@@ -50,17 +51,25 @@ function writeLocal(rows: LocalPilotRow[]) {
   writeFileSync(STORE_PATH, JSON.stringify(rows, null, 2), "utf8");
 }
 
-/**
- * Persist a pilot lead. Prefer Supabase (service role, RLS-locked table).
- * Fall back to a server-only local file when Supabase is not configured —
- * never exposed via a public GET API.
- */
 export async function savePilotRequest(
   input: PilotRequestInput
 ): Promise<PilotRequestRecord> {
+  if (isMvpRpcConfigured()) {
+    const saved = await rpcSavePilotRequest({
+      name: input.name,
+      email: input.email,
+      company: input.company,
+      role: input.role,
+      candidates: input.candidates,
+      note: input.note,
+    });
+    return { id: saved.id, created_at: saved.created_at };
+  }
+
   if (isSupabaseConfigured()) {
     const admin = getSupabaseAdmin();
     const { data, error } = await admin
+      .schema("mvp")
       .from("pilot_requests")
       .insert({
         name: input.name,
@@ -78,7 +87,7 @@ export async function savePilotRequest(
     if (error) {
       throw new Error(
         error.message.includes("pilot_requests") || error.code === "42P01"
-          ? "Pilot request storage is not ready. Apply migration 003_pilot_requests.sql in Supabase."
+          ? "Pilot request storage is not ready. Apply the mvp schema migration."
           : error.message
       );
     }

@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
-import {
-  submitFinalRecommendation,
-  generateAttemptScore,
-  generateCandidateReport
-} from "@/lib/mvp/db";
+import { finalizeAttemptWithScore } from "@/lib/mvp/db";
 
-// Candidate-facing: submit the final recommendation, then deterministically
-// score it and build the evidence-backed report.
+// Candidate-facing: submit recommendation, score, and persist evidence report.
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -20,12 +15,23 @@ export async function POST(
         { status: 400 }
       );
     }
-    const attempt = await submitFinalRecommendation(id, recommendation.trim());
-    if (!attempt) return NextResponse.json({ error: "Attempt not found." }, { status: 404 });
-
-    const score = await generateAttemptScore(id);
-    await generateCandidateReport(id);
-    return NextResponse.json({ ok: true, overall_score: score?.overall_score ?? null });
+    const result = await finalizeAttemptWithScore(id, recommendation.trim());
+    // #region agent log
+    fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "dc0a6c" },
+      body: JSON.stringify({
+        sessionId: "dc0a6c",
+        runId: "loop-verify",
+        hypothesisId: "H4",
+        location: "submit/route.ts",
+        message: "Finalize result",
+        data: { attemptId: id, score: result.overall_score },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    return NextResponse.json({ ok: true, overall_score: result.overall_score });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Could not submit.";
     return NextResponse.json({ error: msg }, { status: 400 });
