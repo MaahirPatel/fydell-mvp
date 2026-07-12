@@ -107,6 +107,9 @@ export async function createUser(
 
     if (error) {
       const msg = error.message || "Could not create account.";
+      // #region agent log
+      fetch('http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'dc0a6c'},body:JSON.stringify({sessionId:'dc0a6c',runId:'auth-pre',hypothesisId:'A',location:'platform-store.ts:createUser:signUp-error',message:'supabase signUp error',data:{msg:String(msg).slice(0,200)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (/already|registered|exists/i.test(msg)) {
         throw new Error("An account with this email already exists.");
       }
@@ -114,6 +117,9 @@ export async function createUser(
     }
 
     const userId = data.user?.id;
+    // #region agent log
+    fetch('http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'dc0a6c'},body:JSON.stringify({sessionId:'dc0a6c',runId:'auth-pre',hypothesisId:'A',location:'platform-store.ts:createUser:after-signUp',message:'supabase signUp returned',data:{hasUserId:Boolean(userId),hasSession:Boolean(data.session),identities:Array.isArray(data.user?.identities)?data.user!.identities.length:null},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     if (!userId) {
       throw new Error(
         "Account created but email confirmation may be required. Check your inbox, then sign in."
@@ -172,6 +178,9 @@ export async function verifyUser(
       password
     });
     if (error || !data.user) {
+      // #region agent log
+      fetch('http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'dc0a6c'},body:JSON.stringify({sessionId:'dc0a6c',runId:'auth-pre',hypothesisId:'A',location:'platform-store.ts:verifyUser:signIn-error',message:'supabase signIn failed',data:{hasError:Boolean(error),msg:String(error?.message||'').slice(0,200)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (/confirm|verified/i.test(error?.message || "")) {
         throw new Error(
           "Please confirm your email before signing in. Check your inbox for the link."

@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
-import { verifyUser } from "@/lib/platform-store";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
   createAdminSession,
   createCompanySession,
   verifyAdminCredentials,
 } from "@/lib/auth";
 import { ensureBootstrapRole } from "@/lib/ops/platform-roles";
+import { resolvePostLoginDestination } from "@/lib/auth/resolve-post-login";
+import { ensureEmployerOnboardingRow } from "@/lib/pilot/lifecycle";
+import { isSupabaseConfigured } from "@/lib/supabase/admin";
 
 export async function POST(req: Request) {
   try {
@@ -16,12 +19,11 @@ export async function POST(req: Request) {
 
     const normalized = String(email).trim().toLowerCase();
 
-    // Platform administrators use the same /login form.
     if (verifyAdminCredentials(normalized, String(password))) {
       try {
         await ensureBootstrapRole(normalized);
       } catch {
-        // Role grant can be retried via bootstrap script.
+        /* bootstrap optional */
       }
       await createAdminSession(normalized);
       return NextResponse.json({
@@ -32,20 +34,51 @@ export async function POST(req: Request) {
       });
     }
 
-    const user = await verifyUser(email, password);
-    if (!user) {
+    if (!isSupabaseConfigured()) {
+      return NextResponse.json(
+        { error: "Authentication is not configured." },
+        { status: 503 }
+      );
+    }
+
+    const supabase = await createServerSupabaseClient();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: normalized,
+      password: String(password),
+    });
+
+    if (error || !data.user) {
+      const msg = error?.message || "Invalid email or password.";
+      if (/confirm|verified/i.test(msg)) {
+        return NextResponse.json(
+          {
+            error: "Please confirm your email before signing in.",
+            code: "email_not_confirmed",
+          },
+          { status: 403 }
+        );
+      }
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
     }
-    await createCompanySession(user.id, user.email);
+
+    // Transitional company cookie for legacy routes during migration
+    await createCompanySession(data.user.id, normalized);
+
+    try {
+      await ensureEmployerOnboardingRow(data.user.id);
+    } catch {
+      /* table may not exist until migration applied */
+    }
+
+    const dest = await resolvePostLoginDestination(normalized, data.user.id);
     return NextResponse.json({
       ok: true,
-      role: "employer",
-      redirectTo: user.onboardingComplete ? "/dashboard" : "/onboarding",
-      onboardingComplete: user.onboardingComplete,
+      role: dest.kind,
+      redirectTo: dest.path,
+      reason: "reason" in dest ? dest.reason : undefined,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Could not sign in.";
-    const status = /confirm your email/i.test(msg) ? 403 : 500;
-    return NextResponse.json({ error: msg }, { status });
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

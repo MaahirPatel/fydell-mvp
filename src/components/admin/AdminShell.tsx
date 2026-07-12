@@ -15,6 +15,7 @@ const NAV_GROUPS = [
       { href: "/admin/organizations", label: "Organizations" },
       { href: "/admin/users", label: "Users" },
       { href: "/admin/invitations", label: "Invitations" },
+      { href: "/admin/repair", label: "Repair console" },
     ],
   },
   {

@@ -73,7 +73,7 @@ export function PlatformShell({
                 GP
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-bold text-white">Growth Partners</span>
+                <span className="block truncate text-sm font-bold text-white">Your workspace</span>
                 <span className="block text-[11px] font-medium text-[#9aa4b8]">Workspace</span>
               </span>
               <ChevronsUpDown className="h-4 w-4 shrink-0 text-white/45" strokeWidth={1.7} />
@@ -116,7 +116,7 @@ export function PlatformShell({
                 GP
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-bold text-white">Growth Partners</span>
+                <span className="block truncate text-sm font-bold text-white">Your workspace</span>
                 <span className="block text-[11px] font-medium text-[#9aa4b8]">Admin</span>
               </span>
             </div>

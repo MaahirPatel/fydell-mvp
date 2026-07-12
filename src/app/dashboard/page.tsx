@@ -2,318 +2,223 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { KPICards } from "@/components/dashboard/KPICards";
-import { CandidateTable } from "@/components/dashboard/CandidateTable";
-import { DEMO_CANDIDATES, DEMO_STATS, type DemoCandidate } from "@/lib/dashboard-demo";
+
+type Pipeline = {
+  invited: number;
+  accepted: number;
+  in_progress: number;
+  submitted: number;
+  report_ready: number;
+};
+
+type ActivityRow = {
+  id: string;
+  name: string;
+  email: string;
+  invitation: string;
+  session: string;
+  report: string;
+  href?: string;
+};
+
+type DashPayload = {
+  organizationName: string | null;
+  roleTitle: string | null;
+  pipeline: Pipeline;
+  activity: ActivityRow[];
+  approvalStatus?: string;
+  invitesEnabled?: boolean;
+  error?: string;
+};
+
+const EMPTY_PIPELINE: Pipeline = {
+  invited: 0,
+  accepted: 0,
+  in_progress: 0,
+  submitted: 0,
+  report_ready: 0,
+};
 
 export default function DashboardOverview() {
-  const [candidates, setCandidates] = useState<DemoCandidate[]>([]);
-  const [stats, setStats] = useState(DEMO_STATS);
+  const [data, setData] = useState<DashPayload | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-
-    async function load() {
+    (async () => {
       try {
-        const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 4000);
-        const res = await fetch("/api/mvp/dashboard", { signal: ctrl.signal });
-        clearTimeout(timer);
-        if (!res.ok) {
-          // Keep demo sample only when unauthorized / unavailable
-          if (!cancelled) {
-            setCandidates(DEMO_CANDIDATES);
-            setStats(DEMO_STATS);
-            setLoading(false);
-          }
-          return;
-        }
-        const data = await res.json();
+        const res = await fetch("/api/pilot/dashboard", { cache: "no-store" });
+        const json = await res.json();
         if (cancelled) return;
-        const mapped: DemoCandidate[] = (data.attempts ?? []).map(
-          (a: {
-            id: string;
-            candidate_name: string | null;
-            candidate_email: string | null;
-            status: string;
-            hiring_decision: string;
-            score: number | null;
-            report_json: { overall_signal?: string } | null;
-            started_at: string | null;
-            submitted_at: string | null;
-          }) => ({
-            id: a.id,
-            name: a.candidate_name ?? a.candidate_email ?? "Candidate",
-            email: a.candidate_email ?? "",
-            role: "FP&A Analyst",
-            status: (a.status === "reviewed"
-              ? "reviewed"
-              : a.status === "submitted"
-                ? "submitted"
-                : "in_progress") as DemoCandidate["status"],
-            decision: (["advance", "hold", "reject"].includes(a.hiring_decision)
-              ? a.hiring_decision
-              : "not_decided") as DemoCandidate["decision"],
-            score: a.score ?? 0,
-            signal:
-              (a.report_json?.overall_signal as "strong" | "moderate" | "weak") ??
-              "weak",
-            completionMins:
-              a.submitted_at && a.started_at
-                ? Math.round(
-                    (new Date(a.submitted_at).getTime() -
-                      new Date(a.started_at).getTime()) /
-                      60000
-                  )
-                : 0,
-            submittedAt: a.submitted_at ?? "",
-            verdict: null,
-            flags: 0,
-            modelEdits: 0,
-          })
-        );
-        setCandidates(mapped);
-        setStats({
-          activeSimulations: data.stats?.totalSimulations ?? 1,
-          invitesSent: data.stats?.totalInvites ?? 0,
-          completedReports: data.stats?.completedAttempts ?? 0,
-          advanceRecommendations: mapped.filter((c) => c.decision === "advance").length,
-        });
-      } catch {
-        if (!cancelled) {
-          setCandidates(DEMO_CANDIDATES);
-          setStats(DEMO_STATS);
+        if (!res.ok) {
+          setError(json.error || "Could not load dashboard.");
+          setData(null);
+        } else {
+          setData(json);
+          setError(null);
         }
+      } catch {
+        if (!cancelled) setError("Network error loading dashboard.");
       } finally {
         if (!cancelled) setLoading(false);
       }
-    }
-    load();
+    })();
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const inProgress = candidates.filter((c) => c.status === "in_progress").length;
-  const reportsReady = stats.completedReports;
-  const feedbackNeeded = candidates.filter((c) => c.decision === "not_decided").length;
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 w-64 rounded bg-white/5" />
+        <div className="h-24 rounded-xl bg-white/5" />
+        <div className="h-48 rounded-xl bg-white/5" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-[14px] border border-[#F43F5E]/30 bg-[#F43F5E]/10 px-5 py-6">
+        <h1 className="text-[20px] text-white" style={{ fontWeight: 560 }}>
+          Dashboard unavailable
+        </h1>
+        <p className="mt-2 text-[14px] text-white/70">{error}</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="mt-4 inline-flex h-9 items-center rounded-[8px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C]"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  const pipeline = data?.pipeline || EMPTY_PIPELINE;
+  const hasRole = Boolean(data?.roleTitle);
+  const hasCandidates = (data?.activity?.length || 0) > 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-      {/* Page header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          gap: 16,
-          flexWrap: "wrap",
-        }}
-      >
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow" style={{ marginBottom: 10 }}>
-            Employer operating system
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/45">
+            Overview
           </p>
           <h1
-            style={{
-              fontSize: 28,
-              fontWeight: 700,
-              letterSpacing: "-0.035em",
-              margin: 0,
-            }}
+            className="mt-1 text-[28px] text-[#F4F5F7] sm:text-[32px]"
+            style={{ fontWeight: 560, letterSpacing: "-0.035em" }}
           >
-            Finance Hiring Overview
+            {data?.organizationName || "Your workspace"}
           </h1>
-          <p style={{ fontSize: 14, color: "var(--muted)", margin: "8px 0 0", maxWidth: 520 }}>
-            Track candidate progress, review evidence, and prepare interviews.
+          <p className="mt-2 text-[14px] text-white/55">
+            Live hiring activity for your organization. No sample candidates.
           </p>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        {hasRole ? (
           <Link
-            href="/dashboard/simulations"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              height: 40,
-              padding: "0 16px",
-              borderRadius: 10,
-              border: "1px solid var(--border)",
-              color: "var(--text)",
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
+            href="/dashboard/roles"
+            className="inline-flex h-10 items-center rounded-[9px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C]"
           >
-            View Work Trial
+            Invite candidates
           </Link>
-        </div>
+        ) : (
+          <Link
+            href="/onboarding/employer"
+            className="inline-flex h-10 items-center rounded-[9px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C]"
+          >
+            Complete setup
+          </Link>
+        )}
       </div>
 
-      {/* KPI cards */}
-      {loading ? (
-        <KPISkeletons />
-      ) : (
-        <KPICards
-          invited={stats.invitesSent}
-          inProgress={inProgress}
-          reportsReady={reportsReady}
-          advanceRecommendations={stats.advanceRecommendations}
-        />
-      )}
+      {data?.approvalStatus === "pending" ? (
+        <div className="mt-6 rounded-[12px] border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-4 py-3 text-[13px] text-[#FCD34D]">
+          Workspace is pending Fydell approval. You can finish setup, but candidate
+          invitations stay disabled until an administrator activates your organization.
+        </div>
+      ) : null}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)",
-          gap: 16,
-        }}
-      >
-        <div className="glass-card" style={{ padding: "22px 24px" }}>
-          <p
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.10em",
-              textTransform: "uppercase",
-              color: "var(--faint)",
-              margin: "0 0 12px",
-            }}
-          >
-            Active role summary
-          </p>
-          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>
-            FP&A Analyst
+      {!hasRole ? (
+        <section className="mt-8 rounded-[16px] border border-dashed border-white/15 bg-[#0A0C11] px-6 py-12 text-center">
+          <h2 className="text-[22px] text-white" style={{ fontWeight: 560 }}>
+            Set up your first finance role
           </h2>
-          <p style={{ fontSize: 13, color: "var(--muted)", margin: "6px 0 0" }}>
-            Simulation: Project Meridian — FP&A Forecast Review
+          <p className="mx-auto mt-3 max-w-[42ch] text-[14px] leading-relaxed text-white/55">
+            Define the role, confirm first-90-day outcomes, and use Project Meridian to
+            invite your first candidates.
           </p>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 12,
-              marginTop: 18,
-            }}
-          >
-            <div>
-              <p style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "-0.03em" }}>
-                {stats.invitesSent}
-              </p>
-              <p style={{ fontSize: 12, color: "var(--faint)", margin: "2px 0 0" }}>Invited</p>
-            </div>
-            <div>
-              <p style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "-0.03em" }}>
-                {inProgress}
-              </p>
-              <p style={{ fontSize: 12, color: "var(--faint)", margin: "2px 0 0" }}>In progress</p>
-            </div>
-            <div>
-              <p style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "-0.03em" }}>
-                {reportsReady}
-              </p>
-              <p style={{ fontSize: 12, color: "var(--faint)", margin: "2px 0 0" }}>Reports ready</p>
-            </div>
-          </div>
-          <p style={{ fontSize: 12, color: "var(--muted)", margin: "16px 0 0" }}>
-            Status: Active · No payment required to explore this workspace
-          </p>
-        </div>
-
-        <div className="glass-card" style={{ padding: "22px 24px" }}>
-          <p
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.10em",
-              textTransform: "uppercase",
-              color: "var(--faint)",
-              margin: "0 0 12px",
-            }}
-          >
-            Next actions
-          </p>
-          <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-            <li style={{ fontSize: 13, color: "var(--text)" }}>
-              Invite candidates to Project Meridian
-            </li>
-            <li style={{ fontSize: 13, color: "var(--text)" }}>
-              Review evidence reports as they complete
-            </li>
-            <li style={{ fontSize: 13, color: "var(--muted)" }}>
-              Feedback needed: {feedbackNeeded || "—"}
-            </li>
-          </ul>
           <Link
-            href="/dashboard/reports"
-            style={{
-              display: "inline-flex",
-              marginTop: 18,
-              fontSize: 13,
-              fontWeight: 600,
-              color: "var(--blue)",
-              textDecoration: "none",
-            }}
+            href="/onboarding/employer"
+            className="mt-6 inline-flex h-10 items-center rounded-[9px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C]"
           >
-            Review reports →
+            Create role
           </Link>
-        </div>
-      </div>
-
-      {/* Recent candidates */}
-      <div className="glass-card" style={{ overflow: "hidden" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "20px 24px 16px",
-            borderBottom: "1px solid var(--border)",
-          }}
-        >
-          <div>
-            <h2
-              style={{ fontSize: 16, fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}
-            >
-              Recent candidates
-            </h2>
-            <p style={{ fontSize: 13, color: "var(--muted)", margin: "2px 0 0" }}>
-              Project Meridian · FP&A Forecast Review
-            </p>
+        </section>
+      ) : (
+        <>
+          <div className="mt-8 grid gap-2 sm:grid-cols-5">
+            {(
+              [
+                ["Invited", pipeline.invited],
+                ["Accepted", pipeline.accepted],
+                ["In progress", pipeline.in_progress],
+                ["Submitted", pipeline.submitted],
+                ["Report ready", pipeline.report_ready],
+              ] as const
+            ).map(([label, value]) => (
+              <div
+                key={label}
+                className="rounded-[12px] border border-white/[0.1] bg-[#0A0C11] px-3 py-3"
+              >
+                <p className="text-[11px] uppercase tracking-[0.05em] text-white/45">{label}</p>
+                <p className="mt-1 text-[24px] tabular-nums text-white" style={{ fontWeight: 560 }}>
+                  {value}
+                </p>
+              </div>
+            ))}
           </div>
-          <Link
-            href="/dashboard/candidates"
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "var(--blue)",
-              textDecoration: "none",
-            }}
-          >
-            View all →
-          </Link>
-        </div>
-        <CandidateTable candidates={loading ? [] : candidates.slice(0, 5)} />
-      </div>
-    </div>
-  );
-}
 
-function KPISkeletons() {
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
-      {[0, 1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="glass-card"
-          style={{
-            height: 120,
-            background: "rgba(255,255,255,0.02)",
-            animation: "fydell-pulse 1.6s ease-in-out infinite",
-          }}
-        />
-      ))}
+          <section className="mt-8 rounded-[16px] border border-white/[0.1] bg-[#0A0C11] p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/50">
+                Active role · {data?.roleTitle}
+              </h2>
+              <Link href="/dashboard/candidates" className="text-[12px] text-white/60 hover:text-white">
+                View candidates
+              </Link>
+            </div>
+
+            {!hasCandidates ? (
+              <div className="mt-6 rounded-[12px] border border-dashed border-white/12 px-4 py-10 text-center text-[13px] text-white/55">
+                No candidates invited yet.{" "}
+                {data?.invitesEnabled === false
+                  ? "Invitations unlock after organization approval."
+                  : "Invite your first candidate to start the work trial."}
+              </div>
+            ) : (
+              <ul className="mt-4 divide-y divide-white/[0.06]">
+                {data!.activity.map((row) => (
+                  <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-[13px]">
+                    <div>
+                      <p className="font-medium text-white">{row.name}</p>
+                      <p className="text-white/45">{row.email}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-3 text-white/55">
+                      <span>Invite: {row.invitation}</span>
+                      <span>Session: {row.session}</span>
+                      <span>Report: {row.report}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </>
+      )}
     </div>
   );
 }

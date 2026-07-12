@@ -2,486 +2,197 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
-  Beaker,
+  Briefcase,
   Users,
+  Timer,
   FileText,
+  Target,
   Settings,
   Plus,
   X,
   Copy,
   Check,
-  ExternalLink,
 } from "lucide-react";
+import FydellBrand from "@/components/brand/FydellBrand";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/simulations", label: "Simulations", icon: Beaker },
+  { href: "/dashboard/roles", label: "Roles", icon: Briefcase },
   { href: "/dashboard/candidates", label: "Candidates", icon: Users },
+  { href: "/dashboard/sessions", label: "Sessions", icon: Timer },
   { href: "/dashboard/reports", label: "Reports", icon: FileText },
+  { href: "/dashboard/outcomes", label: "Outcomes", icon: Target },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
-interface InviteForm {
-  name: string;
-  email: string;
-}
-
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export function DashboardShell({
+  children,
+  organizationName = "Your workspace",
+}: {
+  children: React.ReactNode;
+  organizationName?: string;
+}) {
   const path = usePathname();
+  const router = useRouter();
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [form, setForm] = useState<InviteForm>({ name: "", email: "" });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   async function sendInvite() {
-    if (!form.email.trim()) { setErr("Email is required."); return; }
-    setBusy(true); setErr(null);
-    try {
-      const res = await fetch("/api/mvp/invites", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          simulationId: "sim-meridian-001",
-          candidateName: form.name || null,
-          candidateEmail: form.email,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      // #region agent log
-      fetch("http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "dc0a6c" },
-        body: JSON.stringify({
-          sessionId: "dc0a6c",
-          runId: "loop-fix",
-          hypothesisId: "H1",
-          location: "DashboardShell.tsx:sendInvite",
-          message: "Invite API response",
-          data: {
-            status: res.status,
-            hasToken: Boolean(data.token || data.invite?.token),
-            isDemoFallback: false,
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
-      if (data.token || data.invite?.token) {
-        const token = data.token || data.invite.token;
-        setInviteLink(`${window.location.origin}/workroom/${token}`);
-      } else if (data.url) {
-        setInviteLink(data.url);
-      } else {
-        setErr(data.error || "Could not create invite. Sign in and try again.");
-      }
-    } catch {
-      setErr("Network error creating invite.");
+    if (!email.trim() || !name.trim()) {
+      setErr("Name and email are required.");
+      return;
     }
-    setBusy(false);
-  }
-
-  function copyLink() {
-    if (!inviteLink) return;
-    navigator.clipboard.writeText(inviteLink).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
-
-  function closeModal() {
-    setInviteOpen(false);
-    setForm({ name: "", email: "" });
-    setInviteLink(null);
+    setBusy(true);
     setErr(null);
+    try {
+      const res = await fetch("/api/pilot/invites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ candidateName: name, candidateEmail: email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Invite failed");
+      setInviteLink(data.acceptUrl);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Invite failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function logout() {
+    await fetch("/api/platform/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg)" }}>
-      {/* ── Sidebar ── */}
-      <aside
-        style={{
-          width: 232,
-          flexShrink: 0,
-          borderRight: "1px solid var(--border)",
-          background: "rgba(11,16,26,0.97)",
-          display: "flex",
-          flexDirection: "column",
-          position: "sticky",
-          top: 0,
-          height: "100vh",
-          overflowY: "auto",
-        }}
-      >
-        {/* Wordmark */}
-        <div
-          style={{
-            padding: "18px 20px",
-            borderBottom: "1px solid var(--border)",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <div
-            style={{
-              width: 30,
-              height: 30,
-              background: "linear-gradient(135deg, var(--blue) 0%, var(--violet) 100%)",
-              borderRadius: 9,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              color: "#fff",
-              fontSize: 13,
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-            }}
-          >
-            F
+    <div className="min-h-screen bg-[#07080B] text-[#F4F5F7]">
+      <div className="mx-auto flex min-h-screen max-w-[1480px]">
+        <aside className="hidden w-[224px] shrink-0 flex-col border-r border-white/[0.08] bg-[#090B10] px-3 py-4 md:flex">
+          <div className="px-2 pb-4">
+            <FydellBrand markSize={28} wordmarkSize={18} />
           </div>
-          <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: "-0.02em", color: "var(--text)" }}>
-            Fydell
-          </span>
-        </div>
-
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: "10px 10px" }}>
-          {NAV.map(({ href, label, icon: Icon, exact }) => {
-            const active = exact ? path === href : path.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "9px 12px",
-                  borderRadius: 10,
-                  marginBottom: 2,
-                  color: active ? "var(--text)" : "var(--muted)",
-                  background: active
-                    ? "rgba(124,61,255,0.12)"
-                    : "transparent",
-                  border: active ? "1px solid rgba(124,61,255,0.18)" : "1px solid transparent",
-                  fontSize: 13.5,
-                  fontWeight: active ? 600 : 400,
-                  textDecoration: "none",
-                  transition: "all 140ms",
-                }}
-              >
-                <Icon size={15} />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Footer */}
-        <div
-          style={{
-            padding: "14px 20px",
-            borderTop: "1px solid var(--border)",
-            fontSize: 11,
-            color: "var(--faint)",
-          }}
-        >
-          FP&A MVP · Project Meridian
-        </div>
-      </aside>
-
-      {/* ── Main ── */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        {/* Top bar */}
-        <header
-          style={{
-            height: 58,
-            borderBottom: "1px solid var(--border)",
-            background: "rgba(11,16,26,0.94)",
-            backdropFilter: "blur(20px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 28px",
-            position: "sticky",
-            top: 0,
-            zIndex: 20,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span
-              style={{
-                fontSize: 13.5,
-                fontWeight: 600,
-                color: "var(--muted)",
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid var(--border)",
-                borderRadius: 8,
-                padding: "4px 10px",
-              }}
+          <nav className="flex flex-1 flex-col gap-0.5">
+            {NAV.map((item) => {
+              const active = item.exact
+                ? path === item.href
+                : path === item.href || path.startsWith(`${item.href}/`);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-2.5 rounded-[9px] px-3 py-2 text-[13px] ${
+                    active
+                      ? "bg-[#3B5BFF]/15 text-white"
+                      : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+                  }`}
+                  style={{ fontWeight: active ? 560 : 450 }}
+                >
+                  <Icon className="h-4 w-4 opacity-70" strokeWidth={1.7} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="mt-auto space-y-2 border-t border-white/[0.08] px-2 pt-4">
+            <p className="truncate text-[12.5px] text-white">{organizationName}</p>
+            <button
+              type="button"
+              onClick={logout}
+              className="inline-flex h-9 w-full items-center justify-center rounded-[8px] border border-white/15 bg-[#12151C] text-[12.5px] font-semibold text-white"
             >
-              Acme Financial Group
-            </span>
+              Sign out
+            </button>
           </div>
-          <button
-            onClick={() => setInviteOpen(true)}
-            className="platform-btn-primary"
-            style={{
-              fontSize: 13,
-              padding: "0 16px",
-              height: 36,
-              gap: 6,
-              display: "inline-flex",
-              alignItems: "center",
-            }}
-          >
-            <Plus size={14} />
-            Invite candidate
-          </button>
-        </header>
+        </aside>
 
-        {/* Content */}
-        <main style={{ flex: 1, overflowY: "auto", padding: "28px 32px" }}>
-          {children}
-        </main>
+        <div className="min-w-0 flex-1">
+          <header className="flex h-14 items-center justify-between border-b border-white/[0.08] px-4 sm:px-7">
+            <p className="truncate text-[13px] text-white/55">{organizationName}</p>
+            <button
+              type="button"
+              onClick={() => setInviteOpen(true)}
+              className="inline-flex h-9 items-center gap-1.5 rounded-[8px] bg-[#F1F2F4] px-3 text-[12.5px] font-semibold text-[#08090C]"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Invite candidates
+            </button>
+          </header>
+          <div className="px-4 py-7 sm:px-7 lg:px-8">{children}</div>
+        </div>
       </div>
 
-      {/* ── Invite Modal ── */}
-      {inviteOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 100,
-            background: "rgba(0,0,0,0.72)",
-            backdropFilter: "blur(6px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "24px",
-          }}
-          onClick={(e) => e.target === e.currentTarget && closeModal()}
-        >
-          <div
-            className="glass-card"
-            style={{ width: "100%", maxWidth: 460, padding: "28px" }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: 20,
-              }}
-            >
-              <div>
-                <p className="eyebrow" style={{ marginBottom: 8 }}>
-                  Project Meridian
-                </p>
-                <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
-                  Invite candidate
-                </h2>
-              </div>
-              <button
-                onClick={closeModal}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--muted)",
-                  cursor: "pointer",
-                  padding: 4,
-                }}
-              >
-                <X size={18} />
+      {inviteOpen ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4">
+          <div className="w-full max-w-md rounded-[16px] border border-white/10 bg-[#0A0C11] p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[16px] font-semibold">Invite candidate</h2>
+              <button type="button" onClick={() => setInviteOpen(false)} aria-label="Close">
+                <X className="h-4 w-4 text-white/50" />
               </button>
             </div>
-
             {!inviteLink ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "var(--muted)",
-                      marginBottom: 6,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Candidate name
-                  </label>
-                  <input
-                    className="platform-input"
-                    type="text"
-                    placeholder="Alex Chen"
-                    value={form.name}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    style={{ fontSize: 14 }}
-                  />
-                </div>
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "var(--muted)",
-                      marginBottom: 6,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Email address
-                  </label>
-                  <input
-                    className="platform-input"
-                    type="email"
-                    placeholder="candidate@company.com"
-                    value={form.email}
-                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                    style={{ fontSize: 14 }}
-                  />
-                </div>
-                {err && (
-                  <p style={{ fontSize: 13, color: "var(--danger)", margin: 0 }}>{err}</p>
-                )}
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 10,
-                    marginTop: 4,
-                  }}
+              <div className="mt-4 space-y-3">
+                <input
+                  className="platform-input"
+                  placeholder="Full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <input
+                  className="platform-input"
+                  placeholder="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                {err ? <p className="text-[12px] text-[#fda4b0]">{err}</p> : null}
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={sendInvite}
+                  className="inline-flex h-10 w-full items-center justify-center rounded-[9px] bg-[#F1F2F4] text-[13px] font-semibold text-[#08090C] disabled:opacity-50"
                 >
-                  <button
-                    onClick={sendInvite}
-                    disabled={busy}
-                    className="platform-btn-primary"
-                    style={{ flex: 1, fontSize: 14, height: 42 }}
-                  >
-                    {busy ? "Generating link…" : "Generate invite link"}
-                  </button>
-                  <button
-                    onClick={closeModal}
-                    className="platform-btn-ghost"
-                    style={{ fontSize: 14, height: 42 }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-                <p
-                  style={{
-                    fontSize: 12,
-                    color: "var(--faint)",
-                    margin: 0,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  The candidate receives a unique link to the 25-minute FP&A workroom.
-                  Results are automatically scored on submission.
-                </p>
+                  {busy ? "Creating…" : "Create invitation"}
+                </button>
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <div
-                  style={{
-                    background: "rgba(52,211,153,0.08)",
-                    border: "1px solid rgba(52,211,153,0.24)",
-                    borderRadius: 10,
-                    padding: "12px 14px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
+              <div className="mt-4 space-y-3">
+                <p className="text-[13px] text-white/60">
+                  Share this secure acceptance link with the candidate.
+                </p>
+                <div className="break-all rounded-[10px] border border-white/10 bg-black/30 px-3 py-2 text-[12px]">
+                  {inviteLink}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(inviteLink);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1500);
                   }}
+                  className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-white/15 px-3 text-[12px]"
                 >
-                  <Check size={14} color="var(--green)" />
-                  <span style={{ fontSize: 13, color: "var(--green)", fontWeight: 600 }}>
-                    Invite link generated
-                  </span>
-                </div>
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "var(--muted)",
-                      marginBottom: 6,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Candidate link
-                  </label>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 8,
-                      background: "rgba(5,8,18,0.72)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 10,
-                      padding: "10px 12px",
-                      fontSize: 12,
-                      color: "var(--muted)",
-                      wordBreak: "break-all",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    <span style={{ flex: 1 }}>{inviteLink}</span>
-                  </div>
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button
-                    onClick={copyLink}
-                    className="platform-btn-primary"
-                    style={{
-                      flex: 1,
-                      fontSize: 13,
-                      height: 40,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
-                    {copied ? <Check size={14} /> : <Copy size={14} />}
-                    {copied ? "Copied!" : "Copy link"}
-                  </button>
-                  <a
-                    href={inviteLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="platform-btn-ghost"
-                    style={{
-                      fontSize: 13,
-                      height: 40,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      textDecoration: "none",
-                    }}
-                  >
-                    <ExternalLink size={13} />
-                    Preview
-                  </a>
-                  <button
-                    onClick={closeModal}
-                    className="platform-btn-ghost"
-                    style={{ fontSize: 13, height: 40 }}
-                  >
-                    Done
-                  </button>
-                </div>
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? "Copied" : "Copy link"}
+                </button>
               </div>
             )}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
+
+export default DashboardShell;

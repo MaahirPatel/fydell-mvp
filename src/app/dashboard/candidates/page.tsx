@@ -1,163 +1,76 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CandidateTable } from "@/components/dashboard/CandidateTable";
-import { DEMO_CANDIDATES, type DemoCandidate } from "@/lib/dashboard-demo";
+
+type Row = {
+  id: string;
+  name: string;
+  email: string;
+  invitation: string;
+  session: string;
+  report: string;
+};
 
 export default function CandidatesPage() {
-  const [candidates, setCandidates] = useState<DemoCandidate[]>([]);
+  const [rows, setRows] = useState<Row[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("all");
 
   useEffect(() => {
-    async function load() {
+    (async () => {
       try {
-        const res = await fetch("/api/mvp/dashboard");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.attempts) {
-            const mapped: DemoCandidate[] = data.attempts.map(
-              (a: {
-                id: string;
-                candidate_name: string | null;
-                candidate_email: string | null;
-                status: string;
-                hiring_decision: string;
-                score: number | null;
-                report_json: { overall_signal?: string } | null;
-                started_at: string | null;
-                submitted_at: string | null;
-              }) => ({
-                id: a.id,
-                name: a.candidate_name ?? a.candidate_email ?? "Candidate",
-                email: a.candidate_email ?? "",
-                role: "FP&A Analyst",
-                status: (a.status === "reviewed"
-                  ? "reviewed"
-                  : a.status === "submitted"
-                    ? "submitted"
-                    : "in_progress") as DemoCandidate["status"],
-                decision: (["advance", "hold", "reject"].includes(a.hiring_decision)
-                  ? a.hiring_decision
-                  : "not_decided") as DemoCandidate["decision"],
-                score: a.score ?? 0,
-                signal:
-                  (a.report_json?.overall_signal as "strong" | "moderate" | "weak") ?? "weak",
-                completionMins:
-                  a.submitted_at && a.started_at
-                    ? Math.round(
-                        (new Date(a.submitted_at).getTime() -
-                          new Date(a.started_at).getTime()) /
-                          60000
-                      )
-                    : 0,
-                submittedAt: a.submitted_at ?? "",
-                verdict: null,
-                flags: 0,
-                modelEdits: 0,
-              })
-            );
-            setCandidates(mapped);
-            setLoading(false);
-            return;
-          }
-        }
-      } catch {
-        // fallthrough
+        const res = await fetch("/api/pilot/dashboard", { cache: "no-store" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed");
+        setRows(data.activity || []);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Failed");
+      } finally {
+        setLoading(false);
       }
-      setCandidates(DEMO_CANDIDATES);
-      setLoading(false);
-    }
-    load();
+    })();
   }, []);
 
-  const FILTERS = [
-    { label: "All", value: "all" },
-    { label: "Reviewed", value: "reviewed" },
-    { label: "Submitted", value: "submitted" },
-    { label: "In progress", value: "in_progress" },
-  ];
-
-  const filtered =
-    filter === "all" ? candidates : candidates.filter((c) => c.status === filter);
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div>
-          <p className="eyebrow" style={{ marginBottom: 10 }}>
-            Candidates
-          </p>
-          <h1
-            style={{
-              fontSize: 26,
-              fontWeight: 700,
-              letterSpacing: "-0.035em",
-              margin: "0 0 4px",
-            }}
-          >
-            All candidates
-          </h1>
-          <p style={{ fontSize: 14, color: "var(--muted)", margin: 0 }}>
-            {candidates.length} candidate{candidates.length !== 1 ? "s" : ""} · Project Meridian
-          </p>
+    <div>
+      <h1 className="text-[28px] text-white" style={{ fontWeight: 560, letterSpacing: "-0.03em" }}>
+        Candidates
+      </h1>
+      <p className="mt-2 text-[14px] text-white/55">Only invited candidates for your organization.</p>
+      {loading ? <p className="mt-8 text-white/45">Loading…</p> : null}
+      {error ? <p className="mt-8 text-[#fda4b0]">{error}</p> : null}
+      {!loading && !error && rows.length === 0 ? (
+        <div className="mt-8 rounded-[14px] border border-dashed border-white/12 px-4 py-10 text-center text-[13px] text-white/55">
+          No candidates invited yet.
         </div>
-      </div>
-
-      {/* Filter tabs */}
-      <div style={{ display: "flex", gap: 4 }}>
-        {FILTERS.map((f) => {
-          const active = filter === f.value;
-          const count =
-            f.value === "all"
-              ? candidates.length
-              : candidates.filter((c) => c.status === f.value).length;
-          return (
-            <button
-              key={f.value}
-              onClick={() => setFilter(f.value)}
-              style={{
-                fontSize: 13,
-                fontWeight: active ? 600 : 400,
-                color: active ? "var(--text)" : "var(--muted)",
-                background: active ? "rgba(255,255,255,0.07)" : "transparent",
-                border: `1px solid ${active ? "var(--border-strong)" : "transparent"}`,
-                borderRadius: 8,
-                padding: "5px 12px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              {f.label}
-              <span
-                style={{
-                  fontSize: 11,
-                  background: "rgba(255,255,255,0.08)",
-                  borderRadius: 4,
-                  padding: "1px 5px",
-                  color: "var(--muted)",
-                }}
-              >
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Table */}
-      <div className="glass-card" style={{ overflow: "hidden" }}>
-        {loading ? (
-          <div style={{ padding: "48px", textAlign: "center", color: "var(--muted)", fontSize: 14 }}>
-            Loading candidates…
-          </div>
-        ) : (
-          <CandidateTable candidates={filtered} />
-        )}
-      </div>
+      ) : null}
+      {rows.length > 0 ? (
+        <div className="mt-8 overflow-hidden rounded-[14px] border border-white/10">
+          <table className="min-w-full text-left text-[13px]">
+            <thead className="bg-[#0B0D12] text-[11px] uppercase tracking-[0.05em] text-white/40">
+              <tr>
+                <th className="px-4 py-3">Candidate</th>
+                <th className="px-4 py-3">Invitation</th>
+                <th className="px-4 py-3">Session</th>
+                <th className="px-4 py-3">Report</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} className="border-t border-white/[0.06]">
+                  <td className="px-4 py-3">
+                    <div className="text-white">{r.name}</div>
+                    <div className="text-white/40">{r.email}</div>
+                  </td>
+                  <td className="px-4 py-3 text-white/60">{r.invitation}</td>
+                  <td className="px-4 py-3 text-white/60">{r.session}</td>
+                  <td className="px-4 py-3 text-white/60">{r.report}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
     </div>
   );
 }
