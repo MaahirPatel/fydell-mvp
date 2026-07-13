@@ -40,10 +40,6 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Request failed");
-      if (data.needsConfirmation) {
-        router.push("/auth/confirmation-required");
-        return;
-      }
       if (typeof data.redirectTo === "string" && data.redirectTo) {
         router.push(data.redirectTo);
         return;

@@ -64,14 +64,41 @@ export async function POST(req: Request) {
 
     const userId = data.user?.id;
     if (!userId) {
-      return NextResponse.json({
-        ok: true,
-        needsConfirmation: true,
-        redirectTo: "/auth/confirmation-required",
-      });
+      return NextResponse.json(
+        { error: "Could not create account. Try signing in or use a different email." },
+        { status: 400 }
+      );
     }
 
     const admin = createAdminSupabaseClient();
+
+    // Pilot: never block on email confirmation. Confirm immediately, then ensure session.
+    if (!data.session) {
+      const { error: confirmError } = await admin.auth.admin.updateUserById(userId, {
+        email_confirm: true,
+      });
+      if (confirmError) {
+        return NextResponse.json(
+          { error: confirmError.message || "Could not activate account." },
+          { status: 400 }
+        );
+      }
+      const { data: signedIn, error: signInError } = await supabase.auth.signInWithPassword({
+        email: normalized,
+        password: String(password),
+      });
+      if (signInError || !signedIn.session) {
+        return NextResponse.json(
+          {
+            error:
+              signInError?.message ||
+              "Account created. Sign in with the same email and password.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     await admin.from("profiles").upsert({
       id: userId,
       email: normalized,
@@ -96,19 +123,11 @@ export async function POST(req: Request) {
       }
     }
 
-    if (data.session) {
-      await createCompanySession(userId, normalized);
-      return NextResponse.json({
-        ok: true,
-        needsConfirmation: false,
-        redirectTo: "/onboarding/employer",
-      });
-    }
-
+    await createCompanySession(userId, normalized);
     return NextResponse.json({
       ok: true,
-      needsConfirmation: true,
-      redirectTo: "/auth/confirmation-required",
+      needsConfirmation: false,
+      redirectTo: intent === "candidate" ? "/login" : "/onboarding/employer",
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Could not create account.";

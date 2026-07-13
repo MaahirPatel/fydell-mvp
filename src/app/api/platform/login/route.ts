@@ -8,7 +8,7 @@ import {
 import { ensureBootstrapRole } from "@/lib/ops/platform-roles";
 import { resolvePostLoginDestination } from "@/lib/auth/resolve-post-login";
 import { ensureEmployerOnboardingRow } from "@/lib/pilot/lifecycle";
-import { isSupabaseConfigured } from "@/lib/supabase/admin";
+import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 
 export async function POST(req: Request) {
   try {
@@ -42,22 +42,36 @@ export async function POST(req: Request) {
     }
 
     const supabase = await createServerSupabaseClient();
-    const { data, error } = await supabase.auth.signInWithPassword({
+    let { data, error } = await supabase.auth.signInWithPassword({
       email: normalized,
       password: String(password),
     });
 
-    if (error || !data.user) {
-      const msg = error?.message || "Invalid email or password.";
-      if (/confirm|verified/i.test(msg)) {
-        return NextResponse.json(
-          {
-            error: "Please confirm your email before signing in.",
-            code: "email_not_confirmed",
-          },
-          { status: 403 }
-        );
+    // Pilot: if Auth still requires confirmation, confirm via service role and retry once.
+    if (error && /confirm|verified/i.test(error.message || "")) {
+      try {
+        const admin = createAdminSupabaseClient();
+        const { data: profile } = await admin
+          .from("profiles")
+          .select("id")
+          .eq("email", normalized)
+          .maybeSingle();
+        const userId = profile?.id as string | undefined;
+        if (userId) {
+          await admin.auth.admin.updateUserById(userId, { email_confirm: true });
+          const retry = await supabase.auth.signInWithPassword({
+            email: normalized,
+            password: String(password),
+          });
+          data = retry.data;
+          error = retry.error;
+        }
+      } catch {
+        /* fall through to generic auth error */
       }
+    }
+
+    if (error || !data.user) {
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
     }
 

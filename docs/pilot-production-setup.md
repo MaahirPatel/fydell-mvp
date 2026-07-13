@@ -7,7 +7,7 @@ Run `npx tsx scripts/verify-migration-state.ts`.
 ## 2. Production backup
 Supabase → Database → Backups before applying `010_pilot_lifecycle.sql`.
 
-## 3. Auth URLs
+## 3. Auth URLs + email confirmation (pilot)
 Site URL: `https://www.fydell.com`
 Redirects:
 - `https://www.fydell.com/auth/callback`
@@ -16,6 +16,12 @@ Redirects:
 - `https://www.fydell.com/login`
 - `https://www.fydell.com/onboarding/employer`
 - `https://www.fydell.com/candidate/invite/*`
+
+**Pilot default:** disable email confirmation so employers can sign in immediately after signup.
+
+Supabase → Authentication → Providers → Email → turn **Confirm email** **OFF**.
+
+The app also auto-confirms new users via the service role if a session is not returned on signup.
 
 ## 4. Env (Vercel)
 See `.env.example`. Production defaults:
