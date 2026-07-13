@@ -28,8 +28,25 @@ See `.env.example`. Production defaults:
 - `EMPLOYER_SELF_SIGNUP_MODE=approval_required`
 - `ALLOW_DEMO_DATA=false`
 
-## 5. Email
-Set Resend keys; configure Supabase Auth SMTP; cron for `/api/cron/process-email-outbox`.
+## 5. Email (required for password reset + invites)
+Set Resend keys; verify `fydell.com` as a sending domain; configure Supabase Auth SMTP; cron for `/api/cron/process-email-outbox`.
+
+### Resend domain (needed for “from Fydell” + deliverability)
+1. Resend → **Domains** → **Add** `fydell.com`
+2. Add the DNS records Resend shows (SPF, DKIM, optionally DMARC) at your DNS host
+3. Wait until status is **Verified**
+4. In Vercel set:
+   - `EMAIL_FROM_TRANSACTIONAL` = `Fydell <noreply@fydell.com>`
+   - `EMAIL_REPLY_TO` = `admin@fydell.com`
+5. Redeploy
+6. Supabase → Authentication → Emails → SMTP:
+   - Sender email: `noreply@fydell.com`
+   - Sender name: `Fydell`
+   - Host `smtp.resend.com`, port `465`, user `resend`, password = `RESEND_API_KEY`
+
+Until the domain is verified, Resend only reliably sends from `onboarding@resend.dev` to the Resend account owner’s inbox — password resets to other people will fail or never arrive.
+
+Password reset emails are sent by the app via Resend (branded HTML with the Fydell mark). Inbox “profile picture” requires a verified domain (and optionally BIMI later); the logo appears in the email body immediately.
 
 ## 6. Admin
 `npm run bootstrap:admin` then sign in at `/login` with admin credentials → `/admin`.
