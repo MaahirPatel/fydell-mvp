@@ -61,9 +61,10 @@ export function domainsMismatch(
 export type EmployerSelfSignupMode = "disabled" | "approval_required" | "open";
 
 export function employerSelfSignupMode(): EmployerSelfSignupMode {
-  const raw = (process.env.EMPLOYER_SELF_SIGNUP_MODE || "approval_required").toLowerCase();
+  // Pilot default: open — employers land in a usable workspace immediately.
+  const raw = (process.env.EMPLOYER_SELF_SIGNUP_MODE || "open").toLowerCase();
   if (raw === "disabled" || raw === "open" || raw === "approval_required") return raw;
-  return "approval_required";
+  return "open";
 }
 
 export function allowDemoData(): boolean {

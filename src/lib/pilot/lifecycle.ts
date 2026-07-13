@@ -61,8 +61,9 @@ export async function completeEmployerOnboarding(input: {
   const admin = createAdminSupabaseClient();
   const mode = employerSelfSignupMode();
   const mismatch = domainsMismatch(input.email, input.companyWebsite);
+  // Open mode: workspace is usable immediately (mismatch is flagged, not blocked).
   const approval =
-    mode === "open" && !mismatch ? "approved" : mode === "disabled" ? "pending" : "pending";
+    mode === "open" ? "approved" : mode === "disabled" ? "pending" : "pending";
   const orgStatus = approval === "approved" ? "active" : "pending";
   const invitesEnabled = approval === "approved";
 

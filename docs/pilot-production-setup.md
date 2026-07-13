@@ -24,8 +24,8 @@ Supabase → Authentication → Providers → Email → turn **Confirm email** *
 The app also auto-confirms new users via the service role if a session is not returned on signup.
 
 ## 4. Env (Vercel)
-See `.env.example`. Production defaults:
-- `EMPLOYER_SELF_SIGNUP_MODE=approval_required`
+See `.env.example`. **Production defaults:**
+- `EMPLOYER_SELF_SIGNUP_MODE=open` (usable workspace + invites immediately after questions)
 - `ALLOW_DEMO_DATA=false`
 
 ## 5. Email (required for password reset + invites)

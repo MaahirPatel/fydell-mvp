@@ -5,11 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
-  Briefcase,
+  Orbit,
   Users,
-  Timer,
-  FileText,
-  Target,
   Settings,
   Plus,
   X,
@@ -19,12 +16,9 @@ import {
 import FydellBrand from "@/components/brand/FydellBrand";
 
 const NAV = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/roles", label: "Roles", icon: Briefcase },
+  { href: "/dashboard", label: "Analytics", icon: LayoutDashboard, exact: true },
+  { href: "/dashboard/meridian", label: "Project Meridian", icon: Orbit },
   { href: "/dashboard/candidates", label: "Candidates", icon: Users },
-  { href: "/dashboard/sessions", label: "Sessions", icon: Timer },
-  { href: "/dashboard/reports", label: "Reports", icon: FileText },
-  { href: "/dashboard/outcomes", label: "Outcomes", icon: Target },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
@@ -44,6 +38,15 @@ export function DashboardShell({
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  function closeInvite() {
+    setInviteOpen(false);
+    setName("");
+    setEmail("");
+    setInviteLink(null);
+    setErr(null);
+    setCopied(false);
+  }
 
   async function sendInvite() {
     if (!email.trim() || !name.trim()) {
@@ -76,9 +79,10 @@ export function DashboardShell({
 
   return (
     <div className="min-h-screen bg-[#07080B] text-[#F4F5F7]">
-      <div className="mx-auto flex min-h-screen max-w-[1480px]">
-        <aside className="hidden w-[224px] shrink-0 flex-col border-r border-white/[0.08] bg-[#090B10] px-3 py-4 md:flex">
-          <div className="px-2 pb-4">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(59,91,255,0.12),transparent_45%),radial-gradient(ellipse_at_bottom_right,rgba(59,91,255,0.06),transparent_40%)]" />
+      <div className="relative mx-auto flex min-h-screen max-w-[1480px]">
+        <aside className="hidden w-[232px] shrink-0 flex-col border-r border-white/[0.08] bg-[#090B10]/90 px-3 py-4 backdrop-blur md:flex">
+          <div className="px-2 pb-5">
             <FydellBrand markSize={28} wordmarkSize={18} />
           </div>
           <nav className="flex flex-1 flex-col gap-0.5">
@@ -91,9 +95,9 @@ export function DashboardShell({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2.5 rounded-[9px] px-3 py-2 text-[13px] ${
+                  className={`flex items-center gap-2.5 rounded-[9px] px-3 py-2.5 text-[13px] transition-colors ${
                     active
-                      ? "bg-[#3B5BFF]/15 text-white"
+                      ? "bg-[#3B5BFF]/18 text-white"
                       : "text-white/55 hover:bg-white/[0.04] hover:text-white"
                   }`}
                   style={{ fontWeight: active ? 560 : 450 }}
@@ -105,11 +109,11 @@ export function DashboardShell({
             })}
           </nav>
           <div className="mt-auto space-y-2 border-t border-white/[0.08] px-2 pt-4">
-            <p className="truncate text-[12.5px] text-white">{organizationName}</p>
+            <p className="truncate text-[12.5px] text-white/80">{organizationName}</p>
             <button
               type="button"
               onClick={logout}
-              className="inline-flex h-9 w-full items-center justify-center rounded-[8px] border border-white/15 bg-[#12151C] text-[12.5px] font-semibold text-white"
+              className="inline-flex h-9 w-full items-center justify-center rounded-[8px] border border-white/15 bg-[#12151C] text-[12.5px] font-semibold text-white hover:bg-[#181b24]"
             >
               Sign out
             </button>
@@ -118,29 +122,53 @@ export function DashboardShell({
 
         <div className="min-w-0 flex-1">
           <header className="flex h-14 items-center justify-between border-b border-white/[0.08] px-4 sm:px-7">
-            <p className="truncate text-[13px] text-white/55">{organizationName}</p>
-            <button
-              type="button"
-              onClick={() => setInviteOpen(true)}
-              className="inline-flex h-9 items-center gap-1.5 rounded-[8px] bg-[#F1F2F4] px-3 text-[12.5px] font-semibold text-[#08090C]"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Invite candidates
-            </button>
+            <div className="min-w-0 md:hidden">
+              <FydellBrand markSize={24} wordmarkSize={16} />
+            </div>
+            <p className="hidden truncate text-[13px] text-white/55 md:block">{organizationName}</p>
+            <div className="flex items-center gap-2">
+              <nav className="mr-1 flex gap-1 md:hidden">
+                {NAV.filter((n) => n.href !== "/dashboard/settings").map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`rounded-full px-2.5 py-1 text-[11px] ${
+                      path === item.href || path.startsWith(`${item.href}/`)
+                        ? "bg-white/10 text-white"
+                        : "text-white/45"
+                    }`}
+                  >
+                    {item.label === "Project Meridian" ? "Meridian" : item.label}
+                  </Link>
+                ))}
+              </nav>
+              <button
+                type="button"
+                data-invite-trigger
+                onClick={() => setInviteOpen(true)}
+                className="inline-flex h-9 items-center gap-1.5 rounded-[8px] bg-[#F1F2F4] px-3 text-[12.5px] font-semibold text-[#08090C]"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Invite
+              </button>
+            </div>
           </header>
           <div className="px-4 py-7 sm:px-7 lg:px-8">{children}</div>
         </div>
       </div>
 
       {inviteOpen ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-[16px] border border-white/10 bg-[#0A0C11] p-5">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/65 px-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-md rounded-[16px] border border-white/10 bg-[#0A0C11] p-5 shadow-2xl">
             <div className="flex items-center justify-between">
               <h2 className="text-[16px] font-semibold">Invite candidate</h2>
-              <button type="button" onClick={() => setInviteOpen(false)} aria-label="Close">
+              <button type="button" onClick={closeInvite} aria-label="Close">
                 <X className="h-4 w-4 text-white/50" />
               </button>
             </div>
+            <p className="mt-1 text-[13px] text-white/50">
+              They&apos;ll receive Project Meridian as their work trial.
+            </p>
             {!inviteLink ? (
               <div className="mt-4 space-y-3">
                 <input
@@ -151,7 +179,7 @@ export function DashboardShell({
                 />
                 <input
                   className="platform-input"
-                  placeholder="Email"
+                  placeholder="Work email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -169,7 +197,8 @@ export function DashboardShell({
             ) : (
               <div className="mt-4 space-y-3">
                 <p className="text-[13px] text-white/60">
-                  Share this secure acceptance link with the candidate.
+                  Share this link with the candidate. Their name appears here only after you invite
+                  them — nothing is pre-filled.
                 </p>
                 <div className="break-all rounded-[10px] border border-white/10 bg-black/30 px-3 py-2 text-[12px]">
                   {inviteLink}
@@ -185,6 +214,13 @@ export function DashboardShell({
                 >
                   {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                   {copied ? "Copied" : "Copy link"}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeInvite}
+                  className="ml-2 text-[12px] text-white/50 hover:text-white"
+                >
+                  Done
                 </button>
               </div>
             )}

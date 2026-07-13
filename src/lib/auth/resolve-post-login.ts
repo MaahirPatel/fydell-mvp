@@ -68,12 +68,9 @@ export async function resolvePostLoginDestination(
     return { kind: "onboarding", path: "/onboarding/employer" };
   }
 
-  if (onboarding?.completed_at && onboarding.approval_status === "pending") {
-    return {
-      kind: "setup",
-      path: "/account/setup-required",
-      reason: "awaiting_org_approval",
-    };
+  // Completed onboarding without membership is rare; send back to finish setup.
+  if (onboarding?.completed_at) {
+    return { kind: "onboarding", path: "/onboarding/employer" };
   }
 
   const { data: candidate } = await admin

@@ -76,8 +76,7 @@ export async function POST(req: Request) {
         roleId: result.role.id,
         approval: result.approval,
         invitesEnabled: result.invitesEnabled,
-        redirectTo:
-          result.approval === "approved" ? "/dashboard" : "/account/setup-required?reason=awaiting_org_approval",
+        redirectTo: "/dashboard",
       });
     }
 

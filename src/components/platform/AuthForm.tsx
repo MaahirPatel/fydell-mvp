@@ -89,7 +89,9 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
           <p className="mt-5 text-[17px] leading-[1.65] text-white/[0.55]">
             {fromAdmin
               ? "Use your Fydell account. Platform operators land in ops; employers land in their workspace."
-              : "Review work trials, evidence reports, and candidate progress."}
+              : isSignup
+                ? "Answer a few questions about your company and role, then explore Project Meridian and invite candidates."
+                : "Review work trials, evidence, and candidate progress."}
           </p>
           {!fromAdmin ? (
             <ul className="mt-8 space-y-4">
@@ -111,7 +113,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
             </h2>
             <p className="mt-2 text-[14px] leading-relaxed text-white/[0.55]">
               {isSignup
-                ? "Start with one FP&A role."
+                ? "A few questions, then your empty workspace — ready for real invites."
                 : "One login for employers and platform operators."}
             </p>
 

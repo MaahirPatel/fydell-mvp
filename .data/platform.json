@@ -18,6 +18,42 @@
         "hiringPain": "Hard to assess practical skills in traditional interviews",
         "simulationPriority": "Real work instead of interviews"
       }
+    },
+    {
+      "id": "74c1bcdefd99e0209301296b",
+      "email": "looptest_134282183756721236@example.com",
+      "passwordHash": "e6d672baac315f78156c464e154e0ac21febc62fa46efe24450b1de5927d7913",
+      "passwordSalt": "1d50c46ee6232c9c7b48316f9bb6f433",
+      "companyName": "Loop Test Co",
+      "createdAt": "2026-07-11T04:39:35.701Z",
+      "onboardingComplete": false
+    },
+    {
+      "id": "9e2d60d8a51d1059590418c2",
+      "email": "loop2_134282189830393788@example.com",
+      "passwordHash": "f02aea421ba2fe7da2aa8d056eef823db6393cd9a6e706b5855c910c5a0f7d52",
+      "passwordSalt": "221f27f8a5f445e4a743133ed96ee320",
+      "companyName": "Loop2",
+      "createdAt": "2026-07-11T04:49:43.107Z",
+      "onboardingComplete": false
+    },
+    {
+      "id": "7f370b15fd050c9cc883df36",
+      "email": "rpc2_1783746230@example.com",
+      "passwordHash": "fa669fc08553515c2c41f445f561b3d71484c7eedfa209767298fd548f411850",
+      "passwordSalt": "a04f97f6aa9ca58e698f615325a7217b",
+      "companyName": "RPC Co",
+      "createdAt": "2026-07-11T05:03:50.387Z",
+      "onboardingComplete": false
+    },
+    {
+      "id": "99250b5c860403deda6bb157",
+      "email": "rpc3_1783746302@example.com",
+      "passwordHash": "01062018e55ba62850df1a9d7269d767a7677f464ca9d1c7b622d49209fa87ab",
+      "passwordSalt": "d80577f44f1c5e60fb8b102d6e6255ca",
+      "companyName": "RPC Co",
+      "createdAt": "2026-07-11T05:05:02.652Z",
+      "onboardingComplete": false
     }
   ],
   "simulations": [],
