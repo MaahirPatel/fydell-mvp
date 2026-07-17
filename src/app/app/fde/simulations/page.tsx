@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { stageForStatus } from "@/lib/relay/session-client";
 
 type Session = {
   id: string;
@@ -13,16 +15,29 @@ type Session = {
 
 const STATUS_LABEL: Record<string, string> = {
   invited: "Invited",
-  accepted: "Accepted — check your email link",
-  preflight: "In setup — check your email link",
-  ready: "Ready — check your email link",
-  active: "In progress — continue from your email link",
-  recovering: "In progress (recovering) — continue from your email link",
+  accepted: "Accepted — continue setup",
+  preflight: "In setup",
+  ready: "Ready to start",
+  active: "In progress",
+  recovering: "In progress (recovering)",
   submitted: "Submitted — evidence pending",
   processing: "Generating evidence",
   receipt_ready: "Evidence ready",
   technical_failure: "Technical failure — not billed",
   withdrawn: "Withdrawn",
+};
+
+const RESUMABLE_LABEL: Record<string, string> = {
+  accepted: "Continue",
+  preflight: "Continue",
+  ready: "Continue",
+  active: "Continue",
+  recovering: "Continue",
+  submitted: "View status",
+  processing: "View status",
+  receipt_ready: "View status",
+  technical_failure: "View status",
+  withdrawn: "View status",
 };
 
 export default function FdeSimulationsPage() {
@@ -54,8 +69,8 @@ export default function FdeSimulationsPage() {
         Your Project Relay sessions
       </h1>
       <p className="mt-2 max-w-[56ch] text-[14px] leading-relaxed text-white/55">
-        Sessions in progress can only be resumed from the private link in your invitation email —
-        we don't store that link anywhere you can copy it from here.
+        Use the private link in your invitation email to resume fastest — or continue from here
+        while you're signed in.
       </p>
 
       {error ? (
@@ -75,15 +90,28 @@ export default function FdeSimulationsPage() {
         </section>
       ) : (
         <ul className="mt-6 divide-y divide-white/[0.06] rounded-[16px] border border-white/[0.1] bg-[#0A0C11]/85">
-          {sessions.map((s) => (
-            <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 text-[13px]">
-              <div>
-                <p className="font-medium text-white">{s.missionTitle}</p>
-                <p className="mt-0.5 text-white/45">{new Date(s.createdAt).toLocaleDateString()}</p>
-              </div>
-              <span className="text-white/55">{STATUS_LABEL[s.status] || s.status}</span>
-            </li>
-          ))}
+          {sessions.map((s) => {
+            const stage = stageForStatus(s.status);
+            return (
+              <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 text-[13px]">
+                <div>
+                  <p className="font-medium text-white">{s.missionTitle}</p>
+                  <p className="mt-0.5 text-white/45">{new Date(s.createdAt).toLocaleDateString()}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-white/55">{STATUS_LABEL[s.status] || s.status}</span>
+                  {stage && (
+                    <Link
+                      href={`/s/${s.id}/${stage}`}
+                      className="rounded-[8px] bg-[#F1F2F4] px-3 py-1.5 text-[12.5px] font-semibold text-[#08090C] transition hover:bg-white"
+                    >
+                      {RESUMABLE_LABEL[s.status] || "Open"}
+                    </Link>
+                  )}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

@@ -18,8 +18,8 @@ export default function HomeReportMock() {
             {[
               { label: "Recommendation", value: "Advance", accent: true },
               { label: "Confidence", value: "Medium-high" },
-              { label: "Role", value: "Senior FP&A Analyst" },
-              { label: "Trial", value: "Project Meridian" },
+              { label: "Role", value: "Forward Deployed Engineer" },
+              { label: "Simulation", value: "Project Relay" },
             ].map((row) => (
               <div key={row.label} className="border-b border-white/[0.04] pb-3">
                 <p className="text-[11px] text-[rgba(244,245,247,0.4)]">{row.label}</p>
@@ -46,10 +46,10 @@ export default function HomeReportMock() {
           </p>
           <ol className="mt-3 space-y-2.5">
             {[
-              "Revised churn after reviewing renewal data",
-              "Connected the churn change to cash runway",
-              "Communicated a conditional recommendation",
-              "Verified AI-generated calculations before use",
+              "Re-ran tests after every meaningful edit",
+              "Adapted the approach after the mid-session curveball",
+              "Told the customer what changed and why",
+              "Reviewed AI-suggested code before shipping it",
             ].map((s, i) => (
               <li key={s} className="flex gap-2.5 text-[13px] leading-[1.45] text-[rgba(244,245,247,0.72)]">
                 <span className="w-4 shrink-0 tabular-nums text-[rgba(244,245,247,0.4)]">
@@ -68,8 +68,8 @@ export default function HomeReportMock() {
           </p>
           <ol className="mt-3 space-y-2.5">
             {[
-              "Did not test customer concentration",
-              "Did not reconcile bookings against recognized revenue without prompting",
+              "Ran the preview command only once before submitting",
+              "Did not run the eval suite without being prompted",
             ].map((s, i) => (
               <li key={s} className="flex gap-2.5 text-[13px] leading-[1.45] text-[rgba(244,245,247,0.62)]">
                 <span className="w-4 shrink-0 tabular-nums text-[rgba(244,245,247,0.4)]">
@@ -91,9 +91,9 @@ export default function HomeReportMock() {
           </p>
           <ol className="mt-3 space-y-0">
             {[
-              "Renewal risk identified",
-              "Forecast revised",
-              "Recommendation changed",
+              "Mid-session curveball revealed",
+              "Approach revised after the change",
+              "Final submission frozen",
             ].map((m, i, arr) => (
               <li key={m} className="flex gap-3">
                 <div className="flex w-4 flex-col items-center">
@@ -121,7 +121,7 @@ export default function HomeReportMock() {
           <ul className="mt-3 space-y-3">
             {[
               "What additional evidence would make you reverse your recommendation?",
-              "How would you distinguish timing risk from structural churn?",
+              "How would you have handled the curveball with half the time left?",
             ].map((q) => (
               <li
                 key={q}

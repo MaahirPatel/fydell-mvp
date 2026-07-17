@@ -3,6 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { defaultPrimaryDimensions } from "@/lib/fde/evaluation-contract";
+
+const EVALUATION_DIMENSIONS = defaultPrimaryDimensions().map((d) => ({
+  name: d.label,
+  description: d.behavioralAnchors.supportingEvidence[0] || "",
+}));
 
 export default function NewMissionPage() {
   const router = useRouter();
@@ -56,6 +62,28 @@ export default function NewMissionPage() {
       <p className="mt-2 max-w-[52ch] text-[14px] leading-relaxed text-white/55">
         Be specific. This is submitted for review before you can invite an FDE.
       </p>
+
+      <section className="mt-6 rounded-[14px] border border-white/[0.08] bg-white/[0.02] p-4">
+        <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/45">
+          Evaluation contract
+        </p>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-white/55">
+          Whoever you invite is evaluated on how they actually worked this mission — observed
+          across five dimensions, not a personality score or match percentage. Dimensions without
+          enough independent evidence show as inconclusive, not negative. This contract locks
+          automatically once the first candidate starts — you cannot retune priorities after seeing
+          results. Fydell does not produce an automated hire recommendation; your team owns the
+          decision and fair-selection obligations.
+        </p>
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+          {EVALUATION_DIMENSIONS.map((d) => (
+            <li key={d.name} className="flex items-baseline gap-2 text-[12.5px]">
+              <span className="font-medium text-white/85">{d.name}</span>
+              <span className="text-white/40">— {d.description}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <form onSubmit={submit} className="mt-8 grid gap-4">
         <label className="block">

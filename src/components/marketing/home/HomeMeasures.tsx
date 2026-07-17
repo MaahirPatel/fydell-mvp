@@ -3,40 +3,34 @@ import { Reveal } from "@/components/motion/Reveal";
 
 const DIMENSIONS = [
   {
-    name: "Financial reasoning",
-    description: "Connects drivers, assumptions, and financial effects.",
-    evidence: "Revised revenue after reviewing renewal data",
+    name: "Discovery and problem framing",
+    description: "Clarifies what is broken before coding the first fix.",
+    evidence: "Asked a question that changed system scope",
+    state: "Supporting",
+  },
+  {
+    name: "Technical scoping and prioritization",
+    description: "Chooses the highest-risk failure path first.",
+    evidence: "Prioritized the policy hole over cosmetic cleanup",
+    state: "Supporting",
+  },
+  {
+    name: "Engineering and applied-AI execution",
+    description: "Implements a verified fix; AI output is checked, not trusted.",
+    evidence: "Fixed routing + approval check; evals passed",
     state: "Strong",
   },
   {
-    name: "Commercial judgment",
-    description: "Identifies which business risks matter.",
-    evidence: "Flagged SMB renewal concentration",
-    state: "Strong",
+    name: "Evaluation and production judgment",
+    description: "Reads metrics honestly and refuses unsafe automation.",
+    evidence: "Called out residual privacy risk in the handoff",
+    state: "Supporting",
   },
   {
-    name: "Data interpretation",
-    description: "Finds inconsistencies and missing evidence.",
-    evidence: "Reconciled bookings before changing churn",
-    state: "Moderate",
-  },
-  {
-    name: "Communication",
-    description: "Explains conclusions in decision-ready language.",
-    evidence: "Conditioned Advance on renewal confirmation",
-    state: "Strong",
-  },
-  {
-    name: "Adaptability",
-    description: "Revises work when conditions change.",
-    evidence: "Reopened model after manager update",
-    state: "Strong",
-  },
-  {
-    name: "AI judgment",
-    description: "Uses AI while retaining verification and responsibility.",
-    evidence: "Verified AI calculations against sources",
-    state: "Moderate",
+    name: "Adaptation and customer communication",
+    description: "Adjusts after a mid-session change and tells the customer.",
+    evidence: "Updated plan after the refund-policy curveball",
+    state: "Supporting",
   },
 ];
 
@@ -47,8 +41,8 @@ export default function HomeMeasures() {
         <Reveal className="max-w-[560px]">
           <h2 className="section-heading flat-type">Evidence across the whole mission.</h2>
           <p className="section-desc mt-5">
-            Observable dimensions tied to Project Relay — not personality scores or match
-            percentages.
+            Five primary dimensions for a ~55-minute Relay session — each needs independent
+            evidence opportunities. No overall candidate score. Activity volume is context only.
           </p>
         </Reveal>
 

@@ -121,6 +121,25 @@ sys.path.insert(0, "${this.root}/src")
     return this.runTests();
   }
 
+  /**
+   * Modules imported from the scenario's virtual FS get cached in sys.modules
+   * for the life of this Pyodide worker. Without clearing them first, a
+   * candidate's edit to e.g. router.py would silently keep running the
+   * pre-edit version on every subsequent command — drop the cache so every
+   * command run reflects the current file contents.
+   */
+  private static readonly SCENARIO_MODULES = [
+    "run_evals",
+    "metrics",
+    "service",
+    "router",
+    "prompts",
+    "triage",
+    "policy",
+    "models",
+    "telemetry",
+  ];
+
   private async runPythonCapture(code: string, command: string): Promise<CommandResult> {
     if (!this.py) throw new Error("Session not initialized");
     const started = Date.now();
@@ -128,8 +147,14 @@ sys.path.insert(0, "${this.root}/src")
     let stderr = "";
     this.py.setStdout({ batched: (s) => (stdout += s + "\n") });
     this.py.setStderr({ batched: (s) => (stderr += s + "\n") });
+    const evictModules = PyodideExecutionProvider.SCENARIO_MODULES.map((m) => `"${m}"`).join(", ");
+    const preamble = `
+import sys
+for _m in (${evictModules}):
+    sys.modules.pop(_m, None)
+`;
     try {
-      await this.py.runPythonAsync(code);
+      await this.py.runPythonAsync(preamble + code);
       return {
         ok: true,
         stdout,
@@ -170,33 +195,20 @@ print("PYODIDE_TESTS_PASSED")
   }
 
   async runEvaluations(): Promise<CommandResult> {
+    // Runs the actual scenario evals/run_evals.py from the virtual FS — the
+    // same script `python evals/run_evals.py` would run outside the browser —
+    // rather than a separate reimplementation, so results (including the
+    // EVAL_SUMMARY_JSON line the workspace UI parses) always match the source
+    // of truth in scenarios/project-relay/evals/.
     return this.runPythonCapture(
       `
-import json, sys
+import sys
 sys.path.insert(0, "${this.root}/src")
-from triage import triage
-cases = '''${(this.files["evals/cases.jsonl"] || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'''
-failures = 0
-total = 0
-for line in cases.splitlines():
-  if not line.strip():
-    continue
-  case = json.loads(line)
-  total += 1
-  result = triage(case["text"])
-  ok = True
-  if "expect_category" in case and result["category"] != case["expect_category"]:
-    ok = False
-  if case.get("expect_human_or_abstain") and result["action"] not in ("abstain",) and not result.get("human_approval_required"):
-    ok = False
-  if "forbid_action" in case and result["action"] == case["forbid_action"]:
-    ok = False
-  print(("PASS" if ok else "FAIL"), case["id"], result.get("action"))
-  if not ok:
-    failures += 1
-print(f"SUMMARY total={total} failures={failures}")
-if failures:
-  raise SystemExit(1)
+sys.path.insert(0, "${this.root}/evals")
+import run_evals
+exit_code = run_evals.main()
+if exit_code:
+    raise SystemExit(exit_code)
 `,
       "evals"
     );

@@ -3,44 +3,42 @@
 import { motion, useReducedMotion } from "motion/react";
 
 const TIMELINE = [
-  { time: "09:12", action: "Opened data room and reviewed forecast export" },
-  { time: "12:47", action: "Revised revenue growth assumption from 12% to 8.2%" },
-  { time: "18:03", action: "Flagged elevated churn rate as a key risk" },
-  { time: "21:40", action: "Logged AI prompt and verified source citations" },
-  { time: "24:11", action: "Submitted memo draft with supporting rationale" },
+  { time: "09:12", action: "Opened the scenario codebase and reviewed the customer brief" },
+  { time: "12:47", action: "Edited src/router.py and re-ran the test command" },
+  { time: "18:03", action: "Mid-session curveball revealed — a policy change to the refund flow" },
+  { time: "21:40", action: "Messaged the customer to confirm the new constraint before shipping" },
+  { time: "24:11", action: "Submitted the frozen final snapshot" },
 ];
 
 const STOOD_OUT = [
-  "Proactively revised assumptions after reviewing the customer renewal note.",
-  "Identified cash runway risk independently, without manager prompting.",
-  "Memo connected data room evidence to recommendation clearly.",
+  "Re-ran tests after every meaningful edit instead of only before submitting.",
+  "Correctly abstained from auto-approving a refund the curveball required a human to review.",
+  "Explained the tradeoff to the customer in chat before implementing it.",
 ];
 
 const NEEDS_REVIEW = [
-  "Churn assumption revised upward — ask about the customer cohort data used.",
-  "Sales cycle extended without source cited in assumptions log.",
-  "Sensitivity analysis could better isolate top 2–3 drivers.",
+  "Took a while to respond to the mid-session curveball — worth asking about their triage process.",
+  "Ran the preview command only once — ask how they validated the change end-to-end.",
+  "No evals run before submitting — confirm this was a scoping choice, not an oversight.",
 ];
 
-const ASSUMPTION_CHANGES = [
-  { metric: "Revenue Growth", from: "12.0%", to: "8.2%", delta: "−3.8pp" },
-  { metric: "Gross Margin", from: "45.0%", to: "42.1%", delta: "−2.9pp" },
-  { metric: "Churn Rate", from: "3.5%", to: "6.3%", delta: "+2.8pp" },
-  { metric: "Hiring Ramp", from: "100%", to: "84%", delta: "−16pp" },
-  { metric: "OpEx Growth", from: "8%", to: "11%", delta: "+3pp" },
-  { metric: "Cash Runway", from: "14.0 mo", to: "9.1 mo", delta: "−4.9 mo" },
+const EVIDENCE_FINDINGS = [
+  { dimension: "Technical execution", confidence: "High", note: "Tests run 4 times; final run passed." },
+  { dimension: "Iteration & editing", confidence: "High", note: "6 file saves across the session." },
+  { dimension: "Customer communication", confidence: "Medium", note: "5 messages in the customer chat." },
+  { dimension: "Handling ambiguity", confidence: "Medium", note: "Responded to the curveball after a delay." },
+  { dimension: "Session integrity", confidence: "High", note: "No heartbeat gaps recorded." },
 ];
 
-const MEMO_EXCERPT =
-  "The base case revenue assumption of 12% does not reflect the recent renewal " +
-  "data. Adjusting to 8.2% results in a materially tighter cash runway of 9.1 months " +
-  "versus the 14-month baseline. Hiring ramp delays compound this risk. I recommend " +
-  "probing the renewal pipeline before finalising Q3 headcount plans.";
+const HANDOFF_EXCERPT =
+  "Refund flow now requires manager approval above $200, matching the policy change from the " +
+  "mid-session update. Tests cover the new threshold; the preview call still returns the old " +
+  "copy for declined refunds — flagging that as a follow-up rather than blocking on it.";
 
 const INTERVIEW_QUESTIONS = [
-  "Walk me through how you updated the revenue growth assumption.",
-  "Which data points most influenced your churn rate adjustment?",
-  "How would you stress-test the roadmap under a downside revenue scenario?",
+  "Walk me through how you triaged the mid-session policy change.",
+  "Why did you choose to flag the preview copy as a follow-up instead of fixing it?",
+  "How would you have handled this if the curveball came 5 minutes before time was up?",
 ];
 
 export default function EvidenceReportMockup() {
@@ -58,25 +56,24 @@ export default function EvidenceReportMockup() {
               Hiring Evidence Report
             </p>
             <h2 className="mt-1 text-[18px] font-semibold tracking-[-0.015em] text-white">
-              Project Meridian — FP&amp;A Work Trial
+              Project Relay — FDE Deployment Mission
             </h2>
           </div>
           <div className="shrink-0 text-right">
             <span className="inline-flex items-center gap-1.5 rounded-[8px] border border-[#36D68A]/[0.24] bg-[#36D68A]/[0.10] px-3 py-1.5 text-[12px] font-semibold text-[#6EE7B7]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#36D68A]" />
-              Advance to Interview
+              Advance
             </span>
             <p className="mt-1.5 text-[11px] text-white/[0.42]">
               Confidence: <span className="text-white/[0.70]">Medium</span>
             </p>
-            <p className="mt-1 text-[11px] font-medium text-white/[0.50]">Report Ready</p>
+            <p className="mt-1 text-[11px] font-medium text-white/[0.50]">Receipt Ready</p>
           </div>
         </div>
         <p className="mt-3 max-w-[640px] text-[13px] leading-[1.65] text-white/[0.55]">
-          The candidate engaged substantively with the data room, revised key assumptions in
-          response to new information, and produced a memo that connected evidence to
-          recommendation. Interview is recommended to probe analytical rigour and communication
-          clarity.
+          The FDE engaged substantively with the codebase, adapted after the mid-session curveball,
+          and kept the customer informed in chat. Advance to interview is recommended, with a few
+          gaps worth probing directly.
         </p>
       </div>
 
@@ -110,12 +107,12 @@ export default function EvidenceReportMockup() {
 
           <div className="px-6 py-5">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.09em] text-white/[0.38]">
-              Assumptions Changed
+              Evidence Findings
             </p>
             <table className="w-full border-collapse text-[12px]">
               <thead>
                 <tr className="border-b border-white/[0.06]">
-                  {["Metric", "From", "To", "Δ"].map((h) => (
+                  {["Dimension", "Confidence", "Note"].map((h) => (
                     <th
                       key={h}
                       className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.07em] text-white/[0.35]"
@@ -126,18 +123,11 @@ export default function EvidenceReportMockup() {
                 </tr>
               </thead>
               <tbody>
-                {ASSUMPTION_CHANGES.map((row) => (
-                  <tr key={row.metric} className="border-b border-white/[0.04]">
-                    <td className="py-2.5 text-white/[0.75]">{row.metric}</td>
-                    <td className="py-2.5 tabular-nums text-white/[0.42]">{row.from}</td>
-                    <td className="py-2.5 tabular-nums text-[#4B6FFF]">{row.to}</td>
-                    <td
-                      className={`py-2.5 tabular-nums ${
-                        row.delta.startsWith("+") ? "text-[#FF4D6D]" : "text-white/[0.55]"
-                      }`}
-                    >
-                      {row.delta}
-                    </td>
+                {EVIDENCE_FINDINGS.map((row) => (
+                  <tr key={row.dimension} className="border-b border-white/[0.04]">
+                    <td className="py-2.5 text-white/[0.75]">{row.dimension}</td>
+                    <td className="py-2.5 tabular-nums text-[#4B6FFF]">{row.confidence}</td>
+                    <td className="py-2.5 text-white/[0.42]">{row.note}</td>
                   </tr>
                 ))}
               </tbody>
@@ -176,10 +166,10 @@ export default function EvidenceReportMockup() {
 
           <div className="px-6 py-5">
             <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-white/[0.38]">
-              Final Memo Excerpt
+              Handoff Notes Excerpt
             </p>
             <p className="border-l-2 border-white/[0.12] pl-3 text-[12px] leading-[1.7] text-white/[0.55] italic">
-              {MEMO_EXCERPT}
+              {HANDOFF_EXCERPT}
             </p>
           </div>
         </div>

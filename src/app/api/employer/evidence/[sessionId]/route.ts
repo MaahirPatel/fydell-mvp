@@ -1,8 +1,35 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
+import { loadSessionAnalysis } from "@/lib/fde/relay-session";
 
 export const dynamic = "force-dynamic";
+
+type RelayEventPayload = Record<string, unknown>;
+
+/** One-line, human-readable gloss of an event for the Evidence Aperture expand view. */
+function summarizeEvent(eventType: string, payload: RelayEventPayload): string {
+  switch (eventType) {
+    case "customer_chat_message":
+      return String(payload?.text || "Customer chat message");
+    case "command_run": {
+      const p = payload as { command?: string; ok?: boolean };
+      return `Ran \`${p.command || "a command"}\` — ${p.ok ? "passed" : "did not pass"}`;
+    }
+    case "curveball_revealed":
+      return `Curveball revealed${payload?.key ? `: ${payload.key}` : ""}`;
+    case "session_started":
+      return "Session started";
+    case "session_submitted":
+      return "Session submitted for evidence generation";
+    case "preflight_started":
+      return "Preflight started";
+    case "file_saved":
+      return "Workspace files saved";
+    default:
+      return eventType.replace(/_/g, " ");
+  }
+}
 
 export async function GET(_req: Request, ctx: { params: Promise<{ sessionId: string }> }) {
   if (!isSupabaseConfigured()) {
@@ -34,10 +61,51 @@ export async function GET(_req: Request, ctx: { params: Promise<{ sessionId: str
     .maybeSingle();
   if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { data: findings } = await admin
+  const { data: findingRows } = await admin
     .from("fde_evidence_findings")
     .select("*")
     .eq("session_id", sessionId);
+
+  // Findings only ever store ids — resolve them here so the Evidence Aperture
+  // can expand a finding into its actual source events without a second round trip.
+  const { data: eventRows } = await admin
+    .from("relay_execution_events")
+    .select("id, event_type, actor, source_surface, payload, created_at, sequence_number")
+    .eq("session_id", sessionId)
+    .order("sequence_number", { ascending: true });
+
+  const { data: artifactRows } = await admin
+    .from("fde_artifacts")
+    .select("id, type, created_at")
+    .eq("session_id", sessionId);
+
+  const eventsById: Record<
+    string,
+    { id: string; eventType: string; actor: string; sourceSurface: string | null; createdAt: string; summary: string }
+  > = {};
+  for (const e of eventRows || []) {
+    eventsById[e.id] = {
+      id: e.id,
+      eventType: e.event_type,
+      actor: e.actor,
+      sourceSurface: e.source_surface,
+      createdAt: e.created_at,
+      summary: summarizeEvent(e.event_type, (e.payload as RelayEventPayload) || {}),
+    };
+  }
+
+  const artifactsById: Record<string, { id: string; type: string; createdAt: string }> = {};
+  for (const a of artifactRows || []) {
+    artifactsById[a.id] = { id: a.id, type: a.type, createdAt: a.created_at };
+  }
+
+  const findings = (findingRows || []).map((f) => ({
+    ...f,
+    // Findings always carry these refs through to the payload, even when empty,
+    // so the employer UI can always attempt to expand a finding's sources.
+    eventRefs: (f.event_ids || []) as string[],
+    artifactRefs: (f.artifact_ids || []) as string[],
+  }));
 
   const { data: profile } = await admin
     .from("profiles")
@@ -51,6 +119,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ sessionId: str
     .eq("session_id", sessionId)
     .order("created_at", { ascending: false });
 
+  const analysis = await loadSessionAnalysis(sessionId);
+
   return NextResponse.json({
     session: {
       id: session.id,
@@ -61,7 +131,17 @@ export async function GET(_req: Request, ctx: { params: Promise<{ sessionId: str
     },
     mission: { id: mission.id, title: mission.title, objective: mission.objective },
     fde: { name: profile?.display_name || profile?.email || "FDE" },
-    findings: findings || [],
+    findings,
+    eventsById,
+    artifactsById,
     decisions: decisions || [],
+    analysis: analysis
+      ? {
+          fit: analysis.fit,
+          prediction: analysis.prediction,
+          policyVersion: analysis.policyVersion,
+          formulaVersion: analysis.formulaVersion,
+        }
+      : null,
   });
 }

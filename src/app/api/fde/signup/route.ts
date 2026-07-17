@@ -10,10 +10,12 @@ export const dynamic = "force-dynamic";
 
 type SignupPath = "employer" | "fde" | "partner";
 
-function redirectForPath(path: SignupPath): string {
+function redirectForPath(path: SignupPath | null): string {
   if (path === "employer") return "/app/employer/missions/new";
   if (path === "fde") return "/app/fde";
-  return "/account/setup-required?reason=partner_pending";
+  if (path === "partner") return "/account/setup-required?reason=partner_pending";
+  // No path chosen yet — this is the default signup flow. Role is chosen next.
+  return "/signup/role";
 }
 
 export async function POST(req: Request) {
@@ -23,10 +25,8 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const path = String(body.path || "") as SignupPath;
-    if (!["employer", "fde", "partner"].includes(path)) {
-      return NextResponse.json({ error: "Invalid signup path." }, { status: 400 });
-    }
+    const rawPath = String(body.path || "");
+    const path = (["employer", "fde", "partner"].includes(rawPath) ? rawPath : null) as SignupPath | null;
 
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "");
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
         emailRedirectTo: `${site}/auth/callback?next=${encodeURIComponent(nextPath)}`,
         data: {
           full_name: name,
-          account_type: path,
+          account_type: path || "unresolved",
         },
       },
     });
@@ -124,9 +124,15 @@ export async function POST(req: Request) {
       email,
       full_name: name,
       display_name: name,
-      account_type: path,
+      account_type: path || "unresolved",
       onboarding_state:
-        path === "employer" ? "started" : path === "partner" ? "partner_pending_approval" : "completed",
+        path === "employer"
+          ? "started"
+          : path === "partner"
+            ? "partner_pending_approval"
+            : path === "fde"
+              ? "completed"
+              : "unresolved",
       email_verified_at: emailVerifiedAt,
       company_name: path === "employer" ? companyName : path === "partner" ? firmName || null : null,
     });
@@ -144,11 +150,16 @@ export async function POST(req: Request) {
     } else if (path === "fde") {
       await ensureFdeProfile(userId);
       redirectTo = "/app/fde";
-    } else {
+    } else if (path === "partner") {
       redirectTo = "/account/setup-required?reason=partner_pending";
+    } else {
+      redirectTo = "/signup/role";
     }
 
-    await audit(userId, `signup.${path}`, "profile", userId, { path, email });
+    await audit(userId, `signup.${path || "unresolved"}`, "profile", userId, {
+      path: path || "unresolved",
+      email,
+    });
 
     return NextResponse.json({ ok: true, redirectTo });
   } catch (err) {

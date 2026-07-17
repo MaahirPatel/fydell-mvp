@@ -8,10 +8,10 @@ export default function HomeWorkroomDetail() {
       <Container>
         <Reveal>
           <EditorialHeader
-            heading="Put candidates inside the work."
-            description="Candidates review operating data, update a live forecast, investigate inconsistencies, and submit a recommendation under the same kinds of constraints the role creates."
-            stageHref="#project-meridian"
-            stageLabel="1.0 · Work trial"
+            heading="Put FDEs inside the work."
+            description="FDEs get a real codebase, an allowlisted terminal, and a live customer chat — then edit, test, and ship under the same constraints the role creates."
+            stageHref="#project-relay"
+            stageLabel="Project Relay"
           />
         </Reveal>
 

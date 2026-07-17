@@ -1,0 +1,16 @@
+{"id": "g01", "text": "Production API is down for all customers in us-east", "label": "incident_p0"}
+{"id": "g02", "text": "Sev-1 outage, checkout is completely offline", "label": "incident_p0"}
+{"id": "g03", "text": "Our production offline alert just fired for the payments service", "label": "incident_p0"}
+{"id": "g04", "text": "Possible credential stuffing and unauthorized login attempts", "label": "security"}
+{"id": "g05", "text": "Suspected data breach involving customer exports", "label": "security"}
+{"id": "g06", "text": "We think an attacker exfil'd a database snapshot overnight", "label": "security"}
+{"id": "g07", "text": "Ransomware note appeared on a build server", "label": "security"}
+{"id": "g08", "text": "Customer requests refund for duplicate invoice charge", "label": "billing"}
+{"id": "g09", "text": "Please reverse this charge, it was billed twice", "label": "billing"}
+{"id": "g10", "text": "Invoice from last month looks wrong, can you check?", "label": "billing"}
+{"id": "g11", "text": "How do I reset my password?", "label": "general"}
+{"id": "g12", "text": "Where can I find the status page?", "label": "general"}
+{"id": "g13", "text": "What time zone does the dashboard use?", "label": "general"}
+{"id": "g14", "text": "Can you point me to the API docs?", "label": "general"}
+{"id": "g15", "text": "Unauthorized access attempt flagged on the admin console", "label": "security"}
+{"id": "g16", "text": "We were double charged for the annual plan renewal", "label": "billing"}

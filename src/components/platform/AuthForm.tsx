@@ -7,8 +7,8 @@ import { ArrowRight } from "lucide-react";
 import FydellBrand from "@/components/brand/FydellBrand";
 
 const HIGHLIGHTS = [
-  "Work trials configured for your FP&A role",
-  "Evidence reports from how candidates actually worked",
+  "Project Relay missions configured for your open role",
+  "Evidence reports from how FDEs actually worked",
   "Candidate progress visible to your hiring team",
 ];
 
@@ -90,8 +90,8 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
             {fromAdmin
               ? "Use your Fydell account. Platform operators land in ops; employers land in their workspace."
               : isSignup
-                ? "Answer a few questions about your company and role, then explore Project Meridian and invite candidates."
-                : "Review work trials, evidence, and candidate progress."}
+                ? "Answer a few questions about your company and role, then set up Project Relay and invite candidates."
+                : "Review missions, evidence, and candidate progress."}
           </p>
           {!fromAdmin ? (
             <ul className="mt-8 space-y-4">

@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation";
 import FydellBrand from "@/components/brand/FydellBrand";
 
 const OUTCOMES = [
-  "Own the monthly operating forecast",
-  "Explain material budget variances",
-  "Surface downside risks early",
-  "Maintain auditable assumptions",
-  "Communicate recommendations to leadership",
-  "Partner with department leaders",
-  "Verify AI-assisted analysis",
+  "Ship real deployment work independently",
+  "Surface risks and edge cases early",
+  "Communicate clearly with the customer",
+  "Adapt when requirements change mid-task",
+  "Write maintainable, tested changes",
+  "Partner well with the hiring team",
+  "Verify AI-assisted work before shipping",
 ];
 
 export default function EmployerOnboardingPage() {
@@ -25,8 +25,8 @@ export default function EmployerOnboardingPage() {
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [companySize, setCompanySize] = useState("");
-  const [industry, setIndustry] = useState("Finance");
-  const [roleTitle, setRoleTitle] = useState("FP&A Analyst");
+  const [industry, setIndustry] = useState("");
+  const [roleTitle, setRoleTitle] = useState("Forward Deployed Engineer");
   const [outcomes, setOutcomes] = useState<string[]>([]);
   const [referral, setReferral] = useState("");
 
@@ -43,8 +43,8 @@ export default function EmployerOnboardingPage() {
             setCompanyWebsite(o.company_website || "");
             setJobTitle(o.job_title || "");
             setCompanySize(o.company_size || "");
-            setIndustry(o.industry || "Finance");
-            setRoleTitle(o.role_title || "FP&A Analyst");
+            setIndustry(o.industry || "");
+            setRoleTitle(o.role_title || "Forward Deployed Engineer");
             setOutcomes(o.first_90_day_outcomes || []);
             setReferral(o.referral_source || "");
             if (o.completed_at) {
@@ -248,7 +248,7 @@ export default function EmployerOnboardingPage() {
         {step === 3 && (
           <section>
             <h1 className="text-[28px]" style={{ fontWeight: 560, letterSpacing: "-0.03em" }}>
-              Set up your first finance role
+              Set up your first mission role
             </h1>
             <label className="mt-8 block text-[13px] text-white/65">
               Role title
@@ -340,7 +340,7 @@ export default function EmployerOnboardingPage() {
                 <span className="text-white/45">Outcomes:</span> {outcomes.length}
               </p>
               <p>
-                <span className="text-white/45">Work trial:</span> Project Meridian
+                <span className="text-white/45">Simulation:</span> Project Relay
               </p>
             </div>
             <label className="mt-6 block text-[13px] text-white/65">

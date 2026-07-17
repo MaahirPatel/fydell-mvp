@@ -11,6 +11,8 @@ const RULES = [
   "Sensitive actions (refunds, account locks, legal escalation) require human approval — never auto-execute them.",
   "You'll get one immutable submission. Once you submit, your files are frozen for evidence review.",
   "This is a simulation, not a live production system — no real customer data or systems are touched.",
+  "No overall candidate score is produced. Typing speed, prompt count, and time-in-file are not used as evidence.",
+  "If you need a disability accommodation (extra time, assistive tech), stop and contact the inviting employer before starting — the timer must not begin until that is arranged.",
 ];
 
 export default function RelayConsentPage() {
@@ -55,8 +57,10 @@ export default function RelayConsentPage() {
       ) : (
         <>
           <p className="mt-4 text-[14px] leading-relaxed text-white/60">
-            This is a 50-minute simulated deployment session. It's designed to produce honest evidence of
-            how you actually work — not a trivia quiz.
+            Project Relay is a 55-minute simulated deployment session, running real Python in your
+            browser (no install required). It produces work evidence for a human hiring decision — not
+            a predicted job-performance score, personality profile, or automated hire/no-hire
+            recommendation.
           </p>
 
           <ul className="mt-6 space-y-3">

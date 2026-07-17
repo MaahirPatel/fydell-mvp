@@ -1,6 +1,6 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
-import { Container, ButtonLink } from "@/components/marketing/ui";
+import { Container, ButtonLink, TextLink } from "@/components/marketing/ui";
 import PageHero from "@/components/marketing/PageHero";
 
 export const metadata = {
@@ -37,8 +37,9 @@ export default function NetworkPage() {
             </p>
           </Reveal>
 
-          <Reveal delay={0.1} className="mt-10">
-            <ButtonLink href="/signup">Post a mission or join as an FDE</ButtonLink>
+          <Reveal delay={0.1} className="mt-10 flex flex-wrap items-center gap-5">
+            <ButtonLink href="/signup">Sign up</ButtonLink>
+            <TextLink href="/login">Log in</TextLink>
           </Reveal>
         </Container>
       </section>

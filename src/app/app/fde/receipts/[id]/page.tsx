@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Copy, Check } from "lucide-react";
+import ReceiptSeal from "@/components/fde/ui/ReceiptSeal";
+import PermissionHalo from "@/components/fde/ui/PermissionHalo";
+import UncertaintyTexture from "@/components/fde/ui/UncertaintyTexture";
 
 type Finding = {
   id: string;
@@ -115,9 +118,12 @@ export default function FdeReceiptDetailPage() {
   return (
     <div className="mx-auto max-w-[760px]">
       <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/45">Receipt</p>
-      <h1 className="mt-1 text-[26px] text-[#F4F5F7] sm:text-[30px]" style={{ fontWeight: 560, letterSpacing: "-0.035em" }}>
-        {receipt.receipt_number}
-      </h1>
+      <div className="mt-1 flex flex-wrap items-baseline justify-between gap-3">
+        <h1 className="text-[26px] text-[#F4F5F7] sm:text-[30px]" style={{ fontWeight: 560, letterSpacing: "-0.035em" }}>
+          {receipt.receipt_number}
+        </h1>
+        {receipt.status === "issued" && <ReceiptSeal />}
+      </div>
       {receipt.context_summary && <p className="mt-2 text-[14px] text-white/60">{receipt.context_summary}</p>}
 
       <section className="mt-6 rounded-[16px] border border-white/[0.1] bg-[#0A0C11]/85 p-5">
@@ -127,15 +133,21 @@ export default function FdeReceiptDetailPage() {
         ) : (
           <ul className="mt-3 space-y-4">
             {findings.map((f) => (
-              <li key={f.id} className="border-b border-white/[0.06] pb-4 last:border-0 last:pb-0">
-                <div className="flex items-center justify-between gap-3">
+              <li
+                key={f.id}
+                className="relative overflow-hidden rounded-[10px] border-b border-white/[0.06] px-3 py-3 last:border-0"
+              >
+                <UncertaintyTexture confidence={f.confidence} />
+                <div className="relative flex items-center justify-between gap-3">
                   <h3 className="text-[13.5px] font-semibold capitalize text-white">
                     {f.dimension.replace(/_/g, " ")}
                   </h3>
                   <span className="text-[11px] text-white/40">{f.confidence} confidence</span>
                 </div>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-white/70">{f.observation}</p>
-                {f.interpretation && <p className="mt-1 text-[13px] leading-relaxed text-white/55">{f.interpretation}</p>}
+                <p className="relative mt-1.5 text-[13px] leading-relaxed text-white/70">{f.observation}</p>
+                {f.interpretation && (
+                  <p className="relative mt-1 text-[13px] leading-relaxed text-white/55">{f.interpretation}</p>
+                )}
               </li>
             ))}
           </ul>
@@ -190,18 +202,20 @@ export default function FdeReceiptDetailPage() {
                     {p.accessCount} view(s) · granted {new Date(p.grantedAt).toLocaleDateString()}
                   </p>
                 </div>
-                {p.revokedAt ? (
-                  <span className="text-white/40">Revoked</span>
-                ) : (
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => revoke(p.id)}
-                    className="text-[12px] text-[#fda4b0] hover:underline disabled:opacity-50"
-                  >
-                    Revoke
-                  </button>
-                )}
+                <PermissionHalo active={!p.revokedAt}>
+                  {p.revokedAt ? (
+                    <span className="px-2 py-0.5 text-white/40">Revoked</span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => revoke(p.id)}
+                      className="rounded-full px-2.5 py-0.5 text-[12px] text-[#8EE4B8] hover:underline disabled:opacity-50"
+                    >
+                      Active · Revoke
+                    </button>
+                  )}
+                </PermissionHalo>
               </li>
             ))}
           </ul>

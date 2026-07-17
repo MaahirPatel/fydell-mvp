@@ -59,21 +59,14 @@ export default function SiteNav() {
             className="hidden text-[12.5px] leading-none text-[rgba(244,245,247,0.4)] transition-colors duration-160 hover:text-[#F4F5F7] sm:inline"
             style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
           >
-            Sign in
-          </Link>
-          <Link
-            href="/signup"
-            className="hidden text-[12.5px] leading-none text-[rgba(244,245,247,0.4)] transition-colors duration-160 hover:text-[#F4F5F7] lg:inline"
-            style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
-          >
-            Post a mission
+            Log in
           </Link>
           <Link
             href="/signup"
             className="hidden h-[33px] items-center rounded-[8px] bg-[#F1F2F4] px-[14px] text-[12.5px] leading-none text-[#08090C] transition-[transform,filter] duration-160 hover:-translate-y-px hover:brightness-[1.02] sm:inline-flex"
             style={{ fontWeight: 560 }}
           >
-            Join as an FDE
+            Sign up
           </Link>
           <button
             type="button"
@@ -107,15 +100,7 @@ export default function SiteNav() {
               className="rounded-[8px] px-3 py-2.5 text-[13px] text-[rgba(244,245,247,0.62)] transition-colors duration-160 hover:text-[#F4F5F7]"
               style={{ fontWeight: 500 }}
             >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              onClick={() => setOpen(false)}
-              className="rounded-[8px] px-3 py-2.5 text-[13px] text-[rgba(244,245,247,0.62)] transition-colors duration-160 hover:text-[#F4F5F7]"
-              style={{ fontWeight: 500 }}
-            >
-              Post a mission
+              Log in
             </Link>
             <Link
               href="/signup"
@@ -123,7 +108,7 @@ export default function SiteNav() {
               className="mt-1 inline-flex h-[36px] items-center justify-center rounded-[8px] bg-[#F1F2F4] px-4 text-[13px] text-[#08090C]"
               style={{ fontWeight: 560 }}
             >
-              Join as an FDE
+              Sign up
             </Link>
           </nav>
         </div>

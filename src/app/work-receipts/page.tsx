@@ -1,8 +1,7 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
-import { Container, ButtonLink } from "@/components/marketing/ui";
+import { Container, ButtonLink, TextLink } from "@/components/marketing/ui";
 import PageHero from "@/components/marketing/PageHero";
-import FinalCTA from "@/components/marketing/FinalCTA";
 
 export const metadata = {
   title: "Work receipts · Fydell",
@@ -63,13 +62,12 @@ export default function WorkReceiptsPage() {
               link can view the findings — until you revoke it. There's no public receipt directory.
             </p>
           </Reveal>
-          <Reveal delay={0.06} className="mt-8">
-            <ButtonLink href="/signup">Join as an FDE</ButtonLink>
+          <Reveal delay={0.06} className="mt-8 flex flex-wrap items-center gap-5">
+            <ButtonLink href="/signup">Sign up</ButtonLink>
+            <TextLink href="/login">Log in</TextLink>
           </Reveal>
         </Container>
       </section>
-
-      <FinalCTA />
     </MarketingShell>
   );
 }

@@ -12,6 +12,7 @@ export type PostLoginDestination =
   | { kind: "candidate"; path: string }
   | { kind: "fde"; path: "/app/fde" }
   | { kind: "employer_app"; path: "/app/employer" }
+  | { kind: "role_pending"; path: "/signup/role" }
   | { kind: "setup"; path: "/account/setup-required"; reason: string };
 
 /**
@@ -55,6 +56,10 @@ export async function resolvePostLoginDestination(
       .select("account_type")
       .eq("id", userId)
       .maybeSingle();
+
+    if (profile?.account_type === "unresolved") {
+      return { kind: "role_pending", path: "/signup/role" };
+    }
 
     if (profile?.account_type === "fde") {
       return { kind: "fde", path: "/app/fde" };

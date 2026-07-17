@@ -1,14 +1,11 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
 import FydellBrand from "@/components/brand/FydellBrand";
-import SignupPathPicker, { type SignupPath } from "@/components/fde/SignupPathPicker";
 import FdeAuthForm from "@/components/fde/FdeAuthForm";
 
 function SignupContent() {
-  const [path, setPath] = useState<SignupPath | null>(null);
-
   return (
     <div className="relative min-h-[100dvh] overflow-hidden bg-[#050609]">
       <div className="pointer-events-none absolute right-[-8%] top-[-8%] h-[480px] w-[580px] rounded-full bg-[#3B5BFF]/[0.06] blur-[160px]" />
@@ -26,29 +23,24 @@ function SignupContent() {
 
       <main className="relative z-10 mx-auto grid min-h-[calc(100dvh-72px)] max-w-[720px] items-center px-6 pb-16">
         <section className="w-full">
-          {!path ? (
-            <>
-              <h1
-                className="text-white"
-                style={{
-                  fontSize: "clamp(2rem,3vw,2.8rem)",
-                  lineHeight: 1.06,
-                  letterSpacing: "-0.04em",
-                  fontWeight: 650,
-                }}
-              >
-                How will you use Fydell?
-              </h1>
-              <p className="mt-4 max-w-[52ch] text-[15px] leading-[1.65] text-white/[0.55]">
-                Pick a path — you can always reach the others from your account settings later.
-              </p>
-              <div className="mt-8">
-                <SignupPathPicker onSelect={setPath} />
-              </div>
-            </>
-          ) : (
-            <FdeAuthForm path={path} onBack={() => setPath(null)} />
-          )}
+          <h1
+            className="text-white"
+            style={{
+              fontSize: "clamp(2rem,3vw,2.8rem)",
+              lineHeight: 1.06,
+              letterSpacing: "-0.04em",
+              fontWeight: 650,
+            }}
+          >
+            Create your account
+          </h1>
+          <p className="mt-4 max-w-[52ch] text-[15px] leading-[1.65] text-white/[0.55]">
+            Just your name, email, and password to start. You&apos;ll choose how you use Fydell
+            right after.
+          </p>
+          <div className="mt-8">
+            <FdeAuthForm />
+          </div>
 
           <p className="mt-6 text-center text-[13px] text-white/50">
             Already have an account?{" "}

@@ -1,12 +1,12 @@
 import FydellMark from "@/components/brand/FydellMark";
 
 const FILES = [
-  { name: "CFO Brief", ext: "PDF", state: "Reviewed" },
-  { name: "Renewal Report", ext: "PDF", state: "Flagged", highlight: true },
-  { name: "Hiring Plan", ext: "XLSX", state: "Reviewed" },
-  { name: "Department Budgets", ext: "XLSX", state: "Unread" },
-  { name: "Sales Pipeline", ext: "XLSX", state: "Referenced" },
-  { name: "Actuals vs Budget", ext: "XLSX", state: "Reviewed" },
+  { name: "router.py", ext: "PY", state: "Reviewed" },
+  { name: "service.py", ext: "PY", state: "Flagged", highlight: true },
+  { name: "test_router.py", ext: "PY", state: "Reviewed" },
+  { name: "policy.json", ext: "JSON", state: "Unread" },
+  { name: "customer_brief.md", ext: "MD", state: "Referenced" },
+  { name: "evals.py", ext: "PY", state: "Reviewed" },
 ];
 
 export default function WorkroomDetailMock() {
@@ -20,21 +20,21 @@ export default function WorkroomDetailMock() {
         <div className="flex items-center gap-2.5">
           <FydellMark width={18} />
           <p className="text-[12.5px] text-[#F4F5F7]" style={{ fontWeight: 580 }}>
-            Project Meridian
+            Project Relay
           </p>
-          <span className="text-[12px] text-[rgba(244,245,247,0.4)]">· Data Room</span>
+          <span className="text-[12px] text-[rgba(244,245,247,0.4)]">· Repo</span>
         </div>
-        <span className="text-[11px] text-[rgba(244,245,247,0.4)]">6 sources · 1 flagged</span>
+        <span className="text-[11px] text-[rgba(244,245,247,0.4)]">6 files · 1 flagged</span>
       </div>
 
       <div className="grid min-h-[400px] grid-cols-[0.85fr_1.2fr_0.95fr]">
-        {/* Data Room */}
+        {/* Repo */}
         <div className="border-r border-[var(--border-subtle)] bg-[#080A0F] p-3">
           <p
             className="mb-2 px-1 text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
             style={{ fontWeight: 500 }}
           >
-            Data Room
+            Repo
           </p>
           <div className="space-y-1">
             {FILES.map((f) => (
@@ -51,7 +51,7 @@ export default function WorkroomDetailMock() {
                   <span
                     className={[
                       "shrink-0 rounded px-1.5 py-0.5 text-[9px]",
-                      f.ext === "XLSX"
+                      f.ext === "PY"
                         ? "bg-[rgba(103,217,160,0.14)] text-[#8EE4B8]"
                         : "bg-white/[0.06] text-[rgba(244,245,247,0.4)]",
                     ].join(" ")}
@@ -75,65 +75,66 @@ export default function WorkroomDetailMock() {
           </div>
         </div>
 
-        {/* Forecast workspace */}
+        {/* Terminal + editor */}
         <div className="border-r border-[var(--border-subtle)] bg-[#0B0F16] p-4">
           <p
             className="text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
             style={{ fontWeight: 500 }}
           >
-            Selected assumption
+            Selected file
           </p>
           <p className="mt-2 text-[14px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
-            SMB churn rate
+            service.py
           </p>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-[8px] border border-[var(--border-subtle)] bg-white/[0.02] px-3 py-2.5">
-              <p className="text-[10px] text-[rgba(244,245,247,0.4)]">Company base</p>
-              <p className="mt-1 text-[15px] tabular-nums text-[rgba(244,245,247,0.62)]">3.5%</p>
+              <p className="text-[10px] text-[rgba(244,245,247,0.4)]">Last test run</p>
+              <p className="mt-1 text-[15px] tabular-nums text-[rgba(244,245,247,0.62)]">exit 1</p>
             </div>
             <div className="rounded-[8px] border border-[rgba(86,98,255,0.28)] bg-[rgba(86,98,255,0.08)] px-3 py-2.5">
-              <p className="text-[10px] text-[rgba(244,245,247,0.4)]">Candidate forecast</p>
+              <p className="text-[10px] text-[rgba(244,245,247,0.4)]">Current run</p>
               <p className="mt-1 text-[15px] tabular-nums text-[#5662FF]" style={{ fontWeight: 600 }}>
-                6.3%
+                exit 0
               </p>
             </div>
           </div>
           <div className="mt-4 rounded-[8px] border border-[var(--border-subtle)] px-3 py-3">
             <p className="text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]">
-              Source link
+              Referenced file
             </p>
             <p className="mt-1.5 text-[12px] text-[rgba(244,245,247,0.72)]">
-              Renewal Report · SMB cohort, pages 4–6
+              customer_brief.md · refund policy, lines 4–6
             </p>
             <p className="mt-3 text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]">
-              Candidate note
+              FDE note
             </p>
             <p className="mt-1.5 text-[12px] leading-[1.5] text-[rgba(244,245,247,0.62)]">
-              Renewal risk is concentrated in SMB. Raising churn before revising runway.
+              Refund routing was silently failing above the new threshold. Fixed and added a
+              regression test before touching anything else.
             </p>
           </div>
           <div className="mt-3 flex items-center justify-between rounded-[8px] border border-[var(--border-subtle)] px-3 py-2.5">
-            <span className="text-[11px] text-[rgba(244,245,247,0.4)]">Impact preview</span>
-            <span className="text-[12px] tabular-nums text-[#F26B82]" style={{ fontWeight: 550 }}>
-              Cash runway −4.9 mo
+            <span className="text-[11px] text-[rgba(244,245,247,0.4)]">Test coverage</span>
+            <span className="text-[12px] tabular-nums text-[#8EE4B8]" style={{ fontWeight: 550 }}>
+              +1 regression test
             </span>
           </div>
         </div>
 
-        {/* Assumptions register */}
+        {/* Change log */}
         <div className="bg-[#080A0F] p-4">
           <p
             className="text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
             style={{ fontWeight: 500 }}
           >
-            Assumptions register
+            Change log
           </p>
           <div className="mt-3 space-y-2">
             {[
-              { label: "Revenue growth", value: "8.2%", state: "Revised" },
-              { label: "SMB churn", value: "6.3%", state: "Active" },
-              { label: "Hiring ramp", value: "84%", state: "Revised" },
-              { label: "Cash runway", value: "9.1 mo", state: "Pending" },
+              { label: "router.py", value: "edited", state: "Reviewed" },
+              { label: "service.py", value: "edited", state: "Active" },
+              { label: "test_router.py", value: "passing", state: "Revised" },
+              { label: "evals.py", value: "run", state: "Pending" },
             ].map((a) => (
               <div
                 key={a.label}

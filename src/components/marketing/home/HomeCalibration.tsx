@@ -2,24 +2,24 @@ import { Container, EditorialHeader } from "@/components/marketing/ui";
 import { Reveal } from "@/components/motion/Reveal";
 
 const ROLE_OUTCOMES = [
-  "Own monthly forecast",
-  "Explain material variances",
-  "Surface downside risk",
-  "Communicate to management",
+  "Ship deployment work independently",
+  "Surface risks and edge cases early",
+  "Adapt when requirements change mid-task",
+  "Communicate clearly with the customer",
 ];
 
 const PRE_HIRE = [
-  "Strong risk identification",
-  "Strong assumption revision",
-  "Moderate stakeholder communication",
-  "Limited evidence of cross-functional follow-up",
+  "Strong handling of the mid-session curveball",
+  "Strong iteration across multiple file saves",
+  "Moderate customer chat communication",
+  "Limited evidence of test coverage without prompting",
 ];
 
 const DAY_90 = [
-  "Forecast accuracy within agreed tolerance",
-  "Material risks surfaced early",
-  "Management updates consistently usable",
-  "Cross-functional follow-up improving",
+  "Shipped changes within agreed review tolerance",
+  "Edge cases surfaced early",
+  "Customer updates consistently usable",
+  "Test coverage improving",
 ];
 
 const PATH = [
@@ -38,7 +38,7 @@ export default function HomeCalibration() {
         <Reveal>
           <EditorialHeader
             heading="Learn what transferred to the job."
-            description="Structured 30- and 90-day feedback connects pre-hire evidence with real performance, helping finance teams learn which signals actually mattered."
+            description="Structured 30- and 90-day feedback connects pre-hire evidence with real performance, helping hiring teams learn which signals actually mattered."
             stageHref="#request-pilot"
             stageLabel="4.0 · Outcome calibration"
           />

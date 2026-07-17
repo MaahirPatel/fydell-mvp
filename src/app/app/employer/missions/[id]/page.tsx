@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Lock } from "lucide-react";
+import { defaultPrimaryDimensions } from "@/lib/fde/evaluation-contract";
 
 type Mission = {
   id: string;
@@ -44,6 +45,7 @@ export default function MissionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [mission, setMission] = useState<Mission | null>(null);
   const [invites, setInvites] = useState<Invite[]>([]);
+  const [hasSessions, setHasSessions] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [email, setEmail] = useState("");
@@ -63,6 +65,7 @@ export default function MissionDetailPage() {
       const invitesData = await invitesRes.json();
       if (!missionRes.ok) throw new Error(missionData.error || "Could not load mission");
       setMission(missionData.mission);
+      setHasSessions(Boolean(missionData.hasSessions));
       setInvites(invitesRes.ok ? invitesData.invites || [] : []);
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : "Could not load mission");
@@ -158,6 +161,39 @@ export default function MissionDetailPage() {
         )}
       </section>
 
+      <section
+        className={
+          "mt-6 rounded-[16px] border p-5 " +
+          (hasSessions
+            ? "border-[#3B5BFF]/25 bg-[#3B5BFF]/[0.05]"
+            : "border-white/[0.1] bg-[#0A0C11]/85")
+        }
+      >
+        <div className="flex items-center gap-2">
+          {hasSessions && <Lock className="h-3.5 w-3.5 text-[#8FA3FF]" strokeWidth={2} />}
+          <h2
+            className={
+              "text-[12px] font-medium uppercase tracking-[0.06em] " +
+              (hasSessions ? "text-[#B8C4FF]" : "text-white/50")
+            }
+          >
+            Evaluation contract{hasSessions ? " — locked" : ""}
+          </h2>
+        </div>
+        <p className="mt-2 text-[12.5px] leading-relaxed text-white/55">
+          {hasSessions
+            ? "A candidate has already started a session under this contract. The dimensions below can no longer change for this mission — that's what keeps evidence comparable across every FDE you invite to it."
+            : "Whoever you invite is evaluated on how they actually worked this mission, across five primary dimensions. This locks automatically the moment the first candidate starts their session."}
+        </p>
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+          {defaultPrimaryDimensions().map((d) => (
+            <li key={d.dimensionId} className="flex items-baseline gap-2 text-[12.5px]">
+              <span className="font-medium text-white/85">{d.label}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <section className="mt-6 rounded-[16px] border border-white/[0.1] bg-[#0A0C11]/85 p-5">
         <h2 className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/50">
           Invite an FDE
@@ -200,6 +236,10 @@ export default function MissionDetailPage() {
             <div className="break-all rounded-[10px] border border-white/10 bg-black/30 px-3 py-2 text-[12px]">
               {acceptUrl}
             </div>
+            <p className="text-[12px] leading-relaxed text-white/40">
+              They&apos;ll also see this invitation waiting in their Action Inbox as soon as they
+              sign in — the link above works even if they never check email.
+            </p>
             <div className="flex gap-3">
               <button
                 type="button"

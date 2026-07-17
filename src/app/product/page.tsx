@@ -2,7 +2,7 @@ import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
 import { Container, EditorialHeader } from "@/components/marketing/ui";
 import PageHero from "@/components/marketing/PageHero";
-import ProjectMeridianWindow from "@/components/marketing/ProjectMeridianWindow";
+import ProjectRelaySequence from "@/components/marketing/ProjectRelaySequence";
 import EvidenceReportMockup from "@/components/marketing/EvidenceReportMockup";
 import CategoryPanels from "@/components/marketing/CategoryPanels";
 import EvidenceCaptureSection from "@/components/marketing/EvidenceCaptureSection";
@@ -27,7 +27,7 @@ export default function ProductPage() {
           <Reveal>
             <div className="overflow-hidden rounded-[15px] border border-[rgba(255,255,255,0.10)] max-md:overflow-x-auto">
               <div className="min-w-[720px] md:min-w-0">
-                <ProjectMeridianWindow />
+                <ProjectRelaySequence />
               </div>
             </div>
           </Reveal>
@@ -38,8 +38,8 @@ export default function ProductPage() {
         <Container>
           <Reveal>
             <EditorialHeader
-              heading="What the trial produces."
-              description="Every completed workroom generates structured objects your hiring team can read, share, and act on."
+              heading="What the mission produces."
+              description="Every completed Project Relay session generates structured objects your hiring team can read, share, and act on."
               stageHref="/how-it-works"
               stageLabel="How it works"
             />
@@ -55,9 +55,9 @@ export default function ProductPage() {
           <Reveal>
             <EditorialHeader
               heading="What gets captured."
-              description="Every action inside the workroom is logged as evidence — reviewed before the report is delivered."
-              stageHref="/#project-meridian"
-              stageLabel="Project Meridian"
+              description="Every action inside the session is logged as evidence — reviewed before the receipt is delivered."
+              stageHref="/simulation"
+              stageLabel="Project Relay"
             />
           </Reveal>
           <Reveal delay={0.06} className="mt-[72px] lg:mt-20">
@@ -71,7 +71,7 @@ export default function ProductPage() {
           <Reveal>
             <EditorialHeader
               heading="What your hiring team receives."
-              description="Within 24 hours of submission, you get a structured evidence report — with recommendation, confidence, and what to ask next."
+              description="Once the FDE submits, you get a structured evidence report — with findings, confidence, and a decision you record yourself."
               stageHref="/sample-report"
               stageLabel="Sample report"
             />

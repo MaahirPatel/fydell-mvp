@@ -43,7 +43,13 @@ export async function GET(
   if (!mission) return NextResponse.json({ error: "Mission not found" }, { status: 404 });
   if (!authorized) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  return NextResponse.json({ mission });
+  const admin = createAdminSupabaseClient();
+  const { count } = await admin
+    .from("relay_sessions")
+    .select("id", { count: "exact", head: true })
+    .eq("mission_id", id);
+
+  return NextResponse.json({ mission, hasSessions: (count || 0) > 0 });
 }
 
 export async function PATCH(

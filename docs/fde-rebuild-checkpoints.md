@@ -1,54 +1,62 @@
-# FDE rebuild checkpoints (revised vertical-slice order)
+# FDE rebuild checkpoints (revised: technical proof → thin loop → depth)
 
-## M0 — Baseline + flags
-- Doc: `docs/fde-rebuild-m0-audit.md`
-- Flags: `NEXT_PUBLIC_FDE_MARKETPLACE`, `NEXT_PUBLIC_RELAY_SPIKE`, `RELAY_EXECUTION`
-- **Gate:** flags documented; unfinished nav stays hidden
+Strategy: **one extraordinary Relay + one undeniable evidence report** before marketplace breadth.
 
-## M1 — Relay technical spike
-- Scenario: `scenarios/project-relay/` (Python triage workflow — **not** a fake FastAPI server)
-- Providers: `src/lib/relay/execution-provider.ts`, `node-test-provider.ts`, `pyodide-provider.ts`
-- Test: `npm run test:relay-spike` → must print `RELAY_SPIKE_OK`
-- **Gate:** edit, persist/restore, allowlisted tests+evals, preview, curveball file, immutable snapshot, recover after terminate
+Meridian: **hidden/redirected** from customer paths; implementation preserved until Relay golden path, recovery, and submission gates pass. Do not delete yet.
 
-## M2 — Minimal schema + three-path auth
-- Migrations: `011_fde_core_loop.sql`, `012_fde_account_type_check_fix.sql` (applied remotely)
-- Signup path picker + `api/fde/signup`
-- Post-login routes to `/app/employer` or `/app/fde` when marketplace flag on
-- **Gate:** employer/FDE/partner account types; tenant RLS helpers; no fake people
+## A — Runtime proof (done locally)
+- Flags: marketplace, relay spike, `NEXT_PUBLIC_LEGACY_MERIDIAN=0`, `NEXT_PUBLIC_PARTNER_SIGNUP=0`
+- Meridian nav/routes redirected; code kept
+- Monaco + multi-file + Pyodide provider + persist/restore + worker recovery + immutable idempotent submit
+- Perf budgets in `RELAY_PERF_BUDGETS`; failure matrix in `docs/checkpoint-a-runtime.md`
+- **Gate:** `npm run test:relay-spike` → `RELAY_SPIKE_OK`
 
-## M3 — Employer invites one FDE
-- Mission draft → submit for review → ops activate (`/ops/missions`)
-- Invite → `/s/[token]` accept → relay session `accepted`
-- **Gate:** one real employer can invite one real FDE without manual SQL
+## B — Thin golden path (in progress)
+- Employer creates mission → invites FDE → Action Inbox / invite accept → consent → preflight → Relay (edit + one test) → submit → employer opens artifact → records decision
+- Manual script: `docs/checkpoint-b-golden-path.md`
+- Mission Control + Action Inbox + signup→role shipped; Monaco wired into live workspace
+- Migration `013_action_inbox` applied remotely
+- **Gate:** complete journey without manual SQL; previous A tests still pass
 
-## M4 — Complete Relay experience
-- Consent → preflight → workspace (Pyodide) → submit
-- Server timer, heartbeat, autosave, curveball, idempotent submit
-- **Gate:** session completes without manual DB intervention
+## C — Complete Relay experience
+- Customer simulator, scope note, AI workspace, evaluation laboratory, curveball, handoff, full recovery, technical-failure handling
+- Visual tokens/primitives already started (`src/lib/fde/ui/tokens.ts`, Mission Control rails) — polish deferred
+- **Gate:** every Relay surface used in a real session; recovery matrix holds in-browser
 
-## M5 — Evidence + permissioned receipt
-- Findings generated from events; Work Receipt issue/share/revoke
-- `/r/[shareToken]` only with active permission
-- **Gate:** employer sees evidence only when authorized
+## D — Deterministic analysis
+- Objective artifact metrics only: accuracy, macro-F1, high-severity recall, false-automation rate, abstention, selective accuracy, schema validity, privacy violations, idempotency, regression detection
+- Evaluation contract types: `src/lib/fde/evaluation-contract.ts` (lock before first candidate)
+- Five primary dimensions; secondary descriptive / insufficient evidence
+- **Gate:** metrics reproducible from same artifact; no behavioral math yet
 
-## M6 — Decision + minimal graph
-- Employer decision on evidence page
-- FDE graph lists real receipt/decision nodes only
-- **Gate:** real records create real edges; empty state if none
+## E — Evidence inference and review
+- Evidence atoms, provenance reliability, independence groups, Bayesian/shrinkage (exact formulas + golden vectors), uncertainty, operator review, disputes, receipt versions
+- Activity volume / typing / prompts / latency = **context only**, never independent evidence
+- Action Inbox expansions (evidence ready, dispute update, decision feedback)
+- **Gate:** golden math cases + policy version on every receipt; reprocessing identical
 
-## M7 — Public FDE rewrite + pricing
-- Nav/hero/pricing $2,500 / $300 / $0 failures
-- Stub `/simulation`, `/network`, `/work-receipts`, `/trust`
-- **Gate:** no primary-path $10 or FP&A hiring claims
+## F — Candidate and employer depth
+- Candidate home, invitations, simulations, receipts, privacy, feedback
+- Employer Mission Control depth, Evidence Room, interview calibration, Decision Room
+- Partners remain schema-present, operator-invited, feature-flagged (no public partner UX)
 
-## Deferred (M8 — after pilot feedback)
-- Full network browse, partner OS, outcomes checkpoints, billing checkout, appeals, generative variant factory UI
+## G — One controlled generative demonstration
+- One known-good canonical Relay scenario + **one** generated approved variant
+- Deterministic materialization, golden-solution validation, difficulty comparison, operator approval, fallback
+- Expand to three only after this works
 
-## Known limitations
-1. Pyodide executes a **Python service workflow** with deterministic JSON preview — not a deployed FastAPI HTTP server. Do not claim otherwise.
-2. Evidence findings are rule-based v1; human ops review still required for trust.
-3. Simulation-validity interviews with FDE hiring managers are a **parallel non-code workstream**.
-4. Partner approval is stub (`setup-required`).
-5. Email verification UX: signup still auto-confirms for reliability; product copy should not promise unverified access forever.
-6. Monaco not required — workspace uses monospace textarea editor for MVP reliability.
+## H — Visual polish, security audit, pilot QA
+- Final system-wide RLS/security audit (RLS + tenant tests required on every migration earlier)
+- Human acceptance: ≥3 candidates + ≥3 hiring leaders; record “Not yet collected” until done
+- Accessibility + browser matrix documentation
+
+## Every checkpoint must ship with
+Exact files, migrations, feature flags, performance budget, security tests, rollback/repair path, automated acceptance tests, manual verification script, screenshots, known limitations, and proof previous checkpoints still pass.
+
+## Known limitations (honest)
+1. Pyodide runs a Python triage workflow with deterministic preview — not a live FastAPI HTTP server.
+2. Evidence findings are still rule-based v1 until Checkpoint E.
+3. Browser compatibility matrix (Safari/Firefox/private/poor network) not fully measured in CI yet.
+4. Durable background job table for eval/evidence/email retries not yet migrated.
+5. Human usability sessions: **Not yet collected**.
+6. Generative variants: not started (Checkpoint G).

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import WorkroomRunner from "@/components/workroom/WorkroomRunner";
+import { legacyMeridianEnabled } from "@/lib/fde/flags";
 
 // Validate token server-side. Only explicit demo-* tokens run without persistence.
 async function resolveToken(token: string): Promise<{
@@ -99,6 +100,72 @@ interface PageProps {
 
 export default async function WorkroomPage({ params }: PageProps) {
   const { token } = await params;
+
+  // Legacy Project Meridian workroom is retired from customer traffic.
+  // WorkroomRunner / the Meridian engine stay in the codebase for rollback.
+  if (!legacyMeridianEnabled()) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#05070d",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "40px",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 460,
+            width: "100%",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: 24,
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.012)), rgba(12,16,30,0.7)",
+            padding: "36px",
+            textAlign: "center",
+            backdropFilter: "blur(22px)",
+          }}
+        >
+          <h1
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: "#fff",
+              margin: "0 0 10px",
+              letterSpacing: "-0.03em",
+            }}
+          >
+            This simulation has been replaced by Project Relay
+          </h1>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, margin: "0 0 20px" }}>
+            Project Meridian work trials are no longer active. Fydell now runs Project Relay, a
+            live AI-operations deployment simulation.
+          </p>
+          <a
+            href="/app/fde"
+            style={{
+              display: "inline-flex",
+              height: 40,
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "0 20px",
+              borderRadius: 9,
+              background: "#F1F2F4",
+              color: "#08090C",
+              fontSize: 13,
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
+            Go to Project Relay
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   const ctx = await resolveToken(token);
 
   if (!ctx.valid) {

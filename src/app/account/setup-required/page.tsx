@@ -3,9 +3,11 @@ import FydellBrand from "@/components/brand/FydellBrand";
 
 const REASONS: Record<string, string> = {
   unaffiliated:
-    "Your account is active, but it is not yet connected to a Fydell workspace or candidate invitation.",
+    "Your account is active, but it is not yet connected to a Fydell workspace or mission invitation.",
   awaiting_org_approval:
-    "Your company setup was received and is awaiting Fydell approval before candidate invitations are enabled.",
+    "Your company setup was received and is awaiting Fydell approval before mission invitations are enabled.",
+  partner_pending:
+    "Your partner application was received. Partner access is approval-gated — we'll follow up once it's reviewed.",
   no_user_or_supabase: "We could not resolve your workspace. Sign in again or contact support.",
 };
 
@@ -27,16 +29,20 @@ export default async function SetupRequiredPage({
         </h1>
         <p className="mt-3 text-[14px] leading-relaxed text-white/60">{copy}</p>
         <ul className="mt-6 space-y-2 text-[13px] text-white/70">
-          <li>
-            <Link href="/onboarding/employer" className="underline hover:text-white">
-              Continue employer onboarding
-            </Link>
-          </li>
-          <li>
-            <Link href="/request-pilot" className="underline hover:text-white">
-              Request a pilot
-            </Link>
-          </li>
+          {reason === "partner_pending" ? null : (
+            <>
+              <li>
+                <Link href="/signup/role" className="underline hover:text-white">
+                  Choose how you use Fydell
+                </Link>
+              </li>
+              <li>
+                <Link href="/request-pilot" className="underline hover:text-white">
+                  Request a pilot
+                </Link>
+              </li>
+            </>
+          )}
           <li>
             <a href="mailto:admin@fydell.com" className="underline hover:text-white">
               Contact admin@fydell.com

@@ -1,9 +1,15 @@
 import "server-only";
-import { resolve } from "path";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { audit, hashInviteToken } from "@/lib/fde/lifecycle";
-import { loadScenarioSeedFiles } from "@/lib/relay/node-test-provider";
+import { enqueueAction } from "@/lib/fde/action-inbox";
 import type { FileMap } from "@/lib/relay/execution-provider";
+import {
+  analyzeSession,
+  POLICY_VERSION,
+  FORMULA_VERSION,
+  type SessionAnalysis,
+} from "@/lib/fde/evidence";
+import { resolveScenarioForSession } from "@/lib/relay/variants/resolve";
 import canonicalRaw from "../../../scenarios/project-relay/canonical.json";
 
 type AdminClient = ReturnType<typeof createAdminSupabaseClient>;
@@ -48,6 +54,10 @@ export type WorkspaceState = {
   plan: Record<string, string>;
   handoff: Record<string, string>;
   savedAt?: string;
+  /** Which Relay scenario release seeded this session's files — always
+   * `"project-relay@known-good"` unless RELAY_ACTIVE_VARIANT_ID names an
+   * ops-approved, validated variant (see src/lib/relay/variants/resolve.ts). */
+  scenarioReleaseId?: string;
 };
 
 type ScenarioCanonical = {
@@ -318,9 +328,29 @@ async function insertEvent(
   return event as RelayEventRow;
 }
 
-/** Resolve a relay session from its invitation accept token, for the signed-in FDE. */
+const SESSION_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Resolve a relay session from its invitation accept token, for the signed-in FDE.
+ * Invite tokens are only ever stored as a hash (never retrievable), so a signed-in FDE
+ * who has lost their original invite email can also resume via their own session id —
+ * ownership is still enforced below, so this never exposes another FDE's session.
+ */
 export async function getSessionByInviteToken(token: string, userId: string) {
   const admin = createAdminSupabaseClient();
+
+  if (SESSION_ID_RE.test(token)) {
+    const { data: ownSession } = await admin
+      .from("relay_sessions")
+      .select("*")
+      .eq("id", token)
+      .maybeSingle();
+    if (ownSession) {
+      if (ownSession.fde_user_id !== userId) throw new Error("Forbidden.");
+      return ownSession as RelaySessionRow;
+    }
+  }
+
   const tokenHash = hashInviteToken(token);
   const { data: invitation } = await admin
     .from("fde_invitations")
@@ -346,7 +376,9 @@ export async function getSessionForOwner(sessionId: string, userId: string) {
 
   const { data: mission } = await admin
     .from("fde_missions")
-    .select("title, objective, customer_context, expected_outcome")
+    .select(
+      "title, objective, customer_context, expected_outcome, systems_context, technical_environment, constraints, security_considerations, success_measures"
+    )
     .eq("id", session.mission_id)
     .maybeSingle();
 
@@ -403,18 +435,26 @@ export async function beginSession(sessionId: string, userId: string) {
   }
 
   const canonical = getScenarioCanonical();
-  const scenarioRoot = resolve(process.cwd(), "scenarios/project-relay");
-  const seed = loadScenarioSeedFiles(scenarioRoot);
+  // Safest-for-demo default: only serve an ops-approved, validated variant
+  // when explicitly named via env; otherwise always the known-good baseline.
+  // See src/lib/relay/variants/resolve.ts — never serves draft/unapproved.
+  const release = resolveScenarioForSession({
+    preferVariantId: process.env.RELAY_ACTIVE_VARIANT_ID || null,
+  });
 
   const startedAt = new Date();
-  const endsAt = computeEndsAt(startedAt, canonical.durationMinutes || 50);
+  const endsAt = computeEndsAt(startedAt, canonical.durationMinutes || 55);
   const curveballKey = session.curveball_key || pickCurveball(canonical.curveballs, sessionId);
 
   const existingState = (session.workspace_state as Partial<WorkspaceState>) || {};
   const workspaceState: WorkspaceState = {
-    files: existingState.files && Object.keys(existingState.files).length ? existingState.files : seed,
+    files:
+      existingState.files && Object.keys(existingState.files).length
+        ? existingState.files
+        : release.files,
     plan: existingState.plan || {},
     handoff: existingState.handoff || {},
+    scenarioReleaseId: existingState.scenarioReleaseId || release.releaseId,
   };
 
   const { data: updated, error } = await admin
@@ -435,10 +475,13 @@ export async function beginSession(sessionId: string, userId: string) {
 
   await insertEvent(admin, sessionId, "system", "session_started", "workspace", {
     endsAt: endsAt.toISOString(),
+    scenarioReleaseId: workspaceState.scenarioReleaseId,
   });
-  await audit(userId, "relay_session.started", "relay_session", sessionId, {});
+  await audit(userId, "relay_session.started", "relay_session", sessionId, {
+    scenarioReleaseId: workspaceState.scenarioReleaseId,
+  });
 
-  return { session: updated as RelaySessionRow, seedFiles: seed };
+  return { session: updated as RelaySessionRow, seedFiles: release.files };
 }
 
 export async function heartbeat(sessionId: string, userId: string) {
@@ -634,6 +677,62 @@ export async function markProcessing(sessionId: string) {
   return updated as RelaySessionRow;
 }
 
+function planTextFromWorkspace(workspace: Record<string, unknown> | null | undefined): string {
+  const plan = (workspace?.plan || {}) as Record<string, string>;
+  return [plan.approach, plan.risks, plan.testStrategy].filter(Boolean).join("\n");
+}
+
+function handoffTextFromWorkspace(workspace: Record<string, unknown> | null | undefined): string {
+  const handoff = (workspace?.handoff || {}) as Record<string, string>;
+  return [handoff.summary, handoff.recommendation, handoff.followUps].filter(Boolean).join("\n");
+}
+
+/** Persist atoms + scored metrics. Never throws — must not block findings. */
+async function persistAnalysisArtifacts(
+  admin: AdminClient,
+  sessionId: string,
+  analysis: SessionAnalysis
+): Promise<void> {
+  try {
+    if (analysis.atoms.length > 0) {
+      const rows = analysis.atoms.map((a) => ({
+        session_id: a.sessionId,
+        event_id: a.eventId ?? null,
+        artifact_id: a.artifactId ?? null,
+        dimension_id: a.dimensionId,
+        direction: a.direction,
+        magnitude: a.magnitude,
+        relevance: a.relevance,
+        reliability: a.reliability,
+        independence_group: a.independenceGroup,
+        source_kind: a.sourceKind,
+        summary: a.summary,
+        event_refs: a.eventRefs,
+        artifact_refs: a.artifactRefs,
+      }));
+      const { error } = await admin.from("evidence_atoms").insert(rows);
+      if (error) console.error("persistAnalysisArtifacts: atom insert failed", error.message);
+    }
+
+    await admin.from("evaluation_runs").insert({
+      session_id: sessionId,
+      policy_version: analysis.policyVersion || POLICY_VERSION,
+      formula_version: analysis.formulaVersion || FORMULA_VERSION,
+      metrics: {
+        atomCount: analysis.atoms.length,
+        fit: analysis.fit,
+        prediction: analysis.prediction,
+      },
+      status: "completed",
+    });
+  } catch (err) {
+    console.error(
+      "persistAnalysisArtifacts: skipped (schema likely not migrated yet)",
+      err instanceof Error ? err.message : err
+    );
+  }
+}
+
 export async function generateEvidenceFindings(sessionId: string) {
   const admin = createAdminSupabaseClient();
   const { data: session } = await admin.from("relay_sessions").select("*").eq("id", sessionId).maybeSingle();
@@ -656,16 +755,84 @@ export async function generateEvidenceFindings(sessionId: string) {
     .eq("session_id", sessionId)
     .order("sequence_number", { ascending: true });
 
-  const findings = buildFindingsFromEvents((events || []) as RelayEventRow[], session as RelaySessionRow);
-  const rows = findings.map((f) => ({ session_id: sessionId, ...f }));
+  const workspace = (session.workspace_state || {}) as Record<string, unknown>;
+  const analysis = analyzeSession((events || []) as RelayEventRow[], {
+    sessionId,
+    planText: planTextFromWorkspace(workspace),
+    handoffText: handoffTextFromWorkspace(workspace),
+  });
+
+  const findings =
+    analysis.findings.length > 0
+      ? analysis.findings.map((f) => ({
+          dimension: f.dimension,
+          observation: f.observation,
+          interpretation: f.interpretation,
+          confidence: f.confidence,
+          limitation: f.limitation,
+          event_ids: f.event_ids || [],
+          artifact_ids: f.artifact_ids || [],
+        }))
+      : buildFindingsFromEvents((events || []) as RelayEventRow[], session as RelaySessionRow);
+
+  const rows = findings.map((f) => ({
+    session_id: sessionId,
+    ...f,
+    event_ids: f.event_ids || [],
+    artifact_ids: f.artifact_ids || [],
+  }));
 
   const { data: inserted, error } = await admin.from("fde_evidence_findings").insert(rows).select("*");
   if (error) throw new Error(error.message);
 
+  await persistAnalysisArtifacts(admin, sessionId, analysis);
+
   await admin.from("relay_sessions").update({ status: "receipt_ready" }).eq("id", sessionId).eq("status", "processing");
   await audit(session.fde_user_id, "relay_session.evidence_generated", "relay_session", sessionId, {
     count: inserted?.length || 0,
+    fitScore100: analysis.fit.fitScore100,
+    hireProbabilityPct: analysis.prediction.hireProbabilityPct,
+    recommendation: analysis.prediction.recommendation,
+  });
+
+  const { data: missionForNotice } = await admin
+    .from("fde_missions")
+    .select("title, organization_id")
+    .eq("id", session.mission_id)
+    .maybeSingle();
+
+  await enqueueAction({
+    userId: session.fde_user_id,
+    type: "evidence_ready",
+    title: "Your evidence is ready",
+    body: missionForNotice?.title
+      ? `Scored findings and a predictive fit estimate from your "${missionForNotice.title}" session are ready.`
+      : "Scored findings and a predictive fit estimate from your submitted session are ready.",
+    actionUrl: "/app/fde/receipts",
+    organizationId: missionForNotice?.organization_id || null,
+    missionId: session.mission_id,
+    sessionId,
   });
 
   return inserted || [];
+}
+
+/** Recompute analysis for Evidence Room / audit export. */
+export async function loadSessionAnalysis(sessionId: string): Promise<SessionAnalysis | null> {
+  const admin = createAdminSupabaseClient();
+  const { data: session } = await admin.from("relay_sessions").select("*").eq("id", sessionId).maybeSingle();
+  if (!session) return null;
+
+  const { data: events } = await admin
+    .from("relay_execution_events")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("sequence_number", { ascending: true });
+
+  const workspace = (session.workspace_state || {}) as Record<string, unknown>;
+  return analyzeSession((events || []) as RelayEventRow[], {
+    sessionId,
+    planText: planTextFromWorkspace(workspace),
+    handoffText: handoffTextFromWorkspace(workspace),
+  });
 }

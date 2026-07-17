@@ -17,9 +17,9 @@ export default function HomePilotCta() {
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-5">
               <ButtonLink href="/signup" variant="primary">
-                Post a mission
+                Sign up
               </ButtonLink>
-              <TextLink href="#project-meridian">View Project Relay</TextLink>
+              <TextLink href="#project-relay">See how it works</TextLink>
             </div>
             <p className="mt-6 text-[13px] text-[rgba(244,245,247,0.4)]">
               Configured around your mission · No ATS replacement required

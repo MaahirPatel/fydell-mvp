@@ -1,7 +1,8 @@
+import dynamic from "next/dynamic";
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
 import { Container } from "@/components/marketing/ui";
-import ProjectMeridianWindow from "@/components/marketing/ProjectMeridianWindow";
+import ProjectRelaySequence from "@/components/marketing/ProjectRelaySequence";
 import HomeProductStages from "@/components/marketing/home/HomeProductStages";
 import HomeWorkroomDetail from "@/components/marketing/home/HomeWorkroomDetail";
 import HomeCurveballs from "@/components/marketing/home/HomeCurveballs";
@@ -11,6 +12,13 @@ import HomeCalibration from "@/components/marketing/home/HomeCalibration";
 import HomeRoles from "@/components/marketing/home/HomeRoles";
 import HomePilotCta from "@/components/marketing/home/HomePilotCta";
 import Link from "next/link";
+import { legacyMeridianEnabled } from "@/lib/fde/flags";
+
+// Only code-split-loaded when NEXT_PUBLIC_LEGACY_MERIDIAN=1 (rollback path).
+// Customers never pull this chunk while the flag is off.
+const LegacyProjectMeridianWindow = dynamic(
+  () => import("@/components/marketing/ProjectMeridianWindow")
+);
 
 export const metadata = {
   title: "Fydell",
@@ -19,6 +27,7 @@ export const metadata = {
 };
 
 export default function HomePage() {
+  const showLegacyMeridian = legacyMeridianEnabled();
   return (
     <MarketingShell>
       <section className="relative overflow-hidden pb-16 sm:pb-20 lg:pb-24">
@@ -47,7 +56,7 @@ export default function HomePage() {
                 A real 50-minute deployment simulation. A portable evidence receipt your team can review.
               </p>
               <Link
-                href="#project-meridian"
+                href="#project-relay"
                 className="hero-context-link shrink-0 self-start sm:self-end"
               >
                 <span className="accent">Project Relay</span>
@@ -60,11 +69,11 @@ export default function HomePage() {
           </Reveal>
 
           <Reveal delay={0.08} y={14} className="hero-product-stage relative">
-            <div id="project-meridian" className="scroll-mt-20">
+            <div id="project-relay" className="scroll-mt-20">
               <div className="hero-product-glow" aria-hidden />
               <div className="hero-product-frame max-md:overflow-x-auto">
                 <div className="min-w-[720px] md:min-w-0">
-                  <ProjectMeridianWindow />
+                  {showLegacyMeridian ? <LegacyProjectMeridianWindow /> : <ProjectRelaySequence />}
                 </div>
               </div>
             </div>

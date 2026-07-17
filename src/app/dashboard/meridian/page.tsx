@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { legacyMeridianEnabled } from "@/lib/fde/flags";
 
 type DashPayload = {
   organizationName: string | null;
@@ -17,6 +19,12 @@ type DashPayload = {
 };
 
 export default function MeridianPage() {
+  // Defensive — the parent /dashboard layout already redirects when legacy
+  // Meridian is off, but this page must not render Meridian UI on its own.
+  if (!legacyMeridianEnabled()) {
+    redirect("/app/employer");
+  }
+
   const [data, setData] = useState<DashPayload | null>(null);
   const [loading, setLoading] = useState(true);
 

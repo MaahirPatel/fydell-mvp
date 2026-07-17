@@ -2,6 +2,7 @@ import "server-only";
 import { createHash, randomBytes } from "crypto";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { appUrl } from "@/lib/app-url";
+import { enqueueAction } from "@/lib/fde/action-inbox";
 
 export function hashInviteToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -300,6 +301,26 @@ export async function inviteFdeToMission(input: {
     email,
   });
 
+  // If this email already belongs to a registered FDE, surface the invite in
+  // their Action Inbox in addition to the outbound email.
+  const { data: existingProfile } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+  if (existingProfile?.id) {
+    await enqueueAction({
+      userId: existingProfile.id,
+      type: "mission_invite",
+      title: `You're invited: ${mission.title}`,
+      body: "Review the mission details and accept to start your simulation.",
+      actionUrl: acceptUrl,
+      organizationId: mission.organization_id,
+      missionId: mission.id,
+      invitationId: invitation.id,
+    });
+  }
+
   return { invitation, acceptUrl, token, mission };
 }
 
@@ -402,6 +423,26 @@ export async function acceptInvitation(token: string, userId: string) {
 
   await audit(userId, "fde_invitation.accepted", "fde_invitation", invitation.id, {
     missionId: invitation.mission_id,
+    sessionId: session.id,
+  });
+
+  const { data: missionRow } = await admin
+    .from("fde_missions")
+    .select("title, organization_id")
+    .eq("id", invitation.mission_id)
+    .maybeSingle();
+
+  await enqueueAction({
+    userId,
+    type: "simulation_ready",
+    title: "Simulation ready",
+    body: missionRow?.title
+      ? `Your simulation for "${missionRow.title}" is ready to start.`
+      : "Your simulation is ready to start.",
+    actionUrl: `/s/${token}/consent`,
+    organizationId: missionRow?.organization_id || null,
+    missionId: invitation.mission_id,
+    invitationId: invitation.id,
     sessionId: session.id,
   });
 

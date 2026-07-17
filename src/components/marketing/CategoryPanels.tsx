@@ -73,21 +73,21 @@ function MemoSchematic() {
 
 const PANELS = [
   {
-    id: "workroom",
-    title: "Workroom",
-    copy: "Candidates complete role-specific FP&A tasks in a structured work environment.",
+    id: "session",
+    title: "Relay session",
+    copy: "The FDE completes a real deployment mission — a working codebase, an allowlisted terminal, and a customer chat.",
     Schematic: WorkroomSchematic,
   },
   {
     id: "evidence",
     title: "Evidence trail",
-    copy: "Decisions, revisions, AI usage, and assumptions are captured as evidence.",
+    copy: "File saves, test runs, chat messages, and the mid-session curveball are all captured as timestamped evidence.",
     Schematic: EvidenceSchematic,
   },
   {
     id: "memo",
-    title: "Hiring memo",
-    copy: "Hiring teams get a structured report showing what to ask, review, and trust.",
+    title: "Evidence receipt",
+    copy: "Hiring teams get rule-based findings showing what to ask, review, and trust — before recording a decision.",
     Schematic: MemoSchematic,
   },
 ];

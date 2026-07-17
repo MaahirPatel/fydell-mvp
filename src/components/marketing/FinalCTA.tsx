@@ -12,7 +12,7 @@ export default function FinalCTA() {
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-5">
             <ButtonLink href="/signup" variant="primary">
-              Post a mission
+              Sign up
             </ButtonLink>
             <TextLink href="/simulation">View Project Relay</TextLink>
           </div>

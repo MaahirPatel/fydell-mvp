@@ -5,29 +5,28 @@ import { useInView, useReducedMotion, animate, motion } from "motion/react";
 import CountUp from "@/components/motion/CountUp";
 
 const CAPTURE_ITEMS = [
-  "Documents opened and reviewed in the data room",
-  "Model changes and assumption revisions",
-  "Assumptions logged with sources",
-  "Risks identified or missed",
-  "AI tool usage and verification behavior",
-  "Manager update response",
-  "Final memo content and structure",
+  "File saves and iteration across the codebase",
+  "Allowlisted commands run — test, pytest, evals, preview",
+  "Customer chat messages and response timing",
+  "Response to the mid-session curveball",
+  "Heartbeat gaps and technical interruptions",
+  "The final, frozen submission",
 ];
 
 const EVIDENCE_COUNTS = [
-  { label: "Documents opened", value: "7" },
-  { label: "Assumptions changed", value: "4" },
-  { label: "Risks flagged", value: "2" },
-  { label: "AI prompts logged", value: "9" },
-  { label: "Sources reviewed", value: "5" },
-  { label: "Notes added", value: "3" },
+  { label: "Files edited", value: "6" },
+  { label: "Test runs", value: "4" },
+  { label: "Chat messages", value: "5" },
+  { label: "Curveball response", value: "1" },
+  { label: "Heartbeat gaps", value: "0" },
+  { label: "Commands run", value: "9" },
 ];
 
 const ACTIVITY = [
-  { time: "09:12", text: "Opened forecast export" },
-  { time: "12:47", text: "Revised revenue growth" },
-  { time: "18:03", text: "Flagged churn risk" },
-  { time: "24:11", text: "Submitted memo draft" },
+  { time: "09:12", text: "Edited src/router.py" },
+  { time: "12:47", text: "Ran pytest — 1 failure" },
+  { time: "18:03", text: "Responded to mid-session curveball" },
+  { time: "24:11", text: "Submitted final work" },
 ];
 
 function ProgressBar() {

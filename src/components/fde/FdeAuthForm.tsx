@@ -20,12 +20,17 @@ const COPY: Record<SignupPath, { title: string; subtitle: string }> = {
   },
 };
 
+const DEFAULT_COPY = {
+  title: "Create your account",
+  subtitle: "You'll choose how you use Fydell — as a business or an FDE — right after this.",
+};
+
 export default function FdeAuthForm({
   path,
   onBack,
 }: {
-  path: SignupPath;
-  onBack: () => void;
+  path?: SignupPath;
+  onBack?: () => void;
 }) {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -37,7 +42,7 @@ export default function FdeAuthForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const copy = COPY[path];
+  const copy = path ? COPY[path] : DEFAULT_COPY;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -68,16 +73,18 @@ export default function FdeAuthForm({
 
   return (
     <div className="overflow-hidden rounded-[20px] border border-white/[0.10] bg-[#080B12] p-7 sm:p-9">
-      <button
-        type="button"
-        onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-[13px] font-medium text-white/[0.5] transition hover:text-white"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Change path
-      </button>
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-white/[0.5] transition hover:text-white"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Change path
+        </button>
+      )}
 
-      <h2 className="mt-4 text-[24px] font-semibold tracking-[-0.04em] text-white">
+      <h2 className={`text-[24px] font-semibold tracking-[-0.04em] text-white ${onBack ? "mt-4" : ""}`}>
         {copy.title}
       </h2>
       <p className="mt-2 text-[14px] leading-relaxed text-white/[0.55]">{copy.subtitle}</p>

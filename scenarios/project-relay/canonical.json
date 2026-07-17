@@ -2,7 +2,7 @@
   "templateId": "project-relay",
   "version": "1.0.0",
   "label": "Synthetic FDE deployment",
-  "durationMinutes": 50,
+  "durationMinutes": 55,
   "curveballs": [
     "model_rate_limit",
     "schema_drift",

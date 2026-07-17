@@ -1,0 +1,30 @@
+{
+  "id": "project-relay",
+  "version": "1.1.0",
+  "label": "Project Relay — Synthetic FDE Deployment",
+  "description": "AI-assisted ticket triage workflow. Candidates deploy the smallest credible improvement, prove it with tests/evals, and explain risk.",
+  "allowedCommands": ["test", "pytest", "evals", "preview", "help"],
+  "entrypoints": {
+    "tests": "tests/test_triage.py",
+    "evals": "evals/run_evals.py",
+    "preview": "src/service.py"
+  },
+  "files": [
+    "README.md",
+    "canonical.json",
+    "docs/customer-brief.md",
+    "src/models.py",
+    "src/prompts.py",
+    "src/telemetry.py",
+    "src/router.py",
+    "src/service.py",
+    "src/triage.py",
+    "src/policy.py",
+    "data/tickets.jsonl",
+    "data/golden_set.jsonl",
+    "evals/cases.jsonl",
+    "evals/metrics.py",
+    "evals/run_evals.py",
+    "tests/test_triage.py"
+  ]
+}
