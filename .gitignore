@@ -11,3 +11,9 @@ visual-review/
 *.log
 .vercel
 .env*
+__pycache__/
+*.pyc
+tsc-out.txt
+spike-out.txt
+fde-unit-out.txt
+build-out.txt
