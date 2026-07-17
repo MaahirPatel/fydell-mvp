@@ -11,15 +11,15 @@ import FinalCTA from "@/components/marketing/FinalCTA";
 export const metadata = {
   title: "Product · Fydell",
   description:
-    "Fydell gives candidates a realistic FP&A task and gives hiring teams structured evidence from how the work was done.",
+    "Fydell gives FDE candidates a realistic deployment mission and gives hiring teams structured evidence from how the work was actually done.",
 };
 
 export default function ProductPage() {
   return (
     <MarketingShell>
       <PageHero
-        title="The finance workroom before the interview."
-        description="Candidates complete realistic FP&A work. Hiring teams receive structured evidence from how that work was done."
+        title="The deployment simulation before the hire."
+        description="FDE candidates complete a realistic mission. Hiring teams receive structured evidence from how that work was done."
       />
 
       <section className="pb-16 sm:pb-20 lg:pb-24">

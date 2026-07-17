@@ -3,12 +3,15 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import { listActiveRolesForEmail } from "@/lib/ops/platform-roles";
 import { getAdminSession } from "@/lib/auth";
+import { fdeMarketplaceEnabled } from "@/lib/fde/flags";
 
 export type PostLoginDestination =
   | { kind: "admin"; path: "/admin/overview" }
   | { kind: "dashboard"; path: "/dashboard" }
   | { kind: "onboarding"; path: "/onboarding/employer" }
   | { kind: "candidate"; path: string }
+  | { kind: "fde"; path: "/app/fde" }
+  | { kind: "employer_app"; path: "/app/employer" }
   | { kind: "setup"; path: "/account/setup-required"; reason: string };
 
 /**
@@ -45,6 +48,40 @@ export async function resolvePostLoginDestination(
   }
 
   const admin = createAdminSupabaseClient();
+
+  if (fdeMarketplaceEnabled()) {
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("account_type")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (profile?.account_type === "fde") {
+      return { kind: "fde", path: "/app/fde" };
+    }
+
+    if (profile?.account_type === "partner") {
+      // No partner approval flow yet — every partner signup lands pending.
+      return {
+        kind: "setup",
+        path: "/account/setup-required",
+        reason: "partner_pending",
+      };
+    }
+
+    if (profile?.account_type === "employer") {
+      const { data: employerMembership } = await admin
+        .from("organization_members")
+        .select("organization_id")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      if (employerMembership?.organization_id) {
+        return { kind: "employer_app", path: "/app/employer" };
+      }
+    }
+  }
 
   const { data: membership } = await admin
     .from("organization_members")

@@ -11,18 +11,18 @@ export default function HomePilotCta() {
       <Container>
         <div className="grid items-start gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
           <Reveal className="max-w-[480px]">
-            <h2 className="section-heading flat-type">See the work before the interview.</h2>
+            <h2 className="section-heading flat-type">See the deployment before you hire.</h2>
             <p className="section-desc mt-5">
-              Run a founder-led Fydell pilot for one active FP&amp;A role.
+              Run a founder-led Fydell pilot for one real FDE mission.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-5">
-              <ButtonLink href="#pilot-request-form" variant="primary">
-                Request a pilot
+              <ButtonLink href="/signup" variant="primary">
+                Post a mission
               </ButtonLink>
-              <TextLink href="#project-meridian">View Project Meridian</TextLink>
+              <TextLink href="#project-meridian">View Project Relay</TextLink>
             </div>
             <p className="mt-6 text-[13px] text-[rgba(244,245,247,0.4)]">
-              Configured around your role · No ATS replacement required
+              Configured around your mission · No ATS replacement required
             </p>
           </Reveal>
 

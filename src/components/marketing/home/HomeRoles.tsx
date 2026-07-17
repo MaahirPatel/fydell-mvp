@@ -2,10 +2,10 @@ import { Container } from "@/components/marketing/ui";
 import { Reveal } from "@/components/motion/Reveal";
 
 const ROLES = [
-  { title: "FP&A Analyst", meta: "Project Meridian · Available" },
-  { title: "Senior FP&A Analyst", meta: "Configured pilot · Available" },
-  { title: "Strategic Finance", meta: "Configured pilot · On request" },
-  { title: "Treasury Analyst", meta: "On request" },
+  { title: "Forward Deployed Engineer", meta: "Project Relay · Available" },
+  { title: "Senior Forward Deployed Engineer", meta: "Configured pilot · Available" },
+  { title: "Solutions Engineer", meta: "Configured pilot · On request" },
+  { title: "Implementation Engineer", meta: "On request" },
 ];
 
 export default function HomeRoles() {
@@ -13,7 +13,7 @@ export default function HomeRoles() {
     <section className="section-compact border-t border-[var(--border-subtle)]">
       <Container>
         <Reveal className="max-w-[500px]">
-          <h2 className="section-heading flat-type">Start with one finance role.</h2>
+          <h2 className="section-heading flat-type">Start with one real mission.</h2>
         </Reveal>
 
         <div className="mt-10 max-w-[720px] border-t border-[var(--border-subtle)]">

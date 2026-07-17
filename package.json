@@ -17,6 +17,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test:unit": "npx tsx scripts/test-pilot-validation.ts && npx tsx scripts/test-pilot-lifecycle.ts",
+    "test:relay-spike": "npx tsx scripts/test-relay-spike.ts",
+    "test:fde-unit": "npx tsx scripts/test-fde-loop-unit.ts",
     "test:e2e": "playwright test",
     "verify:migrations": "npx tsx scripts/verify-migration-state.ts",
     "bootstrap:admin": "npx tsx scripts/bootstrap-platform-admin.ts",

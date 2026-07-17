@@ -3,15 +3,17 @@ import FydellBrand from "@/components/brand/FydellBrand";
 
 const PRODUCT = [
   { label: "Product", href: "/product" },
-  { label: "Project Meridian", href: "/#project-meridian" },
+  { label: "Project Relay", href: "/simulation" },
   { label: "How It Works", href: "/how-it-works" },
+  { label: "Work Receipts", href: "/work-receipts" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Request a Pilot", href: "/#request-pilot" },
+  { label: "Post a Mission", href: "/#request-pilot" },
 ];
 
 const COMPANY = [
   { label: "Contact", href: "mailto:hello@fydell.com" },
-  { label: "Log in", href: "/login" },
+  { label: "Trust", href: "/trust" },
+  { label: "Sign in", href: "/login" },
 ];
 
 const LEGAL = [
@@ -59,7 +61,7 @@ export default function SiteFooter() {
           <div className="max-w-[280px]">
             <FydellBrand markSize={22} wordmarkSize={16} className="gap-2" />
             <p className="mt-3 text-[13px] leading-[1.55] text-[rgba(244,245,247,0.4)]">
-              Work-based hiring evidence for finance teams.
+              Portable, candidate-owned evidence for Forward Deployed Engineers.
             </p>
           </div>
 

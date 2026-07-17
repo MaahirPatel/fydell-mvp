@@ -14,7 +14,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Fydell",
   description:
-    "Fydell runs FP&A candidates through a realistic 25-minute work trial and gives hiring teams an evidence memo showing how they model, catch risk, use AI, and communicate judgment.",
+    "Fydell places Forward Deployed Engineers into real missions through Project Relay — a 50-minute simulated deployment session — and turns the recorded work into a portable, candidate-owned evidence receipt.",
   icons: {
     icon: [{ url: "/brand/fydell-chain-mark.png" }]
   }

@@ -11,7 +11,11 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/admin") ||
     path.startsWith("/account") ||
     path.startsWith("/candidate") ||
-    path.startsWith("/workroom")
+    path.startsWith("/workroom") ||
+    path.startsWith("/app") ||
+    path.startsWith("/s/") ||
+    path.startsWith("/r/") ||
+    path.startsWith("/ops")
   ) {
     res.headers.set("Cache-Control", "private, no-store, max-age=0, must-revalidate");
   }

@@ -45,9 +45,9 @@ export default function HomeMeasures() {
     <section className="mkt-section border-t border-[var(--border-subtle)]">
       <Container>
         <Reveal className="max-w-[560px]">
-          <h2 className="section-heading flat-type">Evidence across the whole role.</h2>
+          <h2 className="section-heading flat-type">Evidence across the whole mission.</h2>
           <p className="section-desc mt-5">
-            Observable dimensions tied to Project Meridian — not personality scores or match
+            Observable dimensions tied to Project Relay — not personality scores or match
             percentages.
           </p>
         </Reveal>

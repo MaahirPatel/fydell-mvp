@@ -137,53 +137,48 @@ export const TEAM_FEATURES = [
 
 export const PRICING = [
   {
-    name: "Pilot",
-    price: "Free",
-    period: "/ cohort",
-    billing: "",
-    desc: "Ideal for teams validating Fydell with a single cohort.",
+    name: "Founding pilot",
+    price: "$2,500",
+    period: "/ first mission",
+    billing: "Invoiced directly",
+    desc: "One mission, invite links for your FDE candidates, and a work receipt per completed session.",
     features: [
-      "Up to 20 candidates",
-      "Standard simulation library",
-      "PDF score reports",
-      "Basic analytics dashboard",
-      "Email support"
+      "One mission, fully configured",
+      "Unlimited invite links for that mission",
+      "One 50-minute Project Relay session per FDE",
+      "A work receipt with evidence findings",
+      "Founder-led setup and support",
+      "Cancel any time — no contract"
     ],
-    cta: "Start your pilot",
-    highlight: false
-  },
-  {
-    name: "Team",
-    price: "$499",
-    period: "/ month",
-    billing: "Billed monthly",
-    desc: "For growing teams ready to standardize assessments.",
-    features: [
-      "Unlimited simulations",
-      "Up to 200 candidates / month",
-      "PDF score reports",
-      "ATS integrations",
-      "Admin controls",
-      "Priority email support"
-    ],
-    cta: "Start free 14-day trial",
+    cta: "Post your first mission",
     highlight: true
   },
   {
-    name: "Enterprise",
-    price: "Custom",
-    period: "",
-    billing: "Billed annually",
-    desc: "For organizations that need scale, control, and flexibility.",
+    name: "Additional mission",
+    price: "$300",
+    period: "/ mission",
+    billing: "Same pilot",
+    desc: "Run another mission during the same founding pilot at a flat, predictable rate.",
     features: [
-      "Unlimited candidates",
-      "Custom simulation studio",
-      "Advanced analytics & exports",
-      "SSO / SCIM",
-      "Dedicated success manager",
-      "SLA & enterprise support"
+      "Same simulation, same evidence pipeline",
+      "No per-candidate fee",
+      "Founder-led support continues"
     ],
-    cta: "Contact sales",
+    cta: "Add a mission",
+    highlight: false
+  },
+  {
+    name: "Technical failure",
+    price: "$0",
+    period: "",
+    billing: "Never billed",
+    desc: "A session flagged as a technical failure — not the candidate's fault — is never charged.",
+    features: [
+      "No charge for the session",
+      "Doesn't count against your mission total",
+      "Flagged and audited by our team"
+    ],
+    cta: "Read our trust page",
     highlight: false
   }
 ];

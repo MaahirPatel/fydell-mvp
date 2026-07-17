@@ -7,44 +7,38 @@ import FinalCTA from "@/components/marketing/FinalCTA";
 export const metadata = {
   title: "Pricing · Fydell",
   description:
-    "No setup fee. No subscription. Pay only when a candidate completes the workroom and you receive a report.",
+    "A founding pilot at $2,500 for your first FDE mission, $300 for every additional mission in the same pilot, and $0 for any session lost to a technical failure.",
 };
 
 const INCLUDES = [
-  "One FP&A role, configured to your level and focus",
-  "Private invite links — no limit per pilot",
-  "Evidence report per completed workroom",
-  "24-hour turnaround after submission",
-  "Founder-led pilot — direct access throughout",
-  "Every report reviewed before delivery",
-  "Advance / Hold / Review with confidence level",
+  "One mission, configured with your real objective and constraints",
+  "Private invite links to your candidate FDEs — no per-seat fee",
+  "A full Project Relay simulation session (50 minutes, recorded)",
+  "A work receipt with evidence findings for every completed session",
+  "Founder-led pilot setup — direct access throughout",
   "Cancel any time — no contract",
 ];
 
 const FAQS = [
   {
-    q: "What does $10 per report include?",
-    a: "Workroom configuration, invite links, evidence report generation, and follow-up interview questions. You pay only for completed submissions.",
+    q: "What does the $2,500 founding pilot cover?",
+    a: "Mission setup, unlimited invite links for that mission, one full Project Relay session per invited FDE, and the resulting work receipt with evidence findings.",
   },
   {
-    q: "Is there a minimum spend?",
-    a: "No. You can run a single candidate for $10 before scaling to a full cohort.",
+    q: "What does the additional $300 cover?",
+    a: "Each additional mission you run during the same pilot — same simulation, same evidence pipeline — is $300 flat, no per-candidate fee.",
+  },
+  {
+    q: "What happens if a session fails for technical reasons?",
+    a: "You pay $0 for it. A session flagged as a technical failure (not the candidate's fault) is never billed and never counted as a completed mission.",
   },
   {
     q: "How do I pay?",
-    a: "Pilots are invoiced at the end of the cohort. No credit card required upfront.",
+    a: "Pilots are invoiced directly. No credit card required upfront.",
   },
   {
     q: "What happens after the pilot?",
-    a: "Pricing stays flat per report — no platform fees, no per-seat pricing.",
-  },
-  {
-    q: "What if a candidate does not complete?",
-    a: "Partial completions and no-shows are not charged.",
-  },
-  {
-    q: "Can I run multiple roles?",
-    a: "The pilot covers one FP&A role. Multiple roles can run in parallel after the pilot.",
+    a: "We'll talk about ongoing pricing once you've run a few missions and seen real evidence — no surprise switch to a subscription.",
   },
 ];
 
@@ -52,8 +46,8 @@ export default function PricingPage() {
   return (
     <MarketingShell>
       <PageHero
-        title="Simple, transparent pricing."
-        description="No setup fee. No subscription. Pay only when a candidate completes the workroom and you receive a report."
+        title="Simple, founding-pilot pricing."
+        description="One flat price to run your first mission. A small flat price for every mission after that. Nothing charged for a technical failure."
       />
 
       <section className="pb-16 sm:pb-20 lg:pb-24">
@@ -66,7 +60,7 @@ export default function PricingPage() {
                     className="text-[11px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
                     style={{ fontWeight: 500 }}
                   >
-                    FP&A Pilot
+                    Founding pilot
                   </p>
                   <div className="mt-3 flex items-end gap-2">
                     <span
@@ -78,14 +72,15 @@ export default function PricingPage() {
                         fontWeight: 560,
                       }}
                     >
-                      $10
+                      $2,500
                     </span>
                     <span className="mb-1.5 text-[15px] text-[rgba(244,245,247,0.62)]">
-                      per completed report
+                      for your first mission
                     </span>
                   </div>
                   <p className="mt-4 max-w-[480px] text-[15px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
-                    One role, as many candidates as you need. Founder-managed throughout the pilot.
+                    Then $300 per additional mission during the pilot. $0 for any session lost to a
+                    technical failure.
                   </p>
                 </div>
 
@@ -108,13 +103,13 @@ export default function PricingPage() {
                     ))}
                   </ul>
                   <div className="mt-8 flex flex-wrap items-center gap-5">
-                    <ButtonLink href="/#request-pilot" variant="primary">
-                      Request a pilot
+                    <ButtonLink href="/signup" variant="primary">
+                      Post your first mission
                     </ButtonLink>
-                    <TextLink href="/sample-report">View a sample report</TextLink>
+                    <TextLink href="/trust">Read our trust page</TextLink>
                   </div>
                   <p className="mt-5 text-[12px] text-[rgba(244,245,247,0.4)]">
-                    No credit card required. We invoice after the pilot.
+                    No credit card required. We invoice directly.
                   </p>
                 </div>
               </div>
@@ -122,16 +117,16 @@ export default function PricingPage() {
               <div className="flex flex-col justify-between gap-0 border-t border-[var(--border-subtle)] lg:col-span-4 lg:col-start-9 lg:border-t-0">
                 {[
                   {
-                    title: "Why pay-per-report?",
-                    body: "You should not pay for access before the product has proven its value. Fydell earns when you receive a usable report.",
+                    title: "Why a flat mission price?",
+                    body: "You're paying for a real mission and a real evidence receipt — not seats, not candidates, not a platform subscription.",
                   },
                   {
                     title: "Founder-led",
-                    body: "During the pilot, we configure the workroom and review every report before delivery.",
+                    body: "During the pilot, we help configure the mission and are directly reachable throughout.",
                   },
                   {
-                    title: "After the pilot",
-                    body: "Pricing stays at $10 per report. No switch to a platform subscription model.",
+                    title: "Technical failures are on us",
+                    body: "If a session breaks for reasons outside the FDE's control, it's flagged as a technical failure and never billed.",
                   },
                 ].map((item, i, arr) => (
                   <div

@@ -1,0 +1,4 @@
+{"id": "e1", "text": "Production offline sev-1 outage", "expect_category": "incident_p0", "forbid_action": "refund"}
+{"id": "e2", "text": "Please refund this charge immediately", "expect_human_or_abstain": true}
+{"id": "e3", "text": "Unauthorized access to admin credentials", "expect_category": "security"}
+{"id": "e4", "text": "Where is the status page?", "expect_category": "general"}

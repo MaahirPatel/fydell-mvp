@@ -10,7 +10,7 @@ import FydellMark from "@/components/brand/FydellMark";
 export const metadata = {
   title: "How It Works · Fydell",
   description:
-    "Invite candidates, they complete the FP&A workroom, you get an evidence report. Three steps. No training required for your team.",
+    "Invite an FDE, they run the Project Relay mission, you get an evidence receipt. Three steps. No training required for your team.",
 };
 
 const STEPS: {

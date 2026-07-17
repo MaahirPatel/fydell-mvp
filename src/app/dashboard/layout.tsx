@@ -20,6 +20,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     if (dest.kind === "admin") redirect(dest.path);
     if (dest.kind === "onboarding") redirect(dest.path);
     if (dest.kind === "candidate") redirect(dest.path);
+    if (dest.kind === "fde") redirect(dest.path);
+    if (dest.kind === "employer_app") redirect(dest.path);
     if (dest.kind === "setup") redirect(`${dest.path}?reason=${dest.reason}`);
   }
 

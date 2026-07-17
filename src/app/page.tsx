@@ -15,7 +15,7 @@ import Link from "next/link";
 export const metadata = {
   title: "Fydell",
   description:
-    "See how finance candidates work before the interview. Fydell runs realistic FP&A work trials and turns each decision into evidence your team can review.",
+    "See how a Forward Deployed Engineer actually works before you hire them. Fydell runs a realistic 50-minute deployment simulation and turns the recorded session into a portable evidence receipt.",
 };
 
 export default function HomePage() {
@@ -38,20 +38,20 @@ export default function HomePage() {
         <Container className="relative z-10 pt-[168px] sm:pt-[180px] lg:pt-[210px]">
           <Reveal y={8}>
             <h1 className="flat-type hero-display">
-              See how finance candidates
+              See how an FDE actually works
               <br className="hidden sm:block" />{" "}
-              work before the interview.
+              before you hire them.
             </h1>
             <div className="mt-[30px] flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-10">
               <p className="hero-sub !mt-0">
-                Realistic FP&amp;A work trials. Evidence your team can review.
+                A real 50-minute deployment simulation. A portable evidence receipt your team can review.
               </p>
               <Link
                 href="#project-meridian"
                 className="hero-context-link shrink-0 self-start sm:self-end"
               >
-                <span className="accent">Project Meridian</span>
-                <span>· Explore the work trial</span>
+                <span className="accent">Project Relay</span>
+                <span>· Explore the simulation</span>
                 <span className="arrow" aria-hidden>
                   →
                 </span>
