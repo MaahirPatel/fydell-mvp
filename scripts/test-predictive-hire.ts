@@ -1,13 +1,15 @@
 /**
- * Golden cases for numeric scoring + predictive hiring formulas.
+ * Golden cases for the 10-trait numeric scoring + predictive hiring formulas.
  */
 import assert from "node:assert/strict";
 import {
   analyzeSession,
   compositeFitScore,
   predictHire,
-  scoreDimension,
+  scoreTrait,
+  TRAIT_IDS,
   type EvidenceAtomInput,
+  type OpportunityFlags,
   type RelayEventLike,
 } from "../src/lib/fde/evidence";
 
@@ -24,7 +26,9 @@ function check(name: string, fn: () => void) {
   }
 }
 
-function atom(partial: Partial<EvidenceAtomInput> & Pick<EvidenceAtomInput, "dimensionId" | "independenceGroup">): EvidenceAtomInput {
+function atom(
+  partial: Partial<EvidenceAtomInput> & Pick<EvidenceAtomInput, "dimensionId" | "independenceGroup">
+): EvidenceAtomInput {
   return {
     sessionId: "s1",
     direction: "supporting",
@@ -39,84 +43,115 @@ function atom(partial: Partial<EvidenceAtomInput> & Pick<EvidenceAtomInput, "dim
   };
 }
 
-check("scoreDimension: two strong independent → score100 present and supporting/strong", () => {
-  const result = scoreDimension([
-    atom({ dimensionId: "engineering_applied_ai_execution", independenceGroup: "g1", magnitude: 0.85 }),
-    atom({ dimensionId: "engineering_applied_ai_execution", independenceGroup: "g2", magnitude: 0.85 }),
-    atom({ dimensionId: "engineering_applied_ai_execution", independenceGroup: "g3", magnitude: 0.9 }),
-  ]);
+function allObserved(overrides: Partial<OpportunityFlags> = {}): OpportunityFlags {
+  const flags = {} as OpportunityFlags;
+  for (const id of TRAIT_IDS) flags[id] = true;
+  return { ...flags, ...overrides };
+}
+
+function noneObserved(): OpportunityFlags {
+  const flags = {} as OpportunityFlags;
+  for (const id of TRAIT_IDS) flags[id] = false;
+  return flags;
+}
+
+check("scoreTrait: two strong independent → score100 present and strong_evidence", () => {
+  const result = scoreTrait(
+    "technical_execution",
+    [
+      atom({ dimensionId: "technical_execution", independenceGroup: "g1", magnitude: 0.85 }),
+      atom({ dimensionId: "technical_execution", independenceGroup: "g2", magnitude: 0.85 }),
+      atom({ dimensionId: "technical_execution", independenceGroup: "g3", magnitude: 0.9 }),
+    ],
+    true
+  );
   assert.ok(result.score100 != null);
   assert.ok((result.score100 as number) >= 60);
-  assert.ok(["supporting", "strong_supporting"].includes(result.state));
-  assert.equal(result.provisional, false);
+  assert.equal(result.bucket, "strong_evidence");
+  assert.equal(result.opportunityFlag, true);
 });
 
-check("scoreDimension: one atom → provisional score with shrinkage", () => {
-  const result = scoreDimension([
-    atom({ dimensionId: "discovery_problem_framing", independenceGroup: "only", magnitude: 0.9 }),
-  ]);
+check("scoreTrait: opportunityFlag=false → not_observed regardless of atoms", () => {
+  const result = scoreTrait(
+    "ai_tool_judgment",
+    [atom({ dimensionId: "ai_tool_judgment", independenceGroup: "only", magnitude: 0.9 })],
+    false
+  );
+  assert.equal(result.bucket, "not_observed");
+  assert.equal(result.score100, null);
+});
+
+check("scoreTrait: opportunity present but one atom → needs_review, not strong (no invented certainty)", () => {
+  const result = scoreTrait(
+    "elicitation",
+    [atom({ dimensionId: "elicitation", independenceGroup: "only", magnitude: 0.95, relevance: 0.95, reliability: 0.95 })],
+    true
+  );
   assert.ok(result.score100 != null);
-  assert.equal(result.provisional, true);
-  // Heavy shrink toward 0.5 → should not be 90
-  assert.ok((result.score100 as number) < 85);
+  assert.notEqual(result.bucket, "strong_evidence", "a single independent moment must never be labeled strong_evidence");
 });
 
-check("compositeFitScore: equal-weight mean of scored dims", () => {
+check("compositeFitScore: not_observed traits excluded from composite, not penalized", () => {
   const atoms: EvidenceAtomInput[] = [
-    atom({ dimensionId: "engineering_applied_ai_execution", independenceGroup: "e1" }),
-    atom({ dimensionId: "engineering_applied_ai_execution", independenceGroup: "e2" }),
-    atom({ dimensionId: "evaluation_production_judgment", independenceGroup: "j1" }),
-    atom({ dimensionId: "evaluation_production_judgment", independenceGroup: "j2" }),
+    atom({ dimensionId: "technical_execution", independenceGroup: "e1", magnitude: 0.9 }),
+    atom({ dimensionId: "technical_execution", independenceGroup: "e2", magnitude: 0.9 }),
+    atom({ dimensionId: "verification_discipline", independenceGroup: "j1", magnitude: 0.9 }),
+    atom({ dimensionId: "verification_discipline", independenceGroup: "j2", magnitude: 0.9 }),
   ];
-  const fit = compositeFitScore(atoms);
+  const flags = noneObserved();
+  flags.technical_execution = true;
+  flags.verification_discipline = true;
+  const fit = compositeFitScore(atoms, flags);
   assert.ok(fit.fitScore100 != null);
-  assert.ok(fit.scoredDimensionCount >= 2);
-  assert.equal(fit.formulaVersion.length > 0, true);
+  assert.equal(fit.observedTraitCount, 2);
+  assert.equal(fit.notObservedTraitIds.length, 8);
+  assert.ok((fit.fitScore100 as number) >= 60, "composite over two strong observed traits should be high, unaffected by 8 not_observed traits");
 });
 
-check("predictHire: strong evidence → advance or strong_advance", () => {
-  const dims = [
-    "discovery_problem_framing",
-    "technical_scoping_prioritization",
-    "engineering_applied_ai_execution",
-    "evaluation_production_judgment",
-    "adaptation_customer_communication",
-  ] as const;
+check("predictHire: strong evidence across all traits → advance", () => {
   const atoms: EvidenceAtomInput[] = [];
-  for (const d of dims) {
-    atoms.push(atom({ dimensionId: d, independenceGroup: `${d}:a`, magnitude: 0.85 }));
-    atoms.push(atom({ dimensionId: d, independenceGroup: `${d}:b`, magnitude: 0.85 }));
-    atoms.push(atom({ dimensionId: d, independenceGroup: `${d}:c`, magnitude: 0.9 }));
+  for (const id of TRAIT_IDS) {
+    atoms.push(atom({ dimensionId: id, independenceGroup: `${id}:a`, magnitude: 0.85 }));
+    atoms.push(atom({ dimensionId: id, independenceGroup: `${id}:b`, magnitude: 0.85 }));
+    atoms.push(atom({ dimensionId: id, independenceGroup: `${id}:c`, magnitude: 0.9 }));
   }
-  const fit = compositeFitScore(atoms);
+  const fit = compositeFitScore(atoms, allObserved());
   const pred = predictHire(fit);
-  assert.ok(pred.hireProbabilityPct >= 58);
-  assert.ok(["advance", "strong_advance"].includes(pred.recommendation));
+  assert.ok(pred.hireProbabilityPct >= 60);
+  assert.equal(pred.recommendation, "advance");
   assert.ok(pred.drivers.length > 0);
   assert.ok(pred.caveats.length > 0);
 });
 
 check("predictHire: counter-evidence lowers probability vs support-only", () => {
-  const support = compositeFitScore([
-    atom({ dimensionId: "engineering_applied_ai_execution", independenceGroup: "a", direction: "supporting", magnitude: 0.8 }),
-    atom({ dimensionId: "engineering_applied_ai_execution", independenceGroup: "b", direction: "supporting", magnitude: 0.8 }),
-  ]);
-  const mixed = compositeFitScore([
-    atom({ dimensionId: "engineering_applied_ai_execution", independenceGroup: "a", direction: "supporting", magnitude: 0.8 }),
-    atom({ dimensionId: "engineering_applied_ai_execution", independenceGroup: "b", direction: "counter", magnitude: 0.8 }),
-  ]);
+  const flags = noneObserved();
+  flags.technical_execution = true;
+  const support = compositeFitScore(
+    [
+      atom({ dimensionId: "technical_execution", independenceGroup: "a", direction: "supporting", magnitude: 0.8 }),
+      atom({ dimensionId: "technical_execution", independenceGroup: "b", direction: "supporting", magnitude: 0.8 }),
+    ],
+    flags
+  );
+  const mixed = compositeFitScore(
+    [
+      atom({ dimensionId: "technical_execution", independenceGroup: "a", direction: "supporting", magnitude: 0.8 }),
+      atom({ dimensionId: "technical_execution", independenceGroup: "b", direction: "counter", magnitude: 0.8 }),
+    ],
+    flags
+  );
   const pSupport = predictHire(support).hireProbability;
   const pMixed = predictHire(mixed).hireProbability;
   assert.ok(pMixed <= pSupport);
 });
 
-check("predictHire: empty fit → hold with default prior", () => {
-  const pred = predictHire(compositeFitScore([]));
+check("predictHire: nothing observed → hold with default prior", () => {
+  const pred = predictHire(compositeFitScore([], noneObserved()));
   assert.equal(pred.recommendation, "hold");
   assert.equal(pred.confidence, "low");
 });
 
-check("analyzeSession: end-to-end events produce fit + prediction", () => {
+check("analyzeSession: end-to-end events produce traits + composite + prediction", () => {
   const events: RelayEventLike[] = [
     {
       id: "e1",
@@ -156,7 +191,7 @@ check("analyzeSession: end-to-end events produce fit + prediction", () => {
       sequence_number: 5,
       actor: "candidate",
       event_type: "customer_chat_message",
-      payload: { text: "Updated the router for the new refund policy." },
+      payload: { text: "Given the change, I'm cutting scope to just the refund router for now." },
     },
     {
       id: "e6",
@@ -166,22 +201,26 @@ check("analyzeSession: end-to-end events produce fit + prediction", () => {
       event_type: "command_run",
       payload: { command: "test", ok: true },
     },
+    { id: "e7", session_id: "s1", sequence_number: 7, actor: "candidate", event_type: "session_submitted", payload: {} },
   ];
 
   const analysis = analyzeSession(events, {
     sessionId: "s1",
     planText: "Fix approval hole first, then re-run evals. Risks: false automation on refunds.",
-    handoffText: "Recommend ship after policy check. Residual risk: severity filter still thin.",
+    handoffText:
+      "Verified with tests and evals. Recommend shipping the router fix. Residual risk: not sure the severity filter covers every edge case.",
   });
 
   assert.ok(analysis.atoms.length >= 4);
-  assert.ok(analysis.fit.fitScore100 != null);
+  assert.ok(analysis.composite.fitScore100 != null);
   assert.ok(analysis.prediction.hireProbabilityPct > 0);
-  assert.ok(analysis.findings.length === 5);
+  assert.equal(analysis.traits.length, 10);
+  assert.equal(analysis.findings.length, 10);
   assert.ok(analysis.findings.every((f) => Array.isArray(f.event_ids)));
+  assert.equal(analysis.validationMaturity, "design_weighted");
 });
 
-check("deterministic reprocessing: identical events → identical fit + prediction", () => {
+check("deterministic reprocessing: identical events → identical composite + prediction", () => {
   const events: RelayEventLike[] = [
     {
       id: "e1",
@@ -202,7 +241,7 @@ check("deterministic reprocessing: identical events → identical fit + predicti
   ];
   const a = analyzeSession(events, { sessionId: "s1", planText: "x".repeat(50), handoffText: "y".repeat(50) });
   const b = analyzeSession(events, { sessionId: "s1", planText: "x".repeat(50), handoffText: "y".repeat(50) });
-  assert.equal(a.fit.fitScore100, b.fit.fitScore100);
+  assert.equal(a.composite.fitScore100, b.composite.fitScore100);
   assert.equal(a.prediction.hireProbabilityPct, b.prediction.hireProbabilityPct);
   assert.equal(a.prediction.recommendation, b.prediction.recommendation);
 });

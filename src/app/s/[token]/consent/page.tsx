@@ -6,11 +6,13 @@ import FydellBrand from "@/components/brand/FydellBrand";
 import { resolveSessionByToken, stageForStatus } from "@/lib/relay/session-client";
 
 const RULES = [
+  "This is a synthetic Forward Deployed Engineer (FDE) deployment for Northbeam Logistics — a simulated client, not a live production system.",
+  "Runs in-browser for 55 minutes, real Python via Pyodide — requires Chrome or Edge (checked on the next screen).",
   "Every file save, command run, chat message, and submission is recorded as timestamped evidence.",
-  "You may only run allowlisted commands inside the workspace: test, pytest, evals, preview.",
+  "You may only run allowlisted commands inside the workspace: test, pytest, evals, preview, reconcile.",
   "Sensitive actions (refunds, account locks, legal escalation) require human approval — never auto-execute them.",
-  "You'll get one immutable submission. Once you submit, your files are frozen for evidence review.",
-  "This is a simulation, not a live production system — no real customer data or systems are touched.",
+  "You'll get one immutable ship. Once you ship, your files are frozen for evidence review.",
+  "No real customer data or systems are touched — Northbeam Logistics and its contacts are entirely synthetic.",
   "No overall candidate score is produced. Typing speed, prompt count, and time-in-file are not used as evidence.",
   "If you need a disability accommodation (extra time, assistive tech), stop and contact the inviting employer before starting — the timer must not begin until that is arranged.",
 ];
@@ -47,6 +49,7 @@ export default function RelayConsentPage() {
       <h1 className="mt-1 text-[28px]" style={{ fontWeight: 560, letterSpacing: "-0.03em" }}>
         How Project Relay works
       </h1>
+      <p className="mt-1.5 text-[13px] text-white/45">Northbeam Logistics · Synthetic FDE deployment</p>
 
       {error ? (
         <p className="mt-6 text-[14px] text-[#fda4b0]">{error}</p>
@@ -57,10 +60,10 @@ export default function RelayConsentPage() {
       ) : (
         <>
           <p className="mt-4 text-[14px] leading-relaxed text-white/60">
-            Project Relay is a 55-minute simulated deployment session, running real Python in your
-            browser (no install required). It produces work evidence for a human hiring decision — not
-            a predicted job-performance score, personality profile, or automated hire/no-hire
-            recommendation.
+            Project Relay places you as a Forward Deployed Engineer on a 55-minute synthetic deployment
+            for Northbeam Logistics, running real Python in your browser (Chrome or Edge, no install
+            required). It produces work evidence for a human hiring decision — not a predicted
+            job-performance score, personality profile, or automated hire/no-hire recommendation.
           </p>
 
           <ul className="mt-6 space-y-3">

@@ -34,12 +34,21 @@ export async function GET() {
 
   const { data: sessions, error } = await admin
     .from("relay_sessions")
-    .select("id, mission_id, invitation_id, fde_user_id, status, started_at, submitted_at, created_at")
+    .select(
+      "id, mission_id, invitation_id, fde_user_id, status, started_at, submitted_at, created_at, attempt_kind"
+    )
     .in("mission_id", missionIds)
     .order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  const fdeUserIds = Array.from(new Set((sessions || []).map((s) => s.fde_user_id).filter(Boolean)));
+  // Exclude preview/demonstration from the real candidate attempts list.
+  const productionSessions = (sessions || []).filter(
+    (s) => !("attempt_kind" in s) || !s.attempt_kind || s.attempt_kind === "scored"
+  );
+
+  const fdeUserIds = Array.from(
+    new Set(productionSessions.map((s) => s.fde_user_id).filter(Boolean))
+  );
   let fdeInfoById: Record<string, { name: string; email: string | null }> = {};
   if (fdeUserIds.length > 0) {
     const { data: profiles } = await admin
@@ -51,7 +60,9 @@ export async function GET() {
     );
   }
 
-  const invitationIds = Array.from(new Set((sessions || []).map((s) => s.invitation_id).filter(Boolean))) as string[];
+  const invitationIds = Array.from(
+    new Set(productionSessions.map((s) => s.invitation_id).filter(Boolean))
+  ) as string[];
   let invitedEmailByInvitation: Record<string, string> = {};
   if (invitationIds.length > 0) {
     const { data: invites } = await admin
@@ -61,7 +72,7 @@ export async function GET() {
     invitedEmailByInvitation = Object.fromEntries((invites || []).map((i) => [i.id, i.invited_email]));
   }
 
-  const shaped = (sessions || []).map((s) => {
+  const shaped = productionSessions.map((s) => {
     const fdeInfo = fdeInfoById[s.fde_user_id];
     const candidateEmail =
       fdeInfo?.email || (s.invitation_id ? invitedEmailByInvitation[s.invitation_id] : null) || null;

@@ -1,0 +1,16 @@
+{
+  "gateId": "GEN-002",
+  "commit": "working-tree",
+  "environment": "local",
+  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "payload": {
+    "expected": "different material signatures and files",
+    "actual": "differ",
+    "details": {
+      "sigA": "Northbeam Cloud Group::We need better visibility into support tickets response d",
+      "sigB": "Anchor Point Shipping Co.::We need better visibility into shipments delays.::id_",
+      "companyA": "Northbeam Cloud Group",
+      "companyB": "Anchor Point Shipping Co."
+    }
+  }
+}

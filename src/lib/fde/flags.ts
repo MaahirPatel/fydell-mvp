@@ -6,6 +6,18 @@ export function fdeMarketplaceEnabled(): boolean {
   return process.env.NEXT_PUBLIC_FDE_MARKETPLACE === "1";
 }
 
+/**
+ * Explicit pilot/demo mode. Enables walkthrough helper and a labeled
+ * "Enter pilot workspace" fallback when auth secrets are missing.
+ * Never silently bypasses production authentication.
+ */
+export function pilotModeEnabled(): boolean {
+  return (
+    process.env.NEXT_PUBLIC_PILOT_MODE === "true" ||
+    process.env.NEXT_PUBLIC_PILOT_MODE === "1"
+  );
+}
+
 export function relaySpikeEnabled(): boolean {
   return (
     process.env.NEXT_PUBLIC_RELAY_SPIKE === "1" ||

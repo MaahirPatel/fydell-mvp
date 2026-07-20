@@ -1,0 +1,13 @@
+{
+  "gateId": "MATH-004",
+  "commit": "working-tree",
+  "environment": "local",
+  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "payload": {
+    "expected": "null fit when nothing observed",
+    "actual": "null",
+    "details": {
+      "reason": "no_observed_traits"
+    }
+  }
+}

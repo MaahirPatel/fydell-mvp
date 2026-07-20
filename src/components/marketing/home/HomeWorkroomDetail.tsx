@@ -9,7 +9,7 @@ export default function HomeWorkroomDetail() {
         <Reveal>
           <EditorialHeader
             heading="Put FDEs inside the work."
-            description="FDEs get a real codebase, an allowlisted terminal, and a live customer chat — then edit, test, and ship under the same constraints the role creates."
+            description="A real codebase, an allowlisted terminal, and a live customer chat with Northbeam's ops team — then edit, test, and ship under the same ambiguity the role creates."
             stageHref="#project-relay"
             stageLabel="Project Relay"
           />

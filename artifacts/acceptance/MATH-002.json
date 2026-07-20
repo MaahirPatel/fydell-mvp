@@ -1,0 +1,10 @@
+{
+  "gateId": "MATH-002",
+  "commit": "working-tree",
+  "environment": "local",
+  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "payload": {
+    "expected": "finite logdet; N_eff≤n; low conf when empty",
+    "actual": "logdet=-123.1439 nEff=4 conf=0"
+  }
+}

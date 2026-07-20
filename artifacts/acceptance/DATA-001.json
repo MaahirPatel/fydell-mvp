@@ -1,0 +1,10 @@
+{
+  "gateId": "DATA-001",
+  "commit": "working-tree",
+  "environment": "local",
+  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "payload": {
+    "expected": "only scored counts as production",
+    "actual": "filter contract holds"
+  }
+}

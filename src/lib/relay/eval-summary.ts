@@ -6,12 +6,11 @@
  */
 
 export type EvalMetrics = {
-  accuracy: number;
-  macroF1: number;
-  highSeverityRecall: number;
-  abstentionRate: number;
-  falseAutomationRate: number;
-  schemaValidity: number;
+  naiveLateRate: number;
+  trueLateRate: number;
+  rowsDroppedNaive: number;
+  integrityCaught: boolean;
+  reportSchemaValid: boolean;
   casesTotal: number;
   casesFailures: number;
 };
@@ -27,13 +26,13 @@ export function parseEvalSummary(stdout: string): EvalMetrics | null {
       const v = Number(raw[key]);
       return Number.isFinite(v) ? v : NaN;
     };
+    const bool = (key: string): boolean => raw[key] === true;
     const metrics: EvalMetrics = {
-      accuracy: num("accuracy"),
-      macroF1: num("macro_f1"),
-      highSeverityRecall: num("high_severity_recall"),
-      abstentionRate: num("abstention_rate"),
-      falseAutomationRate: num("false_automation_rate"),
-      schemaValidity: num("schema_validity"),
+      naiveLateRate: num("naive_late_rate"),
+      trueLateRate: num("true_late_rate"),
+      rowsDroppedNaive: num("rows_dropped_naive"),
+      integrityCaught: bool("integrity_caught"),
+      reportSchemaValid: bool("report_schema_valid"),
       casesTotal: num("cases_total"),
       casesFailures: num("cases_failures"),
     };

@@ -35,6 +35,7 @@ export const ALLOWED_COMMANDS = new Set([
   "pytest",
   "evals",
   "preview",
+  "reconcile",
   "help",
 ]);
 
@@ -42,6 +43,7 @@ export function parseAllowlistedCommand(input: string): string | null {
   const cmd = input.trim().toLowerCase();
   if (ALLOWED_COMMANDS.has(cmd)) return cmd;
   if (cmd.startsWith("python ") && cmd.includes("run_evals")) return "evals";
+  if (cmd.startsWith("python ") && cmd.includes("reconcile")) return "reconcile";
   if (cmd.startsWith("pytest")) return "pytest";
   return null;
 }

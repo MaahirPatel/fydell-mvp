@@ -1,0 +1,26 @@
+shipment_id,delay_reason,flagged_date,ops_notes
+SHP-00003,carrier_capacity_shortage,2026-01-10,Ops confirmed via carrier call
+SHP-00004,weather_delay,2026-01-11,Winter storm on I-70 corridor
+SHP-00005,customs_hold,2026-01-12,Held at border inspection
+SHP-00006,warehouse_backlog,2026-01-13,Outbound dock congestion
+SHP-7,mechanical_breakdown,2026-01-14,Trailer axle failure reported by driver
+SHP-00008,address_correction_needed,2026-01-15,Consignee address incomplete
+SHP-00009,port_congestion,2026-01-16,Delayed inbound at rail yard
+SHP-00010,carrier_capacity_shortage,2026-01-17,No available trailer for 2 days
+SHP-00013,weather_delay,2026-01-20,Regional ice storm
+SHP-00014,customs_hold,2026-01-21,Secondary inspection required
+SHP-00015,warehouse_backlog,2026-01-22,Cross-dock overflow
+SHP-00018,mechanical_breakdown,2026-01-25,Refrigeration unit failure
+SHP-00019,address_correction_needed,2026-01-26,Suite number missing on BOL
+SHP-00020,port_congestion,2026-01-27,Vessel berth delay
+SHP-00022,carrier_capacity_shortage,2026-01-29,Driver shortage on lane
+SHP-00023,weather_delay,2026-01-30,High winds closed corridor
+00024,customs_hold,2026-01-31,Tariff classification review
+SHP-00025,warehouse_backlog,2026-02-01,Peak volume backlog
+SHP-00028,mechanical_breakdown,2026-02-04,"Tire blowout, roadside repair"
+SHP-00029,address_correction_needed,2026-02-05,Zip code mismatch flagged by carrier
+SHP-00033,port_congestion,2026-02-09,Terminal equipment outage
+SHP-00034,carrier_capacity_shortage,2026-02-10,Reassigned to backup carrier
+SHP-038,weather_delay,2026-02-14,Fog closures at hub
+SHP-00041,customs_hold,2026-02-17,Random compliance audit
+SHP-00047,warehouse_backlog,2026-02-23,Short-staffed receiving dock

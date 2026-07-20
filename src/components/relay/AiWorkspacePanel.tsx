@@ -30,7 +30,7 @@ export default function AiWorkspacePanel({
       setNotice(
         instruction.trim()
           ? "Could not build a safe suggestion for this file type — try a source (.py) file."
-          : "Nothing to suggest for this file. Try router.py, or type an instruction above."
+          : "Nothing to suggest for this file. Try src/report.py, or type an instruction above."
       );
       setProposal(null);
       return;
@@ -58,8 +58,8 @@ export default function AiWorkspacePanel({
     <div className="flex h-full min-h-0 flex-col overflow-y-auto p-3">
       <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/40">AI workspace</p>
       <p className="mt-1.5 text-[11.5px] leading-relaxed text-white/45">
-        Fully offline and deterministic — no live model calls. It either applies the known router
-        approval-policy fix, or appends a labeled note from your instruction.
+        Fully offline and deterministic — no live model calls. It either applies the known report
+        join-wiring fix, or appends a labeled note from your instruction.
       </p>
 
       <div className="mt-3 rounded-[8px] border border-white/10 bg-black/20 px-3 py-2">

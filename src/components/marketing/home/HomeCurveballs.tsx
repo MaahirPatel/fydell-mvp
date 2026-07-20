@@ -9,7 +9,7 @@ export default function HomeCurveballs() {
         <Reveal>
           <EditorialHeader
             heading="See judgment when the conditions change."
-            description="Controlled updates reveal whether candidates adapt, investigate, communicate, and revise—or preserve a conclusion after the evidence no longer supports it."
+            description="Partway through, the VP moves the deadline up and reframes the ask. We watch whether the candidate renegotiates scope out loud — or keeps building the wrong thing on schedule."
             stageHref="#request-pilot"
             stageLabel="2.0 · Curveballs"
           />

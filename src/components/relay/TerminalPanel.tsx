@@ -2,7 +2,7 @@
 
 const MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
-const COMMANDS = ["test", "evals", "preview"] as const;
+const COMMANDS = ["test", "evals", "preview", "reconcile"] as const;
 
 /** Pulls FAIL / error lines out of raw command output for a quick-scan problems list. */
 function extractProblems(output: string): string[] {
@@ -38,7 +38,7 @@ export default function TerminalPanel({
           </button>
         ))}
         <span className="ml-1 text-[11px] text-white/30" style={{ fontFamily: MONO }}>
-          allowlisted only — test · evals · preview
+          allowlisted only — test · evals · preview · reconcile
         </span>
       </div>
       <div className="flex min-h-0 flex-1 divide-x divide-white/[0.06]">

@@ -1,10 +1,10 @@
 import FydellMark from "@/components/brand/FydellMark";
 
 const BEHAVIORS = [
-  "Re-read the customer brief",
-  "Adjusted the refund threshold",
-  "Added a regression test",
-  "Told the customer what changed",
+  "Re-read the ops/VP thread for the actual ask",
+  "Cut scope to a one-page root-cause note",
+  "Kept the reconciled numbers, dropped the polish",
+  "Told Dana what was cut and why",
 ];
 
 export default function CurveballsMock() {
@@ -28,24 +28,24 @@ export default function CurveballsMock() {
       <div className="grid min-h-[400px] grid-cols-[1.15fr_0.95fr_0.9fr]">
         {/* Live change + response */}
         <div className="border-r border-[var(--border-subtle)] bg-[#0B0F16] p-4">
-          <div className="rounded-[10px] border border-[rgba(134,87,244,0.28)] bg-[rgba(134,87,244,0.08)] px-4 py-3.5">
-            <p className="text-[11px] text-[#C4A8FF]" style={{ fontWeight: 560 }}>
-              Mid-session curveball
+          <div className="rounded-[10px] border border-[rgba(86,98,255,0.28)] bg-[rgba(86,98,255,0.08)] px-4 py-3.5">
+            <p className="text-[11px] text-[#9FADFF]" style={{ fontWeight: 560 }}>
+              Mid-session curveball — Priya Anand, VP of Operations
             </p>
             <p className="mt-2 text-[13px] leading-[1.5] text-[rgba(244,245,247,0.78)]">
-              Policy just changed: refunds above $200 now require manager approval. The customer
-              needs a fix before their next request lands.
+              "Heads up — board meeting got pulled forward to this Thursday. Whatever you have, I
+              need it a day earlier than we planned."
             </p>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-[8px] border border-[var(--border-subtle)] px-3 py-3">
-              <p className="text-[10px] text-[rgba(244,245,247,0.4)]">Prior behavior</p>
-              <p className="mt-1 text-[13px] text-[rgba(244,245,247,0.62)]">Auto-approve refunds</p>
+              <p className="text-[10px] text-[rgba(244,245,247,0.4)]">Prior plan</p>
+              <p className="mt-1 text-[13px] text-[rgba(244,245,247,0.62)]">Dashboard + root-cause writeup</p>
             </div>
             <div className="rounded-[8px] border border-[rgba(242,107,130,0.24)] bg-[rgba(242,107,130,0.06)] px-3 py-3">
               <p className="text-[10px] text-[rgba(244,245,247,0.4)]">New constraint</p>
-              <p className="mt-1 text-[13px] text-[#F7B0BC]">Requires human approval &gt; $200</p>
+              <p className="mt-1 text-[13px] text-[#F7B0BC]">One day less, board is the audience</p>
             </div>
           </div>
 
@@ -54,8 +54,8 @@ export default function CurveballsMock() {
               FDE response
             </p>
             <p className="mt-2 text-[13px] leading-[1.5] text-[rgba(244,245,247,0.72)]">
-              Added the approval gate, wrote a regression test for the new threshold, and told the
-              customer in chat before shipping.
+              Cut the dashboard polish, kept the reconciled late-rate numbers, and told Dana
+              directly what was and wasn't going to be ready before Thursday.
             </p>
           </div>
         </div>
@@ -70,9 +70,9 @@ export default function CurveballsMock() {
           </p>
           <ol className="mt-3 space-y-0">
             {[
-              { t: "09:12", label: "Curveball revealed" },
-              { t: "09:28", label: "Approval gate added to service.py" },
-              { t: "09:41", label: "Regression test passing" },
+              { t: "09:12", label: "Curveball revealed in #northbeam-ops" },
+              { t: "09:28", label: "Scope cut confirmed with Dana" },
+              { t: "09:41", label: "Root-cause note finalized" },
             ].map((step, i, arr) => (
               <li key={step.t} className="flex gap-3">
                 <div className="flex w-4 flex-col items-center">

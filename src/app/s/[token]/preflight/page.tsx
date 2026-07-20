@@ -136,6 +136,7 @@ export default function RelayPreflightPage() {
       <h1 className="mt-1 text-[28px]" style={{ fontWeight: 560, letterSpacing: "-0.03em" }}>
         Environment check
       </h1>
+      <p className="mt-1.5 text-[13px] text-white/45">Northbeam Logistics · Forward Deployed Engineer deployment</p>
       <p className="mt-4 text-[14px] leading-relaxed text-white/60">
         Project Relay runs real Python in your browser (no install) via Pyodide — this needs
         Chrome or Edge. Once you explicitly start below, a {durationMinutes}-minute timer begins —

@@ -4,80 +4,60 @@ import { useEffect, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import FydellMark from "@/components/brand/FydellMark";
 
-type Status = "pending" | "triaged" | "flagged";
+type RowState = "unreconciled" | "recovered" | "flagged";
 
-interface TicketRow {
+interface ShipmentRow {
   id: string;
-  subject: string;
-  category: string;
-  action: string;
-  status: Status;
+  lane: string;
+  carrier: string;
+  rawId: string;
+  state: RowState;
 }
 
-const BASE_ROWS: TicketRow[] = [
-  {
-    id: "T-4821",
-    subject: "Production API is down",
-    category: "incident_p0",
-    action: "assign_queue",
-    status: "triaged",
-  },
-  {
-    id: "T-4822",
-    subject: "Please refund this charge",
-    category: "billing",
-    action: "—",
-    status: "pending",
-  },
-  {
-    id: "T-4823",
-    subject: "How do I reset my password?",
-    category: "general",
-    action: "reply_template",
-    status: "triaged",
-  },
+const BASE_ROWS: ShipmentRow[] = [
+  { id: "SHP-00041", lane: "PHX → DAL", carrier: "Redline Freight", rawId: "SHP-00041", state: "unreconciled" },
+  { id: "SHP-00007", lane: "ATL → BNA", carrier: "Caldera Transit", rawId: "SHP-7", state: "unreconciled" },
+  { id: "SHP-00024", lane: "SEA → PDX", carrier: "Redline Freight", rawId: "00024", state: "unreconciled" },
+  { id: "SHP-00038", lane: "DFW → OKC", carrier: "Vantage Lines", rawId: "SHP-038", state: "unreconciled" },
 ];
 
-const REFUND_FINAL: Pick<TicketRow, "action" | "status"> = {
-  action: "abstain",
-  status: "flagged",
-};
+const RECOVERED_STATE: RowState = "recovered";
 
 const EVIDENCE_METRICS = [
-  { label: "Tickets triaged", value: 3 },
-  { label: "Router calls inspected", value: 5 },
-  { label: "Unsafe actions blocked", value: 1 },
+  { label: "Delay records reconciled", value: 25 },
+  { label: "Rows dropped by naive join", value: 3 },
+  { label: "Carrier claims checked", value: 5 },
   { label: "Golden-set cases run", value: 12 },
 ];
 
 const INITIAL_LOG = [
-  { time: "14:02", text: "Routed P0 outage to incident queue" },
-  { time: "13:41", text: "Replied to a general password question" },
+  { time: "14:02", text: "Loaded shipments.csv + carriers.csv, checked join keys" },
+  { time: "13:41", text: "Flagged Dana/Priya's conflicting ask in #northbeam-ops" },
 ];
 
-function StatusPill({ status }: { status: Status }) {
-  if (status === "pending") {
+function StatePill({ state }: { state: RowState }) {
+  if (state === "unreconciled") {
     return (
       <span className="inline-flex h-5 items-center rounded-full bg-white/[0.06] px-2 text-[10.5px] text-[rgba(244,245,247,0.4)]">
-        pending
+        format mismatch
       </span>
     );
   }
-  if (status === "flagged") {
+  if (state === "flagged") {
     return (
       <span className="inline-flex h-5 items-center gap-1 rounded-full border border-[rgba(242,107,130,0.28)] bg-[rgba(242,107,130,0.10)] px-2 text-[10.5px] text-[#F26B82]">
-        needs approval
+        dropped by naive join
       </span>
     );
   }
   return (
     <span className="inline-flex h-5 items-center gap-1 rounded-full border border-[rgba(103,217,160,0.22)] bg-[rgba(103,217,160,0.10)] px-2 text-[10.5px] text-[#8EE4B8]">
-      triaged
+      recovered
     </span>
   );
 }
 
-function TicketPanel({ rows }: { rows: TicketRow[] }) {
+function ShipmentPanel({ rows }: { rows: ShipmentRow[] }) {
   return (
     <div className="flex h-full min-w-0 flex-col overflow-hidden">
       <div className="flex h-[42px] items-center border-b border-[var(--border-subtle)] px-4">
@@ -85,45 +65,43 @@ function TicketPanel({ rows }: { rows: TicketRow[] }) {
           className="text-[10.5px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
           style={{ fontWeight: 500 }}
         >
-          Ticket Router
+          delays_manual_tracking.csv · reconcile.py
         </p>
       </div>
       <div className="flex-1 overflow-hidden">
         <div
           className="grid h-[42px] items-center border-b border-[var(--border-subtle)] text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
           style={{
-            gridTemplateColumns: "0.7fr 1.6fr 0.9fr 0.95fr 0.85fr",
+            gridTemplateColumns: "1.1fr 1fr 1.15fr 0.85fr 1.15fr",
             fontWeight: 500,
             paddingInline: 16,
           }}
         >
-          <span>Ticket</span>
-          <span>Subject</span>
-          <span>Category</span>
-          <span>Action</span>
-          <span>Status</span>
+          <span>Shipment</span>
+          <span>Raw ID</span>
+          <span>Lane</span>
+          <span>Carrier</span>
+          <span>Join status</span>
         </div>
         {rows.map((row) => (
           <div
             key={row.id}
             className={[
               "grid h-[52px] items-center border-b border-white/[0.035] text-[12px] transition-[background-color,color] duration-300",
-              row.status === "flagged" ? "bg-[rgba(242,107,130,0.045)]" : "",
+              row.state === "flagged" ? "bg-[rgba(242,107,130,0.045)]" : "",
             ].join(" ")}
             style={{
-              gridTemplateColumns: "0.7fr 1.6fr 0.9fr 0.95fr 0.85fr",
+              gridTemplateColumns: "1.1fr 1fr 1.15fr 0.85fr 1.15fr",
               paddingInline: 16,
             }}
           >
-            <span className="tabular-nums text-[rgba(244,245,247,0.4)]">{row.id}</span>
-            <span className="truncate text-[12.5px] text-[#F4F5F7]" style={{ fontWeight: 550 }}>
-              {row.subject}
+            <span className="tabular-nums text-[#F4F5F7]" style={{ fontWeight: 550 }}>
+              {row.id}
             </span>
-            <span className="text-[11.5px] text-[rgba(244,245,247,0.62)]">{row.category}</span>
-            <span className="tabular-nums text-[#5662FF]" style={{ fontWeight: 600 }}>
-              {row.action}
-            </span>
-            <StatusPill status={row.status} />
+            <span className="tabular-nums text-[rgba(244,245,247,0.4)]">{row.rawId}</span>
+            <span className="truncate text-[11.5px] text-[rgba(244,245,247,0.62)]">{row.lane}</span>
+            <span className="truncate text-[11.5px] text-[rgba(244,245,247,0.62)]">{row.carrier}</span>
+            <StatePill state={row.state} />
           </div>
         ))}
       </div>
@@ -137,14 +115,14 @@ export default function ProjectRelaySequence({
   showToast?: boolean;
 }) {
   const reduce = useReducedMotion();
-  const [rows, setRows] = useState<TicketRow[]>(() =>
+  const [rows, setRows] = useState<ShipmentRow[]>(() =>
     reduce
-      ? BASE_ROWS.map((r) => (r.id === "T-4822" ? { ...r, ...REFUND_FINAL } : r))
-      : BASE_ROWS
+      ? BASE_ROWS.map((r) => ({ ...r, state: r.id === "SHP-00041" ? "unreconciled" : RECOVERED_STATE }))
+      : BASE_ROWS.map((r) => (r.id === "SHP-00041" ? r : { ...r, state: "flagged" as RowState }))
   );
   const [log, setLog] = useState(() =>
     reduce
-      ? [{ time: "13:55", text: "Flagged a refund for human approval" }, ...INITIAL_LOG]
+      ? [{ time: "13:55", text: "Reconciled 3 dropped rows — true late rate is 41.7%, not 36.7%" }, ...INITIAL_LOG]
       : INITIAL_LOG
   );
   const [toastVisible, setToastVisible] = useState(Boolean(reduce && showToast));
@@ -153,13 +131,14 @@ export default function ProjectRelaySequence({
     if (reduce) return;
 
     const t1 = window.setTimeout(() => {
-      setRows((prev) =>
-        prev.map((r) => (r.id === "T-4822" ? { ...r, ...REFUND_FINAL } : r))
-      );
+      setRows((prev) => prev.map((r) => (r.id === "SHP-00041" ? r : { ...r, state: RECOVERED_STATE })));
     }, 1200);
 
     const t2 = window.setTimeout(() => {
-      setLog((prev) => [{ time: "13:55", text: "Flagged a refund for human approval" }, ...prev]);
+      setLog((prev) => [
+        { time: "13:55", text: "Reconciled 3 dropped rows — true late rate is 41.7%, not 36.7%" },
+        ...prev,
+      ]);
     }, 1800);
 
     const t3 = window.setTimeout(() => {
@@ -194,7 +173,7 @@ export default function ProjectRelaySequence({
             ·
           </span>
           <span className="hidden text-[12px] text-[rgba(244,245,247,0.4)] sm:inline">
-            AI Operations Deployment
+            Northbeam Logistics — synthetic deployment
           </span>
           <span
             className="ml-1 inline-flex h-6 items-center gap-1.5 rounded-full border border-[rgba(103,217,160,0.22)] bg-[rgba(103,217,160,0.10)] px-2.5 text-[11px] text-[#8EE4B8]"
@@ -222,18 +201,18 @@ export default function ProjectRelaySequence({
 
       <div className="relative z-[1] grid min-h-[568px] grid-cols-[152px_minmax(0,1fr)_222px]">
         <div className="flex flex-col border-r border-[var(--border-subtle)] bg-[#080A0F] py-2">
-          {["Repo", "router.py", "service.py", "Tests", "Preview"].map((label, i) => (
+          {["Repo", "shipments.csv", "reconcile.py", "Tests", "Preview"].map((label, i) => (
             <div
               key={label}
               className={[
                 "relative mx-2 mb-0.5 flex h-[39px] cursor-default items-center rounded-[7px] px-3.5 text-[12px] transition-colors duration-150",
-                i === 1
+                i === 2
                   ? "bg-[rgba(86,98,255,0.12)] text-[#F4F5F7]"
                   : "text-[rgba(244,245,247,0.4)]",
               ].join(" ")}
-              style={{ fontWeight: i === 1 ? 550 : 450 }}
+              style={{ fontWeight: i === 2 ? 550 : 450 }}
             >
-              {i === 1 && (
+              {i === 2 && (
                 <span
                   className="absolute left-0 top-1/2 h-[16px] w-[2px] -translate-y-1/2 rounded-full bg-[#5662FF]"
                   aria-hidden
@@ -251,31 +230,28 @@ export default function ProjectRelaySequence({
             </div>
             <div className="h-[3px] w-full overflow-hidden rounded-full bg-white/[0.08]">
               <div
-                className="h-full rounded-full"
-                style={{
-                  width: "44%",
-                  background: "linear-gradient(90deg, #5662FF, #8657F4)",
-                }}
+                className="h-full rounded-full bg-[#5662FF]"
+                style={{ width: "44%" }}
               />
             </div>
           </div>
         </div>
 
         <div className="relative min-w-[650px] overflow-hidden border-r border-[var(--border-subtle)] bg-[#0B0F16] lg:min-w-0">
-          <TicketPanel rows={rows} />
+          <ShipmentPanel rows={rows} />
 
           {toastVisible && (
             <div
-              className="absolute bottom-4 left-4 z-[3] w-[268px] rounded-[10px] border border-[rgba(134,87,244,0.24)] bg-[#11151D] px-3.5 py-3 shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+              className="absolute bottom-4 left-4 z-[3] w-[280px] rounded-[10px] border border-[rgba(86,98,255,0.24)] bg-[#11151D] px-3.5 py-3 shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
               style={{
                 animation: reduce ? undefined : "fydell-toast-in 280ms var(--ease) both",
               }}
             >
               <p className="text-[12px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
-                Policy check
+                Data integrity check
               </p>
               <p className="mt-1 text-[12px] leading-[1.45] text-[rgba(244,245,247,0.62)]">
-                Refunds require human approval. The candidate&apos;s router correctly abstained.
+                The naive join silently drops 3 rows. The candidate reconciled them before trusting the number.
               </p>
             </div>
           )}

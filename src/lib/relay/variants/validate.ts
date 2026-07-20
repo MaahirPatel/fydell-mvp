@@ -1,8 +1,6 @@
 /**
- * Bounded, deterministic validation for a materialized Relay variant
- * FileMap. Never runs candidate/generated code — pure static checks so this
- * can run cheaply in the ops UI, in tests, and before `resolveScenarioForSession`
- * ever serves a variant to a real session.
+ * Bounded, deterministic validation for a materialized Northbeam Relay variant.
+ * Never runs candidate code — static checks only.
  */
 import type { FileMap } from "@/lib/relay/execution-provider";
 import scenarioManifest from "../../../../scenarios/project-relay/.fydell/scenario.json";
@@ -14,14 +12,16 @@ export type ValidationResult = {
 };
 
 const REQUIRED_FILES: string[] = (scenarioManifest as { files: string[] }).files;
-const MIN_GOLDEN_SET_CASES = 5;
 
 const DEFECT_MARKER_RE = /INTENTIONAL_DEFECT/;
 
-// Deliberately simple/conservative — anything shaped like an email address
-// is treated as possible PII and rejected. False positives (e.g. an actual
-// example.com address) are acceptable; a false negative is not.
 const EMAIL_LOOKING_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+
+const REQUIRED_DATA = [
+  "data/shipments.csv",
+  "data/carriers.csv",
+  "data/delays_manual_tracking.csv",
+] as const;
 
 export function validateVariant(files: FileMap): ValidationResult {
   const errors: string[] = [];
@@ -37,17 +37,18 @@ export function validateVariant(files: FileMap): ValidationResult {
     errors.push("evals/run_evals.py is missing — evals script is required.");
   }
 
-  const goldenSet = files["data/golden_set.jsonl"];
-  if (!goldenSet || !goldenSet.trim()) {
-    errors.push("data/golden_set.jsonl is missing or empty.");
-  } else {
-    const cases = goldenSet.split("\n").filter((line) => line.trim().length > 0);
-    if (cases.length === 0) {
-      errors.push("data/golden_set.jsonl has no cases.");
-    } else if (cases.length < MIN_GOLDEN_SET_CASES) {
-      warnings.push(
-        `data/golden_set.jsonl only has ${cases.length} case(s); ${MIN_GOLDEN_SET_CASES}+ recommended.`
-      );
+  if (!("tests/test_reconcile.py" in files)) {
+    errors.push("tests/test_reconcile.py is missing — reconcile tests are required.");
+  }
+
+  for (const dataFile of REQUIRED_DATA) {
+    if (!(dataFile in files) || !files[dataFile].trim()) {
+      errors.push(`Missing required data file: ${dataFile}`);
+    } else {
+      const lines = files[dataFile].split("\n").filter((l) => l.trim().length > 0);
+      if (lines.length < 3) {
+        warnings.push(`${dataFile} looks thin (${lines.length} non-empty lines).`);
+      }
     }
   }
 

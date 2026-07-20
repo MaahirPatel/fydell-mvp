@@ -9,13 +9,13 @@ export const metadata = { title: "Fydell — Employer" };
 export const dynamic = "force-dynamic";
 
 const NAV = [
-  { href: "/app/employer", label: "Mission Control" },
+  { href: "/app/employer", label: "Overview" },
+  { href: "/app/employer/simulations", label: "Simulations" },
   { href: "/app/employer/missions", label: "Missions" },
   { href: "/app/employer/candidates", label: "Candidates" },
-  { href: "/app/employer/simulations", label: "Simulations" },
+  { href: "/app/employer/attempts", label: "Attempts" },
   { href: "/app/employer/evidence", label: "Evidence" },
   { href: "/app/employer/decisions", label: "Decisions" },
-  { href: "/app/employer/receipts", label: "Work Receipts" },
   { href: "/app/employer/settings", label: "Settings" },
 ];
 
@@ -96,19 +96,27 @@ export default async function EmployerAppLayout({ children }: { children: React.
               <FydellBrand markSize={24} wordmarkSize={16} />
             </div>
             <p className="hidden truncate text-[13px] text-white/55 md:block">
-              {organizationName}
+              Workspace: {organizationName}
             </p>
-            <nav className="flex min-w-0 gap-1 overflow-x-auto md:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] text-white/55"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/app/employer/simulations/generate"
+                className="inline-flex h-9 items-center rounded-[8px] bg-[#F1F2F4] px-3 text-[12px] font-semibold text-[#08090C]"
+              >
+                Create simulation
+              </Link>
+              <nav className="flex min-w-0 gap-1 overflow-x-auto md:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {NAV.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="shrink-0 whitespace-nowrap rounded-[8px] px-2.5 py-1 text-[11px] text-white/55"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
           </header>
           <div className="px-4 py-7 sm:px-7 lg:px-8">{children}</div>
         </div>

@@ -5,27 +5,27 @@ import { useInView, useReducedMotion, animate, motion } from "motion/react";
 import CountUp from "@/components/motion/CountUp";
 
 const CAPTURE_ITEMS = [
-  "File saves and iteration across the codebase",
-  "Allowlisted commands run — test, pytest, evals, preview",
-  "Customer chat messages and response timing",
-  "Response to the mid-session curveball",
+  "File saves and iteration across the repo",
+  "Allowlisted commands run — reconcile, test, evals, preview",
+  "Chat with Dana and Priya, and response timing",
+  "Response to the board-meeting curveball",
   "Heartbeat gaps and technical interruptions",
   "The final, frozen submission",
 ];
 
 const EVIDENCE_COUNTS = [
   { label: "Files edited", value: "6" },
-  { label: "Test runs", value: "4" },
-  { label: "Chat messages", value: "5" },
+  { label: "Reconciliation runs", value: "3" },
+  { label: "Chat messages", value: "7" },
   { label: "Curveball response", value: "1" },
   { label: "Heartbeat gaps", value: "0" },
-  { label: "Commands run", value: "9" },
+  { label: "Commands run", value: "11" },
 ];
 
 const ACTIVITY = [
-  { time: "09:12", text: "Edited src/router.py" },
-  { time: "12:47", text: "Ran pytest — 1 failure" },
-  { time: "18:03", text: "Responded to mid-session curveball" },
+  { time: "09:12", text: "Loaded shipments.csv and carriers.csv" },
+  { time: "12:47", text: "Ran reconcile.py — recovered 3 dropped rows" },
+  { time: "18:03", text: "Responded to the board-meeting curveball" },
   { time: "24:11", text: "Submitted final work" },
 ];
 

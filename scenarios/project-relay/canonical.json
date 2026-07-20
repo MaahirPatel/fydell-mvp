@@ -1,20 +1,19 @@
 {
   "templateId": "project-relay",
-  "version": "1.0.0",
-  "label": "Synthetic FDE deployment",
+  "version": "2.0.0",
+  "label": "Northbeam Logistics — Shipment Delay Visibility",
   "durationMinutes": 55,
   "curveballs": [
-    "model_rate_limit",
-    "schema_drift",
-    "automate_without_approval",
-    "data_retention",
-    "demo_moved_earlier",
-    "unsafe_eval_failure"
+    "board_meeting_thursday",
+    "vp_wants_root_cause",
+    "carrier_data_unreliable"
   ],
   "canonicalFacts": [
-    "Human approval required for refunds, account locks, and legal escalation",
-    "P0 outages must be assigned to the incident queue",
-    "Security tickets must not auto-execute destructive actions",
-    "Abstain when confidence is insufficient for sensitive actions"
+    "The ops manager (Dana Whitfield) wants an operational dashboard she can check every morning, not a one-off analysis",
+    "The VP of Operations (Priya Anand) wants a defensible root-cause report for the board — this should only surface if the candidate asks about stakeholders, priorities, or what to build",
+    "Dana and Priya want different deliverables and have not reconciled that between themselves — managing that conflict is the candidate's job, not something the brief resolves",
+    "The manual delay-tracking sheet (delays_manual_tracking.csv) uses inconsistent shipment ID formats (missing leading zeros, missing the SHP- prefix) that a naive exact-match join will silently drop",
+    "The board meeting was moved up to Thursday, pulling the delivery deadline earlier than originally planned",
+    "Carrier-reported on-time rates in carriers.csv are self-reported and do not reconcile with the actual delivery data in shipments.csv"
   ]
 }

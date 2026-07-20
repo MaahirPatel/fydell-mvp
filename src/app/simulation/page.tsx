@@ -7,25 +7,40 @@ import FinalCTA from "@/components/marketing/FinalCTA";
 export const metadata = {
   title: "Project Relay · Fydell",
   description:
-    "Project Relay is a 50-minute simulated deployment session: a real customer scenario, a real terminal, a mid-session curveball, and one immutable submission.",
+    "Project Relay is a 50-minute simulated deployment session at a synthetic logistics company: messy hand-kept data, a stakeholder conflict, a mid-session curveball, and one immutable submission.",
 };
 
 const STAGES = [
   {
-    title: "Consent + setup",
-    body: "Every FDE sees exactly what's recorded before they start: file saves, command runs, chat messages, and the final submission.",
+    title: "Consent + the ask",
+    body: "The FDE sees exactly what's recorded, then gets Northbeam's real ask, verbatim: \u201CWe need better visibility into shipment delays.\u201D No spec, no ticket, no acceptance criteria.",
   },
   {
     title: "50-minute session",
-    body: "A real customer scenario with a working codebase, an allowlisted terminal (test, pytest, evals, preview), and a bounded customer chat.",
+    body: "Three CSVs, a working repo, an allowlisted terminal, and a live #northbeam-ops chat with an ops manager and a VP who want two different things.",
   },
   {
     title: "Mid-session curveball",
-    body: "Partway through, something changes — a rate limit, a schema drift, a policy question — and the FDE has to adapt in real time.",
+    body: "The board meeting gets pulled forward a day, mid-thread, with no warning. Whatever scope was planned has to be renegotiated on the clock.",
   },
   {
     title: "One immutable submission",
-    body: "When the FDE submits, their files are frozen. That frozen snapshot is the only thing evidence gets generated from.",
+    body: "The ship gate asks what was built, how it was verified, and what's still unverified. Then the workspace freezes — evidence only comes from that frozen snapshot.",
+  },
+];
+
+const WORKED_EXAMPLE = [
+  {
+    title: "The data doesn't agree with itself",
+    body: "shipments.csv comes from the TMS. delays_manual_tracking.csv is hand-kept by ops and was never validated against it — 3 rows use a different ID format and vanish under a naive join, understating the late rate by 5 points.",
+  },
+  {
+    title: "The stakeholders don't agree either",
+    body: "Dana (ops manager) wants a dashboard to check every morning. Priya (VP of Operations) wants a root-cause report defensible to the board. Neither one resolves it for the candidate.",
+  },
+  {
+    title: "A carrier's own number is wrong",
+    body: "carriers.csv includes each carrier's self-reported on-time rate. Compute the real rate from shipments.csv and at least one carrier's claim is off by a wide margin — a fact to verify, not cite.",
   },
 ];
 
@@ -34,7 +49,7 @@ export default function SimulationPage() {
     <MarketingShell>
       <PageHero
         title="Project Relay: the simulation behind every mission."
-        description="A 50-minute deployment session that produces honest, rule-based evidence — not a quiz, not a personality test."
+        description="A 50-minute deployment session at Northbeam Logistics, a synthetic freight brokerage — messy data, a stakeholder conflict, and one immutable submission. Not a quiz, not LeetCode."
       />
 
       <section className="mkt-section border-t border-[var(--border-subtle)]">
@@ -51,6 +66,33 @@ export default function SimulationPage() {
                     {stage.body}
                   </p>
                 </div>
+              </Reveal>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      <section className="mkt-section border-t border-[var(--border-subtle)]">
+        <Container>
+          <Reveal className="max-w-[640px]">
+            <h2 className="section-heading flat-type">Northbeam Logistics, worked.</h2>
+            <p className="section-desc mt-5">
+              Every candidate runs the same synthetic scenario. Here&apos;s what&apos;s actually in it.
+            </p>
+          </Reveal>
+
+          <div className="mt-14 grid gap-10 sm:grid-cols-3 sm:gap-8 lg:gap-12">
+            {WORKED_EXAMPLE.map((item) => (
+              <Reveal key={item.title} delay={0.03}>
+                <h3
+                  className="text-[15px] text-[#F4F5F7]"
+                  style={{ fontWeight: 560, letterSpacing: "-0.015em" }}
+                >
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
+                  {item.body}
+                </p>
               </Reveal>
             ))}
           </div>

@@ -17,14 +17,14 @@ export default function HomeReportMock() {
           <div className="mt-5 space-y-4">
             {[
               { label: "Recommendation", value: "Advance", accent: true },
-              { label: "Confidence", value: "Medium-high" },
+              { label: "Fit score (secondary)", value: "74 / 100 · design-weighted" },
               { label: "Role", value: "Forward Deployed Engineer" },
-              { label: "Simulation", value: "Project Relay" },
+              { label: "Simulation", value: "Project Relay · Northbeam Logistics" },
             ].map((row) => (
               <div key={row.label} className="border-b border-white/[0.04] pb-3">
                 <p className="text-[11px] text-[rgba(244,245,247,0.4)]">{row.label}</p>
                 <p
-                  className={`mt-1 text-[14px] ${
+                  className={`mt-1 text-[13.5px] ${
                     row.accent ? "text-[#67D9A0]" : "text-[#F4F5F7]"
                   }`}
                   style={{ fontWeight: 560 }}
@@ -42,14 +42,13 @@ export default function HomeReportMock() {
             className="text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
             style={{ fontWeight: 500 }}
           >
-            Observed strengths
+            Strong evidence
           </p>
           <ol className="mt-3 space-y-2.5">
             {[
-              "Re-ran tests after every meaningful edit",
-              "Adapted the approach after the mid-session curveball",
-              "Told the customer what changed and why",
-              "Reviewed AI-suggested code before shipping it",
+              "Reconciled the dropped-rows bug before trusting the late rate",
+              "Named the Dana/Priya scope conflict instead of picking a side quietly",
+              "Cut dashboard polish, not the reconciled numbers, under the deadline curveball",
             ].map((s, i) => (
               <li key={s} className="flex gap-2.5 text-[13px] leading-[1.45] text-[rgba(244,245,247,0.72)]">
                 <span className="w-4 shrink-0 tabular-nums text-[rgba(244,245,247,0.4)]">
@@ -68,8 +67,8 @@ export default function HomeReportMock() {
           </p>
           <ol className="mt-3 space-y-2.5">
             {[
-              "Ran the preview command only once before submitting",
-              "Did not run the eval suite without being prompted",
+              "Didn't state what was cut from scope, only that the deadline moved",
+              "No verification note on the AI-drafted query before it shipped",
             ].map((s, i) => (
               <li key={s} className="flex gap-2.5 text-[13px] leading-[1.45] text-[rgba(244,245,247,0.62)]">
                 <span className="w-4 shrink-0 tabular-nums text-[rgba(244,245,247,0.4)]">
@@ -91,8 +90,8 @@ export default function HomeReportMock() {
           </p>
           <ol className="mt-3 space-y-0">
             {[
-              "Mid-session curveball revealed",
-              "Approach revised after the change",
+              "Dropped-rows bug found and reconciled",
+              "Board-meeting curveball revealed",
               "Final submission frozen",
             ].map((m, i, arr) => (
               <li key={m} className="flex gap-3">
@@ -120,8 +119,8 @@ export default function HomeReportMock() {
           </p>
           <ul className="mt-3 space-y-3">
             {[
-              "What additional evidence would make you reverse your recommendation?",
-              "How would you have handled the curveball with half the time left?",
+              "What would have changed your read on the late-rate number?",
+              "How would you have split scope with half the remaining time?",
             ].map((q) => (
               <li
                 key={q}

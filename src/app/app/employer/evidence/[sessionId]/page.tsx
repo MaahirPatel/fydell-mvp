@@ -21,6 +21,45 @@ type Decision = {
   created_at: string;
 };
 
+type TraitRow = {
+  traitId: string;
+  label: string;
+  score100: number | null;
+  bucket: string;
+  opportunityFlag: boolean;
+  independentCount?: number;
+  nEff?: number;
+  se?: number | null;
+  band?: { low: number; high: number } | null;
+  eventRefs?: string[];
+  artifactRefs?: string[];
+  summaries?: string[];
+  confidence?: {
+    sufficiency?: number;
+    consistency?: number;
+    diversity?: number;
+    provenance?: number;
+    confidence01?: number;
+    label?: string;
+  } | null;
+};
+
+type InterviewFollowup = {
+  traitId: string;
+  label: string;
+  prompt: string;
+  eventIds?: string[];
+  why?: string;
+};
+
+type ProcessComponent = {
+  key: string;
+  label: string;
+  score01: number;
+  overall100?: number;
+  explanation: string;
+};
+
 type EvidenceData = {
   session: { id: string; status: string; submittedAt: string | null; curveballKey: string | null };
   mission: { id: string; title: string; objective: string };
@@ -30,18 +69,14 @@ type EvidenceData = {
   artifactsById: Record<string, ApertureArtifactRef>;
   decisions: Decision[];
   analysis: {
-    fit: {
+    composite: {
       fitScore100: number | null;
       formulaVersion: string;
       policyVersion: string;
-      provisionalDimensionCount: number;
-      dimensions: Array<{
-        dimensionId: string;
-        label: string;
-        score100: number | null;
-        state: string;
-        provisional: boolean;
-      }>;
+      observedTraitCount: number;
+      notObservedTraitIds: string[];
+      confidenceTag: string;
+      traits: TraitRow[];
     };
     prediction: {
       hireProbabilityPct: number;
@@ -56,6 +91,27 @@ type EvidenceData = {
       band: { low: number; high: number };
       validationStatus: string;
     };
+    interviewFollowups: InterviewFollowup[];
+    processQuality?: {
+      overall100: number;
+      components: ProcessComponent[];
+    };
+    aiQuality?: {
+      observed: boolean;
+      score: number | null;
+      score100: number | null;
+    };
+    adaptability?: {
+      observed: boolean;
+      score01: number | null;
+      score100: number | null;
+    };
+    diagnosticEfficiency?: {
+      efficiency: number;
+      totalIG: number;
+    };
+    validationMaturity: string;
+    formulaVersion?: string;
   } | null;
 };
 
@@ -67,41 +123,6 @@ const DECISIONS = [
 ];
 
 const MIN_RATIONALE_LENGTH = 15;
-
-const CALIBRATION_TEMPLATES: Record<string, (f: Finding) => string> = {
-  discovery_problem_framing: () =>
-    "Ask what they believed the real customer problem was at minute five versus at submit — and what evidence changed their mind.",
-  technical_scoping_prioritization: () =>
-    "Ask how they chose what to fix first, and what they deliberately left unfinished.",
-  engineering_applied_ai_execution: (f) =>
-    f.confidence === "low"
-      ? "There's weak execution evidence — ask them to walk through how they would validate a fix before shipping to production."
-      : "Ask them to explain one change they made, how they verified it, and what they would still not trust without more time.",
-  evaluation_production_judgment: () =>
-    "Ask which residual production risk they would refuse to automate, and why.",
-  adaptation_customer_communication: (f) =>
-    f.confidence === "low"
-      ? "Customer communication evidence is thin — ask how they would have notified a real stakeholder after the mid-session change."
-      : "Ask how they decided what to tell the customer after the curveball, and what they left out.",
-  technical_execution: (f) =>
-    f.confidence === "low"
-      ? "There's no recorded test run before submission — ask them to walk through how they validated the solution before shipping."
-      : "Ask them to explain what the test run told them, and what they'd have checked next with more time.",
-  customer_communication: (f) =>
-    f.confidence === "low"
-      ? "They didn't use the customer chat — ask how they'd have handled checking in with a real stakeholder before shipping."
-      : "Ask how they decided what to tell the customer, and what they left out.",
-  handling_ambiguity: () =>
-    "Ask them to describe the mid-session change in their own words and how they decided what to reprioritize.",
-};
-
-function buildCalibrationPrompts(findings: Finding[]): string[] {
-  return findings.slice(0, 5).map((f) => {
-    const generator = CALIBRATION_TEMPLATES[f.dimension];
-    if (generator) return generator(f);
-    return `Ask them to elaborate on: ${f.observation}`;
-  });
-}
 
 export default function EmployerEvidenceDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -128,10 +149,7 @@ export default function EmployerEvidenceDetailPage() {
     load();
   }, [load]);
 
-  const calibrationPrompts = useMemo(
-    () => (data ? buildCalibrationPrompts(data.findings) : []),
-    [data]
-  );
+  const calibrationPrompts = useMemo(() => data?.analysis?.interviewFollowups || [], [data]);
 
   const rationaleTooShort = structuredReason.trim().length < MIN_RATIONALE_LENGTH;
 
@@ -173,7 +191,9 @@ export default function EmployerEvidenceDetailPage() {
 
   return (
     <div className="mx-auto max-w-[760px]">
-      <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/45">Evidence</p>
+      <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/45">
+        Prototype evidence report
+      </p>
       <div className="mt-1 flex flex-wrap items-baseline justify-between gap-3">
         <h1 className="text-[26px] text-[#F4F5F7] sm:text-[30px]" style={{ fontWeight: 560, letterSpacing: "-0.035em" }}>
           {data.mission.title}
@@ -181,19 +201,37 @@ export default function EmployerEvidenceDetailPage() {
         {data.session.status === "receipt_ready" && <ReceiptSeal />}
       </div>
       <p className="mt-2 text-[14px] text-white/60">{data.fde.name}</p>
+      <p className="mt-1 text-[12.5px] text-white/40">
+        Role alignment and competency estimates with uncertainty — not an autonomous hire/reject
+        decision.
+      </p>
 
       <aside className="mt-5 rounded-[12px] border border-white/[0.1] bg-white/[0.03] px-4 py-3 text-[12.5px] leading-relaxed text-white/55">
-        <strong className="font-semibold text-white/75">Employer responsibility.</strong> Fit scores
-        and the predictive hire estimate below are decision-support outputs from a versioned
-        work-sample model. Your organization remains accountable for the final selection decision,
-        accommodations, adverse-impact monitoring, and documentation under applicable law. A human
-        rationale is still required. Provisional / insufficient dimensions are inconclusive, not
-        negative.
+        <strong className="font-semibold text-white/75">Methodology.</strong> Events → evidence
+        atoms → trait estimates with Kish{" "}
+        <span className="text-white/70">N_eff</span>, standard error, shrinkage priors, and a
+        decomposable confidence (sufficiency × consistency × diversity × provenance). Composite
+        fit blends arithmetic and geometric means so one strength cannot hide every weakness.
+        Difficulty/coverage coefficients are labeled expert priors — design-weighted, not
+        outcome-validated. Expand any competency below for event citations. Human review remains
+        required; Fydell does not autonomously hire or reject.
+        {data.analysis?.formulaVersion ? (
+          <span className="mt-1 block text-[11px] text-white/40">
+            Analysis formula {data.analysis.formulaVersion}
+          </span>
+        ) : null}
       </aside>
 
       {data.analysis && (
         <div className="mt-6">
-          <PredictiveHirePanel fit={data.analysis.fit} prediction={data.analysis.prediction} />
+          <PredictiveHirePanel
+            composite={data.analysis.composite}
+            prediction={data.analysis.prediction}
+            onOpenEvent={(id) => {
+              const el = document.getElementById(`event-${id}`);
+              el?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }}
+          />
           <div className="mt-3 flex flex-wrap gap-3">
             <a
               href={`/api/employer/evidence/${sessionId}/export`}
@@ -203,6 +241,54 @@ export default function EmployerEvidenceDetailPage() {
             </a>
           </div>
         </div>
+      )}
+
+      {(data.analysis?.aiQuality || data.analysis?.adaptability || data.analysis?.diagnosticEfficiency) && (
+        <section className="mt-6 grid gap-3 sm:grid-cols-3">
+          {data.analysis.aiQuality && (
+            <div className="rounded-[12px] border border-white/[0.1] bg-[#0A0C11]/85 px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.06em] text-white/45">AI-use quality</p>
+              <p className="mt-1 text-[18px] tabular-nums text-white/90">
+                {!data.analysis.aiQuality.observed
+                  ? "Not observed"
+                  : data.analysis.aiQuality.score100 == null
+                    ? "—"
+                    : data.analysis.aiQuality.score100}
+              </p>
+              <p className="mt-1 text-[11px] text-white/40">
+                No AI use is not a penalty. Measures framing, verification, and blind reliance.
+              </p>
+            </div>
+          )}
+          {data.analysis.adaptability && (
+            <div className="rounded-[12px] border border-white/[0.1] bg-[#0A0C11]/85 px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.06em] text-white/45">Adaptability</p>
+              <p className="mt-1 text-[18px] tabular-nums text-white/90">
+                {!data.analysis.adaptability.observed
+                  ? "Not observed"
+                  : data.analysis.adaptability.score100 == null
+                    ? "—"
+                    : data.analysis.adaptability.score100}
+              </p>
+              <p className="mt-1 text-[11px] text-white/40">
+                Anchored to curveball_revealed. Absent curveball ⇒ not observed, not zero.
+              </p>
+            </div>
+          )}
+          {data.analysis.diagnosticEfficiency && (
+            <div className="rounded-[12px] border border-white/[0.1] bg-[#0A0C11]/85 px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.06em] text-white/45">
+                Diagnostic efficiency
+              </p>
+              <p className="mt-1 text-[18px] tabular-nums text-white/90">
+                {Math.round(data.analysis.diagnosticEfficiency.efficiency * 100)}
+              </p>
+              <p className="mt-1 text-[11px] text-white/40">
+                Information gain vs time / churn / redundancy (expert-prior weights).
+              </p>
+            </div>
+          )}
+        </section>
       )}
 
       <section className="mt-6 rounded-[16px] border border-white/[0.1] bg-[#0A0C11]/85 p-5">
@@ -231,20 +317,48 @@ export default function EmployerEvidenceDetailPage() {
         )}
       </section>
 
+      {data.analysis?.processQuality && (
+        <section className="mt-6 rounded-[16px] border border-white/[0.1] bg-[#0A0C11]/85 p-5">
+          <h2 className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/50">
+            Process quality
+          </h2>
+          <p className="mt-1.5 text-[12.5px] text-white/45">
+            Prototype rollup from observable actions — overall{" "}
+            {data.analysis.processQuality.overall100}/100.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {data.analysis.processQuality.components.map((c) => (
+              <li key={c.key} className="flex items-center gap-3 text-[12.5px]">
+                <span className="w-[140px] shrink-0 text-white/70">{c.label}</span>
+                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.08]">
+                  <span
+                    className="block h-full rounded-full bg-[#8FA3FF]"
+                    style={{ width: `${Math.round(c.score01 * 100)}%` }}
+                  />
+                </span>
+                <span className="w-8 tabular-nums text-white/40">{Math.round(c.score01 * 100)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {calibrationPrompts.length > 0 && (
         <section className="mt-6 rounded-[16px] border border-[#5662FF]/25 bg-[#5662FF]/[0.05] p-5">
           <h2 className="text-[12px] font-medium uppercase tracking-[0.06em] text-[#B8C4FF]">
             Interview calibration
           </h2>
           <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/50">
-            Questions to ask in a live conversation, derived from this session's findings — use
+            Questions to ask in a live conversation, derived from this session&apos;s findings — use
             them to calibrate, not to replace the conversation.
           </p>
-          <ol className="mt-3 space-y-2.5">
-            {calibrationPrompts.map((prompt, i) => (
-              <li key={i} className="flex gap-2.5 text-[13px] leading-relaxed text-white/75">
+          <ol className="mt-3 space-y-3">
+            {calibrationPrompts.map((followup, i) => (
+              <li key={followup.traitId} className="flex gap-2.5 text-[13px] leading-relaxed text-white/75">
                 <span className="mt-[1px] shrink-0 text-[12px] font-semibold text-[#8FA3FF]">{i + 1}.</span>
-                {prompt}
+                <span>
+                  <span className="text-white/45">{followup.label}:</span> {followup.prompt}
+                </span>
               </li>
             ))}
           </ol>

@@ -65,6 +65,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
           files: body.files,
           plan: body.plan,
           handoff: body.handoff,
+          notes: body.notes,
         });
         return NextResponse.json({ ok: true, session });
       }
@@ -88,6 +89,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
           files: body.files,
           plan: body.plan,
           handoff: body.handoff,
+          notes: body.notes,
         });
         await markProcessing(id);
         await generateEvidenceFindings(id);

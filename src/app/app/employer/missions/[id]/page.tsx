@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Copy, Check, Lock } from "lucide-react";
+import { Copy, Check, Lock, ExternalLink } from "lucide-react";
 import { defaultPrimaryDimensions } from "@/lib/fde/evaluation-contract";
 
 type Mission = {
@@ -26,8 +27,8 @@ type Invite = {
 
 const STATUS_LABEL: Record<string, string> = {
   draft: "Draft",
-  under_review: "Under review",
-  active: "Active",
+  under_review: "Validated (under review)",
+  active: "Published",
   paused: "Paused",
   closed: "Closed",
   archived: "Archived",
@@ -55,6 +56,10 @@ export default function MissionDetailPage() {
   const [acceptUrl, setAcceptUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const [publishBusy, setPublishBusy] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [publishOk, setPublishOk] = useState(false);
+
   const load = useCallback(async () => {
     try {
       const [missionRes, invitesRes] = await Promise.all([
@@ -63,18 +68,73 @@ export default function MissionDetailPage() {
       ]);
       const missionData = await missionRes.json();
       const invitesData = await invitesRes.json();
-      if (!missionRes.ok) throw new Error(missionData.error || "Could not load mission");
+      if (!missionRes.ok) throw new Error(missionData.error || "Could not load simulation");
       setMission(missionData.mission);
       setHasSessions(Boolean(missionData.hasSessions));
       setInvites(invitesRes.ok ? invitesData.invites || [] : []);
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : "Could not load mission");
+      setLoadError(err instanceof Error ? err.message : "Could not load simulation");
     }
   }, [id]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash === "#invite") {
+      document.getElementById("invite")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [mission?.status]);
+
+  async function publishSimulation() {
+    setPublishBusy(true);
+    setPublishError(null);
+    setPublishOk(false);
+    try {
+      const res = await fetch(`/api/fde/missions/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "publish" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not publish");
+      setMission(data.mission);
+      setPublishOk(true);
+      requestAnimationFrame(() => {
+        document.getElementById("invite")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        document.getElementById("invite-email")?.focus();
+      });
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : "Could not publish");
+    } finally {
+      setPublishBusy(false);
+    }
+  }
+
+  async function missionAction(action: "archive" | "restore" | "duplicate") {
+    setPublishBusy(true);
+    setPublishError(null);
+    try {
+      const res = await fetch(`/api/fde/missions/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Could not ${action}`);
+      if (action === "duplicate" && data.mission?.id) {
+        window.location.href = `/app/employer/missions/${data.mission.id}`;
+        return;
+      }
+      setMission(data.mission);
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : `Could not ${action}`);
+    } finally {
+      setPublishBusy(false);
+    }
+  }
 
   async function sendInvite(e: React.FormEvent) {
     e.preventDefault();
@@ -100,22 +160,37 @@ export default function MissionDetailPage() {
   }
 
   if (loadError) {
-    return <p className="text-[14px] text-[#fda4b0]">{loadError}</p>;
+    return (
+      <div className="rounded-[14px] border border-[#f26b82]/30 bg-[#f26b82]/10 p-5">
+        <p className="text-[14px] text-[#fda4b0]">{loadError}</p>
+        <button
+          type="button"
+          onClick={() => {
+            setLoadError(null);
+            load();
+          }}
+          className="mt-3 text-[13px] text-white/70 underline"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
   if (!mission) {
     return (
-      <div className="animate-pulse space-y-3">
+      <div className="animate-pulse space-y-3" aria-busy="true">
         <div className="h-8 w-64 rounded bg-white/5" />
         <div className="h-32 rounded-[14px] bg-white/5" />
       </div>
     );
   }
 
-  const canInvite = mission.status === "under_review" || mission.status === "active";
+  const canPublish = ["draft", "under_review", "paused"].includes(mission.status);
+  const canInvite = mission.status === "active";
 
   return (
-    <div className="mx-auto max-w-[760px]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="mx-auto max-w-[860px]">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/45">
             Mission
@@ -126,13 +201,85 @@ export default function MissionDetailPage() {
           >
             {mission.title}
           </h1>
+          <p className="mt-2 text-[13px] text-white/50">
+            Preview the Project Relay workspace, publish the mission, then invite candidates.
+          </p>
         </div>
-        <span className="rounded-full border border-white/15 px-2.5 py-1 text-[12px] text-white/60">
-          {STATUS_LABEL[mission.status] || mission.status}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-[8px] border border-white/15 px-2.5 py-1 text-[12px] text-white/60">
+            {STATUS_LABEL[mission.status] || mission.status}
+          </span>
+          <Link
+            href={`/app/employer/missions/${id}/preview`}
+            className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-white/15 px-3 text-[12px] text-white/80 hover:bg-white/[0.04]"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            Preview Project Relay
+          </Link>
+          {canPublish && (
+            <button
+              type="button"
+              onClick={publishSimulation}
+              disabled={publishBusy}
+              className="inline-flex h-9 items-center justify-center rounded-[8px] bg-[#F1F2F4] px-3.5 text-[12px] font-semibold text-[#08090C] disabled:opacity-50"
+            >
+              {publishBusy ? "Publishing…" : "Publish & invite"}
+            </button>
+          )}
+          {canInvite && (
+            <a
+              href="#invite"
+              className="inline-flex h-9 items-center justify-center rounded-[8px] bg-[#F1F2F4] px-3.5 text-[12px] font-semibold text-[#08090C]"
+            >
+              Invite candidate
+            </a>
+          )}
+          <button
+            type="button"
+            onClick={() => missionAction("duplicate")}
+            disabled={publishBusy}
+            className="inline-flex h-9 items-center rounded-[8px] border border-white/15 px-3 text-[12px] text-white/75 disabled:opacity-50"
+          >
+            Duplicate
+          </button>
+          {mission.status === "archived" ? (
+            <button
+              type="button"
+              onClick={() => missionAction("restore")}
+              disabled={publishBusy}
+              className="inline-flex h-9 items-center rounded-[8px] border border-white/15 px-3 text-[12px] text-white/75 disabled:opacity-50"
+            >
+              Restore
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Archive this simulation? You can restore it later as a draft.")) {
+                  missionAction("archive");
+                }
+              }}
+              disabled={publishBusy}
+              className="inline-flex h-9 items-center rounded-[8px] border border-white/15 px-3 text-[12px] text-white/55 disabled:opacity-50"
+            >
+              Archive
+            </button>
+          )}
+        </div>
       </div>
 
-      <section className="mt-6 rounded-[16px] border border-white/[0.1] bg-[#0A0C11]/85 p-5">
+      {publishError && (
+        <p className="mt-3 text-[13px] text-[#fda4b0]" role="alert">
+          {publishError}
+        </p>
+      )}
+      {publishOk && (
+        <p className="mt-3 text-[13px] text-[#67d9a0]" role="status">
+          Simulation is active. You can invite candidates below.
+        </p>
+      )}
+
+      <section className="mt-6 rounded-[14px] border border-white/[0.1] bg-[#0A0C11]/85 p-5">
         <h2 className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/50">
           Objective
         </h2>
@@ -144,8 +291,9 @@ export default function MissionDetailPage() {
             <h2 className="mt-5 text-[12px] font-medium uppercase tracking-[0.06em] text-white/50">
               Customer context
             </h2>
-            <p className="mt-2 whitespace-pre-wrap text-[14px] leading-relaxed text-white/70">
-              {mission.customer_context}
+            <p className="mt-2 max-h-48 overflow-y-auto whitespace-pre-wrap text-[14px] leading-relaxed text-white/70">
+              {mission.customer_context.slice(0, 2400)}
+              {mission.customer_context.length > 2400 ? "…" : ""}
             </p>
           </>
         )}
@@ -163,7 +311,7 @@ export default function MissionDetailPage() {
 
       <section
         className={
-          "mt-6 rounded-[16px] border p-5 " +
+          "mt-6 rounded-[14px] border p-5 " +
           (hasSessions
             ? "border-[#3B5BFF]/25 bg-[#3B5BFF]/[0.05]"
             : "border-white/[0.1] bg-[#0A0C11]/85")
@@ -182,8 +330,8 @@ export default function MissionDetailPage() {
         </div>
         <p className="mt-2 text-[12.5px] leading-relaxed text-white/55">
           {hasSessions
-            ? "A candidate has already started a session under this contract. The dimensions below can no longer change for this mission — that's what keeps evidence comparable across every FDE you invite to it."
-            : "Whoever you invite is evaluated on how they actually worked this mission, across five primary dimensions. This locks automatically the moment the first candidate starts their session."}
+            ? "A candidate has already started a session under this contract. Traits below can no longer change for this simulation."
+            : "Candidates are evaluated on observable work across FDE traits. Traits with no opportunity to observe are marked not observed — never scored negatively."}
         </p>
         <ul className="mt-3 grid gap-2 sm:grid-cols-2">
           {defaultPrimaryDimensions().map((d) => (
@@ -194,30 +342,54 @@ export default function MissionDetailPage() {
         </ul>
       </section>
 
-      <section className="mt-6 rounded-[16px] border border-white/[0.1] bg-[#0A0C11]/85 p-5">
+      <section
+        id="invite"
+        className="mt-6 scroll-mt-8 rounded-[14px] border border-white/[0.1] bg-[#0A0C11]/85 p-5"
+      >
         <h2 className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/50">
-          Invite an FDE
+          Invite a candidate
         </h2>
+        <p className="mt-1.5 text-[13px] text-white/50">
+          Creates a shareable Project Relay link. No fake candidates — only people you invite.
+        </p>
 
         {!canInvite ? (
-          <p className="mt-3 text-[13px] text-white/50">
-            This mission must finish review before you can invite an FDE.
-          </p>
+          <div className="mt-3 space-y-3">
+            <p className="text-[13px] text-white/50">
+              Publish this mission first, then invite with a shareable link.
+            </p>
+            {canPublish && (
+              <button
+                type="button"
+                onClick={publishSimulation}
+                disabled={publishBusy}
+                className="inline-flex h-10 items-center justify-center rounded-[10px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C] disabled:opacity-50"
+              >
+                {publishBusy ? "Publishing…" : "Publish to enable invites"}
+              </button>
+            )}
+          </div>
         ) : !acceptUrl ? (
-          <form onSubmit={sendInvite} className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-start">
+          <form
+            onSubmit={sendInvite}
+            className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-start"
+          >
             <input
               className="platform-input"
               placeholder="Full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
               required
             />
             <input
+              id="invite-email"
               className="platform-input"
               placeholder="Work email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
             />
             <button
@@ -225,22 +397,18 @@ export default function MissionDetailPage() {
               disabled={inviteBusy}
               className="inline-flex h-[46px] items-center justify-center rounded-[10px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C] disabled:opacity-50"
             >
-              {inviteBusy ? "Sending…" : "Invite"}
+              {inviteBusy ? "Creating…" : "Create invite link"}
             </button>
           </form>
         ) : (
           <div className="mt-4 space-y-3">
             <p className="text-[13px] text-white/60">
-              Share this link with the FDE. It won&apos;t be shown again.
+              Share this link with the candidate. Copy it now — it won&apos;t be shown again.
             </p>
             <div className="break-all rounded-[10px] border border-white/10 bg-black/30 px-3 py-2 text-[12px]">
               {acceptUrl}
             </div>
-            <p className="text-[12px] leading-relaxed text-white/40">
-              They&apos;ll also see this invitation waiting in their Action Inbox as soon as they
-              sign in — the link above works even if they never check email.
-            </p>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => {
@@ -253,6 +421,14 @@ export default function MissionDetailPage() {
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                 {copied ? "Copied" : "Copy link"}
               </button>
+              <a
+                href={acceptUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-white/15 px-3 text-[12px] text-white/80"
+              >
+                Open as candidate
+              </a>
               <button
                 type="button"
                 onClick={() => setAcceptUrl(null)}
@@ -264,7 +440,11 @@ export default function MissionDetailPage() {
           </div>
         )}
 
-        {inviteError && <p className="mt-3 text-[13px] text-[#fda4b0]">{inviteError}</p>}
+        {inviteError && (
+          <p className="mt-3 text-[13px] text-[#fda4b0]" role="alert">
+            {inviteError}
+          </p>
+        )}
 
         {invites.length > 0 && (
           <ul className="mt-5 divide-y divide-white/[0.06] border-t border-white/[0.06]">
@@ -282,6 +462,18 @@ export default function MissionDetailPage() {
           </ul>
         )}
       </section>
+
+      <div className="mt-6 flex flex-wrap gap-3 text-[13px]">
+        <Link href="/app/employer/evidence" className="text-white/55 underline hover:text-white/80">
+          View evidence reports
+        </Link>
+        <Link
+          href="/app/employer/simulations/generate"
+          className="text-white/55 underline hover:text-white/80"
+        >
+          Generate another simulation
+        </Link>
+      </div>
     </div>
   );
 }

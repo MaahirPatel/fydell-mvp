@@ -78,25 +78,25 @@ async function main() {
   await step("initialize_session", async () => {
     await provider.initializeSession(seed);
     const files = await provider.listFiles();
-    for (const required of ["src/triage.py", "src/policy.py", "src/router.py", "src/service.py", "src/prompts.py", "src/telemetry.py"]) {
+    for (const required of ["src/load.py", "src/join.py", "src/reconcile.py", "src/metrics.py", "src/report.py"]) {
       if (!files.includes(required)) throw new Error(`missing ${required}`);
     }
     return `${files.length} files seeded`;
   });
 
   await step("edit_multi_file", async () => {
-    const triage = (await provider.readFile("src/triage.py")).replace(
-      '"reason": "heuristic_v1",',
-      '"reason": "heuristic_v1_spike_edit",'
+    const report = (await provider.readFile("src/report.py")).replace(
+      "join_fn: JoinFn = naive_join,",
+      "join_fn: JoinFn = naive_join,  # spike_edit_marker"
     );
-    await provider.writeFile("src/triage.py", triage);
+    await provider.writeFile("src/report.py", report);
 
-    const router = (await provider.readFile("src/router.py")).replace(
-      "CONFIDENCE_ESCALATION_THRESHOLD = 0.6",
-      "CONFIDENCE_ESCALATION_THRESHOLD = 0.6  # spike_edit_marker"
+    const reconcile = (await provider.readFile("src/reconcile.py")).replace(
+      "_DIGITS_RE = re.compile(r\"\\d+\")",
+      "_DIGITS_RE = re.compile(r\"\\d+\")  # spike_edit_marker"
     );
-    await provider.writeFile("src/router.py", router);
-    return "edited src/triage.py and src/router.py";
+    await provider.writeFile("src/reconcile.py", reconcile);
+    return "edited src/report.py and src/reconcile.py";
   });
 
   await step("persist_across_refresh", async () => {
@@ -108,13 +108,13 @@ async function main() {
     const restored = new NodeTestExecutionProvider(scenarioRoot, restoredDir);
     await restored.restore(mid);
 
-    const triage = await restored.readFile("src/triage.py");
-    const router = await restored.readFile("src/router.py");
-    if (!triage.includes("heuristic_v1_spike_edit")) {
-      throw new Error("triage.py edit did not survive snapshot/restore");
+    const report = await restored.readFile("src/report.py");
+    const reconcile = await restored.readFile("src/reconcile.py");
+    if (!report.includes("spike_edit_marker")) {
+      throw new Error("report.py edit did not survive snapshot/restore");
     }
-    if (!router.includes("spike_edit_marker")) {
-      throw new Error("router.py edit did not survive snapshot/restore");
+    if (!reconcile.includes("spike_edit_marker")) {
+      throw new Error("reconcile.py edit did not survive snapshot/restore");
     }
     provider = restored;
     return "both file edits survived snapshot -> terminate -> restore";
@@ -188,11 +188,11 @@ async function main() {
     if (secondAccepted) throw new Error("duplicate submission with the same content hash was accepted");
 
     // Tamper the live workspace after snapshotting — snapshot must not change.
-    await provider.writeFile("src/triage.py", "# tamper after submit\n");
+    await provider.writeFile("src/report.py", "# tamper after submit\n");
     if (JSON.stringify(submission1.files) !== frozenJson) {
       throw new Error("snapshot object mutated after being taken");
     }
-    if (submission1.files["src/triage.py"].includes("tamper")) {
+    if (submission1.files["src/report.py"].includes("tamper")) {
       throw new Error("snapshot not immutable relative to later writes");
     }
 
@@ -208,8 +208,8 @@ async function main() {
     if (!finalSnapshot) throw new Error("no snapshot to recover from");
     await recovered.restore(finalSnapshot);
 
-    const triage = await recovered.readFile("src/triage.py");
-    if (!triage.includes("heuristic_v1_spike_edit")) {
+    const report = await recovered.readFile("src/report.py");
+    if (!report.includes("spike_edit_marker")) {
       throw new Error("recovery lost the earlier edit");
     }
     const curveball = await recovered.readFile("docs/curveball.md");

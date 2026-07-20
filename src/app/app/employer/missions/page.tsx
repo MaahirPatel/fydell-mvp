@@ -52,15 +52,27 @@ export default function EmployerMissionsPage() {
             className="mt-1 text-[28px] text-[#F4F5F7] sm:text-[34px]"
             style={{ fontWeight: 560, letterSpacing: "-0.035em" }}
           >
-            All missions
+            Published deployments
           </h1>
+          <p className="mt-2 max-w-[56ch] text-[14px] text-white/50">
+            Missions are published uses of a simulation — invite settings, status, and candidate
+            funnel. Blueprints live in the Simulation Library.
+          </p>
         </div>
-        <Link
-          href="/app/employer/missions/new"
-          className="inline-flex h-10 items-center rounded-[9px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C]"
-        >
-          New mission
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/app/employer/simulations"
+            className="inline-flex h-10 items-center rounded-[9px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C]"
+          >
+            Simulation library
+          </Link>
+          <Link
+            href="/app/employer/simulations/generate"
+            className="inline-flex h-10 items-center rounded-[9px] border border-white/15 px-4 text-[13px] text-white/75"
+          >
+            Generate
+          </Link>
+        </div>
       </div>
 
       {error ? (
@@ -76,13 +88,14 @@ export default function EmployerMissionsPage() {
             No missions yet
           </h2>
           <p className="mx-auto mt-3 max-w-[42ch] text-[14px] leading-relaxed text-white/55">
-            Create your first mission to start the loop.
+            Adopt Enterprise Analytics Deployment Recovery or generate a simulation, then publish
+            it as a mission to invite candidates.
           </p>
           <Link
-            href="/app/employer/missions/new"
+            href="/app/employer/simulations"
             className="mt-6 inline-flex h-10 items-center rounded-[9px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C]"
           >
-            Create a mission
+            Open simulation library
           </Link>
         </section>
       ) : (

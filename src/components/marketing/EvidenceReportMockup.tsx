@@ -3,42 +3,42 @@
 import { motion, useReducedMotion } from "motion/react";
 
 const TIMELINE = [
-  { time: "09:12", action: "Opened the scenario codebase and reviewed the customer brief" },
-  { time: "12:47", action: "Edited src/router.py and re-ran the test command" },
-  { time: "18:03", action: "Mid-session curveball revealed — a policy change to the refund flow" },
-  { time: "21:40", action: "Messaged the customer to confirm the new constraint before shipping" },
+  { time: "09:12", action: "Loaded the three CSVs and checked the join keys before building anything" },
+  { time: "12:47", action: "Found the ID-format mismatch; wrote reconcile.py to recover 3 dropped rows" },
+  { time: "18:03", action: "Board-meeting curveball revealed — Priya needs it a day earlier" },
+  { time: "21:40", action: "Told Dana what was cut and confirmed the reduced scope before shipping" },
   { time: "24:11", action: "Submitted the frozen final snapshot" },
 ];
 
 const STOOD_OUT = [
-  "Re-ran tests after every meaningful edit instead of only before submitting.",
-  "Correctly abstained from auto-approving a refund the curveball required a human to review.",
-  "Explained the tradeoff to the customer in chat before implementing it.",
+  "Caught the naive-join bug unprompted and reconciled it before trusting the late-rate number.",
+  "Named the Dana/Priya scope conflict explicitly instead of silently picking one deliverable.",
+  "Told the customer what was cut when the deadline moved, instead of quietly descoping.",
 ];
 
 const NEEDS_REVIEW = [
-  "Took a while to respond to the mid-session curveball — worth asking about their triage process.",
-  "Ran the preview command only once — ask how they validated the change end-to-end.",
-  "No evals run before submitting — confirm this was a scoping choice, not an oversight.",
+  "Handoff doesn't name what specifically stayed out of scope after the cut — ask directly.",
+  "No verification note on the AI-drafted query before it shipped — ask how they checked it.",
+  "Single preview run before the scope cut, none after — confirm this was deliberate.",
 ];
 
-const EVIDENCE_FINDINGS = [
-  { dimension: "Technical execution", confidence: "High", note: "Tests run 4 times; final run passed." },
-  { dimension: "Iteration & editing", confidence: "High", note: "6 file saves across the session." },
-  { dimension: "Customer communication", confidence: "Medium", note: "5 messages in the customer chat." },
-  { dimension: "Handling ambiguity", confidence: "Medium", note: "Responded to the curveball after a delay." },
-  { dimension: "Session integrity", confidence: "High", note: "No heartbeat gaps recorded." },
+const TRAIT_FINDINGS = [
+  { trait: "Data integrity vigilance", bucket: "Strong evidence", note: "Ran reconcile.py; recovered all 3 dropped rows." },
+  { trait: "Contradiction handling", bucket: "Strong evidence", note: "Named the Dana/Priya conflict in chat." },
+  { trait: "Prioritization under pressure", bucket: "Strong evidence", note: "Cut polish first, kept the numbers, after the curveball." },
+  { trait: "Scope renegotiation", bucket: "Needs review", note: "Told Dana the deadline moved; didn't name what was cut." },
+  { trait: "AI tool judgment", bucket: "Limited evidence", note: "Used the assist once; verification isn't in the handoff." },
 ];
 
 const HANDOFF_EXCERPT =
-  "Refund flow now requires manager approval above $200, matching the policy change from the " +
-  "mid-session update. Tests cover the new threshold; the preview call still returns the old " +
-  "copy for declined refunds — flagging that as a follow-up rather than blocking on it.";
+  "Late rate is 41.7%, not the 36.7% the naive join reports — 3 delay records were being dropped " +
+  "on an ID-format mismatch. I didn't get to a full root-cause breakdown by carrier before the " +
+  "deadline moved; that's the one thing I'd flag as unverified, not finished.";
 
 const INTERVIEW_QUESTIONS = [
-  "Walk me through how you triaged the mid-session policy change.",
-  "Why did you choose to flag the preview copy as a follow-up instead of fixing it?",
-  "How would you have handled this if the curveball came 5 minutes before time was up?",
+  "Walk me through how you found the dropped-rows bug.",
+  "What would you have cut next if you'd had five fewer minutes?",
+  "How would you have handled Dana and Priya wanting different deliverables?",
 ];
 
 export default function EvidenceReportMockup() {
@@ -56,7 +56,7 @@ export default function EvidenceReportMockup() {
               Hiring Evidence Report
             </p>
             <h2 className="mt-1 text-[18px] font-semibold tracking-[-0.015em] text-white">
-              Project Relay — FDE Deployment Mission
+              Project Relay — Northbeam Logistics Deployment
             </h2>
           </div>
           <div className="shrink-0 text-right">
@@ -65,15 +65,15 @@ export default function EvidenceReportMockup() {
               Advance
             </span>
             <p className="mt-1.5 text-[11px] text-white/[0.42]">
-              Confidence: <span className="text-white/[0.70]">Medium</span>
+              Fit score: <span className="text-white/[0.70]">74/100 · design-weighted</span>
             </p>
             <p className="mt-1 text-[11px] font-medium text-white/[0.50]">Receipt Ready</p>
           </div>
         </div>
         <p className="mt-3 max-w-[640px] text-[13px] leading-[1.65] text-white/[0.55]">
-          The FDE engaged substantively with the codebase, adapted after the mid-session curveball,
-          and kept the customer informed in chat. Advance to interview is recommended, with a few
-          gaps worth probing directly.
+          The FDE caught a real data-integrity bug unprompted, named a stakeholder conflict instead
+          of guessing, and adapted when the deadline moved. Advance to interview is recommended, with
+          a few gaps worth probing directly — the fit score is context, not the verdict.
         </p>
       </div>
 
@@ -107,12 +107,12 @@ export default function EvidenceReportMockup() {
 
           <div className="px-6 py-5">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.09em] text-white/[0.38]">
-              Evidence Findings
+              Trait Findings — 5 of 10
             </p>
             <table className="w-full border-collapse text-[12px]">
               <thead>
                 <tr className="border-b border-white/[0.06]">
-                  {["Dimension", "Confidence", "Note"].map((h) => (
+                  {["Trait", "Bucket", "Note"].map((h) => (
                     <th
                       key={h}
                       className="pb-2 text-left text-[10px] font-medium uppercase tracking-[0.07em] text-white/[0.35]"
@@ -123,10 +123,10 @@ export default function EvidenceReportMockup() {
                 </tr>
               </thead>
               <tbody>
-                {EVIDENCE_FINDINGS.map((row) => (
-                  <tr key={row.dimension} className="border-b border-white/[0.04]">
-                    <td className="py-2.5 text-white/[0.75]">{row.dimension}</td>
-                    <td className="py-2.5 tabular-nums text-[#4B6FFF]">{row.confidence}</td>
+                {TRAIT_FINDINGS.map((row) => (
+                  <tr key={row.trait} className="border-b border-white/[0.04]">
+                    <td className="py-2.5 text-white/[0.75]">{row.trait}</td>
+                    <td className="py-2.5 tabular-nums text-[#4B6FFF]">{row.bucket}</td>
                     <td className="py-2.5 text-white/[0.42]">{row.note}</td>
                   </tr>
                 ))}

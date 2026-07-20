@@ -2,7 +2,7 @@
  * Deterministic, fully-offline "AI workspace" helper for Project Relay.
  *
  * There is no live model call here — every suggestion is either a
- * hand-authored fix for the known router.py approval-policy defect, or a
+ * hand-authored fix for the known report.py join-wiring defect, or a
  * mechanical, clearly-labeled note appended for a candidate-typed
  * instruction. Nothing here fabricates a real LLM response.
  */
@@ -12,77 +12,50 @@ export type PatchProposal = {
   before: string;
   after: string;
   summary: string;
-  source: "router_policy_bug_fix" | "instruction";
+  source: "report_join_fix" | "instruction";
 };
 
-const ROUTER_FILE_SUFFIX = "router.py";
+const REPORT_FILE_SUFFIX = "report.py";
 
-const ROUTER_IMPORT_BEFORE = `from models import ModelResponse, Ticket, TriageDecision
-from prompts import call_model`;
+const REPORT_IMPORT_BEFORE = `from join import naive_join
+from metrics import carrier_breakdown, late_rate`;
 
-const ROUTER_IMPORT_AFTER = `from models import ModelResponse, Ticket, TriageDecision
-from policy import requires_human_approval
-from prompts import call_model`;
+const REPORT_IMPORT_AFTER = `from join import naive_join
+from metrics import carrier_breakdown, late_rate
+from reconcile import reconciled_join`;
 
-const ROUTER_RETURN_BEFORE = `    telemetry.record("route_model_assisted", {"ticket_id": ticket.id})
-    model_response: ModelResponse = call_model(ticket.text)
+const REPORT_DEFAULT_BEFORE = `    join_fn: JoinFn = naive_join,`;
 
-    return TriageDecision(
-        ticket_id=ticket.id,
-        category=model_response.category,
-        action=model_response.action,
-        confidence=model_response.confidence,
-        human_approval_required=False,
-        evidence=[f"model_assisted_{model_response.rationale}"],
-        reason="model_assisted_v0",
-        source="model_assisted_v0",
-    )`;
+const REPORT_DEFAULT_AFTER = `    # Fix: default to the ID-reconciled join so the report reflects the true
+    # late rate instead of silently understating it (see docs/data-integrity.md).
+    join_fn: JoinFn = reconciled_join,`;
 
-const ROUTER_RETURN_AFTER = `    telemetry.record("route_model_assisted", {"ticket_id": ticket.id})
-    model_response: ModelResponse = call_model(ticket.text)
-
-    # Fix: re-check the approval policy before treating a model suggestion as
-    # authorized — mirrors the heuristic branch above via triage.recommend_action.
-    human_approval_required = requires_human_approval(model_response.action)
-    action = "abstain" if human_approval_required else model_response.action
-
-    return TriageDecision(
-        ticket_id=ticket.id,
-        category=model_response.category,
-        action=action,
-        confidence=model_response.confidence,
-        human_approval_required=human_approval_required,
-        evidence=[f"model_assisted_{model_response.rationale}"],
-        reason="model_assisted_v0",
-        source="model_assisted_v0",
-    )`;
-
-export function detectRouterPolicyBug(file: string, content: string): boolean {
+export function detectReportJoinBug(file: string, content: string): boolean {
   return (
-    file.endsWith(ROUTER_FILE_SUFFIX) &&
-    content.includes(ROUTER_RETURN_BEFORE) &&
-    !content.includes("requires_human_approval(model_response.action)")
+    file.endsWith(REPORT_FILE_SUFFIX) &&
+    content.includes(REPORT_DEFAULT_BEFORE) &&
+    !content.includes("join_fn: JoinFn = reconciled_join")
   );
 }
 
-function routerPolicyFix(file: string, content: string): PatchProposal | null {
-  if (!detectRouterPolicyBug(file, content)) return null;
-  let after = content.replace(ROUTER_IMPORT_BEFORE, ROUTER_IMPORT_AFTER);
-  after = after.replace(ROUTER_RETURN_BEFORE, ROUTER_RETURN_AFTER);
+function reportJoinFix(file: string, content: string): PatchProposal | null {
+  if (!detectReportJoinBug(file, content)) return null;
+  let after = content.replace(REPORT_IMPORT_BEFORE, REPORT_IMPORT_AFTER);
+  after = after.replace(REPORT_DEFAULT_BEFORE, REPORT_DEFAULT_AFTER);
   if (after === content) return null;
   return {
     file,
     before: content,
     after,
     summary:
-      "Known defect: the model-assisted branch never re-checks policy.requires_human_approval, so a " +
-      "high-confidence model suggestion could auto-execute a refund or account lock. This patch threads " +
-      "the same approval check the heuristic branch already uses.",
-    source: "router_policy_bug_fix",
+      "Known defect: build_report() defaults to join.naive_join, which silently drops delay-tracking rows " +
+      "whose shipment_id format doesn't match shipments.csv (see docs/data-integrity.md). This patch rewires " +
+      "the default to reconcile.reconciled_join so the report reflects the true late rate.",
+    source: "report_join_fix",
   };
 }
 
-const UNSAFE_TO_ANNOTATE = [".json", ".jsonl"];
+const UNSAFE_TO_ANNOTATE = [".json", ".jsonl", ".csv"];
 
 function commentPrefixFor(file: string): string {
   if (file.endsWith(".py")) return "#";
@@ -109,11 +82,11 @@ function instructionPatch(file: string, content: string, instruction: string): P
 /**
  * Propose a deterministic patch for the given file.
  * - A typed instruction always wins (that's the more specific request).
- * - Otherwise, if the file is router.py and still has the known approval-policy
- *   defect, propose the canonical fix.
+ * - Otherwise, if the file is report.py and still defaults to the naive join,
+ *   propose the canonical fix.
  * - Otherwise there is nothing to suggest.
  */
 export function proposePatch(file: string, content: string, instruction: string): PatchProposal | null {
   if (instruction.trim()) return instructionPatch(file, content, instruction);
-  return routerPolicyFix(file, content);
+  return reportJoinFix(file, content);
 }

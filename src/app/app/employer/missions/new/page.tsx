@@ -69,7 +69,7 @@ export default function NewMissionPage() {
         </p>
         <p className="mt-1.5 text-[13px] leading-relaxed text-white/55">
           Whoever you invite is evaluated on how they actually worked this mission — observed
-          across five dimensions, not a personality score or match percentage. Dimensions without
+          across 10 FDE traits, not a personality score or match percentage. Traits without
           enough independent evidence show as inconclusive, not negative. This contract locks
           automatically once the first candidate starts — you cannot retune priorities after seeing
           results. Fydell does not produce an automated hire recommendation; your team owns the

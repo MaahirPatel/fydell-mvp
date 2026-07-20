@@ -1,0 +1,436 @@
+{
+  "generatedAt": "2026-07-20T23:01:53.985Z",
+  "commit": "working-tree",
+  "environment": "local",
+  "deployedUrl": "https://www.fydell.com",
+  "traceability": {
+    "S0_S1_Tc": 0.875,
+    "required": 16,
+    "verified": 14,
+    "blocked": 1,
+    "target": "Tc=1.0 for S0/S1 before calling release-ready without named limitations"
+  },
+  "absoluteQuestions": {
+    "zeroFabricatedData": "YES (empty Mission Control; no seeded candidates)",
+    "employerIntentAltersRuntime": "YES (GEN-002 verified)",
+    "candidateSurvivesRefresh": "IMPLEMENTED_UNVERIFIED (Relay autosave; chaos not run)",
+    "conclusionsTraceToEvidence": "YES for analysis path (trait eventRefs + findings)",
+    "uncertaintyIncreasesWhenSparse": "YES (MATH-002/MATH-004)",
+    "refusesToScoreWithoutOpportunity": "YES (not_observed / AIQ / adaptability)",
+    "failsHonestly": "PARTIAL (publish gate + evidence honesty; chaos incomplete)",
+    "mathReproducible": "YES (GEN-001 + math cards)",
+    "hrBuyerUnderstandable": "IMPLEMENTED_UNVERIFIED (needs live pilot feedback)",
+    "demonstratedOnDeployedBuild": "BLOCKED (E2E-001)"
+  },
+  "gates": [
+    {
+      "gateId": "SEC-001",
+      "requirement": "Hidden-answer canary never reaches candidate-visible overlay files",
+      "severity": "S0",
+      "implementation": [
+        "src/lib/fde/generator/overlay.ts",
+        "src/lib/fde/generator/blueprint-schema.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/SEC-001.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "canary absent from candidate FileMap",
+      "actual": "canary absent",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "SEC-002",
+      "requirement": "Cross-org authorization helper denies foreign mission membership",
+      "severity": "S0",
+      "implementation": [
+        "src/app/api/fde/missions/[id]/route.ts",
+        "src/lib/fde/lifecycle-status.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/SEC-002.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "foreign org → forbidden",
+      "actual": "foreign org → forbidden",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "DATA-001",
+      "requirement": "Preview/demonstration attempts excluded from production analytics filter",
+      "severity": "S0",
+      "implementation": [
+        "src/lib/fde/lifecycle-status.ts",
+        "src/app/api/employer/mission-control/route.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/DATA-001.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "only scored counts as production",
+      "actual": "filter contract holds",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "LIFE-001",
+      "requirement": "Public mission lifecycle maps draft→validated→published→archived",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/lifecycle-status.ts",
+        "src/lib/fde/lifecycle.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/LIFE-001.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "draft/validated/published/archived",
+      "actual": "mapping verified",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "GEN-001",
+      "requirement": "Identical (X,s) produces identical output hash (createdAt excluded)",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/generator/compile.ts",
+        "src/lib/fde/generator/determinism.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/GEN-001.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "a6c007814a5ba94120b0900a805d9c9ad97e6d0276d2f3b8e0a8f6245a781afb",
+      "actual": "a6c007814a5ba94120b0900a805d9c9ad97e6d0276d2f3b8e0a8f6245a781afb",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "GEN-002",
+      "requirement": "Material-effect differential: industry/seed changes candidate CSV + inbox",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/generator/overlay.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/GEN-002.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "different material signatures and files",
+      "actual": "differ",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "GEN-003",
+      "requirement": "Competency-weight change alters D-optimal module selection utility ranking",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/generator/selection.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/GEN-003.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "selection diverges under weight change",
+      "actual": "m-elicit,m-integrity vs m-integrity,m-elicit",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "GEN-004",
+      "requirement": "Publish gate fails closed on blocking coverage failure",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/generator/validators.ts",
+        "src/lib/fde/lifecycle.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/GEN-004.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "needs_revision",
+      "actual": "needs_revision",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "MATH-001",
+      "requirement": "Coverage product uses 1-∏(1-B), not sum; bounds [0,1]",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/generator/measurement-planner.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/MATH-001.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "0.76",
+      "actual": "0.76",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "MATH-002",
+      "requirement": "logdet stabilized; duplicate evidence cannot inflate N_eff above count",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/generator/selection.ts",
+        "src/lib/fde/evidence/reliability.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/MATH-002.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "finite logdet; N_eff≤n; low conf when empty",
+      "actual": "logdet=-123.1439 nEff=4 conf=0",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "MATH-003",
+      "requirement": "Missing AI / missing curveball → not observed (not zero penalty)",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/evidence/aiq.ts",
+        "src/lib/fde/evidence/adaptability.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/MATH-003.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "not observed / null",
+      "actual": "not observed / null",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "MATH-004",
+      "requirement": "Composite arithmetic+geometric blend; suppress when insufficient",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/evidence/score.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/MATH-004.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "null fit when nothing observed",
+      "actual": "null",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "SCHEMA-001",
+      "requirement": "Intake schema rejects invalid duration and unknown traits",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/generator/blueprint-schema.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/SCHEMA-001.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "ok=false with field diagnostics",
+      "actual": "ok=false n=2",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "MUT-001",
+      "requirement": "Mutation suite detects naive-sum coverage and missing weight normalize",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/generator/measurement-planner.ts",
+        "src/lib/fde/evidence/reliability.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/MUT-001.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "mutants diverge from correct implementations",
+      "actual": "divergences detected",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "PROP-001",
+      "requirement": "Coverage stays in [0,1]; adding positive module cannot reduce coverage",
+      "severity": "S2",
+      "implementation": [
+        "src/lib/fde/generator/measurement-planner.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/PROP-001.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "monotonic nondecreasing coverage",
+      "actual": "0.4 → 0.58",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "PROP-002",
+      "requirement": "Duplicate correlated evidence cannot double N_eff vs independent",
+      "severity": "S2",
+      "implementation": [
+        "src/lib/fde/evidence/reliability.ts"
+      ],
+      "tests": [
+        "scripts/run-acceptance-proofs.ts"
+      ],
+      "evidence": [
+        "artifacts/acceptance/PROP-002.json"
+      ],
+      "status": "VERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [],
+      "expected": "independentCount=1",
+      "actual": "1",
+      "verifiedAt": "2026-07-20T23:01:53.985Z"
+    },
+    {
+      "gateId": "E2E-001",
+      "requirement": "Fresh private-browser employer→candidate→report on deployed production URL",
+      "severity": "S1",
+      "implementation": [
+        "docs/acceptance-delivery-report.md"
+      ],
+      "tests": [],
+      "evidence": [],
+      "status": "BLOCKED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [
+        "Requires human smoke on https://www.fydell.com after deploying this working tree.",
+        "Owner: pilot facilitator. Next: deploy + run §14 script; attach screenshots to artifacts/acceptance/E2E-001.json"
+      ]
+    },
+    {
+      "gateId": "PERF-001",
+      "requirement": "Landing/dashboard LCP ≤ 2.5s p75 on mid-tier profile",
+      "severity": "S2",
+      "implementation": [],
+      "tests": [],
+      "evidence": [],
+      "status": "NOT_STARTED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [
+        "No Lighthouse CI profile wired yet."
+      ]
+    },
+    {
+      "gateId": "A11Y-001",
+      "requirement": "axe zero critical/serious on core routes + keyboard-only flows",
+      "severity": "S2",
+      "implementation": [
+        "src/app/app/employer",
+        "src/app/s"
+      ],
+      "tests": [],
+      "evidence": [],
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [
+        "UI patterns exist; automated axe + manual SR smoke not executed this session."
+      ]
+    },
+    {
+      "gateId": "CHAOS-001",
+      "requirement": "DB/network drop during submit recovers idempotently",
+      "severity": "S1",
+      "implementation": [
+        "src/lib/fde/relay-session.ts"
+      ],
+      "tests": [],
+      "evidence": [],
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "commit": "working-tree",
+      "environment": "local",
+      "limitations": [
+        "Submit idempotency code exists; chaos harness not run."
+      ]
+    }
+  ]
+}

@@ -100,7 +100,7 @@ sys.path.insert(0, "${this.root}/src")
       return {
         ok: false,
         stdout: "",
-        stderr: "Command not allowed. Supported: test | pytest | evals | preview | help",
+        stderr: "Command not allowed. Supported: test | pytest | evals | preview | reconcile | help",
         exitCode: 127,
         durationMs: 0,
         command,
@@ -109,7 +109,7 @@ sys.path.insert(0, "${this.root}/src")
     if (allowed === "help") {
       return {
         ok: true,
-        stdout: "Allowed: test, pytest, evals, preview, help\n",
+        stdout: "Allowed: test, pytest, evals, preview, reconcile, help\n",
         stderr: "",
         exitCode: 0,
         durationMs: 0,
@@ -118,26 +118,24 @@ sys.path.insert(0, "${this.root}/src")
     }
     if (allowed === "preview") return this.preview();
     if (allowed === "evals") return this.runEvaluations();
+    if (allowed === "reconcile") return this.runReconcile();
     return this.runTests();
   }
 
   /**
    * Modules imported from the scenario's virtual FS get cached in sys.modules
    * for the life of this Pyodide worker. Without clearing them first, a
-   * candidate's edit to e.g. router.py would silently keep running the
+   * candidate's edit to e.g. report.py would silently keep running the
    * pre-edit version on every subsequent command — drop the cache so every
    * command run reflects the current file contents.
    */
   private static readonly SCENARIO_MODULES = [
     "run_evals",
+    "report",
     "metrics",
-    "service",
-    "router",
-    "prompts",
-    "triage",
-    "policy",
-    "models",
-    "telemetry",
+    "reconcile",
+    "join",
+    "load",
   ];
 
   private async runPythonCapture(code: string, command: string): Promise<CommandResult> {
@@ -180,14 +178,16 @@ for _m in (${evictModules}):
       `
 import sys
 sys.path.insert(0, "${this.root}/src")
-from triage import classify, triage
+from load import load_delay_tracking, load_shipments
+from join import naive_join
+from reconcile import reconciled_join
 
-assert classify("Production API is down") == "incident_p0"
-assert classify("credential stuffing unauthorized") == "security"
-r = triage("Please refund this charge immediately")
-assert r["action"] == "abstain" or r["human_approval_required"] is True
-r2 = triage("How do I reset my password?")
-assert r2["category"] == "general"
+shipments = load_shipments()
+delay_rows = load_delay_tracking()
+_, naive_dropped = naive_join(shipments, delay_rows)
+assert len(naive_dropped) > 0, "naive_join should drop mismatched-id rows"
+_, reconciled_unmatched = reconciled_join(shipments, delay_rows)
+assert len(reconciled_unmatched) == 0, "reconciled_join should recover all rows"
 print("PYODIDE_TESTS_PASSED")
 `,
       "test"
@@ -214,14 +214,39 @@ if exit_code:
     );
   }
 
+  /**
+   * Runs the same naive-vs-reconciled join comparison as
+   * `reconcile.main()` (see `scenarios/project-relay/src/reconcile.py`) so a
+   * candidate can see, from the workspace terminal, exactly which
+   * delay-tracking rows the naive join drops and why. Real code, real data —
+   * no mock ledger.
+   */
+  private async runReconcile(): Promise<CommandResult> {
+    return this.runPythonCapture(
+      `
+import sys
+sys.path.insert(0, "${this.root}/src")
+import reconcile
+reconcile.main()
+`,
+      "reconcile"
+    );
+  }
+
   private async preview(): Promise<CommandResult> {
     return this.runPythonCapture(
       `
-import json, sys
+import sys
 sys.path.insert(0, "${this.root}/src")
-from triage import triage
-for s in ["Production API is down", "Please refund this charge", "unauthorized credential access"]:
-  print(json.dumps({"input": s, "result": triage(s)}))
+from load import load_carriers, load_delay_tracking, load_shipments
+from report import build_report
+
+shipments = load_shipments()
+carriers = load_carriers()
+delay_rows = load_delay_tracking()
+report = build_report(shipments, carriers, delay_rows)
+import json
+print(json.dumps(report, indent=2))
 `,
       "preview"
     );

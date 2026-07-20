@@ -1,17 +1,18 @@
 import dynamic from "next/dynamic";
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Reveal } from "@/components/motion/Reveal";
-import { Container } from "@/components/marketing/ui";
+import { Container, ButtonLink } from "@/components/marketing/ui";
 import ProjectRelaySequence from "@/components/marketing/ProjectRelaySequence";
 import HomeProductStages from "@/components/marketing/home/HomeProductStages";
+import HomeSimulationContents from "@/components/marketing/home/HomeSimulationContents";
 import HomeWorkroomDetail from "@/components/marketing/home/HomeWorkroomDetail";
 import HomeCurveballs from "@/components/marketing/home/HomeCurveballs";
-import HomeEvidenceReport from "@/components/marketing/home/HomeEvidenceReport";
 import HomeMeasures from "@/components/marketing/home/HomeMeasures";
+import HomeEvidenceReport from "@/components/marketing/home/HomeEvidenceReport";
+import HomeHiringLoop from "@/components/marketing/home/HomeHiringLoop";
 import HomeCalibration from "@/components/marketing/home/HomeCalibration";
 import HomeRoles from "@/components/marketing/home/HomeRoles";
 import HomePilotCta from "@/components/marketing/home/HomePilotCta";
-import Link from "next/link";
 import { legacyMeridianEnabled } from "@/lib/fde/flags";
 
 // Only code-split-loaded when NEXT_PUBLIC_LEGACY_MERIDIAN=1 (rollback path).
@@ -23,7 +24,7 @@ const LegacyProjectMeridianWindow = dynamic(
 export const metadata = {
   title: "Fydell",
   description:
-    "See how a Forward Deployed Engineer actually works before you hire them. Fydell runs a realistic 50-minute deployment simulation and turns the recorded session into a portable evidence receipt.",
+    "Fydell is work-sample evidence for Forward Deployed Engineer hiring. A recorded deployment simulation tests ambiguity, client empathy, data integrity, and verification — not algorithms — and turns the session into a portable evidence receipt your team can review before you interview.",
 };
 
 export default function HomePage() {
@@ -35,7 +36,7 @@ export default function HomePage() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(70% 45% at 50% 48%, rgba(86,98,255,0.075), transparent 72%), radial-gradient(45% 36% at 72% 42%, rgba(134,87,244,0.045), transparent 75%)",
+              "radial-gradient(70% 45% at 50% 48%, rgba(86,98,255,0.085), transparent 72%), radial-gradient(45% 36% at 72% 42%, rgba(58,191,210,0.04), transparent 75%)",
           }}
           aria-hidden
         />
@@ -46,25 +47,29 @@ export default function HomePage() {
         */}
         <Container className="relative z-10 pt-[168px] sm:pt-[180px] lg:pt-[210px]">
           <Reveal y={8}>
-            <h1 className="flat-type hero-display">
-              See how an FDE actually works
-              <br className="hidden sm:block" />{" "}
-              before you hire them.
+            <p
+              className="text-[12.5px] uppercase tracking-[0.09em] text-[rgba(244,245,247,0.4)]"
+              style={{ fontWeight: 560 }}
+            >
+              Fydell
+            </p>
+            <h1 className="flat-type hero-display mt-3">
+              See how candidates actually execute.
             </h1>
-            <div className="mt-[30px] flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-10">
+            <div className="mt-[30px] flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between sm:gap-10">
               <p className="hero-sub !mt-0">
-                A real 50-minute deployment simulation. A portable evidence receipt your team can review.
+                Generate adaptive work simulations for customer-facing technical roles. Observe
+                reasoning, communication, verification, and AI use—then enter the interview with
+                evidence.
               </p>
-              <Link
-                href="#project-relay"
-                className="hero-context-link shrink-0 self-start sm:self-end"
-              >
-                <span className="accent">Project Relay</span>
-                <span>· Explore the simulation</span>
-                <span className="arrow" aria-hidden>
-                  →
-                </span>
-              </Link>
+              <div className="flex shrink-0 flex-wrap items-center gap-3 self-start sm:self-end">
+                <ButtonLink href="/signup" variant="primary">
+                  Create an FDE simulation
+                </ButtonLink>
+                <ButtonLink href="/product" variant="secondary">
+                  View the product
+                </ButtonLink>
+              </div>
             </div>
           </Reveal>
 
@@ -76,17 +81,22 @@ export default function HomePage() {
                   {showLegacyMeridian ? <LegacyProjectMeridianWindow /> : <ProjectRelaySequence />}
                 </div>
               </div>
+              <p className="mt-4 text-[12.5px] text-[rgba(244,245,247,0.4)]">
+                Project Relay · Northbeam Logistics is a synthetic company built for this simulation — no real client data.
+              </p>
             </div>
           </Reveal>
         </Container>
       </section>
 
       <HomeProductStages />
+      <HomeSimulationContents />
       <HomeWorkroomDetail />
       <HomeCurveballs />
-      <HomeEvidenceReport />
-      <HomeCalibration />
       <HomeMeasures />
+      <HomeEvidenceReport />
+      <HomeHiringLoop />
+      <HomeCalibration />
       <HomeRoles />
       <HomePilotCta />
     </MarketingShell>

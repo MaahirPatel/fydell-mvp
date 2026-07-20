@@ -9,10 +9,10 @@ const ROLE_OUTCOMES = [
 ];
 
 const PRE_HIRE = [
-  "Strong handling of the mid-session curveball",
-  "Strong iteration across multiple file saves",
-  "Moderate customer chat communication",
-  "Limited evidence of test coverage without prompting",
+  "Strong evidence: caught the dropped-rows integrity bug unprompted",
+  "Strong evidence: named the ops/VP scope conflict explicitly",
+  "Needs review: didn't state what got cut under the deadline curveball",
+  "Limited evidence: single verification pass on the AI-drafted query",
 ];
 
 const DAY_90 = [

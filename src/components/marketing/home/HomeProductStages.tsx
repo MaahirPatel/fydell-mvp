@@ -4,7 +4,7 @@ import { Reveal } from "@/components/motion/Reveal";
 const PRINCIPLES = [
   {
     title: "Observe the work",
-    body: "Capture decisions, assumptions, revisions, and tradeoffs.",
+    body: "Capture decisions, assumptions, and tradeoffs under a genuinely ambiguous brief.",
     diagram: (
       <svg viewBox="0 0 120 72" className="h-[72px] w-[120px]" aria-hidden>
         <rect x="8" y="14" width="48" height="44" rx="4" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
@@ -19,7 +19,7 @@ const PRINCIPLES = [
   },
   {
     title: "Introduce change",
-    body: "Test how candidates respond when the information moves.",
+    body: "Move a deadline or contradict a stakeholder mid-session, then watch what changes.",
     diagram: (
       <svg viewBox="0 0 120 72" className="h-[72px] w-[120px]" aria-hidden>
         <path
@@ -31,13 +31,13 @@ const PRINCIPLES = [
         <path
           d="M12 48 L36 28 L60 40 L84 18 L108 32"
           fill="none"
-          stroke="rgba(134,87,244,0.55)"
+          stroke="rgba(58,191,210,0.55)"
           strokeWidth="1.2"
           strokeDasharray="4 4"
           transform="translate(0,8)"
         />
         <circle cx="84" cy="18" r="3.5" fill="#5662FF" />
-        <circle cx="84" cy="26" r="3.5" fill="rgba(134,87,244,0.7)" />
+        <circle cx="84" cy="26" r="3.5" fill="rgba(58,191,210,0.7)" />
       </svg>
     ),
   },
@@ -49,7 +49,7 @@ const PRINCIPLES = [
         <circle cx="24" cy="36" r="5" fill="rgba(86,98,255,0.5)" />
         <circle cx="60" cy="22" r="4" fill="rgba(255,255,255,0.2)" />
         <circle cx="60" cy="50" r="4" fill="rgba(255,255,255,0.2)" />
-        <circle cx="96" cy="36" r="5" fill="rgba(134,87,244,0.55)" />
+        <circle cx="96" cy="36" r="5" fill="rgba(58,191,210,0.55)" />
         <path d="M29 36 L55 24 M29 36 L55 48 M65 24 L91 36 M65 48 L91 36" stroke="rgba(255,255,255,0.16)" strokeWidth="1" />
       </svg>
     ),
@@ -71,10 +71,10 @@ export default function HomeProductStages() {
             }}
           >
             <span className="text-[rgba(244,245,247,0.62)]">
-              Hiring systems record what candidates claim.
+              LeetCode tests whether they memorized the pattern.
             </span>
             <br />
-            <span className="text-[#F4F5F7]">Fydell records how they work.</span>
+            <span className="text-[#F4F5F7]">Fydell tests whether they can work the room.</span>
           </p>
         </Reveal>
 

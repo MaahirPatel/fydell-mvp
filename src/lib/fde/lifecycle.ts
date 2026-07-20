@@ -3,6 +3,12 @@ import { createHash, randomBytes } from "crypto";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { appUrl } from "@/lib/app-url";
 import { enqueueAction } from "@/lib/fde/action-inbox";
+import {
+  extractBlueprintFromCustomerContext,
+  publishGateFor,
+  validateBlueprintParts,
+  type SimulationBlueprint,
+} from "@/lib/fde/generator";
 
 export function hashInviteToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -200,7 +206,47 @@ export async function submitMissionForReview(missionId: string, actorUserId: str
   return updated;
 }
 
-export async function activateMission(missionId: string, actorUserId: string) {
+function assertBlueprintPublishable(mission: {
+  customer_context?: string | null;
+  title?: string | null;
+}): SimulationBlueprint | null {
+  const blueprint = mission.customer_context
+    ? extractBlueprintFromCustomerContext(String(mission.customer_context))
+    : null;
+  if (!blueprint) {
+    // Known-good Relay-only missions (no generated blueprint) remain publishable.
+    return null;
+  }
+
+  const report = validateBlueprintParts({
+    world: blueprint.world,
+    episodes: blueprint.episodes,
+    coverage: blueprint.coverage,
+    durationMinutes: blueprint.durationMinutes,
+    plannedMinutes: blueprint.episodes.reduce((s, e) => s + e.estimatedMinutes, 0),
+    ambiguity: blueprint.ambiguity,
+    difficulty: blueprint.difficulty,
+    preferenceVector: blueprint.preferenceVector,
+  });
+  const gate = report.publishGate || publishGateFor(report);
+  if (gate.gate !== "publishable") {
+    const reasons = gate.reasons.length
+      ? gate.reasons.slice(0, 4).join(" ")
+      : "Resolve blocking validation findings first.";
+    throw new Error(`Publish blocked — simulation needs revision. ${reasons}`);
+  }
+  if (blueprint.maturity === "draft" && !report.passesAllGates) {
+    throw new Error("Publish blocked — blueprint maturity is draft with failing gates.");
+  }
+  return blueprint;
+}
+
+/**
+ * Employer self-serve publish: draft | under_review | paused → active(=published).
+ * Idempotent: already-active missions return unchanged (no partial mutate).
+ * Enforces generator publish gate when a blueprint is embedded.
+ */
+export async function publishMission(missionId: string, actorUserId: string) {
   const admin = createAdminSupabaseClient();
   const { data: mission } = await admin
     .from("fde_missions")
@@ -208,9 +254,22 @@ export async function activateMission(missionId: string, actorUserId: string) {
     .eq("id", missionId)
     .maybeSingle();
   if (!mission) throw new Error("Mission not found.");
-  if (!["under_review", "paused"].includes(mission.status)) {
-    throw new Error("Mission must be under review (or paused) before it can be activated.");
+
+  // Idempotent publish — second call is a no-op success.
+  if (mission.status === "active") {
+    return mission;
   }
+  if (mission.status === "archived") {
+    throw new Error("Archived simulations cannot be published. Restore or duplicate first.");
+  }
+  if (!["draft", "under_review", "paused"].includes(mission.status)) {
+    throw new Error(`Illegal transition: cannot publish from status "${mission.status}".`);
+  }
+  if (!mission.title?.trim() || !mission.objective?.trim()) {
+    throw new Error("Add a title and objective before publishing.");
+  }
+
+  assertBlueprintPublishable(mission);
 
   const { data: updated, error } = await admin
     .from("fde_missions")
@@ -219,12 +278,119 @@ export async function activateMission(missionId: string, actorUserId: string) {
       published_at: mission.published_at || new Date().toISOString(),
     })
     .eq("id", missionId)
+    .in("status", ["draft", "under_review", "paused"])
     .select("*")
     .single();
-  if (error || !updated) throw new Error(error?.message || "Could not activate mission.");
+  if (error || !updated) throw new Error(error?.message || "Could not publish simulation.");
 
-  await audit(actorUserId, "fde_mission.activated", "fde_mission", missionId, {});
+  await audit(actorUserId, "fde_mission.published", "fde_mission", missionId, {
+    fromStatus: mission.status,
+  });
   return updated;
+}
+
+/** Soft-archive. Reversible via restoreMission. */
+export async function archiveMission(missionId: string, actorUserId: string) {
+  const admin = createAdminSupabaseClient();
+  const { data: mission } = await admin
+    .from("fde_missions")
+    .select("*")
+    .eq("id", missionId)
+    .maybeSingle();
+  if (!mission) throw new Error("Mission not found.");
+  if (mission.status === "archived") return mission;
+  if (!["draft", "under_review", "active", "paused", "closed"].includes(mission.status)) {
+    throw new Error(`Illegal transition: cannot archive from status "${mission.status}".`);
+  }
+
+  const { data: updated, error } = await admin
+    .from("fde_missions")
+    .update({ status: "archived" })
+    .eq("id", missionId)
+    .select("*")
+    .single();
+  if (error || !updated) throw new Error(error?.message || "Could not archive simulation.");
+
+  await audit(actorUserId, "fde_mission.archived", "fde_mission", missionId, {
+    fromStatus: mission.status,
+  });
+  return updated;
+}
+
+/** Restore an archived mission to draft (safe default — re-publish required). */
+export async function restoreMission(missionId: string, actorUserId: string) {
+  const admin = createAdminSupabaseClient();
+  const { data: mission } = await admin
+    .from("fde_missions")
+    .select("*")
+    .eq("id", missionId)
+    .maybeSingle();
+  if (!mission) throw new Error("Mission not found.");
+  if (mission.status !== "archived") {
+    throw new Error("Only archived simulations can be restored.");
+  }
+
+  const { data: updated, error } = await admin
+    .from("fde_missions")
+    .update({ status: "draft", published_at: null })
+    .eq("id", missionId)
+    .eq("status", "archived")
+    .select("*")
+    .single();
+  if (error || !updated) throw new Error(error?.message || "Could not restore simulation.");
+
+  await audit(actorUserId, "fde_mission.restored", "fde_mission", missionId, {});
+  return updated;
+}
+
+/** Duplicate as a new draft with provenance to the source mission. */
+export async function duplicateMission(missionId: string, actorUserId: string) {
+  const admin = createAdminSupabaseClient();
+  const { data: mission } = await admin
+    .from("fde_missions")
+    .select("*")
+    .eq("id", missionId)
+    .maybeSingle();
+  if (!mission) throw new Error("Mission not found.");
+
+  const { data: created, error } = await admin
+    .from("fde_missions")
+    .insert({
+      organization_id: mission.organization_id,
+      title: `${mission.title} (copy)`,
+      objective: mission.objective,
+      customer_context: mission.customer_context,
+      expected_outcome: mission.expected_outcome,
+      systems_context: mission.systems_context,
+      technical_environment: mission.technical_environment,
+      constraints: mission.constraints,
+      security_considerations: mission.security_considerations,
+      success_measures: mission.success_measures,
+      location: mission.location,
+      travel_expectation: mission.travel_expectation,
+      work_arrangement: mission.work_arrangement,
+      compensation_minimum: mission.compensation_minimum,
+      compensation_maximum: mission.compensation_maximum,
+      currency: mission.currency,
+      hiring_timeline: mission.hiring_timeline,
+      invitation_limit: mission.invitation_limit,
+      simulation_template_key: mission.simulation_template_key,
+      status: "draft",
+      created_by: actorUserId,
+    })
+    .select("*")
+    .single();
+  if (error || !created) throw new Error(error?.message || "Could not duplicate simulation.");
+
+  await audit(actorUserId, "fde_mission.duplicated", "fde_mission", created.id, {
+    sourceMissionId: missionId,
+  });
+  return created;
+}
+
+export async function activateMission(missionId: string, actorUserId: string) {
+  // Ops and employer paths share the same publish semantics for pilot reliability.
+  return publishMission(missionId, actorUserId);
 }
 
 export async function inviteFdeToMission(input: {
@@ -244,8 +410,9 @@ export async function inviteFdeToMission(input: {
     .eq("id", input.missionId)
     .maybeSingle();
   if (!mission) throw new Error("Mission not found.");
-  if (!["under_review", "active"].includes(mission.status)) {
-    throw new Error("Mission must be submitted for review (or active) before inviting an FDE.");
+  // Production invites require an active(=published) simulation only.
+  if (mission.status !== "active") {
+    throw new Error("Publish the simulation before inviting candidates.");
   }
 
   const { count } = await admin
@@ -447,4 +614,58 @@ export async function acceptInvitation(token: string, userId: string) {
   });
 
   return { invitation, session, duplicate: false };
+}
+
+/**
+ * Employer-only preview attempt. Uses attempt_kind=preview so it never
+ * contaminates production candidate lists or analytics counts.
+ * Idempotent per (mission, employer user): returns the existing preview session.
+ */
+export async function createPreviewAttempt(input: {
+  missionId: string;
+  employerUserId: string;
+}) {
+  const admin = createAdminSupabaseClient();
+  const { data: mission } = await admin
+    .from("fde_missions")
+    .select("*")
+    .eq("id", input.missionId)
+    .maybeSingle();
+  if (!mission) throw new Error("Mission not found.");
+
+  const { data: existing } = await admin
+    .from("relay_sessions")
+    .select("*")
+    .eq("mission_id", input.missionId)
+    .eq("fde_user_id", input.employerUserId)
+    .eq("attempt_kind", "preview")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (existing) {
+    return { session: existing, duplicate: true as const };
+  }
+
+  await ensureFdeProfile(input.employerUserId);
+
+  const { data: session, error } = await admin
+    .from("relay_sessions")
+    .insert({
+      mission_id: input.missionId,
+      invitation_id: null,
+      fde_user_id: input.employerUserId,
+      status: "ready",
+      attempt_kind: "preview",
+      billable: false,
+      workspace_state: { attemptKind: "preview", files: {}, plan: {}, handoff: {}, notes: {} },
+    })
+    .select("*")
+    .single();
+  if (error || !session) throw new Error(error?.message || "Could not create preview attempt.");
+
+  await audit(input.employerUserId, "relay_session.preview_created", "relay_session", session.id, {
+    missionId: input.missionId,
+  });
+
+  return { session, duplicate: false as const };
 }

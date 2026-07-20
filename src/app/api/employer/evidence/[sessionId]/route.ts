@@ -137,8 +137,14 @@ export async function GET(_req: Request, ctx: { params: Promise<{ sessionId: str
     decisions: decisions || [],
     analysis: analysis
       ? {
-          fit: analysis.fit,
+          composite: analysis.composite,
           prediction: analysis.prediction,
+          interviewFollowups: analysis.interviewFollowups,
+          processQuality: analysis.processQuality,
+          aiQuality: analysis.aiQuality,
+          adaptability: analysis.adaptability,
+          diagnosticEfficiency: analysis.diagnosticEfficiency,
+          validationMaturity: analysis.validationMaturity,
           policyVersion: analysis.policyVersion,
           formulaVersion: analysis.formulaVersion,
         }

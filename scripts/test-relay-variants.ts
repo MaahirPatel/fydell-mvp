@@ -1,20 +1,5 @@
 /**
- * Checkpoint F — Relay variant pipeline acceptance.
- *
- * Verifies, against the real materialize/validate/resolve modules (no
- * mocks):
- *   1. materializing each of the three catalog variants is deterministic —
- *      same spec -> byte-identical FileMap, every time.
- *   2. each approved catalog variant's materialized files pass validateVariant
- *      (required files, golden set, defect marker, no email-looking PII, evals
- *      script present).
- *   3. validateVariant actually rejects files with a fabricated PII-looking
- *      email and files with no intentional-defect marker (negative cases,
- *      not just "everything passes").
- *   4. resolveScenarioForSession only ever serves a variant when it is
- *      explicitly requested AND approved AND valid — and falls back to the
- *      known-good canonical baseline the moment any of those isn't true
- *      (unknown id, non-approved status, or a deliberately-broken variant).
+ * Northbeam Relay variant pipeline acceptance.
  *
  * Run: npx tsx scripts/test-relay-variants.ts
  */
@@ -75,8 +60,10 @@ goldenCase("known-good baseline is deterministic and non-empty", () => {
   const b = getKnownGoodBaseline();
   assert.deepEqual(a, b);
   assert.ok(Object.keys(a).length > 5, "baseline should contain the real scenario files");
-  assert.ok("src/router.py" in a);
-  assert.ok("data/golden_set.jsonl" in a);
+  assert.ok("src/join.py" in a);
+  assert.ok("data/shipments.csv" in a);
+  assert.ok("data/delays_manual_tracking.csv" in a);
+  assert.ok("evals/run_evals.py" in a);
 });
 
 goldenCase("materializeVariant is deterministic per spec (same seed -> same files)", () => {
@@ -87,12 +74,13 @@ goldenCase("materializeVariant is deterministic per spec (same seed -> same file
   }
 });
 
-goldenCase("different defect focuses produce genuinely different router/triage files", () => {
+goldenCase("different defect focuses produce genuinely different mutated files", () => {
   const materialized = specs.map((spec) => materializeVariant(spec));
-  const routerVariants = new Set(materialized.map((f) => f["src/router.py"]));
-  const triageVariants = new Set(materialized.map((f) => f["src/triage.py"]));
+  const joinVariants = new Set(materialized.map((f) => f["src/join.py"]));
+  const metricsVariants = new Set(materialized.map((f) => f["src/metrics.py"]));
+  const integrityVariants = new Set(materialized.map((f) => f["docs/data-integrity.md"]));
   assert.ok(
-    routerVariants.size > 1 || triageVariants.size > 1,
+    joinVariants.size > 1 || metricsVariants.size > 1 || integrityVariants.size > 1,
     "at least one mutated file must differ across the three variants"
   );
 });
@@ -128,8 +116,9 @@ goldenCase("validateVariant rejects a fabricated email-looking PII string", () =
 
 goldenCase("validateVariant rejects files with no intentional defect marker", () => {
   const files = { ...getKnownGoodBaseline() };
-  // The real baseline's docstring mentions the known issue in prose but has
-  // no literal INTENTIONAL_DEFECT marker comment — this must fail closed.
+  for (const [path, content] of Object.entries(files)) {
+    files[path] = content.replace(/INTENTIONAL_DEFECT[^\n]*/g, "KNOWN_ISSUE");
+  }
   const result = validateVariant(files);
   assert.equal(result.ok, false);
   assert.ok(result.errors.some((e) => e.includes("INTENTIONAL_DEFECT")));
@@ -182,17 +171,10 @@ goldenCase("resolveScenarioForSession never serves a non-approved variant (statu
 });
 
 goldenCase("resolveScenarioForSession falls back for an approved-but-invalid variant", () => {
-  // Approved status alone is not sufficient — construct a spec that is
-  // approved but whose materialization would fail validation (unknown
-  // defect focus keeps mutators a no-op, but we assert the *contract*: an
-  // invalid materialization is never served even if status says approved).
   const brokenSpec: VariantSpec = {
     ...specs[0],
     id: "relay-variant-test-broken",
   };
-  // This id is not in the catalog, so findCatalogSpec(id) returns undefined
-  // and resolve falls back — proving unknown/uncataloged variants can never
-  // be served regardless of the spec object's own status field.
   const resolved = resolveScenarioForSession({ preferVariantId: brokenSpec.id });
   assert.equal(resolved.source, "canonical");
 });

@@ -38,7 +38,7 @@ function describe(event: WorkspaceEvent): ThreadEvent {
   } else if (event.event_type === "curveball_revealed") {
     detail = payload.key ? String(payload.key) : null;
   } else if (event.event_type === "ai_patch_applied") {
-    detail = `${payload.file ?? ""} — ${payload.source === "router_policy_bug_fix" ? "router policy fix" : "instruction note"}`;
+    detail = `${payload.file ?? ""} — ${payload.source === "report_join_fix" ? "report join fix" : "instruction note"}`;
   } else if (event.event_type === "technical_issue_reported") {
     detail = String(payload.description ?? "");
   }

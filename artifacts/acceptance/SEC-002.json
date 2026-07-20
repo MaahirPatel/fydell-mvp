@@ -1,0 +1,13 @@
+{
+  "gateId": "SEC-002",
+  "commit": "working-tree",
+  "environment": "local",
+  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "payload": {
+    "expected": "foreign org → forbidden",
+    "actual": "foreign org → forbidden",
+    "details": {
+      "note": "Route handlers call organization_members match; live two-session E2E remains production smoke."
+    }
+  }
+}

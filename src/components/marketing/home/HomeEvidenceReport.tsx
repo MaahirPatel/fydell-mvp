@@ -8,8 +8,8 @@ export default function HomeEvidenceReport() {
       <Container>
         <Reveal>
           <EditorialHeader
-            heading="Turn every decision into evidence."
-            description="Fydell shows what the candidate demonstrated, what they missed, how confident the evidence is, and what the interviewer should examine next."
+            heading="A receipt your team reads, not a score you trust blindly."
+            description="Strong evidence, needs review, cited moments, and follow-up questions your interviewer can actually ask. The fit score shows up once — as context, not the headline."
             stageHref="#request-pilot"
             stageLabel="3.0 · Evidence report"
           />

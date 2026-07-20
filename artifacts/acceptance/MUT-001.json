@@ -1,0 +1,17 @@
+{
+  "gateId": "MUT-001",
+  "commit": "working-tree",
+  "environment": "local",
+  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "payload": {
+    "expected": "mutants diverge from correct implementations",
+    "actual": "divergences detected",
+    "details": {
+      "correctCoverage": 0.76,
+      "mutantSum": 0.8999999999999999,
+      "realConf": 0.3934884261458143,
+      "mutantConf": 0.8,
+      "shrunkSparse": 0.5
+    }
+  }
+}

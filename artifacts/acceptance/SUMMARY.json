@@ -1,0 +1,7 @@
+{
+  "S0_S1_Tc": 0.875,
+  "required": 16,
+  "verified": 14,
+  "blocked": 1,
+  "target": "Tc=1.0 for S0/S1 before calling release-ready without named limitations"
+}

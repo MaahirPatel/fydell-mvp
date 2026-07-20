@@ -1,0 +1,14 @@
+{
+  "gateId": "SEC-001",
+  "commit": "working-tree",
+  "environment": "local",
+  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "payload": {
+    "expected": "canary absent from candidate FileMap",
+    "actual": "canary absent",
+    "details": {
+      "fileCount": 20,
+      "schemaOk": true
+    }
+  }
+}

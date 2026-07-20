@@ -1,0 +1,10 @@
+{
+  "gateId": "PROP-001",
+  "commit": "working-tree",
+  "environment": "local",
+  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "payload": {
+    "expected": "monotonic nondecreasing coverage",
+    "actual": "0.4 → 0.58"
+  }
+}

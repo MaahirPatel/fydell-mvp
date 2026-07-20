@@ -1,0 +1,64 @@
+{
+  "channel": "#northbeam-ops",
+  "participants": [
+    { "id": "dana.whitfield", "name": "Dana Whitfield", "role": "Ops Manager, Northbeam Logistics" },
+    { "id": "priya.anand", "name": "Priya Anand", "role": "VP of Operations, Northbeam Logistics" },
+    { "id": "you", "name": "You", "role": "Forward-Deployed Engineer" }
+  ],
+  "messages": [
+    {
+      "id": "msg-001",
+      "author": "dana.whitfield",
+      "timestamp": "2026-07-13T14:02:00-05:00",
+      "text": "Hey — thanks for hopping on this. We need better visibility into shipment delays. Right now nobody can tell me which lanes or carriers are actually behind until a customer complains."
+    },
+    {
+      "id": "msg-002",
+      "author": "dana.whitfield",
+      "timestamp": "2026-07-13T14:03:20-05:00",
+      "text": "We've got shipments.csv from the TMS export and carriers.csv with each carrier's stated on-time rate. Whatever's useful, build it."
+    },
+    {
+      "id": "msg-003",
+      "author": "dana.whitfield",
+      "timestamp": "2026-07-13T14:05:41-05:00",
+      "text": "Also attaching delays_manual_tracking.csv — that's the sheet my team keeps by hand when we catch a delay before the system does. Fair warning, it's not the tidiest spreadsheet."
+    },
+    {
+      "id": "msg-004",
+      "author": "you",
+      "timestamp": "2026-07-13T14:11:05-05:00",
+      "text": "Got it. Starting with a look at the data — will follow up with what I find."
+    },
+    {
+      "id": "msg-005",
+      "author": "priya.anand",
+      "timestamp": "2026-07-14T09:47:12-05:00",
+      "text": "Dana looped me in. Before we talk dashboards — I want to understand *why* we're late so often. A pretty chart doesn't tell the board anything if we can't explain root cause."
+    },
+    {
+      "id": "msg-006",
+      "author": "dana.whitfield",
+      "timestamp": "2026-07-14T09:52:30-05:00",
+      "text": "Priya, I hear you, but my team just needs something we can check every morning. Root cause is a bigger lift than what we scoped."
+    },
+    {
+      "id": "msg-007",
+      "author": "priya.anand",
+      "timestamp": "2026-07-14T09:54:03-05:00",
+      "text": "We can figure out scope. I'd rather have one right answer than a dashboard nobody trusts."
+    },
+    {
+      "id": "msg-008",
+      "author": "priya.anand",
+      "timestamp": "2026-07-16T11:20:47-05:00",
+      "text": "Heads up — board meeting got pulled forward to this Thursday. Whatever you have, I need it a day earlier than we planned."
+    },
+    {
+      "id": "msg-009",
+      "author": "dana.whitfield",
+      "timestamp": "2026-07-16T11:24:15-05:00",
+      "text": "(to you) Sorry — we haven't sorted out whether this is a dashboard or a root-cause writeup. Use your judgment on what's most useful and we'll adjust."
+    }
+  ]
+}

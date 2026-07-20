@@ -80,7 +80,7 @@ export class NodeTestExecutionProvider implements ExecutionProvider {
       return {
         ok: false,
         stdout: "",
-        stderr: `Command not allowed. Supported: test | pytest | evals | preview | help`,
+        stderr: `Command not allowed. Supported: test | pytest | evals | preview | reconcile | help`,
         exitCode: 127,
         durationMs: 0,
         command,
@@ -89,7 +89,7 @@ export class NodeTestExecutionProvider implements ExecutionProvider {
     if (allowed === "help") {
       return {
         ok: true,
-        stdout: "Allowed: test, pytest, evals, preview, help\n",
+        stdout: "Allowed: test, pytest, evals, preview, reconcile, help\n",
         stderr: "",
         exitCode: 0,
         durationMs: 0,
@@ -100,6 +100,7 @@ export class NodeTestExecutionProvider implements ExecutionProvider {
       return this.preview();
     }
     if (allowed === "evals") return this.runEvaluations();
+    if (allowed === "reconcile") return this.runReconcile();
     return this.runTests();
   }
 
@@ -116,19 +117,23 @@ export class NodeTestExecutionProvider implements ExecutionProvider {
     return this.runPython(["evals/run_evals.py"]);
   }
 
+  async runReconcile(): Promise<CommandResult> {
+    return this.runPython(["src/reconcile.py"]);
+  }
+
   private async preview(): Promise<CommandResult> {
     const started = Date.now();
     const script = `
 import json, sys
 sys.path.insert(0, "src")
-from triage import triage
-samples = [
-  "Production API is down",
-  "Please refund this charge",
-  "unauthorized credential access",
-]
-for s in samples:
-  print(json.dumps({"input": s, "result": triage(s)}))
+from load import load_carriers, load_delay_tracking, load_shipments
+from report import build_report
+
+shipments = load_shipments()
+carriers = load_carriers()
+delay_rows = load_delay_tracking()
+report = build_report(shipments, carriers, delay_rows)
+print(json.dumps(report, indent=2))
 `;
     const result = spawnSync("python", ["-c", script], {
       cwd: this.workDir,
@@ -165,18 +170,20 @@ for s in samples:
 const FALLBACK_TEST_RUNNER = `
 import sys
 sys.path.insert(0, "src")
-from triage import classify, triage
+from load import load_delay_tracking, load_shipments
+from join import naive_join
+from reconcile import reconciled_join
 
 def check(cond, msg):
   if not cond:
     raise AssertionError(msg)
 
-check(classify("Production API is down") == "incident_p0", "p0")
-check(classify("credential stuffing unauthorized") == "security", "security")
-r = triage("Please refund this charge immediately")
-check(r["action"] == "abstain" or r["human_approval_required"] is True, "refund")
-r2 = triage("How do I reset my password?")
-check(r2["category"] == "general", "general")
+shipments = load_shipments()
+delay_rows = load_delay_tracking()
+_, naive_dropped = naive_join(shipments, delay_rows)
+check(len(naive_dropped) > 0, "naive join should drop mismatched-id rows")
+_, reconciled_unmatched = reconciled_join(shipments, delay_rows)
+check(len(reconciled_unmatched) == 0, "reconciled join should recover all rows")
 print("FALLBACK_TESTS_PASSED")
 `;
 

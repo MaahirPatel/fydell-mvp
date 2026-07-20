@@ -1,0 +1,15 @@
+{
+  "gateId": "GEN-004",
+  "commit": "working-tree",
+  "environment": "local",
+  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "payload": {
+    "expected": "needs_revision",
+    "actual": "needs_revision",
+    "details": {
+      "reasons": [
+        "Critical coverage missing"
+      ]
+    }
+  }
+}

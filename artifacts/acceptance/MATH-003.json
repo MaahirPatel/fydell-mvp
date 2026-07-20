@@ -1,0 +1,10 @@
+{
+  "gateId": "MATH-003",
+  "commit": "working-tree",
+  "environment": "local",
+  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "payload": {
+    "expected": "not observed / null",
+    "actual": "not observed / null"
+  }
+}

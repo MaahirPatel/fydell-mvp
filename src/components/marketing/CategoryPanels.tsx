@@ -41,7 +41,7 @@ function EvidenceSchematic() {
       <circle cx="24" cy="36" r="5" fill="rgba(86,98,255,0.5)" />
       <circle cx="60" cy="22" r="4" fill="rgba(255,255,255,0.2)" />
       <circle cx="60" cy="50" r="4" fill="rgba(255,255,255,0.2)" />
-      <circle cx="96" cy="36" r="5" fill="rgba(134,87,244,0.55)" />
+      <circle cx="96" cy="36" r="5" fill="rgba(58,191,210,0.55)" />
       <path
         d="M29 36 L55 24 M29 36 L55 48 M65 24 L91 36 M65 48 L91 36"
         stroke="rgba(255,255,255,0.16)"
@@ -75,19 +75,19 @@ const PANELS = [
   {
     id: "session",
     title: "Relay session",
-    copy: "The FDE completes a real deployment mission — a working codebase, an allowlisted terminal, and a customer chat.",
+    copy: "The FDE gets Northbeam's real ask, three messy CSVs, a working repo, an allowlisted terminal, and a live stakeholder chat.",
     Schematic: WorkroomSchematic,
   },
   {
     id: "evidence",
     title: "Evidence trail",
-    copy: "File saves, test runs, chat messages, and the mid-session curveball are all captured as timestamped evidence.",
+    copy: "File saves, terminal commands, chat messages, and the response to the deadline curveball are all captured as timestamped evidence.",
     Schematic: EvidenceSchematic,
   },
   {
     id: "memo",
     title: "Evidence receipt",
-    copy: "Hiring teams get rule-based findings showing what to ask, review, and trust — before recording a decision.",
+    copy: "Hiring teams get ten cited trait findings in four buckets — plus a secondary fit score — before recording a decision.",
     Schematic: MemoSchematic,
   },
 ];

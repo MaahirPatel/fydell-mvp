@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
-import { submitMissionForReview, updateMissionDraft } from "@/lib/fde/lifecycle";
+import {
+  archiveMission,
+  duplicateMission,
+  publishMission,
+  restoreMission,
+  submitMissionForReview,
+  updateMissionDraft,
+} from "@/lib/fde/lifecycle";
+import { toPublicMissionStatus } from "@/lib/fde/lifecycle-status";
 
 export const dynamic = "force-dynamic";
 
@@ -44,12 +52,20 @@ export async function GET(
   if (!authorized) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const admin = createAdminSupabaseClient();
+  // Preview/demonstration attempts must not lock editing or inflate "has sessions".
   const { count } = await admin
     .from("relay_sessions")
     .select("id", { count: "exact", head: true })
-    .eq("mission_id", id);
+    .eq("mission_id", id)
+    .or("attempt_kind.is.null,attempt_kind.eq.scored");
 
-  return NextResponse.json({ mission, hasSessions: (count || 0) > 0 });
+  return NextResponse.json({
+    mission: {
+      ...mission,
+      lifecycleStatus: toPublicMissionStatus(String(mission.status)),
+    },
+    hasSessions: (count || 0) > 0,
+  });
 }
 
 export async function PATCH(
@@ -105,6 +121,26 @@ export async function POST(
     if (action === "submit_review") {
       const updated = await submitMissionForReview(id, data.user.id);
       return NextResponse.json({ ok: true, mission: updated });
+    }
+
+    if (action === "publish" || action === "activate") {
+      const updated = await publishMission(id, data.user.id);
+      return NextResponse.json({ ok: true, mission: updated });
+    }
+
+    if (action === "archive") {
+      const updated = await archiveMission(id, data.user.id);
+      return NextResponse.json({ ok: true, mission: updated });
+    }
+
+    if (action === "restore") {
+      const updated = await restoreMission(id, data.user.id);
+      return NextResponse.json({ ok: true, mission: updated });
+    }
+
+    if (action === "duplicate") {
+      const created = await duplicateMission(id, data.user.id);
+      return NextResponse.json({ ok: true, mission: created });
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

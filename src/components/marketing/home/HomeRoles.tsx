@@ -12,8 +12,12 @@ export default function HomeRoles() {
   return (
     <section className="section-compact border-t border-[var(--border-subtle)]">
       <Container>
-        <Reveal className="max-w-[500px]">
+        <Reveal className="max-w-[560px]">
           <h2 className="section-heading flat-type">Start with one real mission.</h2>
+          <p className="section-desc mt-5">
+            One FDE, one mission, one decision — before a senior engineer spends an afternoon on a
+            candidate who doesn't clear the bar.
+          </p>
         </Reveal>
 
         <div className="mt-10 max-w-[720px] border-t border-[var(--border-subtle)]">

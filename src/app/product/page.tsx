@@ -11,7 +11,7 @@ import FinalCTA from "@/components/marketing/FinalCTA";
 export const metadata = {
   title: "Product · Fydell",
   description:
-    "Fydell gives FDE candidates a realistic deployment mission and gives hiring teams structured evidence from how the work was actually done.",
+    "Fydell gives FDE candidates a realistic deployment mission at a synthetic logistics company and gives hiring teams trait-level evidence from how the work was actually done.",
 };
 
 export default function ProductPage() {
@@ -19,7 +19,7 @@ export default function ProductPage() {
     <MarketingShell>
       <PageHero
         title="The deployment simulation before the hire."
-        description="FDE candidates complete a realistic mission. Hiring teams receive structured evidence from how that work was done."
+        description="FDE candidates work a real, ambiguous ask for Northbeam Logistics. Hiring teams get ten traits of cited evidence — not a leaderboard score."
       />
 
       <section className="pb-16 sm:pb-20 lg:pb-24">
@@ -39,7 +39,7 @@ export default function ProductPage() {
           <Reveal>
             <EditorialHeader
               heading="What the mission produces."
-              description="Every completed Project Relay session generates structured objects your hiring team can read, share, and act on."
+              description="Every completed Project Relay session at Northbeam Logistics generates structured objects your hiring team can read, share, and act on."
               stageHref="/how-it-works"
               stageLabel="How it works"
             />
@@ -55,7 +55,7 @@ export default function ProductPage() {
           <Reveal>
             <EditorialHeader
               heading="What gets captured."
-              description="Every action inside the session is logged as evidence — reviewed before the receipt is delivered."
+              description="File saves, terminal commands, chat with Dana and Priya, and the response to the deadline curveball — all logged as evidence, reviewed before the receipt is delivered."
               stageHref="/simulation"
               stageLabel="Project Relay"
             />
@@ -71,7 +71,7 @@ export default function ProductPage() {
           <Reveal>
             <EditorialHeader
               heading="What your hiring team receives."
-              description="Once the FDE submits, you get a structured evidence report — with findings, confidence, and a decision you record yourself."
+              description="Once the FDE submits, you get ten trait findings in strong evidence / needs review / limited / not observed buckets, cited moments, and a fit score shown as context — not the headline."
               stageHref="/sample-report"
               stageLabel="Sample report"
             />

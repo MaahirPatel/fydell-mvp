@@ -54,7 +54,7 @@ export default function TopBar({
   onExit,
   onOpenRecovery,
   recoveryAlert,
-  onSubmit,
+  onOpenShipGate,
 }: {
   missionTitle: string;
   connection: ConnectionState;
@@ -66,20 +66,21 @@ export default function TopBar({
   onExit: () => void;
   onOpenRecovery: () => void;
   recoveryAlert: boolean;
-  onSubmit: () => void;
+  onOpenShipGate: () => void;
 }) {
+  const lowTime = remainingSeconds <= 300 && remainingSeconds > 0;
   const timeUp = remainingSeconds <= 0;
 
   return (
     <header className="flex h-14 flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] bg-[#090B10] px-4 sm:px-6">
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         <FydellBrand markSize={22} wordmarkSize={15} />
-        <span className="hidden text-[13px] font-medium text-white/70 sm:inline">Project Relay</span>
-        <span className="hidden rounded-full border border-[#3B5BFF]/35 bg-[#3B5BFF]/10 px-2.5 py-0.5 text-[10.5px] font-medium uppercase tracking-[0.05em] text-[#B8C4FF] sm:inline">
-          Synthetic deployment
+        <span className="hidden truncate text-[12px] text-white/40 sm:inline">
+          Project Relay <span className="text-white/25">·</span> Northbeam Logistics
+          <span className="text-white/25"> · </span>Synthetic deployment
         </span>
         {missionTitle && (
-          <span className="hidden max-w-[220px] truncate text-[13px] text-white/45 lg:inline">
+          <span className="hidden max-w-[200px] truncate text-[12.5px] text-white/35 lg:inline">
             {missionTitle}
           </span>
         )}
@@ -87,11 +88,11 @@ export default function TopBar({
 
       <div className="flex items-center gap-2 sm:gap-3">
         <div
-          className="hidden items-center gap-2 text-[11px] text-white/40 md:flex"
+          className="hidden items-center gap-2 text-[11px] text-white/35 md:flex"
           style={{ fontFamily: MONO }}
         >
-          <span className={connection === "online" ? "text-[#8EE4B8]" : "text-[#F26B82]"}>
-            {connection === "online" ? "● online" : "● offline"}
+          <span className={connection === "online" ? "text-white/40" : "text-[#F26B82]"}>
+            {connection === "online" ? "online" : "offline"}
           </span>
           <span aria-hidden>·</span>
           <span>{saveLabel(saveState) || "—"}</span>
@@ -114,12 +115,12 @@ export default function TopBar({
         </button>
 
         <span
-          className={`rounded-full border px-3 py-1 text-[12px] ${
-            timeUp ? "border-[#fda4b0]/40 text-[#fda4b0]" : "border-white/15 text-white/70"
+          className={`rounded-full border px-3 py-1 text-[11.5px] ${
+            timeUp ? "border-[#F26B82]/35 text-[#fda4b0]" : lowTime ? "border-[#F2C36B]/30 text-[#F2C36B]/90" : "border-white/10 text-white/45"
           }`}
           style={{ fontFamily: MONO }}
         >
-          {timeUp ? "TIME UP" : formatClock(remainingSeconds)}
+          {timeUp ? "Time up" : formatClock(remainingSeconds)}
         </span>
 
         <button
@@ -133,10 +134,10 @@ export default function TopBar({
         <button
           type="button"
           disabled={submitting}
-          onClick={onSubmit}
+          onClick={onOpenShipGate}
           className="inline-flex h-9 items-center rounded-[8px] bg-[#F1F2F4] px-4 text-[12.5px] font-semibold text-[#08090C] disabled:opacity-50"
         >
-          {submitting ? "Submitting…" : "Submit"}
+          {submitting ? "Shipping…" : "Ship"}
         </button>
       </div>
     </header>

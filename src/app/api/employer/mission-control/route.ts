@@ -33,6 +33,7 @@ type SessionRow = {
   started_at: string | null;
   submitted_at: string | null;
   created_at: string;
+  attempt_kind?: string | null;
 };
 
 type DecisionRow = {
@@ -97,7 +98,7 @@ function buildCta(
     return { label: "Finish your mission", href: `/app/employer/missions/${draftMission.id}` };
   }
 
-  return { label: "Create a mission", href: "/app/employer/missions/new" };
+  return { label: "Create simulation", href: "/app/employer/simulations/generate" };
 }
 
 function pickFocusMissionId(
@@ -411,12 +412,15 @@ export async function GET() {
         .order("created_at", { ascending: false }),
       admin
         .from("relay_sessions")
-        .select("id, mission_id, fde_user_id, status, started_at, submitted_at, created_at")
+        .select("id, mission_id, fde_user_id, status, started_at, submitted_at, created_at, attempt_kind")
         .in("mission_id", missionIds)
         .order("created_at", { ascending: false }),
     ]);
     invites = (invitesRes.data || []) as InviteRow[];
-    sessions = (sessionsRes.data || []) as SessionRow[];
+    // Preview/demonstration attempts never enter production analytics.
+    sessions = ((sessionsRes.data || []) as SessionRow[]).filter(
+      (s) => !s.attempt_kind || s.attempt_kind === "scored"
+    );
   }
 
   const { data: decisionsData } = await admin

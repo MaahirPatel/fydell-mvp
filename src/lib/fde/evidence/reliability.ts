@@ -9,8 +9,20 @@ import type { EvidenceAtomInput } from "./types";
 
 /** Bump this whenever the *policy* (which evidence counts, thresholds, caps) changes. */
 export const POLICY_VERSION = "evidence-policy-v1";
-/** Bump this whenever the *math* (formulas below / aggregate.ts) changes. */
-export const FORMULA_VERSION = "evidence-formula-v1";
+/** Bump this whenever the *math* (formulas below / aggregate.ts / score.ts) changes. */
+export const FORMULA_VERSION = "evidence-formula-v2";
+
+/** Floor for denominators — keeps every formula finite. */
+export const EPS = 1e-9;
+
+/**
+ * Expert-prior variance folded into SE. Bernoulli variance peaks at 0.25;
+ * we use a milder prior so SE is not dominated by the prior term at small N_eff.
+ * Bounds contribution via `priorVar / (nEff + SE_PRIOR_LAMBDA)`.
+ */
+export const SE_PRIOR_VAR = 0.0625;
+/** Pseudo-count strength for the SE prior term (matches shrink k scale). */
+export const SE_PRIOR_LAMBDA = 2;
 
 export function clampFinite(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) return min;
@@ -19,6 +31,57 @@ export function clampFinite(value: number, min: number, max: number): number {
 
 function clamp01(value: number): number {
   return clampFinite(value, 0, 1);
+}
+
+/**
+ * Kish effective sample size for a set of non-negative weights:
+ *
+ *   N_eff = (Σ w)² / (Σ w² + ε)
+ *
+ * Bounds: empty → 0; otherwise finite in (0, weights.length]. Duplicate /
+ * correlated mass in the same weight vector does not inflate N_eff the way a
+ * raw count would — equal weights of 1 yield N_eff = n; one dominant weight
+ * yields N_eff ≈ 1.
+ */
+export function effectiveSampleSize(weights: number[]): number {
+  if (weights.length === 0) return 0;
+
+  let sum = 0;
+  let sumSq = 0;
+  let usable = 0;
+  for (const w of weights) {
+    if (!Number.isFinite(w) || w <= 0) continue;
+    sum += w;
+    sumSq += w * w;
+    usable += 1;
+  }
+  if (usable === 0 || sum <= 0) return 0;
+
+  // Use max(sumSq, ε) so equal unit weights yield exactly `usable`, while
+  // still guarding a degenerate all-zero sumSq path.
+  const nEff = (sum * sum) / Math.max(sumSq, EPS);
+  return clampFinite(nEff, 0, usable);
+}
+
+/**
+ * Standard error of a [0,1] estimate under an effective sample size:
+ *
+ *   SE = √( p(1-p) / max(N_eff, ε)  +  priorVar / (N_eff + λ) )
+ *
+ * Bounds: always finite in [0, 0.5]. `priorVar` defaults to SE_PRIOR_VAR.
+ */
+export function standardError(
+  estimate01: number,
+  nEff: number,
+  priorVar: number = SE_PRIOR_VAR
+): number {
+  const p = clamp01(estimate01);
+  const safeN = Number.isFinite(nEff) && nEff > 0 ? nEff : 0;
+  const safePriorVar = Number.isFinite(priorVar) && priorVar >= 0 ? priorVar : SE_PRIOR_VAR;
+  const bernoulli = (p * (1 - p)) / Math.max(safeN, EPS);
+  const priorTerm = safePriorVar / (safeN + SE_PRIOR_LAMBDA);
+  const se = Math.sqrt(Math.max(0, bernoulli + priorTerm));
+  return clampFinite(se, 0, 0.5);
 }
 
 /**
@@ -101,15 +164,24 @@ export function shrinkEstimate(raw: number, prior: number, n: number, k: number)
 }
 
 /**
- * A symmetric uncertainty band around an estimate that narrows as the amount
- * of independent evidence `n` grows. With n=0 the band nearly spans [0, 1];
- * it shrinks toward zero width as n grows large. Never NaN/Infinity, and
- * low/high are always clamped to [0, 1] with low <= high.
+ * A symmetric uncertainty band around an estimate.
+ *
+ * When `se` is provided (preferred in formula-v2), the margin is that SE
+ * clamped to [0, 0.5]. Otherwise falls back to the legacy n-based margin
+ * `0.5 / √(n+1)` so existing aggregate/predict call sites stay compatible.
+ *
+ * Never NaN/Infinity; low/high always in [0, 1] with low <= high.
  */
-export function uncertaintyBand(estimate: number, n: number): { low: number; high: number } {
+export function uncertaintyBand(
+  estimate: number,
+  n: number,
+  se?: number
+): { low: number; high: number } {
   const safeEstimate = clamp01(estimate);
-  const safeN = Number.isFinite(n) && n > 0 ? n : 0;
-  const margin = clamp01(0.5 / Math.sqrt(safeN + 1));
+  const margin =
+    se != null && Number.isFinite(se)
+      ? clampFinite(se, 0, 0.5)
+      : clamp01(0.5 / Math.sqrt((Number.isFinite(n) && n > 0 ? n : 0) + 1));
 
   return {
     low: clamp01(safeEstimate - margin),

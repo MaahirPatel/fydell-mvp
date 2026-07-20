@@ -1,0 +1,10 @@
+{
+  "gateId": "PROP-002",
+  "commit": "working-tree",
+  "environment": "local",
+  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "payload": {
+    "expected": "independentCount=1",
+    "actual": "1"
+  }
+}

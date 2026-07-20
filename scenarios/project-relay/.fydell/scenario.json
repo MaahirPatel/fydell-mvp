@@ -1,30 +1,31 @@
 {
   "id": "project-relay",
-  "version": "1.1.0",
-  "label": "Project Relay — Synthetic FDE Deployment",
-  "description": "AI-assisted ticket triage workflow. Candidates deploy the smallest credible improvement, prove it with tests/evals, and explain risk.",
-  "allowedCommands": ["test", "pytest", "evals", "preview", "help"],
+  "version": "2.0.0",
+  "label": "Northbeam Logistics — Shipment Delay Visibility",
+  "description": "Northbeam Logistics asked for 'better visibility into shipment delays' with no further spec. Candidates must find and fix a naive-join data-integrity defect (mismatched shipment ID formats silently drop ~12% of manually tracked delay rows), reconcile a stakeholder conflict between an ops manager who wants a dashboard and a VP who wants a root-cause report, and prove their fix with tests and evals.",
+  "allowedCommands": ["test", "pytest", "evals", "preview", "help", "reconcile"],
   "entrypoints": {
-    "tests": "tests/test_triage.py",
+    "tests": "tests/test_reconcile.py",
     "evals": "evals/run_evals.py",
-    "preview": "src/service.py"
+    "preview": "src/report.py",
+    "reconcile": "src/reconcile.py"
   },
   "files": [
     "README.md",
     "canonical.json",
     "docs/customer-brief.md",
-    "src/models.py",
-    "src/prompts.py",
-    "src/telemetry.py",
-    "src/router.py",
-    "src/service.py",
-    "src/triage.py",
-    "src/policy.py",
-    "data/tickets.jsonl",
-    "data/golden_set.jsonl",
-    "evals/cases.jsonl",
-    "evals/metrics.py",
+    "docs/slack-thread.md",
+    "docs/data-integrity.md",
+    "src/load.py",
+    "src/join.py",
+    "src/reconcile.py",
+    "src/metrics.py",
+    "src/report.py",
+    "data/shipments.csv",
+    "data/carriers.csv",
+    "data/delays_manual_tracking.csv",
+    "data/inbox_thread.json",
     "evals/run_evals.py",
-    "tests/test_triage.py"
+    "tests/test_reconcile.py"
   ]
 }

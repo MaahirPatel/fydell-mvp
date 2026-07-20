@@ -2,10 +2,20 @@
  * Versioned evaluation contract — locks before the first candidate starts.
  * Behavioral evidence mathematics must not run without a locked contract.
  *
- * Primary dimensions (prototype, ~55 min): five only.
- * Secondary signals remain descriptive until the scenario creates
- * repeated independent opportunities.
+ * Primary dimensions: the 10 FDE traits (see src/lib/fde/evidence/traits.ts,
+ * the single source of truth for trait identity, weights, opportunities, and
+ * rubric anchors). There are no secondary/descriptive dimensions in this
+ * version of the contract — every trait is either scored or explicitly
+ * not_observed.
  */
+import {
+  FDE_W,
+  RUBRIC_ANCHORS,
+  TRAIT_IDS,
+  TRAIT_LABELS,
+  TRAIT_MIN_INDEPENDENT_FOR_STRONG,
+  TRAIT_OPPORTUNITIES,
+} from "./evidence/traits";
 
 export type EvidenceOpportunity = {
   opportunityId: string;
@@ -51,115 +61,46 @@ export const UNSCORED_CONTEXT_KEYS = [
   "time_in_file_ms",
 ] as const;
 
-export const PRIMARY_DIMENSION_IDS = [
-  "discovery_problem_framing",
-  "technical_scoping_prioritization",
-  "engineering_applied_ai_execution",
-  "evaluation_production_judgment",
-  "adaptation_customer_communication",
-] as const;
+/** The 10 FDE traits — see src/lib/fde/evidence/traits.ts for the source of truth. */
+export const PRIMARY_DIMENSION_IDS = TRAIT_IDS;
 
-export const SECONDARY_DIMENSION_IDS = [
-  "privacy_judgment",
-  "reusable_abstraction_thinking",
-  "handoff_quality",
-  "ai_collaboration",
-  "operational_reliability",
-] as const;
+/** No secondary/descriptive dimensions in this contract version — every trait is scored or not_observed. */
+export const SECONDARY_DIMENSION_IDS = [] as const;
 
-export const EVAL_POLICY_VERSION = "eval-policy-v0";
-export const EVAL_FORMULA_VERSION = "eval-formula-v0-placeholder";
+export const EVAL_POLICY_VERSION = "eval-policy-v2";
+export const EVAL_FORMULA_VERSION = "eval-formula-v2";
 
-/** Canonical primary dimension stubs for mission-create preview / future lock. */
+/** Canonical primary dimension stubs (10 traits) for mission-create preview / future lock. */
 export function defaultPrimaryDimensions(): EvaluationDimension[] {
-  return [
-    {
-      dimensionId: "discovery_problem_framing",
-      label: "Discovery and problem framing",
+  return TRAIT_IDS.map((traitId) => {
+    const anchors = RUBRIC_ANCHORS[traitId];
+    return {
+      dimensionId: traitId,
+      label: TRAIT_LABELS[traitId],
       priority: 1,
       behavioralAnchors: {
-        counterEvidence: ["Accepted the brief without testing assumptions that later broke the solution"],
-        mixedEvidence: ["Asked clarifying questions but did not update the plan when answers changed scope"],
-        supportingEvidence: ["Asked a question that changed system scope before coding"],
-        strongSupportingEvidence: ["Reframed the customer problem with a clear constraint set and verified it"],
+        counterEvidence: anchors.counter,
+        mixedEvidence: anchors.mixed,
+        supportingEvidence: anchors.supporting,
+        strongSupportingEvidence: anchors.strong,
       },
-      opportunities: [
-        { opportunityId: "chat_clarify", surface: "customer_chat", description: "Clarify ambiguous requirements" },
-        { opportunityId: "plan_approach", surface: "workspace", description: "Write approach before deep implementation" },
+      opportunities: TRAIT_OPPORTUNITIES[traitId],
+      prohibitedInferences: [
+        `Infer ${TRAIT_LABELS[traitId].toLowerCase()} from activity volume (message count, keystrokes, time-in-file) alone.`,
       ],
-      prohibitedInferences: ["Infer discovery skill from message count alone"],
-      minimumIndependentOpportunities: 2,
-    },
-    {
-      dimensionId: "technical_scoping_prioritization",
-      label: "Technical scoping and prioritization",
-      priority: 1,
-      behavioralAnchors: {
-        counterEvidence: ["Edited many files without addressing the failing evaluator path"],
-        mixedEvidence: ["Identified the bug area but spent remaining time on polish"],
-        supportingEvidence: ["Prioritized the policy/routing failure over cosmetic cleanup"],
-        strongSupportingEvidence: ["Scoped a minimal fix, ran targeted tests, then expanded only as needed"],
-      },
-      opportunities: [
-        { opportunityId: "triage_failing_eval", surface: "evals", description: "Read failing evals and choose a first cut" },
-        { opportunityId: "curveball_reprioritize", surface: "curveball", description: "Reprioritize after mid-session change" },
-      ],
-      prohibitedInferences: ["Treat number of files opened as prioritization skill"],
-      minimumIndependentOpportunities: 2,
-    },
-    {
-      dimensionId: "engineering_applied_ai_execution",
-      label: "Engineering and applied-AI execution",
-      priority: 1,
-      behavioralAnchors: {
-        counterEvidence: ["Pastes AI output that fails tests without verification"],
-        mixedEvidence: ["Fixes tests but leaves the approval-policy hole open"],
-        supportingEvidence: ["Implements a working fix and verifies with allowlisted commands"],
-        strongSupportingEvidence: ["Produces a correct, reviewed change that survives evals and privacy constraints"],
-      },
-      opportunities: [
-        { opportunityId: "edit_and_test", surface: "workspace", description: "Edit code and run tests" },
-        { opportunityId: "run_evals", surface: "evals", description: "Run evaluation suite against golden set" },
-      ],
-      prohibitedInferences: ["Score from typing speed or prompt count"],
-      minimumIndependentOpportunities: 2,
-    },
-    {
-      dimensionId: "evaluation_production_judgment",
-      label: "Evaluation and production judgment",
-      priority: 1,
-      behavioralAnchors: {
-        counterEvidence: ["Claims green without reading high-severity failures"],
-        mixedEvidence: ["Improves accuracy but ignores false-automation / privacy risks"],
-        supportingEvidence: ["Checks schema validity, privacy, or idempotency alongside accuracy"],
-        strongSupportingEvidence: ["Documents residual risk and refuses unsafe automation"],
-      },
-      opportunities: [
-        { opportunityId: "interpret_metrics", surface: "evals", description: "Interpret objective metrics honestly" },
-        { opportunityId: "handoff_risks", surface: "handoff", description: "Call out unresolved production risks" },
-      ],
-      prohibitedInferences: ["Treat time spent reading logs as judgment quality"],
-      minimumIndependentOpportunities: 2,
-    },
-    {
-      dimensionId: "adaptation_customer_communication",
-      label: "Adaptation and customer communication",
-      priority: 1,
-      behavioralAnchors: {
-        counterEvidence: ["Ignores the curveball or hides unresolved risk from the customer"],
-        mixedEvidence: ["Acknowledges the change but does not update the solution"],
-        supportingEvidence: ["Communicates impact of the curveball and adjusts the plan"],
-        strongSupportingEvidence: ["Negotiates a safe path with the customer and lands a verified adaptation"],
-      },
-      opportunities: [
-        { opportunityId: "curveball_response", surface: "curveball", description: "Respond to mid-session requirement change" },
-        { opportunityId: "customer_update", surface: "customer_chat", description: "Update the customer with clear status/risk" },
-      ],
-      prohibitedInferences: ["Infer communication quality from message volume alone"],
-      minimumIndependentOpportunities: 2,
-    },
-  ];
+      // Catalog opportunity *kinds* per trait vary (1 or 2); a trait's actual
+      // independent-moment count at scoring time can still exceed this via
+      // repeated behavior within a single catalog opportunity (see score.ts).
+      minimumIndependentOpportunities: Math.min(
+        TRAIT_MIN_INDEPENDENT_FOR_STRONG,
+        TRAIT_OPPORTUNITIES[traitId].length
+      ),
+    };
+  });
 }
+
+/** Weighted role-fit composite weight per trait — re-exported for mission-preview UI. */
+export const PRIMARY_DIMENSION_WEIGHTS = FDE_W;
 
 export function assertContractLockable(contract: EvaluationContract): string[] {
   const errors: string[] = [];

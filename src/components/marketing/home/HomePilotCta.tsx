@@ -22,7 +22,7 @@ export default function HomePilotCta() {
               <TextLink href="#project-relay">See how it works</TextLink>
             </div>
             <p className="mt-6 text-[13px] text-[rgba(244,245,247,0.4)]">
-              Configured around your mission · No ATS replacement required
+              Configured around your mission · Exports to sit next to Greenhouse or Ashby
             </p>
           </Reveal>
 
