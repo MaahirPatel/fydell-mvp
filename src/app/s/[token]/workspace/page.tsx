@@ -1,71 +1,51 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+/**
+ * Project Relay — event-sourced IDE workspace.
+ * UI mutates state ONLY via dispatchCommand → server reducer → reconciled state.
+ * No disconnected setEditorText / mock preview / checkbox scoring.
+ */
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { cn } from "@/lib/cn";
-import TopBar, { type ConnectionState, type RuntimeStage, type SaveState } from "@/components/relay/TopBar";
-import PhaseRail from "@/components/relay/PhaseRail";
-import ContextPanel, { type ContextTab } from "@/components/relay/ContextPanel";
-import WorkbenchPanel, { type WorkbenchTab } from "@/components/relay/WorkbenchPanel";
-import MissionPanel, { type MissionNavTarget } from "@/components/relay/MissionPanel";
-import CurveballBanner from "@/components/relay/CurveballBanner";
+import FydellBrand from "@/components/brand/FydellBrand";
+import MonacoEditor from "@/components/relay/MonacoEditor";
+import DataTableView from "@/components/relay/DataTableView";
 import ShipGateModal, { type ShipFields } from "@/components/relay/ShipGateModal";
-import RecoveryCenter from "@/components/relay/RecoveryCenter";
-import type { MissionInfo } from "@/components/relay/BriefPanel";
-import { DEFAULT_CHECKLIST, type WorkingNotesState } from "@/components/relay/WorkingNotes";
-import type { ChatMessage } from "@/components/relay/ClientInbox";
-import {
-  buildChannelSeed,
-  buildCurveballSeed,
-  inboxMeta,
-  speakerForActor,
-} from "@/lib/relay/inbox-seed";
-import type { CommandResult, ExecutionProvider, FileMap } from "@/lib/relay/execution-provider";
+import AiWorkspacePanel from "@/components/relay/AiWorkspacePanel";
+import type { ExecutionProvider } from "@/lib/relay/execution-provider";
 import { fetchSession, patchSession, resolveSessionByToken, stageForStatus } from "@/lib/relay/session-client";
-import { parseEvalSummary, type EvalMetrics } from "@/lib/relay/eval-summary";
-import { computeStageIndex, type RelayStage } from "@/lib/relay/phase";
+import {
+  dispatchCommand,
+  fetchEngine,
+  filesForRuntime,
+  reportRuntimeResult,
+  saveLabel,
+} from "@/lib/relay/workspace/client-store";
+import { missionProgress } from "@/lib/relay/workspace/requirements";
+import type { WorkspaceEngineState } from "@/lib/relay/workspace/types";
+import { cn } from "@/lib/cn";
 import type { PatchProposal } from "@/lib/relay/ai-patch";
 
-type EventRow = {
-  id: string;
-  session_id: string;
-  sequence_number: number;
-  actor: string;
-  event_type: string;
-  source_surface: string | null;
-  payload: Record<string, unknown>;
-  created_at: string;
-};
+const MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
-type MobileZone = "context" | "workbench" | "mission";
+type RailId = "mission" | "messages" | "files" | "search" | "history";
 
-const HEARTBEAT_MS = 20_000;
-const AUTOSAVE_MS = 15_000;
-
-const EMPTY_SHIP_FIELDS: ShipFields = {
-  whatBuilt: "",
-  verification: "",
-  limitations: "",
-  clientMessage: "",
-};
-const EMPTY_NOTES: WorkingNotesState = {
-  knowledge: "",
-  unknowns: "",
-  risks: "",
-  checklist: DEFAULT_CHECKLIST.map((c) => ({ ...c })),
-};
-
-function localKey(sessionId: string) {
-  return `relay-session-${sessionId}`;
+function formatClock(seconds: number): string {
+  const s = Math.max(0, Math.floor(seconds));
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-function normalizeHandoff(raw?: Partial<ShipFields> | null): ShipFields {
-  return {
-    whatBuilt: raw?.whatBuilt || "",
-    verification: raw?.verification || "",
-    limitations: raw?.limitations || "",
-    clientMessage: raw?.clientMessage || "",
-  };
+function buildTree(paths: string[]): { dir: string; files: string[] }[] {
+  const map = new Map<string, string[]>();
+  for (const p of paths.sort()) {
+    const i = p.lastIndexOf("/");
+    const dir = i < 0 ? "." : p.slice(0, i);
+    const name = i < 0 ? p : p.slice(i + 1);
+    if (!map.has(dir)) map.set(dir, []);
+    map.get(dir)!.push(name);
+  }
+  return [...map.entries()].map(([dir, files]) => ({ dir, files }));
 }
 
 export default function RelayWorkspacePage() {
@@ -73,67 +53,41 @@ export default function RelayWorkspacePage() {
   const router = useRouter();
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [mission, setMission] = useState<MissionInfo>({
-    title: "",
-    objective: "",
-    customerContext: "",
-    expectedOutcome: "",
-    systemsContext: "",
-    technicalEnvironment: "",
-    constraints: "",
-    securityConsiderations: "",
-    successMeasures: "",
-  });
-  const [canonicalFacts, setCanonicalFacts] = useState<string[]>([]);
-  const [endsAt, setEndsAt] = useState<string | null>(null);
-  const [remaining, setRemaining] = useState<number>(0);
-  const [status, setStatus] = useState<string>("active");
-
-  const [files, setFiles] = useState<FileMap>({});
-  const [activeFile, setActiveFile] = useState<string>("");
-  const [notes, setNotes] = useState<WorkingNotesState>(EMPTY_NOTES);
-  const [handoff, setHandoff] = useState<ShipFields>(EMPTY_SHIP_FIELDS);
-  const [events, setEvents] = useState<EventRow[]>([]);
-  const [curveballKey, setCurveballKey] = useState<string | null>(null);
-  const [chatDraft, setChatDraft] = useState("");
-  const [chatSending, setChatSending] = useState(false);
-
-  const [terminalOutput, setTerminalOutput] = useState<string>("Workspace loading…");
-  const [previewOutput, setPreviewOutput] = useState<string | null>(null);
-  const [curveballText, setCurveballText] = useState<string | null>(null);
-  const [curveballAck, setCurveballAck] = useState(false);
-  const [running, setRunning] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState<WorkspaceEngineState | null>(null);
+  const [ackHead, setAckHead] = useState(0);
+  const [candidateFacts, setCandidateFacts] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [runtimeStage, setRuntimeStage] = useState<RuntimeStage>("idle");
-  const [saveState, setSaveState] = useState<SaveState>("idle");
-  const [connection, setConnection] = useState<ConnectionState>("online");
-  const [monacoReady, setMonacoReady] = useState(false);
-
-  const [contextTab, setContextTab] = useState<ContextTab>("brief");
-  const [workbenchTab, setWorkbenchTab] = useState<WorkbenchTab>("data");
-  const [focusStage, setFocusStage] = useState<RelayStage | null>(null);
-  const [mobileZone, setMobileZone] = useState<MobileZone>("workbench");
-  const [recoveryOpen, setRecoveryOpen] = useState(false);
-  const [shipGateOpen, setShipGateOpen] = useState(false);
-  const [unreadChat, setUnreadChat] = useState(0);
-
-  const [editCount, setEditCount] = useState(0);
-  const [verifyRunCount, setVerifyRunCount] = useState(0);
-  const [inspectedData, setInspectedData] = useState(false);
-  const [openedBriefOrChat, setOpenedBriefOrChat] = useState(true);
-
-  const [evalMetrics, setEvalMetrics] = useState<EvalMetrics | null>(null);
-  const [evalLastRunAt, setEvalLastRunAt] = useState<string | null>(null);
-  const [evalLastRunOk, setEvalLastRunOk] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const [offline, setOffline] = useState(false);
+  const [remaining, setRemaining] = useState(0);
+  const [endsAt, setEndsAt] = useState<string | null>(null);
+  const [rail, setRail] = useState<RailId>("files");
+  const [bottomTab, setBottomTab] = useState<"terminal" | "tests" | "problems" | "output">("terminal");
+  const [terminalCmd, setTerminalCmd] = useState("");
+  const [terminalLog, setTerminalLog] = useState("Workspace engine ready.\n");
+  const [running, setRunning] = useState(false);
+  const [chatDraft, setChatDraft] = useState("");
+  const [searchQ, setSearchQ] = useState("");
+  const [shipOpen, setShipOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [localEdit, setLocalEdit] = useState<string | null>(null);
+  const [dirtyPath, setDirtyPath] = useState<string | null>(null);
+  const [curveballText, setCurveballText] = useState<string | null>(null);
 
   const providerRef = useRef<ExecutionProvider | null>(null);
-  const filesRef = useRef<FileMap>({});
-  const curveballTriggeredRef = useRef(false);
-  const startedAtRef = useRef<number | null>(null);
-  const durationRef = useRef<number>(55 * 60);
-  const wasCrashedOrErrorRef = useRef(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  const syncEngine = useCallback(async (sid: string) => {
+    const data = await fetchEngine(sid);
+    setState(data.state);
+    setAckHead(data.acknowledgedHeadVersion);
+    setCandidateFacts(data.candidateFacts);
+    setSaveFailed(false);
+    return data.state;
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -145,88 +99,17 @@ export default function RelayWorkspacePage() {
         if (stage === "submitted") return router.replace(`/s/${token}/submitted`);
 
         setSessionId(resolved.sessionId);
-        const data = await fetchSession(resolved.sessionId);
-        setStatus(data.session.status);
-        setMission({
-          title: data.mission?.title || "Mission",
-          objective: data.mission?.objective || "",
-          customerContext: data.mission?.customer_context || "",
-          expectedOutcome: data.mission?.expected_outcome || "",
-          systemsContext: data.mission?.systems_context || "",
-          technicalEnvironment: data.mission?.technical_environment || "",
-          constraints: data.mission?.constraints || "",
-          securityConsiderations: data.mission?.security_considerations || "",
-          successMeasures: data.mission?.success_measures || "",
-        });
-        setCanonicalFacts(data.canonicalFacts || []);
-        setEndsAt(data.session.ends_at);
-        durationRef.current = (data.durationMinutes || 55) * 60;
-        startedAtRef.current = data.session.started_at
-          ? new Date(data.session.started_at).getTime()
-          : Date.now();
-        setCurveballText(data.curveballText || null);
-        setCurveballKey(data.session.curveball_key || null);
-        curveballTriggeredRef.current = Boolean(data.curveballText);
-
-        const serverState = (data.session.workspace_state || {}) as {
-          files?: FileMap;
-          handoff?: Partial<ShipFields> & Record<string, string>;
-          notes?: Partial<WorkingNotesState>;
-        };
-
-        let localFiles: FileMap | null = null;
-        try {
-          const raw = window.localStorage.getItem(localKey(resolved.sessionId));
-          if (raw) {
-            const parsed = JSON.parse(raw) as {
-              files?: FileMap;
-              handoff?: Partial<ShipFields>;
-              notes?: Partial<WorkingNotesState>;
-            };
-            localFiles = parsed.files || null;
-            if (parsed.handoff) setHandoff((h) => ({ ...h, ...normalizeHandoff(parsed.handoff) }));
-            if (parsed.notes) {
-              setNotes((n) => ({
-                ...n,
-                ...parsed.notes,
-                checklist: parsed.notes?.checklist?.length
-                  ? parsed.notes.checklist
-                  : n.checklist,
-              }));
-            }
-          }
-        } catch {
-          // ignore corrupt local cache
-        }
-
-        const initialFiles = localFiles || serverState.files || {};
-        setFiles(initialFiles);
-        filesRef.current = initialFiles;
-        const firstCsv =
-          Object.keys(initialFiles)
-            .sort()
-            .find((p) => p.endsWith(".csv")) || Object.keys(initialFiles).sort()[0] || "";
-        setActiveFile(firstCsv);
-        if (serverState.handoff) setHandoff(normalizeHandoff(serverState.handoff));
-        if (serverState.notes) {
-          setNotes((n) => ({
-            ...n,
-            ...serverState.notes,
-            checklist: serverState.notes?.checklist?.length
-              ? serverState.notes.checklist
-              : n.checklist,
-          }));
-        }
-        setEvents((data.events || []) as EventRow[]);
-        setTerminalOutput("Ready. Commands: test · evals · preview · reconcile · ls · help");
+        const sess = await fetchSession(resolved.sessionId);
+        setEndsAt(sess.session.ends_at);
+        setCurveballText(sess.curveballText || null);
+        await syncEngine(resolved.sessionId);
         setLoading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not load workspace");
         setLoading(false);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, router, syncEngine]);
 
   useEffect(() => {
     if (!endsAt) return;
@@ -237,727 +120,695 @@ export default function RelayWorkspacePage() {
   }, [endsAt]);
 
   useEffect(() => {
-    if (typeof navigator === "undefined") return;
-    setConnection(navigator.onLine ? "online" : "offline");
-    const goOnline = () => setConnection("online");
-    const goOffline = () => setConnection("offline");
-    window.addEventListener("online", goOnline);
-    window.addEventListener("offline", goOffline);
+    const on = () => setOffline(!navigator.onLine);
+    on();
+    window.addEventListener("online", on);
+    window.addEventListener("offline", on);
     return () => {
-      window.removeEventListener("online", goOnline);
-      window.removeEventListener("offline", goOffline);
+      window.removeEventListener("online", on);
+      window.removeEventListener("offline", on);
     };
   }, []);
 
+  // Curveball trigger via legacy session API, then store text in UI (ack via engine)
   useEffect(() => {
-    if (!sessionId || curveballTriggeredRef.current || startedAtRef.current === null) return;
-    const totalElapsed = (Date.now() - startedAtRef.current) / 1000;
-    if (totalElapsed < durationRef.current * 0.3) return;
-    curveballTriggeredRef.current = true;
-    (async () => {
-      try {
-        const result = await patchSession<{ curveballText: string; event?: EventRow }>(
-          sessionId,
-          "curveball"
-        );
-        setCurveballText(result.curveballText);
-        if (result.event) setEvents((prev) => [...prev, result.event as EventRow]);
-        setUnreadChat((n) => n + 1);
-      } catch {
-        curveballTriggeredRef.current = false;
-      }
-    })();
-  }, [remaining, sessionId]);
-
-  useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId || curveballText) return;
     const id = setInterval(async () => {
       try {
-        const result = await patchSession<{ expired: boolean; session: { status: string } }>(
-          sessionId,
-          "heartbeat"
-        );
-        setStatus(result.session.status);
-        if (result.expired) {
-          setTerminalOutput((t) => `${t}\n\n[Time is up — review & submit your work now.]`);
+        const sess = await fetchSession(sessionId);
+        if (sess.curveballText) setCurveballText(sess.curveballText);
+        else if (sess.session.started_at) {
+          const elapsed = (Date.now() - new Date(sess.session.started_at).getTime()) / 1000;
+          const dur = (sess.durationMinutes || 55) * 60;
+          if (elapsed >= dur * 0.3) {
+            const r = await patchSession<{ curveballText: string }>(sessionId, "curveball");
+            if (r.curveballText) setCurveballText(r.curveballText);
+          }
         }
-      } catch {
-        // retry next beat
-      }
-    }, HEARTBEAT_MS);
-    return () => clearInterval(id);
-  }, [sessionId]);
-
-  useEffect(() => {
-    filesRef.current = files;
-  }, [files]);
-
-  useEffect(() => {
-    if (!sessionId) return;
-    try {
-      window.localStorage.setItem(localKey(sessionId), JSON.stringify({ files, handoff, notes }));
-      setSaveState((s) => (s === "syncing" ? s : "local"));
-    } catch {
-      setSaveState("error");
-      setError("Browser storage is full or blocked. Local recovery may fail.");
-    }
-  }, [sessionId, files, handoff, notes]);
-
-  useEffect(() => {
-    if (!sessionId) return;
-    const id = setInterval(() => {
-      setSaveState("syncing");
-      patchSession(sessionId, "save", { files, handoff, notes })
-        .then(() => setSaveState("synced"))
-        .catch(() => setSaveState("error"));
-    }, AUTOSAVE_MS);
-    return () => clearInterval(id);
-  }, [sessionId, files, handoff, notes]);
-
-  useEffect(() => {
-    const flush = () => {
-      if (!sessionId) return;
-      try {
-        window.localStorage.setItem(localKey(sessionId), JSON.stringify({ files, handoff, notes }));
       } catch {
         /* ignore */
       }
-      void patchSession(sessionId, "save", { files, handoff, notes }).catch(() => undefined);
-    };
-    const onVis = () => {
-      if (document.visibilityState === "hidden") flush();
-    };
-    window.addEventListener("beforeunload", flush);
-    document.addEventListener("visibilitychange", onVis);
-    return () => {
-      window.removeEventListener("beforeunload", flush);
-      document.removeEventListener("visibilitychange", onVis);
-    };
-  }, [sessionId, files, handoff, notes]);
+    }, 20_000);
+    return () => clearInterval(id);
+  }, [sessionId, curveballText]);
 
-  const recoveryAlert = runtimeStage === "crashed" || saveState === "error";
-  useEffect(() => {
-    if (recoveryAlert && !wasCrashedOrErrorRef.current) setRecoveryOpen(true);
-    wasCrashedOrErrorRef.current = recoveryAlert;
-  }, [recoveryAlert]);
-
-  async function ensureProvider(): Promise<ExecutionProvider> {
-    if (providerRef.current && runtimeStage === "ready") return providerRef.current;
-    setRuntimeStage("booting");
-    setTerminalOutput((t) => `${t}\n\n[workspace] Starting Python runtime…`);
-    try {
-      const { PyodideExecutionProvider } = await import("@/lib/relay/pyodide-provider");
-      const provider = new PyodideExecutionProvider();
-      await provider.initializeSession(filesRef.current);
-      providerRef.current = provider;
-      setRuntimeStage("ready");
-      setTerminalOutput((t) => `${t}\n[workspace] Ready.`);
-      return provider;
-    } catch (err) {
-      setRuntimeStage("crashed");
-      providerRef.current = null;
-      throw err;
-    }
-  }
-
-  async function syncProviderFiles(provider: ExecutionProvider) {
-    for (const [path, content] of Object.entries(filesRef.current)) {
-      await provider.writeFile(path, content);
-    }
-  }
-
-  async function logEvent(eventType: string, sourceSurface: string, payload: Record<string, unknown>) {
-    if (!sessionId) return null;
-    try {
-      const result = await patchSession<{ event: EventRow; reply?: EventRow | null }>(
-        sessionId,
-        "command_event",
-        { eventType, actor: "candidate", sourceSurface, payload }
-      );
-      setEvents((prev) => [...prev, result.event]);
-      return result;
-    } catch {
+  async function runDispatch(
+    type: Parameters<typeof dispatchCommand>[1],
+    payload: Record<string, unknown>
+  ) {
+    if (!sessionId || !stateRef.current) return null;
+    const expected = stateRef.current.headVersion;
+    setSaveFailed(false);
+    const result = await dispatchCommand(sessionId, type, expected, payload);
+    if (result.ok === false) {
+      setSaveFailed(true);
+      if (result.state) {
+        setState(result.state);
+        setAckHead(result.state.headVersion);
+      }
+      setError(result.error || "Command failed");
       return null;
     }
+    setState(result.state);
+    setAckHead(result.acknowledgedHeadVersion);
+    setLocalEdit(null);
+    setDirtyPath(null);
+    return result.state;
   }
 
-  async function runCommand(command: string) {
-    if (!sessionId) return;
+  function scheduleFileSave(path: string, content: string, baseVersion: number) {
+    setLocalEdit(content);
+    setDirtyPath(path);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      void runDispatch("EDIT_FILE", { path, content, baseVersion });
+    }, 500);
+  }
+
+  async function flushSave() {
+    if (!dirtyPath || localEdit == null || !state) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const baseVersion = state.artifacts[dirtyPath]?.version ?? 1;
+    await runDispatch("EDIT_FILE", { path: dirtyPath, content: localEdit, baseVersion });
+  }
+
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === "hidden") void flushSave();
+    };
+    window.addEventListener("beforeunload", () => void flushSave());
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dirtyPath, localEdit, state?.headVersion]);
+
+  async function openArtifact(path: string) {
+    await flushSave();
+    await runDispatch("OPEN_ARTIFACT", { path });
+    setRail("files");
+  }
+
+  async function ensureProvider(files: Record<string, string>) {
+    if (providerRef.current) {
+      for (const [p, c] of Object.entries(files)) await providerRef.current.writeFile(p, c);
+      return providerRef.current;
+    }
+    const { PyodideExecutionProvider } = await import("@/lib/relay/pyodide-provider");
+    const p = new PyodideExecutionProvider();
+    await p.initializeSession(files);
+    providerRef.current = p;
+    return p;
+  }
+
+  async function runTerminal(command: string) {
+    if (!sessionId || !state || running) return;
+    await flushSave();
+    const head = stateRef.current!;
     setRunning(true);
-    const normalized = command.trim().toLowerCase();
-    if (normalized === "evals" || normalized === "test" || normalized === "pytest") {
-      setWorkbenchTab("tests");
-      setVerifyRunCount((n) => n + 1);
-    }
-    if (normalized === "preview") {
-      setWorkbenchTab("preview");
-      setVerifyRunCount((n) => n + 1);
-    }
-    setTerminalOutput(`$ ${command}\n(running…)`);
+    setBottomTab("terminal");
+    setTerminalLog((t) => `${t}\n$ ${command}\n`);
+    await runDispatch("RUN_COMMAND", { command });
     try {
-      let provider: ExecutionProvider;
-      try {
-        provider = await ensureProvider();
-      } catch (bootErr) {
-        setTerminalOutput(
-          `$ ${command}\n[interrupted] ${bootErr instanceof Error ? bootErr.message : String(bootErr)}\nRetrying…`
-        );
-        providerRef.current = null;
-        setRuntimeStage("idle");
-        provider = await ensureProvider();
+      const files = filesForRuntime(head);
+      const provider = await ensureProvider(files);
+      for (const [p, c] of Object.entries(filesForRuntime(stateRef.current!))) {
+        await provider.writeFile(p, c);
       }
-      await syncProviderFiles(provider);
-      const result: CommandResult = await provider.runCommand(command);
-      const combined = `$ ${command}\nexit ${result.exitCode} · ${result.durationMs}ms\n\n${result.stdout}${
-        result.stderr ? `\n[stderr]\n${result.stderr}` : ""
-      }`;
-      setTerminalOutput(combined);
-      if (normalized === "preview" || command.toLowerCase().includes("preview")) {
-        setPreviewOutput(result.stdout || result.stderr || "(empty preview)");
-      }
-
-      let evalPayloadExtras: Record<string, unknown> = {};
-      if (normalized === "evals") {
-        const parsed = parseEvalSummary(result.stdout);
-        setEvalMetrics(parsed);
-        setEvalLastRunAt(new Date().toISOString());
-        setEvalLastRunOk(result.ok);
-        if (parsed) {
-          evalPayloadExtras = {
-            integrity_caught: parsed.integrityCaught,
-            rows_dropped_naive: parsed.rowsDroppedNaive,
-          };
-        }
-      }
-      if (normalized === "test" || normalized === "pytest") {
-        setEvalLastRunAt(new Date().toISOString());
-        setEvalLastRunOk(result.ok);
-      }
-
-      await logEvent("command_run", "terminal", {
+      const result = await provider.runCommand(command);
+      setTerminalLog(
+        (t) =>
+          `${t}${result.stdout}${result.stderr ? `\n[stderr]\n${result.stderr}` : ""}\nexit ${result.exitCode}\n`
+      );
+      const applied = await reportRuntimeResult(sessionId, {
         command,
         ok: result.ok,
         exitCode: result.exitCode,
-        durationMs: result.durationMs,
-        ...evalPayloadExtras,
+        stdout: result.stdout,
+        stderr: result.stderr,
+        workspaceVersion: head.headVersion,
       });
-
-      if (result.ok && (normalized === "test" || normalized === "evals" || normalized === "pytest")) {
-        setNotes((n) => {
-          const checklist = n.checklist.length ? n.checklist : DEFAULT_CHECKLIST;
-          return {
-            ...n,
-            checklist: checklist.map((c) =>
-              c.id === "verify" ? { ...c, done: true } : c
-            ),
-          };
-        });
+      if (applied.ok) {
+        setState(applied.state);
+        setAckHead(applied.acknowledgedHeadVersion);
       }
     } catch (err) {
-      setRuntimeStage("crashed");
-      providerRef.current = null;
-      setTerminalOutput(`$ ${command}\n[error] ${err instanceof Error ? err.message : String(err)}`);
+      setTerminalLog((t) => `${t}[error] ${err instanceof Error ? err.message : String(err)}\n`);
     } finally {
       setRunning(false);
+      setTerminalCmd("");
     }
   }
 
-  async function onFileChange(path: string, content: string) {
-    setEditCount((n) => n + 1);
-    setFiles((f) => ({ ...f, [path]: content }));
-    if (path.endsWith(".csv")) setInspectedData(true);
-    if (path.includes("join") || path.includes("reconcile") || path.includes("src/")) {
-      setNotes((n) => {
-        const checklist = n.checklist.length ? n.checklist : DEFAULT_CHECKLIST;
-        return {
-          ...n,
-          checklist: checklist.map((c) =>
-            c.id === "normalize" ? { ...c, done: true } : c
-          ),
-        };
-      });
-    }
-    if (providerRef.current) {
-      try {
-        await providerRef.current.writeFile(path, content);
-      } catch {
-        providerRef.current = null;
-        setRuntimeStage("crashed");
-      }
-    }
-  }
-
-  async function applyAiPatch(proposal: PatchProposal) {
-    setEditCount((n) => n + 1);
-    setFiles((f) => ({ ...f, [proposal.file]: proposal.after }));
-    if (providerRef.current) {
-      try {
-        await providerRef.current.writeFile(proposal.file, proposal.after);
-      } catch {
-        providerRef.current = null;
-        setRuntimeStage("crashed");
-      }
-    }
-    await logEvent("ai_patch_applied", "ai_workspace", {
-      file: proposal.file,
-      source: proposal.source,
-      summary: proposal.summary.slice(0, 300),
-    });
-  }
-
-  const inboxJson = files["data/inbox_thread.json"] || null;
-  const inbox = useMemo(() => inboxMeta(inboxJson), [inboxJson]);
-
-  const messages = useMemo<ChatMessage[]>(() => {
-    const curveballRevealedAt =
-      events.find((e) => e.event_type === "curveball_revealed")?.created_at || null;
-    const seed = buildChannelSeed(inboxJson);
-    const curveballSeed = buildCurveballSeed(
-      curveballKey,
-      curveballText,
-      curveballRevealedAt,
-      inboxJson
-    );
-    const live: ChatMessage[] = events
-      .filter((e) => e.event_type === "customer_chat_message")
-      .map((e) => {
-        const speaker = speakerForActor(e.actor, inboxJson);
-        return {
-          id: e.id,
-          actor: e.actor,
-          authorName: speaker.name,
-          authorRole: speaker.role,
-          text: String((e.payload as { text?: string })?.text || ""),
-          at: e.created_at,
-        };
-      });
-    return [...seed, ...curveballSeed, ...live].sort(
-      (a, b) => new Date(a.at).getTime() - new Date(b.at).getTime()
-    );
-  }, [events, curveballKey, curveballText, inboxJson]);
-
-  async function sendMessage() {
-    if (!sessionId || !chatDraft.trim() || chatSending) return;
+  async function sendChat() {
     const text = chatDraft.trim();
-    const tempId = `local-${Date.now()}`;
+    if (!text) return;
     setChatDraft("");
-    setChatSending(true);
-    setOpenedBriefOrChat(true);
-    setNotes((n) => {
-      const checklist = n.checklist.length ? n.checklist : DEFAULT_CHECKLIST;
-      return {
-        ...n,
-        checklist: checklist.map((c) => (c.id === "priority" ? { ...c, done: true } : c)),
-      };
-    });
-    setEvents((prev) => [
-      ...prev,
-      {
-        id: tempId,
-        session_id: sessionId,
-        sequence_number: -1,
-        actor: "candidate",
-        event_type: "customer_chat_message",
-        source_surface: "customer_chat",
-        payload: { text },
-        created_at: new Date().toISOString(),
-      },
-    ]);
-    try {
-      const result = await patchSession<{ event: EventRow; reply: EventRow | null }>(
-        sessionId,
-        "command_event",
-        {
-          eventType: "customer_chat_message",
-          actor: "candidate",
-          sourceSurface: "customer_chat",
-          payload: { text },
-        }
-      );
-      setEvents((prev) => [
-        ...prev.filter((e) => e.id !== tempId),
-        result.event,
-        ...(result.reply ? [result.reply] : []),
-      ]);
-    } catch (err) {
-      setEvents((prev) =>
-        prev.map((e) =>
-          e.id === tempId
-            ? {
-                ...e,
-                payload: {
-                  text: `${text}\n\n[Not sent — ${err instanceof Error ? err.message : "retry"}]`,
-                },
-              }
-            : e
-        )
-      );
-      setChatDraft(text);
-    } finally {
-      setChatSending(false);
-    }
+    await runDispatch("SEND_STAKEHOLDER_MESSAGE", { text });
   }
 
-  function toggleChecklistItem(id: string) {
-    setNotes((n) => {
-      const checklist = n.checklist.length > 0 ? n.checklist : DEFAULT_CHECKLIST;
-      return {
-        ...n,
-        checklist: checklist.map((c) => (c.id === id ? { ...c, done: !c.done } : c)),
-      };
+  async function acceptAi(proposal: PatchProposal) {
+    if (!state) return;
+    const art = state.artifacts[proposal.file];
+    if (!art) return;
+    await runDispatch("ACCEPT_AI_PATCH", {
+      path: proposal.file,
+      content: proposal.after,
+      baseVersion: art.version,
     });
   }
 
-  async function addReasoningNote(text: string) {
-    setNotes((n) => ({
-      ...n,
-      knowledge: n.knowledge ? `${n.knowledge}\n• ${text}` : `• ${text}`,
-    }));
-    await logEvent("file_saved", "mission_panel", { paths: ["notes"], text });
-  }
-
-  function restoreLocalSnapshot() {
-    if (!sessionId) return;
-    try {
-      const raw = window.localStorage.getItem(localKey(sessionId));
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as {
-        files?: FileMap;
-        handoff?: Partial<ShipFields>;
-        notes?: Partial<WorkingNotesState>;
-      };
-      if (parsed.files) {
-        setFiles(parsed.files);
-        filesRef.current = parsed.files;
-      }
-      if (parsed.handoff) setHandoff((h) => ({ ...h, ...normalizeHandoff(parsed.handoff) }));
-      if (parsed.notes) setNotes((n) => ({ ...n, ...parsed.notes }));
-    } catch {
-      setError("Could not read the local snapshot — it may be corrupted.");
-    }
-  }
-
-  async function reinitWorker() {
-    providerRef.current = null;
-    setRuntimeStage("idle");
-    try {
-      await ensureProvider();
-    } catch {
-      // ensureProvider sets crashed
-    }
-  }
-
-  async function reportTechnicalIssue(description: string) {
-    await logEvent("technical_issue_reported", "recovery_center", { description });
-  }
-
-  async function retrySave() {
-    if (!sessionId) return;
-    setSaveState("syncing");
-    try {
-      await patchSession(sessionId, "save", { files, handoff, notes });
-      setSaveState("synced");
-    } catch {
-      setSaveState("error");
-    }
-  }
-
-  async function shipNow(fields: ShipFields) {
-    if (!sessionId) return;
-    setHandoff(fields);
+  async function submitHandoff(fields: ShipFields) {
+    if (!sessionId || !state) return;
     setSubmitting(true);
-    setError(null);
     try {
-      await patchSession(sessionId, "save", { files, handoff: fields, notes });
-      await patchSession(sessionId, "submit", { files, handoff: fields, notes });
-      try {
-        window.localStorage.removeItem(localKey(sessionId));
-      } catch {
-        /* ignore */
+      await flushSave();
+      await runDispatch("SAVE_HANDOFF", {
+        whatChanged: fields.whatBuilt,
+        evidence: fields.verification,
+        limitations: fields.limitations,
+        clientMessage: fields.clientMessage,
+      });
+      const latest = stateRef.current!;
+      if (latest.headVersion !== ackHead && latest.headVersion > ackHead) {
+        // wait for ack
       }
-      setShipGateOpen(false);
+      const sub = await runDispatch("SUBMIT_SESSION", {});
+      if (!sub) throw new Error("Submit blocked — sync first");
+      await patchSession(sessionId, "submit", {
+        files: filesForRuntime(sub),
+        handoff: {
+          whatBuilt: fields.whatBuilt,
+          verification: fields.verification,
+          limitations: fields.limitations,
+          clientMessage: fields.clientMessage,
+        },
+      });
       router.push(`/s/${token}/submitted`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not submit");
+      setError(err instanceof Error ? err.message : "Submit failed");
       setSubmitting(false);
     }
   }
 
-  function exitSafely() {
-    if (
-      window.confirm(
-        "Exit the workspace? Progress is autosaved and you can resume from your Action Inbox."
-      )
-    ) {
-      router.push("/app/fde");
-    }
-  }
-
-  function selectFile(path: string) {
-    const resolved =
-      files[path] != null
-        ? path
-        : Object.keys(files).find((p) => p.endsWith(path) || p.endsWith(path.replace(/^data\//, ""))) ||
-          path;
-    setActiveFile(resolved);
-    if (resolved.endsWith(".csv")) {
-      setInspectedData(true);
-      setWorkbenchTab("data");
-      setNotes((n) => {
-        const checklist = n.checklist.length ? n.checklist : DEFAULT_CHECKLIST;
-        return {
-          ...n,
-          checklist: checklist.map((c) => (c.id === "inspect" ? { ...c, done: true } : c)),
-        };
-      });
-    } else {
-      setWorkbenchTab("code");
-    }
-    setMobileZone("workbench");
-  }
-
-  function navigateMission(target: MissionNavTarget) {
-    if (target === "chat") {
-      setContextTab("chat");
-      setMobileZone("context");
-      setUnreadChat(0);
-      return;
-    }
-    if (target === "handoff") {
-      setShipGateOpen(true);
-      return;
-    }
-    setWorkbenchTab(target);
-    setMobileZone("workbench");
-  }
-
-  const filePaths = useMemo(() => Object.keys(files).sort(), [files]);
-  const handoffFilled = useMemo(
-    () => Object.values(handoff).some((v) => v.trim().length > 0),
-    [handoff]
+  const saveUi = saveLabel(
+    state?.headVersion ?? 0,
+    ackHead,
+    saveFailed,
+    offline
   );
-  const stageIndex = computeStageIndex({
-    started: true,
-    openedBriefOrChat,
-    inspectedData,
-    editCount,
-    verifyRunCount,
-    handoffFilled,
-  });
 
-  const checklist = notes.checklist.length ? notes.checklist : DEFAULT_CHECKLIST;
-  const doneCount = checklist.filter((c) => c.done).length;
-  const timeUp = remaining <= 0;
-  void status;
-  void monacoReady;
+  const activePath = state?.activePath;
+  const activeArt = activePath ? state?.artifacts[activePath] : null;
+  const editorContent =
+    dirtyPath === activePath && localEdit != null ? localEdit : activeArt?.content ?? "";
+
+  const tree = useMemo(
+    () => buildTree(Object.keys(state?.artifacts || {}).filter((p) => !p.startsWith("outputs/") || true)),
+    [state?.artifacts]
+  );
+
+  const progress = state ? missionProgress(state.requirements) : 0;
+  const problems = useMemo(() => {
+    const lines = terminalLog.split("\n").filter((l) => /FAIL|error|stderr/i.test(l));
+    return lines.slice(-12);
+  }, [terminalLog]);
 
   if (loading) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-[#080A0F] text-[#9AA3B2]">
-        Loading workspace…
+      <div className="flex h-[100dvh] items-center justify-center bg-[#080A0F] text-[#9AA3B2]">
+        Loading workspace engine…
       </div>
     );
   }
-  if (error && !sessionId) {
+  if (error && !state) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-[#080A0F] px-6 text-center text-[#fda4b0]">
+      <div className="flex h-[100dvh] items-center justify-center bg-[#080A0F] px-6 text-[#fda4b0]">
         {error}
       </div>
     );
   }
-
-  const shellHeight = "min-h-0 flex-1";
+  if (!state) return null;
 
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden bg-[#080A0F] text-[#F4F5F7]">
-      <TopBar
-        customerName="Northbeam Logistics"
-        connection={connection}
-        saveState={saveState}
-        runtimeStage={runtimeStage}
-        remainingSeconds={remaining}
-        submitting={submitting}
-        onExit={exitSafely}
-        onOpenRecovery={() => setRecoveryOpen(true)}
-        recoveryAlert={recoveryAlert}
-        onOpenShipGate={() => setShipGateOpen(true)}
-        onRetrySave={retrySave}
-      />
+      {/* TOP CHROME */}
+      <header className="flex h-[52px] shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] bg-[#0B0E14] px-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <FydellBrand markSize={20} wordmarkSize={14} />
+          <span className="hidden text-[12.5px] text-[#9AA3B2] sm:inline">Project Relay</span>
+          <span className="hidden text-white/20 sm:inline">/</span>
+          <span className="truncate text-[12.5px] text-[#F4F5F7]">{state.companyName}</span>
+        </div>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="hidden items-center gap-1.5 text-[12px] text-[#9AA3B2] md:inline-flex">
+            <span className={`h-1.5 w-1.5 rounded-full ${offline ? "bg-[#F26B82]" : "bg-[#67d9a0]"}`} />
+            {offline ? "Offline" : "Live"}
+          </span>
+          <button
+            type="button"
+            onClick={() => void (saveFailed ? syncEngine(sessionId!) : flushSave())}
+            className={cn(
+              "text-[12px]",
+              saveUi.state === "failed" ? "text-[#fda4b0] underline" : "text-[#687182]"
+            )}
+          >
+            {saveUi.label}
+            {state.headVersion > 0 ? ` · v${state.headVersion}` : ""}
+          </button>
+          <span className="tabular-nums text-[12.5px] text-[#F4F5F7]" style={{ fontFamily: MONO }}>
+            {formatClock(remaining)}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm("Exit safely? Progress is persisted on the server.")) router.push("/app/fde");
+            }}
+            className="h-8 rounded-[8px] border border-white/[0.14] px-2.5 text-[12px] text-[#9AA3B2]"
+          >
+            Exit safely
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              await flushSave();
+              if (state.headVersion > ackHead) {
+                setError("Your latest changes are still syncing. Wait or retry before submitting.");
+                return;
+              }
+              setShipOpen(true);
+            }}
+            className="h-8 rounded-[8px] bg-[#F1F2F4] px-3 text-[12px] font-semibold text-[#08090C]"
+          >
+            Review handoff
+          </button>
+        </div>
+      </header>
 
-      <PhaseRail
-        index={stageIndex}
-        activeStage={focusStage}
-        onSelectStage={(s) => {
-          setFocusStage(s);
-          if (s === "understand") {
-            setContextTab("brief");
-            setMobileZone("context");
-          } else if (s === "investigate") {
-            setWorkbenchTab("data");
-            setMobileZone("workbench");
-          } else if (s === "build") {
-            setWorkbenchTab("code");
-            setMobileZone("workbench");
-          } else if (s === "verify") {
-            setWorkbenchTab("tests");
-            setMobileZone("workbench");
-          } else if (s === "handoff") {
-            setShipGateOpen(true);
-          }
-        }}
-      />
-
-      {curveballText && (
-        <CurveballBanner
-          text={curveballText}
-          onAcknowledge={() => {
-            setCurveballAck(true);
-            void logEvent("curveball_acknowledged", "curveball_banner", { text: curveballText });
-          }}
-        />
+      {curveballText && !state.curveballAcked && (
+        <div className="flex shrink-0 items-center gap-3 border-b border-[#6470FF]/30 bg-[#6470FF]/[0.1] px-3 py-2 text-[12.5px] text-[#D5DBFF]">
+          <span className="min-w-0 flex-1">
+            <strong className="text-white">New constraint · </strong>
+            {curveballText}
+          </span>
+          <button
+            type="button"
+            className="shrink-0 text-[#B8C4FF] underline"
+            onClick={() =>
+              void runDispatch("ACKNOWLEDGE_CURVEBALL", { text: curveballText }).then(() =>
+                setState((s) => (s ? { ...s, curveballText, curveballAcked: true } : s))
+              )
+            }
+          >
+            Acknowledge
+          </button>
+        </div>
       )}
+
       {error && (
-        <div className="shrink-0 border-b border-[#fda4b0]/30 bg-[#fda4b0]/10 px-4 py-2 text-[13px] text-[#fda4b0]">
+        <div className="shrink-0 border-b border-[#fda4b0]/30 bg-[#fda4b0]/10 px-3 py-1.5 text-[12.5px] text-[#fda4b0]">
           {error}
-          <button type="button" className="ml-3 underline" onClick={() => setError(null)}>
+          <button type="button" className="ml-2 underline" onClick={() => setError(null)}>
             Dismiss
           </button>
         </div>
       )}
-      {timeUp && (
-        <div className="shrink-0 border-b border-[#fda4b0]/30 bg-[#fda4b0]/10 px-4 py-2 text-[13px] text-[#fda4b0]">
-          Time is up — use Review & submit to hand off your work.
-        </div>
-      )}
 
-      <div className="flex shrink-0 border-b border-white/[0.06] bg-[#0B0F16] lg:hidden">
-        {(
-          [
-            { id: "context" as const, label: "Context" },
-            { id: "workbench" as const, label: "Workbench" },
-            { id: "mission" as const, label: "Mission" },
-          ] as const
-        ).map((z) => (
-          <button
-            key={z.id}
-            type="button"
-            onClick={() => setMobileZone(z.id)}
-            className={cn(
-              "flex-1 border-b-2 px-2 py-2.5 text-[12.5px] font-medium",
-              mobileZone === z.id
-                ? "border-[#6470FF] text-white"
-                : "border-transparent text-[#687182]"
+      <div className="flex min-h-0 flex-1">
+        {/* ICON RAIL */}
+        <nav className="flex w-14 shrink-0 flex-col items-center gap-1 border-r border-white/[0.08] bg-[#0B0E14] py-2">
+          {(
+            [
+              ["mission", "Mission"],
+              ["messages", "Msgs"],
+              ["files", "Files"],
+              ["search", "Search"],
+              ["history", "Hist"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setRail(id)}
+              className={cn(
+                "flex h-10 w-10 flex-col items-center justify-center rounded-[8px] text-[9px] font-medium",
+                rail === id ? "bg-[#6470FF]/20 text-white" : "text-[#687182] hover:bg-white/[0.04]"
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        {/* PROJECT SIDEBAR */}
+        <aside className="hidden w-[260px] shrink-0 flex-col border-r border-white/[0.08] bg-[#10141D] md:flex">
+          <div className="border-b border-white/[0.06] px-3 py-2 text-[11px] font-medium uppercase tracking-[0.06em] text-[#687182]">
+            Project Relay
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
+            {rail === "search" ? (
+              <input
+                value={searchQ}
+                onChange={(e) => setSearchQ(e.target.value)}
+                placeholder="Search files…"
+                className="mb-2 w-full rounded-[7px] border border-white/10 bg-[#0B0E14] px-2 py-1.5 text-[12px]"
+              />
+            ) : null}
+            {rail === "messages" ? (
+              <div className="space-y-2 p-1">
+                <p className="text-[11px] text-[#687182]">CLIENT</p>
+                <button type="button" className="block w-full rounded-[6px] px-2 py-1.5 text-left text-[12.5px] hover:bg-white/[0.04]" onClick={() => setRail("messages")}>
+                  Dana Whitfield
+                </button>
+                <button type="button" className="block w-full rounded-[6px] px-2 py-1.5 text-left text-[12.5px] hover:bg-white/[0.04]">
+                  Priya Anand
+                </button>
+              </div>
+            ) : (
+              tree
+                .filter(({ dir, files }) =>
+                  !searchQ ||
+                  files.some((f) => `${dir}/${f}`.toLowerCase().includes(searchQ.toLowerCase()))
+                )
+                .map(({ dir, files }) => (
+                  <div key={dir} className="mb-2">
+                    <p className="px-1 text-[10.5px] font-medium uppercase tracking-[0.05em] text-[#687182]">
+                      {dir === "." ? "root" : dir}
+                    </p>
+                    {files.map((name) => {
+                      const path = dir === "." ? name : `${dir}/${name}`;
+                      const art = state.artifacts[path];
+                      return (
+                        <button
+                          key={path}
+                          type="button"
+                          onClick={() => void openArtifact(path)}
+                          className={cn(
+                            "flex w-full items-center gap-1.5 rounded-[6px] px-1.5 py-1 text-left text-[12px]",
+                            activePath === path ? "bg-white/[0.08] text-white" : "text-[#9AA3B2] hover:bg-white/[0.04]"
+                          )}
+                          style={{ fontFamily: MONO }}
+                        >
+                          <span
+                            className={cn(
+                              "h-1.5 w-1.5 shrink-0 rounded-full",
+                              art?.status === "stale"
+                                ? "bg-[#F2C36B]"
+                                : art?.status === "modified" || dirtyPath === path
+                                  ? "bg-[#6470FF]"
+                                  : "bg-transparent"
+                            )}
+                          />
+                          {name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))
             )}
-          >
-            {z.label}
-          </button>
-        ))}
+          </div>
+        </aside>
+
+        {/* CENTER + BOTTOM */}
+        <main className="flex min-w-0 flex-1 flex-col bg-[#0B0E14]">
+          <div className="flex gap-1 border-b border-white/[0.06] px-2 py-1.5 overflow-x-auto">
+            {state.openTabs.map((path) => (
+              <button
+                key={path}
+                type="button"
+                onClick={() => void openArtifact(path)}
+                className={cn(
+                  "shrink-0 rounded-[6px] px-2.5 py-1 text-[12px]",
+                  activePath === path ? "bg-white/[0.08] text-white" : "text-[#687182]"
+                )}
+              >
+                {path.split("/").pop()}
+                {dirtyPath === path ? " ·" : ""}
+              </button>
+            ))}
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-hidden">
+            {!activeArt ? (
+              <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+                <p className="text-[16px] font-medium text-[#F4F5F7]">Start here</p>
+                <p className="max-w-[42ch] text-[13px] text-[#9AA3B2]">
+                  Open <button type="button" className="text-[#B8C4FF] underline" onClick={() => void openArtifact("docs/customer-brief.md")}>customer_brief.md</button>{" "}
+                  then inspect the CSVs under data/. Every edit versions the workspace and invalidates downstream outputs.
+                </p>
+              </div>
+            ) : activeArt.kind === "data" ? (
+              <DataTableView
+                content={editorContent}
+                path={activeArt.path}
+                onCellEdit={(row, col, newValue) => {
+                  void runDispatch("EDIT_DATASET_CELL", {
+                    path: activeArt.path,
+                    row,
+                    col,
+                    newValue,
+                    baseVersion: activeArt.version,
+                  });
+                }}
+              />
+            ) : activeArt.path.startsWith("outputs/") || activePath === "outputs/daily_delay_view.csv" ? (
+              <pre className="h-full overflow-auto p-4 text-[12.5px] text-[#9AA3B2]" style={{ fontFamily: MONO }}>
+                {state.preview.status === "stale" && (
+                  <div className="mb-3 text-[#F2C36B]">Preview stale — re-run preview against current workspace v{state.headVersion}</div>
+                )}
+                {state.preview.content || editorContent || "No preview generated yet. Run preview in the terminal."}
+              </pre>
+            ) : (
+              <MonacoEditor
+                path={activeArt.path}
+                value={editorContent}
+                onChange={(v) => scheduleFileSave(activeArt.path, v, activeArt.version)}
+                height="100%"
+              />
+            )}
+          </div>
+
+          {/* BOTTOM PANEL */}
+          <div className="flex h-[240px] shrink-0 flex-col border-t border-white/[0.08]">
+            <div className="flex gap-1 border-b border-white/[0.06] px-2 py-1">
+              {(["terminal", "tests", "problems", "output"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setBottomTab(t)}
+                  className={cn(
+                    "rounded-[6px] px-2.5 py-1 text-[11.5px] capitalize",
+                    bottomTab === t ? "bg-white/[0.08] text-white" : "text-[#687182]"
+                  )}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto px-3 py-2 text-[12px]" style={{ fontFamily: MONO }}>
+              {bottomTab === "terminal" && (
+                <pre className="whitespace-pre-wrap text-[#9CE5B0]">{terminalLog}</pre>
+              )}
+              {bottomTab === "tests" && (
+                <ul className="space-y-2 text-[#9AA3B2]">
+                  {state.tests.map((t) => (
+                    <li key={t.id}>
+                      <span
+                        className={
+                          t.status === "PASS"
+                            ? "text-[#67d9a0]"
+                            : t.status === "FAIL"
+                              ? "text-[#fda4b0]"
+                              : t.status === "STALE"
+                                ? "text-[#F2C36B]"
+                                : ""
+                        }
+                      >
+                        [{t.status}]
+                      </span>{" "}
+                      {t.label}
+                      {t.workspaceVersion != null
+                        ? ` · ran on v${t.workspaceVersion}${
+                            t.workspaceVersion !== state.headVersion ? " (not current)" : ""
+                          }`
+                        : ""}
+                    </li>
+                  ))}
+                  <li className="pt-2">
+                    <button
+                      type="button"
+                      disabled={running}
+                      onClick={() => void runTerminal("test")}
+                      className="rounded-[6px] bg-[#F1F2F4] px-2.5 py-1 text-[11.5px] font-semibold text-[#08090C] disabled:opacity-50"
+                    >
+                      Run visible tests
+                    </button>
+                  </li>
+                </ul>
+              )}
+              {bottomTab === "problems" && (
+                <ul className="space-y-1 text-[#fda4b0]">
+                  {problems.length === 0 ? (
+                    <li className="text-[#687182]">No problems in latest output.</li>
+                  ) : (
+                    problems.map((p, i) => <li key={i}>{p}</li>)
+                  )}
+                </ul>
+              )}
+              {bottomTab === "output" && (
+                <pre className="whitespace-pre-wrap text-[#9AA3B2]">
+                  {state.lastRuntime
+                    ? `v${state.lastRuntime.workspaceVersion} · ${state.lastRuntime.command} · exit ${state.lastRuntime.exitCode}\n${state.lastRuntime.stdout}`
+                    : "No runs yet."}
+                  {state.lastRuntime &&
+                    state.lastRuntime.workspaceVersion !== state.headVersion &&
+                    `\n\nCompleted against workspace v${state.lastRuntime.workspaceVersion} · current is v${state.headVersion}`}
+                </pre>
+              )}
+            </div>
+            {bottomTab === "terminal" && (
+              <form
+                className="flex items-center gap-2 border-t border-white/[0.06] px-3 py-1.5"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void runTerminal(terminalCmd);
+                }}
+              >
+                <span className="text-[#6470FF]">$</span>
+                <input
+                  value={terminalCmd}
+                  onChange={(e) => setTerminalCmd(e.target.value)}
+                  disabled={running}
+                  placeholder="test | preview | reconcile | ls | help"
+                  className="min-w-0 flex-1 bg-transparent text-[12.5px] outline-none"
+                  style={{ fontFamily: MONO }}
+                />
+                <button type="submit" disabled={running || !terminalCmd.trim()} className="text-[12px] text-[#B8C4FF] disabled:opacity-40">
+                  Run
+                </button>
+              </form>
+            )}
+          </div>
+        </main>
+
+        {/* RIGHT CONTEXT */}
+        <aside className="hidden w-[320px] shrink-0 flex-col border-l border-white/[0.08] bg-[#10141D] lg:flex">
+          <div className="border-b border-white/[0.06] px-3 py-3">
+            <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-[#687182]">
+              Current objective
+            </p>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-[#F4F5F7]">
+              Find why the delay report understates late shipments, fix the pipeline, and give Dana a
+              reliable daily view.
+            </p>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
+              <div className="h-full bg-[#6470FF]" style={{ width: `${Math.round(progress * 100)}%` }} />
+            </div>
+          </div>
+
+          <div className="border-b border-white/[0.06] px-3 py-2">
+            <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-[#687182]">
+              Requirements
+            </p>
+            <ul className="mt-2 space-y-1.5 text-[12px]">
+              {state.requirements.map((r) => (
+                <li key={r.id} className="flex gap-2">
+                  <span
+                    className={
+                      r.status === "SATISFIED"
+                        ? "text-[#67d9a0]"
+                        : r.status === "REGRESSED"
+                          ? "text-[#F2C36B]"
+                          : "text-[#687182]"
+                    }
+                  >
+                    {r.status === "SATISFIED" ? "✓" : r.status === "REGRESSED" ? "!" : "○"}
+                  </span>
+                  <span className="text-[#9AA3B2]">{r.description}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-[11px] text-[#687182]">
+              Status from verification predicates — not checkboxes.
+            </p>
+          </div>
+
+          <div className="flex min-h-0 flex-1 flex-col border-b border-white/[0.06]">
+            <p className="px-3 py-2 text-[11px] font-medium uppercase tracking-[0.06em] text-[#687182]">
+              Client thread
+            </p>
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3">
+              {state.messages.length === 0 && (
+                <p className="text-[12px] text-[#687182]">No messages yet. Ask Dana what she needs daily.</p>
+              )}
+              {state.messages.map((m) => (
+                <div key={m.id} className="text-[12px]">
+                  <p className="font-medium text-[#F4F5F7]">
+                    {m.authorName}{" "}
+                    <span className="font-normal text-[#687182]">{m.authorRole}</span>
+                  </p>
+                  <p className="mt-0.5 text-[#9AA3B2]">{m.text}</p>
+                </div>
+              ))}
+            </div>
+            <form
+              className="flex gap-1 border-t border-white/[0.06] p-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void sendChat();
+              }}
+            >
+              <input
+                value={chatDraft}
+                onChange={(e) => setChatDraft(e.target.value)}
+                placeholder="Message Northbeam…"
+                className="min-w-0 flex-1 rounded-[7px] border border-white/10 bg-[#0B0E14] px-2 py-1.5 text-[12px]"
+              />
+              <button type="submit" className="rounded-[7px] bg-[#6470FF] px-2.5 text-[12px] text-white">
+                Send
+              </button>
+            </form>
+          </div>
+
+          <div className="max-h-[220px] overflow-y-auto border-b border-white/[0.06] px-2 py-2">
+            <p className="px-1 text-[11px] font-medium uppercase tracking-[0.06em] text-[#687182]">
+              AI copilot · activity recorded
+            </p>
+            <AiWorkspacePanel
+              activeFile={activePath || ""}
+              activeFileContent={editorContent}
+              onApply={(p) => void acceptAi(p)}
+            />
+          </div>
+
+          <div className="px-3 py-2 text-[11px] text-[#687182]">
+            <p className="font-medium text-[#9AA3B2]">Known context</p>
+            <ul className="mt-1 space-y-1">
+              {candidateFacts.map((f) => (
+                <li key={f}>· {f}</li>
+              ))}
+            </ul>
+          </div>
+        </aside>
       </div>
-
-      <div className="grid min-h-0 flex-1 gap-px bg-white/[0.06] lg:grid-cols-[300px_minmax(0,1fr)_320px]">
-        <div
-          className={cn(
-            mobileZone === "context" ? "flex" : "hidden",
-            "lg:flex",
-            shellHeight,
-            "flex-col overflow-hidden"
-          )}
-        >
-          <ContextPanel
-            tab={contextTab}
-            onTabChange={(t) => {
-              setContextTab(t);
-              setOpenedBriefOrChat(true);
-              if (t === "chat") setUnreadChat(0);
-            }}
-            unreadChat={unreadChat}
-            mission={mission}
-            canonicalFacts={canonicalFacts}
-            messages={messages}
-            draft={chatDraft}
-            onDraftChange={setChatDraft}
-            onSend={sendMessage}
-            sending={chatSending}
-            channelName={inbox.channel}
-            participants={inbox.participants}
-            onOpenFile={selectFile}
-          />
-        </div>
-
-        <div
-          className={cn(
-            mobileZone === "workbench" ? "flex" : "hidden",
-            "lg:flex",
-            shellHeight,
-            "flex-col overflow-hidden"
-          )}
-        >
-          <WorkbenchPanel
-            tab={workbenchTab}
-            onTabChange={setWorkbenchTab}
-            filePaths={filePaths}
-            files={files}
-            activeFile={activeFile}
-            onSelectFile={selectFile}
-            onChangeFile={onFileChange}
-            onEditorMount={() => setMonacoReady(true)}
-            previewOutput={previewOutput}
-            onRunPreview={() => runCommand("preview")}
-            evalMetrics={evalMetrics}
-            evalLastRunAt={evalLastRunAt}
-            evalLastRunOk={evalLastRunOk}
-            onRunTests={() => runCommand("test")}
-            onRunEvals={() => runCommand("evals")}
-            running={running}
-            terminalOutput={terminalOutput}
-            onRunCommand={runCommand}
-          />
-        </div>
-
-        <div
-          className={cn(
-            mobileZone === "mission" ? "flex" : "hidden",
-            "lg:flex",
-            shellHeight,
-            "flex-col overflow-hidden"
-          )}
-        >
-          <MissionPanel
-            notes={notes}
-            onToggleChecklistItem={toggleChecklistItem}
-            onAddNote={addReasoningNote}
-            events={events}
-            activeFile={activeFile}
-            activeFileContent={files[activeFile] || ""}
-            onApplyAi={applyAiPatch}
-            onNavigate={navigateMission}
-            doneCount={doneCount}
-            totalCount={checklist.length}
-          />
-        </div>
-      </div>
-
-      <RecoveryCenter
-        open={recoveryOpen}
-        onClose={() => setRecoveryOpen(false)}
-        onRestoreSnapshot={restoreLocalSnapshot}
-        onReinitWorker={reinitWorker}
-        onReportIssue={reportTechnicalIssue}
-        runtimeCrashed={runtimeStage === "crashed"}
-        storageError={saveState === "error"}
-      />
 
       <ShipGateModal
-        open={shipGateOpen}
-        initial={handoff}
+        open={shipOpen}
+        initial={{
+          whatBuilt: state.handoff.whatChanged,
+          verification: state.handoff.evidence,
+          limitations: state.handoff.limitations,
+          clientMessage: state.handoff.clientMessage,
+        }}
         submitting={submitting}
-        onClose={() => setShipGateOpen(false)}
-        onShip={shipNow}
+        onClose={() => setShipOpen(false)}
+        onShip={submitHandoff}
         readiness={{
-          fileCount: filePaths.length,
-          testsLastRunAt: evalLastRunAt,
-          testsOk: evalLastRunOk,
-          curveballAck: curveballAck || !curveballText,
+          fileCount: Object.keys(state.artifacts).length,
+          testsLastRunAt: state.tests.find((t) => t.id === "visible_suite")?.workspaceVersion
+            ? new Date().toISOString()
+            : null,
+          testsOk: state.tests.find((t) => t.id === "visible_suite")?.status === "PASS",
+          curveballAck: state.curveballAcked || !curveballText,
         }}
       />
     </div>

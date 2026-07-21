@@ -12,7 +12,6 @@
   },
   "files": [
     "README.md",
-    "canonical.json",
     "docs/customer-brief.md",
     "docs/slack-thread.md",
     "docs/data-integrity.md",

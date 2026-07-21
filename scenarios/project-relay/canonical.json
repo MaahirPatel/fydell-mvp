@@ -15,5 +15,11 @@
     "The manual delay-tracking sheet (delays_manual_tracking.csv) uses inconsistent shipment ID formats (missing leading zeros, missing the SHP- prefix) that a naive exact-match join will silently drop",
     "The board meeting was moved up to Thursday, pulling the delivery deadline earlier than originally planned",
     "Carrier-reported on-time rates in carriers.csv are self-reported and do not reconcile with the actual delivery data in shipments.csv"
+  ],
+  "candidateVisibleFacts": [
+    "Dana Whitfield (Operations Manager) needs a reliable daily operational view of shipment delays.",
+    "Priya Anand (VP of Operations) cares about a defensible explanation the board can trust.",
+    "Dana and Priya have not fully aligned on deliverable shape — clarify before overbuilding.",
+    "Carrier on-time rates in carriers.csv are self-reported claims, not verified actuals."
   ]
 }

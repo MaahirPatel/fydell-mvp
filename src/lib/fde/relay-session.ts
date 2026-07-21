@@ -99,6 +99,8 @@ type ScenarioCanonical = {
   durationMinutes: number;
   curveballs: string[];
   canonicalFacts: string[];
+  /** Candidate-safe facts for Brief UI — never answer-key spoilers. */
+  candidateVisibleFacts?: string[];
 };
 
 const ACTIVE_STATES = ["active", "recovering"];
@@ -471,11 +473,15 @@ export async function getSessionForOwner(sessionId: string, userId: string) {
   const narrative =
     typeof state.curveballNarrative === "string" ? state.curveballNarrative : null;
 
+  const { candidateVisibleFacts } = await import("@/lib/relay/workspace/seed");
   return {
     session,
     mission,
     events: (events || []) as RelayEventRow[],
+    /** Full facts for server-side chat simulation only — do not render in Brief. */
     canonicalFacts: overlayFacts,
+    /** Safe for candidate Brief / constraints UI. */
+    candidateFacts: candidateVisibleFacts(overlayFacts, canonical.candidateVisibleFacts),
     durationMinutes: overlayDuration,
     curveballText: narrative || (session.curveball_key ? curveballCopy(session.curveball_key) : null),
   };
@@ -545,10 +551,13 @@ export async function beginSession(sessionId: string, userId: string) {
   const endsAt = computeEndsAt(startedAt, durationMinutes);
 
   const existingState = (session.workspace_state as Partial<WorkspaceState>) || {};
-  const seededFiles =
+  // Candidate FS must never include evaluator answer keys (canonical.json, spoiler docs).
+  const { toCandidateFileMap } = await import("@/lib/relay/workspace/seed");
+  const seededFiles = toCandidateFileMap(
     existingState.files && Object.keys(existingState.files).length
       ? existingState.files
-      : overlay.files;
+      : overlay.files
+  );
 
   const attemptKind =
     session.attempt_kind === "preview" || session.attempt_kind === "demonstration"
@@ -600,7 +609,7 @@ export async function beginSession(sessionId: string, userId: string) {
     blueprintId: workspaceState.blueprintId,
   });
 
-  return { session: updated as RelaySessionRow, seedFiles: overlay.files };
+  return { session: updated as RelaySessionRow, seedFiles: seededFiles };
 }
 
 export async function heartbeat(sessionId: string, userId: string) {

@@ -65,11 +65,14 @@ export default function DataTableView({
   path,
   compareContent,
   comparePath,
+  onCellEdit,
 }: {
   content: string;
   path: string;
   compareContent?: string | null;
   comparePath?: string | null;
+  /** When set, cells are editable and call back with (rowIndex, colIndex, newValue). */
+  onCellEdit?: (row: number, col: number, newValue: string) => void;
 }) {
   const rows = useMemo(() => parseCsv(content), [content]);
   const [sortCol, setSortCol] = useState<number | null>(null);
@@ -90,14 +93,14 @@ export default function DataTableView({
 
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    let next = body;
+    let next = body.map((r, idx) => ({ r, idx: idx + 1 })); // idx = CSV line number (header is 0)
     if (q) {
-      next = next.filter((r) => r.some((c) => (c || "").toLowerCase().includes(q)));
+      next = next.filter(({ r }) => r.some((c) => (c || "").toLowerCase().includes(q)));
     }
     if (sortCol != null) {
       next = [...next].sort((a, b) => {
-        const av = a[sortCol] ?? "";
-        const bv = b[sortCol] ?? "";
+        const av = a.r[sortCol] ?? "";
+        const bv = b.r[sortCol] ?? "";
         return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
       });
     }
@@ -163,12 +166,12 @@ export default function DataTableView({
             </tr>
           </thead>
           <tbody>
-            {visibleBody.map((row, i) => {
+            {visibleBody.map(({ r: row, idx }, i) => {
               const mismatch =
                 highlightMismatches && idCol >= 0 && looksMismatchedId(row[idCol] || "");
               return (
                 <tr
-                  key={i}
+                  key={idx}
                   className={mismatch ? "bg-[#F26B82]/[0.12]" : i % 2 === 0 ? "bg-white/[0.015]" : ""}
                 >
                   {header.map((_, j) => (
@@ -178,7 +181,19 @@ export default function DataTableView({
                         mismatch && j === idCol ? "text-[#fda4b0]" : "text-[#9AA3B2]"
                       }`}
                     >
-                      {row[j] ?? ""}
+                      {onCellEdit ? (
+                        <input
+                          defaultValue={row[j] ?? ""}
+                          onBlur={(e) => {
+                            if (e.target.value !== (row[j] ?? "")) {
+                              onCellEdit(idx, j, e.target.value);
+                            }
+                          }}
+                          className="w-full min-w-[4rem] bg-transparent outline-none focus:bg-white/[0.06]"
+                        />
+                      ) : (
+                        row[j] ?? ""
+                      )}
                     </td>
                   ))}
                 </tr>
