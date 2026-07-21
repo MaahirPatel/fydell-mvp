@@ -5,13 +5,13 @@ import {
   applyRuntimeToEngine,
   dispatchWorkspaceCommand,
   loadOrInitEngine,
+  maybeTriggerAdaptiveEvent,
   persistEngine,
 } from "@/lib/relay/workspace";
 import type { WorkspaceCommand } from "@/lib/relay/workspace";
 import { toCandidateFileMap } from "@/lib/relay/workspace/seed";
 import { getSessionForOwner } from "@/lib/fde/relay-session";
 import { initFromFiles } from "@/lib/relay/workspace/reducer";
-import { candidateVisibleFacts } from "@/lib/relay/workspace/seed";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,7 @@ async function requireUser() {
   return data.user || null;
 }
 
-/** GET — load canonical engine state (initializes from seed if needed). */
+/** GET — load canonical engine state + maybe adaptive event. */
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireUser();
@@ -32,7 +32,6 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     const sessionBundle = await getSessionForOwner(id, user.id);
     let state = await loadOrInitEngine(id, user.id);
 
-    // First load: if engine was empty genesis, rebuild from candidate-safe files
     if (state.headVersion === 0 || Object.keys(state.artifacts).length === 0) {
       const files = toCandidateFileMap(
         ((sessionBundle.session.workspace_state as { files?: Record<string, string> })?.files ||
@@ -44,12 +43,32 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       ]);
     }
 
+    let adaptiveText: string | null = state.curveballText;
+    if (!adaptiveText && sessionBundle.session.started_at && sessionBundle.session.ends_at) {
+      const started = new Date(sessionBundle.session.started_at).getTime();
+      const ends = new Date(sessionBundle.session.ends_at).getTime();
+      const now = Date.now();
+      const elapsedRatio = Math.max(0, Math.min(1, (now - started) / Math.max(1, ends - started)));
+      const remainingMinutes = Math.max(0, (ends - now) / 60000);
+      const adaptive = await maybeTriggerAdaptiveEvent(id, user.id, {
+        elapsedRatio,
+        remainingMinutes,
+      });
+      if (adaptive.triggered && adaptive.text) {
+        adaptiveText = adaptive.text;
+        state = await loadOrInitEngine(id, user.id);
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       state,
       acknowledgedHeadVersion: state.headVersion,
-      candidateFacts: candidateVisibleFacts(sessionBundle.canonicalFacts || []),
+      candidateFacts:
+        (sessionBundle as { candidateFacts?: string[] }).candidateFacts ||
+        [],
       companyName: "Northbeam Logistics",
+      curveballText: adaptiveText,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Could not load workspace engine";
@@ -57,7 +76,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   }
 }
 
-/** POST — dispatch a validated command or apply runtime result. */
+/** POST — dispatch command, runtime result, or adaptive poll. */
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireUser();
@@ -75,6 +94,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
         workspaceVersion: Number(body.workspaceVersion || 0),
       });
       return NextResponse.json(result, { status: result.ok ? 200 : 409 });
+    }
+
+    if (body.action === "adaptive_tick") {
+      const adaptive = await maybeTriggerAdaptiveEvent(id, user.id, {
+        elapsedRatio: Number(body.elapsedRatio || 0),
+        remainingMinutes: Number(body.remainingMinutes || 30),
+      });
+      const state = await loadOrInitEngine(id, user.id);
+      return NextResponse.json({ ok: true, adaptive, state });
     }
 
     const command: WorkspaceCommand = {

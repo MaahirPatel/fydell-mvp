@@ -25,6 +25,12 @@ import {
 } from "./information-gain";
 import { clampFinite } from "./reliability";
 import { commandOf, payloadHasIntegritySignal, textOf } from "./signals";
+import {
+  atomsFromEngineEvents,
+  scoreCompetency,
+  type CompetencyReport,
+} from "@/lib/relay/workspace/evidence-credibility";
+import { roleFit, emptyCapabilityVector, type CapabilityId } from "@/lib/relay/workspace/scoring";
 
 export type AnalysisFinding = {
   /** Kept as `dimension` (not `traitId`) — this is the column name in
@@ -74,6 +80,10 @@ export type SessionAnalysis = {
   validationMaturity: "design_weighted";
   policyVersion: string;
   formulaVersion: string;
+  /** Workspace-engine credibility reports (employer-only; not candidate-visible scores). */
+  workspaceCredibility: CompetencyReport[];
+  /** Provisional Fit_r — never claim predictive validity without outcome data. */
+  provisionalRoleFit: { fit: number; provisional: true };
 };
 
 /**
@@ -368,6 +378,42 @@ export function analyzeSession(events: RelayEventLike[], opts: AnalyzeSessionOpt
   const adaptability = computeAdaptability(events);
   const diagnosticEfficiencyResult = computeSessionDiagnosticEfficiency(events);
 
+  const engineAtoms = atomsFromEngineEvents(
+    events.map((e) => ({
+      id: e.id,
+      event_type: e.event_type,
+      payload: (e.payload || {}) as Record<string, unknown>,
+    }))
+  );
+  const competencyIds = [
+    "data_integrity",
+    "verification",
+    "customer_communication",
+    "ai_judgment",
+    "adaptation",
+  ] as const;
+  const workspaceCredibility = competencyIds.map((c) => scoreCompetency(c, engineAtoms));
+  const theta = emptyCapabilityVector(0.5);
+  const map: Partial<Record<CapabilityId, string>> = {
+    data_integrity: "data_integrity",
+    verification: "verification",
+    customer_communication: "customer_communication",
+    ai_judgment: "ai_judgment",
+    adaptation: "adaptation",
+  };
+  for (const report of workspaceCredibility) {
+    const key = map[report.competency as CapabilityId];
+    if (key) theta[key] = report.estimate;
+  }
+  for (const t of composite.traits) {
+    if (t.traitId === "verification_discipline") theta.verification = Math.max(theta.verification, (t.score100 ?? 50) / 100);
+    if (t.traitId === "data_integrity_vigilance") theta.data_integrity = Math.max(theta.data_integrity, (t.score100 ?? 50) / 100);
+    if (t.traitId === "communication_translation") {
+      theta.customer_communication = Math.max(theta.customer_communication, (t.score100 ?? 50) / 100);
+    }
+  }
+  const provisionalRoleFit = roleFit(theta);
+
   return {
     atoms,
     traits: composite.traits,
@@ -382,5 +428,7 @@ export function analyzeSession(events: RelayEventLike[], opts: AnalyzeSessionOpt
     validationMaturity: "design_weighted",
     policyVersion: POLICY_VERSION,
     formulaVersion: FORMULA_VERSION,
+    workspaceCredibility,
+    provisionalRoleFit,
   };
 }

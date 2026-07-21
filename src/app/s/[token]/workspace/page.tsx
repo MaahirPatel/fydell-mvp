@@ -10,20 +10,25 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import FydellBrand from "@/components/brand/FydellBrand";
 import MonacoEditor from "@/components/relay/MonacoEditor";
-import DataTableView from "@/components/relay/DataTableView";
+import VirtualizedDataGrid from "@/components/relay/VirtualizedDataGrid";
+import ConflictMergeModal from "@/components/relay/ConflictMergeModal";
 import ShipGateModal, { type ShipFields } from "@/components/relay/ShipGateModal";
 import AiWorkspacePanel from "@/components/relay/AiWorkspacePanel";
 import type { ExecutionProvider } from "@/lib/relay/execution-provider";
 import { fetchSession, patchSession, resolveSessionByToken, stageForStatus } from "@/lib/relay/session-client";
 import {
+  adaptiveTick,
   dispatchCommand,
   fetchEngine,
   filesForRuntime,
+  listPending,
+  replayOutbox,
   reportRuntimeResult,
   saveLabel,
 } from "@/lib/relay/workspace/client-store";
+import { computeSaveDebounceMs } from "@/lib/relay/workspace/outbox";
 import { missionProgress } from "@/lib/relay/workspace/requirements";
-import type { WorkspaceEngineState } from "@/lib/relay/workspace/types";
+import type { VersionConflictPayload, WorkspaceEngineState } from "@/lib/relay/workspace/types";
 import { cn } from "@/lib/cn";
 import type { PatchProposal } from "@/lib/relay/ai-patch";
 
@@ -74,17 +79,22 @@ export default function RelayWorkspacePage() {
   const [localEdit, setLocalEdit] = useState<string | null>(null);
   const [dirtyPath, setDirtyPath] = useState<string | null>(null);
   const [curveballText, setCurveballText] = useState<string | null>(null);
+  const [conflict, setConflict] = useState<VersionConflictPayload | null>(null);
+  const [keystrokes, setKeystrokes] = useState(0);
+  const [contextOpen, setContextOpen] = useState(true);
 
   const providerRef = useRef<ExecutionProvider | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stateRef = useRef(state);
   stateRef.current = state;
+  const keystrokeWindowRef = useRef<number[]>([]);
 
   const syncEngine = useCallback(async (sid: string) => {
     const data = await fetchEngine(sid);
     setState(data.state);
     setAckHead(data.acknowledgedHeadVersion);
     setCandidateFacts(data.candidateFacts);
+    if (data.curveballText) setCurveballText(data.curveballText);
     setSaveFailed(false);
     return data.state;
   }, []);
@@ -102,7 +112,16 @@ export default function RelayWorkspacePage() {
         const sess = await fetchSession(resolved.sessionId);
         setEndsAt(sess.session.ends_at);
         setCurveballText(sess.curveballText || null);
-        await syncEngine(resolved.sessionId);
+        const eng = await syncEngine(resolved.sessionId);
+        if (eng) {
+          /* synced */
+        }
+        try {
+          await replayOutbox(resolved.sessionId);
+          await syncEngine(resolved.sessionId);
+        } catch {
+          /* ignore */
+        }
         setLoading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not load workspace");
@@ -130,27 +149,52 @@ export default function RelayWorkspacePage() {
     };
   }, []);
 
-  // Curveball trigger via legacy session API, then store text in UI (ack via engine)
+  // §17 layout mathematics — collapse context before shrinking the editor
   useEffect(() => {
-    if (!sessionId || curveballText) return;
+    const onResize = () => {
+      const W = window.innerWidth;
+      const iconRail = 56;
+      const projectSidebar = Math.min(280, Math.max(220, 0.15 * W));
+      const contextPanel = Math.min(360, Math.max(300, 0.2 * W));
+      const workbench = W - iconRail - projectSidebar - contextPanel;
+      setContextOpen(workbench >= 720);
+    };
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Adaptive IG event selection (server-side) + outbox replay on reconnect
+  useEffect(() => {
+    if (!sessionId) return;
     const id = setInterval(async () => {
       try {
-        const sess = await fetchSession(sessionId);
-        if (sess.curveballText) setCurveballText(sess.curveballText);
-        else if (sess.session.started_at) {
-          const elapsed = (Date.now() - new Date(sess.session.started_at).getTime()) / 1000;
-          const dur = (sess.durationMinutes || 55) * 60;
-          if (elapsed >= dur * 0.3) {
-            const r = await patchSession<{ curveballText: string }>(sessionId, "curveball");
-            if (r.curveballText) setCurveballText(r.curveballText);
-          }
+        if (!navigator.onLine) {
+          setOffline(true);
+          return;
         }
+        if (offline) {
+          setOffline(false);
+          await replayOutbox(sessionId);
+          await syncEngine(sessionId);
+        }
+        if (curveballText || !endsAt) return;
+        const sess = await fetchSession(sessionId);
+        if (!sess.session.started_at) return;
+        const started = new Date(sess.session.started_at).getTime();
+        const ends = new Date(endsAt).getTime();
+        const now = Date.now();
+        const elapsedRatio = (now - started) / Math.max(1, ends - started);
+        const remainingMinutes = (ends - now) / 60000;
+        const tick = await adaptiveTick(sessionId, elapsedRatio, remainingMinutes);
+        if (tick.text) setCurveballText(tick.text);
+        if (tick.state) setState(tick.state);
       } catch {
         /* ignore */
       }
-    }, 20_000);
+    }, 15_000);
     return () => clearInterval(id);
-  }, [sessionId, curveballText]);
+  }, [sessionId, curveballText, endsAt, offline, syncEngine]);
 
   async function runDispatch(
     type: Parameters<typeof dispatchCommand>[1],
@@ -166,6 +210,9 @@ export default function RelayWorkspacePage() {
         setState(result.state);
         setAckHead(result.state.headVersion);
       }
+      if (result.code === "VERSION_CONFLICT" && result.conflict) {
+        setConflict(result.conflict);
+      }
       setError(result.error || "Command failed");
       return null;
     }
@@ -179,10 +226,14 @@ export default function RelayWorkspacePage() {
   function scheduleFileSave(path: string, content: string, baseVersion: number) {
     setLocalEdit(content);
     setDirtyPath(path);
+    const now = Date.now();
+    keystrokeWindowRef.current = [...keystrokeWindowRef.current.filter((t) => now - t < 2000), now];
+    setKeystrokes(keystrokeWindowRef.current.length);
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    const delay = computeSaveDebounceMs(keystrokeWindowRef.current.length);
     debounceRef.current = setTimeout(() => {
       void runDispatch("EDIT_FILE", { path, content, baseVersion });
-    }, 500);
+    }, delay);
   }
 
   async function flushSave() {
@@ -277,20 +328,45 @@ export default function RelayWorkspacePage() {
     });
   }
 
+  async function assertSyncedForSubmit(): Promise<boolean> {
+    if (!sessionId || !stateRef.current) return false;
+    await flushSave();
+    let ack = ackHead;
+    try {
+      await replayOutbox(sessionId);
+      const eng = await syncEngine(sessionId);
+      if (eng) ack = eng.headVersion;
+    } catch {
+      /* ignore */
+    }
+    const pending = await listPending(sessionId).catch(() => []);
+    const latest = stateRef.current;
+    if (!latest) return false;
+    if (pending.length > 0 || latest.headVersion > ack) {
+      setError("Your latest changes are still syncing. Wait or retry before submitting.");
+      setSaveFailed(true);
+      return false;
+    }
+    return true;
+  }
+
   async function submitHandoff(fields: ShipFields) {
     if (!sessionId || !state) return;
     setSubmitting(true);
     try {
-      await flushSave();
+      if (!(await assertSyncedForSubmit())) {
+        setSubmitting(false);
+        return;
+      }
       await runDispatch("SAVE_HANDOFF", {
         whatChanged: fields.whatBuilt,
         evidence: fields.verification,
         limitations: fields.limitations,
         clientMessage: fields.clientMessage,
       });
-      const latest = stateRef.current!;
-      if (latest.headVersion !== ackHead && latest.headVersion > ackHead) {
-        // wait for ack
+      if (!(await assertSyncedForSubmit())) {
+        setSubmitting(false);
+        return;
       }
       const sub = await runDispatch("SUBMIT_SESSION", {});
       if (!sub) throw new Error("Submit blocked — sync first");
@@ -390,11 +466,7 @@ export default function RelayWorkspacePage() {
           <button
             type="button"
             onClick={async () => {
-              await flushSave();
-              if (state.headVersion > ackHead) {
-                setError("Your latest changes are still syncing. Wait or retry before submitting.");
-                return;
-              }
+              if (!(await assertSyncedForSubmit())) return;
               setShipOpen(true);
             }}
             className="h-8 rounded-[8px] bg-[#F1F2F4] px-3 text-[12px] font-semibold text-[#08090C]"
@@ -557,7 +629,7 @@ export default function RelayWorkspacePage() {
                 </p>
               </div>
             ) : activeArt.kind === "data" ? (
-              <DataTableView
+              <VirtualizedDataGrid
                 content={editorContent}
                 path={activeArt.path}
                 onCellEdit={(row, col, newValue) => {
@@ -690,8 +762,13 @@ export default function RelayWorkspacePage() {
           </div>
         </main>
 
-        {/* RIGHT CONTEXT */}
-        <aside className="hidden w-[320px] shrink-0 flex-col border-l border-white/[0.08] bg-[#10141D] lg:flex">
+        {/* RIGHT CONTEXT — §17 collapse when workbench < 720px */}
+        <aside
+          className={cn(
+            "w-[min(360px,20vw)] min-w-[300px] max-w-[360px] shrink-0 flex-col border-l border-white/[0.08] bg-[#10141D]",
+            contextOpen ? "hidden lg:flex" : "hidden"
+          )}
+        >
           <div className="border-b border-white/[0.06] px-3 py-3">
             <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-[#687182]">
               Current objective
@@ -811,6 +888,32 @@ export default function RelayWorkspacePage() {
           curveballAck: state.curveballAcked || !curveballText,
         }}
       />
+
+      <ConflictMergeModal
+        open={Boolean(conflict)}
+        path={conflict?.path || ""}
+        base={conflict?.base || ""}
+        local={conflict?.local || ""}
+        remote={conflict?.remote || ""}
+        onCancel={() => setConflict(null)}
+        onResolve={(content) => {
+          if (!conflict || !state.artifacts[conflict.path]) {
+            setConflict(null);
+            return;
+          }
+          const art = state.artifacts[conflict.path];
+          setConflict(null);
+          void runDispatch("EDIT_FILE", {
+            path: conflict.path,
+            content,
+            baseVersion: art.version,
+          });
+        }}
+      />
+      {/* keystroke debounce indicator reserved */}
+      <span className="sr-only" aria-hidden>
+        {keystrokes}
+      </span>
     </div>
   );
 }

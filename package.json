@@ -18,6 +18,8 @@
     "typecheck": "tsc --noEmit",
     "test:unit": "npx tsx scripts/test-pilot-validation.ts && npx tsx scripts/test-pilot-lifecycle.ts",
     "test:relay-spike": "npx tsx scripts/test-relay-spike.ts",
+    "test:workspace-engine": "npx tsx scripts/test-workspace-engine.ts",
+    "test:workspace-acceptance-22": "npx tsx scripts/test-workspace-acceptance-22.ts",
     "test:fde-unit": "npx tsx scripts/test-fde-loop-unit.ts",
     "test:evidence-math": "npx tsx scripts/test-evidence-math.ts",
     "test:predictive-hire": "npx tsx scripts/test-predictive-hire.ts",

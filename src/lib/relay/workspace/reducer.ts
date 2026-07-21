@@ -467,8 +467,25 @@ export function applyCommand(
       for (const r of next.requirements) {
         const prev = state.requirements.find((x) => x.id === r.id);
         if (r.status === "SATISFIED" && prev?.status !== "SATISFIED") {
+          const artifactVersionMap: Record<string, number> = {};
+          for (const [p, art] of Object.entries(next.artifacts)) {
+            artifactVersionMap[p] = art.version;
+          }
           events.push(
-            makeEvent(state, "requirement.satisfied", "system", command.commandId, { id: r.id }, next.headVersion)
+            makeEvent(
+              state,
+              "requirement.satisfied",
+              "system",
+              command.commandId,
+              {
+                id: r.id,
+                workspaceVersion: next.headVersion,
+                testWorkspaceVersion: next.tests.find((t) => t.id === "visible_suite")?.workspaceVersion,
+                artifactVersionMap,
+                runtimeCommand: commandName,
+              },
+              next.headVersion
+            )
           );
         }
         if (r.status === "REGRESSED" && prev?.status === "SATISFIED") {

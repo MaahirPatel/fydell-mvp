@@ -159,6 +159,13 @@ export type WorkspaceDomainEvent = {
   schemaVersion: 1;
 };
 
+export type VersionConflictPayload = {
+  path: string;
+  base: string;
+  local: string;
+  remote: string;
+};
+
 export type DispatchResult =
   | {
       ok: true;
@@ -171,6 +178,7 @@ export type DispatchResult =
       error: string;
       code: "VERSION_CONFLICT" | "VALIDATION" | "FORBIDDEN" | "SUBMITTED" | "RUNTIME";
       state?: WorkspaceEngineState;
+      conflict?: VersionConflictPayload;
     };
 
 export const EVALUATOR_ONLY_PATHS = new Set([
