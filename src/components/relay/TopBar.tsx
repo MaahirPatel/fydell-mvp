@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import FydellBrand from "@/components/brand/FydellBrand";
 
 const MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
@@ -13,26 +14,13 @@ function saveLabel(state: SaveState): string {
     case "local":
       return "Saved locally";
     case "syncing":
-      return "Syncing…";
+      return "Saving…";
     case "synced":
-      return "Synced";
+      return "Saved just now";
     case "error":
-      return "Save issue";
+      return "Save failed · Retry";
     default:
-      return "";
-  }
-}
-
-function runtimeLabel(stage: RuntimeStage): string {
-  switch (stage) {
-    case "booting":
-      return "Python booting…";
-    case "ready":
-      return "Python ready";
-    case "crashed":
-      return "Runtime recovering…";
-    default:
-      return "Runtime idle";
+      return "Saved just now";
   }
 }
 
@@ -44,89 +32,126 @@ function formatClock(seconds: number): string {
 }
 
 export default function TopBar({
-  missionTitle,
+  customerName = "Northbeam Logistics",
   connection,
   saveState,
   runtimeStage,
-  editorReady,
   remainingSeconds,
   submitting,
   onExit,
   onOpenRecovery,
   recoveryAlert,
   onOpenShipGate,
+  onRetrySave,
 }: {
-  missionTitle: string;
+  missionTitle?: string;
+  customerName?: string;
   connection: ConnectionState;
   saveState: SaveState;
   runtimeStage: RuntimeStage;
-  editorReady: boolean;
+  editorReady?: boolean;
   remainingSeconds: number;
   submitting: boolean;
   onExit: () => void;
   onOpenRecovery: () => void;
   recoveryAlert: boolean;
   onOpenShipGate: () => void;
+  onRetrySave?: () => void;
 }) {
+  const [tipOpen, setTipOpen] = useState(false);
   const lowTime = remainingSeconds <= 300 && remainingSeconds > 0;
   const timeUp = remainingSeconds <= 0;
+  const showRuntime = runtimeStage === "booting" || runtimeStage === "crashed";
 
   return (
-    <header className="flex h-14 flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] bg-[#090B10] px-4 sm:px-6">
+    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] bg-[#080A0F] px-4 sm:px-5">
       <div className="flex min-w-0 items-center gap-3">
         <FydellBrand markSize={22} wordmarkSize={15} />
-        <span className="hidden truncate text-[12px] text-white/40 sm:inline">
-          Project Relay <span className="text-white/25">·</span> Northbeam Logistics
-          <span className="text-white/25"> · </span>Synthetic deployment
-        </span>
-        {missionTitle && (
-          <span className="hidden max-w-[200px] truncate text-[12.5px] text-white/35 lg:inline">
-            {missionTitle}
+        <div className="hidden min-w-0 items-center gap-2 sm:flex">
+          <span className="text-[12.5px] text-[#9AA3B2]">Project Relay</span>
+          <span className="text-white/20" aria-hidden>
+            /
           </span>
-        )}
+          <span className="truncate text-[12.5px] text-[#F4F5F7]">{customerName}</span>
+          <button
+            type="button"
+            className="relative rounded-[6px] px-1.5 py-0.5 text-[11px] text-[#687182] hover:bg-white/[0.05] hover:text-[#9AA3B2]"
+            aria-label="About synthetic deployment"
+            onClick={() => setTipOpen((v) => !v)}
+            onBlur={() => setTipOpen(false)}
+          >
+            Synthetic deployment
+            {tipOpen && (
+              <span className="absolute left-0 top-full z-50 mt-1 w-[260px] rounded-[8px] border border-white/[0.12] bg-[#10141D] p-3 text-left text-[12px] leading-relaxed text-[#9AA3B2] shadow-xl">
+                A realistic customer environment for this assessment. Actions are recorded as evidence.
+                Hidden scoring rules are never shown here.
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        <div
-          className="hidden items-center gap-2 text-[11px] text-white/35 md:flex"
-          style={{ fontFamily: MONO }}
-        >
-          <span className={connection === "online" ? "text-white/40" : "text-[#F26B82]"}>
-            {connection === "online" ? "online" : "offline"}
+        <div className="hidden items-center gap-2 md:flex">
+          <span className="inline-flex items-center gap-1.5 text-[12px] text-[#9AA3B2]">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${connection === "online" ? "bg-[#67d9a0]" : "bg-[#F26B82]"}`}
+              aria-hidden
+            />
+            {connection === "online" ? "Session active" : "Offline"}
           </span>
-          <span aria-hidden>·</span>
-          <span>{saveLabel(saveState) || "—"}</span>
-          <span aria-hidden>·</span>
-          <span>{runtimeLabel(runtimeStage)}</span>
-          <span aria-hidden>·</span>
-          <span>{editorReady ? "Editor ready" : "Editor loading…"}</span>
+          <span className="text-white/15" aria-hidden>
+            ·
+          </span>
+          <button
+            type="button"
+            onClick={() => saveState === "error" && onRetrySave?.()}
+            className={`text-[12px] ${
+              saveState === "error" ? "text-[#fda4b0] underline" : "text-[#687182]"
+            }`}
+          >
+            {saveLabel(saveState)}
+          </button>
+          {showRuntime && (
+            <>
+              <span className="text-white/15" aria-hidden>
+                ·
+              </span>
+              <span className="text-[12px] text-[#F2C36B]/90">
+                {runtimeStage === "booting" ? "Starting workspace…" : "Workspace interrupted"}
+              </span>
+            </>
+          )}
         </div>
 
-        <button
-          type="button"
-          onClick={onOpenRecovery}
-          className={`inline-flex h-8 items-center rounded-[7px] border px-2.5 text-[11.5px] font-medium transition-colors ${
-            recoveryAlert
-              ? "border-[#F26B82]/50 bg-[#F26B82]/10 text-[#fda4b0]"
-              : "border-white/12 text-white/50 hover:bg-white/[0.05]"
-          }`}
-        >
-          Recovery{recoveryAlert ? " ⚠" : ""}
-        </button>
+        {recoveryAlert && (
+          <button
+            type="button"
+            onClick={onOpenRecovery}
+            className="inline-flex h-8 items-center rounded-[8px] border border-[#F26B82]/45 bg-[#F26B82]/10 px-2.5 text-[11.5px] font-medium text-[#fda4b0]"
+          >
+            Recover
+          </button>
+        )}
 
         <span
-          className={`rounded-full border px-3 py-1 text-[11.5px] ${
-            timeUp ? "border-[#F26B82]/35 text-[#fda4b0]" : lowTime ? "border-[#F2C36B]/30 text-[#F2C36B]/90" : "border-white/10 text-white/45"
+          className={`rounded-[8px] border px-2.5 py-1 text-[12.5px] tabular-nums ${
+            timeUp
+              ? "border-[#F26B82]/35 text-[#fda4b0]"
+              : lowTime
+                ? "border-[#F2C36B]/30 text-[#F2C36B]"
+                : "border-white/[0.1] text-[#F4F5F7]"
           }`}
           style={{ fontFamily: MONO }}
+          aria-live="polite"
         >
-          {timeUp ? "Time up" : formatClock(remainingSeconds)}
+          {timeUp ? "Time up" : `${formatClock(remainingSeconds)} remaining`}
         </span>
 
         <button
           type="button"
           onClick={onExit}
-          className="inline-flex h-9 items-center rounded-[8px] border border-white/15 px-3 text-[12.5px] text-white/70 hover:bg-white/[0.05]"
+          className="inline-flex h-9 items-center rounded-[8px] border border-white/[0.14] px-3 text-[12.5px] text-[#9AA3B2] hover:bg-white/[0.04] hover:text-[#F4F5F7]"
         >
           Exit safely
         </button>
@@ -135,9 +160,9 @@ export default function TopBar({
           type="button"
           disabled={submitting}
           onClick={onOpenShipGate}
-          className="inline-flex h-9 items-center rounded-[8px] bg-[#F1F2F4] px-4 text-[12.5px] font-semibold text-[#08090C] disabled:opacity-50"
+          className="inline-flex h-9 items-center rounded-[8px] bg-[#F1F2F4] px-3.5 text-[12.5px] font-semibold text-[#08090C] disabled:opacity-50"
         >
-          {submitting ? "Shipping…" : "Ship"}
+          {submitting ? "Submitting…" : "Review & submit"}
         </button>
       </div>
     </header>

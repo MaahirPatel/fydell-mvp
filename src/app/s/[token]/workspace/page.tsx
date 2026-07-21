@@ -5,16 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import TopBar, { type ConnectionState, type RuntimeStage, type SaveState } from "@/components/relay/TopBar";
 import PhaseRail from "@/components/relay/PhaseRail";
-import BriefPanel, { type MissionInfo } from "@/components/relay/BriefPanel";
-import FilesPanel from "@/components/relay/FilesPanel";
-import EvaluationLab from "@/components/relay/EvaluationLab";
-import TerminalPanel from "@/components/relay/TerminalPanel";
-import ClientInbox, { type ChatMessage } from "@/components/relay/ClientInbox";
-import WorkingNotes, { DEFAULT_CHECKLIST, type WorkingNotesState } from "@/components/relay/WorkingNotes";
+import ContextPanel, { type ContextTab } from "@/components/relay/ContextPanel";
+import WorkbenchPanel, { type WorkbenchTab } from "@/components/relay/WorkbenchPanel";
+import MissionPanel, { type MissionNavTarget } from "@/components/relay/MissionPanel";
+import CurveballBanner from "@/components/relay/CurveballBanner";
 import ShipGateModal, { type ShipFields } from "@/components/relay/ShipGateModal";
-import AiWorkspacePanel from "@/components/relay/AiWorkspacePanel";
-import EvidenceTrailPanel from "@/components/relay/EvidenceTrailPanel";
 import RecoveryCenter from "@/components/relay/RecoveryCenter";
+import type { MissionInfo } from "@/components/relay/BriefPanel";
+import { DEFAULT_CHECKLIST, type WorkingNotesState } from "@/components/relay/WorkingNotes";
+import type { ChatMessage } from "@/components/relay/ClientInbox";
 import {
   buildChannelSeed,
   buildCurveballSeed,
@@ -24,7 +23,7 @@ import {
 import type { CommandResult, ExecutionProvider, FileMap } from "@/lib/relay/execution-provider";
 import { fetchSession, patchSession, resolveSessionByToken, stageForStatus } from "@/lib/relay/session-client";
 import { parseEvalSummary, type EvalMetrics } from "@/lib/relay/eval-summary";
-import { computePhaseIndex } from "@/lib/relay/phase";
+import { computeStageIndex, type RelayStage } from "@/lib/relay/phase";
 import type { PatchProposal } from "@/lib/relay/ai-patch";
 
 type EventRow = {
@@ -38,18 +37,35 @@ type EventRow = {
   created_at: string;
 };
 
-type RelayCommand = "test" | "evals" | "preview" | "reconcile";
-type CenterTab = "files" | "evals" | "brief" | "evidence";
-type MobileZone = "inbox" | "workspace" | "notes";
+type MobileZone = "context" | "workbench" | "mission";
 
 const HEARTBEAT_MS = 20_000;
 const AUTOSAVE_MS = 15_000;
 
-const EMPTY_SHIP_FIELDS: ShipFields = { whatBuilt: "", verification: "", limitations: "" };
-const EMPTY_NOTES: WorkingNotesState = { knowledge: "", unknowns: "", risks: "", checklist: [] };
+const EMPTY_SHIP_FIELDS: ShipFields = {
+  whatBuilt: "",
+  verification: "",
+  limitations: "",
+  clientMessage: "",
+};
+const EMPTY_NOTES: WorkingNotesState = {
+  knowledge: "",
+  unknowns: "",
+  risks: "",
+  checklist: DEFAULT_CHECKLIST.map((c) => ({ ...c })),
+};
 
 function localKey(sessionId: string) {
   return `relay-session-${sessionId}`;
+}
+
+function normalizeHandoff(raw?: Partial<ShipFields> | null): ShipFields {
+  return {
+    whatBuilt: raw?.whatBuilt || "",
+    verification: raw?.verification || "",
+    limitations: raw?.limitations || "",
+    clientMessage: raw?.clientMessage || "",
+  };
 }
 
 export default function RelayWorkspacePage() {
@@ -80,9 +96,12 @@ export default function RelayWorkspacePage() {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [curveballKey, setCurveballKey] = useState<string | null>(null);
   const [chatDraft, setChatDraft] = useState("");
+  const [chatSending, setChatSending] = useState(false);
 
   const [terminalOutput, setTerminalOutput] = useState<string>("Workspace loading…");
+  const [previewOutput, setPreviewOutput] = useState<string | null>(null);
   const [curveballText, setCurveballText] = useState<string | null>(null);
+  const [curveballAck, setCurveballAck] = useState(false);
   const [running, setRunning] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,12 +111,18 @@ export default function RelayWorkspacePage() {
   const [connection, setConnection] = useState<ConnectionState>("online");
   const [monacoReady, setMonacoReady] = useState(false);
 
-  const [centerTab, setCenterTab] = useState<CenterTab>("files");
-  const [briefVariant, setBriefVariant] = useState<"brief" | "requirements">("brief");
-  const [mobileZone, setMobileZone] = useState<MobileZone>("workspace");
+  const [contextTab, setContextTab] = useState<ContextTab>("brief");
+  const [workbenchTab, setWorkbenchTab] = useState<WorkbenchTab>("data");
+  const [focusStage, setFocusStage] = useState<RelayStage | null>(null);
+  const [mobileZone, setMobileZone] = useState<MobileZone>("workbench");
   const [recoveryOpen, setRecoveryOpen] = useState(false);
-  const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
   const [shipGateOpen, setShipGateOpen] = useState(false);
+  const [unreadChat, setUnreadChat] = useState(0);
+
+  const [editCount, setEditCount] = useState(0);
+  const [verifyRunCount, setVerifyRunCount] = useState(0);
+  const [inspectedData, setInspectedData] = useState(false);
+  const [openedBriefOrChat, setOpenedBriefOrChat] = useState(true);
 
   const [evalMetrics, setEvalMetrics] = useState<EvalMetrics | null>(null);
   const [evalLastRunAt, setEvalLastRunAt] = useState<string | null>(null);
@@ -108,8 +133,6 @@ export default function RelayWorkspacePage() {
   const curveballTriggeredRef = useRef(false);
   const startedAtRef = useRef<number | null>(null);
   const durationRef = useRef<number>(55 * 60);
-  const localEditCountRef = useRef(0);
-  const localEvalsRunCountRef = useRef(0);
   const wasCrashedOrErrorRef = useRef(false);
 
   useEffect(() => {
@@ -138,7 +161,9 @@ export default function RelayWorkspacePage() {
         setCanonicalFacts(data.canonicalFacts || []);
         setEndsAt(data.session.ends_at);
         durationRef.current = (data.durationMinutes || 55) * 60;
-        startedAtRef.current = data.session.started_at ? new Date(data.session.started_at).getTime() : Date.now();
+        startedAtRef.current = data.session.started_at
+          ? new Date(data.session.started_at).getTime()
+          : Date.now();
         setCurveballText(data.curveballText || null);
         setCurveballKey(data.session.curveball_key || null);
         curveballTriggeredRef.current = Boolean(data.curveballText);
@@ -159,40 +184,41 @@ export default function RelayWorkspacePage() {
               notes?: Partial<WorkingNotesState>;
             };
             localFiles = parsed.files || null;
-            if (parsed.handoff) setHandoff((h) => ({ ...h, ...parsed.handoff }));
+            if (parsed.handoff) setHandoff((h) => ({ ...h, ...normalizeHandoff(parsed.handoff) }));
             if (parsed.notes) {
               setNotes((n) => ({
                 ...n,
                 ...parsed.notes,
-                checklist: parsed.notes?.checklist?.length ? parsed.notes.checklist : n.checklist,
+                checklist: parsed.notes?.checklist?.length
+                  ? parsed.notes.checklist
+                  : n.checklist,
               }));
             }
           }
         } catch {
-          // ignore corrupt local cache — fall back to server snapshot
+          // ignore corrupt local cache
         }
 
         const initialFiles = localFiles || serverState.files || {};
         setFiles(initialFiles);
         filesRef.current = initialFiles;
-        setActiveFile(Object.keys(initialFiles).sort()[0] || "");
-        if (serverState.handoff) {
-          setHandoff((h) => ({
-            whatBuilt: serverState.handoff?.whatBuilt ?? h.whatBuilt,
-            verification: serverState.handoff?.verification ?? h.verification,
-            limitations: serverState.handoff?.limitations ?? h.limitations,
-          }));
-        }
+        const firstCsv =
+          Object.keys(initialFiles)
+            .sort()
+            .find((p) => p.endsWith(".csv")) || Object.keys(initialFiles).sort()[0] || "";
+        setActiveFile(firstCsv);
+        if (serverState.handoff) setHandoff(normalizeHandoff(serverState.handoff));
         if (serverState.notes) {
           setNotes((n) => ({
             ...n,
             ...serverState.notes,
-            checklist: serverState.notes?.checklist?.length ? serverState.notes.checklist : n.checklist,
+            checklist: serverState.notes?.checklist?.length
+              ? serverState.notes.checklist
+              : n.checklist,
           }));
         }
-        const rows = (data.events || []) as EventRow[];
-        setEvents(rows);
-        setTerminalOutput("Ready. Try `test`, `evals`, `preview`, or `reconcile`.");
+        setEvents((data.events || []) as EventRow[]);
+        setTerminalOutput("Ready. Commands: test · evals · preview · reconcile · ls · help");
         setLoading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not load workspace");
@@ -204,10 +230,7 @@ export default function RelayWorkspacePage() {
 
   useEffect(() => {
     if (!endsAt) return;
-    const tick = () => {
-      const secs = (new Date(endsAt).getTime() - Date.now()) / 1000;
-      setRemaining(secs);
-    };
+    const tick = () => setRemaining((new Date(endsAt).getTime() - Date.now()) / 1000);
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
@@ -233,9 +256,13 @@ export default function RelayWorkspacePage() {
     curveballTriggeredRef.current = true;
     (async () => {
       try {
-        const result = await patchSession<{ curveballText: string; event?: EventRow }>(sessionId, "curveball");
+        const result = await patchSession<{ curveballText: string; event?: EventRow }>(
+          sessionId,
+          "curveball"
+        );
         setCurveballText(result.curveballText);
         if (result.event) setEvents((prev) => [...prev, result.event as EventRow]);
+        setUnreadChat((n) => n + 1);
       } catch {
         curveballTriggeredRef.current = false;
       }
@@ -246,13 +273,16 @@ export default function RelayWorkspacePage() {
     if (!sessionId) return;
     const id = setInterval(async () => {
       try {
-        const result = await patchSession<{ expired: boolean; session: { status: string } }>(sessionId, "heartbeat");
+        const result = await patchSession<{ expired: boolean; session: { status: string } }>(
+          sessionId,
+          "heartbeat"
+        );
         setStatus(result.session.status);
         if (result.expired) {
-          setTerminalOutput((t) => `${t}\n\n[Time is up — ship your work now.]`);
+          setTerminalOutput((t) => `${t}\n\n[Time is up — review & submit your work now.]`);
         }
       } catch {
-        // transient network issue — next heartbeat will retry
+        // retry next beat
       }
     }, HEARTBEAT_MS);
     return () => clearInterval(id);
@@ -269,9 +299,7 @@ export default function RelayWorkspacePage() {
       setSaveState((s) => (s === "syncing" ? s : "local"));
     } catch {
       setSaveState("error");
-      setError(
-        "Browser storage is full or blocked. Local recovery may fail — keep a copy of critical edits and retry after freeing space."
-      );
+      setError("Browser storage is full or blocked. Local recovery may fail.");
     }
   }, [sessionId, files, handoff, notes]);
 
@@ -286,6 +314,27 @@ export default function RelayWorkspacePage() {
     return () => clearInterval(id);
   }, [sessionId, files, handoff, notes]);
 
+  useEffect(() => {
+    const flush = () => {
+      if (!sessionId) return;
+      try {
+        window.localStorage.setItem(localKey(sessionId), JSON.stringify({ files, handoff, notes }));
+      } catch {
+        /* ignore */
+      }
+      void patchSession(sessionId, "save", { files, handoff, notes }).catch(() => undefined);
+    };
+    const onVis = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    window.addEventListener("beforeunload", flush);
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      window.removeEventListener("beforeunload", flush);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [sessionId, files, handoff, notes]);
+
   const recoveryAlert = runtimeStage === "crashed" || saveState === "error";
   useEffect(() => {
     if (recoveryAlert && !wasCrashedOrErrorRef.current) setRecoveryOpen(true);
@@ -295,14 +344,14 @@ export default function RelayWorkspacePage() {
   async function ensureProvider(): Promise<ExecutionProvider> {
     if (providerRef.current && runtimeStage === "ready") return providerRef.current;
     setRuntimeStage("booting");
-    setTerminalOutput((t) => `${t}\n\n[runtime] Booting Python in the browser…`);
+    setTerminalOutput((t) => `${t}\n\n[workspace] Starting Python runtime…`);
     try {
       const { PyodideExecutionProvider } = await import("@/lib/relay/pyodide-provider");
       const provider = new PyodideExecutionProvider();
       await provider.initializeSession(filesRef.current);
       providerRef.current = provider;
       setRuntimeStage("ready");
-      setTerminalOutput((t) => `${t}\n[runtime] Python ready.`);
+      setTerminalOutput((t) => `${t}\n[workspace] Ready.`);
       return provider;
     } catch (err) {
       setRuntimeStage("crashed");
@@ -318,14 +367,13 @@ export default function RelayWorkspacePage() {
   }
 
   async function logEvent(eventType: string, sourceSurface: string, payload: Record<string, unknown>) {
-    if (!sessionId) return;
+    if (!sessionId) return null;
     try {
-      const result = await patchSession<{ event: EventRow; reply?: EventRow | null }>(sessionId, "command_event", {
-        eventType,
-        actor: "candidate",
-        sourceSurface,
-        payload,
-      });
+      const result = await patchSession<{ event: EventRow; reply?: EventRow | null }>(
+        sessionId,
+        "command_event",
+        { eventType, actor: "candidate", sourceSurface, payload }
+      );
       setEvents((prev) => [...prev, result.event]);
       return result;
     } catch {
@@ -333,10 +381,18 @@ export default function RelayWorkspacePage() {
     }
   }
 
-  async function runCommand(command: RelayCommand) {
+  async function runCommand(command: string) {
     if (!sessionId) return;
     setRunning(true);
-    setCenterTab((t) => (command === "evals" ? "evals" : t));
+    const normalized = command.trim().toLowerCase();
+    if (normalized === "evals" || normalized === "test" || normalized === "pytest") {
+      setWorkbenchTab("tests");
+      setVerifyRunCount((n) => n + 1);
+    }
+    if (normalized === "preview") {
+      setWorkbenchTab("preview");
+      setVerifyRunCount((n) => n + 1);
+    }
     setTerminalOutput(`$ ${command}\n(running…)`);
     try {
       let provider: ExecutionProvider;
@@ -344,7 +400,7 @@ export default function RelayWorkspacePage() {
         provider = await ensureProvider();
       } catch (bootErr) {
         setTerminalOutput(
-          `$ ${command}\n[runtime crashed] ${bootErr instanceof Error ? bootErr.message : String(bootErr)}\nRetrying with a fresh worker…`
+          `$ ${command}\n[interrupted] ${bootErr instanceof Error ? bootErr.message : String(bootErr)}\nRetrying…`
         );
         providerRef.current = null;
         setRuntimeStage("idle");
@@ -352,27 +408,30 @@ export default function RelayWorkspacePage() {
       }
       await syncProviderFiles(provider);
       const result: CommandResult = await provider.runCommand(command);
-      const combined = `$ ${command}\nexit ${result.exitCode} · ${result.durationMs}ms\n\n${result.stdout}${result.stderr ? `\n[stderr]\n${result.stderr}` : ""}`;
+      const combined = `$ ${command}\nexit ${result.exitCode} · ${result.durationMs}ms\n\n${result.stdout}${
+        result.stderr ? `\n[stderr]\n${result.stderr}` : ""
+      }`;
       setTerminalOutput(combined);
+      if (normalized === "preview" || command.toLowerCase().includes("preview")) {
+        setPreviewOutput(result.stdout || result.stderr || "(empty preview)");
+      }
 
       let evalPayloadExtras: Record<string, unknown> = {};
-      if (command === "evals") {
-        localEvalsRunCountRef.current += 1;
+      if (normalized === "evals") {
         const parsed = parseEvalSummary(result.stdout);
         setEvalMetrics(parsed);
         setEvalLastRunAt(new Date().toISOString());
         setEvalLastRunOk(result.ok);
-        // Surface the real integrity signal from EVAL_SUMMARY_JSON on the
-        // event itself (not just local UI state) so the evidence engine's
-        // data_integrity_vigilance trait can see whether the eval harness
-        // caught the naive-join data-integrity defect — see
-        // src/lib/fde/evidence/signals.ts payloadHasIntegritySignal.
         if (parsed) {
           evalPayloadExtras = {
             integrity_caught: parsed.integrityCaught,
             rows_dropped_naive: parsed.rowsDroppedNaive,
           };
         }
+      }
+      if (normalized === "test" || normalized === "pytest") {
+        setEvalLastRunAt(new Date().toISOString());
+        setEvalLastRunOk(result.ok);
       }
 
       await logEvent("command_run", "terminal", {
@@ -382,6 +441,18 @@ export default function RelayWorkspacePage() {
         durationMs: result.durationMs,
         ...evalPayloadExtras,
       });
+
+      if (result.ok && (normalized === "test" || normalized === "evals" || normalized === "pytest")) {
+        setNotes((n) => {
+          const checklist = n.checklist.length ? n.checklist : DEFAULT_CHECKLIST;
+          return {
+            ...n,
+            checklist: checklist.map((c) =>
+              c.id === "verify" ? { ...c, done: true } : c
+            ),
+          };
+        });
+      }
     } catch (err) {
       setRuntimeStage("crashed");
       providerRef.current = null;
@@ -392,8 +463,20 @@ export default function RelayWorkspacePage() {
   }
 
   async function onFileChange(path: string, content: string) {
-    localEditCountRef.current += 1;
+    setEditCount((n) => n + 1);
     setFiles((f) => ({ ...f, [path]: content }));
+    if (path.endsWith(".csv")) setInspectedData(true);
+    if (path.includes("join") || path.includes("reconcile") || path.includes("src/")) {
+      setNotes((n) => {
+        const checklist = n.checklist.length ? n.checklist : DEFAULT_CHECKLIST;
+        return {
+          ...n,
+          checklist: checklist.map((c) =>
+            c.id === "normalize" ? { ...c, done: true } : c
+          ),
+        };
+      });
+    }
     if (providerRef.current) {
       try {
         await providerRef.current.writeFile(path, content);
@@ -405,7 +488,7 @@ export default function RelayWorkspacePage() {
   }
 
   async function applyAiPatch(proposal: PatchProposal) {
-    localEditCountRef.current += 1;
+    setEditCount((n) => n + 1);
     setFiles((f) => ({ ...f, [proposal.file]: proposal.after }));
     if (providerRef.current) {
       try {
@@ -426,7 +509,8 @@ export default function RelayWorkspacePage() {
   const inbox = useMemo(() => inboxMeta(inboxJson), [inboxJson]);
 
   const messages = useMemo<ChatMessage[]>(() => {
-    const curveballRevealedAt = events.find((e) => e.event_type === "curveball_revealed")?.created_at || null;
+    const curveballRevealedAt =
+      events.find((e) => e.event_type === "curveball_revealed")?.created_at || null;
     const seed = buildChannelSeed(inboxJson);
     const curveballSeed = buildCurveballSeed(
       curveballKey,
@@ -447,14 +531,25 @@ export default function RelayWorkspacePage() {
           at: e.created_at,
         };
       });
-    return [...seed, ...curveballSeed, ...live].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+    return [...seed, ...curveballSeed, ...live].sort(
+      (a, b) => new Date(a.at).getTime() - new Date(b.at).getTime()
+    );
   }, [events, curveballKey, curveballText, inboxJson]);
 
   async function sendMessage() {
-    if (!sessionId || !chatDraft.trim()) return;
+    if (!sessionId || !chatDraft.trim() || chatSending) return;
     const text = chatDraft.trim();
     const tempId = `local-${Date.now()}`;
     setChatDraft("");
+    setChatSending(true);
+    setOpenedBriefOrChat(true);
+    setNotes((n) => {
+      const checklist = n.checklist.length ? n.checklist : DEFAULT_CHECKLIST;
+      return {
+        ...n,
+        checklist: checklist.map((c) => (c.id === "priority" ? { ...c, done: true } : c)),
+      };
+    });
     setEvents((prev) => [
       ...prev,
       {
@@ -469,39 +564,56 @@ export default function RelayWorkspacePage() {
       },
     ]);
     try {
-      const result = await patchSession<{ event: EventRow; reply: EventRow | null }>(sessionId, "command_event", {
-        eventType: "customer_chat_message",
-        actor: "candidate",
-        sourceSurface: "customer_chat",
-        payload: { text },
-      });
-      setEvents((prev) => [...prev.filter((e) => e.id !== tempId), result.event, ...(result.reply ? [result.reply] : [])]);
-    } catch (err) {
-      setEvents((prev) => [
-        ...prev,
+      const result = await patchSession<{ event: EventRow; reply: EventRow | null }>(
+        sessionId,
+        "command_event",
         {
-          id: `error-${Date.now()}`,
-          session_id: sessionId,
-          sequence_number: -1,
-          actor: "system",
-          event_type: "customer_chat_message",
-          source_surface: "customer_chat",
-          payload: { text: `Message failed to send: ${err instanceof Error ? err.message : "unknown error"}` },
-          created_at: new Date().toISOString(),
-        },
+          eventType: "customer_chat_message",
+          actor: "candidate",
+          sourceSurface: "customer_chat",
+          payload: { text },
+        }
+      );
+      setEvents((prev) => [
+        ...prev.filter((e) => e.id !== tempId),
+        result.event,
+        ...(result.reply ? [result.reply] : []),
       ]);
+    } catch (err) {
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === tempId
+            ? {
+                ...e,
+                payload: {
+                  text: `${text}\n\n[Not sent — ${err instanceof Error ? err.message : "retry"}]`,
+                },
+              }
+            : e
+        )
+      );
+      setChatDraft(text);
+    } finally {
+      setChatSending(false);
     }
-  }
-
-  function updateNotesField(key: "knowledge" | "unknowns" | "risks", value: string) {
-    setNotes((n) => ({ ...n, [key]: value }));
   }
 
   function toggleChecklistItem(id: string) {
     setNotes((n) => {
       const checklist = n.checklist.length > 0 ? n.checklist : DEFAULT_CHECKLIST;
-      return { ...n, checklist: checklist.map((c) => (c.id === id ? { ...c, done: !c.done } : c)) };
+      return {
+        ...n,
+        checklist: checklist.map((c) => (c.id === id ? { ...c, done: !c.done } : c)),
+      };
     });
+  }
+
+  async function addReasoningNote(text: string) {
+    setNotes((n) => ({
+      ...n,
+      knowledge: n.knowledge ? `${n.knowledge}\n• ${text}` : `• ${text}`,
+    }));
+    await logEvent("file_saved", "mission_panel", { paths: ["notes"], text });
   }
 
   function restoreLocalSnapshot() {
@@ -509,12 +621,16 @@ export default function RelayWorkspacePage() {
     try {
       const raw = window.localStorage.getItem(localKey(sessionId));
       if (!raw) return;
-      const parsed = JSON.parse(raw) as { files?: FileMap; handoff?: Partial<ShipFields>; notes?: Partial<WorkingNotesState> };
+      const parsed = JSON.parse(raw) as {
+        files?: FileMap;
+        handoff?: Partial<ShipFields>;
+        notes?: Partial<WorkingNotesState>;
+      };
       if (parsed.files) {
         setFiles(parsed.files);
         filesRef.current = parsed.files;
       }
-      if (parsed.handoff) setHandoff((h) => ({ ...h, ...parsed.handoff }));
+      if (parsed.handoff) setHandoff((h) => ({ ...h, ...normalizeHandoff(parsed.handoff) }));
       if (parsed.notes) setNotes((n) => ({ ...n, ...parsed.notes }));
     } catch {
       setError("Could not read the local snapshot — it may be corrupted.");
@@ -527,12 +643,23 @@ export default function RelayWorkspacePage() {
     try {
       await ensureProvider();
     } catch {
-      // ensureProvider already sets runtimeStage to "crashed" on failure
+      // ensureProvider sets crashed
     }
   }
 
   async function reportTechnicalIssue(description: string) {
     await logEvent("technical_issue_reported", "recovery_center", { description });
+  }
+
+  async function retrySave() {
+    if (!sessionId) return;
+    setSaveState("syncing");
+    try {
+      await patchSession(sessionId, "save", { files, handoff, notes });
+      setSaveState("synced");
+    } catch {
+      setSaveState("error");
+    }
   }
 
   async function shipNow(fields: ShipFields) {
@@ -546,7 +673,7 @@ export default function RelayWorkspacePage() {
       try {
         window.localStorage.removeItem(localKey(sessionId));
       } catch {
-        // best effort cleanup
+        /* ignore */
       }
       setShipGateOpen(false);
       router.push(`/s/${token}/submitted`);
@@ -557,99 +684,169 @@ export default function RelayWorkspacePage() {
   }
 
   function exitSafely() {
-    if (window.confirm("Exit the workspace? Your progress is autosaved, and you can resume from the Action Inbox.")) {
+    if (
+      window.confirm(
+        "Exit the workspace? Progress is autosaved and you can resume from your Action Inbox."
+      )
+    ) {
       router.push("/app/fde");
     }
   }
 
+  function selectFile(path: string) {
+    const resolved =
+      files[path] != null
+        ? path
+        : Object.keys(files).find((p) => p.endsWith(path) || p.endsWith(path.replace(/^data\//, ""))) ||
+          path;
+    setActiveFile(resolved);
+    if (resolved.endsWith(".csv")) {
+      setInspectedData(true);
+      setWorkbenchTab("data");
+      setNotes((n) => {
+        const checklist = n.checklist.length ? n.checklist : DEFAULT_CHECKLIST;
+        return {
+          ...n,
+          checklist: checklist.map((c) => (c.id === "inspect" ? { ...c, done: true } : c)),
+        };
+      });
+    } else {
+      setWorkbenchTab("code");
+    }
+    setMobileZone("workbench");
+  }
+
+  function navigateMission(target: MissionNavTarget) {
+    if (target === "chat") {
+      setContextTab("chat");
+      setMobileZone("context");
+      setUnreadChat(0);
+      return;
+    }
+    if (target === "handoff") {
+      setShipGateOpen(true);
+      return;
+    }
+    setWorkbenchTab(target);
+    setMobileZone("workbench");
+  }
+
   const filePaths = useMemo(() => Object.keys(files).sort(), [files]);
-  const candidateMessageCount = useMemo(
-    () => events.filter((e) => e.actor === "candidate" && (e.event_type === "customer_chat_message" || e.event_type === "stakeholder_message")).length,
-    [events]
+  const handoffFilled = useMemo(
+    () => Object.values(handoff).some((v) => v.trim().length > 0),
+    [handoff]
   );
-  const notesFilled = useMemo(() => [notes.knowledge, notes.unknowns, notes.risks].some((v) => v.trim().length > 0), [notes]);
-  const handoffFilled = useMemo(() => Object.values(handoff).some((v) => v.trim().length > 0), [handoff]);
-  const phaseIndex = computePhaseIndex({
+  const stageIndex = computeStageIndex({
     started: true,
-    chatMessageCount: candidateMessageCount,
-    planFilled: notesFilled,
-    editCount: localEditCountRef.current,
-    evalsRunCount: localEvalsRunCountRef.current,
-    curveballRevealed: Boolean(curveballText),
+    openedBriefOrChat,
+    inspectedData,
+    editCount,
+    verifyRunCount,
     handoffFilled,
   });
 
+  const checklist = notes.checklist.length ? notes.checklist : DEFAULT_CHECKLIST;
+  const doneCount = checklist.filter((c) => c.done).length;
   const timeUp = remaining <= 0;
   void status;
+  void monacoReady;
 
   if (loading) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-[#050609] text-white/60">Loading workspace…</div>
+      <div className="flex min-h-[100dvh] items-center justify-center bg-[#080A0F] text-[#9AA3B2]">
+        Loading workspace…
+      </div>
     );
   }
   if (error && !sessionId) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-[#050609] px-6 text-center text-[#fda4b0]">
+      <div className="flex min-h-[100dvh] items-center justify-center bg-[#080A0F] px-6 text-center text-[#fda4b0]">
         {error}
       </div>
     );
   }
 
-  const columnHeight = "min-h-[calc(100dvh-146px)] lg:min-h-[calc(100dvh-104px)]";
-  const CENTER_TABS: { id: CenterTab; label: string }[] = [
-    { id: "files", label: "Files" },
-    { id: "evals", label: "Evaluation Lab" },
-    { id: "brief", label: "Brief" },
-    { id: "evidence", label: "Evidence" },
-  ];
-  const MOBILE_ZONES: { id: MobileZone; label: string }[] = [
-    { id: "inbox", label: "Inbox" },
-    { id: "workspace", label: "Workspace" },
-    { id: "notes", label: "Notes" },
-  ];
+  const shellHeight = "min-h-0 flex-1";
 
   return (
-    <div className="min-h-[100dvh] bg-[#07080B] text-[#F4F5F7]">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-[#080A0F] text-[#F4F5F7]">
       <TopBar
-        missionTitle={mission.title}
+        customerName="Northbeam Logistics"
         connection={connection}
         saveState={saveState}
         runtimeStage={runtimeStage}
-        editorReady={monacoReady}
         remainingSeconds={remaining}
         submitting={submitting}
         onExit={exitSafely}
         onOpenRecovery={() => setRecoveryOpen(true)}
         recoveryAlert={recoveryAlert}
         onOpenShipGate={() => setShipGateOpen(true)}
+        onRetrySave={retrySave}
       />
 
-      <PhaseRail index={phaseIndex} />
+      <PhaseRail
+        index={stageIndex}
+        activeStage={focusStage}
+        onSelectStage={(s) => {
+          setFocusStage(s);
+          if (s === "understand") {
+            setContextTab("brief");
+            setMobileZone("context");
+          } else if (s === "investigate") {
+            setWorkbenchTab("data");
+            setMobileZone("workbench");
+          } else if (s === "build") {
+            setWorkbenchTab("code");
+            setMobileZone("workbench");
+          } else if (s === "verify") {
+            setWorkbenchTab("tests");
+            setMobileZone("workbench");
+          } else if (s === "handoff") {
+            setShipGateOpen(true);
+          }
+        }}
+      />
 
       {curveballText && (
-        <div className="border-b border-[#3B5BFF]/25 bg-[#3B5BFF]/[0.06] px-4 py-2 text-[12.5px] text-[#c4cdff] sm:px-6">
-          <strong className="font-medium">Mid-session change: </strong>
-          {curveballText}
-        </div>
+        <CurveballBanner
+          text={curveballText}
+          onAcknowledge={() => {
+            setCurveballAck(true);
+            void logEvent("curveball_acknowledged", "curveball_banner", { text: curveballText });
+          }}
+        />
       )}
       {error && (
-        <div className="border-b border-[#fda4b0]/30 bg-[#fda4b0]/10 px-4 py-2 text-[13px] text-[#fda4b0]">{error}</div>
+        <div className="shrink-0 border-b border-[#fda4b0]/30 bg-[#fda4b0]/10 px-4 py-2 text-[13px] text-[#fda4b0]">
+          {error}
+          <button type="button" className="ml-3 underline" onClick={() => setError(null)}>
+            Dismiss
+          </button>
+        </div>
       )}
       {timeUp && (
-        <div className="border-b border-[#fda4b0]/30 bg-[#fda4b0]/10 px-4 py-2 text-[13px] text-[#fda4b0]">
-          Time is up — ship your work now.
+        <div className="shrink-0 border-b border-[#fda4b0]/30 bg-[#fda4b0]/10 px-4 py-2 text-[13px] text-[#fda4b0]">
+          Time is up — use Review & submit to hand off your work.
         </div>
       )}
 
-      <div className="flex border-b border-white/[0.06] bg-[#08090D] lg:hidden">
-        {MOBILE_ZONES.map((z) => (
+      <div className="flex shrink-0 border-b border-white/[0.06] bg-[#0B0F16] lg:hidden">
+        {(
+          [
+            { id: "context" as const, label: "Context" },
+            { id: "workbench" as const, label: "Workbench" },
+            { id: "mission" as const, label: "Mission" },
+          ] as const
+        ).map((z) => (
           <button
             key={z.id}
             type="button"
             onClick={() => setMobileZone(z.id)}
             className={cn(
-              "flex-1 border-b-2 px-2 py-2.5 text-[12.5px] font-medium transition-colors",
-              mobileZone === z.id ? "border-[#3B5BFF] text-white" : "border-transparent text-white/40"
+              "flex-1 border-b-2 px-2 py-2.5 text-[12.5px] font-medium",
+              mobileZone === z.id
+                ? "border-[#6470FF] text-white"
+                : "border-transparent text-[#687182]"
             )}
           >
             {z.label}
@@ -657,118 +854,88 @@ export default function RelayWorkspacePage() {
         ))}
       </div>
 
-      <div className="grid gap-px bg-white/[0.06] lg:grid-cols-[7fr_11fr_7fr]">
-        <div className={cn(mobileZone === "inbox" ? "block" : "hidden", "lg:block", columnHeight, "bg-[#0A0C11]")}>
-          <ClientInbox
+      <div className="grid min-h-0 flex-1 gap-px bg-white/[0.06] lg:grid-cols-[300px_minmax(0,1fr)_320px]">
+        <div
+          className={cn(
+            mobileZone === "context" ? "flex" : "hidden",
+            "lg:flex",
+            shellHeight,
+            "flex-col overflow-hidden"
+          )}
+        >
+          <ContextPanel
+            tab={contextTab}
+            onTabChange={(t) => {
+              setContextTab(t);
+              setOpenedBriefOrChat(true);
+              if (t === "chat") setUnreadChat(0);
+            }}
+            unreadChat={unreadChat}
+            mission={mission}
             canonicalFacts={canonicalFacts}
             messages={messages}
             draft={chatDraft}
             onDraftChange={setChatDraft}
             onSend={sendMessage}
+            sending={chatSending}
             channelName={inbox.channel}
             participants={inbox.participants}
+            onOpenFile={selectFile}
           />
         </div>
 
-        <div className={cn(mobileZone === "workspace" ? "flex" : "hidden", "lg:flex", columnHeight, "flex-col bg-[#0A0C11]")}>
-          <div className="flex items-center justify-between gap-2 border-b border-white/[0.06] px-2.5 py-1.5">
-            <div className="flex gap-1 overflow-x-auto">
-              {CENTER_TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setCenterTab(tab.id)}
-                  className={cn(
-                    "shrink-0 rounded-[6px] px-2.5 py-1.5 text-[12px] font-medium transition-colors",
-                    centerTab === tab.id ? "bg-white/[0.08] text-white" : "text-white/45 hover:bg-white/[0.04] hover:text-white/75"
-                  )}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() => setAiDrawerOpen(true)}
-              className="shrink-0 rounded-[6px] border border-white/12 px-2.5 py-1.5 text-[12px] text-white/60 hover:bg-white/[0.05]"
-            >
-              AI assistant
-            </button>
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            {centerTab === "files" && (
-              <FilesPanel
-                filePaths={filePaths}
-                activeFile={activeFile}
-                content={files[activeFile] || ""}
-                onSelectFile={setActiveFile}
-                onChange={(value) => onFileChange(activeFile, value)}
-                onMount={() => setMonacoReady(true)}
-              />
-            )}
-            {centerTab === "evals" && (
-              <EvaluationLab
-                metrics={evalMetrics}
-                lastRunAt={evalLastRunAt}
-                lastRunOk={evalLastRunOk}
-                onRunEvals={() => runCommand("evals")}
-                running={running}
-              />
-            )}
-            {centerTab === "brief" && (
-              <div className="h-full overflow-y-auto">
-                <div className="flex gap-1 px-6 pt-5">
-                  {(["brief", "requirements"] as const).map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => setBriefVariant(v)}
-                      className={cn(
-                        "rounded-[6px] px-2.5 py-1 text-[11.5px] font-medium capitalize transition-colors",
-                        briefVariant === v ? "bg-white/[0.08] text-white" : "text-white/40 hover:text-white/70"
-                      )}
-                    >
-                      {v}
-                    </button>
-                  ))}
-                </div>
-                <BriefPanel mission={mission} canonicalFacts={canonicalFacts} variant={briefVariant} />
-              </div>
-            )}
-            {centerTab === "evidence" && <EvidenceTrailPanel events={events} />}
-          </div>
-
-          <TerminalPanel onRun={runCommand} running={running} output={terminalOutput} />
+        <div
+          className={cn(
+            mobileZone === "workbench" ? "flex" : "hidden",
+            "lg:flex",
+            shellHeight,
+            "flex-col overflow-hidden"
+          )}
+        >
+          <WorkbenchPanel
+            tab={workbenchTab}
+            onTabChange={setWorkbenchTab}
+            filePaths={filePaths}
+            files={files}
+            activeFile={activeFile}
+            onSelectFile={selectFile}
+            onChangeFile={onFileChange}
+            onEditorMount={() => setMonacoReady(true)}
+            previewOutput={previewOutput}
+            onRunPreview={() => runCommand("preview")}
+            evalMetrics={evalMetrics}
+            evalLastRunAt={evalLastRunAt}
+            evalLastRunOk={evalLastRunOk}
+            onRunTests={() => runCommand("test")}
+            onRunEvals={() => runCommand("evals")}
+            running={running}
+            terminalOutput={terminalOutput}
+            onRunCommand={runCommand}
+          />
         </div>
 
-        <div className={cn(mobileZone === "notes" ? "flex" : "hidden", "lg:flex", columnHeight, "flex-col bg-[#0A0C11]")}>
-          <WorkingNotes notes={notes} onChange={updateNotesField} onToggleChecklistItem={toggleChecklistItem} />
+        <div
+          className={cn(
+            mobileZone === "mission" ? "flex" : "hidden",
+            "lg:flex",
+            shellHeight,
+            "flex-col overflow-hidden"
+          )}
+        >
+          <MissionPanel
+            notes={notes}
+            onToggleChecklistItem={toggleChecklistItem}
+            onAddNote={addReasoningNote}
+            events={events}
+            activeFile={activeFile}
+            activeFileContent={files[activeFile] || ""}
+            onApplyAi={applyAiPatch}
+            onNavigate={navigateMission}
+            doneCount={doneCount}
+            totalCount={checklist.length}
+          />
         </div>
       </div>
-
-      {aiDrawerOpen && (
-        <div className="fixed inset-0 z-40 flex items-stretch justify-end bg-black/50" onClick={() => setAiDrawerOpen(false)}>
-          <div
-            className="flex h-full w-full max-w-[400px] flex-col border-l border-white/10 bg-[#0A0C11]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
-              <h2 className="text-[14px] font-medium text-white">AI assistant</h2>
-              <button
-                type="button"
-                onClick={() => setAiDrawerOpen(false)}
-                className="text-[13px] text-white/45 hover:text-white/80"
-              >
-                Close
-              </button>
-            </div>
-            <div className="min-h-0 flex-1">
-              <AiWorkspacePanel activeFile={activeFile} activeFileContent={files[activeFile] || ""} onApply={applyAiPatch} />
-            </div>
-          </div>
-        </div>
-      )}
 
       <RecoveryCenter
         open={recoveryOpen}
@@ -780,7 +947,19 @@ export default function RelayWorkspacePage() {
         storageError={saveState === "error"}
       />
 
-      <ShipGateModal open={shipGateOpen} initial={handoff} submitting={submitting} onClose={() => setShipGateOpen(false)} onShip={shipNow} />
+      <ShipGateModal
+        open={shipGateOpen}
+        initial={handoff}
+        submitting={submitting}
+        onClose={() => setShipGateOpen(false)}
+        onShip={shipNow}
+        readiness={{
+          fileCount: filePaths.length,
+          testsLastRunAt: evalLastRunAt,
+          testsOk: evalLastRunOk,
+          curveballAck: curveballAck || !curveballText,
+        }}
+      />
     </div>
   );
 }

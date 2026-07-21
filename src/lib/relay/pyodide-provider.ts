@@ -100,7 +100,8 @@ sys.path.insert(0, "${this.root}/src")
       return {
         ok: false,
         stdout: "",
-        stderr: "Command not allowed. Supported: test | pytest | evals | preview | reconcile | help",
+        stderr:
+          "Command not allowed. Supported: test | pytest | evals | preview | reconcile | ls | cat | head | grep | git diff | help",
         exitCode: 127,
         durationMs: 0,
         command,
@@ -109,17 +110,112 @@ sys.path.insert(0, "${this.root}/src")
     if (allowed === "help") {
       return {
         ok: true,
-        stdout: "Allowed: test, pytest, evals, preview, reconcile, help\n",
+        stdout:
+          "Allowed: test, pytest, evals, preview, reconcile, ls, cat <path>, head <path>, grep <pat> <path>, git diff, help\n",
         stderr: "",
         exitCode: 0,
         durationMs: 0,
         command,
       };
     }
+    if (allowed === "ls" || allowed === "cat" || allowed === "head" || allowed === "grep" || allowed === "git diff") {
+      return this.runFsCommand(allowed, command.trim());
+    }
     if (allowed === "preview") return this.preview();
     if (allowed === "evals") return this.runEvaluations();
     if (allowed === "reconcile") return this.runReconcile();
     return this.runTests();
+  }
+
+  private async runFsCommand(kind: string, raw: string): Promise<CommandResult> {
+    const started = Date.now();
+    try {
+      const files = await this.listFiles();
+      if (kind === "ls") {
+        return {
+          ok: true,
+          stdout: files.sort().join("\n") + "\n",
+          stderr: "",
+          exitCode: 0,
+          durationMs: Date.now() - started,
+          command: raw,
+        };
+      }
+      if (kind === "git diff") {
+        return {
+          ok: true,
+          stdout:
+            "No host git in the sandbox. Use the Code tab for edits; evidence captures file changes on submit.\n",
+          stderr: "",
+          exitCode: 0,
+          durationMs: Date.now() - started,
+          command: raw,
+        };
+      }
+      const parts = raw.split(/\s+/);
+      if (kind === "cat" || kind === "head") {
+        const path = parts[1];
+        if (!path) {
+          return {
+            ok: false,
+            stdout: "",
+            stderr: `Usage: ${kind} <path>\n`,
+            exitCode: 2,
+            durationMs: Date.now() - started,
+            command: raw,
+          };
+        }
+        const content = await this.readFile(path);
+        const out = kind === "head" ? content.split("\n").slice(0, 20).join("\n") + "\n" : content;
+        return {
+          ok: true,
+          stdout: out.endsWith("\n") ? out : out + "\n",
+          stderr: "",
+          exitCode: 0,
+          durationMs: Date.now() - started,
+          command: raw,
+        };
+      }
+      // grep <pat> <path>
+      const pat = parts[1];
+      const path = parts[2];
+      if (!pat || !path) {
+        return {
+          ok: false,
+          stdout: "",
+          stderr: "Usage: grep <pattern> <path>\n",
+          exitCode: 2,
+          durationMs: Date.now() - started,
+          command: raw,
+        };
+      }
+      const content = await this.readFile(path);
+      const re = new RegExp(pat, "i");
+      const hits = content
+        .split("\n")
+        .map((line, i) => ({ line, i: i + 1 }))
+        .filter(({ line }) => re.test(line))
+        .slice(0, 80)
+        .map(({ line, i }) => `${i}:${line}`)
+        .join("\n");
+      return {
+        ok: true,
+        stdout: (hits || "(no matches)") + "\n",
+        stderr: "",
+        exitCode: 0,
+        durationMs: Date.now() - started,
+        command: raw,
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        stdout: "",
+        stderr: err instanceof Error ? err.message : String(err),
+        exitCode: 1,
+        durationMs: Date.now() - started,
+        command: raw,
+      };
+    }
   }
 
   /**

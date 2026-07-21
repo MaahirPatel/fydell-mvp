@@ -37,13 +37,26 @@ export const ALLOWED_COMMANDS = new Set([
   "preview",
   "reconcile",
   "help",
+  "ls",
+  "cat",
+  "head",
+  "grep",
+  "git diff",
 ]);
 
 export function parseAllowlistedCommand(input: string): string | null {
   const cmd = input.trim().toLowerCase();
+  if (!cmd) return null;
   if (ALLOWED_COMMANDS.has(cmd)) return cmd;
+  if (cmd === "git diff" || cmd.startsWith("git diff")) return "git diff";
+  if (cmd === "ls" || cmd.startsWith("ls ")) return "ls";
+  if (cmd.startsWith("cat ")) return "cat";
+  if (cmd.startsWith("head ")) return "head";
+  if (cmd.startsWith("grep ")) return "grep";
   if (cmd.startsWith("python ") && cmd.includes("run_evals")) return "evals";
+  if (cmd.startsWith("python ") && cmd.includes("metrics")) return "preview";
   if (cmd.startsWith("python ") && cmd.includes("reconcile")) return "reconcile";
+  if (cmd.startsWith("python ") && (cmd.includes("join.py") || cmd.includes("src/"))) return "reconcile";
   if (cmd.startsWith("pytest")) return "pytest";
   return null;
 }

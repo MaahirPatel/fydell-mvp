@@ -12,11 +12,11 @@ export type WorkingNotesState = {
 };
 
 export const DEFAULT_CHECKLIST: ChecklistItem[] = [
-  { id: "tests", label: "Ran test and it reflects the current code", done: false },
-  { id: "evals", label: "Ran evals and reviewed the metrics", done: false },
-  { id: "policy", label: "Checked sensitive actions against the approval policy", done: false },
-  { id: "notes", label: "Working notes are current", done: false },
-  { id: "handoff", label: "Handoff drafted with an honest limitations section", done: false },
+  { id: "inspect", label: "Inspect both data sources", done: false },
+  { id: "priority", label: "Confirm the stakeholder priority", done: false },
+  { id: "normalize", label: "Fix shipment-ID normalization", done: false },
+  { id: "verify", label: "Run the verification set", done: false },
+  { id: "handoff", label: "Draft the client handoff", done: false },
 ];
 
 const FIELDS: { key: keyof Pick<WorkingNotesState, "knowledge" | "unknowns" | "risks">; label: string; placeholder: string }[] = [

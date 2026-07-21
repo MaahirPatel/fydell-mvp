@@ -56,10 +56,10 @@ export default function AiWorkspacePanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-y-auto p-3">
-      <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/40">AI workspace</p>
+      <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/40">AI copilot</p>
       <p className="mt-1.5 text-[11.5px] leading-relaxed text-white/45">
-        Fully offline and deterministic — no live model calls. It either applies the known report
-        join-wiring fix, or appends a labeled note from your instruction.
+        Proposals are reviewable diffs only. Accept, edit, or reject — then verify with tests. Activity
+        is recorded. Hidden tests and scoring weights are never available here.
       </p>
 
       <div className="mt-3 rounded-[8px] border border-white/10 bg-black/20 px-3 py-2">
@@ -73,7 +73,7 @@ export default function AiWorkspacePanel({
         <textarea
           value={instruction}
           onChange={(e) => setInstruction(e.target.value)}
-          placeholder="e.g. note that this endpoint needs rate limiting"
+          placeholder="Ask for help, generate code, or challenge your approach…"
           rows={3}
           className="mt-1 w-full resize-none rounded-[7px] border border-white/10 bg-black/30 px-2.5 py-2 text-[12px] text-white/80 placeholder:text-white/25"
         />

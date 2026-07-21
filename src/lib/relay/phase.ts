@@ -1,40 +1,54 @@
 /**
- * Heuristic phase-rail computation for the Project Relay workspace.
- * Advances from recorded activity signals only — never a self-report toggle.
- * Monotonic-ish: we take the furthest phase whose condition currently holds,
- * so phases don't regress just because e.g. chat goes quiet for a while.
+ * Five plain-language stages for Project Relay.
+ * Stages guide progress; candidates may move freely between workspace tools.
+ * Index is computed from activity signals (never self-report scoring).
  */
 
-export type RelayPhase = "orient" | "discover" | "scope" | "build" | "evaluate" | "curveball" | "handoff";
+export type RelayStage = "understand" | "investigate" | "build" | "verify" | "handoff";
 
-export const PHASE_ORDER: { id: RelayPhase; label: string }[] = [
-  { id: "orient", label: "Orient" },
-  { id: "discover", label: "Discover" },
-  { id: "scope", label: "Scope" },
-  { id: "build", label: "Build" },
-  { id: "evaluate", label: "Evaluate" },
-  { id: "curveball", label: "Curveball" },
-  { id: "handoff", label: "Handoff" },
+export const STAGE_ORDER: { id: RelayStage; label: string; guide: string }[] = [
+  {
+    id: "understand",
+    label: "Understand",
+    guide: "Read the brief and client chat. Confirm what Dana needs and what “done” looks like.",
+  },
+  {
+    id: "investigate",
+    label: "Investigate",
+    guide: "Open the data files, compare sources, and find why the delay report understates late shipments.",
+  },
+  {
+    id: "build",
+    label: "Build",
+    guide: "Edit the pipeline (normalize IDs, fix joins) so delayed shipments are not silently dropped.",
+  },
+  {
+    id: "verify",
+    label: "Verify",
+    guide: "Run tests and preview. Confirm late rate and unmatched rows before you hand off.",
+  },
+  {
+    id: "handoff",
+    label: "Handoff",
+    guide: "Draft what changed, evidence it works, remaining limits, and a clear message to Dana.",
+  },
 ];
 
-export type PhaseSignals = {
+export type StageSignals = {
   started: boolean;
-  chatMessageCount: number;
-  planFilled: boolean;
+  openedBriefOrChat: boolean;
+  inspectedData: boolean;
   editCount: number;
-  evalsRunCount: number;
-  curveballRevealed: boolean;
+  verifyRunCount: number;
   handoffFilled: boolean;
 };
 
-export function computePhaseIndex(signals: PhaseSignals): number {
+export function computeStageIndex(signals: StageSignals): number {
   const conditions: boolean[] = [
     signals.started,
-    signals.chatMessageCount > 0,
-    signals.planFilled,
+    signals.openedBriefOrChat || signals.inspectedData,
     signals.editCount > 0,
-    signals.evalsRunCount > 0,
-    signals.curveballRevealed,
+    signals.verifyRunCount > 0,
     signals.handoffFilled,
   ];
   let furthest = 0;
@@ -44,6 +58,29 @@ export function computePhaseIndex(signals: PhaseSignals): number {
   return furthest;
 }
 
+export function computeStage(signals: StageSignals): RelayStage {
+  return STAGE_ORDER[computeStageIndex(signals)].id;
+}
+
+/** @deprecated Use STAGE_ORDER / computeStageIndex */
+export const PHASE_ORDER = STAGE_ORDER.map((s) => ({ id: s.id, label: s.label }));
+export type RelayPhase = RelayStage;
+export type PhaseSignals = StageSignals & {
+  chatMessageCount?: number;
+  planFilled?: boolean;
+  evalsRunCount?: number;
+  curveballRevealed?: boolean;
+};
+export function computePhaseIndex(signals: PhaseSignals): number {
+  return computeStageIndex({
+    started: signals.started,
+    openedBriefOrChat: (signals.chatMessageCount ?? 0) > 0 || Boolean(signals.planFilled),
+    inspectedData: Boolean(signals.planFilled),
+    editCount: signals.editCount,
+    verifyRunCount: signals.evalsRunCount ?? signals.verifyRunCount ?? 0,
+    handoffFilled: signals.handoffFilled,
+  });
+}
 export function computePhase(signals: PhaseSignals): RelayPhase {
-  return PHASE_ORDER[computePhaseIndex(signals)].id;
+  return STAGE_ORDER[computePhaseIndex(signals)].id;
 }
