@@ -67,7 +67,12 @@ sys.path.insert(0, "${this.root}/src")
         const s = document.createElement("script");
         s.src = "https://cdn.jsdelivr.net/pyodide/v0.27.5/full/pyodide.js";
         s.onload = () => resolve();
-        s.onerror = () => reject(new Error("Failed to load Pyodide"));
+        s.onerror = () =>
+          reject(
+            new Error(
+              "[infrastructure] The Python runtime could not be downloaded. This is a platform/network issue, not a problem with your work."
+            )
+          );
         document.head.appendChild(s);
       });
     }
@@ -95,6 +100,19 @@ sys.path.insert(0, "${this.root}/src")
   }
 
   async runCommand(command: string): Promise<CommandResult> {
+    if (!this.py) {
+      // Runtime never initialized — a Fydell infrastructure condition, never
+      // a candidate-code failure. exitCode 111 marks infra everywhere.
+      return {
+        ok: false,
+        stdout: "",
+        stderr:
+          "[infrastructure] The Python runtime is not available. Your work is unaffected — reload the workspace or use Report technical issue.",
+        exitCode: 111,
+        durationMs: 0,
+        command,
+      };
+    }
     const allowed = parseAllowlistedCommand(command);
     if (!allowed) {
       return {
@@ -232,6 +250,7 @@ sys.path.insert(0, "${this.root}/src")
     "reconcile",
     "join",
     "load",
+    "test_reconcile",
   ];
 
   private async runPythonCapture(code: string, command: string): Promise<CommandResult> {
@@ -269,24 +288,64 @@ for _m in (${evictModules}):
     }
   }
 
+  /**
+   * Executes the seeded tests/test_reconcile.py from the virtual FS against
+   * the candidate's *current* workspace files — not a hardcoded re-statement
+   * of the assertions. A candidate edit to src/reconcile.py (or to the test
+   * file itself) changes what actually runs, exactly like pytest would.
+   */
   async runTests(): Promise<CommandResult> {
+    const testPath = `${this.root}/tests/test_reconcile.py`;
+    if (this.py && !this.py.FS.analyzePath(testPath).exists) {
+      return {
+        ok: false,
+        stdout: "",
+        stderr:
+          "[infrastructure] tests/test_reconcile.py is missing from the workspace. This is a Fydell provisioning issue, not a problem with your work — use Report technical issue.",
+        exitCode: 111,
+        durationMs: 0,
+        command: "pytest",
+      };
+    }
     return this.runPythonCapture(
       `
-import sys
+import sys, traceback, importlib.util
 sys.path.insert(0, "${this.root}/src")
-from load import load_delay_tracking, load_shipments
-from join import naive_join
-from reconcile import reconciled_join
+sys.path.insert(0, "${this.root}/tests")
 
-shipments = load_shipments()
-delay_rows = load_delay_tracking()
-_, naive_dropped = naive_join(shipments, delay_rows)
-assert len(naive_dropped) > 0, "naive_join should drop mismatched-id rows"
-_, reconciled_unmatched = reconciled_join(shipments, delay_rows)
-assert len(reconciled_unmatched) == 0, "reconciled_join should recover all rows"
-print("PYODIDE_TESTS_PASSED")
+spec = importlib.util.spec_from_file_location("test_reconcile", "${testPath}")
+mod = importlib.util.module_from_spec(spec)
+sys.modules["test_reconcile"] = mod
+spec.loader.exec_module(mod)
+
+tests = [(name, fn) for name, fn in vars(mod).items() if name.startswith("test_") and callable(fn)]
+tests.sort(key=lambda t: t[0])
+
+passed, failed, errored = 0, 0, 0
+for name, fn in tests:
+    try:
+        fn()
+        print(f"PASSED  {name}")
+        passed += 1
+    except AssertionError as exc:
+        failed += 1
+        print(f"FAILED  {name}")
+        tb = traceback.format_exc().splitlines()
+        for line in tb[-3:]:
+            print(f"        {line}")
+    except Exception:
+        errored += 1
+        print(f"ERROR   {name}")
+        tb = traceback.format_exc().splitlines()
+        for line in tb[-3:]:
+            print(f"        {line}")
+
+print()
+print(f"{passed} passed, {failed} failed, {errored} errored — tests/test_reconcile.py")
+if failed or errored:
+    raise SystemExit(1)
 `,
-      "test"
+      "pytest"
     );
   }
 

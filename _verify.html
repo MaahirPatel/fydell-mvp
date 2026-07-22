@@ -654,7 +654,7 @@ button.wsf-chip:hover{background:var(--bg-tint);color:var(--ink)}
 .rp-exec{background:radial-gradient(420px 200px at 96% -30%, rgba(109,76,255,.08), transparent 62%),#fff}
 @media(max-width:860px){.wb-art{display:none}}
 
-/* ============ workspace v4 — premium ============ */
+/* ============ workspace v4 premium ============ */
 .ws{min-height:100vh;background:var(--bg);padding-bottom:70px;position:relative;overflow:hidden}
 .ws::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(720px 460px at 4% 0%, rgba(109,76,255,.10), transparent 60%),radial-gradient(680px 460px at 100% 8%, rgba(63,124,255,.07), transparent 60%),radial-gradient(620px 460px at 92% 100%, rgba(246,163,92,.10), transparent 62%)}
 .ws>*{position:relative;z-index:1}
@@ -857,6 +857,67 @@ button.wsf-chip{cursor:pointer}button.wsf-chip:hover,button.wsf-chip.on{backgrou
 @media(max-width:640px){.ws-rail{flex-direction:column}.dr-mets{grid-template-columns:repeat(2,1fr)}.ws-stage .stg-l{display:none}}
 @media (prefers-reduced-motion: reduce){.ws-card,.msg,.mgr-update,.evf,.ws-tb{animation:none}.sb-tr i,#wsRingArc,.sg-tr i{transition:none}.ws-saved{animation:none}}
 
+/* ===== buyer sections ===== */
+.ncts{padding:80px 0 70px}
+.ncts-grid{display:grid;grid-template-columns:300px 1fr;gap:60px;align-items:start}
+.ncts h2{font-size:clamp(26px,2.6vw,36px)}
+.ncts .sub{margin-top:13px;color:var(--slate-2);line-height:1.68}
+.nct-row{display:grid;grid-template-columns:44px 1fr;gap:16px;padding:17px 0;border-bottom:1px solid var(--line)}
+.nct-row:last-child{border-bottom:none}
+.nct-n{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:.85rem}
+.nct-row b{display:block;font-size:1rem;color:var(--ink);margin-bottom:4px}
+.nct-row p{font-size:.9rem;color:var(--slate-2);line-height:1.6}
+.rev{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:80px 0}
+.rev-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:64px;align-items:center}
+.rev h2{font-size:clamp(26px,2.6vw,36px);margin-bottom:12px}
+.rev .sub{color:var(--slate-2);line-height:1.65;margin-bottom:20px}
+.rev-item{display:flex;gap:11px;align-items:flex-start;padding:7px 0;font-size:.92rem;color:var(--ink-2);line-height:1.55}
+.rev-item .ck{flex:none;margin-top:1px}
+.rev-proof{background:var(--bg-soft);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 18px 44px rgba(30,25,60,.09)}
+.rev-q{border-left:3px solid var(--violet);padding:2px 0 2px 15px;margin:16px 0}
+.rev-q b{font-size:.95rem;color:var(--ink);display:block}
+.rev-q p{font-size:.87rem;color:var(--slate-2);margin-top:4px;line-height:1.62}
+@media(max-width:980px){.ncts-grid,.rev-grid{grid-template-columns:1fr;gap:34px}}
+/* ===== Project Relay (FDE) ===== */
+.fde-grid{display:grid;grid-template-columns:320px 1fr 280px;gap:16px;max-width:1520px;margin:14px auto 0;padding:0 26px;align-items:start}
+.fde-inbox{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;position:sticky;top:78px;max-height:calc(100vh - 96px)}
+.fde-feed{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:0;min-height:220px}
+.fde-center{min-width:0}
+.fde-right{position:sticky;top:78px;display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 96px);overflow-y:auto}
+.fde-due{font-size:.74rem;font-weight:700;color:var(--slate-2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:#fff}
+.fde-due.pulled{color:#C2410C;border-color:#F3C98D;background:#FEF6EA}
+.fde-due2{font-size:.82rem;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.fde-due2.warn{color:#C2410C}
+.fde-sheet{margin-bottom:14px}
+.fde-sheet-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:7px}
+.fde-sheet-h b{font-size:.82rem;color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace}
+.fde-sheet-h span{font-size:.7rem;color:var(--slate-3)}
+.fde-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 10px;padding-top:14px;border-top:1px solid var(--line-2)}
+.fde-tog{display:inline-flex;align-items:center;gap:8px;font-size:.84rem;color:var(--ink-2);font-weight:500;cursor:pointer}
+.fde-tog input{width:15px;height:15px;accent-color:var(--violet)}
+.fde-result{border:1px solid #CBE8DD;background:#F6FCF9;border-radius:12px;padding:13px 15px;margin:10px 0}
+.fde-result.naive{border-color:var(--line);background:var(--bg-soft)}
+.fde-result b{display:block;font-size:.92rem;color:var(--ink)}
+.fde-result span{font-size:.76rem;color:var(--slate-3)}
+.fde-flagrow{display:flex;gap:8px;margin-top:10px}
+.fde-flagrow input{flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;font-size:.84rem;background:var(--bg-soft)}
+.fde-flagrow input:focus{outline:none;border-color:var(--violet)}
+.fde-checks{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.fde-checks label{display:flex;align-items:center;gap:9px;font-size:.86rem;color:var(--ink-2);cursor:pointer}
+.fde-checks input{width:15px;height:15px;accent-color:var(--violet)}
+.fde-km{display:flex;gap:11px;align-items:flex-start;padding:10px 13px;border:1px solid #F3C98D;background:#FEF9F0;border-radius:12px;margin-bottom:8px}
+.fde-km.good{border-color:#CBE8DD;background:#F6FCF9}
+.fde-km span{flex:none;font-size:.85rem;color:#C2410C;margin-top:1px}
+.fde-km.good span{color:var(--green)}
+.fde-km p{font-size:.88rem;color:var(--ink-2);line-height:1.55}
+.fde-q{font-size:.82rem;color:var(--slate-2);border-top:1px solid var(--line-2);padding-top:9px;margin-top:10px;line-height:1.55}
+.fde-q b{color:var(--violet-2)}
+.sg-none2{color:#C2410C;background:#FCE9EE}
+.fde-flag-band{border:1px solid var(--line);background:linear-gradient(120deg,#F6F3FF,#EFF4FF 55%,#FDF6EC);border-radius:20px;padding:26px 28px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;margin-bottom:22px}
+.fde-flag-band h3{font-size:1.35rem;letter-spacing:-.015em;margin-bottom:7px}
+.fde-flag-band p{font-size:.93rem;color:var(--slate-2);line-height:1.6;max-width:42rem}
+.fde-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+@media(max-width:1180px){.fde-grid{grid-template-columns:1fr}.fde-inbox,.fde-right{position:static;max-height:none}.fde-feed{max-height:260px}.fde-flag-band{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -881,10 +942,10 @@ button.wsf-chip{cursor:pointer}button.wsf-chip:hover,button.wsf-chip.on{backgrou
       <div>
         <span class="eyepill">Work simulations for hiring</span>
         <h1>Hire from real work,<br><span class="grad">not resumes.</span></h1>
-        <p class="lead">Send candidates a realistic work simulation and get a clear evidence report on how they think, communicate, and make decisions.</p>
+        <p class="lead">The work trial your senior people already run by hand, without their hours: real pressure, messy data, and an evidence report you can defend.</p>
         <div class="hero-cta">
           <button class="btn btn-primary" onclick="authStart('signup')">Start pilot <svg width="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-          <button class="btn btn-ghost" onclick="launchNamedSim('meridian')"><span class="play"><svg width="9" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>View simulation</button>
+          <button class="btn btn-ghost" onclick="launchFdeSim()"><span class="play"><svg width="9" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>View simulation</button>
         </div>
         
       </div>
@@ -953,11 +1014,11 @@ button.wsf-chip{cursor:pointer}button.wsf-chip:hover,button.wsf-chip.on{backgrou
 
   <div class="wrap" style="position:relative;z-index:2;margin-top:-6px">
     <div class="metstrip">
-      <div class="metric"><span class="mi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><div class="n">60%</div><div class="l">less screening time</div></div></div>
+      <div class="metric"><span class="mi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><div class="n">25 min</div><div class="l">median candidate session</div></div></div>
       <div class="msep"></div>
-      <div class="metric"><span class="mi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="12" width="3.4" height="8" rx=".6"/><rect x="10.3" y="7" width="3.4" height="13" rx=".6"/><rect x="16.6" y="10" width="3.4" height="10" rx=".6"/></svg></span><div><div class="n">7</div><div class="l">signal dimensions</div></div></div>
+      <div class="metric"><span class="mi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="12" width="3.4" height="8" rx=".6"/><rect x="10.3" y="7" width="3.4" height="13" rx=".6"/><rect x="16.6" y="10" width="3.4" height="10" rx=".6"/></svg></span><div><div class="n">8</div><div class="l">evidence signals, bucketed not scored</div></div></div>
       <div class="msep"></div>
-      <div class="metric"><span class="mi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span><div><div class="n">1</div><div class="l">link for the candidate</div></div></div>
+      <div class="metric"><span class="mi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span><div><div class="n">1 link</div><div class="l">no scheduling, no senior hours</div></div></div>
     </div>
   </div>
   <section class="hwband"><div class="wrap hwb-grid">
@@ -972,33 +1033,74 @@ button.wsf-chip{cursor:pointer}button.wsf-chip:hover,button.wsf-chip.on{backgrou
     </div>
   </div></section>
 
+  <section class="ncts"><div class="wrap ncts-grid">
+    <div>
+      <h2>Not another coding test.</h2>
+      <p class="sub">Screening tools already tell you whether someone can code or recite a framework. Fydell tests what interviews and take-homes miss, because the simulation is built like the job.</p>
+    </div>
+    <div>
+      <div class="nct-row"><span class="nct-n" style="background:#E9E3FF;color:#5B3DF5">1</span><div><b>An underspecified brief</b><p>The goal is clear. The path is not. That gap is where judgment shows up, and where it gets captured.</p></div></div>
+      <div class="nct-row"><span class="nct-n" style="background:#EAF1FF;color:#3F7CFF">2</span><div><b>Documents that disagree</b><p>Numbers that need checking, and a material risk buried where skimming misses it.</p></div></div>
+      <div class="nct-row"><span class="nct-n" style="background:#FCF0E1;color:#C2410C">3</span><div><b>A stakeholder who changes the ask</b><p>New information lands mid-task. Composure and communication get observed, not claimed.</p></div></div>
+      <div class="nct-row"><span class="nct-n" style="background:#DFF2EA;color:#1F9D6A">4</span><div><b>A hard time-box</b><p>Twenty to twenty-five minutes forces prioritization. What a candidate chooses to skip is a finding.</p></div></div>
+      <div class="nct-row"><span class="nct-n" style="background:#E9E3FF;color:#5B3DF5">5</span><div><b>AI allowed, verification scored</b><p>Candidates can use the AI assistant. Whether they check its output before relying on it is part of the evidence.</p></div></div>
+    </div>
+  </div></section>
+
   <section class="section"><div class="wrap">
-    <div class="sec-head"><span class="eyebrow">Simulation prototypes</span><h2 style="margin-top:10px">Run a realistic simulation today</h2><p>Four prototype simulations, each ending in an evidence report you can act on.</p></div>
+    <div class="sec-head"><span class="eyebrow">Simulation prototypes</span><h2 style="margin-top:10px">Run a realistic simulation today</h2><p>Four calibrated scenarios. Every candidate for a role gets the same brief, the same data, and the same rubric.</p></div>
+    <div class="fde-flag-band">
+      <div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><span class="eyepill" style="font-size:.62rem;padding:6px 11px">New flagship</span><span class="pill pill-strong">Forward Deployed Engineer</span></div>
+        <h3>Project Relay</h3>
+        <p>A vague client ask, three spreadsheets that quietly disagree, a stakeholder conflict nobody surfaced, and a deadline that moves. The candidate ships real work and defends it.</p>
+        <div class="fde-chips"><span class="ws-chip">Elicitation</span><span class="ws-chip">Data integrity</span><span class="ws-chip">Stakeholder handling</span><span class="ws-chip">Verification discipline</span><span class="ws-chip">Plain-language communication</span></div>
+      </div>
+      <button class="btn btn-primary" onclick="launchFdeSim()">Run Project Relay</button>
+    </div>
     <div class="cards c4">
       <div class="card" style="cursor:pointer" onclick="launchNamedSim('meridian')">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span class="eyebrow">Finance</span><span class="pill pill-strong">Flagship</span></div>
-        <h3>Project Meridian</h3><p style="font-size:.85rem;color:var(--slate-2);margin:6px 0 10px">Acquisition Analysis Simulation</p>
+        <h3>Project Meridian</h3><p style="font-size:.85rem;color:var(--slate-2);margin:6px 0 10px">An underspecified acquisition brief, financials that disagree with the deck, a mid-task curveball, and a memo due for the committee.</p>
         <span class="lk" style="color:var(--indigo);font-weight:600;font-size:.88rem">Open simulation →</span>
       </div>
       <div class="card" style="cursor:pointer" onclick="launchNamedSim('harbor')">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span class="eyebrow">Healthcare</span></div>
-        <h3>Project Harbor</h3><p style="font-size:.85rem;color:var(--slate-2);margin:6px 0 10px">Patient Operations Triage Simulation</p>
+        <h3>Project Harbor</h3><p style="font-size:.85rem;color:var(--slate-2);margin:6px 0 10px">A short-staffed clinic afternoon, an aging urgent queue, and an action plan that has to hold.</p>
         <span class="lk" style="color:var(--indigo);font-weight:600;font-size:.88rem">Open simulation →</span>
       </div>
       <div class="card" style="cursor:pointer" onclick="launchNamedSim('atlas')">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span class="eyebrow">Tech</span></div>
-        <h3>Project Atlas</h3><p style="font-size:.85rem;color:var(--slate-2);margin:6px 0 10px">Product Debugging and Prioritization Simulation</p>
+        <h3>Project Atlas</h3><p style="font-size:.85rem;color:var(--slate-2);margin:6px 0 10px">Sliding retention, loud complaints, fixed capacity, and a triage call someone has to make.</p>
         <span class="lk" style="color:var(--indigo);font-weight:600;font-size:.88rem">Open simulation →</span>
       </div>
       <div class="card" style="cursor:pointer" onclick="launchNamedSim('sentinel')">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span class="eyebrow">Cybersecurity</span></div>
-        <h3>Project Sentinel</h3><p style="font-size:.85rem;color:var(--slate-2);margin:6px 0 10px">Suspicious Access Investigation Simulation</p>
+        <h3>Project Sentinel</h3><p style="font-size:.85rem;color:var(--slate-2);margin:6px 0 10px">Anomalous logins, an AI suggestion that is wrong, and an escalation decision against the runbook.</p>
         <span class="lk" style="color:var(--indigo);font-weight:600;font-size:.88rem">Open simulation →</span>
       </div>
     </div>
   </div></section>
 
   
+
+  <section class="rev"><div class="wrap rev-grid">
+    <div>
+      <h2>Built to survive review.</h2>
+      <p class="sub">When a hiring decision gets questioned, a number does not defend you. Evidence does.</p>
+      <div class="rev-item"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span><span>Same scenario, same data, same rubric for every candidate in a role.</span></div>
+      <div class="rev-item"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span><span>Every conclusion traces to a captured action. No black-box scores.</span></div>
+      <div class="rev-item"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span><span>Buckets, not rankings: Strong evidence, Observed, Emerging, Not observed.</span></div>
+      <div class="rev-item"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span><span>Interview questions generated from each candidate's actual gaps.</span></div>
+      <div class="rev-item"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span><span>No webcam analysis, no personality inference. Candidates see what is captured before they start.</span></div>
+    </div>
+    <div class="rev-proof">
+      <div class="ws-lab">How a claim reads in the report</div>
+      <div class="rev-q"><span class="sg-pill sg-strong" style="margin-bottom:5px;display:inline-block">Strong evidence</span><b>Risk detection</b><p>Opened the financing extract, flagged the change of control clause, and priced the accelerated debt into the final memo.</p></div>
+      <div class="rev-q" style="border-color:var(--orange)"><span class="sg-pill sg-emg" style="margin-bottom:5px;display:inline-block">Emerging</span><b>Communication clarity</b><p>The final memo was brief for a decision of this size.</p></div>
+      <div class="rev-q" style="border-color:var(--blue)"><span class="sg-pill sg-obs" style="margin-bottom:5px;display:inline-block">Generated for the interview</span><b>Follow-up question</b><p>Which risk would most change your recommendation, and how would you size the downside?</p></div>
+    </div>
+  </div></section>
 
   <div class="cta-band"><div class="cta-in">
     <h2>Candidates get a chance to prove what a resume cannot show.</h2>
@@ -1025,6 +1127,17 @@ button.wsf-chip{cursor:pointer}button.wsf-chip:hover,button.wsf-chip.on{backgrou
   </section>
   <section class="section" style="padding-top:0">
     <div class="sim-cat">
+      <div class="card" style="display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="eyebrow">Forward deployed</span><span style="display:flex;gap:6px"><span class="pill pill-strong">Flagship</span><span class="pill pill-consider">Prototype</span></span></div>
+        <h3 style="font-size:1.3rem">Project Relay</h3>
+        <p style="font-weight:600;color:var(--ink-2);font-size:.92rem;margin:4px 0 8px">Forward Deployed Engineer Simulation</p>
+        <p style="font-size:.92rem">An underspecified client ask, mismatched data that breaks a naive join, a stakeholder who talks back, and a deadline that moves mid-task. Shipping requires saying how you know it is right.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin:14px 0"><span style="font-size:.72rem;font-weight:600;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fff">Elicitation</span><span style="font-size:.72rem;font-weight:600;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fff">Data integrity vigilance</span><span style="font-size:.72rem;font-weight:600;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fff">Contradiction handling</span><span style="font-size:.72rem;font-weight:600;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fff">Verification discipline</span><span style="font-size:.72rem;font-weight:600;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fff">AI tool judgment</span></div>
+        <div style="display:flex;align-items:center;gap:14px;border-top:1px solid var(--line-2);padding-top:14px;margin-top:auto;font-size:.82rem;color:var(--slate-2)">
+          <span>Forward Deployed Engineer</span><span>~30 min</span><span>Advanced</span>
+          <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="launchFdeSim()">Open simulation</button>
+        </div>
+      </div>
       <div class="card" style="display:flex;flex-direction:column">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="eyebrow">Finance</span><span style="display:flex;gap:6px"><span class="pill pill-strong">Flagship demo</span><span class="pill pill-consider">Prototype</span></span></div>
         <h3 style="font-size:1.3rem">Project Meridian</h3>
@@ -1122,24 +1235,26 @@ button.wsf-chip{cursor:pointer}button.wsf-chip:hover,button.wsf-chip.on{backgrou
 </div></main>
 
 <main class="view" data-view="pricing"><div class="wrap">
-  <section style="text-align:center;padding:64px 0 40px;max-width:720px;margin:0 auto">
-    <span class="eyepill">Pilot stage</span>
-    <h1 style="font-size:clamp(34px,4vw,54px);line-height:1.05;letter-spacing:-.03em;margin:18px 0 16px">Pay when you get <span class="grad">evidence.</span></h1>
-    <p style="font-size:1.1rem;color:var(--slate-2)">Only pay when a candidate completes the simulation and you receive the evidence report.</p>
+  <section style="text-align:center;padding:64px 0 40px;max-width:760px;margin:0 auto">
+    <span class="eyepill">Pilot pricing</span>
+    <h1 style="font-size:clamp(34px,4vw,54px);line-height:1.05;letter-spacing:-.03em;margin:18px 0 16px">Priced against the cost of <span class="grad">a bad hire.</span></h1>
+    <p style="font-size:1.08rem;color:var(--slate-2)">An agency charges 15 to 30 percent of first-year salary. A mis-hire is commonly put at 1.5 to 3 times salary. Fydell redirects spend you already burn on manual screens.</p>
   </section>
   <section style="padding-bottom:30px">
     <div class="price-grid">
-      <div class="plan"><h3>Free</h3><p class="pd">Explore Fydell and see what a report looks like.</p><div class="price">$0</div>
-        <ul><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Browse all four simulations</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Create one pilot</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Invite one test candidate</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>View a sample report</li></ul>
-        <button class="btn btn-ghost" onclick="authStart('signup')">Try Fydell</button></div>
-      <div class="plan feat"><span class="pop">Recommended</span><h3>Pilot</h3><p class="pd">For teams screening real candidates.</p><div class="price">$10<small> per completed report</small></div>
-        <ul><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Candidate simulation link</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Full action tracking</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Evidence report with skill and behavior signals</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Interview follow-up questions</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Advance / Hold / Reject tracking</li></ul>
-        <button class="btn btn-primary" onclick="authStart('signup')">Start pilot</button></div>
-      <div class="plan"><h3>Custom pilot</h3><p class="pd">For teams that want a scenario built around their role.</p><div class="price">Custom</div>
-        <ul><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Custom simulation setup</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Custom rubric</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Founder-led support</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Batch candidate review</li></ul>
+      <div class="plan"><h3>Sample</h3><p class="pd">See exactly what you would be paying for.</p><div class="price">$0</div>
+        <ul><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Run any of the four simulations yourself</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Read the full evidence report it produces</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Invite one test candidate</li></ul>
+        <button class="btn btn-ghost" onclick="launchNamedSim('meridian')">Try the flagship simulation</button></div>
+      <div class="plan feat"><span class="pop">Most teams start here</span><h3>Pilot cohort</h3><p class="pd">One role, one real candidate cohort, founder-run.</p><div class="price">$2,500<small> per cohort</small></div>
+        <ul><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Up to 25 completed simulations and reports</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Evidence reports with generated interview questions</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Advance / Hold / Reject tracking</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Calibration call on your first reports</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>30-day outcome check-ins on hires</li></ul>
+        <button class="btn btn-primary" onclick="authStart('signup')">Start pilot</button>
+        <p style="font-size:.76rem;color:var(--slate-3);margin-top:10px;text-align:center">Effectively $100 per completed report.</p></div>
+      <div class="plan"><h3>Annual</h3><p class="pd">For teams screening every hiring cycle.</p><div class="price">$15,000<small>/year and up</small></div>
+        <ul><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Volume tiers by completed simulations</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Role benchmarks as your data grows</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Outcome tracking at 30 and 90 days</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Security review and data agreement</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10" fill="rgba(109,76,255,.10)" stroke="none"/><polyline points="8 12 11 15 16 9"/></svg></span>Priority support</li></ul>
         <a class="btn btn-ghost" href="mailto:hello@fydell.com">Talk to us</a></div>
     </div>
-    <p style="font-size:.85rem;color:var(--slate-3);margin-top:22px;text-align:center">Creating a pilot and inviting candidates is free. You pay only for completed reports.</p>
+    <p style="font-size:.85rem;color:var(--slate-3);margin-top:22px;text-align:center">Invite links drop into any ATS today. Native Greenhouse, Ashby, and Lever integrations ship with pilot partners.</p>
+    <p style="font-size:.85rem;color:var(--slate-2);margin-top:8px;text-align:center;font-weight:600">If a report does not change how you interview a candidate, tell us. That report is free.</p>
   </section>
   <footer class="footer"><div class="wrap"><div class="footer-in">
 <div class="about"><a class="logo" onclick="go('home');return false" href="#"><span style="display:inline-flex"><svg width="28" viewBox="0 0 48 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Fydell"><circle cx="16" cy="15" r="11" stroke="url(#fydL)" stroke-width="4.2"/><circle cx="32" cy="15" r="11" stroke="url(#fydR)" stroke-width="4.2"/><path d="M22.8 5.9A11 11 0 0 1 27.2 9.6" stroke="url(#fydL)" stroke-width="4.2" stroke-linecap="round"/></svg></span><span class="word">fydell</span></a><p>Realistic work simulations that show how candidates think, decide, and perform, so you hire on evidence, not resumes.</p></div>
@@ -1254,6 +1369,13 @@ button.wsf-chip{cursor:pointer}button.wsf-chip:hover,button.wsf-chip.on{backgrou
     <button class="btn btn-ghost" onclick="go('console')"><svg width="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back to dashboard</button>
   </div>
   <div class="pick-grid">
+    <div class="pick-card">
+      <div class="pick-top"><span class="eyepill" style="font-size:.62rem;padding:6px 11px">Forward deployed</span><span class="pill pill-strong">New flagship</span></div>
+      <h3>Project Relay</h3><p class="pk-sub">Forward Deployed Engineer</p>
+      <p class="pk-desc">A vague client ask, data that disagrees, a stakeholder conflict, and a moved deadline. Ten traits scored from the transcript, with a verification gate before shipping.</p>
+      <div class="pk-meta"><span>Forward Deployed Engineer</span><span>~30 min</span><span>Advanced</span></div>
+      <div class="pk-actions"><button class="btn btn-primary btn-sm" onclick="useFdeTemplate()">Use this simulation</button><button class="btn btn-ghost btn-sm" onclick="launchFdeSim()">Preview as candidate</button></div>
+    </div>
     <div class="pick-card">
       <div class="pick-top"><span class="eyepill" style="font-size:.62rem;padding:6px 11px">Finance</span><span class="pill pill-strong">Flagship</span></div>
       <h3>Project Meridian</h3><p class="pk-sub">Acquisition Analysis</p>
@@ -1560,6 +1682,17 @@ function launchNamedSim(k){
  sim.title=m.title;
  launchRun(sim);
 }
+function useFdeTemplate(){
+ if(!currentUser()){ authStart('signup'); return; }
+ var d=userData(); d.simulations=d.simulations||[];
+ if(!d.simulations.some(function(s){return s.typeKey==='fde_relay';})){
+   d.simulations.push({id:'sim_'+Date.now().toString(36),title:'Project Relay',role:'Forward Deployed Engineer',typeKey:'fde_relay',typeLabel:'Forward deployed engineering',industry:'Technology',difficulty:'advanced',durationMin:30,skills:['elicitation','data integrity','verification'],createdAt:Date.now(),completions:0});
+   saveUserData(d); addActivity('Published simulation: Project Relay');
+ }
+ go('console');
+ var last=(userData().simulations||[]).filter(function(s){return s.typeKey==='fde_relay';})[0];
+ if(last && typeof toggleInviteForm==='function') toggleInviteForm(last.id);
+}
 function useSimTemplate(k){
  var m=MVP_SIMS[k]; if(!m) return;
  if(!currentUser()){ authStart('signup'); return; }
@@ -1812,6 +1945,7 @@ function postMsg(token,from){
 function startInviteRun(token){
   var inv=invFind(token); if(!inv)return;
   invUpdate(token,function(i){if(i.status==='invited')i.status='started';});
+  if(inv.sim&&inv.sim.type==='fde_relay'){ launchFdeSim(); FD.activeInvite=token; return; }
   FD.sim=generateSimulation({role:inv.sim.role,industry:inv.sim.industry,seniority:'Senior',type:inv.sim.type,durationMin:inv.sim.durationMin,difficulty:inv.sim.difficulty,skills:inv.sim.skills});
   launchRun(FD.sim); FD.activeInvite=token;
 }
@@ -1819,7 +1953,7 @@ function completeInvite(token,res){
   invUpdate(token,function(i){i.status='submitted';i.fit=res.fit;i.res=res;i.messages.push({from:'system',text:'Candidate submitted the simulation. An evidence report (fit '+res.fit+'%) is ready for the hiring team.',at:Date.now()});});
   fdLog('fydell.html:completeInvite','invite completed',{token:token,fit:res.fit,level:res.overall});
 }
-function viewInvReport(token){ var inv=invFind(token); if(!inv||!inv.res)return; FD.lastReport=inv.res; renderReport(inv.res); go('report'); }
+function viewInvReport(token){ var inv=invFind(token); if(!inv||!inv.res)return; FD.lastReport=inv.res; if(inv.res.kind==='fde'){renderFdeReport(inv.res);}else{renderReport(inv.res);} go('report'); }
 
 /* ---- state-aware console ---- */
 function renderConsole(){
@@ -2558,6 +2692,399 @@ function enterApp(){ var u=currentUser(); if(!u){ go('auth'); return; } go(u.rol
 function fydHashRoute(){ if((location.hash||'')==='#admin') go('admin'); }
 window.addEventListener('hashchange',fydHashRoute);
 setTimeout(fydHashRoute,60);
+
+</script>
+<script>
+/* ============================================================
+   Project Relay: Forward Deployed Engineer simulation.
+   A parameterized scenario template (anti-leak foundation):
+   swap company, entities, data quirk, and stakeholder surface
+   without changing the structure or the trait engine.
+   Traits are scored from transcript moments with opportunity
+   flags. Buckets only; raw numbers stay internal.
+   ============================================================ */
+(function(){
+"use strict";
+
+var FDE_VARIANTS=[
+ {company:'Northbeam Logistics',kind:'shipments',ask:'We need better visibility into shipment delays.',
+  unit:'shipments',lanes:'lanes',carrierWord:'carrier',
+  carriers:['Boreal Freight','Kestrel Line','Juniper Cargo','Westgate Haul'],
+  naiveRate:'9.8%',trueRate:'14.1%',naiveMatch:'1,204 of 1,368',trueMatch:'1,368 of 1,368',
+  naiveTop:'Boreal Freight (11% late)',trueTop:'Kestrel Line (19% late)',
+  promise:'the promised delivery date'},
+ {company:'Aldervale Medical Supply',kind:'orders',ask:'We need a handle on late order deliveries.',
+  unit:'orders',lanes:'regions',carrierWord:'courier',
+  carriers:['Cinder Express','Bluewater Courier','Hollis Dispatch','Penrose Med'],
+  naiveRate:'8.4%',trueRate:'13.2%',naiveMatch:'987 of 1,120',trueMatch:'1,120 of 1,120',
+  naiveTop:'Cinder Express (10% late)',trueTop:'Hollis Dispatch (17% late)',
+  promise:'the promised delivery window'}
+];
+
+var TRAITS=[
+ {id:'elicit',label:'Elicitation'},
+ {id:'conflict',label:'Contradiction handling'},
+ {id:'dataint',label:'Data integrity vigilance'},
+ {id:'scope',label:'Scope renegotiation'},
+ {id:'tech',label:'Technical execution'},
+ {id:'aitool',label:'AI tool judgment'},
+ {id:'verify',label:'Verification discipline'},
+ {id:'limits',label:'Limitation honesty'},
+ {id:'priority',label:'Prioritization under pressure'},
+ {id:'comms',label:'Communication translation'}
+];
+var FDE_W={elicit:.14,conflict:.10,dataint:.16,scope:.08,tech:.12,aitool:.08,verify:.12,limits:.06,priority:.06,comms:.08};
+
+function fde(){return FD.fde;}
+function fdeEsc(s){return esc(s);}
+function fdeEv(type,label,detail,trait){
+  var s=fde(); if(!s)return;
+  s.events.push({t:s.elapsed,type:type,label:label,detail:detail||'',trait:trait||null});
+  var f=document.getElementById('fdeTrail');
+  if(f){ if(f.firstElementChild&&f.firstElementChild.tagName==='P')f.innerHTML='';
+    f.insertAdjacentHTML('afterbegin','<div class="evf"><i class="evd"></i><span>'+fmtClock(s.elapsed)+'</span><b>'+fdeEsc(label)+'</b></div>');
+    while(f.children.length>30)f.removeChild(f.lastChild); }
+  var sv=document.getElementById('fdeSaved'); if(sv)sv.style.opacity='1';
+}
+
+function launchFdeSim(variant){
+  var v=FDE_VARIANTS[typeof variant==='number'?variant:(typeof window.FDE_VARIANT==='number'?window.FDE_VARIANT:0)]||FDE_VARIANTS[0];
+  FD.fde={v:v,elapsed:0,durSec:32*60,timerId:null,
+    msgs:[],qcount:0,qtopics:{},firstActionAt:null,
+    reconciled:false,flaggedData:false,flagText:'',computes:[],
+    vpFired:false,conflictSurfaced:false,pullFired:false,scopeReplied:false,
+    aiUsed:false,aiAction:'none',
+    know:'',unknown:'',
+    ship:{checks:[],verifyText:'',scopeChoice:'',built:'',clientNote:'',limits:''},
+    events:[],shipped:false};
+  renderFde();
+  go('simrun');
+  fdeEv('session_started','Started the engagement','',null);
+  fdeMsg('Ops Manager','client operations',v.ask+' Can you take a look this week? I can get you whatever you need.',false);
+  FD.fde.timerId=setInterval(fdeTick,1000);
+}
+
+function fdeTick(){
+  var s=fde(); if(!s)return; s.elapsed++;
+  var left=Math.max(0,s.durSec-s.elapsed);
+  var el=document.getElementById('fdeDue'); if(el){el.textContent='Due in '+fmtClock(left); el.classList.toggle('warn',left<=300);}
+  if(!s.vpFired && (s.elapsed>=420 || s.computes.length>0) && s.msgs.length>=2) fdeVpJoin();
+  if(s.vpFired && !s.pullFired && (s.elapsed - (s._vpAt||0) >= 150)) fdePull();
+  if(s.elapsed>=s.durSec){ clearInterval(s.timerId); fdeShowTab(2); wsToastSafe('Time is up. Ship what you have.'); }
+}
+function wsToastSafe(m){ if(typeof wsToast==='function')wsToast(m); }
+
+/* ---------------- inbox ---------------- */
+function fdeMsg(from,role,text,isYou){
+  var s=fde(); if(!s)return;
+  s.msgs.push({from:from,role:role,text:text,you:!!isYou,t:s.elapsed});
+  var feed=document.getElementById('fdeFeed'); if(!feed)return;
+  var col=isYou?'#6D4CFF':(from.indexOf('VP')===0?'#C2410C':'#3F7CFF');
+  var ini=isYou?'Y':from.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+  feed.insertAdjacentHTML('beforeend','<div class="msg'+(isYou?' you':'')+'"><div class="mh"><span class="av" style="background:'+col+'">'+ini+'</span><div><b>'+fdeEsc(from)+'</b><span class="role">'+fdeEsc(role)+'</span></div></div><p>'+fdeEsc(text)+'</p></div>');
+  feed.scrollTop=feed.scrollHeight;
+}
+function fdeVpJoin(){
+  var s=fde(); s.vpFired=true; s._vpAt=s.elapsed;
+  fdeMsg('VP Operations','joined the thread','Jumping in here. A dashboard is not what I need. I need a one-page read on WHY '+s.v.unit+' are late and what we do about it. This goes in front of the board.',false);
+  fdeEv('stakeholder_conflict_shown','A second stakeholder asked for something different','',null);
+}
+function fdePull(){
+  var s=fde(); s.pullFired=true;
+  s.durSec=Math.max(s.elapsed+300, s.durSec-480);
+  fdeMsg('VP Operations','client leadership','One more thing. The board meeting moved up a day. I need whatever you have by Thursday morning, not Friday.',false);
+  fdeEv('deadline_pulled','The deadline moved a day earlier','',null);
+  var chip=document.getElementById('fdeDeadline'); if(chip){chip.textContent='Now due Thursday'; chip.classList.add('pulled');}
+  var sb=document.getElementById('fdeScopeBlock'); if(sb)sb.style.display='block';
+}
+
+var FDE_TOPICS=[
+ {id:'delaydef',re:/(delay|late|slip|on.?time|sla|window)/i,who:'ops',
+  reply:function(v){return 'Anything that lands after '+v.promise+'. We count it from the promise we gave the customer, not from pickup.';}},
+ {id:'data',re:/(data|sheet|source|export|spreadsheet|column|id|format|track)/i,who:'ops',
+  reply:function(v){return 'The '+v.unit+' export comes straight from our system. The manual tracking sheet is what my team keeps by hand when the system misses one. Fair warning, three different people maintain it.';}},
+ {id:'audience',re:/(who|audience|present|board|leadership|read)/i,who:'ops',
+  reply:function(){return 'For me it is the weekly ops review. Although I hear leadership has started asking about this too.';}},
+ {id:'goal',re:/(dashboard|report|deliverable|expect|look like|format|output)/i,who:'ops',
+  reply:function(v){return 'Honestly I pictured a dashboard we check every morning. Something that shows which '+v.lanes+' are slipping.';}},
+ {id:'deadline',re:/(when|deadline|due|friday|thursday|how long|time)/i,who:'ops',
+  reply:function(){return 'End of week works. Friday morning ideally.';}},
+ {id:'priority',re:/(first|priority|most|important|focus|one thing)/i,who:'ops',
+  reply:function(v){return 'If I could only know one thing: which '+v.carrierWord+' is costing us the most late '+v.unit+'.';}},
+ {id:'conflictq',re:/(both|conflict|disagree|align|different|two (asks|things)|dashboard and|report and|reconcile)/i,who:'vp',
+  reply:function(){return 'Good catch. We had not compared notes. The board needs the why. The daily view can come after. Confirm with ops so we are aligned.';}},
+ {id:'scopecut',re:/(cut|smaller|instead|by thursday|reduce|drop|first version|v1|trim)/i,who:'vp',
+  reply:function(){return 'Cut whatever you need to. I would rather have one number I trust than five I cannot.';}}
+];
+
+function fdeSend(){
+  var inp=document.getElementById('fdeChatIn'); if(!inp)return;
+  var text=(inp.value||'').trim(); if(!text)return; inp.value='';
+  var s=fde();
+  fdeMsg('You','forward deployed engineer',text,true);
+  var hits=[]; FDE_TOPICS.forEach(function(t){ if(t.re.test(text)) hits.push(t); });
+  var before=!s.firstActionAt;
+  s.qcount++; if(before)s._qBefore=(s._qBefore||0)+1;
+  hits.forEach(function(t){ s.qtopics[t.id]=true; });
+  if(hits.some(function(t){return t.id==='conflictq';}) && s.vpFired && !s.conflictSurfaced){
+    s.conflictSurfaced=true;
+    fdeEv('conflict_surfaced','Surfaced the stakeholder conflict out loud','','conflict');
+  } else if(hits.length){
+    fdeEv('question_asked','Asked about '+hits.map(function(t){return t.id;}).join(', '),text.slice(0,70),'elicit');
+  } else {
+    fdeEv('message_sent','Messaged the client',text.slice(0,70),null);
+  }
+  if(s.pullFired && /(cut|instead|smaller|by thursday|reduce|drop|trim|scope)/i.test(text) && !s.scopeReplied){
+    s.scopeReplied=true;
+    fdeEv('scope_renegotiated','Renegotiated scope out loud after the deadline moved','','scope');
+  }
+  var replyTopic=hits.filter(function(t){return t.who==='ops'||s.vpFired;})[0];
+  setTimeout(function(){
+    if(replyTopic){
+      var who=replyTopic.who==='vp'&&s.vpFired?['VP Operations','client leadership']:['Ops Manager','client operations'];
+      fdeMsg(who[0],who[1],replyTopic.reply(s.v),false);
+    } else {
+      fdeMsg('Ops Manager','client operations','Honestly, whatever helps us see what is slipping. What do you need from me?',false);
+    }
+  },900);
+}
+
+/* ---------------- workspace actions ---------------- */
+function fdeFirstAction(){ var s=fde(); if(s&&!s.firstActionAt)s.firstActionAt=s.elapsed; }
+function fdeReconcile(el){
+  var s=fde(); s.reconciled=el.checked;
+  fdeFirstAction();
+  if(el.checked){ fdeEv('data_reconciled','Normalized the mismatched ID formats before joining','','dataint'); wsToastSafe('IDs normalized. Joins now match every row.'); }
+  var res=document.getElementById('fdeResults'); if(res&&s.computes.length)fdeCompute(s._lastComputeKind||'rate',true);
+}
+function fdeFlag(){
+  var inp=document.getElementById('fdeFlagIn'); if(!inp)return; var t=(inp.value||'').trim(); if(!t)return; inp.value='';
+  var s=fde(); s.flaggedData=true; s.flagText=t;
+  var caught=/(id|format|leading zero|match|join|missing|dropp|1,?204|987|mismatch)/i.test(t);
+  fdeEv(caught?'data_issue_caught':'data_note','Flagged a data issue: '+t.slice(0,60),'',caught?'dataint':null);
+  wsToastSafe('Noted. Flag is attached to your evidence.');
+}
+function fdeCompute(kind,silent){
+  var s=fde(); fdeFirstAction(); s._lastComputeKind=kind;
+  var v=s.v; var rec=s.reconciled;
+  var out;
+  if(kind==='rate') out='Delay rate: '+(rec?v.trueRate:v.naiveRate)+' of '+v.unit+'. Matched '+(rec?v.trueMatch:v.naiveMatch)+' rows.';
+  else out='Worst '+v.carrierWord+': '+(rec?v.trueTop:v.naiveTop)+'. Matched '+(rec?v.trueMatch:v.naiveMatch)+' rows.';
+  s.computes.push({kind:kind,naive:!rec,t:s.elapsed});
+  var res=document.getElementById('fdeResults');
+  if(res)res.innerHTML='<div class="fde-result'+(rec?'':' naive')+'"><b>'+out+'</b><span>'+(rec?'Computed on the normalized join.':'Computed on the raw join. Row counts above show what matched.')+'</span></div>';
+  if(!silent)fdeEv('computed','Computed '+(kind==='rate'?'the delay rate':'the '+v.carrierWord+' breakdown')+(rec?' on the normalized join':' on the raw join'),'','tech');
+}
+function fdeAskAI(){
+  var s=fde(); s.aiUsed=true; fdeFirstAction();
+  fdeEv('ai_used','Asked the assistant to analyze the data','','aitool');
+  var v=s.v;
+  document.getElementById('fdeAiOut').innerHTML='<div class="ai-out">I joined the '+v.unit+' table with the manual tracking sheet and found a '+v.naiveRate+' delay rate. '+v.naiveTop.split(' (')[0]+' is your worst performer. I recommend opening a '+v.carrierWord+' review with them this week.</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="fdeAiAct(\'accept\')">Use as-is</button><button class="btn btn-ghost btn-sm" onclick="fdeAiAct(\'edit\')">Check it first</button><button class="btn btn-ghost btn-sm" onclick="fdeAiAct(\'reject\')">Set it aside</button></div><div id="fdeAiAfter"></div>';
+}
+function fdeAiAct(a){
+  var s=fde(); s.aiAction=a;
+  fdeEv('ai_'+a,a==='accept'?'Accepted the assistant\'s answer without checking':a==='edit'?'Checked the assistant\'s answer against the data':'Set the assistant\'s answer aside','','aitool');
+  var m=a==='accept'?'Noted. The answer is in your working set as given.':a==='edit'?'Good instinct. Compare its matched-row count against the tables.':'Noted.';
+  document.getElementById('fdeAiAfter').innerHTML='<p class="ws-mut" style="margin-top:8px">'+m+'</p>';
+}
+function fdeNotes(which,val){
+  var s=fde(); if(!s)return;
+  if(which==='know'){ if(!s._knowEv&&val.trim().length>=15){s._knowEv=true;fdeEv('note_created','Started the working notes','',null);} s.know=val; }
+  else { if(!s._unkEv&&val.trim().length>=15){s._unkEv=true;fdeEv('note_created','Logged an open unknown','','limits');} s.unknown=val; }
+}
+function fdeCheck(el,key){
+  var s=fde(); var i=s.ship.checks.indexOf(key);
+  if(el.checked&&i<0)s.ship.checks.push(key);
+  if(!el.checked&&i>=0)s.ship.checks.splice(i,1);
+}
+function fdeShipField(k,v){ var s=fde(); if(s)s.ship[k]=v; }
+
+function fdeShowTab(i){
+  document.querySelectorAll('#fdeTabs .wt').forEach(function(b,j){b.classList.toggle('on',j===i);});
+  document.querySelectorAll('.fde-tb').forEach(function(p,j){p.style.display=j===i?'block':'none';});
+  var s=fde(); if(s){ s._tabs=s._tabs||{}; if(!s._tabs[i]){ s._tabs[i]=true; if(i>0)fdeEv('tab_viewed',['','Opened the data workspace','Opened the ship panel'][i]||'Changed tab','',null); } }
+}
+
+/* ---------------- ship + scoring ---------------- */
+function fdeTrySubmit(){
+  var s=fde(); var sh=s.ship; var missing=[];
+  if((sh.built||'').trim().length<40)missing.push('describe what you built (40+ characters)');
+  if((sh.clientNote||'').trim().length<80)missing.push('write the client note (80+ characters)');
+  if(!sh.checks.length&&(sh.verifyText||'').trim().length<20)missing.push('say how you know it is right');
+  if(s.pullFired&&!sh.scopeChoice)missing.push('choose what you cut for Thursday');
+  if(missing.length){ wsToastSafe('Before you ship: '+missing.join('; ')); fdeShowTab(2); return; }
+  clearInterval(s.timerId); s.shipped=true;
+  fdeEv('shipped','Shipped the deliverable','',null);
+  var res=fdeScore();
+  FD.lastReport=res;
+  if(FD.activeInvite){ var tk=FD.activeInvite; FD.activeInvite=null; completeInvite(tk,res); openInvitation(tk); return; }
+  renderFdeReport(res);
+  go('report');
+}
+
+function fdeBucket(score,opp){
+  if(!opp)return {k:'notobs',label:'Not observed',cls:'sg-none'};
+  if(score>=75)return {k:'strong',label:'Strong evidence',cls:'sg-strong'};
+  if(score>=45)return {k:'review',label:'Needs review',cls:'sg-emg'};
+  return {k:'limited',label:'Limited evidence',cls:'sg-none2'};
+}
+
+function fdeScore(){
+  var s=fde(); var v=s.v; var sh=s.ship; var ev=s.events;
+  function moments(trait){ return ev.filter(function(e){return e.trait===trait;}).map(function(e){return e.label;}); }
+  var topicN=Object.keys(s.qtopics).filter(function(k){return k!=='conflictq'&&k!=='scopecut';}).length;
+  var caught = s.reconciled || ev.some(function(e){return e.type==='data_issue_caught';}) || /(id|format|leading zero|mismatch|dropp)/i.test(sh.limits||'');
+  var lastCompute = s.computes.length?s.computes[s.computes.length-1]:null;
+  var noteText=(sh.clientNote||'');
+  var plain=/(carrier|courier|route|lane|late|delay|customer|on.?time|region)/i.test(noteText);
+  var recVerb=/(recommend|suggest|should|next step|focus|start with|propose)/i.test(noteText);
+  var jargon=/(join|dataframe|sql|regex|schema|null|dedupe|pivot)/i.test(noteText);
+  var limitsGood=(sh.limits||'').trim().length>=30 && /(not sure|assum|manual|window|sample|only|limit|verify|unclear|caveat|id)/i.test(sh.limits||'');
+  var verifyConcrete=s.ship.checks.filter(function(c){return c!=='none';}).length>0;
+  var verifyText=(sh.verifyText||'').trim();
+
+  var T={};
+  T.elicit={opp:1,score:Math.min(100,(s._qBefore||0)>=1?40:10)+Math.min(45,topicN*15)+((s._qBefore||0)>=2?15:0)};
+  T.conflict={opp:s.vpFired?1:0,score:s.conflictSurfaced?88:(s.vpFired?(topicN>0?35:20):0)};
+  T.dataint={opp:1,score:(caught?70:10)+(s.reconciled?18:0)+(ev.some(function(e){return e.type==='data_issue_caught';})?12:0)};
+  T.scope={opp:s.pullFired?1:0,score:s.scopeReplied?85:(sh.scopeChoice&&sh.scopeChoice!=='everything'?55:15)};
+  T.tech={opp:1,score:!lastCompute?15:(lastCompute.naive?30:85)+((sh.built||'').length>=80?10:0)};
+  T.aitool={opp:s.aiUsed?1:0,score:s.aiAction==='edit'?88:s.aiAction==='reject'?70:s.aiAction==='accept'?22:0};
+  T.verify={opp:1,score:(verifyConcrete?55:10)+(verifyText.length>=40?25:verifyText.length>=20?12:0)+(s.reconciled&&verifyConcrete?15:0)};
+  T.limits={opp:1,score:limitsGood?82:((sh.limits||'').trim().length>=15?45:8)};
+  T.priority={opp:s.pullFired?1:0,score:(function(){var c=sh.scopeChoice;if(!c)return 15;if(c==='one_number')return 85;if(c==='memo')return 75;if(c==='dash_top')return 60;return 25;})()};
+  T.comms={opp:1,score:(noteText.length>=80?30:5)+(plain?25:0)+(recVerb?25:0)+(jargon?-15:10)};
+  Object.keys(T).forEach(function(k){T[k].score=Math.max(0,Math.min(100,T[k].score));});
+
+  var acc=0,wsum=0;
+  TRAITS.forEach(function(t){ if(T[t.id].opp){acc+=T[t.id].score*FDE_W[t.id];wsum+=FDE_W[t.id];} });
+  var comp=wsum?Math.round(acc/wsum):0;
+  var recBand=comp>=78?'Strong advance':comp>=58?'Advance':comp>=38?'Hold':'Do not advance';
+
+  var Q={elicit:'Before you touched the data, what did you most need to know, and why?',
+    conflict:'Two stakeholders asked for different things. Walk me through how you decided whose need came first.',
+    dataint:'The two sheets used different ID formats. How would you catch that in a client engagement?',
+    scope:'The deadline moved a day earlier. What did you cut, and what did you tell the client?',
+    tech:'Walk me through how your number was computed and what could make it wrong.',
+    aitool:'You used the assistant. What did you check before relying on its answer?',
+    verify:'How do you know the number you shipped is right?',
+    limits:'What in this deliverable are you least sure about?',
+    priority:'With less time than promised, what did you decide not to do?',
+    comms:'Explain your finding to a VP with no technical background, in two sentences.'};
+
+  var kms=[];
+  kms.push(caught?{good:1,label:'Caught the mismatched ID formats before shipping a number built on dropped rows.'}:{good:0,label:'Shipped a number computed on the raw join. Row counts showed '+v.naiveMatch+' matched, and it went unquestioned.'});
+  if(s.vpFired)kms.push(s.conflictSurfaced?{good:1,label:'Surfaced the dashboard-versus-report conflict to the stakeholders instead of silently picking one.'}:{good:0,label:'Two stakeholders asked for different deliverables. The conflict was never raised.'});
+  if(s.pullFired)kms.push(s.scopeReplied?{good:1,label:'Renegotiated scope out loud when the deadline moved a day earlier.'}:{good:0,label:'The deadline moved a day earlier without a scope conversation.'});
+  if(verifyConcrete||verifyText.length>=20)kms.push({good:1,label:'Stated a concrete check at the ship gate instead of asserting confidence.'});
+  if(s.aiUsed)kms.push(s.aiAction==='accept'?{good:0,label:'Relied on the assistant\'s analysis without checking its matched-row count.'}:{good:1,label:'Treated the assistant\'s answer as a draft to check, not a result to ship.'});
+
+  var traits=TRAITS.map(function(t){
+    var d=T[t.id]; var b=fdeBucket(d.score,d.opp);
+    var mm=moments(t.id).slice(0,3);
+    if(!mm.length&&b.k!=='notobs')mm=[b.k==='strong'?'Supported by the final deliverable.':'No supporting action was captured.'];
+    return {id:t.id,label:t.label,bucket:b,moments:mm,question:(b.k==='review'||b.k==='limited')?Q[t.id]:null,opp:d.opp};
+  });
+  return {kind:'fde',company:v.company,comp:comp,fit:comp,overall:(comp>=78?'strong':comp>=58?'moderate':comp>=38?'weak':'none'),recBand:recBand,traits:traits,keyMoments:kms,events:ev.slice(),ship:sh,durationSec:s.elapsed,
+    caught:caught,conflictSurfaced:s.conflictSurfaced,vpFired:s.vpFired,pullFired:s.pullFired};
+}
+
+/* ---------------- render: workspace ---------------- */
+function renderFde(){
+  var s=fde(); var v=s.v;
+  function tbl(title,head,rows,note){
+    return '<div class="fde-sheet"><div class="fde-sheet-h"><b>'+title+'</b><span>'+note+'</span></div><div class="dr-wrap"><table class="dr-t" style="min-width:420px"><thead><tr>'+head.map(function(c,i){return '<th'+(i===0?' style="text-align:left"':'')+'>'+c+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+r.map(function(c,i){return '<td'+(i===0?' style="text-align:left;color:var(--ink-2);font-weight:500"':'')+'>'+c+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div></div>';
+  }
+  var c=v.carriers;
+  var ship=tbl(v.kind==='shipments'?'shipments_export':'orders_export',['ID','Lane','Promised','Delivered','Provider'],
+    [['SH-00214','CHI to DEN','Mar 4','Mar 4',c[0]],['SH-00982','CHI to ATL','Mar 4','Mar 6',c[1]],['SH-01047','DEN to SEA','Mar 5','Mar 5',c[2]],['SH-01203','ATL to MIA','Mar 5','Mar 8',c[1]],['SH-01388','CHI to DEN','Mar 6','Mar 6',c[0]],['SH-01490','SEA to CHI','Mar 6','Mar 7',c[3]]],
+    'showing 6 of '+v.trueMatch.split(' of ')[1]+' rows, from the system');
+  var man=tbl('delays_manual_tracking',['Ship ID','Issue','Days late','Logged by'],
+    [['982','weather hold','2','ops team'],['1203','damaged, re-sent','3','ops team'],['1490','driver shortage','1','warehouse'],['214','none, arrived fine','0','ops team']],
+    'kept by hand, three maintainers');
+  var carr=tbl('providers',['Provider','Lanes','Notes'],
+    [[c[0],'12','largest volume'],[c[1],'8','renewal due Q3'],[c[2],'6','new this year'],[c[3],'4','regional only']],
+    'reference sheet');
+
+  var html='<div class="ws fde">'+
+    '<div class="ws-top"><span style="display:inline-flex"><svg width="26" viewBox="0 0 48 30" fill="none"><circle cx="16" cy="15" r="11" stroke="url(#fydL)" stroke-width="4.2"/><circle cx="32" cy="15" r="11" stroke="url(#fydR)" stroke-width="4.2"/><path d="M22.8 5.9A11 11 0 0 1 27.2 9.6" stroke="url(#fydL)" stroke-width="4.2" stroke-linecap="round"/></svg></span>'+
+      '<div class="ws-title"><b>Project Relay</b><span>Forward Deployed Engineer, embedded with '+fdeEsc(v.company)+'</span></div>'+
+      '<div class="ws-topr"><span class="fde-due" id="fdeDeadline">Due Friday</span><span class="fde-due2" id="fdeDue">Due in '+fmtClock(s.durSec)+'</span><span class="ws-saved" id="fdeSaved" style="animation:none;opacity:.65">Saved</span>'+
+      '<button class="btn btn-primary btn-sm" onclick="fdeShowTab(2)">Ship</button></div></div>'+
+    '<div class="fde-grid">'+
+      '<div class="fde-inbox"><div class="ws-lab" style="padding:14px 16px 0">Client thread</div><div id="fdeFeed" class="fde-feed"></div>'+
+        '<div class="ws-chatrow" style="padding:0 14px 14px;margin-top:8px"><input id="fdeChatIn" placeholder="Ask the client anything…" onkeydown="if(event.key===\'Enter\')fdeSend()"><button onclick="fdeSend()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button></div></div>'+
+      '<div class="fde-center"><div class="ws-card" style="padding:0">'+
+        '<div class="ws-tabs" id="fdeTabs"><button class="wt on" onclick="fdeShowTab(0)">Brief</button><button class="wt" onclick="fdeShowTab(1)">Workspace</button><button class="wt" onclick="fdeShowTab(2)">Ship</button><span class="ws-tag" style="margin-left:auto;padding-right:16px">your work trail becomes the evidence</span></div>'+
+        '<div class="fde-tb ws-tb" id="fdeT0"><div class="ws-lab">The engagement</div><p class="ws-p" style="font-size:.95rem;color:var(--ink-2);margin-bottom:14px">You are the forward deployed engineer embedded with '+fdeEsc(v.company)+'. Their entire ask is in the thread on the left. There is no spec. Part of the job is finding out what they actually need.</p>'+
+          '<div class="ws-lab">What you have</div><p class="ws-p" style="margin-bottom:14px">Three sheets in the workspace, a client contact who answers questions, and an assistant you may use. The data is in the state real client data is usually in.</p>'+
+          '<div class="ws-lab">What shipping means</div><p class="ws-p">A number or finding you stand behind, a note the client can act on, and an honest account of what you are not sure about. You will be asked how you know it is right.</p>'+
+          '<div style="margin-top:16px"><button class="btn btn-primary btn-sm" onclick="fdeShowTab(1)">Open the workspace &rarr;</button></div></div>'+
+        '<div class="fde-tb ws-tb" id="fdeT1" style="display:none">'+
+          ship+man+carr+
+          '<div class="fde-tools"><label class="fde-tog"><input type="checkbox" onchange="fdeReconcile(this)"> Normalize ID formats before joining</label>'+
+          '<button class="btn btn-ghost btn-sm" onclick="fdeCompute(\'rate\')">Compute delay rate</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick="fdeCompute(\'carrier\')">Break down by provider</button></div>'+
+          '<div id="fdeResults"></div>'+
+          '<div class="fde-flagrow"><input id="fdeFlagIn" placeholder="Flag a data issue you noticed…"><button class="btn btn-ghost btn-sm" onclick="fdeFlag()">Flag it</button></div>'+
+          '<div class="ai-box" style="margin-top:14px"><div class="ah">Assistant <span style="color:var(--slate-3);font-weight:500;margin-left:auto">optional, use is recorded</span></div><div id="fdeAiOut"><button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="fdeAskAI()">Ask the assistant to analyze the delays</button></div></div></div>'+
+        '<div class="fde-tb ws-tb" id="fdeT2" style="display:none">'+
+          '<div class="ws-lab">Before you ship: how do you know it is right?</div>'+
+          '<div class="fde-checks">'+
+            '<label><input type="checkbox" onchange="fdeCheck(this,\'reconciled\')"> I normalized the ID formats and re-ran the numbers</label>'+
+            '<label><input type="checkbox" onchange="fdeCheck(this,\'spot\')"> I spot-checked rows against the manual sheet</label>'+
+            '<label><input type="checkbox" onchange="fdeCheck(this,\'totals\')"> I compared matched-row counts across the sheets</label>'+
+          '</div>'+
+          '<textarea class="ta" style="min-height:64px;margin-bottom:14px" placeholder="In your own words: what makes you confident, and what would prove you wrong?" oninput="fdeShipField(\'verifyText\',this.value)"></textarea>'+
+          '<div id="fdeScopeBlock" style="display:none"><div class="ws-lab">The deadline moved. What are you cutting for Thursday?</div><select class="sel" style="margin-bottom:14px" onchange="fdeShipField(\'scopeChoice\',this.value)"><option value="">Choose…</option><option value="one_number">One trusted number and the top offender, nothing else</option><option value="memo">The root-cause memo only, dashboard later</option><option value="dash_top">A small dashboard for the top '+fdeEsc(v.lanes)+' only</option><option value="everything">Everything as originally planned</option></select></div>'+
+          '<div class="ws-lab">What you built or found</div><textarea class="ta" style="min-height:64px;margin-bottom:14px" placeholder="Plainly: what did you do and what did it show?" oninput="fdeShipField(\'built\',this.value)"></textarea>'+
+          '<div class="ws-lab">Your note to the client</div><textarea class="ta" style="min-height:84px;margin-bottom:14px" placeholder="Written for the VP, who is not technical. What did you find, and what should they do?" oninput="fdeShipField(\'clientNote\',this.value)"></textarea>'+
+          '<div class="ws-lab">What you are not sure about</div><textarea class="ta" style="min-height:64px;margin-bottom:16px" placeholder="Name the limits honestly. This is scored as a strength, not a weakness." oninput="fdeShipField(\'limits\',this.value)"></textarea>'+
+          '<button class="btn btn-primary" onclick="fdeTrySubmit()">Ship it</button></div>'+
+      '</div></div>'+
+      '<div class="fde-right">'+
+        '<div class="ws-card"><div class="ws-lab">What I know</div><textarea class="ta" style="min-height:84px" placeholder="Keep a running list…" oninput="fdeNotes(\'know\',this.value)"></textarea></div>'+
+        '<div class="ws-card"><div class="ws-lab">What I still do not know</div><textarea class="ta" style="min-height:84px" placeholder="Open questions live here…" oninput="fdeNotes(\'unknown\',this.value)"></textarea></div>'+
+        '<div class="ws-card"><div class="ws-ch" style="margin-bottom:8px"><div class="ws-lab" style="margin:0">Work trail</div><span class="wb-live"><i></i>Live</span></div><div id="fdeTrail"><p class="ws-mut">Your decisions appear here as they happen.</p></div></div>'+
+      '</div>'+
+    '</div></div>';
+  document.getElementById('runStage').innerHTML=html;
+}
+
+/* ---------------- render: report ---------------- */
+function renderFdeReport(r){
+  var recClass=r.comp>=78?'sig-strong':r.comp>=58?'sig-moderate':r.comp>=38?'sig-weak':'sig-none';
+  var head='<div class="rp-head"><div><a class="rp-back" onclick="go(currentUser()?\'console\':\'home\')"><svg width="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back</a><h1>Evidence report</h1><p class="sub">Project Relay, embedded with '+fdeEsc(r.company)+'. Candidate submission, '+fmtClock(r.durationSec)+' worked.</p></div><span class="ws-tag">Design-weighted rubric. Not yet outcome-validated.</span></div>';
+  var exec='<div class="ws-card rp-exec"><div class="rp-exec-l"><h3>Executive summary</h3><p>'+
+    (r.caught?'The candidate caught the broken join before shipping a number built on it. ':'The candidate shipped a number computed on a join that silently dropped rows. ')+
+    (r.vpFired?(r.conflictSurfaced?'When two stakeholders asked for different deliverables, the conflict was surfaced out loud. ':'A stakeholder conflict went unaddressed. '):'')+
+    (r.pullFired?(r.ship.scopeChoice&&r.ship.scopeChoice!=='everything'?'When the deadline moved, scope was cut deliberately. ':'The moved deadline did not change the plan. '):'')+
+    'Every claim below links to a moment in the work trail.</p></div>'+
+    '<div class="rp-exec-r"><div class="rp-cell"><span class="ws-lab">Recommendation</span><span class="sig '+recClass+'">'+r.recBand+'</span></div></div></div>';
+  var km='<div class="ws-card"><div class="ws-ch"><h3>The moments that mattered</h3><span class="ws-tag">watch these first</span></div>'+
+    r.keyMoments.map(function(k){return '<div class="fde-km'+(k.good?' good':'')+'"><span>'+(k.good?'&#10003;':'&#9888;')+'</span><p>'+k.label+'</p></div>';}).join('')+'</div>';
+  var cards='<div class="rp-cards">'+r.traits.map(function(t){
+    return '<div class="ws-card rp-dim"><div class="rp-dh"><b>'+t.label+'</b><em class="sg-pill '+t.bucket.cls+'">'+t.bucket.label+'</em></div>'+
+      '<ul class="rp-ul">'+t.moments.map(function(m){return '<li>'+fdeEsc(m)+'</li>';}).join('')+'</ul>'+
+      (t.question?'<p class="fde-q"><b>Ask in the interview:</b> '+t.question+'</p>':'')+'</div>';
+  }).join('')+'</div>';
+  var sh=r.ship;
+  var final='<div class="ws-card"><div class="ws-ch"><h3>What they shipped</h3><span class="ws-tag">verbatim</span></div>'+
+    '<div class="ws-lab">What they built</div><p class="rp-frbody" style="margin-bottom:12px">'+fdeEsc(sh.built||'')+'</p>'+
+    '<div class="ws-lab">Note to the client</div><p class="rp-frbody" style="margin-bottom:12px">'+fdeEsc(sh.clientNote||'')+'</p>'+
+    '<div class="ws-lab">What they said they were not sure about</div><p class="rp-frbody">'+fdeEsc(sh.limits||'Nothing was named.')+'</p></div>';
+  var tl='<div class="ws-card"><div class="ws-ch"><h3>Work trail</h3><span class="ws-tag">'+r.events.length+' captured actions</span></div><div class="rp-tl">'+
+    r.events.map(function(e){return '<div class="evf"><i class="evd"></i><span>'+fmtClock(e.t)+'</span><b>'+fdeEsc(e.label)+'</b></div>';}).join('')+'</div></div>';
+  var decide='<div class="ws-card"><div class="ws-ch"><h3>Hiring decision</h3></div><div class="dec-grid"><div class="dec" onclick="pickDec(this)">Advance</div><div class="dec" onclick="pickDec(this)">Hold</div><div class="dec" onclick="pickDec(this)">Reject</div></div><textarea class="ta" style="margin-top:12px" placeholder="Reviewer notes..."></textarea></div>';
+  document.getElementById('reportStage').innerHTML=head+'<div class="rp-grid"><div class="rp-main">'+exec+km+cards+final+decide+'</div><div class="rp-side">'+tl+'</div></div>';
+}
+
+window.launchFdeSim=launchFdeSim;
+window.fdeSend=fdeSend;window.fdeShowTab=fdeShowTab;window.fdeReconcile=fdeReconcile;window.fdeFlag=fdeFlag;
+window.fdeCompute=fdeCompute;window.fdeAskAI=fdeAskAI;window.fdeAiAct=fdeAiAct;window.fdeNotes=fdeNotes;
+window.fdeCheck=fdeCheck;window.fdeShipField=fdeShipField;window.fdeTrySubmit=fdeTrySubmit;
+})();
 
 </script>
 </body>

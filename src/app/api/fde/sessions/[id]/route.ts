@@ -6,6 +6,7 @@ import {
   beginSession,
   getSessionForOwner,
   heartbeat,
+  recordConsent,
   revealCurveball,
   saveWorkspaceState,
   startPreflight,
@@ -48,6 +49,14 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     const action = String(body.action || "");
 
     switch (action) {
+      case "consent": {
+        const result = await recordConsent(
+          id,
+          user.id,
+          String(body.consentVersion || "unversioned")
+        );
+        return NextResponse.json({ ok: true, ...result });
+      }
       case "start_preflight": {
         const session = await startPreflight(id, user.id);
         return NextResponse.json({ ok: true, session });

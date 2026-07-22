@@ -14,6 +14,7 @@ type Mission = {
   success_measures: string;
   status: string;
   invitation_limit: number;
+  mode?: string;
 };
 
 type Invite = {
@@ -54,7 +55,9 @@ export default function MissionDetailPage() {
   const [inviteBusy, setInviteBusy] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [acceptUrl, setAcceptUrl] = useState<string | null>(null);
+  const [emailDelivery, setEmailDelivery] = useState<"queued" | "not_configured" | null>(null);
   const [copied, setCopied] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
 
   const [publishBusy, setPublishBusy] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -113,6 +116,25 @@ export default function MissionDetailPage() {
     }
   }
 
+  async function setMode(mode: "demo" | "shadow_pilot") {
+    setPublishBusy(true);
+    setPublishError(null);
+    try {
+      const res = await fetch(`/api/fde/missions/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "set_mode", mode }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not change mode");
+      setMission(data.mission);
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : "Could not change mode");
+    } finally {
+      setPublishBusy(false);
+    }
+  }
+
   async function missionAction(action: "archive" | "restore" | "duplicate") {
     setPublishBusy(true);
     setPublishError(null);
@@ -149,6 +171,7 @@ export default function MissionDetailPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Invite failed");
       setAcceptUrl(data.acceptUrl);
+      setEmailDelivery(data.emailDelivery === "queued" ? "queued" : "not_configured");
       setEmail("");
       setName("");
       load();
@@ -156,6 +179,28 @@ export default function MissionDetailPage() {
       setInviteError(err instanceof Error ? err.message : "Invite failed");
     } finally {
       setInviteBusy(false);
+    }
+  }
+
+  async function revokeInvite(invitationId: string, invitedEmail: string) {
+    if (!window.confirm(`Revoke the invitation for ${invitedEmail}? The link will stop working.`)) {
+      return;
+    }
+    setRevokingId(invitationId);
+    setInviteError(null);
+    try {
+      const res = await fetch("/api/fde/invites", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invitationId, action: "revoke" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Revoke failed");
+      await load();
+    } catch (err) {
+      setInviteError(err instanceof Error ? err.message : "Revoke failed");
+    } finally {
+      setRevokingId(null);
     }
   }
 
@@ -209,6 +254,26 @@ export default function MissionDetailPage() {
           <span className="rounded-[8px] border border-white/15 px-2.5 py-1 text-[12px] text-white/60">
             {STATUS_LABEL[mission.status] || mission.status}
           </span>
+          <button
+            type="button"
+            disabled={publishBusy}
+            onClick={() =>
+              void setMode(mission.mode === "shadow_pilot" ? "demo" : "shadow_pilot")
+            }
+            title={
+              mission.mode === "shadow_pilot"
+                ? "Shadow pilot: your original decision must be locked before Fydell's report is revealed. Click to switch to demo mode."
+                : "Demo mode: reports are visible immediately. Click to switch to shadow-pilot mode (report sealed until you lock your original decision)."
+            }
+            className={
+              "rounded-[8px] border px-2.5 py-1 text-[12px] disabled:opacity-50 " +
+              (mission.mode === "shadow_pilot"
+                ? "border-[#F2C36B]/40 text-[#F2C36B]"
+                : "border-white/15 text-white/60")
+            }
+          >
+            {mission.mode === "shadow_pilot" ? "Shadow pilot" : "Demo mode"}
+          </button>
           <Link
             href={`/app/employer/missions/${id}/preview`}
             className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-white/15 px-3 text-[12px] text-white/80 hover:bg-white/[0.04]"
@@ -402,9 +467,17 @@ export default function MissionDetailPage() {
           </form>
         ) : (
           <div className="mt-4 space-y-3">
-            <p className="text-[13px] text-white/60">
-              Share this link with the candidate. Copy it now — it won&apos;t be shown again.
-            </p>
+            {emailDelivery === "queued" ? (
+              <p className="text-[13px] text-[#67d9a0]">
+                Invitation email queued for delivery. Copy the secure link as a backup — it
+                won&apos;t be shown again.
+              </p>
+            ) : (
+              <p className="text-[13px] text-[#F2C36B]">
+                Email delivery is not configured — no email was sent. Copy the secure invitation
+                link below and share it with the candidate directly. It won&apos;t be shown again.
+              </p>
+            )}
             <div className="break-all rounded-[10px] border border-white/10 bg-black/30 px-3 py-2 text-[12px]">
               {acceptUrl}
             </div>
@@ -454,8 +527,20 @@ export default function MissionDetailPage() {
                 className="flex flex-wrap items-center justify-between gap-2 py-3 text-[13px]"
               >
                 <span className="text-white/80">{inv.invited_email}</span>
-                <span className="text-white/45">
-                  {INVITE_STATUS_LABEL[inv.status] || inv.status}
+                <span className="flex items-center gap-3">
+                  <span className="text-white/45">
+                    {INVITE_STATUS_LABEL[inv.status] || inv.status}
+                  </span>
+                  {inv.status === "pending" && (
+                    <button
+                      type="button"
+                      disabled={revokingId === inv.id}
+                      onClick={() => void revokeInvite(inv.id, inv.invited_email)}
+                      className="text-[12px] text-[#fda4b0] underline disabled:opacity-50"
+                    >
+                      {revokingId === inv.id ? "Revoking…" : "Revoke"}
+                    </button>
+                  )}
                 </span>
               </li>
             ))}

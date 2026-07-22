@@ -21,7 +21,7 @@ const STAGES = [
   },
   {
     title: "Mid-session curveball",
-    body: "The board meeting gets pulled forward a day, mid-thread, with no warning. Whatever scope was planned has to be renegotiated on the clock.",
+    body: "Partway through, the scenario changes — a deadline moves, a requirement shifts, or a stakeholder escalates. Whatever scope was planned has to be renegotiated on the clock.",
   },
   {
     title: "One immutable submission",
@@ -32,15 +32,15 @@ const STAGES = [
 const WORKED_EXAMPLE = [
   {
     title: "The data doesn't agree with itself",
-    body: "shipments.csv comes from the TMS. delays_manual_tracking.csv is hand-kept by ops and was never validated against it — 3 rows use a different ID format and vanish under a naive join, understating the late rate by 5 points.",
+    body: "shipments.csv comes from the TMS. delays_manual_tracking.csv is hand-kept by ops and was never validated against it. The two sources genuinely disagree — how, where, and how much it distorts the reported numbers is what the candidate has to establish.",
   },
   {
     title: "The stakeholders don't agree either",
     body: "Dana (ops manager) wants a dashboard to check every morning. Priya (VP of Operations) wants a root-cause report defensible to the board. Neither one resolves it for the candidate.",
   },
   {
-    title: "A carrier's own number is wrong",
-    body: "carriers.csv includes each carrier's self-reported on-time rate. Compute the real rate from shipments.csv and at least one carrier's claim is off by a wide margin — a fact to verify, not cite.",
+    title: "Nothing in the data can be taken on faith",
+    body: "Some of the figures in the scenario are self-reported by third parties and were never checked against Northbeam's own records. Whether a candidate verifies before citing is exactly the kind of behavior the evidence report captures.",
   },
 ];
 

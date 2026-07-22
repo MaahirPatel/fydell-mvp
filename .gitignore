@@ -13,6 +13,7 @@ visual-review/
 .env*
 __pycache__/
 *.pyc
+test-results/
 tsc-out.txt
 spike-out.txt
 fde-unit-out.txt

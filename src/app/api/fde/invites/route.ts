@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
-import { inviteFdeToMission } from "@/lib/fde/lifecycle";
+import { inviteFdeToMission, revokeInvitation } from "@/lib/fde/lifecycle";
+import { isResendConfigured } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -132,9 +133,62 @@ export async function POST(req: Request) {
       ok: true,
       acceptUrl: result.acceptUrl,
       invitationId: result.invitation.id,
+      // Truthful delivery status — never claim "Sent" without a provider.
+      emailDelivery: isResendConfigured() ? "queued" : "not_configured",
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Invite failed";
+    return NextResponse.json({ error: msg }, { status: 400 });
+  }
+}
+
+/** Revoke an invitation: PATCH { invitationId, action: "revoke" } */
+export async function PATCH(req: Request) {
+  try {
+    if (!isSupabaseConfigured()) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+    const supabase = await createServerSupabaseClient();
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const invitationId = String(body.invitationId || "");
+    const action = String(body.action || "");
+    if (!invitationId || action !== "revoke") {
+      return NextResponse.json({ error: "invitationId and action=revoke required." }, { status: 400 });
+    }
+
+    const admin = createAdminSupabaseClient();
+    const { data: invitation } = await admin
+      .from("fde_invitations")
+      .select("id, mission_id")
+      .eq("id", invitationId)
+      .maybeSingle();
+    if (!invitation) return NextResponse.json({ error: "Invitation not found" }, { status: 404 });
+
+    const { data: mission } = await admin
+      .from("fde_missions")
+      .select("organization_id")
+      .eq("id", invitation.mission_id)
+      .maybeSingle();
+    if (!mission) return NextResponse.json({ error: "Mission not found" }, { status: 404 });
+
+    const { data: membership } = await admin
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", data.user.id)
+      .eq("organization_id", mission.organization_id)
+      .eq("status", "active")
+      .maybeSingle();
+    if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const updated = await revokeInvitation({ invitationId, revokedBy: data.user.id });
+    return NextResponse.json({ ok: true, invitation: { id: updated.id, status: updated.status } });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Revoke failed";
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 }

@@ -1,5 +1,5 @@
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { appendEvent, draftCustomerReply, getSessionForOwner } from "@/lib/fde/relay-session";
+import { appendEvent, draftCustomerReply, draftPriyaReply, getSessionForOwner } from "@/lib/fde/relay-session";
 import { applyCommand, fileMapFromState, initFromFiles } from "./reducer";
 import { toCandidateFileMap } from "./seed";
 import type { DispatchResult, WorkspaceCommand, WorkspaceEngineState } from "./types";
@@ -128,15 +128,18 @@ export async function dispatchWorkspaceCommand(
 
     if (command.type === "SEND_STAKEHOLDER_MESSAGE") {
       const text = String(command.payload.text || "");
+      const recipient = String(command.payload.recipient || "dana");
       const session = await getSessionForOwner(sessionId, userId);
-      const replyText = draftCustomerReply(text, session.canonicalFacts || []);
+      const facts = session.canonicalFacts || [];
+      const isPriya = recipient === "priya";
+      const replyText = isPriya ? draftPriyaReply(text, facts) : draftCustomerReply(text, facts);
       command = {
         ...command,
         payload: {
           ...command.payload,
           replyText,
-          replyAuthorName: "Dana Whitfield",
-          replyAuthorRole: "Operations Manager",
+          replyAuthorName: isPriya ? "Priya Anand" : "Dana Whitfield",
+          replyAuthorRole: isPriya ? "VP of Operations" : "Operations Manager",
         },
       };
     }

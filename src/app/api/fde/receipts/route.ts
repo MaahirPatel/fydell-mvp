@@ -17,6 +17,23 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const admin = createAdminSupabaseClient();
+
+  // Self-healing issuance: any of the candidate's sessions whose evidence is
+  // ready but which has no receipt yet gets one now (issueReceiptFromSession
+  // is idempotent). The credential must exist without manual intervention.
+  const { data: readySessions } = await admin
+    .from("relay_sessions")
+    .select("id")
+    .eq("fde_user_id", user.id)
+    .eq("status", "receipt_ready");
+  for (const s of readySessions || []) {
+    try {
+      await issueReceiptFromSession(s.id, user.id);
+    } catch {
+      // Skip sessions that cannot be issued; surfaced separately if needed.
+    }
+  }
+
   const { data: receipts, error } = await admin
     .from("work_receipts")
     .select("*, fde_missions(title)")

@@ -8,6 +8,11 @@ function client(): Resend | null {
   return new Resend(key);
 }
 
+/** Truthful email-capability check — used to avoid claiming "Sent" when no provider exists. */
+export function isResendConfigured(): boolean {
+  return client() !== null;
+}
+
 export function transactionalFrom(): string {
   return (
     process.env.EMAIL_FROM_TRANSACTIONAL ||

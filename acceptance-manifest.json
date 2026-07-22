@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T23:01:53.985Z",
+  "generatedAt": "2026-07-22T17:10:34.945Z",
   "commit": "working-tree",
   "environment": "local",
   "deployedUrl": "https://www.fydell.com",
@@ -43,7 +43,7 @@
       "limitations": [],
       "expected": "canary absent from candidate FileMap",
       "actual": "canary absent",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "SEC-002",
@@ -65,7 +65,7 @@
       "limitations": [],
       "expected": "foreign org → forbidden",
       "actual": "foreign org → forbidden",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "DATA-001",
@@ -87,7 +87,7 @@
       "limitations": [],
       "expected": "only scored counts as production",
       "actual": "filter contract holds",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "LIFE-001",
@@ -109,7 +109,7 @@
       "limitations": [],
       "expected": "draft/validated/published/archived",
       "actual": "mapping verified",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "GEN-001",
@@ -131,7 +131,7 @@
       "limitations": [],
       "expected": "a6c007814a5ba94120b0900a805d9c9ad97e6d0276d2f3b8e0a8f6245a781afb",
       "actual": "a6c007814a5ba94120b0900a805d9c9ad97e6d0276d2f3b8e0a8f6245a781afb",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "GEN-002",
@@ -152,7 +152,7 @@
       "limitations": [],
       "expected": "different material signatures and files",
       "actual": "differ",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "GEN-003",
@@ -173,7 +173,7 @@
       "limitations": [],
       "expected": "selection diverges under weight change",
       "actual": "m-elicit,m-integrity vs m-integrity,m-elicit",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "GEN-004",
@@ -195,7 +195,7 @@
       "limitations": [],
       "expected": "needs_revision",
       "actual": "needs_revision",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "MATH-001",
@@ -216,7 +216,7 @@
       "limitations": [],
       "expected": "0.76",
       "actual": "0.76",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "MATH-002",
@@ -238,7 +238,7 @@
       "limitations": [],
       "expected": "finite logdet; N_eff≤n; low conf when empty",
       "actual": "logdet=-123.1439 nEff=4 conf=0",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "MATH-003",
@@ -260,7 +260,7 @@
       "limitations": [],
       "expected": "not observed / null",
       "actual": "not observed / null",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "MATH-004",
@@ -281,7 +281,7 @@
       "limitations": [],
       "expected": "null fit when nothing observed",
       "actual": "null",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "SCHEMA-001",
@@ -302,7 +302,7 @@
       "limitations": [],
       "expected": "ok=false with field diagnostics",
       "actual": "ok=false n=2",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "MUT-001",
@@ -324,7 +324,7 @@
       "limitations": [],
       "expected": "mutants diverge from correct implementations",
       "actual": "divergences detected",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "PROP-001",
@@ -345,7 +345,7 @@
       "limitations": [],
       "expected": "monotonic nondecreasing coverage",
       "actual": "0.4 → 0.58",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "PROP-002",
@@ -366,7 +366,7 @@
       "limitations": [],
       "expected": "independentCount=1",
       "actual": "1",
-      "verifiedAt": "2026-07-20T23:01:53.985Z"
+      "verifiedAt": "2026-07-22T17:10:34.945Z"
     },
     {
       "gateId": "E2E-001",

@@ -47,7 +47,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ sessionId: str
 
   const { data: mission } = await admin
     .from("fde_missions")
-    .select("id, title, objective, organization_id")
+    .select("id, title, objective, organization_id, mode")
     .eq("id", session.mission_id)
     .maybeSingle();
   if (!mission) return NextResponse.json({ error: "Mission not found" }, { status: 404 });
@@ -60,6 +60,59 @@ export async function GET(_req: Request, ctx: { params: Promise<{ sessionId: str
     .eq("status", "active")
     .maybeSingle();
   if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  // Shadow-pilot lock-and-reveal: in shadow_pilot mode the employer must lock
+  // their ORIGINAL decision before any Fydell finding is revealed.
+  const missionMode = String((mission as { mode?: string }).mode || "demo");
+  const { data: decisionLock } = await admin
+    .from("employer_decision_locks")
+    .select("id, decision, confidence, reasons, locked_by, locked_at")
+    .eq("session_id", sessionId)
+    .maybeSingle();
+
+  if (missionMode === "shadow_pilot" && !decisionLock) {
+    const { data: lockedProfile } = await admin
+      .from("profiles")
+      .select("display_name, email")
+      .eq("id", session.fde_user_id)
+      .maybeSingle();
+    return NextResponse.json({
+      locked: true,
+      mode: missionMode,
+      session: {
+        id: session.id,
+        status: session.status,
+        submittedAt: session.submitted_at,
+      },
+      mission: { id: mission.id, title: mission.title, objective: mission.objective },
+      fde: { name: lockedProfile?.display_name || lockedProfile?.email || "Candidate" },
+    });
+  }
+
+  let revealEvents: { id: string; revealed_by: string; revealed_at: string }[] = [];
+  if (missionMode === "shadow_pilot" && decisionLock) {
+    const { data: reveals } = await admin
+      .from("report_reveal_events")
+      .select("id, revealed_by, revealed_at")
+      .eq("session_id", sessionId)
+      .order("revealed_at", { ascending: true });
+    revealEvents = reveals || [];
+    if (revealEvents.length === 0) {
+      // First post-lock view IS the reveal — record it (append-only audit).
+      const { data: inserted } = await admin
+        .from("report_reveal_events")
+        .insert({
+          session_id: sessionId,
+          mission_id: mission.id,
+          organization_id: mission.organization_id,
+          decision_lock_id: decisionLock.id,
+          revealed_by: data.user.id,
+        })
+        .select("id, revealed_by, revealed_at")
+        .single();
+      if (inserted) revealEvents = [inserted];
+    }
+  }
 
   const { data: findingRows } = await admin
     .from("fde_evidence_findings")
@@ -122,6 +175,15 @@ export async function GET(_req: Request, ctx: { params: Promise<{ sessionId: str
   const analysis = await loadSessionAnalysis(sessionId);
 
   return NextResponse.json({
+    locked: false,
+    mode: missionMode,
+    shadow:
+      missionMode === "shadow_pilot"
+        ? {
+            lock: decisionLock,
+            reveals: revealEvents,
+          }
+        : null,
     session: {
       id: session.id,
       status: session.status,

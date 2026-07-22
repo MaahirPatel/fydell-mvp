@@ -60,7 +60,23 @@ type ProcessComponent = {
   explanation: string;
 };
 
+type ShadowLock = {
+  id: string;
+  decision: string;
+  confidence: string;
+  reasons: string;
+  locked_at: string;
+};
+
+type LockedView = {
+  mission: { id: string; title: string };
+  fde: { name: string };
+  session: { id: string; status: string };
+};
+
 type EvidenceData = {
+  mode?: string;
+  shadow?: { lock: ShadowLock | null; reveals: { id: string; revealed_at: string }[] } | null;
   session: { id: string; status: string; submittedAt: string | null; curveballKey: string | null };
   mission: { id: string; title: string; objective: string };
   fde: { name: string };
@@ -134,16 +150,54 @@ export default function EmployerEvidenceDetailPage() {
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Shadow-pilot lock state
+  const [lockedView, setLockedView] = useState<LockedView | null>(null);
+  const [lockDecision, setLockDecision] = useState("advance");
+  const [lockConfidence, setLockConfidence] = useState("medium");
+  const [lockReasons, setLockReasons] = useState("");
+  const [lockBusy, setLockBusy] = useState(false);
+  const [lockError, setLockError] = useState<string | null>(null);
+
   const load = useCallback(async () => {
     try {
       const res = await fetch(`/api/employer/evidence/${sessionId}`, { cache: "no-store" });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Could not load evidence");
+      if (json.locked) {
+        setLockedView(json as LockedView);
+        setData(null);
+        return;
+      }
+      setLockedView(null);
       setData(json);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load evidence");
     }
   }, [sessionId]);
+
+  async function lockOriginalDecision(e: React.FormEvent) {
+    e.preventDefault();
+    setLockBusy(true);
+    setLockError(null);
+    try {
+      const res = await fetch(`/api/employer/evidence/${sessionId}/lock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          decision: lockDecision,
+          confidence: lockConfidence,
+          reasons: lockReasons,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Could not lock your decision");
+      await load();
+    } catch (err) {
+      setLockError(err instanceof Error ? err.message : "Could not lock your decision");
+    } finally {
+      setLockBusy(false);
+    }
+  }
 
   useEffect(() => {
     load();
@@ -179,7 +233,91 @@ export default function EmployerEvidenceDetailPage() {
     }
   }
 
-  if (error && !data) return <p className="text-[14px] text-[#fda4b0]">{error}</p>;
+  if (error && !data && !lockedView) return <p className="text-[14px] text-[#fda4b0]">{error}</p>;
+
+  if (lockedView) {
+    return (
+      <div className="mx-auto max-w-[640px]">
+        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/45">
+          Shadow pilot · report locked
+        </p>
+        <h1
+          className="mt-1 text-[26px] text-[#F4F5F7] sm:text-[30px]"
+          style={{ fontWeight: 560, letterSpacing: "-0.035em" }}
+        >
+          {lockedView.mission.title}
+        </h1>
+        <p className="mt-2 text-[14px] text-white/60">{lockedView.fde.name}</p>
+
+        <section className="mt-6 rounded-[16px] border border-[#F2C36B]/25 bg-[#F2C36B]/[0.05] p-5">
+          <h2 className="text-[13px] font-semibold text-[#F2C36B]">
+            Fydell&apos;s evidence report stays sealed until you lock your original decision.
+          </h2>
+          <p className="mt-2 text-[13px] leading-relaxed text-white/60">
+            This mission runs in shadow mode: record the decision your normal hiring process
+            reached for this candidate — before seeing anything Fydell observed. The lock is
+            timestamped and immutable, so the comparison between your process and Fydell&apos;s
+            evidence stays honest. Fydell&apos;s findings cannot influence this decision.
+          </p>
+
+          <form onSubmit={lockOriginalDecision} className="mt-5 grid gap-3">
+            <label className="block">
+              <span className="text-[12px] font-medium text-white/60">Your original decision</span>
+              <select
+                className="platform-input mt-1"
+                value={lockDecision}
+                onChange={(e) => setLockDecision(e.target.value)}
+              >
+                <option value="advance">Advance</option>
+                <option value="hold">Hold</option>
+                <option value="decline">Decline</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-[12px] font-medium text-white/60">Confidence</span>
+              <select
+                className="platform-input mt-1"
+                value={lockConfidence}
+                onChange={(e) => setLockConfidence(e.target.value)}
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-[12px] font-medium text-white/60">
+                Reasons (what drove this decision in your normal process?)
+              </span>
+              <textarea
+                className="platform-input mt-1"
+                rows={3}
+                value={lockReasons}
+                onChange={(e) => setLockReasons(e.target.value)}
+                required
+              />
+            </label>
+            {lockError && (
+              <p role="alert" className="text-[13px] text-[#fda4b0]">
+                {lockError}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={lockBusy || lockReasons.trim().length < 10}
+              className="inline-flex h-10 w-fit items-center rounded-[9px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {lockBusy ? "Locking…" : "Lock decision & reveal report"}
+            </button>
+            <p className="text-[11.5px] text-white/40">
+              Locking is permanent. Who locked and when is recorded for audit.
+            </p>
+          </form>
+        </section>
+      </div>
+    );
+  }
+
   if (!data) {
     return (
       <div className="animate-pulse space-y-3">
@@ -191,6 +329,18 @@ export default function EmployerEvidenceDetailPage() {
 
   return (
     <div className="mx-auto max-w-[760px]">
+      {data.shadow?.lock && (
+        <div className="mb-5 rounded-[12px] border border-[#67d9a0]/25 bg-[#67d9a0]/[0.05] px-4 py-3 text-[12.5px] leading-relaxed text-white/65">
+          <strong className="font-semibold text-[#8EE4B8]">Shadow pilot.</strong> Your original
+          decision (<span className="capitalize">{data.shadow.lock.decision}</span>,{" "}
+          {data.shadow.lock.confidence} confidence) was locked{" "}
+          {new Date(data.shadow.lock.locked_at).toLocaleString()}
+          {data.shadow.reveals[0]
+            ? ` — report revealed ${new Date(data.shadow.reveals[0].revealed_at).toLocaleString()}.`
+            : "."}{" "}
+          The lock is immutable; this report was sealed until after it.
+        </div>
+      )}
       <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/45">
         Prototype evidence report
       </p>

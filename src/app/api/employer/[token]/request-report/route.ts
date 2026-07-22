@@ -23,18 +23,40 @@ export async function POST(
 
   const key = process.env.RESEND_API_KEY;
   const adminTo = process.env.ADMIN_EMAIL;
-  if (key && !key.startsWith("re_your") && adminTo) {
-    try {
-      const resend = new Resend(key);
-      await resend.emails.send({
-        from: process.env.EMAIL_FROM ?? "Fydell <noreply@fydell.com>",
-        to: adminTo,
-        subject: `Report request from ${employer.name}`,
-        html: `<p><strong>${employer.name}</strong> requested the full PDF report for <strong>${candidateName}</strong>.</p>`
-      });
-    } catch {
-      // best-effort; still acknowledge
+  if (!key || key.startsWith("re_your") || !adminTo) {
+    // Never pretend the request was delivered when no provider is configured.
+    return NextResponse.json(
+      {
+        error:
+          "Email delivery is not configured, so the report request could not be sent. Contact Fydell directly.",
+      },
+      { status: 503 }
+    );
+  }
+
+  try {
+    const resend = new Resend(key);
+    const { error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM ?? "Fydell <noreply@fydell.com>",
+      to: adminTo,
+      subject: `Report request from ${employer.name}`,
+      html: `<p><strong>${employer.name}</strong> requested the full PDF report for <strong>${candidateName}</strong>.</p>`,
+    });
+    if (error) {
+      return NextResponse.json(
+        { error: `The report request email failed to send: ${error.message}` },
+        { status: 502 }
+      );
     }
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error: `The report request email failed to send: ${
+          err instanceof Error ? err.message : "unknown provider error"
+        }`,
+      },
+      { status: 502 }
+    );
   }
 
   return NextResponse.json({ ok: true });

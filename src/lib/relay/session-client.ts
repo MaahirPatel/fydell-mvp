@@ -2,9 +2,22 @@
 
 /** Thin browser-side fetch wrappers shared by the /s/[token]/* relay session pages. */
 
+export class AuthRequiredError extends Error {
+  constructor() {
+    super("Sign in required");
+    this.name = "AuthRequiredError";
+  }
+}
+
+/** Redirect helper: send an unauthenticated candidate to login and back to their session page. */
+export function loginReturnUrl(path: string): string {
+  return `/login?next=${encodeURIComponent(path)}`;
+}
+
 export async function resolveSessionByToken(token: string): Promise<{ sessionId: string; status: string }> {
   const res = await fetch(`/api/fde/sessions/by-token/${token}`, { cache: "no-store" });
   const data = await res.json();
+  if (res.status === 401) throw new AuthRequiredError();
   if (!res.ok) throw new Error(data.error || "Could not resolve session");
   return data;
 }

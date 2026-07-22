@@ -30,6 +30,14 @@ export async function GET(req: Request) {
     data.user.email || "",
     data.user.id
   );
-  const target = dest.path === "/dashboard" ? next : dest.path;
+  // Candidate session deep-links (/s/<token>) always win over the generic
+  // account-type destination — an invited candidate must land on their mission.
+  const isSessionDeepLink = next.startsWith("/s/");
+  const target =
+    isSessionDeepLink && dest.kind !== "admin"
+      ? next
+      : dest.path === "/dashboard"
+        ? next
+        : dest.path;
   return NextResponse.redirect(new URL(target, url.origin));
 }

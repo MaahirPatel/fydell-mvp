@@ -138,34 +138,19 @@ export const TEAM_FEATURES = [
 export const PRICING = [
   {
     name: "Founding pilot",
-    price: "$2,500",
-    period: "/ first mission",
+    price: "Scoped directly",
+    period: "",
     billing: "Invoiced directly",
-    desc: "One mission, invite links for your FDE candidates, and a work receipt per completed session.",
+    desc: "Every founding pilot is scoped in writing: one configured mission, an agreed number of completed simulations, and a reviewed evidence report for each. Contact us.",
     features: [
       "One mission, fully configured",
-      "Unlimited invite links for that mission",
-      "One 50-minute Project Relay session per FDE",
-      "A work receipt with evidence findings",
-      "Founder-led setup and support",
-      "Cancel any time — no contract"
+      "Secure invite links for the candidates you choose",
+      "One full Project Relay session per completed candidate",
+      "A reviewed evidence report per completed session",
+      "Founder-led setup and support"
     ],
-    cta: "Post your first mission",
+    cta: "Contact us about a pilot",
     highlight: true
-  },
-  {
-    name: "Additional mission",
-    price: "$300",
-    period: "/ mission",
-    billing: "Same pilot",
-    desc: "Run another mission during the same founding pilot at a flat, predictable rate.",
-    features: [
-      "Same simulation, same evidence pipeline",
-      "No per-candidate fee",
-      "Founder-led support continues"
-    ],
-    cta: "Add a mission",
-    highlight: false
   },
   {
     name: "Technical failure",

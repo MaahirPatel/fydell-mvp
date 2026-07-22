@@ -23,7 +23,7 @@ const NEEDS_REVIEW = [
 ];
 
 const TRAIT_FINDINGS = [
-  { trait: "Data integrity vigilance", bucket: "Strong evidence", note: "Ran reconcile.py; recovered all 3 dropped rows." },
+  { trait: "Data integrity vigilance", bucket: "Strong evidence", note: "Found and recovered the records the naive join was dropping." },
   { trait: "Contradiction handling", bucket: "Strong evidence", note: "Named the Dana/Priya conflict in chat." },
   { trait: "Prioritization under pressure", bucket: "Strong evidence", note: "Cut polish first, kept the numbers, after the curveball." },
   { trait: "Scope renegotiation", bucket: "Needs review", note: "Told Dana the deadline moved; didn't name what was cut." },
@@ -31,9 +31,10 @@ const TRAIT_FINDINGS = [
 ];
 
 const HANDOFF_EXCERPT =
-  "Late rate is 41.7%, not the 36.7% the naive join reports — 3 delay records were being dropped " +
-  "on an ID-format mismatch. I didn't get to a full root-cause breakdown by carrier before the " +
-  "deadline moved; that's the one thing I'd flag as unverified, not finished.";
+  "The reported late rate was materially understated — the join was silently dropping delay " +
+  "records where the two sources disagreed. I fixed the join and re-ran the numbers. I didn't " +
+  "get to a full root-cause breakdown by carrier before the deadline moved; that's the one " +
+  "thing I'd flag as unverified, not finished.";
 
 const INTERVIEW_QUESTIONS = [
   "Walk me through how you found the dropped-rows bug.",

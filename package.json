@@ -29,6 +29,7 @@
     "test:acceptance-gate": "npx tsx scripts/test-acceptance-gate.ts",
     "test:acceptance-proofs": "npx tsx scripts/run-acceptance-proofs.ts",
     "test:rls-smoke": "npx tsx scripts/test-rls-smoke.ts",
+    "test:pilot-golden-path": "npx tsx scripts/test-pilot-golden-path.ts",
     "test:fde-acceptance": "npm run test:fde-generator && npm run test:evidence-math && npm run test:fde-traits && npm run test:predictive-hire && npm run test:relay-variants && npm run test:acceptance-gate && npm run test:acceptance-proofs && npm run test:rls-smoke",
     "test:e2e": "playwright test",
     "verify:migrations": "npx tsx scripts/verify-migration-state.ts",

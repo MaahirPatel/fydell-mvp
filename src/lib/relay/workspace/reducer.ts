@@ -294,7 +294,10 @@ export function applyCommand(
       next = bumpHead(next, actorId);
       next = { ...next, requirements: recomputeRequirements(next) };
       events.push(
-        makeEvent(state, "message.sent", actorId, command.commandId, { text }, next.headVersion)
+        makeEvent(state, "message.sent", actorId, command.commandId, {
+          text,
+          recipient: String(command.payload.recipient || "dana"),
+        }, next.headVersion)
       );
       const replyText = String(command.payload.replyText || "");
       if (replyText) {

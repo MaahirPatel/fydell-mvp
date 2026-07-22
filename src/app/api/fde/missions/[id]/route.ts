@@ -143,6 +143,28 @@ export async function POST(
       return NextResponse.json({ ok: true, mission: created });
     }
 
+    if (action === "set_mode") {
+      const mode = String(body.mode || "");
+      // live_assist stays disabled until explicitly authorized.
+      if (!["demo", "shadow_pilot"].includes(mode)) {
+        return NextResponse.json(
+          { error: "Mode must be demo or shadow_pilot." },
+          { status: 400 }
+        );
+      }
+      const admin = createAdminSupabaseClient();
+      const { data: updated, error } = await admin
+        .from("fde_missions")
+        .update({ mode })
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error || !updated) {
+        return NextResponse.json({ error: error?.message || "Could not set mode." }, { status: 400 });
+      }
+      return NextResponse.json({ ok: true, mission: updated });
+    }
+
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Could not update mission.";

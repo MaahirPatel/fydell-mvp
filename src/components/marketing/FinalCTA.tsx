@@ -14,7 +14,7 @@ export default function FinalCTA() {
             <ButtonLink href="/signup" variant="primary">
               Sign up
             </ButtonLink>
-            <TextLink href="/simulation">View Project Relay</TextLink>
+            <TextLink href="/simulation">See how Project Relay works</TextLink>
           </div>
           <p className="mt-6 text-[13px] text-[rgba(244,245,247,0.4)]">
             Configured around your mission · No ATS replacement required

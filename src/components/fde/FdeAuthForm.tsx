@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import type { SignupPath } from "@/components/fde/SignupPathPicker";
 import { pilotModeEnabled } from "@/lib/fde/flags";
@@ -58,6 +58,11 @@ export default function FdeAuthForm({
   onBack?: () => void;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawNext = searchParams.get("next");
+  // Only candidate session deep-links (/s/<token>) may override the destination.
+  const returnPath =
+    rawNext && rawNext.startsWith("/s/") && !rawNext.startsWith("//") ? rawNext : null;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -94,7 +99,8 @@ export default function FdeAuthForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          path,
+          // Invitation deep-links are always candidate (FDE) signups.
+          path: returnPath ? path ?? "fde" : path,
           name,
           email,
           password,
@@ -105,6 +111,10 @@ export default function FdeAuthForm({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Request failed");
+      if (returnPath) {
+        router.push(returnPath);
+        return;
+      }
       router.push(data.redirectTo || "/app/employer");
     } catch (err) {
       setError(humanizeAuthError(err instanceof Error ? err.message : "Something went wrong"));
@@ -264,7 +274,10 @@ export default function FdeAuthForm({
 
       <p className="mt-5 text-center text-[13px] text-white/45">
         Already have an account?{" "}
-        <a href="/login" className="text-white/80 underline">
+        <a
+          href={returnPath ? `/login?next=${encodeURIComponent(returnPath)}` : "/login"}
+          className="text-white/80 underline"
+        >
           Log in
         </a>
       </p>

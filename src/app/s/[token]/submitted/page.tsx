@@ -19,6 +19,7 @@ export default function RelaySubmittedPage() {
   const router = useRouter();
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [receiptId, setReceiptId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -31,6 +32,22 @@ export default function RelaySubmittedPage() {
 
         const data = await fetchSession(resolved.sessionId);
         setStatus(data.session.status);
+
+        // Evidence ready → make sure the candidate-owned credential exists
+        // (idempotent server-side) and link straight to it.
+        if (data.session.status === "receipt_ready") {
+          try {
+            const res = await fetch("/api/fde/receipts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sessionId: resolved.sessionId }),
+            });
+            const json = await res.json();
+            if (res.ok && json.receipt?.id) setReceiptId(json.receipt.id);
+          } catch {
+            /* receipts list remains the fallback */
+          }
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not load session");
       }
@@ -53,15 +70,16 @@ export default function RelaySubmittedPage() {
       )}
 
       <p className="mt-8 text-[13px] text-white/40">
-        Nothing else is required from you right now. Work receipts stay in your control — you
-        decide who sees the evidence from this session.
+        Nothing else is required from you right now. Your credential is candidate-owned — it
+        survives this hiring process, stays private by default, and you decide who sees the
+        evidence from this session.
       </p>
 
       <Link
-        href="/app/fde/receipts"
+        href={receiptId ? `/app/fde/receipts/${receiptId}` : "/app/fde/receipts"}
         className="mt-8 inline-flex h-10 items-center rounded-[9px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C]"
       >
-        Go to my receipts
+        {receiptId ? "View my credential" : "Go to my receipts"}
       </Link>
     </main>
   );

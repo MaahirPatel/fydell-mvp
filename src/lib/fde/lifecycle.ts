@@ -393,6 +393,39 @@ export async function activateMission(missionId: string, actorUserId: string) {
   return publishMission(missionId, actorUserId);
 }
 
+/** Revoke a pending invitation. Idempotent; only pending invites transition. */
+export async function revokeInvitation(input: {
+  invitationId: string;
+  revokedBy: string;
+}) {
+  const admin = createAdminSupabaseClient();
+  const { data: invitation } = await admin
+    .from("fde_invitations")
+    .select("id, status, mission_id, invited_email")
+    .eq("id", input.invitationId)
+    .maybeSingle();
+  if (!invitation) throw new Error("Invitation not found.");
+  if (invitation.status === "revoked") return invitation;
+  if (invitation.status !== "pending") {
+    throw new Error(`Cannot revoke an invitation that is ${invitation.status}.`);
+  }
+
+  const { data: updated, error } = await admin
+    .from("fde_invitations")
+    .update({ status: "revoked" })
+    .eq("id", input.invitationId)
+    .eq("status", "pending")
+    .select("*")
+    .single();
+  if (error || !updated) throw new Error(error?.message || "Could not revoke invitation.");
+
+  await audit(input.revokedBy, "fde_mission.invite_revoked", "fde_invitation", invitation.id, {
+    missionId: invitation.mission_id,
+    email: invitation.invited_email,
+  });
+  return updated;
+}
+
 export async function inviteFdeToMission(input: {
   missionId: string;
   invitedBy: string;

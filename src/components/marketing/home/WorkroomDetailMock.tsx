@@ -103,14 +103,14 @@ export default function WorkroomDetailMock() {
               Referenced file
             </p>
             <p className="mt-1.5 text-[12px] text-[rgba(244,245,247,0.72)]">
-              data-integrity.md · ID-format mismatch, 3 rows
+              data-integrity.md · source mismatch documented
             </p>
             <p className="mt-3 text-[10px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]">
               FDE note
             </p>
             <p className="mt-1.5 text-[12px] leading-[1.5] text-[rgba(244,245,247,0.62)]">
-              naive_join was silently dropping 3 delay records with a different ID format. Wrote
-              reconcile.py to normalize IDs before joining, then re-ran the numbers.
+              The join was silently dropping records where the two sources disagreed. Wrote
+              reconcile.py to handle the mismatch before joining, then re-ran the numbers.
             </p>
           </div>
           <div className="mt-3 flex items-center justify-between rounded-[8px] border border-[var(--border-subtle)] px-3 py-2.5">

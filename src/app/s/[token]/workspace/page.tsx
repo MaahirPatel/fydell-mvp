@@ -15,7 +15,14 @@ import ConflictMergeModal from "@/components/relay/ConflictMergeModal";
 import ShipGateModal, { type ShipFields } from "@/components/relay/ShipGateModal";
 import AiWorkspacePanel from "@/components/relay/AiWorkspacePanel";
 import type { ExecutionProvider } from "@/lib/relay/execution-provider";
-import { fetchSession, patchSession, resolveSessionByToken, stageForStatus } from "@/lib/relay/session-client";
+import {
+  AuthRequiredError,
+  fetchSession,
+  loginReturnUrl,
+  patchSession,
+  resolveSessionByToken,
+  stageForStatus,
+} from "@/lib/relay/session-client";
 import {
   adaptiveTick,
   dispatchCommand,
@@ -82,6 +89,11 @@ export default function RelayWorkspacePage() {
   const [conflict, setConflict] = useState<VersionConflictPayload | null>(null);
   const [keystrokes, setKeystrokes] = useState(0);
   const [contextOpen, setContextOpen] = useState(true);
+  const [recipient, setRecipient] = useState<"dana" | "priya">("dana");
+  const [historyEvents, setHistoryEvents] = useState<
+    { id: string; event_type: string; actor: string; occurred_at: string }[]
+  >([]);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   const providerRef = useRef<ExecutionProvider | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -124,6 +136,10 @@ export default function RelayWorkspacePage() {
         }
         setLoading(false);
       } catch (err) {
+        if (err instanceof AuthRequiredError) {
+          router.replace(loginReturnUrl(`/s/${token}/workspace`));
+          return;
+        }
         setError(err instanceof Error ? err.message : "Could not load workspace");
         setLoading(false);
       }
@@ -314,8 +330,35 @@ export default function RelayWorkspacePage() {
     const text = chatDraft.trim();
     if (!text) return;
     setChatDraft("");
-    await runDispatch("SEND_STAKEHOLDER_MESSAGE", { text });
+    await runDispatch("SEND_STAKEHOLDER_MESSAGE", { text, recipient });
   }
+
+  // History rail — real recorded evidence events, fetched on open.
+  useEffect(() => {
+    if (rail !== "history" || !sessionId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setHistoryError(null);
+        const sess = await fetchSession(sessionId);
+        if (cancelled) return;
+        const evs = (sess.events || []) as {
+          id: string;
+          event_type: string;
+          actor: string;
+          occurred_at: string;
+        }[];
+        setHistoryEvents(evs.slice(-60).reverse());
+      } catch (err) {
+        if (!cancelled) {
+          setHistoryError(err instanceof Error ? err.message : "Could not load history");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [rail, sessionId]);
 
   async function acceptAi(proposal: PatchProposal) {
     if (!state) return;
@@ -434,6 +477,9 @@ export default function RelayWorkspacePage() {
           <span className="hidden text-[12.5px] text-[#9AA3B2] sm:inline">Project Relay</span>
           <span className="hidden text-white/20 sm:inline">/</span>
           <span className="truncate text-[12.5px] text-[#F4F5F7]">{state.companyName}</span>
+          <span className="hidden shrink-0 rounded-[5px] border border-white/[0.14] px-1.5 py-0.5 text-[10.5px] text-[#9AA3B2] lg:inline">
+            Synthetic simulation
+          </span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           <span className="hidden items-center gap-1.5 text-[12px] text-[#9AA3B2] md:inline-flex">
@@ -547,13 +593,109 @@ export default function RelayWorkspacePage() {
             ) : null}
             {rail === "messages" ? (
               <div className="space-y-2 p-1">
-                <p className="text-[11px] text-[#687182]">CLIENT</p>
-                <button type="button" className="block w-full rounded-[6px] px-2 py-1.5 text-left text-[12.5px] hover:bg-white/[0.04]" onClick={() => setRail("messages")}>
+                <p className="text-[11px] text-[#687182]">CLIENT · pick who you're writing to</p>
+                <button
+                  type="button"
+                  className={cn(
+                    "block w-full rounded-[6px] px-2 py-1.5 text-left text-[12.5px]",
+                    recipient === "dana" ? "bg-white/[0.08] text-white" : "hover:bg-white/[0.04]"
+                  )}
+                  onClick={() => setRecipient("dana")}
+                >
                   Dana Whitfield
+                  <span className="block text-[11px] text-[#687182]">Operations Manager</span>
                 </button>
-                <button type="button" className="block w-full rounded-[6px] px-2 py-1.5 text-left text-[12.5px] hover:bg-white/[0.04]">
+                <button
+                  type="button"
+                  className={cn(
+                    "block w-full rounded-[6px] px-2 py-1.5 text-left text-[12.5px]",
+                    recipient === "priya" ? "bg-white/[0.08] text-white" : "hover:bg-white/[0.04]"
+                  )}
+                  onClick={() => setRecipient("priya")}
+                >
                   Priya Anand
+                  <span className="block text-[11px] text-[#687182]">VP of Operations</span>
                 </button>
+              </div>
+            ) : rail === "mission" ? (
+              <div className="space-y-3 p-1">
+                <div>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-[#687182]">
+                    Objective
+                  </p>
+                  <p className="mt-1 text-[12.5px] leading-relaxed text-[#9AA3B2]">
+                    Find why the delay report understates late shipments, fix the pipeline, and
+                    give Dana a reliable daily view.
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-[#687182]">
+                    Requirements
+                  </p>
+                  <ul className="mt-1.5 space-y-1.5 text-[12px]">
+                    {state.requirements.map((r) => (
+                      <li key={r.id} className="flex gap-1.5">
+                        <span
+                          className={
+                            r.status === "SATISFIED"
+                              ? "text-[#67d9a0]"
+                              : r.status === "REGRESSED"
+                                ? "text-[#F2C36B]"
+                                : "text-[#687182]"
+                          }
+                        >
+                          {r.status === "SATISFIED" ? "✓" : r.status === "REGRESSED" ? "!" : "○"}
+                        </span>
+                        <span className="text-[#9AA3B2]">{r.description}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-[#687182]">
+                    Progress
+                  </p>
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
+                    <div className="h-full bg-[#6470FF]" style={{ width: `${Math.round(progress * 100)}%` }} />
+                  </div>
+                </div>
+              </div>
+            ) : rail === "history" ? (
+              <div className="space-y-1.5 p-1">
+                <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-[#687182]">
+                  Session history
+                </p>
+                {historyError ? (
+                  <p className="text-[12px] text-[#fda4b0]">{historyError}</p>
+                ) : historyEvents.length === 0 ? (
+                  <p className="text-[12px] text-[#687182]">Loading recorded events…</p>
+                ) : (
+                  historyEvents.map((e) => (
+                    <div key={e.id} className="rounded-[6px] px-1.5 py-1 text-[11.5px]">
+                      <span className="text-[#9AA3B2]">{e.event_type.replace(/_/g, " ")}</span>
+                      <span className="block text-[10.5px] text-[#687182]">
+                        {e.actor} · {new Date(e.occurred_at).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : Object.keys(state.artifacts).length === 0 ? (
+              <div className="p-2">
+                <p className="text-[12.5px] leading-relaxed text-[#fda4b0]">
+                  Workspace could not be provisioned — the scenario files are missing.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => sessionId && void syncEngine(sessionId)}
+                  className="mt-2 rounded-[7px] border border-white/[0.14] px-2.5 py-1 text-[12px] text-[#F4F5F7]"
+                >
+                  Retry
+                </button>
+                <p className="mt-2 text-[11.5px] text-[#687182]">
+                  This is a Fydell provisioning issue, not a problem with your work. Your time is
+                  protected.
+                </p>
               </div>
             ) : (
               tree
@@ -837,7 +979,7 @@ export default function RelayWorkspacePage() {
               <input
                 value={chatDraft}
                 onChange={(e) => setChatDraft(e.target.value)}
-                placeholder="Message Northbeam…"
+                placeholder={recipient === "priya" ? "Message Priya Anand…" : "Message Dana Whitfield…"}
                 className="min-w-0 flex-1 rounded-[7px] border border-white/10 bg-[#0B0E14] px-2 py-1.5 text-[12px]"
               />
               <button type="submit" className="rounded-[7px] bg-[#6470FF] px-2.5 text-[12px] text-white">

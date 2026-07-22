@@ -12,6 +12,14 @@ const HIGHLIGHTS = [
   "Candidate progress visible to your hiring team",
 ];
 
+/** Only candidate session deep-links may override the server destination. */
+function safeReturnPath(next: string | null): string | null {
+  if (!next) return null;
+  if (!next.startsWith("/") || next.startsWith("//")) return null;
+  if (next.startsWith("/s/")) return next;
+  return null;
+}
+
 export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,6 +33,10 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
   const resetOk = !isSignup && searchParams.get("reset") === "1";
   const next = searchParams.get("next");
   const fromAdmin = !isSignup && next === "admin";
+  const returnPath = safeReturnPath(next);
+  const fromInvitation = Boolean(returnPath);
+  const toggleHref = (base: string) =>
+    returnPath ? `${base}?next=${encodeURIComponent(returnPath)}` : base;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,6 +52,11 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Request failed");
+      // An invited candidate must return to their session, not a generic dashboard.
+      if (returnPath && data.role !== "platform_admin" && data.role !== "admin") {
+        router.push(returnPath);
+        return;
+      }
       if (typeof data.redirectTo === "string" && data.redirectTo) {
         router.push(data.redirectTo);
         return;
@@ -61,7 +78,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
       <header className="relative z-10 mx-auto flex h-[72px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
         <FydellBrand markSize={42} wordmarkSize={24} />
         <Link
-          href={isSignup ? "/login" : "/signup"}
+          href={toggleHref(isSignup ? "/login" : "/signup")}
           className="text-[14px] font-medium text-white/[0.55] transition hover:text-white"
         >
           {isSignup ? "Sign in" : "Create account"}
@@ -80,18 +97,24 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
               fontWeight: 650,
             }}
           >
-            {isSignup
-              ? "Create your Fydell workspace."
-              : fromAdmin
-                ? "Sign in to Fydell."
-                : "Sign in to your Fydell workspace."}
+            {fromInvitation
+              ? isSignup
+                ? "Create your account to start your mission."
+                : "Sign in to continue your mission."
+              : isSignup
+                ? "Create your Fydell workspace."
+                : fromAdmin
+                  ? "Sign in to Fydell."
+                  : "Sign in to your Fydell workspace."}
           </h1>
           <p className="mt-5 text-[17px] leading-[1.65] text-white/[0.55]">
-            {fromAdmin
-              ? "Use your Fydell account. Platform operators land in ops; employers land in their workspace."
-              : isSignup
-                ? "Answer a few questions about your company and role, then set up Project Relay and invite candidates."
-                : "Review missions, evidence, and candidate progress."}
+            {fromInvitation
+              ? "You were invited to a Project Relay session. After you sign in you will return directly to your invitation."
+              : fromAdmin
+                ? "Use your Fydell account. Platform operators land in ops; employers land in their workspace."
+                : isSignup
+                  ? "Answer a few questions about your company and role, then set up Project Relay and invite candidates."
+                  : "Review missions, evidence, and candidate progress."}
           </p>
           {!fromAdmin ? (
             <ul className="mt-8 space-y-4">
@@ -196,7 +219,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
             <p className="mt-6 text-center text-[13px] text-white/50">
               {isSignup ? "Already have an account? " : "New to Fydell? "}
               <Link
-                href={isSignup ? "/login" : "/signup"}
+                href={toggleHref(isSignup ? "/login" : "/signup")}
                 className="font-semibold text-white hover:underline"
               >
                 {isSignup ? "Sign in" : "Create an account"}

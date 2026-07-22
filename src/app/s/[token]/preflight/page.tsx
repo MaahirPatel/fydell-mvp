@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import FydellBrand from "@/components/brand/FydellBrand";
-import { fetchSession, patchSession, resolveSessionByToken, stageForStatus } from "@/lib/relay/session-client";
+import {
+  AuthRequiredError,
+  fetchSession,
+  loginReturnUrl,
+  patchSession,
+  resolveSessionByToken,
+  stageForStatus,
+} from "@/lib/relay/session-client";
 
 type CheckState = "pending" | "ok" | "fail";
 
@@ -101,6 +108,10 @@ export default function RelayPreflightPage() {
         setChecks(runEnvironmentChecks());
         setLoading(false);
       } catch (err) {
+        if (err instanceof AuthRequiredError) {
+          router.replace(loginReturnUrl(`/s/${token}/preflight`));
+          return;
+        }
         setError(err instanceof Error ? err.message : "Could not run setup checks");
         setLoading(false);
       }

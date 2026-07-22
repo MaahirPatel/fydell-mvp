@@ -6,13 +6,13 @@ const CONTENTS = [
     tag: "Messy data",
     title: "A hand-kept sheet that disagrees with the system export.",
     body:
-      "Northbeam's ops team tracks delays by hand in a CSV that was never validated against the TMS export. Three rows use a different shipment-ID format and get silently dropped by a naive join — the dashboard looks confident and reports a late rate 5 points too low.",
+      "Northbeam's ops team tracks delays by hand in a CSV that was never validated against the TMS export. The numbers a confident dashboard would report don't survive contact with the underlying data — finding out why, and how much it matters, is the candidate's job.",
   },
   {
     tag: "Stakeholder conflict",
     title: "The ops manager and the VP want two different deliverables.",
     body:
-      "Dana wants something her team can check every morning. Priya wants a root-cause writeup she can defend to the board. Neither of them resolves it — and the board meeting gets moved up a day, mid-session, with no warning.",
+      "Dana wants something her team can check every morning. Priya wants a root-cause writeup she can defend to the board. Neither of them resolves it — and the scenario can shift mid-session, with no warning, the way real clients do.",
   },
   {
     tag: "AI-assisted, not AI-trusted",

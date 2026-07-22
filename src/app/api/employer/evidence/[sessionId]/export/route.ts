@@ -22,7 +22,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ sessionId: str
 
   const { data: mission } = await admin
     .from("fde_missions")
-    .select("id, title, organization_id")
+    .select("id, title, organization_id, mode")
     .eq("id", session.mission_id)
     .maybeSingle();
   if (!mission) return NextResponse.json({ error: "Mission not found" }, { status: 404 });
@@ -35,6 +35,21 @@ export async function GET(_req: Request, ctx: { params: Promise<{ sessionId: str
     .eq("status", "active")
     .maybeSingle();
   if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  // Shadow-mode gate — the export must not leak sealed findings pre-lock.
+  if (String((mission as { mode?: string }).mode || "demo") === "shadow_pilot") {
+    const { data: lock } = await admin
+      .from("employer_decision_locks")
+      .select("id")
+      .eq("session_id", sessionId)
+      .maybeSingle();
+    if (!lock) {
+      return NextResponse.json(
+        { error: "Shadow pilot: lock your original decision before exporting the report." },
+        { status: 423 }
+      );
+    }
+  }
 
   const analysis = await loadSessionAnalysis(sessionId);
   const { data: findings } = await admin.from("fde_evidence_findings").select("*").eq("session_id", sessionId);

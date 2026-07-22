@@ -23,6 +23,7 @@ const NAV_GROUPS = [
     items: [
       { href: "/admin/email", label: "Email center" },
       { href: "/admin/audit", label: "Audit log" },
+      { href: "/admin/shadow", label: "Shadow-pilot audit" },
     ],
   },
   {

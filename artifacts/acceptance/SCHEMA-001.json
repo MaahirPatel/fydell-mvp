@@ -2,7 +2,7 @@
   "gateId": "SCHEMA-001",
   "commit": "working-tree",
   "environment": "local",
-  "verifiedAt": "2026-07-20T23:01:53.985Z",
+  "verifiedAt": "2026-07-22T17:10:34.945Z",
   "payload": {
     "expected": "ok=false with field diagnostics",
     "actual": "ok=false n=2"

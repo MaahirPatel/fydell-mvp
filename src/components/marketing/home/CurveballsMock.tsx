@@ -33,8 +33,8 @@ export default function CurveballsMock() {
               Mid-session curveball — Priya Anand, VP of Operations
             </p>
             <p className="mt-2 text-[13px] leading-[1.5] text-[rgba(244,245,247,0.78)]">
-              "Heads up — board meeting got pulled forward to this Thursday. Whatever you have, I
-              need it a day earlier than we planned."
+              "Heads up — the timeline just moved on our side. Whatever you have, I need it a day
+              earlier than we planned."
             </p>
           </div>
 
@@ -55,7 +55,7 @@ export default function CurveballsMock() {
             </p>
             <p className="mt-2 text-[13px] leading-[1.5] text-[rgba(244,245,247,0.72)]">
               Cut the dashboard polish, kept the reconciled late-rate numbers, and told Dana
-              directly what was and wasn't going to be ready before Thursday.
+              directly what was and wasn't going to be ready by the new deadline.
             </p>
           </div>
         </div>

@@ -218,6 +218,49 @@ export function draftCustomerReply(candidateMessage: string, facts: string[]): s
   return fallback;
 }
 
+/**
+ * Priya Anand (VP of Operations) persona reply — same bounded rules as
+ * draftCustomerReply: never invents facts beyond canonicalFacts, never
+ * reveals future curveballs, and stays in Priya's root-cause/board framing.
+ */
+export function draftPriyaReply(candidateMessage: string, facts: string[]): string {
+  const text = candidateMessage.toLowerCase();
+  const rootCauseFact = facts.find((f) => /root-cause|root cause|priya/i.test(f));
+  const priyaDefault =
+    "My concern is the board. I need to be able to explain why the delay numbers we report don't match what customers experience — not just show them a new dashboard.";
+
+  if (/dashboard|daily view|dana/.test(text)) {
+    return (
+      "A daily dashboard is Dana's ask, not mine. " +
+      (rootCauseFact ||
+        "I need a defensible root-cause explanation I can stand behind in front of the board.") +
+      " If you can only do one of those properly in the time you have, tell us which and why."
+    );
+  }
+  if (/id format|leading zero|shipment.?id|manual (sheet|tracking)|data quality|mismatch|join/.test(text)) {
+    return (
+      facts.find((f) => /id format|leading zero|manual/i.test(f)) ||
+      "I can't speak to the mechanics of the tracking sheet — Dana's team maintains it. If the numbers don't reconcile, that's exactly the kind of thing I need explained."
+    );
+  }
+  if (/carrier|on.?time rate|reliable|self.?report/.test(text)) {
+    return (
+      facts.find((f) => /carrier/i.test(f)) ||
+      "If you're going to cite carrier performance to the board, make sure it's from our own delivery data, not the carriers' self-reported figures."
+    );
+  }
+  if (/board|deadline|timeline|when/.test(text)) {
+    return (
+      facts.find((f) => /board/i.test(f)) ||
+      "Whatever you hand over has to hold up to questioning in front of the board. A number I can't defend is worse than no number."
+    );
+  }
+  if (/root.?cause|why|understat|late rate|wrong/.test(text)) {
+    return rootCauseFact || priyaDefault;
+  }
+  return rootCauseFact || priyaDefault;
+}
+
 export type NewFinding = {
   dimension: string;
   observation: string;
@@ -485,6 +528,39 @@ export async function getSessionForOwner(sessionId: string, userId: string) {
     durationMinutes: overlayDuration,
     curveballText: narrative || (session.curveball_key ? curveballCopy(session.curveball_key) : null),
   };
+}
+
+/**
+ * Record candidate consent as an immutable event before preflight.
+ * Idempotent — a second call for the same session is a no-op.
+ */
+export async function recordConsent(
+  sessionId: string,
+  userId: string,
+  consentVersion: string
+) {
+  const admin = createAdminSupabaseClient();
+  const session = await loadOwnedSession(admin, sessionId, userId);
+  if (!["accepted", "preflight", "ready", ...ACTIVE_STATES].includes(session.status)) {
+    throw new Error("Session is not at the consent stage.");
+  }
+
+  const { data: existing } = await admin
+    .from("relay_execution_events")
+    .select("id, payload")
+    .eq("session_id", sessionId)
+    .eq("event_type", "consent_accepted")
+    .limit(1)
+    .maybeSingle();
+  if (existing) {
+    return { alreadyRecorded: true, event: existing };
+  }
+
+  const event = await insertEvent(admin, sessionId, "candidate", "consent_accepted", "consent", {
+    consentVersion,
+    acceptedAtServer: new Date().toISOString(),
+  });
+  return { alreadyRecorded: false, event };
 }
 
 export async function startPreflight(sessionId: string, userId: string) {
