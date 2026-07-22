@@ -948,10 +948,15 @@ async function persistAnalysisArtifacts(
 ): Promise<void> {
   try {
     if (analysis.atoms.length > 0) {
+      // event_id/artifact_id are uuid FKs; synthetic provenance refs (e.g.
+      // "workspace:notes/…") are preserved in event_refs/artifact_refs jsonb.
+      const isUuid = (v: unknown): v is string =>
+        typeof v === "string" &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
       const rows = analysis.atoms.map((a) => ({
         session_id: a.sessionId,
-        event_id: a.eventId ?? null,
-        artifact_id: a.artifactId ?? null,
+        event_id: isUuid(a.eventId) ? a.eventId : null,
+        artifact_id: isUuid(a.artifactId) ? a.artifactId : null,
         dimension_id: a.dimensionId,
         direction: a.direction,
         magnitude: a.magnitude,
@@ -1031,11 +1036,18 @@ export async function generateEvidenceFindings(sessionId: string) {
         }))
       : buildFindingsFromEvents((events || []) as RelayEventRow[], session as RelaySessionRow);
 
+  // The analyzer emits synthetic provenance refs (e.g. "workspace:notes/…") for
+  // signals that have no DB event row. The findings columns are uuid[], so only
+  // real event/artifact UUIDs may be persisted — synthetic refs stay in-memory.
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const onlyUuids = (ids: unknown[]): string[] =>
+    (ids || []).map(String).filter((id) => UUID_RE.test(id));
+
   const rows = findings.map((f) => ({
     session_id: sessionId,
     ...f,
-    event_ids: f.event_ids || [],
-    artifact_ids: f.artifact_ids || [],
+    event_ids: onlyUuids(f.event_ids || []),
+    artifact_ids: onlyUuids(f.artifact_ids || []),
   }));
 
   const { data: inserted, error } = await admin.from("fde_evidence_findings").insert(rows).select("*");

@@ -279,7 +279,10 @@ async function runChain(runIndex: number, baseUrl: string): Promise<void> {
   state = dana.data.state as typeof state;
   step(
     "Dana replies in chat",
-    dana.status === 200 && state.messages.some((m) => m.actor === "stakeholder" && m.text.length > 0)
+    dana.status === 200 &&
+      state.messages.some(
+        (m) => m.actor === "customer_simulator" && m.authorName === "Dana Whitfield" && m.text.length > 0
+      )
   );
 
   const priya = await api(baseUrl, candidate, "POST", wsPath, {
@@ -291,7 +294,10 @@ async function runChain(runIndex: number, baseUrl: string): Promise<void> {
   state = priya.data.state as typeof state;
   step(
     "Priya replies as a distinct recipient",
-    priya.status === 200 && state.messages.filter((m) => m.actor === "stakeholder").length >= 2
+    priya.status === 200 &&
+      state.messages.some(
+        (m) => m.actor === "customer_simulator" && m.authorName === "Priya Anand" && m.text.length > 0
+      )
   );
 
   const failRun = await api(baseUrl, candidate, "POST", wsPath, {
@@ -372,7 +378,7 @@ async function runChain(runIndex: number, baseUrl: string): Promise<void> {
     submit.status === 200 &&
       submittedSession?.status === "receipt_ready" &&
       Boolean(submittedSession?.submission_snapshot),
-    JSON.stringify({ status: submittedSession?.status })
+    JSON.stringify({ httpStatus: submit.status, data: submit.data })
   );
   const snapshot1 = JSON.stringify(submittedSession?.submission_snapshot);
 
