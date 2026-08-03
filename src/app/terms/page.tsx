@@ -13,13 +13,13 @@ export default function TermsPage() {
       <PageHero title="Terms." narrow />
       <section className="pb-20 lg:pb-28">
         <Container className="max-w-[640px]">
-          <p className="text-[15px] leading-[1.65] text-[#586273]">
+          <p className="text-[15px] leading-[1.65] text-[rgba(244,245,247,0.62)]">
             Fydell provides work-trial and evidence-report services for finance hiring. Use of the
             product is subject to the agreement established for your pilot or subscription. For
             questions, contact{" "}
             <a
               href="mailto:hello@fydell.com"
-              className="text-[#0B1020] underline-offset-2 hover:underline"
+              className="text-[#F4F5F7] underline-offset-2 hover:underline"
             >
               hello@fydell.com
             </a>

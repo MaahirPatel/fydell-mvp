@@ -13,12 +13,12 @@ export default function SecurityPage() {
       <PageHero title="Security." narrow />
       <section className="pb-20 lg:pb-28">
         <Container className="max-w-[640px]">
-          <p className="text-[15px] leading-[1.65] text-[#586273]">
+          <p className="text-[15px] leading-[1.65] text-[rgba(244,245,247,0.62)]">
             Candidate workrooms use private invite links. Employer data is stored in Supabase with
             access controls. We do not publish a public test bank. For security inquiries, contact{" "}
             <a
               href="mailto:hello@fydell.com"
-              className="text-[#0B1020] underline-offset-2 hover:underline"
+              className="text-[#F4F5F7] underline-offset-2 hover:underline"
             >
               hello@fydell.com
             </a>

@@ -82,16 +82,16 @@ export default function PricingPage() {
           <Reveal>
             <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
               <div className="mkt-panel overflow-hidden lg:col-span-7">
-                <div className="border-b border-[#D9DEE7] px-6 py-6 sm:px-8 sm:py-7">
+                <div className="border-b border-[var(--border-subtle)] px-6 py-6 sm:px-8 sm:py-7">
                   <p
-                    className="text-[11px] uppercase tracking-[0.055em] text-[#586273]"
+                    className="text-[11px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
                     style={{ fontWeight: 500 }}
                   >
                     Founding pilot
                   </p>
                   <div className="mt-3 flex items-end gap-2">
                     <span
-                      className="text-[#0B1020]"
+                      className="text-[#F4F5F7]"
                       style={{
                         fontSize: "clamp(2rem, 3.2vw, 2.75rem)",
                         lineHeight: 1.05,
@@ -102,7 +102,7 @@ export default function PricingPage() {
                       Scoped directly. Contact us.
                     </span>
                   </div>
-                  <p className="mt-4 max-w-[480px] text-[15px] leading-[1.55] text-[#586273]">
+                  <p className="mt-4 max-w-[480px] text-[15px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
                     We agree the scope in writing before anything starts: the mission, the number
                     of completed simulations included, and what each report covers. Sessions lost
                     to a technical failure on Fydell&apos;s side are never billed.
@@ -111,7 +111,7 @@ export default function PricingPage() {
 
                 <div className="px-6 py-6 sm:px-8">
                   <p
-                    className="mb-4 text-[11px] uppercase tracking-[0.055em] text-[#586273]"
+                    className="mb-4 text-[11px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
                     style={{ fontWeight: 500 }}
                   >
                     Every pilot includes
@@ -133,13 +133,13 @@ export default function PricingPage() {
                     </ButtonLink>
                     <TextLink href="/trust">Read our trust page</TextLink>
                   </div>
-                  <p className="mt-5 text-[12px] text-[#586273]">
+                  <p className="mt-5 text-[12px] text-[rgba(244,245,247,0.4)]">
                     No credit card required. We invoice directly.
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-col justify-between gap-0 border-t border-[#D9DEE7] lg:col-span-4 lg:col-start-9 lg:border-t-0">
+              <div className="flex flex-col justify-between gap-0 border-t border-[var(--border-subtle)] lg:col-span-4 lg:col-start-9 lg:border-t-0">
                 {[
                   {
                     title: "Why scope directly?",
@@ -158,13 +158,13 @@ export default function PricingPage() {
                     key={item.title}
                     className={[
                       "py-6",
-                      i < arr.length - 1 ? "border-b border-[#D9DEE7]" : "",
+                      i < arr.length - 1 ? "border-b border-[var(--border-subtle)]" : "",
                     ].join(" ")}
                   >
-                    <h3 className="text-[15px] text-[#0B1020]" style={{ fontWeight: 560 }}>
+                    <h3 className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
                       {item.title}
                     </h3>
-                    <p className="mt-2 text-[14px] leading-[1.55] text-[#586273]">
+                    <p className="mt-2 text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
                       {item.body}
                     </p>
                   </div>
@@ -175,22 +175,22 @@ export default function PricingPage() {
         </Container>
       </section>
 
-      <section className="mkt-section border-t border-[#D9DEE7]">
+      <section className="mkt-section border-t border-[var(--border-subtle)]">
         <Container>
           <Reveal className="max-w-[500px]">
             <h2 className="section-heading flat-type">What the words mean.</h2>
-            <p className="mt-4 text-[14px] leading-[1.55] text-[#586273]">
+            <p className="mt-4 text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
               Pilot scopes use these four terms, defined the same way in every agreement.
             </p>
           </Reveal>
-          <div className="mt-12 border-t border-[#D9DEE7]">
+          <div className="mt-12 border-t border-[var(--border-subtle)]">
             {TERMS.map((t, i) => (
               <Reveal key={t.term} delay={0.02 * i}>
-                <div className="grid gap-3 border-b border-[#D9DEE7] py-5 sm:grid-cols-[0.9fr_1.4fr] sm:gap-8">
-                  <h3 className="text-[15px] text-[#0B1020]" style={{ fontWeight: 560 }}>
+                <div className="grid gap-3 border-b border-[var(--border-subtle)] py-5 sm:grid-cols-[0.9fr_1.4fr] sm:gap-8">
+                  <h3 className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
                     {t.term}
                   </h3>
-                  <p className="text-[14px] leading-[1.55] text-[#586273]">
+                  <p className="text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
                     {t.definition}
                   </p>
                 </div>
@@ -200,19 +200,19 @@ export default function PricingPage() {
         </Container>
       </section>
 
-      <section className="mkt-section border-t border-[#D9DEE7]">
+      <section className="mkt-section border-t border-[var(--border-subtle)]">
         <Container>
           <Reveal className="max-w-[500px]">
             <h2 className="section-heading flat-type">Questions about the pilot.</h2>
           </Reveal>
-          <div className="mt-12 border-t border-[#D9DEE7]">
+          <div className="mt-12 border-t border-[var(--border-subtle)]">
             {FAQS.map((faq, i) => (
               <Reveal key={faq.q} delay={0.02 * i}>
-                <div className="grid gap-3 border-b border-[#D9DEE7] py-5 sm:grid-cols-[0.9fr_1.4fr] sm:gap-8">
-                  <h3 className="text-[15px] text-[#0B1020]" style={{ fontWeight: 560 }}>
+                <div className="grid gap-3 border-b border-[var(--border-subtle)] py-5 sm:grid-cols-[0.9fr_1.4fr] sm:gap-8">
+                  <h3 className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
                     {faq.q}
                   </h3>
-                  <p className="text-[14px] leading-[1.55] text-[#586273]">
+                  <p className="text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
                     {faq.a}
                   </p>
                 </div>

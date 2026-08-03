@@ -2,7 +2,7 @@
 
 /**
  * Interactive hero preview: a short, looping walkthrough of a five-minute
- * simulation, built from the same visual language as the real mineral workbench.
+ * simulation, built from the same visual language as the real runner.
  * Three role tabs change the storyline. Auto-advances every 1.5s (a ~10.5s
  * loop), pauses on hover/focus, has manual step dots, and respects
  * prefers-reduced-motion (no autoplay).
@@ -139,32 +139,20 @@ const STEPS: Step[] = [
 
 const STEP_MS = 1500;
 
-function MiniTable({
-  title,
-  rows,
-  highlightRow,
-}: {
-  title: string;
-  rows: [string, string][];
-  highlightRow?: number;
-}) {
+function MiniTable({ title, rows, highlightRow }: { title: string; rows: [string, string][]; highlightRow?: number }) {
   return (
-    <div className="min-w-0 flex-1 rounded-[10px] border border-[#D9DEE7] bg-[#FCFCFA] p-2.5">
-      <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-[#586273]">
-        {title}
-      </p>
+    <div className="min-w-0 flex-1 rounded-lg border border-white/[0.09] bg-[#0B0E15] p-2.5">
+      <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-white/40">{title}</p>
       <div className="mt-1.5 space-y-1">
         {rows.map((r, i) => (
           <div
             key={i}
             className={`flex items-center justify-between gap-2 rounded px-1.5 py-1 text-[11px] ${
-              highlightRow === i
-                ? "bg-[#EEF2FF] text-[#2342A2]"
-                : "text-[#0B1020]"
+              highlightRow === i ? "bg-violet-500/20 text-violet-200" : "text-white/65"
             }`}
           >
             <span className="truncate font-mono">{r[0]}</span>
-            <span className="truncate text-[#586273]">{r[1]}</span>
+            <span className="truncate text-white/45">{r[1]}</span>
           </div>
         ))}
       </div>
@@ -201,6 +189,7 @@ export default function HeroSimPreview() {
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
+      {/* Role tabs */}
       <div className="flex gap-1.5" role="tablist" aria-label="Preview role">
         {STORIES.map((s, i) => (
           <button
@@ -211,10 +200,10 @@ export default function HeroSimPreview() {
               setRoleIdx(i);
               setStepIdx(0);
             }}
-            className={`rounded-t-[10px] px-3 py-2 text-[11.5px] font-semibold transition ${
+            className={`rounded-t-lg px-3 py-2 text-[11.5px] font-semibold transition ${
               i === roleIdx
-                ? "bg-[#FCFCFA] text-[#0B1020] shadow-[0_-1px_0_#D9DEE7_inset]"
-                : "bg-transparent text-[#586273] hover:text-[#0B1020]"
+                ? "bg-[#10131C] text-white"
+                : "bg-transparent text-white/40 hover:text-white/70"
             }`}
           >
             {s.role}
@@ -222,39 +211,38 @@ export default function HeroSimPreview() {
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-[12px] rounded-tl-none border border-[#D9DEE7] bg-[#FCFCFA] shadow-[0_18px_48px_rgba(11,16,32,0.08)]">
-        <div className="flex items-center justify-between gap-2 border-b border-[#D9DEE7] bg-[#F4F3EF] px-3.5 py-2.5">
+      {/* Frame */}
+      <div className="overflow-hidden rounded-xl rounded-tl-none border border-white/[0.1] bg-[#10131C] shadow-2xl shadow-black/40">
+        {/* Runner header */}
+        <div className="flex items-center justify-between gap-2 border-b border-white/[0.07] bg-[#0B1220] px-3.5 py-2.5">
           <div className="min-w-0">
-            <p className="truncate text-[12px] font-semibold text-[#0B1020]">{story.sim}</p>
-            <p className="truncate text-[10.5px] text-[#586273]">{story.role}</p>
+            <p className="truncate text-[12px] font-semibold text-white">{story.sim}</p>
+            <p className="truncate text-[10.5px] text-white/40">{story.role}</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+            <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300">
               Saved
             </span>
-            <span className="rounded-md border border-[#D9DEE7] bg-white px-2 py-0.5 font-mono text-[11px] text-[#0B1020]">
+            <span className="rounded bg-white/[0.06] px-2 py-0.5 font-mono text-[11px] text-white/70">
               4:12
             </span>
           </div>
         </div>
 
+        {/* Stage */}
         <div className="h-[240px] p-3.5" aria-live="polite">
           {step.view === "mission" && (
             <div className="flex h-full flex-col justify-center">
-              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-[#3157D5]">
+              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-violet-300">
                 Your task
               </p>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-[#0B1020]">{story.mission}</p>
-              <p className="mt-4 text-[11px] text-[#586273]">
-                Five minutes. Real materials. One decision.
-              </p>
+              <p className="mt-2 text-[13.5px] leading-relaxed text-white/85">{story.mission}</p>
+              <p className="mt-4 text-[11px] text-white/35">Five minutes. Real materials. One decision.</p>
             </div>
           )}
           {step.view === "resources" && (
             <div className="flex h-full flex-col">
-              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-[#586273]">
-                Resources
-              </p>
+              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-white/40">Resources</p>
               <div className="mt-2 flex flex-1 gap-2.5">
                 <MiniTable title={story.resourceA.title} rows={story.resourceA.rows} />
                 <MiniTable title={story.resourceB.title} rows={story.resourceB.rows} />
@@ -263,12 +251,12 @@ export default function HeroSimPreview() {
           )}
           {step.view === "finding" && (
             <div className="flex h-full flex-col">
-              <div className="flex flex-1 gap-2.5 opacity-90">
+              <div className="flex flex-1 gap-2.5 opacity-80">
                 <MiniTable title={story.resourceA.title} rows={story.resourceA.rows} highlightRow={1} />
                 <MiniTable title={story.resourceB.title} rows={story.resourceB.rows} highlightRow={0} />
               </div>
-              <div className="mt-2.5 rounded-[10px] border border-[#3157D5]/25 bg-[#EEF2FF] px-3 py-2">
-                <p className="text-[11.5px] text-[#2342A2]">
+              <div className="mt-2.5 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-2">
+                <p className="text-[11.5px] text-violet-200">
                   <span className="font-semibold">{story.findingHighlight}.</span> {story.findingText}
                 </p>
               </div>
@@ -276,29 +264,29 @@ export default function HeroSimPreview() {
           )}
           {step.view === "chat" && (
             <div className="flex h-full flex-col justify-center gap-2.5">
-              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-[#586273]">
+              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-white/40">
                 {story.stakeholder}
               </p>
-              <div className="ml-auto max-w-[85%] rounded-xl rounded-br-sm bg-[#3157D5] px-3 py-2 text-[12px] text-white">
+              <div className="ml-auto max-w-[85%] rounded-xl rounded-br-sm bg-violet-500/90 px-3 py-2 text-[12px] text-white">
                 {story.question}
               </div>
-              <div className="mr-auto max-w-[85%] rounded-xl rounded-bl-sm border border-[#D9DEE7] bg-[#F4F3EF] px-3 py-2 text-[12px] text-[#0B1020]">
+              <div className="mr-auto max-w-[85%] rounded-xl rounded-bl-sm bg-white/[0.07] px-3 py-2 text-[12px] text-white/80">
                 {story.reply}
               </div>
             </div>
           )}
           {step.view === "answer" && (
             <div className="flex h-full flex-col justify-center">
-              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-[#586273]">
+              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-white/40">
                 {story.answerLabel}
               </p>
-              <div className="mt-2 rounded-[10px] border border-[#D9DEE7] bg-white px-3.5 py-3">
-                <p className="text-[16px] font-semibold text-[#0B1020]">{story.answerValue}</p>
+              <div className="mt-2 rounded-lg border border-white/[0.12] bg-[#0B0E15] px-3.5 py-3">
+                <p className="text-[16px] font-semibold text-white">{story.answerValue}</p>
               </div>
               <button
                 type="button"
                 tabIndex={-1}
-                className="pointer-events-none mt-3 w-fit rounded-[10px] bg-[#3157D5] px-4 py-2 text-[12px] font-semibold text-white"
+                className="pointer-events-none mt-3 w-fit rounded-lg bg-violet-500 px-4 py-2 text-[12px] font-semibold text-white"
               >
                 Continue to review
               </button>
@@ -306,10 +294,10 @@ export default function HeroSimPreview() {
           )}
           {step.view === "event" && (
             <div className="flex h-full flex-col items-start justify-center gap-3">
-              <span className="rounded-md bg-emerald-50 px-3 py-1.5 text-[11.5px] font-semibold text-emerald-700">
+              <span className="rounded-full bg-emerald-500/15 px-3 py-1.5 text-[11.5px] font-semibold text-emerald-300">
                 {story.eventText}
               </span>
-              <p className="text-[11.5px] leading-relaxed text-[#586273]">
+              <p className="text-[11.5px] leading-relaxed text-white/45">
                 Every meaningful action becomes citable evidence: resources opened, questions asked,
                 answers revised.
               </p>
@@ -317,15 +305,15 @@ export default function HeroSimPreview() {
           )}
           {step.view === "result" && (
             <div className="flex h-full flex-col justify-center">
-              <div className="rounded-[10px] border border-[#D9DEE7] bg-white p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[12px] font-semibold text-[#0B1020]">Simulation completed</p>
-                  <span className="rounded-md bg-[#EEF2FF] px-2.5 py-1 text-[11px] font-semibold text-[#3157D5]">
+              <div className="rounded-lg border border-white/[0.1] bg-[#0B0E15] p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-[12px] font-semibold text-white">Simulation completed</p>
+                  <span className="rounded-full bg-violet-500/20 px-2.5 py-1 text-[11px] font-semibold text-violet-300">
                     {story.resultBand}
                   </span>
                 </div>
-                <p className="mt-2 text-[22px] font-semibold text-[#0B1020]">{story.resultScore}</p>
-                <p className="mt-1 text-[11px] text-[#586273]">
+                <p className="mt-2 text-[22px] font-semibold text-white">{story.resultScore}</p>
+                <p className="mt-1 text-[11px] text-white/40">
                   Objective answers, reasoning, stakeholder questions and communication, all cited.
                 </p>
               </div>
@@ -333,8 +321,9 @@ export default function HeroSimPreview() {
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-[#D9DEE7] px-3.5 py-2.5">
-          <p className="text-[11px] text-[#586273]">
+        {/* Step controls */}
+        <div className="flex items-center justify-between border-t border-white/[0.07] px-3.5 py-2.5">
+          <p className="text-[11px] text-white/45">
             {stepIdx + 1}. {step.label}
           </p>
           <div className="flex gap-1.5" role="group" aria-label="Preview steps">
@@ -344,7 +333,7 @@ export default function HeroSimPreview() {
                 aria-label={`Step ${i + 1}: ${s.label}`}
                 onClick={() => setStepIdx(i)}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === stepIdx ? "w-5 bg-[#3157D5]" : "w-1.5 bg-[#D9DEE7] hover:bg-[#586273]"
+                  i === stepIdx ? "w-5 bg-violet-400" : "w-1.5 bg-white/20 hover:bg-white/40"
                 }`}
               />
             ))}

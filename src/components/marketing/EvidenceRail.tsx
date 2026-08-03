@@ -1,6 +1,6 @@
 /**
- * Brand signature: a thin cobalt rail connecting requirement → action → citation.
- * Information design, not decoration.
+ * Thin evidence rail: requirement → action → citation.
+ * Dark-surface variant for marketing pages.
  */
 export type EvidenceRailNode = {
   label: string;
@@ -20,7 +20,7 @@ export default function EvidenceRail({
       aria-label="Evidence path from requirement to citation"
     >
       <span
-        className="absolute bottom-3 left-[7px] top-3 w-px bg-[#3157D5]"
+        className="absolute bottom-3 left-[7px] top-3 w-px bg-violet-500/50"
         aria-hidden
       />
       {nodes.map((node, i) => (
@@ -29,11 +29,13 @@ export default function EvidenceRail({
             className="relative z-10 mt-1.5 flex h-[15px] w-[15px] shrink-0 items-center justify-center"
             aria-hidden
           >
-            <span className="h-[9px] w-[9px] rounded-full border-2 border-[#3157D5] bg-[#FCFCFA]" />
+            <span className="h-[9px] w-[9px] rounded-full border-2 border-violet-400 bg-[#0c0d10]" />
           </span>
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-[#0B1020]">{node.label}</p>
-            <p className="mt-0.5 text-[13.5px] leading-relaxed text-[#586273]">{node.detail}</p>
+            <p className="text-[13px] font-semibold text-[#F4F5F7]">{node.label}</p>
+            <p className="mt-0.5 text-[13.5px] leading-relaxed text-[rgba(244,245,247,0.62)]">
+              {node.detail}
+            </p>
           </div>
         </li>
       ))}

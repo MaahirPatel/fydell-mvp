@@ -74,12 +74,12 @@ interface ButtonLinkProps {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "h-10 rounded-[9px] border border-transparent bg-[#3157D5] px-[17px] text-[14px] text-white hover:bg-[#2342A2]",
+    "h-10 rounded-[9px] border border-transparent bg-[#F2F3F5] px-[17px] text-[14px] text-[#090A0D] hover:brightness-[0.97] hover:-translate-y-px",
   secondary:
-    "h-10 rounded-[9px] border border-[#D9DEE7] bg-[#FCFCFA] px-[17px] text-[14px] text-[#0B1020] hover:border-[#3157D5]/40",
+    "h-10 rounded-[9px] border border-[var(--border-default)] bg-transparent px-[17px] text-[14px] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] hover:-translate-y-px",
   white:
-    "h-10 rounded-[9px] border border-[#D9DEE7] bg-[#FCFCFA] px-[17px] text-[14px] text-[#0B1020] hover:border-[#3157D5]/40",
-}
+    "h-10 rounded-[9px] border border-transparent bg-[#F2F3F5] px-[17px] text-[14px] text-[#090A0D] hover:brightness-[0.97] hover:-translate-y-px",
+};
 
 export function ButtonLink({
   href,
@@ -119,7 +119,7 @@ export function TextLink({
     <Link
       href={href}
       className={[
-        "group inline-flex items-center gap-1.5 text-[14px] text-[#586273] transition-colors duration-160 hover:text-[#0B1020]",
+        "group inline-flex items-center gap-1.5 text-[14px] text-[var(--text-secondary)] transition-colors duration-160 hover:text-[var(--text-primary)]",
         className,
       ]
         .filter(Boolean)

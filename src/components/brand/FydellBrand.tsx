@@ -6,18 +6,14 @@ export default function FydellBrand({
   markSize = 34,
   wordmarkSize,
   sheen = false,
-  ink = false,
 }: {
   className?: string;
   markSize?: number;
   /** Explicit wordmark size in px. Defaults to a readable scale from the mark. */
   wordmarkSize?: number;
   sheen?: boolean;
-  /** Near-black ink for light mineral surfaces. */
-  ink?: boolean;
 }) {
   const textSize = wordmarkSize ?? Math.max(22, Math.round(markSize * 0.72));
-  const color = ink ? "#0B1020" : "#F4F5F7";
 
   return (
     <Link
@@ -36,9 +32,9 @@ export default function FydellBrand({
           fontSize: textSize,
           fontWeight: 560,
           letterSpacing: "-0.045em",
-          color,
+          color: "#F4F5F7",
           background: "none",
-          WebkitTextFillColor: color,
+          WebkitTextFillColor: "#F4F5F7",
         }}
       >
         fydell

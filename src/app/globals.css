@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Mineral/cobalt product direction. App shells use light mineral; public marketing migration pending. */
+/* Fydell visual system - dark enterprise product */
 @theme {
   --color-fydell-bg: #050609;
   --color-fydell-surface: #0a0e17;
@@ -8,8 +8,8 @@
   --color-midnight: #050609;
   --color-surface-mid: #0d1220;
   --color-surface-2: #121828;
-  --color-violet-accent: #3157D5;
-  --color-violet-2: #2848b8;
+  --color-violet-accent: #7c3dff;
+  --color-violet-2: #8b5cf6;
   --color-blue-accent: #3b5bff;
   --color-blue-2: #2954f0;
   --color-cyan-accent: #2ed3d0;
@@ -42,8 +42,8 @@
   --text-tertiary: rgba(244, 245, 247, 0.4);
   --text-disabled: rgba(244, 245, 247, 0.28);
 
-  --brand-blue: #3157D5;
-  --brand-violet: #3157D5;
+  --brand-blue: #5662ff;
+  --brand-violet: #8657f4;
   --brand-cyan: #3abfd2;
   --positive: #67d9a0;
   --risk: #f26b82;
@@ -88,8 +88,8 @@
   --muted: rgba(244, 245, 247, 0.62);
   --faint: rgba(244, 245, 247, 0.4);
   --muted-2: rgba(244, 245, 247, 0.28);
-  --violet: #3157D5;
-  --violet-2: #2848b8;
+  --violet: #8657f4;
+  --violet-2: #9b5cff;
   --blue: #5662ff;
   --blue-bright: #6b75ff;
   --blue-2: #5662ff;
@@ -214,7 +214,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Flat solid type - no gradient fills */
+/* Flat solid type - no gradient fills; light ink on dark canvas */
 .flat-type,
 .fydell-page h1,
 .fydell-page h2,
@@ -224,8 +224,8 @@ body {
   background-image: none !important;
   -webkit-background-clip: border-box !important;
   background-clip: border-box !important;
-  -webkit-text-fill-color: currentColor !important;
-  color: #0b1020;
+  color: #f4f5f7 !important;
+  -webkit-text-fill-color: #f4f5f7 !important;
 }
 
 /*
@@ -297,13 +297,13 @@ h1.page-display {
 }
 
 .mkt-panel {
-  border: 1px solid #d9dee7;
-  border-radius: 12px;
-  background: #fcfcfa;
+  border: 1px solid rgba(255, 255, 255, 0.095);
+  border-radius: 14px;
+  background: #090b10;
 }
 
 .mkt-rule-row {
-  border-bottom: 1px solid #d9dee7;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.065);
 }
 
 .hero-context-link {
@@ -501,29 +501,14 @@ nextjs-portal,
 }
 
 ::selection {
-  background: rgba(49, 87, 213, 0.22);
-  color: #0b1020;
+  background: rgba(124, 92, 255, 0.32);
+  color: #fff;
 }
 
 :focus-visible {
-  outline: 2px solid rgba(49, 87, 213, 0.65);
+  outline: 2px solid rgba(103, 232, 249, 0.7);
   outline-offset: 3px;
   border-radius: 10px;
-}
-
-.fydell-page .section-heading {
-  color: #0b1020;
-}
-
-.fydell-page .section-desc,
-.fydell-page .page-lead,
-.fydell-page .hero-sub {
-  color: #586273;
-}
-
-.fydell-page .page-display,
-.fydell-page .hero-display {
-  color: #0b1020;
 }
 
 .skip-link {
@@ -531,10 +516,10 @@ nextjs-portal,
   left: 1rem;
   top: -4rem;
   z-index: 1000;
-  border: 1px solid #d9dee7;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fcfcfa;
-  color: #0b1020;
+  background: var(--panel-strong);
+  color: #fff;
   padding: 0.7rem 1rem;
   transition: top 160ms var(--ease);
 }
@@ -549,12 +534,7 @@ nextjs-portal,
 }
 
 .fydell-page,
-.marketing-page {
-  min-height: 100vh;
-  background: #f4f3ef;
-  color: #0b1020;
-}
-
+.marketing-page,
 .platform-bg,
 .immersive-bg {
   min-height: 100vh;
@@ -568,14 +548,20 @@ nextjs-portal,
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.025;
+  opacity: 0.02;
   background-image:
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* No cinematic vignette on mineral public pages */
 .fydell-page::after {
-  content: none;
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.34) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.18), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.22));
 }
 
 .bg-fydell-bg {

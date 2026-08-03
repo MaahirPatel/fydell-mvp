@@ -18,16 +18,10 @@ export default function PageHero({
 }) {
   return (
     <section className="relative overflow-hidden pb-12 sm:pb-14 lg:pb-16">
-      <Container className="relative z-10 pt-[130px] sm:pt-[150px] lg:pt-[160px]">
+      <Container className="relative z-10 pt-[168px] sm:pt-[180px] lg:pt-[200px]">
         <Reveal className={narrow ? "max-w-[640px]" : "max-w-[790px]"}>
-          <h1 className="flat-type text-[36px] font-semibold leading-[1.08] tracking-[-0.04em] text-[#0B1020] sm:text-[44px]">
-            {title}
-          </h1>
-          {description ? (
-            <p className="mt-5 max-w-[540px] text-[16px] leading-relaxed text-[#586273] sm:text-[17px]">
-              {description}
-            </p>
-          ) : null}
+          <h1 className="flat-type page-display">{title}</h1>
+          {description ? <p className="page-lead">{description}</p> : null}
           {children}
         </Reveal>
       </Container>

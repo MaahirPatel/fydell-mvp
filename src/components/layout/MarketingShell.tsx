@@ -4,9 +4,9 @@ import SiteNav from "@/components/layout/SiteNav";
 import SiteFooter from "@/components/layout/SiteFooter";
 
 /**
- * Shared shell for public marketing pages: smooth scroll, mineral paper
- * atmosphere, fixed top nav (56px), and the site footer. Page heroes should
- * clear the fixed nav with ~150-210px top padding.
+ * Shared shell for all marketing pages: smooth scroll, ambient background,
+ * fixed top nav (56px), and the site footer. Page heroes should clear the
+ * fixed nav with ~150–210px top padding (see PageHero / homepage).
  */
 export default function MarketingShell({ children }: { children: React.ReactNode }) {
   return (

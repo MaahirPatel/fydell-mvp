@@ -1,21 +1,36 @@
-# Fydell design system
+# Design System — Fydell
 
-## Canvas
-- Public / app paper: `#F4F3EF`
-- Surface: `#FCFCFA`
-- Ink: `#0B1020`
-- Secondary text: `#586273`
-- Border: `#D9DEE7`
-- Brand cobalt: `#3157D5` (hover `#2342A2`)
+## Visual Theme
+Premium dark product company. Asymmetric, editorial, product-led. Finance hiring infrastructure — not a generic SaaS template.
 
-## Principles
-- Work becoming evidence. Prefer inspectable product UI over decorative mockups.
-- Cards only when they contain interaction or a distinct record.
-- Sentence case. No tiny all-caps eyebrow spam.
-- Status color is semantic only (success / caution / error).
-- Evidence rail: thin cobalt connector used only when linking requirement → action → citation.
+## Colors
+| Token | Value |
+|------|-------|
+| `--bg` | `#05070D` |
+| `--surface` | `#0B101A` |
+| `--surface-2` | `#101624` |
+| `--text` | `#F7F8FB` |
+| `--muted` | `#A7B0C0` |
+| `--faint` | `#6F7A8C` |
+| `--blue` | `#2563FF` |
+| `--cyan` | `#2ED3D0` |
+| `--violet` | `#7C3DFF` |
+| `--pink` | `#EC4899` |
+| `--green` | `#34D399` |
 
-## Do not
-- Black + purple glass gradients as the default brand
-- Fake social proof or decorative trust theater
-- Identical six-card bento grids for every section
+## Typography
+Geist Sans / Satoshi. Serious modern grotesque.
+- H1: clamp 64–92px, lh 0.88, ls -0.07em, weight 650
+- H2: clamp 42–56px, lh 0.95, ls -0.05em
+- Body: 17px / 1.65
+- Labels: 11px uppercase, ls 0.14em
+
+## Layout
+12-column grid, max-width 1280px, 48px margins.
+Asymmetric spans (5/7, 4/8). No centered heroes. No equal card grids by default.
+
+## Logo
+Use `public/fydell-logo-mark.svg` chain mark + lowercase wordmark. Cyan→blue / pink→violet rings.
+
+## Anti-patterns
+No left-text/right-preview default hero, fake logos, fake people, portals, scenic AI art, rainbow CTAs, pill overload.

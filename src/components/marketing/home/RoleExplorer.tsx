@@ -1,12 +1,11 @@
 "use client";
 
 /**
- * Compact role family explorer: selectors swap one central panel.
- * Artifact-led, not six identical feature cards.
+ * Section 2 of the landing page: six compact role selectors that swap the
+ * content of one central panel. No stacked role sections.
  */
 import { useState } from "react";
 import Link from "next/link";
-import { TRY_CANDIDATE_HREF } from "@/lib/marketing/ctas";
 
 export interface RoleExplorerRole {
   key: string;
@@ -26,6 +25,7 @@ export default function RoleExplorer({ roles }: { roles: RoleExplorerRole[] }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+      {/* Selectors */}
       <div className="flex flex-row flex-wrap gap-2 lg:flex-col" role="tablist" aria-label="Roles">
         {roles.map((r, i) => (
           <button
@@ -33,72 +33,83 @@ export default function RoleExplorer({ roles }: { roles: RoleExplorerRole[] }) {
             role="tab"
             aria-selected={i === selected}
             onClick={() => setSelected(i)}
-            className={`rounded-[10px] border px-4 py-3 text-left transition ${
+            className={`rounded-xl border px-4 py-3 text-left transition ${
               i === selected
-                ? "border-[#3157D5]/40 bg-[#EEF2FF]"
-                : "border-[#D9DEE7] bg-[#FCFCFA] hover:bg-white"
+                ? "border-violet-500/50 bg-violet-500/10"
+                : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.05]"
             }`}
           >
-            <p
-              className={`text-[13.5px] font-semibold ${
-                i === selected ? "text-[#0B1020]" : "text-[#0B1020]/80"
-              }`}
-            >
+            <p className={`text-[13.5px] font-semibold ${i === selected ? "text-white" : "text-white/75"}`}>
               {r.title}
             </p>
-            <p className="mt-0.5 text-[11px] text-[#586273]">{r.pathway}</p>
+            <p className="mt-0.5 text-[11px] text-white/40">{r.pathway}</p>
           </button>
         ))}
       </div>
 
-      <div className="rounded-[12px] border border-[#D9DEE7] bg-[#FCFCFA] p-6 sm:p-8">
+      {/* Central panel */}
+      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h3 className="text-[19px] font-semibold text-[#0B1020]">{role.title}</h3>
-            <p className="mt-1.5 max-w-xl text-[13.5px] leading-relaxed text-[#586273]">
+            <h3 className="text-[19px] font-semibold text-white">{role.title}</h3>
+            <p className="mt-1.5 max-w-xl text-[13.5px] leading-relaxed text-white/60">
               {role.summary}
             </p>
           </div>
           <Link
             href={`/simulations/start/${role.featuredSlug}`}
-            className="shrink-0 rounded-[9px] bg-[#3157D5] px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-[#2342A2]"
+            className="shrink-0 rounded-[9px] bg-violet-500 px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-violet-400"
           >
-            Try this role
+            Try a simulation
           </Link>
         </div>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#586273]">
+          <div className="rounded-xl border border-white/[0.06] bg-black/20 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/40">
               Example problem
             </p>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-[#0B1020]">{role.exampleProblem}</p>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-white/70">{role.exampleProblem}</p>
           </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#586273]">
+          <div className="rounded-xl border border-white/[0.06] bg-black/20 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/40">
               What we observe
             </p>
-            <ul className="mt-2 space-y-1.5">
+            <div className="mt-2 flex flex-wrap gap-1.5">
               {role.competencies.map((c) => (
-                <li key={c} className="text-[13px] text-[#0B1020]">
+                <span
+                  key={c}
+                  className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11.5px] text-white/65"
+                >
                   {c}
-                </li>
+                </span>
               ))}
-            </ul>
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-[#586273]">
+            </div>
+            <p className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-white/40">
               Tools in the simulation
             </p>
-            <p className="mt-1 text-[12.5px] text-[#586273]">{role.tools.join(" · ")}</p>
+            <p className="mt-1 text-[12.5px] text-white/55">{role.tools.join(" · ")}</p>
           </div>
         </div>
 
-        <div className="mt-6 border-t border-[#D9DEE7] pt-4">
-          <Link
-            href={TRY_CANDIDATE_HREF}
-            className="text-[13px] font-semibold text-[#3157D5] transition hover:text-[#2342A2]"
-          >
-            Browse all simulations →
-          </Link>
+        <div className="mt-5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-white/40">
+            Five available simulations
+          </p>
+          <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
+            {role.simulations.map((s, i) => (
+              <li key={s.slug}>
+                <Link
+                  href={`/simulations/start/${s.slug}`}
+                  className="group flex items-center gap-2.5 rounded-lg border border-white/[0.05] bg-black/10 px-3 py-2 transition hover:border-violet-500/40 hover:bg-violet-500/5"
+                >
+                  <span className="text-[11px] font-mono text-white/30">{i + 1}</span>
+                  <span className="text-[13px] text-white/75 group-hover:text-white">{s.title}</span>
+                  <span className="ml-auto text-[10.5px] text-white/30">5 min</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
