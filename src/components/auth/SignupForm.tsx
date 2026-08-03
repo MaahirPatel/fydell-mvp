@@ -61,15 +61,20 @@ export default function SignupForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawNext = searchParams.get("next");
-  // Only candidate deep-links (/invite/<token>, /sim/<id>) may override the destination.
+  // Candidate deep-links and employer builder return paths may override the destination.
   const returnPath =
     rawNext &&
     (rawNext.startsWith("/invite/") ||
       rawNext.startsWith("/sim/") ||
-      rawNext.startsWith("/simulations")) &&
+      rawNext.startsWith("/simulations") ||
+      rawNext.startsWith("/app/employer") ||
+      rawNext.startsWith("/app/simulations")) &&
     !rawNext.startsWith("//")
       ? rawNext
       : null;
+  const isEmployerReturn =
+    Boolean(returnPath) &&
+    (returnPath!.startsWith("/app/employer") || returnPath!.startsWith("/app/simulations"));
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -106,8 +111,9 @@ export default function SignupForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // Invitation deep-links are always candidate signups.
-          path: returnPath ? path ?? "fde" : path,
+          // Invitation deep-links are candidate signups. Employer builder return
+          // paths go through role selection unless an employer path is already set.
+          path: returnPath && !isEmployerReturn ? path ?? "fde" : path,
           name,
           email,
           password,
@@ -118,8 +124,13 @@ export default function SignupForm({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Request failed");
-      if (returnPath) {
+      if (returnPath && !isEmployerReturn) {
         router.push(returnPath);
+        return;
+      }
+      if (isEmployerReturn && returnPath) {
+        const roleDest = `/signup/role?next=${encodeURIComponent(returnPath)}`;
+        router.push(data.redirectTo === "/signup/role" ? roleDest : returnPath);
         return;
       }
       router.push(data.redirectTo || "/app/employer");

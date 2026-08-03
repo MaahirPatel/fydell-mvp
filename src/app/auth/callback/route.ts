@@ -6,7 +6,7 @@ import { createCompanySession } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 function safeNext(next: string | null): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) return "/dashboard";
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return "/app/employer";
   return next;
 }
 
@@ -37,10 +37,12 @@ export async function GET(req: Request) {
     next.startsWith("/invite/") ||
     next.startsWith("/sim/") ||
     next.startsWith("/simulations");
+  const isEmployerBuilderReturn =
+    next.startsWith("/app/employer") || next.startsWith("/app/simulations");
   const target =
-    isSessionDeepLink && dest.kind !== "admin"
+    ((isSessionDeepLink || isEmployerBuilderReturn) && dest.kind !== "admin")
       ? next
-      : dest.path === "/dashboard"
+      : dest.path === "/app/employer"
         ? next
         : dest.path;
   return NextResponse.redirect(new URL(target, url.origin));

@@ -1,16 +1,16 @@
 import Link from "next/link";
 import FydellBrand from "@/components/brand/FydellBrand";
+import { CONTACT_SALES_HREF } from "@/lib/marketing/ctas";
 
 const PRODUCT = [
   { label: "Product", href: "/product" },
-  { label: "Roles", href: "/roles" },
-  { label: "Simulations", href: "/simulations" },
-  { label: "Pricing", href: "/pricing" },
+  { label: "Employers", href: "/employers" },
+  { label: "Candidates", href: "/candidates" },
 ];
 
 const COMPANY = [
-  { label: "Contact", href: "mailto:hello@fydell.com" },
   { label: "Trust", href: "/trust" },
+  { label: "Contact", href: CONTACT_SALES_HREF },
   { label: "Sign in", href: "/login" },
 ];
 
@@ -30,7 +30,7 @@ function FooterCol({
   return (
     <div>
       <p
-        className="text-[11px] uppercase tracking-[0.06em] text-[rgba(244,245,247,0.4)]"
+        className="text-[11px] uppercase tracking-[0.06em] text-[#586273]"
         style={{ fontWeight: 550 }}
       >
         {title}
@@ -40,7 +40,7 @@ function FooterCol({
           <li key={link.label}>
             <Link
               href={link.href}
-              className="text-[13px] text-[rgba(244,245,247,0.62)] transition-colors duration-150 hover:text-[#F4F5F7]"
+              className="text-[13px] text-[#586273] transition-colors duration-150 hover:text-[#0B1020]"
             >
               {link.label}
             </Link>
@@ -53,13 +53,13 @@ function FooterCol({
 
 export default function SiteFooter() {
   return (
-    <footer className="relative z-10 border-t border-[var(--border-subtle)] pt-[80px] pb-8 sm:pb-10">
+    <footer className="relative z-10 border-t border-[#D9DEE7] pt-[80px] pb-8 sm:pb-10">
       <div className="mkt-content">
         <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
           <div className="max-w-[280px]">
-            <FydellBrand markSize={22} wordmarkSize={16} className="gap-2" />
-            <p className="mt-3 text-[13px] leading-[1.55] text-[rgba(244,245,247,0.4)]">
-              Fydell evaluates Applied Technical Roles through realistic work simulations.
+            <FydellBrand markSize={22} wordmarkSize={16} ink className="gap-2" />
+            <p className="mt-3 text-[13px] leading-[1.55] text-[#586273]">
+              Fydell evaluates applied technical roles through realistic work simulations.
             </p>
           </div>
 
@@ -70,8 +70,8 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-12 flex items-center justify-between border-t border-[var(--border-subtle)] pt-5">
-          <p className="text-[12px] text-[rgba(244,245,247,0.28)]">
+        <div className="mt-12 flex items-center justify-between border-t border-[#D9DEE7] pt-5">
+          <p className="text-[12px] text-[#586273]">
             © {new Date().getFullYear()} Fydell, Inc.
           </p>
         </div>

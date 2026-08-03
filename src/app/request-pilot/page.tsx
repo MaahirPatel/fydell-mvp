@@ -49,15 +49,15 @@ export default function RequestPilotPage() {
         <Container>
           <div className="grid items-start gap-12 lg:grid-cols-12 lg:gap-8">
             <Reveal className="lg:col-span-5">
-              <div className="border-t border-[var(--border-subtle)]">
+              <div className="border-t border-[#D9DEE7]">
                 {DETAILS.map((d) => (
                   <div
                     key={d.label}
-                    className="flex items-baseline justify-between gap-4 border-b border-[var(--border-subtle)] py-3.5"
+                    className="flex items-baseline justify-between gap-4 border-b border-[#D9DEE7] py-3.5"
                   >
-                    <span className="text-[13px] text-[rgba(244,245,247,0.4)]">{d.label}</span>
+                    <span className="text-[13px] text-[#586273]">{d.label}</span>
                     <span
-                      className="text-right text-[13px] text-[#F4F5F7]"
+                      className="text-right text-[13px] text-[#0B1020]"
                       style={{ fontWeight: 520 }}
                     >
                       {d.value}
@@ -66,20 +66,20 @@ export default function RequestPilotPage() {
                 ))}
               </div>
 
-              <div className="mt-10 space-y-0 border-t border-[var(--border-subtle)]">
+              <div className="mt-10 space-y-0 border-t border-[#D9DEE7]">
                 {STEPS.map((s) => (
-                  <div key={s.n} className="flex gap-3 border-b border-[var(--border-subtle)] py-4">
+                  <div key={s.n} className="flex gap-3 border-b border-[#D9DEE7] py-4">
                     <span
-                      className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] border border-[var(--border-subtle)] text-[11px] text-[rgba(244,245,247,0.62)]"
+                      className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] border border-[#D9DEE7] text-[11px] text-[#586273]"
                       style={{ fontWeight: 560 }}
                     >
                       {s.n}
                     </span>
                     <div>
-                      <p className="text-[14px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+                      <p className="text-[14px] text-[#0B1020]" style={{ fontWeight: 560 }}>
                         {s.title}
                       </p>
-                      <p className="mt-1 text-[13px] leading-[1.5] text-[rgba(244,245,247,0.62)]">
+                      <p className="mt-1 text-[13px] leading-[1.5] text-[#586273]">
                         {s.body}
                       </p>
                     </div>
@@ -87,11 +87,11 @@ export default function RequestPilotPage() {
                 ))}
               </div>
 
-              <p className="mt-8 text-[13px] text-[rgba(244,245,247,0.4)]">
+              <p className="mt-8 text-[13px] text-[#586273]">
                 Or email{" "}
                 <a
                   href="mailto:hello@fydell.com"
-                  className="text-[rgba(244,245,247,0.62)] transition-colors hover:text-[#F4F5F7]"
+                  className="text-[#586273] transition-colors hover:text-[#0B1020]"
                 >
                   hello@fydell.com
                 </a>
@@ -101,13 +101,13 @@ export default function RequestPilotPage() {
             <Reveal delay={0.08} className="lg:col-span-6 lg:col-start-7">
               <div className="mkt-panel p-5 sm:p-6">
                 <p
-                  className="mb-5 text-[13px] text-[#F4F5F7]"
+                  className="mb-5 text-[13px] text-[#0B1020]"
                   style={{ fontWeight: 560 }}
                 >
                   Tell us about your role
                 </p>
                 <PilotRequestForm />
-                <p className="mt-4 text-center text-[12px] text-[rgba(244,245,247,0.4)]">
+                <p className="mt-4 text-center text-[12px] text-[#586273]">
                   Submitted securely over HTTPS. We reply within one business day.
                 </p>
               </div>

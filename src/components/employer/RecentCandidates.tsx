@@ -27,7 +27,7 @@ export default function RecentCandidates({ rows }: { rows: RecentCandidateRow[] 
         <button
           type="button"
           onClick={() => open()}
-          className="mt-4 inline-flex h-10 items-center rounded-lg bg-violet-600 px-4 text-[14px] font-semibold text-white hover:bg-violet-500"
+          className="mt-4 inline-flex h-10 items-center rounded-lg bg-[#3157D5] px-4 text-[14px] font-semibold text-white hover:bg-[#2848b8]"
         >
           Invite your first candidate
         </button>
@@ -63,7 +63,7 @@ export default function RecentCandidates({ rows }: { rows: RecentCandidateRow[] 
                 <td className="px-4 py-3 text-slate-600">{r.statusLabel}</td>
                 <td className="px-4 py-3">
                   {r.result ? (
-                    <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[12.5px] font-semibold text-violet-700">
+                    <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[12.5px] font-semibold text-blue-700">
                       {r.result}
                     </span>
                   ) : (
@@ -74,7 +74,7 @@ export default function RecentCandidates({ rows }: { rows: RecentCandidateRow[] 
                   {r.reportReady && r.sessionId ? (
                     <Link
                       href={`/app/employer/assessments/report/${r.sessionId}`}
-                      className="text-[13.5px] font-semibold text-violet-700 hover:text-violet-600"
+                      className="text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
                     >
                       View report
                     </Link>

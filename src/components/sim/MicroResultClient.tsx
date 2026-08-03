@@ -2,18 +2,22 @@
 
 /**
  * Candidate result page: polls until scoring completes, then shows the
- * evidence-backed result, share URL and the pilot feedback form.
+ * evidence-backed result, share URL, work receipt and the pilot feedback form.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { MicroResultView } from "./MicroResultView";
+import { EvidenceReportV2 } from "./EvidenceReportV2";
 import { FeedbackForm } from "./FeedbackForm";
 import type { MicroResult } from "@/lib/simulations/micro-scoring";
+import { isV2PersistedResult, type V2PersistedResult } from "@/lib/simulations/v2/scoring";
+
+type ResultUnion = MicroResult | V2PersistedResult;
 
 interface ResultPayload {
   ready: boolean;
   failed?: boolean;
-  result?: MicroResult;
+  result?: ResultUnion;
   shareUrl?: string | null;
   credential?: { credential_number: string } | null;
 }
@@ -23,6 +27,9 @@ export function MicroResultClient({ sessionId }: { sessionId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [receiptBusy, setReceiptBusy] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
   const attemptsRef = useRef(0);
   const feedbackRef = useRef<HTMLDivElement>(null);
 
@@ -62,6 +69,22 @@ export function MicroResultClient({ sessionId }: { sessionId: string }) {
     }
   };
 
+  const createReceipt = async () => {
+    setReceiptBusy(true);
+    setReceiptError(null);
+    try {
+      const res = await fetch(`/api/sim/results/${sessionId}/share`, { method: "POST" });
+      const data = (await res.json()) as { recordUrl?: string; error?: string };
+      if (!res.ok) throw new Error(data.error || "Could not create work receipt");
+      if (!data.recordUrl) throw new Error("No receipt URL returned");
+      setReceiptUrl(data.recordUrl);
+    } catch (err) {
+      setReceiptError(err instanceof Error ? err.message : "Could not create work receipt");
+    } finally {
+      setReceiptBusy(false);
+    }
+  };
+
   if (error && !payload?.ready) {
     return (
       <Shell>
@@ -95,9 +118,16 @@ export function MicroResultClient({ sessionId }: { sessionId: string }) {
     );
   }
 
+  const result = payload.result;
+  const v2Result = isV2PersistedResult(result) ? result : null;
+
   return (
     <Shell>
-      <MicroResultView result={payload.result} />
+      {v2Result ? (
+        <EvidenceReportV2 result={v2Result} />
+      ) : (
+        <MicroResultView result={result as MicroResult} />
+      )}
 
       {/* actions */}
       <div className="mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5">
@@ -115,6 +145,22 @@ export function MicroResultClient({ sessionId }: { sessionId: string }) {
             {copied ? "Link copied ✓" : "Share result"}
           </button>
         )}
+        {receiptUrl ? (
+          <Link
+            href={receiptUrl}
+            className="rounded-xl border border-emerald-300 bg-emerald-50 px-5 py-2.5 text-[13.5px] font-semibold text-emerald-800 hover:bg-emerald-100"
+          >
+            Open work receipt
+          </Link>
+        ) : (
+          <button
+            onClick={() => void createReceipt()}
+            disabled={receiptBusy}
+            className="rounded-xl border border-slate-300 px-5 py-2.5 text-[13.5px] font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+          >
+            {receiptBusy ? "Creating…" : "Create work receipt"}
+          </button>
+        )}
         <button
           onClick={() => {
             setShowFeedback(true);
@@ -130,6 +176,11 @@ export function MicroResultClient({ sessionId }: { sessionId: string }) {
           </span>
         )}
       </div>
+      {receiptError && (
+        <p className="mt-2 text-[13px] text-red-600" role="alert">
+          {receiptError}
+        </p>
+      )}
 
       <div ref={feedbackRef} className="mt-5">
         {showFeedback && <FeedbackForm sessionId={sessionId} />}

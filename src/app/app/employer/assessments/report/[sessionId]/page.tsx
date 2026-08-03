@@ -14,6 +14,6 @@ export default async function EvidenceReportPage({
   const user = await requireUser();
   if (!user) redirect("/login");
   const org = await requireOrgMember(user.id);
-  if (!org) redirect("/onboarding/employer");
+  if (!org) redirect("/app/employer");
   return <EvidenceReport sessionId={sessionId} />;
 }

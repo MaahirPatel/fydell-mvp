@@ -203,6 +203,13 @@ export const ROLE_BY_KEY: Record<RoleKey, RoleDefinition> = Object.fromEntries(
   ROLES.map((r) => [r.key, r])
 ) as Record<RoleKey, RoleDefinition>;
 
+/** One flagship simulation per Applied Technical Role. */
+export const FLAGSHIP_SLUGS: readonly string[] = ROLES.map((r) => r.simulationSlug);
+
+export function isFlagshipSlug(slug: string): boolean {
+  return FLAGSHIP_SLUGS.includes(slug);
+}
+
 export function rolesForPathway(pathway: PathwayKey): RoleDefinition[] {
   return ROLES.filter((r) => r.pathway === pathway);
 }

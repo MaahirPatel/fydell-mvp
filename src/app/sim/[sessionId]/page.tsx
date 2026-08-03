@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/simulations/auth";
-import { MicroRunner } from "@/components/sim/MicroRunner";
+import { WorkbenchRunner } from "@/components/sim/WorkbenchRunner";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getVersionContent } from "@/lib/simulations/db";
 import { isMicroContent } from "@/lib/simulations/micro-types";
@@ -27,5 +27,5 @@ export default async function SimulationSessionPage({
 
   const content = await getVersionContent(session.template_version_id).catch(() => null);
   if (!content || !isMicroContent(content)) redirect("/simulations");
-  return <MicroRunner sessionId={sessionId} />;
+  return <WorkbenchRunner sessionId={sessionId} />;
 }

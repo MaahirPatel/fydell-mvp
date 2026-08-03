@@ -13,6 +13,16 @@ const ALLOWED_CANDIDATE_EVENTS = new Set([
   "deliverable_field_edited",
   "workspace_action",
   "curveball_acknowledged",
+  // v2 workbench semantic events
+  "table_sorted",
+  "table_filtered",
+  "row_flagged",
+  "ticket_selected",
+  "step_toggled",
+  "rule_reviewed",
+  "decision_selected",
+  "evidence_selected",
+  "deliverable_revised",
 ]);
 
 export async function POST(

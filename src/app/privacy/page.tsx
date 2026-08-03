@@ -13,12 +13,12 @@ export default function PrivacyPage() {
       <PageHero title="Privacy." narrow />
       <section className="pb-20 lg:pb-28">
         <Container className="max-w-[640px]">
-          <p className="text-[15px] leading-[1.65] text-[rgba(244,245,247,0.62)]">
+          <p className="text-[15px] leading-[1.65] text-[#586273]">
             Fydell processes employer and candidate information solely to operate work trials and
             deliver evidence reports. We do not sell personal data. Contact{" "}
             <a
               href="mailto:hello@fydell.com"
-              className="text-[#F4F5F7] underline-offset-2 hover:underline"
+              className="text-[#0B1020] underline-offset-2 hover:underline"
             >
               hello@fydell.com
             </a>{" "}

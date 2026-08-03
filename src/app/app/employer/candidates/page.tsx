@@ -10,7 +10,7 @@ export default async function EmployerCandidatesPage() {
   const user = await requireUser();
   if (!user) redirect("/login?next=/app/employer/candidates");
   const org = await requireOrgMember(user.id);
-  if (!org) redirect("/onboarding/employer");
+  if (!org) redirect("/app/employer");
 
   const records = await getInvitationRecords(org.organizationId, 200);
 

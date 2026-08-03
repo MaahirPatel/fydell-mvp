@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Briefcase, Wrench, Handshake, ArrowRight } from "lucide-react";
 import FydellBrand from "@/components/brand/FydellBrand";
 import { partnerSignupEnabled } from "@/lib/auth/flags";
+import { isSafeAppNext } from "@/lib/marketing/ctas";
 
 type Role = "employer" | "fde" | "partner";
 
-export default function SignupRolePage() {
+function SignupRoleContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextParam = searchParams.get("next");
+  const safeNext = isSafeAppNext(nextParam) ? nextParam : null;
   const [selected, setSelected] = useState<Role | null>(null);
   const [companyName, setCompanyName] = useState("");
   const [companyWebsite, setCompanyWebsite] = useState("");
@@ -31,6 +35,14 @@ export default function SignupRolePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Request failed");
+      if (
+        role === "employer" &&
+        safeNext &&
+        (safeNext.startsWith("/app/employer") || safeNext.startsWith("/app/simulations"))
+      ) {
+        router.push(safeNext);
+        return;
+      }
       router.push(data.redirectTo || "/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -234,5 +246,13 @@ export default function SignupRolePage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function SignupRolePage() {
+  return (
+    <Suspense fallback={<div className="min-h-[100dvh] bg-[#050609]" />}>
+      <SignupRoleContent />
+    </Suspense>
   );
 }

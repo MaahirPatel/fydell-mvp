@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { MicroResultView } from "@/components/sim/MicroResultView";
+import { EvidenceReportV2 } from "@/components/sim/EvidenceReportV2";
 import type { MicroResult } from "@/lib/simulations/micro-scoring";
+import { isV2PersistedResult, type V2PersistedResult } from "@/lib/simulations/v2/scoring";
 
 export const metadata = { title: "Simulation Result | Fydell" };
 export const dynamic = "force-dynamic";
@@ -20,7 +22,7 @@ export default async function SharedResultPage({
     .eq("share_token", token)
     .maybeSingle();
 
-  let result: MicroResult | null = null;
+  let result: MicroResult | V2PersistedResult | null = null;
   if (session) {
     const { data: run } = await admin
       .from("sim_analysis_runs")
@@ -30,8 +32,10 @@ export default async function SharedResultPage({
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    result = (run?.result as MicroResult) || null;
+    result = (run?.result as MicroResult | V2PersistedResult) || null;
   }
+
+  const v2 = result ? isV2PersistedResult(result) : false;
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -52,7 +56,11 @@ export default async function SharedResultPage({
             <p className="mb-4 text-[13px] text-slate-500">
               Shared simulation result · evaluated on the Fydell platform
             </p>
-            <MicroResultView result={result} />
+            {v2 ? (
+              <EvidenceReportV2 result={result as V2PersistedResult} />
+            ) : (
+              <MicroResultView result={result as MicroResult} />
+            )}
           </>
         ) : (
           <div className="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center">

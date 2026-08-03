@@ -3,16 +3,19 @@ import MarketingShell from "@/components/layout/MarketingShell";
 import HeroSimPreview from "@/components/marketing/home/HeroSimPreview";
 import RoleExplorer, { type RoleExplorerRole } from "@/components/marketing/home/RoleExplorer";
 import EvidenceFlow from "@/components/marketing/home/EvidenceFlow";
-import { MicroResultView } from "@/components/sim/MicroResultView";
+import EvidenceRail from "@/components/marketing/EvidenceRail";
 import { ROLES, PATHWAYS } from "@/lib/simulations/roles";
 import { simTitleForSlug } from "@/lib/simulations/sim-titles";
-import type { MicroResult } from "@/lib/simulations/micro-scoring";
-import { PROTOTYPE_DISCLAIMER } from "@/lib/simulations/micro-types";
+import {
+  CONTACT_SALES_HREF,
+  CREATE_SIMULATION_HREF,
+  TRY_CANDIDATE_HREF,
+} from "@/lib/marketing/ctas";
 
 export const metadata = {
-  title: "Fydell | See how technical candidates solve real work",
+  title: "Fydell | See how candidates work before you hire them",
   description:
-    "Five-minute work simulations for Applied Technical Roles. Review the work, not just the resume.",
+    "Create realistic job simulations, invite candidates, and review evidence of how they investigate, decide, use tools, and communicate.",
 };
 
 const EXAMPLE_PROBLEMS: Record<string, { problem: string; tools: string }> = {
@@ -48,124 +51,55 @@ const EXAMPLE_PROBLEMS: Record<string, { problem: string; tools: string }> = {
   },
 };
 
-/**
- * Authentic evidence preview: a genuine scored attempt of "The Missing
- * Delays" (Data Analyst), computed with the real scoring formulas.
- * 30 + 25 + 15 + 10 + 10 = 90, Strong evidence. No fabricated metrics.
- */
-const SAMPLE_RESULT: MicroResult = {
-  format: "micro",
-  simulationTitle: "The Missing Delays",
-  roleKey: "data_analyst",
-  slug: "missing-delays",
-  total: 90,
-  band: "strong",
-  bandLabel: "Strong evidence",
-  completionSeconds: 287,
-  sections: [
-    {
-      questionId: "root_cause",
-      prompt: "What is the most likely cause of the missing delayed orders?",
-      kind: "single_select",
-      competencyKey: "problem_diagnosis",
-      candidateAnswer: "Order IDs use inconsistent formatting",
-      expectedEvidence:
-        "orders.csv uses A-102 / A-103 while manual_delays.csv uses A102 / A103, so the join on Order ID finds no matches.",
-      pointsEarned: 30,
-      pointsAvailable: 30,
-      correct: true,
-    },
-    {
-      questionId: "corrected_value",
-      prompt: "What is the corrected delayed revenue in dollars?",
-      kind: "number",
-      competencyKey: "analytical_correctness",
-      candidateAnswer: "1300",
-      expectedEvidence: "A-102 ($800) + A-103 ($500) = $1,300.",
-      pointsEarned: 25,
-      pointsAvailable: 25,
-      correct: true,
-    },
-    {
-      questionId: "supporting_orders",
-      prompt: "Which orders support the corrected number?",
-      kind: "multi_select",
-      competencyKey: "evidence_selection",
-      candidateAnswer: "A-102, A-103",
-      expectedEvidence: "A-102 and A-103 appear in the manual delay file (as A102 and A103).",
-      pointsEarned: 15,
-      pointsAvailable: 15,
-      correct: true,
-    },
-    {
-      questionId: "recommendation",
-      prompt: "Write a recommendation that prevents this tomorrow.",
-      kind: "text",
-      competencyKey: "recommendation_quality",
-      candidateAnswer:
-        "Strip hyphens from order IDs in both files before the dashboard join so formats always match.",
-      expectedEvidence:
-        "Normalize order IDs (strip hyphens) in both sources before joining, validate the match rate, and alert on unmatched delay records so silent drops can't recur.",
-      pointsEarned: 10,
-      pointsAvailable: 20,
-      correct: false,
-      concepts: [
-        {
-          concept: "normalize_ids",
-          label: "Normalize IDs before joining",
-          present: true,
-          quality: 1,
-          evidence: 'Mentions "strip"',
-        },
-        {
-          concept: "remove_hyphens",
-          label: "Remove or standardize hyphens",
-          present: true,
-          quality: 1,
-          evidence: 'Mentions "hyphen"',
-        },
-        {
-          concept: "validate_match",
-          label: "Validate the match rate",
-          present: false,
-          quality: 0,
-          evidence: "Not found in the response",
-        },
-        {
-          concept: "alert_unmatched",
-          label: "Alert or test for unmatched records",
-          present: false,
-          quality: 0,
-          evidence: "Not found in the response",
-        },
-      ],
-    },
-  ],
-  strengths: [
-    "Correctly identified inconsistent ID formatting as the cause of the missing records.",
-    "Calculated the corrected delayed revenue of $1,300 from the source data.",
-    "Asked the stakeholder a relevant clarifying question before concluding.",
-  ],
-  improvements: [
-    "A stronger recommendation would normalize IDs before joining and add a check for unmatched delay records so this cannot silently recur.",
-  ],
-  competencies: [
-    { key: "problem_diagnosis", label: "Problem diagnosis", earned: 30, available: 30, band: "strong", bandLabel: "Strong evidence" },
-    { key: "analytical_correctness", label: "Analytical correctness", earned: 25, available: 25, band: "strong", bandLabel: "Strong evidence" },
-    { key: "evidence_selection", label: "Evidence selection", earned: 15, available: 15, band: "strong", bandLabel: "Strong evidence" },
-    { key: "recommendation_quality", label: "Recommendation quality", earned: 10, available: 20, band: "developing", bandLabel: "Developing evidence" },
-    { key: "stakeholder_communication", label: "Stakeholder communication", earned: 10, available: 10, band: "strong", bandLabel: "Strong evidence" },
-  ],
-  stakeholder: {
-    asked: true,
-    relevant: true,
-    pointsEarned: 10,
-    pointsAvailable: 10,
-    lastQuestion: "Do the hyphens in the order IDs mean anything, or should both files match?",
+const EVIDENCE_NODES = [
+  {
+    label: "Requirement",
+    detail: "Explain why delayed revenue shows zero when operations knows of two delayed orders.",
   },
-  writtenEvaluationMode: "keyword",
-  disclaimer: PROTOTYPE_DISCLAIMER,
-};
+  {
+    label: "Candidate action",
+    detail: "Opened both CSV files, compared Order ID formats, asked Operations about hyphens.",
+  },
+  {
+    label: "Citation",
+    detail: "Corrected delayed revenue to $1,300 with orders A-102 and A-103 cited in the report.",
+  },
+];
+
+const TRADITIONAL = [
+  "Resume claims",
+  "Scripted screening",
+  "Generic tests",
+  "A final answer without context",
+  "Evidence trapped inside one application",
+];
+
+const FYDELL_PROCESS = [
+  "Role-relevant work",
+  "Decisions under realistic constraints",
+  "Technical and communication evidence together",
+  "An inspectable record of the process",
+  "A portable record the candidate can carry forward",
+];
+
+const TRUST_POINTS = [
+  {
+    title: "Session provenance",
+    body: "Invitations and attempts are tied to real sessions with timestamps you can inspect.",
+  },
+  {
+    title: "Recorded AI use",
+    body: "In-product AI use is observed and summarized, not banned or guessed at outside the product.",
+  },
+  {
+    title: "Job-related rubrics",
+    body: "Scoring anchors to competencies for the role. Scores are labeled as evidence, not hire advice.",
+  },
+  {
+    title: "Human-readable review",
+    body: "Every judgment points at actions, answers, and resources from the attempt.",
+  },
+];
 
 export default function HomePage() {
   const pathwayByKey = Object.fromEntries(PATHWAYS.map((p) => [p.key, p.title]));
@@ -183,59 +117,194 @@ export default function HomePage() {
 
   return (
     <MarketingShell>
-      {/* ------------------------------------------------- Section 1: Hero */}
       <section className="relative overflow-hidden pb-16 lg:pb-24">
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(70% 45% at 50% 35%, rgba(124,93,250,0.10), transparent 72%)",
-          }}
-          aria-hidden
-        />
         <div className="mkt-content relative z-10 grid items-center gap-12 pt-[130px] sm:pt-[150px] lg:grid-cols-[1fr_auto] lg:gap-16 lg:pt-[150px]">
           <div>
             <p
-              className="text-[12.5px] uppercase tracking-[0.09em] text-[rgba(244,245,247,0.4)]"
-              style={{ fontWeight: 560 }}
+              className="text-[28px] leading-none text-[#0B1020] sm:text-[32px]"
+              style={{ fontWeight: 600, letterSpacing: "-0.045em" }}
             >
-              Applied technical hiring
+              fydell
             </p>
-            <h1 className="flat-type mt-3 max-w-[560px] text-4xl font-semibold leading-[1.08] text-[#F4F5F7] sm:text-5xl">
-              See how technical candidates solve real work.
+            <h1 className="flat-type mt-4 max-w-[560px] text-[36px] font-semibold leading-[1.08] tracking-[-0.04em] text-[#0B1020] sm:text-[48px] lg:text-[56px]">
+              See how candidates work before you hire them.
             </h1>
-            <p className="mt-5 max-w-[480px] text-[15.5px] leading-relaxed text-[rgba(244,245,247,0.62)]">
-              Five-minute simulations for data, solutions, implementation, support and systems
-              roles. Review the work, not just the résumé.
+            <p className="mt-5 max-w-[480px] text-[16px] leading-relaxed text-[#586273] sm:text-[17px]">
+              Create realistic job simulations, invite candidates, and review evidence of how they
+              investigate, decide, use tools, and communicate.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
-                href="/simulations"
-                className="inline-flex h-[44px] items-center rounded-[10px] bg-violet-500 px-6 text-[14px] font-semibold text-white transition hover:bg-violet-400"
+                href={CREATE_SIMULATION_HREF}
+                className="inline-flex h-[44px] items-center rounded-[10px] bg-[#3157D5] px-6 text-[14px] font-semibold text-white transition hover:bg-[#2342A2]"
               >
-                Try a simulation
+                Create a simulation
               </Link>
-              <a
-                href="#evidence"
-                className="inline-flex h-[44px] items-center rounded-[10px] border border-white/20 px-6 text-[14px] font-semibold text-[#F4F5F7] transition hover:bg-white/[0.06]"
+              <Link
+                href={TRY_CANDIDATE_HREF}
+                className="inline-flex h-[44px] items-center rounded-[10px] border border-[#D9DEE7] bg-[#FCFCFA] px-6 text-[14px] font-semibold text-[#0B1020] transition hover:border-[#3157D5]/40"
               >
-                View an evidence report
-              </a>
+                Try the candidate experience
+              </Link>
             </div>
+            <p className="mt-4 text-[13.5px] text-[#586273]">
+              Built for applied technical roles where a resume cannot show the work.
+            </p>
           </div>
           <HeroSimPreview />
         </div>
       </section>
 
-      {/* --------------------------------- Section 2: Applied Technical Roles */}
-      <section className="border-t border-white/[0.06] py-16 lg:py-20">
+      <section className="border-t border-[#D9DEE7] py-16 lg:py-24">
         <div className="mkt-content">
-          <h2 className="text-2xl font-semibold text-[#F4F5F7] sm:text-3xl">
-            Built for Applied Technical Roles
+          <h2 className="max-w-2xl text-[28px] font-semibold tracking-[-0.035em] text-[#0B1020] sm:text-[36px]">
+            Replace claims with demonstrated work.
           </h2>
-          <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed text-[rgba(244,245,247,0.55)]">
-            These roles sit between technical systems and real business problems. A résumé can
-            list the tools. Fydell shows how someone uses them.
+          <div className="mt-10 grid gap-10 md:grid-cols-2 md:gap-16">
+            <div>
+              <p className="text-[13px] font-semibold text-[#586273]">Traditional process</p>
+              <ul className="mt-4 space-y-3">
+                {TRADITIONAL.map((item) => (
+                  <li key={item} className="border-b border-[#D9DEE7] pb-3 text-[15px] text-[#586273]">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-[#3157D5]">Fydell process</p>
+              <ul className="mt-4 space-y-3">
+                {FYDELL_PROCESS.map((item) => (
+                  <li key={item} className="border-b border-[#D9DEE7] pb-3 text-[15px] text-[#0B1020]">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-[#D9DEE7] py-16 lg:py-24">
+        <div className="mkt-content">
+          <h2 className="max-w-2xl text-[28px] font-semibold tracking-[-0.035em] text-[#0B1020] sm:text-[36px]">
+            From role requirements to hiring evidence.
+          </h2>
+          <p className="mt-3 max-w-2xl text-[15.5px] leading-relaxed text-[#586273]">
+            One continuous loop: define the work, run the simulation, review the evidence. Switch
+            among the states below without leaving the page.
+          </p>
+          <div className="mt-8">
+            <EvidenceFlow />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-[#D9DEE7] py-16 lg:py-24">
+        <div className="mkt-content">
+          <h2 className="max-w-2xl text-[28px] font-semibold tracking-[-0.035em] text-[#0B1020] sm:text-[36px]">
+            A work sample, not another questionnaire.
+          </h2>
+          <p className="mt-3 max-w-2xl text-[15.5px] leading-relaxed text-[#586273]">
+            Candidates investigate a realistic problem, inspect supplied materials, ask a
+            stakeholder clarifying questions, respond to constraints, and explain tradeoffs.
+          </p>
+          <div className="mt-8 overflow-hidden rounded-[12px] border border-[#D9DEE7] bg-[#FCFCFA]">
+            <div className="flex items-center justify-between gap-2 border-b border-[#D9DEE7] bg-[#F4F3EF] px-4 py-3 sm:px-5">
+              <div>
+                <p className="text-[13px] font-semibold text-[#0B1020]">The Missing Delays</p>
+                <p className="text-[12px] text-[#586273]">Data Analyst · workbench</p>
+              </div>
+              <span className="rounded-md border border-[#D9DEE7] bg-white px-2 py-0.5 font-mono text-[11px] text-[#0B1020]">
+                4:12
+              </span>
+            </div>
+            <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5">
+              <div className="rounded-[10px] border border-[#D9DEE7] bg-white p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[#586273]">
+                  orders.csv
+                </p>
+                <p className="mt-2 font-mono text-[12px] text-[#0B1020]">A-102 · $800</p>
+                <p className="font-mono text-[12px] text-[#0B1020]">A-103 · $500</p>
+              </div>
+              <div className="rounded-[10px] border border-[#D9DEE7] bg-white p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[#586273]">
+                  Stakeholder
+                </p>
+                <p className="mt-2 text-[13px] text-[#0B1020]">
+                  Do the hyphens in the order IDs mean anything?
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="evidence" className="border-t border-[#D9DEE7] py-16 lg:py-24">
+        <div className="mkt-content">
+          <h2 className="max-w-2xl text-[28px] font-semibold tracking-[-0.035em] text-[#0B1020] sm:text-[36px]">
+            Every judgment points back to evidence.
+          </h2>
+          <p className="mt-3 max-w-2xl text-[15.5px] leading-relaxed text-[#586273]">
+            A real scored attempt of the Data Analyst simulation. Requirement, action, and citation
+            stay connected on one rail.
+          </p>
+          <div className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+            <div className="rounded-[12px] border border-[#D9DEE7] bg-[#FCFCFA] p-6 sm:p-8">
+              <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#D9DEE7] pb-5">
+                <div>
+                  <p className="text-[12px] font-semibold uppercase tracking-wide text-[#3157D5]">
+                    Simulation completed
+                  </p>
+                  <h3 className="mt-1 text-[20px] font-semibold text-[#0B1020]">The Missing Delays</h3>
+                  <p className="mt-1 text-[14px] text-[#586273]">Data Analyst · 4m 47s</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[28px] font-semibold tabular-nums text-[#0B1020]">90</p>
+                  <span className="mt-1 inline-block rounded-md bg-[#EEF2FF] px-2.5 py-1 text-[12px] font-semibold text-[#3157D5]">
+                    Strong evidence
+                  </span>
+                </div>
+              </div>
+              <EvidenceRail nodes={EVIDENCE_NODES} className="mt-2" />
+              <p className="mt-4 text-[12.5px] leading-relaxed text-[#586273]">
+                Prototype evidence from the scoring engine. Not a hire or reject recommendation.
+              </p>
+            </div>
+            <div className="space-y-6">
+              <div>
+                <p className="text-[13px] font-semibold text-[#0B1020]">Employer side</p>
+                <p className="mt-2 text-[14.5px] leading-relaxed text-[#586273]">
+                  Structured evidence for the current hiring decision: competencies, cited actions,
+                  and suggested interview follow-ups.
+                </p>
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-[#0B1020]">Candidate side</p>
+                <p className="mt-2 text-[14.5px] leading-relaxed text-[#586273]">
+                  A privacy-controlled portable record the candidate can choose to share, showing
+                  verified simulations and demonstrated skills.
+                </p>
+              </div>
+              <Link
+                href="/trust"
+                className="inline-flex text-[14px] font-semibold text-[#3157D5] hover:text-[#2342A2]"
+              >
+                How evaluation and privacy work →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-[#D9DEE7] py-16 lg:py-24">
+        <div className="mkt-content">
+          <h2 className="max-w-3xl text-[28px] font-semibold tracking-[-0.035em] text-[#0B1020] sm:text-[36px]">
+            Built first for work that mixes technical judgment and communication.
+          </h2>
+          <p className="mt-3 max-w-2xl text-[15.5px] leading-relaxed text-[#586273]">
+            Six applied technical roles share one evidence architecture. Each role has distinct
+            work, resources, decisions, and rubrics.
           </p>
           <div className="mt-8">
             <RoleExplorer roles={explorerRoles} />
@@ -243,69 +312,50 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ------------------------------------ Section 3: From work to evidence */}
-      <section className="border-t border-white/[0.06] py-16 lg:py-20">
+      <section className="border-t border-[#D9DEE7] py-16 lg:py-24">
         <div className="mkt-content">
-          <h2 className="text-2xl font-semibold text-[#F4F5F7] sm:text-3xl">
-            A short simulation. A useful record.
+          <h2 className="max-w-2xl text-[28px] font-semibold tracking-[-0.035em] text-[#0B1020] sm:text-[36px]">
+            Trust the evidence because you can inspect it.
           </h2>
-          <div className="mt-8">
-            <EvidenceFlow />
+          <div className="mt-10 grid gap-8 sm:grid-cols-2">
+            {TRUST_POINTS.map((item) => (
+              <div key={item.title} className="border-t border-[#D9DEE7] pt-4">
+                <h3 className="text-[15px] font-semibold text-[#0B1020]">{item.title}</h3>
+                <p className="mt-2 text-[14.5px] leading-relaxed text-[#586273]">{item.body}</p>
+              </div>
+            ))}
           </div>
+          <Link
+            href="/trust"
+            className="mt-8 inline-flex text-[14px] font-semibold text-[#3157D5] hover:text-[#2342A2]"
+          >
+            Read the Trust page →
+          </Link>
         </div>
       </section>
 
-      {/* ------------------------------- Section 4: Evidence report and CTA */}
-      <section id="evidence" className="border-t border-white/[0.06] py-16 lg:py-20">
-        <div className="mkt-content">
-          <h2 className="text-2xl font-semibold text-[#F4F5F7] sm:text-3xl">
-            See the answer and how they reached it.
+      <section className="border-t border-[#D9DEE7] py-16 lg:py-24">
+        <div className="mkt-content max-w-2xl">
+          <h2 className="text-[28px] font-semibold tracking-[-0.035em] text-[#0B1020] sm:text-[36px]">
+            Create the first simulation for your role.
           </h2>
-          <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed text-[rgba(244,245,247,0.55)]">
-            A real scored attempt of the Data Analyst simulation, rendered with the same
-            components employers see. Every number comes from the actual scoring engine.
+          <p className="mt-3 text-[15.5px] leading-relaxed text-[#586273]">
+            Define the work, invite candidates, and review a complete evidence report in one
+            workspace.
           </p>
-
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
-            <div className="rounded-xl border border-white/[0.08] bg-[#0c0d10] p-3 sm:p-4">
-              <MicroResultView result={SAMPLE_RESULT} variant="dark" />
-            </div>
-            <div className="space-y-4">
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-white/40">
-                  AI-use summary
-                </p>
-                <p className="mt-2 text-[13px] leading-relaxed text-white/65">
-                  In-product AI use is observed, not banned: prompts, inserted output and whether
-                  the candidate verified the result afterward.
-                </p>
-                <p className="mt-2 text-[12px] text-white/40">
-                  This attempt: no AI assistance used.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-white/40">
-                  Suggested follow-up questions
-                </p>
-                <ul className="mt-2 space-y-2 text-[13px] leading-relaxed text-white/65">
-                  <li>How would you catch unmatched records before the dashboard ships?</li>
-                  <li>What would you tell leadership about the reliability of past reports?</li>
-                </ul>
-              </div>
-              <div className="rounded-2xl border border-violet-500/25 bg-violet-500/[0.06] p-5">
-                <h3 className="text-[16px] font-semibold text-white">Run a pilot</h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-white/65">
-                  Choose a role, invite a small candidate group and tell us what evidence your
-                  team needs.
-                </p>
-                <Link
-                  href="/pricing"
-                  className="mt-4 inline-flex h-[40px] items-center rounded-[9px] bg-violet-500 px-5 text-[13px] font-semibold text-white transition hover:bg-violet-400"
-                >
-                  Run a pilot
-                </Link>
-              </div>
-            </div>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link
+              href={CREATE_SIMULATION_HREF}
+              className="inline-flex h-[44px] items-center rounded-[10px] bg-[#3157D5] px-6 text-[14px] font-semibold text-white transition hover:bg-[#2342A2]"
+            >
+              Create a simulation
+            </Link>
+            <Link
+              href={CONTACT_SALES_HREF}
+              className="inline-flex h-[44px] items-center rounded-[10px] border border-[#D9DEE7] bg-[#FCFCFA] px-6 text-[14px] font-semibold text-[#0B1020] transition hover:border-[#3157D5]/40"
+            >
+              Contact sales
+            </Link>
           </div>
         </div>
       </section>

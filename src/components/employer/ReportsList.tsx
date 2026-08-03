@@ -13,6 +13,7 @@ export interface ReportRow {
   score: number | null;
   bandLabel: string | null;
   completedAt: string | null;
+  needsReview?: boolean;
 }
 
 const BAND_OPTIONS = [
@@ -23,23 +24,35 @@ const BAND_OPTIONS = [
   "Insufficient evidence",
 ];
 
+type ReviewFilter = "all" | "needs_review" | "decided";
+
 export default function ReportsList({
   rows,
   roleOptions,
+  initialReviewFilter = "all",
 }: {
   rows: ReportRow[];
   roleOptions: { key: string; title: string }[];
+  initialReviewFilter?: ReviewFilter;
 }) {
   const [roleFilter, setRoleFilter] = useState("all");
   const [bandFilter, setBandFilter] = useState("all");
+  const [reviewFilter, setReviewFilter] = useState<ReviewFilter>(initialReviewFilter);
   const [search, setSearch] = useState("");
   const [sortNewestFirst, setSortNewestFirst] = useState(true);
+
+  const needsReviewCount = useMemo(
+    () => rows.filter((r) => r.needsReview).length,
+    [rows]
+  );
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     const filtered = rows.filter((r) => {
       if (roleFilter !== "all" && r.roleKey !== roleFilter) return false;
       if (bandFilter !== "all" && r.bandLabel !== bandFilter) return false;
+      if (reviewFilter === "needs_review" && !r.needsReview) return false;
+      if (reviewFilter === "decided" && r.needsReview) return false;
       if (q && !r.candidate.toLowerCase().includes(q) && !r.email.toLowerCase().includes(q))
         return false;
       return true;
@@ -49,24 +62,52 @@ export default function ReportsList({
       const bt = b.completedAt || "";
       return sortNewestFirst ? (at < bt ? 1 : -1) : at < bt ? -1 : 1;
     });
-  }, [rows, roleFilter, bandFilter, search, sortNewestFirst]);
+  }, [rows, roleFilter, bandFilter, reviewFilter, search, sortNewestFirst]);
 
   return (
     <div className="mt-6">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Review status">
+        {(
+          [
+            { key: "all" as const, label: `All (${rows.length})` },
+            { key: "needs_review" as const, label: `Needs review (${needsReviewCount})` },
+            {
+              key: "decided" as const,
+              label: `Decided (${rows.length - needsReviewCount})`,
+            },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={reviewFilter === tab.key}
+            onClick={() => setReviewFilter(tab.key)}
+            className={`rounded-full px-3.5 py-1.5 text-[13.5px] transition ${
+              reviewFilter === tab.key
+                ? "bg-slate-900 font-semibold text-white"
+                : "border border-slate-300 bg-white font-medium text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search candidates"
           aria-label="Search candidates"
-          className="w-56 rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 focus:border-violet-500 focus:outline-none"
+          className="w-56 rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 focus:border-[#3157D5] focus:outline-none"
         />
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
           aria-label="Filter by role"
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-700 focus:border-violet-500 focus:outline-none"
+          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-700 focus:border-[#3157D5] focus:outline-none"
         >
           <option value="all">All roles</option>
           {roleOptions.map((r) => (
@@ -79,7 +120,7 @@ export default function ReportsList({
           value={bandFilter}
           onChange={(e) => setBandFilter(e.target.value)}
           aria-label="Filter by evidence band"
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-700 focus:border-violet-500 focus:outline-none"
+          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-700 focus:border-[#3157D5] focus:outline-none"
         >
           <option value="all">All bands</option>
           {BAND_OPTIONS.map((b) => (
@@ -92,7 +133,7 @@ export default function ReportsList({
           value={sortNewestFirst ? "newest" : "oldest"}
           onChange={(e) => setSortNewestFirst(e.target.value === "newest")}
           aria-label="Sort by completion date"
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-700 focus:border-violet-500 focus:outline-none"
+          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-700 focus:border-[#3157D5] focus:outline-none"
         >
           <option value="newest">Newest first</option>
           <option value="oldest">Oldest first</option>
@@ -104,7 +145,9 @@ export default function ReportsList({
           <p className="text-[15px] text-slate-600">
             {rows.length === 0
               ? "No completed reports yet. Reports appear here after a candidate submits a simulation."
-              : "No reports match these filters."}
+              : reviewFilter === "needs_review"
+                ? "No reports need a hiring decision right now."
+                : "No reports match these filters."}
           </p>
         </div>
       ) : (
@@ -129,6 +172,9 @@ export default function ReportsList({
                     {r.candidate !== r.email && (
                       <p className="text-[12.5px] text-slate-400">{r.email}</p>
                     )}
+                    {r.needsReview && (
+                      <p className="mt-0.5 text-[12px] font-medium text-amber-700">Needs review</p>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-slate-600">{r.roleTitle}</td>
                   <td className="px-4 py-3 text-slate-600">{r.simulation}</td>
@@ -137,7 +183,7 @@ export default function ReportsList({
                   </td>
                   <td className="px-4 py-3">
                     {r.bandLabel ? (
-                      <span className="whitespace-nowrap rounded-full bg-violet-50 px-2.5 py-1 text-[12.5px] font-semibold text-violet-700">
+                      <span className="whitespace-nowrap rounded-full bg-blue-50 px-2.5 py-1 text-[12.5px] font-semibold text-blue-700">
                         {r.bandLabel}
                       </span>
                     ) : (
@@ -150,7 +196,7 @@ export default function ReportsList({
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/app/employer/assessments/report/${r.sessionId}`}
-                      className="text-[13.5px] font-semibold text-violet-700 hover:text-violet-600"
+                      className="text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
                     >
                       View
                     </Link>

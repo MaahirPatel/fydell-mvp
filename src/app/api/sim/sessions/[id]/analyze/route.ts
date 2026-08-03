@@ -4,6 +4,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { runMicroScoring } from "@/lib/simulations/micro-scoring";
 import { getVersionContent } from "@/lib/simulations/db";
 import { isMicroContent } from "@/lib/simulations/micro-types";
+import { runV2Scoring } from "@/lib/simulations/v2/run";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -12,6 +13,8 @@ export const maxDuration = 120;
  * POST: run (or re-check) analysis for a submitted session. Idempotent -
  * called by the post-submission page and the employer report page, so a
  * failed run can always be retried without duplicating results.
+ *
+ * Prefers scoring v2 for micro content; falls back to runMicroScoring on error.
  */
 export async function POST(
   _req: NextRequest,
@@ -52,8 +55,20 @@ export async function POST(
         { status: 410 }
       );
     }
-    const { analysisRunId } = await runMicroScoring(id);
-    return NextResponse.json({ ok: true, analysisRunId });
+
+    try {
+      const { analysisRunId } = await runV2Scoring(id);
+      return NextResponse.json({ ok: true, analysisRunId, engineVersion: "v2" });
+    } catch (v2Err) {
+      console.error("[analyze] v2 scoring failed, falling back to micro:", v2Err);
+      const { analysisRunId } = await runMicroScoring(id);
+      return NextResponse.json({
+        ok: true,
+        analysisRunId,
+        engineVersion: "micro-v2",
+        fallback: true,
+      });
+    }
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Analysis failed" },

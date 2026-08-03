@@ -253,7 +253,7 @@ export function InviteModalProvider({
                   <button
                     type="button"
                     onClick={close}
-                    className="rounded-lg bg-violet-600 px-4 py-2 text-[14px] font-semibold text-white hover:bg-violet-500"
+                    className="rounded-lg bg-[#3157D5] px-4 py-2 text-[14px] font-semibold text-white hover:bg-[#2848b8]"
                   >
                     Done
                   </button>
@@ -279,7 +279,7 @@ export function InviteModalProvider({
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Jordan Diaz"
-                      className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-[15px] text-slate-900 focus:border-violet-500 focus:outline-none"
+                      className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-[15px] text-slate-900 focus:border-[#3157D5] focus:outline-none"
                     />
                   </label>
 
@@ -293,7 +293,7 @@ export function InviteModalProvider({
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="jordan@example.com"
-                      className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-[15px] text-slate-900 focus:border-violet-500 focus:outline-none"
+                      className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-[15px] text-slate-900 focus:border-[#3157D5] focus:outline-none"
                     />
                   </label>
 
@@ -306,7 +306,7 @@ export function InviteModalProvider({
                           setRoleKey(e.target.value);
                           setSlug("");
                         }}
-                        className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14.5px] text-slate-900 focus:border-violet-500 focus:outline-none"
+                        className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14.5px] text-slate-900 focus:border-[#3157D5] focus:outline-none"
                       >
                         {catalog.map((r) => (
                           <option key={r.key} value={r.key}>
@@ -323,7 +323,7 @@ export function InviteModalProvider({
                       <select
                         value={expiresInDays}
                         onChange={(e) => setExpiresInDays(Number(e.target.value))}
-                        className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14.5px] text-slate-900 focus:border-violet-500 focus:outline-none"
+                        className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14.5px] text-slate-900 focus:border-[#3157D5] focus:outline-none"
                       >
                         {EXPIRATION_OPTIONS.map((o) => (
                           <option key={o.days} value={o.days}>
@@ -342,7 +342,7 @@ export function InviteModalProvider({
                       required
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
-                      className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14.5px] text-slate-900 focus:border-violet-500 focus:outline-none"
+                      className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14.5px] text-slate-900 focus:border-[#3157D5] focus:outline-none"
                     >
                       <option value="" disabled>
                         Choose a simulation
@@ -379,7 +379,7 @@ export function InviteModalProvider({
                   <button
                     type="submit"
                     disabled={busy}
-                    className="rounded-lg bg-violet-600 px-4 py-2 text-[14px] font-semibold text-white hover:bg-violet-500 disabled:opacity-50"
+                    className="rounded-lg bg-[#3157D5] px-4 py-2 text-[14px] font-semibold text-white hover:bg-[#2848b8] disabled:opacity-50"
                   >
                     {busy ? "Sending" : "Send invitation"}
                   </button>

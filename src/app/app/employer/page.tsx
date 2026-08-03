@@ -4,7 +4,12 @@ import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import RecentCandidates from "@/components/employer/RecentCandidates";
 import SimulationLibrary from "@/components/employer/SimulationLibrary";
 import { getEmployerCatalog } from "./_lib/catalog";
-import { getInvitationRecords, getOverviewMetrics, getReportRecords } from "./_lib/data";
+import {
+  getInvitationRecords,
+  getNeedsReviewRecords,
+  getOverviewMetrics,
+  getReportRecords,
+} from "./_lib/data";
 
 export const metadata = { title: "Overview | Fydell" };
 export const dynamic = "force-dynamic";
@@ -22,12 +27,13 @@ export default async function EmployerOverviewPage() {
   const user = await requireUser();
   if (!user) redirect("/login?next=/app/employer");
   const org = await requireOrgMember(user.id);
-  if (!org) redirect("/onboarding/employer");
+  if (!org) redirect("/account/setup-required?reason=no_org");
 
-  const [metrics, invitations, reports, catalog] = await Promise.all([
+  const [metrics, invitations, reports, needsReview, catalog] = await Promise.all([
     getOverviewMetrics(org.organizationId),
     getInvitationRecords(org.organizationId, 8),
     getReportRecords(org.organizationId, 5),
+    getNeedsReviewRecords(org.organizationId, 8),
     getEmployerCatalog(),
   ]);
 
@@ -45,16 +51,61 @@ export default async function EmployerOverviewPage() {
 
   return (
     <div className="max-w-[1080px]">
-      <h1 className="text-[24px] font-semibold text-slate-900">Overview</h1>
-      <p className="mt-1 text-[15px] text-slate-500">
-        Five-minute work simulations for six applied technical roles.
-      </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-[24px] font-semibold text-slate-900">Overview</h1>
+          <p className="mt-1 text-[15px] text-slate-500">
+            Invite candidates, track attempts, and review citation-backed evidence.
+          </p>
+        </div>
+        <Link
+          href="/app/employer/simulations/new"
+          className="inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3.5 text-[13.5px] font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          New simulation
+        </Link>
+      </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Candidates in progress" value={metrics.inProgress} />
         <Metric label="Completed simulations" value={metrics.completed} />
         <Metric label="Reports ready" value={metrics.reportsReady} />
+        <Metric label="Needs review" value={metrics.needsReview} />
       </div>
+
+      {needsReview.length > 0 && (
+        <section className="mt-10">
+          <div className="flex items-end justify-between gap-3">
+            <h2 className="text-[17px] font-semibold text-slate-900">Needs review</h2>
+            <Link
+              href="/app/employer/reports?review=needs"
+              className="text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
+            >
+              View all
+            </Link>
+          </div>
+          <ul className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
+            {needsReview.map((r) => (
+              <li key={r.sessionId} className="flex items-center justify-between gap-3 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="truncate text-[15px] font-medium text-slate-900">{r.candidate}</p>
+                  <p className="truncate text-[13px] text-slate-500">
+                    {r.simulation}
+                    {r.bandLabel ? ` · ${r.bandLabel}` : ""}
+                    {r.score !== null ? ` · ${r.score}/100` : ""}
+                  </p>
+                </div>
+                <Link
+                  href={`/app/employer/assessments/report/${r.sessionId}`}
+                  className="shrink-0 text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
+                >
+                  Review report
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mt-10">
         <div className="flex items-end justify-between gap-3">
@@ -62,7 +113,7 @@ export default async function EmployerOverviewPage() {
           {recentRows.length > 0 && (
             <Link
               href="/app/employer/candidates"
-              className="text-[13.5px] font-semibold text-violet-700 hover:text-violet-600"
+              className="text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
             >
               View all
             </Link>
@@ -78,7 +129,7 @@ export default async function EmployerOverviewPage() {
           <h2 className="text-[17px] font-semibold text-slate-900">Available simulations</h2>
           <Link
             href="/app/employer/assessments"
-            className="text-[13.5px] font-semibold text-violet-700 hover:text-violet-600"
+            className="text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
           >
             Browse the library
           </Link>
@@ -104,11 +155,12 @@ export default async function EmployerOverviewPage() {
                     {r.simulation}
                     {r.bandLabel ? ` · ${r.bandLabel}` : ""}
                     {r.score !== null ? ` · ${r.score}/100` : ""}
+                    {r.needsReview ? " · Needs review" : ""}
                   </p>
                 </div>
                 <Link
                   href={`/app/employer/assessments/report/${r.sessionId}`}
-                  className="shrink-0 text-[13.5px] font-semibold text-violet-700 hover:text-violet-600"
+                  className="shrink-0 text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
                 >
                   View report
                 </Link>

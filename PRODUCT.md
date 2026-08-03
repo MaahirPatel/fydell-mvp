@@ -1,28 +1,28 @@
 # Fydell
 
 ## Register
-**brand** (marketing landing is the primary public surface; product UI serves the hiring workflow)
+**product** (authenticated hiring workflow is the primary surface; marketing supports it)
 
 ## Users & Purpose
-Finance hiring teams (IB, PE, FP&A, corp fin) who need proof of how candidates think before Superday / interviews. Fydell runs a timed acquisition simulation (Project Meridian) and produces an evidence report from the work trail.
+Hiring managers, talent leaders, and recruiters evaluating Applied Technical Roles: Data Analyst, Business Intelligence Analyst, Solutions Engineer, Implementation Consultant, Technical Support Engineer, and Business Systems Analyst. Candidates complete role-specific work simulations; employers review citation-backed evidence.
 
 ## Brand personality
-Precise · cinematic · finance-first
+Precise · restrained · evidence-led
 
 ## Voice
-Direct, confident, evidence-led. No quiz language. No fabricated benchmarks or percentiles on marketing.
+Direct, concrete, professional. No quiz language. No fabricated benchmarks, percentiles, or compliance claims.
 
 ## Anti-references
-- Brass / parchment “Evidence Ledger” editorial look
-- Purple-on-white generic AI SaaS
+- Dark purple cinematic AI-SaaS glass
 - Warm cream + terracotta editorial
-- Public simulation catalog / self-serve quiz browse
+- Fake logos, fake stats, fake trust badges
+- Quiz UI dressed as a work simulation
 
 ## Visual north star
-Dark cinematic SaaS: near-black atmosphere, cyan↔magenta accents, glass product UI overlays, portal/landscape hero depth. Reference: user-provided fydell landing mock (Book a demo / Hire with proof).
+Light mineral paper canvas, soft white surfaces, near-black navy ink, mineral cobalt accent. Evidence rail connects requirement → action → citation when the relationship is real.
 
 ## Product constraints (do not break)
-- Invite-only Meridian access; no public live sim unlock
-- Atlas / Sentinel / Harbor stay unavailable
-- Request a pilot / Book a demo → lead form (hello@fydell.com)
-- Auth, invites, Supabase dual-write, admin preserved
+- Curated simulations only; no unconstrained AI simulation generator
+- Auth, invitations, Supabase persistence, and historical reports preserved
+- Candidate payloads never expose rubrics or answer keys
+- Published simulation versions are immutable

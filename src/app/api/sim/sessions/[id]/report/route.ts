@@ -3,6 +3,8 @@ import { requireUser } from "@/lib/simulations/auth";
 import { getSessionForOrgMember, getVersionContent, listEvents, listMessages } from "@/lib/simulations/db";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { BAND_LABELS, type EvidenceBand } from "@/lib/simulations/scoring";
+import { isMicroContent } from "@/lib/simulations/micro-types";
+import { isV2PersistedResult } from "@/lib/simulations/v2/scoring";
 
 export const runtime = "nodejs";
 
@@ -73,6 +75,17 @@ export async function GET(
       .eq("session_id", id)
       .maybeSingle();
 
+    const deliverableFields = isMicroContent(content)
+      ? content.questions.map((q) => ({ key: q.id, label: q.prompt }))
+      : Array.isArray((content as { deliverableFields?: { key: string; label: string }[] }).deliverableFields)
+        ? (content as { deliverableFields: { key: string; label: string }[] }).deliverableFields.map(
+            (f) => ({ key: f.key, label: f.label })
+          )
+        : [];
+
+    const resultJson = run.result;
+    const v2 = isV2PersistedResult(resultJson);
+
     return NextResponse.json({
       ready: true,
       candidate: {
@@ -83,7 +96,7 @@ export async function GET(
         title: content.title,
         roleKey: content.roleKey,
         durationMinutes: content.durationMinutes,
-        deliverableFields: content.deliverableFields.map((f) => ({ key: f.key, label: f.label })),
+        deliverableFields,
       },
       session: {
         startedAt: session.started_at,
@@ -94,9 +107,27 @@ export async function GET(
       analysis: {
         recommendation: run.recommendation,
         cappedByCritical: run.capped_by_critical,
-        aiUse: run.ai_use_summary,
-        interviewQuestions: run.interview_questions,
+        aiUse: run.ai_use_summary || {
+          promptCount: 0,
+          insertedCount: 0,
+          editedAfterInsertCount: 0,
+          externalAiDisclosed: Boolean(submission?.external_ai_disclosed),
+          trackingNote: "",
+        },
+        interviewQuestions: run.interview_questions || [],
         completedAt: run.completed_at,
+        engineVersion: run.engine_version,
+        result: resultJson,
+        ...(v2
+          ? {
+              performance: resultJson.performance,
+              coverage: resultJson.coverage,
+              confidence: resultJson.confidence,
+              band: resultJson.band,
+              bandLabel: resultJson.bandLabel,
+              citations: resultJson.citations,
+            }
+          : {}),
         competencies: (competencies || []).map((c) => ({
           key: c.competency_key,
           label: c.label,

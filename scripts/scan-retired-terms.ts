@@ -3,7 +3,11 @@
  * in the active source tree. Fails (exit 1) with file:line listings when found.
  *
  * Scope: the entire src tree (src/app, src/components, src/lib) plus public/.
- * Excluded: node_modules, .next, and scanner test fixtures.
+ * Excluded: node_modules, .next, __fixtures__ dirs, and EXCLUDED_FILE_GLOBS.
+ *
+ * Allowlist policy: docs/ and other non-product paths are outside scan paths.
+ * docs/FYDELL_POLISH_PROMPT.md intentionally contains legacy naming for migration
+ * reference and is never scanned. Do not widen exclusions into active UX.
  *
  * Run: npx tsx scripts/scan-retired-terms.ts
  */
@@ -15,6 +19,12 @@ const ROOT = process.cwd();
 const SCAN_PATHS = ["src/app", "src/components", "src/lib", "public"];
 
 const EXCLUDED_DIR_NAMES = new Set(["node_modules", ".next", "__fixtures__"]);
+
+/** Archived fixtures under src/ that may retain legacy copy. Active UX must stay clean. */
+const EXCLUDED_FILE_GLOBS: RegExp[] = [
+  /[/\\]__fixtures__[/\\]/,
+  /[/\\]legacy[/\\][^/\\]+\.(ts|tsx|md|json)$/,
+];
 
 /** Word-boundary, case-chosen patterns. "FDE" stays case-sensitive so lowercase
  *  legacy identifiers (account_type "fde", table names) don't false-positive. */
@@ -45,6 +55,11 @@ const EXTENSIONS = new Set([
   ".webmanifest",
 ]);
 
+function isExcludedFile(file: string): boolean {
+  const rel = relative(ROOT, file).replace(/\\/g, "/");
+  return EXCLUDED_FILE_GLOBS.some((re) => re.test(rel));
+}
+
 function* walk(path: string): Generator<string> {
   const full = join(ROOT, path);
   let st;
@@ -54,7 +69,7 @@ function* walk(path: string): Generator<string> {
     return;
   }
   if (st.isFile()) {
-    yield full;
+    if (!isExcludedFile(full)) yield full;
     return;
   }
   for (const entry of readdirSync(full)) {
@@ -62,7 +77,8 @@ function* walk(path: string): Generator<string> {
     const child = join(full, entry);
     const cst = statSync(child);
     if (cst.isDirectory()) yield* walk(relative(ROOT, child));
-    else if (EXTENSIONS.has(entry.slice(entry.lastIndexOf(".")))) yield child;
+    else if (EXTENSIONS.has(entry.slice(entry.lastIndexOf("."))) && !isExcludedFile(child))
+      yield child;
   }
 }
 

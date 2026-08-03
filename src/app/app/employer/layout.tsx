@@ -1,11 +1,75 @@
+import { randomBytes } from "crypto";
 import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/auth/resolve-post-login";
+import { emailDomain, slugifyOrganization } from "@/lib/org/reserved";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import EmployerShell from "@/components/employer/EmployerShell";
 import { getEmployerCatalog } from "./_lib/catalog";
 
 export const metadata = { title: "Employer | Fydell" };
 export const dynamic = "force-dynamic";
+
+const FREE_EMAIL_DOMAINS = new Set([
+  "gmail.com",
+  "googlemail.com",
+  "outlook.com",
+  "hotmail.com",
+  "live.com",
+  "yahoo.com",
+  "icloud.com",
+  "me.com",
+  "aol.com",
+  "proton.me",
+  "protonmail.com",
+]);
+
+function defaultWorkspaceName(email: string): string {
+  const domain = emailDomain(email);
+  if (!domain || FREE_EMAIL_DOMAINS.has(domain)) return "My workspace";
+  return domain;
+}
+
+async function ensureDefaultOrganization(
+  admin: ReturnType<typeof createAdminSupabaseClient>,
+  userId: string,
+  email: string
+): Promise<string | null> {
+  const name = defaultWorkspaceName(email);
+  const slug = `${slugifyOrganization(name)}-${randomBytes(3).toString("hex")}`;
+
+  const { data: org, error: orgErr } = await admin
+    .from("organizations")
+    .insert({
+      name,
+      slug,
+      status: "active",
+      pilot_stage: "setup",
+      created_by: userId,
+      owner_id: userId,
+      owner_email: email,
+      billing_email: email,
+    })
+    .select("id, name")
+    .single();
+
+  if (orgErr || !org) return null;
+
+  const { error: memErr } = await admin.from("organization_members").insert({
+    organization_id: org.id,
+    user_id: userId,
+    role: "owner",
+    status: "active",
+    invited_by: userId,
+    joined_at: new Date().toISOString(),
+  });
+
+  if (memErr) {
+    await admin.from("organizations").delete().eq("id", org.id);
+    return null;
+  }
+
+  return org.name as string;
+}
 
 export default async function EmployerAppLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthenticatedUser();
@@ -25,28 +89,40 @@ export default async function EmployerAppLayout({ children }: { children: React.
       .maybeSingle();
 
     if (!membership?.organization_id) {
-      // No org yet. Route the user to the setup flow that matches their
-      // account type instead of assuming they are an employer.
+      // No org yet. Route by account type; employers (or missing type) get a
+      // default workspace instead of a missing onboarding route.
       const { data: profile } = await admin
         .from("profiles")
         .select("account_type")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (profile?.account_type === "unresolved") {
+      const accountType = profile?.account_type as string | null | undefined;
+
+      if (accountType === "unresolved") {
         redirect("/signup/role");
       }
-      if (profile?.account_type === "fde") {
-        redirect("/app/fde");
+      if (accountType === "fde") {
+        redirect("/app/candidate");
       }
-      if (profile?.account_type === "partner") {
+      if (accountType === "partner") {
         redirect("/account/setup-required?reason=partner_pending");
       }
-      redirect("/onboarding/employer");
-    }
 
-    const org = membership.organizations as { name?: string } | null;
-    workspaceName = org?.name || workspaceName;
+      // employer, missing, or unknown → create a default organization and continue
+      const createdName = await ensureDefaultOrganization(
+        admin,
+        user.id,
+        user.email || ""
+      );
+      if (!createdName) {
+        redirect("/account/setup-required?reason=org_create_failed");
+      }
+      workspaceName = createdName;
+    } else {
+      const org = membership.organizations as { name?: string } | null;
+      workspaceName = org?.name || workspaceName;
+    }
   }
 
   const catalog = await getEmployerCatalog();

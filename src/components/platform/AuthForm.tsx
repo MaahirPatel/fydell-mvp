@@ -12,7 +12,7 @@ const HIGHLIGHTS = [
   "Candidate progress visible to your hiring team",
 ];
 
-/** Only candidate session deep-links may override the server destination. */
+/** Candidate session deep-links and employer builder return paths may override. */
 function safeReturnPath(next: string | null): string | null {
   if (!next) return null;
   if (!next.startsWith("/") || next.startsWith("//")) return null;
@@ -20,7 +20,9 @@ function safeReturnPath(next: string | null): string | null {
     next.startsWith("/s/") ||
     next.startsWith("/invite/") ||
     next.startsWith("/sim/") ||
-    next.startsWith("/simulations")
+    next.startsWith("/simulations") ||
+    next.startsWith("/app/employer") ||
+    next.startsWith("/app/simulations")
   )
     return next;
   return null;
@@ -67,7 +69,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
         router.push(data.redirectTo);
         return;
       }
-      router.push(data.onboardingComplete ? "/dashboard" : "/onboarding/employer");
+      router.push("/app/employer");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);

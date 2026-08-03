@@ -18,6 +18,7 @@ export interface CandidateRow {
   reportReady: boolean;
   canResend: boolean;
   canRevoke: boolean;
+  emailDelivery?: string | null;
 }
 
 export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
@@ -34,7 +35,7 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
         <button
           type="button"
           onClick={() => open()}
-          className="mt-5 inline-flex h-10 items-center rounded-lg bg-violet-600 px-4 text-[14px] font-semibold text-white hover:bg-violet-500"
+          className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#3157D5] px-4 text-[14px] font-semibold text-white hover:bg-[#2848b8]"
         >
           Invite candidate
         </button>
@@ -70,11 +71,18 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
                 <td className="px-4 py-3 text-slate-600">{r.email}</td>
                 <td className="px-4 py-3 text-slate-600">{r.roleTitle}</td>
                 <td className="px-4 py-3 text-slate-600">{r.simulation}</td>
-                <td className="px-4 py-3 text-slate-600">{r.statusLabel}</td>
+                <td className="px-4 py-3 text-slate-600">
+                  <span>{r.statusLabel}</span>
+                  {r.emailDelivery === "failed" && (
+                    <span className="mt-1 block text-[12px] font-medium text-red-600">
+                      Email failed
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-slate-600">{r.progress}</td>
                 <td className="px-4 py-3">
                   {r.result ? (
-                    <span className="whitespace-nowrap rounded-full bg-violet-50 px-2.5 py-1 text-[12.5px] font-semibold text-violet-700">
+                    <span className="whitespace-nowrap rounded-full bg-blue-50 px-2.5 py-1 text-[12.5px] font-semibold text-blue-700">
                       {r.result}
                     </span>
                   ) : (
@@ -86,7 +94,7 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
                     {r.reportReady && r.sessionId && (
                       <Link
                         href={`/app/employer/assessments/report/${r.sessionId}`}
-                        className="text-[13.5px] font-semibold text-violet-700 hover:text-violet-600"
+                        className="text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
                       >
                         View report
                       </Link>

@@ -42,15 +42,24 @@ interface Report {
     recommendation: string;
     cappedByCritical: string | null;
     aiUse: {
-      promptCount: number;
-      insertedCount: number;
-      editedAfterInsertCount: number;
-      externalAiDisclosed: boolean;
-      trackingNote: string;
+      promptCount?: number;
+      insertedCount?: number;
+      editedAfterInsertCount?: number;
+      externalAiDisclosed?: boolean;
+      trackingNote?: string;
+      scoringMode?: string;
     };
     interviewQuestions: string[];
     competencies: Competency[];
     evidence: Evidence[];
+    engineVersion?: string;
+    performance?: number | null;
+    coverage?: number;
+    confidence?: number;
+    band?: string;
+    bandLabel?: string;
+    citations?: { claim: string; eventOrArtifactId: string; detail: string }[];
+    result?: unknown;
   };
   submission?: {
     snapshot: { deliverable: Record<string, string | number>; notes: string };
@@ -146,7 +155,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
       </div>
     );
   if (!report)
-    return <p className="text-[13.5px] text-slate-500" role="status">Loading the report…</p>;
+    return <p className="text-[13.5px] text-slate-500" role="status">Loading the report...</p>;
   if (!report.ready)
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-6">
@@ -188,11 +197,39 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
             performance elsewhere cannot offset it.
           </p>
         )}
+        {typeof analysis.performance === "number" && (
+          <p className="mt-2 text-[13px]">
+            Performance {analysis.performance}
+            {typeof analysis.coverage === "number" && (
+              <> · coverage {Math.round(analysis.coverage * 100)}%</>
+            )}
+            {typeof analysis.confidence === "number" && (
+              <> · confidence {Math.round(analysis.confidence * 100)}%</>
+            )}
+            {analysis.bandLabel && <> · {analysis.bandLabel}</>}
+          </p>
+        )}
         <p className="mt-1 text-[12.5px] opacity-80">
           Bands describe strength of observed evidence, not a ranking. This report shows what the
           candidate did, so you can judge for yourself.
         </p>
       </div>
+
+      {analysis.citations && analysis.citations.length > 0 && (
+        <section aria-labelledby="cite-h">
+          <h2 id="cite-h" className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
+            Evidence citations
+          </h2>
+          <ol className="mt-2 space-y-2">
+            {analysis.citations.map((c, i) => (
+              <li key={i} className="rounded-xl border border-slate-200 bg-white p-4">
+                <p className="text-[13.5px] font-semibold text-slate-900">{c.claim}</p>
+                <p className="mt-1 text-[12.5px] text-slate-600">{c.detail}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       {/* competency bands */}
       <section aria-labelledby="comp-h">
@@ -296,14 +333,16 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
               AI use during the session
             </p>
             <p className="mt-1.5 text-[13px] text-slate-700">
-              {analysis.aiUse.promptCount === 0
+              {(analysis.aiUse.promptCount ?? 0) === 0
                 ? "Did not use the in-product assistant."
-                : `Used the in-product assistant ${analysis.aiUse.promptCount} time${analysis.aiUse.promptCount === 1 ? "" : "s"}; inserted output ${analysis.aiUse.insertedCount} time${analysis.aiUse.insertedCount === 1 ? "" : "s"}.`}{" "}
+                : `Used the in-product assistant ${analysis.aiUse.promptCount} time${analysis.aiUse.promptCount === 1 ? "" : "s"}; inserted output ${analysis.aiUse.insertedCount ?? 0} time${(analysis.aiUse.insertedCount ?? 0) === 1 ? "" : "s"}.`}{" "}
               {submission.externalAiDisclosed
                 ? "Candidate disclosed using external AI tools."
                 : "No external AI use was disclosed."}
             </p>
-            <p className="mt-1 text-[11.5px] text-slate-400">{analysis.aiUse.trackingNote}</p>
+            {analysis.aiUse.trackingNote && (
+              <p className="mt-1 text-[11.5px] text-slate-400">{analysis.aiUse.trackingNote}</p>
+            )}
           </div>
         </div>
       )}
@@ -351,7 +390,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
               <li key={d.id}>
                 Recorded <strong className="text-slate-700">{d.decision.replace(/_/g, " ")}</strong> on{" "}
                 {new Date(d.created_at).toLocaleDateString()}
-                {d.notes && <>: “{d.notes}”</>}
+                {d.notes && <>: "{d.notes}"</>}
               </li>
             ))}
           </ul>

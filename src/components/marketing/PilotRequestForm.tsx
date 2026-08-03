@@ -5,7 +5,7 @@ import Link from "next/link";
 import TurnstileField from "@/components/security/TurnstileField";
 
 const inputClass =
-  "h-[43px] w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-0)] px-3.5 text-[14px] text-[var(--text-primary)] placeholder:text-[rgba(244,245,247,0.28)] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[var(--brand-blue)] focus:shadow-[0_0_0_2px_rgba(86,98,255,0.22)]";
+  "h-[43px] w-full rounded-[8px] border border-[#D9DEE7] bg-white px-3.5 text-[14px] text-[#0B1020] placeholder:text-[#586273] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#3157D5] focus:shadow-[0_0_0_2px_rgba(49,87,213,0.18)]";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -74,16 +74,16 @@ export function PilotRequestForm() {
   if (status === "success" && success) {
     return (
       <div className="rounded-[12px] border border-[rgba(103,217,160,0.25)] bg-[rgba(103,217,160,0.08)] px-5 py-6">
-        <p className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+        <p className="text-[15px] text-[#0B1020]" style={{ fontWeight: 560 }}>
           Request received
         </p>
-        <p className="mt-2 text-[13px] text-[rgba(244,245,247,0.72)]">
+        <p className="mt-2 text-[13px] text-[#586273]">
           Reference:{" "}
-          <span className="tabular-nums text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+          <span className="tabular-nums text-[#0B1020]" style={{ fontWeight: 560 }}>
             {success.publicReference}
           </span>
         </p>
-        <p className="mt-3 text-[13px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
+        <p className="mt-3 text-[13px] leading-[1.55] text-[#586273]">
           A confirmation email is being sent to {success.workEmail}. A member of the Fydell team
           will reply within one business day.
         </p>
@@ -97,7 +97,7 @@ export function PilotRequestForm() {
           </Link>
           <Link
             href="/"
-            className="text-[13px] text-[rgba(244,245,247,0.62)] transition-colors hover:text-[#F4F5F7]"
+            className="text-[13px] text-[#586273] transition-colors hover:text-[#0B1020]"
           >
             Return to homepage →
           </Link>
@@ -108,7 +108,7 @@ export function PilotRequestForm() {
             setStatus("idle");
             setSuccess(null);
           }}
-          className="mt-4 text-[13px] text-[rgba(244,245,247,0.4)] hover:text-[rgba(244,245,247,0.7)]"
+          className="mt-4 text-[13px] text-[#586273] hover:text-[#586273]"
         >
           Submit another request
         </button>

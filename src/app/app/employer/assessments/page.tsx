@@ -10,7 +10,7 @@ export default async function EmployerSimulationsPage() {
   const user = await requireUser();
   if (!user) redirect("/login?next=/app/employer/assessments");
   const org = await requireOrgMember(user.id);
-  if (!org) redirect("/onboarding/employer");
+  if (!org) redirect("/app/employer");
 
   const catalog = await getEmployerCatalog();
 
@@ -18,8 +18,8 @@ export default async function EmployerSimulationsPage() {
     <div className="max-w-[1080px]">
       <h1 className="text-[24px] font-semibold text-slate-900">Simulations</h1>
       <p className="mt-1 text-[15px] text-slate-500">
-        Thirty curated five-minute simulations, five for each role. Preview any of them, then
-        invite a candidate.
+        Choose a role simulation, invite a candidate, and review the evidence report when they
+        finish.
       </p>
       <div className="mt-6">
         <SimulationLibrary roles={catalog} />

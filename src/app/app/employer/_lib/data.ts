@@ -27,7 +27,11 @@ const SESSION_PROGRESS_LABEL: Record<string, string> = {
 
 interface AnalysisRunEmbed {
   status: string;
-  result: { total?: number; bandLabel?: string } | null;
+  result: {
+    total?: number;
+    performance?: number | null;
+    bandLabel?: string;
+  } | null;
 }
 
 interface SessionEmbed {
@@ -54,12 +58,34 @@ function roleTitleFor(roleKey: string | undefined): string {
   return ROLE_BY_KEY[roleKey as RoleKey]?.title || roleKey;
 }
 
+/** V2 uses `performance`; legacy micro scoring used `total`. */
+function scoreFromResult(result: AnalysisRunEmbed["result"]): number | null {
+  if (!result) return null;
+  if (typeof result.performance === "number") return result.performance;
+  if (typeof result.total === "number") return result.total;
+  return null;
+}
+
 function formatResult(run: AnalysisRunEmbed | null): string | null {
   if (!run?.result) return null;
-  const { total, bandLabel } = run.result;
-  if (typeof total === "number" && bandLabel) return `${bandLabel} · ${total}/100`;
+  const score = scoreFromResult(run.result);
+  const { bandLabel } = run.result;
+  if (typeof score === "number" && bandLabel) return `${bandLabel} · ${score}/100`;
   if (bandLabel) return bandLabel;
+  if (typeof score === "number") return `${score}/100`;
   return null;
+}
+
+async function decidedSessionIds(
+  admin: ReturnType<typeof createAdminSupabaseClient>,
+  sessionIds: string[]
+): Promise<Set<string>> {
+  if (sessionIds.length === 0) return new Set();
+  const { data } = await admin
+    .from("sim_employer_decisions")
+    .select("session_id")
+    .in("session_id", sessionIds);
+  return new Set((data || []).map((d) => d.session_id as string));
 }
 
 export interface InvitationRecord {
@@ -78,6 +104,7 @@ export interface InvitationRecord {
   canResend: boolean;
   canRevoke: boolean;
   createdAt: string;
+  emailDelivery: string | null;
 }
 
 export async function getInvitationRecords(
@@ -88,7 +115,7 @@ export async function getInvitationRecords(
   const { data } = await admin
     .from("sim_invitations")
     .select(
-      "id, candidate_email, candidate_name, status, expires_at, created_at, sim_templates(title, role_key), sim_sessions(id, status, submitted_at, sim_analysis_runs(status, result))"
+      "id, candidate_email, candidate_name, status, email_delivery, expires_at, created_at, sim_templates(title, role_key), sim_sessions(id, status, submitted_at, sim_analysis_runs(status, result))"
     )
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false })
@@ -128,6 +155,7 @@ export async function getInvitationRecords(
       canResend: ["sent", "opened", "expired"].includes(status),
       canRevoke: ["sent", "opened"].includes(status),
       createdAt: inv.created_at,
+      emailDelivery: (inv.email_delivery as string) || null,
     };
   });
 }
@@ -142,6 +170,7 @@ export interface ReportRecord {
   score: number | null;
   bandLabel: string | null;
   completedAt: string | null;
+  needsReview: boolean;
 }
 
 export async function getReportRecords(
@@ -159,7 +188,13 @@ export async function getReportRecords(
     .order("submitted_at", { ascending: false })
     .limit(limit);
 
-  return (data || []).map((s) => {
+  const sessions = data || [];
+  const decided = await decidedSessionIds(
+    admin,
+    sessions.map((s) => s.id as string)
+  );
+
+  return sessions.map((s) => {
     const template = first(
       s.sim_templates as { title?: string; role_key?: string }[] | { title?: string; role_key?: string } | null
     );
@@ -178,9 +213,10 @@ export async function getReportRecords(
       roleKey: template?.role_key || "",
       roleTitle: roleTitleFor(template?.role_key),
       simulation: template?.title || "",
-      score: typeof run?.result?.total === "number" ? run.result.total : null,
+      score: scoreFromResult(run?.result ?? null),
       bandLabel: run?.result?.bandLabel || null,
       completedAt: s.submitted_at,
+      needsReview: !decided.has(s.id),
     };
   });
 }
@@ -189,6 +225,7 @@ export interface OverviewMetrics {
   inProgress: number;
   completed: number;
   reportsReady: number;
+  needsReview: number;
 }
 
 export async function getOverviewMetrics(organizationId: string): Promise<OverviewMetrics> {
@@ -199,11 +236,28 @@ export async function getOverviewMetrics(organizationId: string): Promise<Overvi
     .eq("organization_id", organizationId)
     .limit(1000);
   const sessions = data || [];
+  const reportReady = sessions.filter((s) =>
+    ["analyzed", "report_ready"].includes(s.status)
+  );
+  const decided = await decidedSessionIds(
+    admin,
+    reportReady.map((s) => s.id as string)
+  );
+
   return {
     inProgress: sessions.filter((s) => ["accepted", "active"].includes(s.status)).length,
     completed: sessions.filter((s) =>
       ["submitted", "analyzed", "report_ready"].includes(s.status)
     ).length,
-    reportsReady: sessions.filter((s) => ["analyzed", "report_ready"].includes(s.status)).length,
+    reportsReady: reportReady.length,
+    needsReview: reportReady.filter((s) => !decided.has(s.id)).length,
   };
+}
+
+export async function getNeedsReviewRecords(
+  organizationId: string,
+  limit = 20
+): Promise<ReportRecord[]> {
+  const reports = await getReportRecords(organizationId, 300);
+  return reports.filter((r) => r.needsReview).slice(0, limit);
 }

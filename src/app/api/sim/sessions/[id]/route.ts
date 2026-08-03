@@ -8,12 +8,13 @@ import {
 } from "@/lib/simulations/db";
 import { toMicroCandidateView } from "@/lib/simulations/candidate-view";
 import { isMicroContent } from "@/lib/simulations/micro-types";
+import { microToV2, toV2CandidateView } from "@/lib/simulations/v2";
 
 export const runtime = "nodejs";
 
 /**
  * GET: the full candidate payload - session, sanitized content, working
- * state, messages.
+ * state, messages. Micro sessions also include a candidate-safe v2 workbench view.
  */
 export async function GET(
   _req: NextRequest,
@@ -44,6 +45,7 @@ export async function GET(
         submittedAt: session.submitted_at,
       },
       content: toMicroCandidateView(content),
+      workbench: toV2CandidateView(microToV2(content)),
       state: {
         revision: state.revision,
         currentTaskId: state.current_task_id,

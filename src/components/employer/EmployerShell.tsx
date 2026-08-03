@@ -11,6 +11,7 @@ import type { CatalogRole } from "./catalog-types";
 const NAV = [
   { href: "/app/employer", label: "Overview", exact: true },
   { href: "/app/employer/assessments", label: "Simulations", exact: false },
+  { href: "/app/employer/simulations/new", label: "New simulation", exact: false },
   { href: "/app/employer/candidates", label: "Candidates", exact: false },
   { href: "/app/employer/reports", label: "Reports", exact: false },
   { href: "/app/employer/settings", label: "Settings", exact: false },
@@ -45,7 +46,7 @@ function NavLinks({ className, itemClass }: { className: string; itemClass?: str
             aria-current={active ? "page" : undefined}
             className={`${itemClass || "flex items-center rounded-lg px-3 py-2 text-[14px]"} ${
               active
-                ? "bg-violet-50 font-semibold text-violet-700"
+                ? "bg-blue-50 font-semibold text-blue-700"
                 : "font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
             }`}
           >
@@ -85,7 +86,7 @@ function HeaderActions({ workspaceName, userEmail }: { workspaceName: string; us
       <button
         type="button"
         onClick={() => open()}
-        className="inline-flex h-9 items-center rounded-lg bg-violet-600 px-4 text-[13.5px] font-semibold text-white transition hover:bg-violet-500"
+        className="inline-flex h-9 items-center rounded-lg bg-[#3157D5] px-4 text-[13.5px] font-semibold text-white transition hover:bg-[#2848b8]"
       >
         Invite candidate
       </button>
