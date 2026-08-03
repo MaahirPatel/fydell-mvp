@@ -28,7 +28,7 @@ export default function InvitationActions({
   }
 
   if (status === "revoked" || status === "accepted") {
-    return <span className="text-[12px] text-[rgba(244,245,247,0.4)]">—</span>;
+    return <span className="text-[12px] text-[rgba(244,245,247,0.4)]">-</span>;
   }
 
   return (

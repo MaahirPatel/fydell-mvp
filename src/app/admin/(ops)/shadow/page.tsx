@@ -114,7 +114,7 @@ export default async function AdminShadowAuditPage() {
                         {orderOk ? "✓ Sequence valid" : "✗ SEQUENCE VIOLATION"}
                       </span>{" "}
                       <span className="text-white/50">
-                        — revealed {new Date(firstReveal.revealed_at).toLocaleString()} by{" "}
+                        - revealed {new Date(firstReveal.revealed_at).toLocaleString()} by{" "}
                         {firstReveal.revealed_by.slice(0, 8)}…
                       </span>
                     </p>

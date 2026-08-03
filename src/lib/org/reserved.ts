@@ -1,4 +1,4 @@
-/** Reserved org names / domains — cannot be claimed by self-signup. */
+/** Reserved org names / domains - cannot be claimed by self-signup. */
 const RESERVED_NAMES = new Set([
   "fydell",
   "admin",
@@ -61,7 +61,7 @@ export function domainsMismatch(
 export type EmployerSelfSignupMode = "disabled" | "approval_required" | "open";
 
 export function employerSelfSignupMode(): EmployerSelfSignupMode {
-  // Pilot default: open — employers land in a usable workspace immediately.
+  // Pilot default: open - employers land in a usable workspace immediately.
   const raw = (process.env.EMPLOYER_SELF_SIGNUP_MODE || "open").toLowerCase();
   if (raw === "disabled" || raw === "open" || raw === "approval_required") return raw;
   return "open";

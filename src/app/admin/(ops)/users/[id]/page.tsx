@@ -72,18 +72,18 @@ export default async function AdminUserDetailPage({
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-[rgba(244,245,247,0.4)]">Platform roles</dt>
-              <dd>{activeRoles.join(", ") || "—"}</dd>
+              <dd>{activeRoles.join(", ") || "-"}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-[rgba(244,245,247,0.4)]">Last sign-in</dt>
               <dd className="tabular-nums">
-                {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "—"}
+                {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "-"}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-[rgba(244,245,247,0.4)]">Created</dt>
               <dd className="tabular-nums">
-                {user.created_at ? new Date(user.created_at).toLocaleString() : "—"}
+                {user.created_at ? new Date(user.created_at).toLocaleString() : "-"}
               </dd>
             </div>
           </dl>

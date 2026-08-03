@@ -7,8 +7,8 @@ import { ArrowRight } from "lucide-react";
 import FydellBrand from "@/components/brand/FydellBrand";
 
 const HIGHLIGHTS = [
-  "Project Relay missions configured for your open role",
-  "Evidence reports from how FDEs actually worked",
+  "Realistic work simulations configured for your open role",
+  "Evidence-backed results from how candidates actually worked",
   "Candidate progress visible to your hiring team",
 ];
 
@@ -16,7 +16,13 @@ const HIGHLIGHTS = [
 function safeReturnPath(next: string | null): string | null {
   if (!next) return null;
   if (!next.startsWith("/") || next.startsWith("//")) return null;
-  if (next.startsWith("/s/")) return next;
+  if (
+    next.startsWith("/s/") ||
+    next.startsWith("/invite/") ||
+    next.startsWith("/sim/") ||
+    next.startsWith("/simulations")
+  )
+    return next;
   return null;
 }
 
@@ -70,7 +76,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
 
   return (
     <div className="relative min-h-[100dvh] overflow-hidden bg-[#050609]">
-      {/* Subtle ambient — toned down, no vivid purple blob */}
+      {/* Subtle ambient: toned down, no vivid purple blob */}
       <div className="pointer-events-none absolute right-[-8%] top-[-8%] h-[480px] w-[580px] rounded-full bg-[#3B5BFF]/[0.06] blur-[160px]" />
       <div className="pointer-events-none absolute left-[-6%] bottom-[-10%] h-[400px] w-[500px] rounded-full bg-[#3B5BFF]/[0.04] blur-[160px]" />
 
@@ -99,8 +105,8 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
           >
             {fromInvitation
               ? isSignup
-                ? "Create your account to start your mission."
-                : "Sign in to continue your mission."
+                ? "Create your account to start your simulation."
+                : "Sign in to continue your simulation."
               : isSignup
                 ? "Create your Fydell workspace."
                 : fromAdmin
@@ -109,12 +115,12 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
           </h1>
           <p className="mt-5 text-[17px] leading-[1.65] text-white/[0.55]">
             {fromInvitation
-              ? "You were invited to a Project Relay session. After you sign in you will return directly to your invitation."
+              ? "You were invited to a work simulation. After you sign in you will return directly to your invitation."
               : fromAdmin
                 ? "Use your Fydell account. Platform operators land in ops; employers land in their workspace."
                 : isSignup
-                  ? "Answer a few questions about your company and role, then set up Project Relay and invite candidates."
-                  : "Review missions, evidence, and candidate progress."}
+                  ? "Answer a few questions about your company and role, then invite candidates to realistic simulations."
+                  : "Review simulations, evidence, and candidate progress."}
           </p>
           {!fromAdmin ? (
             <ul className="mt-8 space-y-4">
@@ -136,7 +142,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
             </h2>
             <p className="mt-2 text-[14px] leading-relaxed text-white/[0.55]">
               {isSignup
-                ? "A few questions, then your empty workspace — ready for real invites."
+                ? "A few questions, then your empty workspace, ready for real invites."
                 : "One login for employers and platform operators."}
             </p>
 

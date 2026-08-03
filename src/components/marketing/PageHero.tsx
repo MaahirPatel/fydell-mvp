@@ -3,7 +3,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { Container } from "@/components/marketing/ui";
 
 /**
- * Shared marketing page opening — matches homepage calm spacing and type scale.
+ * Shared marketing page opening - matches homepage calm spacing and type scale.
  */
 export default function PageHero({
   title,

@@ -73,9 +73,9 @@ export default async function AdminPilotRequestsPage() {
                       <AdminStatusBadge status={row.status} />
                     </td>
                     <td className="px-4 py-3.5 text-[12px] text-white/45">
-                      ack {row.acknowledgment_email_status || "—"}
+                      ack {row.acknowledgment_email_status || "-"}
                       <br />
-                      admin {row.admin_notification_status || "—"}
+                      admin {row.admin_notification_status || "-"}
                     </td>
                   </tr>
                 ))

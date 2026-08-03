@@ -6,16 +6,13 @@ export async function middleware(request: NextRequest) {
   const res = await updateSession(request);
   const path = request.nextUrl.pathname;
   if (
-    path.startsWith("/dashboard") ||
-    path.startsWith("/onboarding") ||
     path.startsWith("/admin") ||
     path.startsWith("/account") ||
-    path.startsWith("/candidate") ||
-    path.startsWith("/workroom") ||
     path.startsWith("/app") ||
-    path.startsWith("/s/") ||
-    path.startsWith("/r/") ||
-    path.startsWith("/ops")
+    path.startsWith("/sim/") ||
+    path.startsWith("/simulations") ||
+    path.startsWith("/invite/") ||
+    path.startsWith("/results/")
   ) {
     res.headers.set("Cache-Control", "private, no-store, max-age=0, must-revalidate");
   }

@@ -103,12 +103,12 @@ export default async function AdminPilotRequestDetailPage({
             </div>
             <div className="flex justify-between gap-4 border-b border-white/[0.05] pb-2">
               <dt className="text-[rgba(244,245,247,0.4)]">Candidates</dt>
-              <dd>{String(r.number_of_candidates || r.candidate_volume || "—")}</dd>
+              <dd>{String(r.number_of_candidates || r.candidate_volume || "-")}</dd>
             </div>
             <div className="border-b border-white/[0.05] pb-2">
               <dt className="text-[rgba(244,245,247,0.4)]">Message</dt>
               <dd className="mt-1 text-[rgba(244,245,247,0.72)]">
-                {String(r.message || r.note || "—")}
+                {String(r.message || r.note || "-")}
               </dd>
             </div>
             <div className="flex justify-between gap-4">

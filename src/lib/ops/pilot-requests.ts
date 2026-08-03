@@ -266,7 +266,7 @@ export async function createPublicPilotRequest(
   }
 
   // Local durable fallback for development without Supabase service role.
-  // Production must use Supabase — this path is intentionally restricted.
+  // Production must use Supabase - this path is intentionally restricted.
   if (process.env.VERCEL || process.env.NODE_ENV === "production") {
     throw new Error(
       "Pilot request storage is not configured. Set SUPABASE_SERVICE_ROLE_KEY."

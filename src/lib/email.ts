@@ -8,7 +8,7 @@ function client(): Resend | null {
   return new Resend(key);
 }
 
-/** Truthful email-capability check — used to avoid claiming "Sent" when no provider exists. */
+/** Truthful email-capability check - used to avoid claiming "Sent" when no provider exists. */
 export function isResendConfigured(): boolean {
   return client() !== null;
 }
@@ -37,7 +37,7 @@ export function fydellEmailShell(inner: string): string {
       <div style="padding:28px">${inner}</div>
     </div>
     <p style="text-align:center;color:#6B7488;font-size:12px;margin-top:18px">
-      Fydell — real work, not interviews<br/>
+      Fydell - real work, not interviews<br/>
       <a href="${appUrl()}" style="color:#6B7488">${appUrl().replace(/^https?:\/\//, "")}</a>
     </p>
   </div>`;

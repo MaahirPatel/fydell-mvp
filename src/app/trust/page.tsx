@@ -5,7 +5,7 @@ import PageHero from "@/components/marketing/PageHero";
 
 export const metadata = {
   title: "Trust · Fydell",
-  description: "What Fydell does and doesn't do today — stated plainly, without invented outcomes or candidates.",
+  description: "What Fydell does and doesn't do today, stated plainly, without invented outcomes or candidates.",
 };
 
 const SECTIONS = [
@@ -15,7 +15,7 @@ const SECTIONS = [
   },
   {
     title: "Simulations are simulations",
-    body: "Project Relay runs in your browser against a scenario codebase — not a live production system. No real customer data or systems are touched during a session.",
+    body: "Simulations run in your browser against authored scenario materials, not a live production system. No real customer data or systems are touched during a session.",
   },
   {
     title: "Evidence is rule-based, and we say so",
@@ -23,15 +23,15 @@ const SECTIONS = [
   },
   {
     title: "Technical failures aren't charged",
-    body: "If a session breaks for reasons outside the FDE's control — and we can confirm it — it's flagged as a technical failure and never billed, and never counted against your mission total.",
+    body: "If a session breaks for reasons outside the candidate's control, and we can confirm it, it's flagged as a technical failure and never billed, and never counted against your pilot total.",
   },
   {
     title: "You control your own evidence",
-    body: "FDEs decide who sees their work receipts. Employers only see evidence from missions they posted themselves. Nothing is broadcast to a public network.",
+    body: "Candidates decide who sees their results. Employers only see evidence from simulations they ran themselves. Nothing is broadcast to a public network.",
   },
   {
     title: "What's still early",
-    body: "We're a founding pilot. The network view, richer graph, and outcome tracking are intentionally minimal right now — we'd rather ship something honest and small than something impressive and fake.",
+    body: "We're a founding pilot. The network view, richer graph, and outcome tracking are intentionally minimal right now. We'd rather ship something honest and small than something impressive and fake.",
   },
 ];
 
@@ -39,7 +39,7 @@ export default function TrustPage() {
   return (
     <MarketingShell>
       <PageHero
-        title="What we do — and don't — today."
+        title="What we do, and don't, today."
         description="Stated plainly, so you can decide whether to trust the evidence."
         narrow
       />

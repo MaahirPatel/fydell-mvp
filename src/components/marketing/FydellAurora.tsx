@@ -3,7 +3,7 @@
 type AuroraVariant = "hero" | "section" | "report";
 
 /**
- * Restrained Fydell light trails — SVG strokes only (no blur filters).
+ * Restrained Fydell light trails - SVG strokes only (no blur filters).
  * Respects prefers-reduced-motion via CSS.
  */
 export default function FydellAurora({

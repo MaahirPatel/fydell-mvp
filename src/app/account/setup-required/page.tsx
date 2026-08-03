@@ -7,7 +7,7 @@ const REASONS: Record<string, string> = {
   awaiting_org_approval:
     "Your company setup was received and is awaiting Fydell approval before mission invitations are enabled.",
   partner_pending:
-    "Your partner application was received. Partner access is approval-gated — we'll follow up once it's reviewed.",
+    "Your partner application was received. Partner access is approval-gated - we'll follow up once it's reviewed.",
   no_user_or_supabase: "We could not resolve your workspace. Sign in again or contact support.",
 };
 

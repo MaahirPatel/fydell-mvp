@@ -7,7 +7,7 @@ import { PilotRequestForm } from "@/components/marketing/PilotRequestForm";
 export const metadata = {
   title: "Request a Pilot · Fydell",
   description:
-    "Request a founding Fydell pilot to invite an FDE into a real Project Relay mission. No payment required to start.",
+    "Request a founding Fydell pilot to invite candidates into realistic work simulations for Applied Technical Roles. No payment required to start.",
 };
 
 const DETAILS = [
@@ -22,13 +22,13 @@ const DETAILS = [
 const STEPS = [
   {
     n: "1",
-    title: "Mission configured",
-    body: "We help you write the real objective, context, and constraints for your first mission.",
+    title: "Simulation configured",
+    body: "We help you pick the role and scenario that matches your open position.",
   },
   {
     n: "2",
-    title: "Private invite generated",
-    body: "You receive a single-use invite link for the FDE you want to evaluate.",
+    title: "Private invites generated",
+    body: "You receive single-use invite links for the candidates you want to evaluate.",
   },
   {
     n: "3",
@@ -41,8 +41,8 @@ export default function RequestPilotPage() {
   return (
     <MarketingShell>
       <PageHero
-        title="Run Project Relay on a real FDE mission."
-        description="Tell us about the role. We set up your workspace, configure the mission, and give you a dashboard to invite the FDE — before any billing."
+        title="Run a pilot on a real Applied Technical Role."
+        description="Tell us about the role. We set up your workspace, configure the simulation, and give you a dashboard to invite candidates, all before any billing."
       />
 
       <section className="pb-20 lg:pb-28">

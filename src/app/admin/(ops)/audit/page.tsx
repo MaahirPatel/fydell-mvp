@@ -54,7 +54,7 @@ export default async function AdminAuditPage() {
                   <td className="px-4 py-3 tabular-nums text-[rgba(244,245,247,0.55)]">
                     {new Date(row.created_at).toLocaleString()}
                   </td>
-                  <td className="px-4 py-3">{row.actor_email || "—"}</td>
+                  <td className="px-4 py-3">{row.actor_email || "-"}</td>
                   <td className="px-4 py-3">{row.action}</td>
                   <td className="px-4 py-3 text-[rgba(244,245,247,0.62)]">
                     {row.entity_type}

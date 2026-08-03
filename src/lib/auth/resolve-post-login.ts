@@ -3,14 +3,14 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import { listActiveRolesForEmail } from "@/lib/ops/platform-roles";
 import { getAdminSession } from "@/lib/auth";
-import { fdeMarketplaceEnabled } from "@/lib/fde/flags";
+import { marketplaceRoutingEnabled } from "@/lib/auth/flags";
 
 export type PostLoginDestination =
   | { kind: "admin"; path: "/admin/overview" }
-  | { kind: "dashboard"; path: "/dashboard" }
-  | { kind: "onboarding"; path: "/onboarding/employer" }
+  | { kind: "dashboard"; path: "/app/employer" }
+  | { kind: "onboarding"; path: "/app/employer" }
   | { kind: "candidate"; path: string }
-  | { kind: "fde"; path: "/app/fde" }
+  | { kind: "fde"; path: "/app/candidate" }
   | { kind: "employer_app"; path: "/app/employer" }
   | { kind: "role_pending"; path: "/signup/role" }
   | { kind: "setup"; path: "/account/setup-required"; reason: string };
@@ -50,7 +50,7 @@ export async function resolvePostLoginDestination(
 
   const admin = createAdminSupabaseClient();
 
-  if (fdeMarketplaceEnabled()) {
+  if (marketplaceRoutingEnabled()) {
     const { data: profile } = await admin
       .from("profiles")
       .select("account_type")
@@ -62,11 +62,12 @@ export async function resolvePostLoginDestination(
     }
 
     if (profile?.account_type === "fde") {
-      return { kind: "fde", path: "/app/fde" };
+      // Legacy account_type value; the destination is the candidate home.
+      return { kind: "fde", path: "/app/candidate" };
     }
 
     if (profile?.account_type === "partner") {
-      // No partner approval flow yet — every partner signup lands pending.
+      // No partner approval flow yet. Every partner signup lands pending.
       return {
         kind: "setup",
         path: "/account/setup-required",
@@ -97,7 +98,7 @@ export async function resolvePostLoginDestination(
     .maybeSingle();
 
   if (membership?.organization_id) {
-    return { kind: "dashboard", path: "/dashboard" };
+    return { kind: "dashboard", path: "/app/employer" };
   }
 
   const { data: onboarding } = await admin
@@ -106,13 +107,8 @@ export async function resolvePostLoginDestination(
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (onboarding && !onboarding.completed_at) {
-    return { kind: "onboarding", path: "/onboarding/employer" };
-  }
-
-  // Completed onboarding without membership is rare; send back to finish setup.
-  if (onboarding?.completed_at) {
-    return { kind: "onboarding", path: "/onboarding/employer" };
+  if (onboarding) {
+    return { kind: "onboarding", path: "/app/employer" };
   }
 
   const { data: candidate } = await admin
@@ -123,19 +119,7 @@ export async function resolvePostLoginDestination(
     .maybeSingle();
 
   if (candidate?.id) {
-    const { data: assignment } = await admin
-      .from("simulation_assignments")
-      .select("id, status")
-      .eq("candidate_id", candidate.id)
-      .not("status", "in", '("cancelled","expired")')
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (assignment?.id) {
-      return { kind: "candidate", path: `/candidate/assignments/${assignment.id}` };
-    }
-    return { kind: "candidate", path: "/candidate" };
+    return { kind: "candidate", path: "/app/candidate" };
   }
 
   return {

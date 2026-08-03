@@ -11,19 +11,19 @@ export const metadata = {
 };
 
 const INCLUDES = [
-  "One mission, configured with your real objective and constraints",
+  "Curated five-minute simulations for the roles you are hiring",
   "Secure invite links for the candidates you choose to include",
-  "A full Project Relay simulation session per completed candidate",
+  "A realistic work simulation per completed candidate",
   "A founder-reviewed, cited evidence report for every completed session",
   "A structured export you can attach to the candidate's record in your ATS",
-  "Founder-led pilot setup — direct access throughout",
+  "Founder-led pilot setup, with direct access throughout",
 ];
 
 const TERMS = [
   {
-    term: "Mission",
+    term: "Simulation",
     definition:
-      "One configured role/scenario engagement — the simulation set up for one open role.",
+      "One curated five-minute work problem for one of the six Applied Technical Roles.",
   },
   {
     term: "Completion",
@@ -33,7 +33,7 @@ const TERMS = [
   {
     term: "Invitation",
     definition:
-      "One candidate invite link. Invitations are not billable by themselves — only completed sessions count.",
+      "One candidate invite link. Invitations are not billable by themselves; only completed sessions count.",
   },
   {
     term: "Technical failure",
@@ -45,7 +45,7 @@ const TERMS = [
 const FAQS = [
   {
     q: "How is a founding pilot priced?",
-    a: "Founding pilots are scoped directly with each company — the price depends on the role, the number of completed simulations you need, and how much calibration the mission requires. Contact us and we'll put a specific scope in writing before anything starts.",
+    a: "Founding pilots are scoped directly with each company. The price depends on the role, the number of completed simulations you need, and the level of support you want. Contact us and we'll put a specific scope in writing before anything starts.",
   },
   {
     q: "What's the unit of billing?",
@@ -53,7 +53,7 @@ const FAQS = [
   },
   {
     q: "Do you integrate with Greenhouse or Ashby?",
-    a: "Not with a live, connected integration today — that's not something we'll claim until it's shipped. What you get now is a structured export built to attach cleanly to the candidate record you already have.",
+    a: "Not with a live, connected integration today. That's not something we'll claim until it's shipped. What you get now is a structured export built to attach cleanly to the candidate record you already have.",
   },
   {
     q: "What happens if a session fails for technical reasons?",
@@ -65,7 +65,7 @@ const FAQS = [
   },
   {
     q: "What happens after the pilot?",
-    a: "We'll agree ongoing pricing together once you've run a few missions and seen real evidence — no surprise switch to a subscription.",
+    a: "We'll agree ongoing pricing together once you've run a few simulations and seen real evidence. There's no surprise switch to a subscription.",
   },
 ];
 
@@ -143,7 +143,7 @@ export default function PricingPage() {
                 {[
                   {
                     title: "Why scope directly?",
-                    body: "You're paying for completed missions and reviewed evidence reports — not seats, not a candidate headcount, not a platform subscription. Until we've run several pilots, honest scoping beats a price grid.",
+                    body: "You're paying for completed missions and reviewed evidence reports: not seats, not a candidate headcount, not a platform subscription. Until we've run several pilots, honest scoping beats a price grid.",
                   },
                   {
                     title: "Founder-led",

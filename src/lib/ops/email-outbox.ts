@@ -88,7 +88,7 @@ function link(href: string, label: string): string {
   return `<p style="margin:0"><a href="${href}" style="color:#5662FF">${label}</a></p>`;
 }
 
-/** @deprecated alias — use renderEmailTemplate */
+/** @deprecated alias - use renderEmailTemplate */
 export function renderPilotTemplates(
   templateKey: string,
   payload: Record<string, unknown>
@@ -122,7 +122,7 @@ export function renderEmailTemplate(
       ),
     },
     admin_new_pilot_request: {
-      subject: `New pilot request: ${company} — ${role}`,
+      subject: `New pilot request: ${company} - ${role}`,
       html: shell(
         `${h1("New pilot request")}${p(
           `<strong style="color:#F4F5F7">${name}</strong> (${email}) from <strong style="color:#F4F5F7">${company}</strong>`
@@ -138,7 +138,7 @@ export function renderEmailTemplate(
       ),
     },
     pilot_request_needs_information: {
-      subject: `We need a bit more detail — ${reference || company}`,
+      subject: `We need a bit more detail - ${reference || company}`,
       html: shell(
         `${h1("Quick follow-up")}${p(`Hi ${name},`)}${p(
           `Thanks for your Fydell pilot request${reference ? ` (${reference})` : ""}. Could you share a little more detail so we can configure Project Meridian correctly?`
@@ -146,7 +146,7 @@ export function renderEmailTemplate(
       ),
     },
     pilot_request_approved: {
-      subject: `Your Fydell pilot is approved — ${company}`,
+      subject: `Your Fydell pilot is approved - ${company}`,
       html: shell(
         `${h1("Pilot approved")}${p(`Hi ${name},`)}${p(
           `Your Fydell pilot for <strong style="color:#F4F5F7">${company}</strong> is approved. You’ll receive a secure invitation to set up your workspace next.`
@@ -186,7 +186,7 @@ export function renderEmailTemplate(
       ),
     },
     employer_session_submitted: {
-      subject: `Candidate submitted — ${name || "session"}`,
+      subject: `Candidate submitted - ${name || "session"}`,
       html: shell(
         `${h1("Candidate submitted")}${p(
           `A candidate has submitted their Project Meridian session for <strong style="color:#F4F5F7">${company}</strong>.`
@@ -194,7 +194,7 @@ export function renderEmailTemplate(
       ),
     },
     report_ready: {
-      subject: `Evidence report ready — ${company || "Fydell"}`,
+      subject: `Evidence report ready - ${company || "Fydell"}`,
       html: shell(
         `${h1("Report ready")}${p(`Hi ${name},`)}${p(
           "A candidate evidence report is ready for review."

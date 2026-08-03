@@ -68,14 +68,14 @@ export default async function AdminInvitationsPage() {
                   <tr key={row.id} className="border-b border-white/[0.05]">
                     <td className="px-4 py-3">{row.email}</td>
                     <td className="px-4 py-3">{row.invitation_type}</td>
-                    <td className="px-4 py-3">{row.organization_role || "—"}</td>
+                    <td className="px-4 py-3">{row.organization_role || "-"}</td>
                     <td className="px-4 py-3 capitalize">
                       {expired && row.status === "pending" ? "expired" : row.status}
                     </td>
                     <td className="px-4 py-3 tabular-nums text-[rgba(244,245,247,0.55)]">
                       {row.last_sent_at
                         ? new Date(row.last_sent_at).toLocaleString()
-                        : "—"}
+                        : "-"}
                       <div className="text-[11px]">count {row.send_count}</div>
                     </td>
                     <td className="px-4 py-3">

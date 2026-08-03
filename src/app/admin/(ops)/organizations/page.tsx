@@ -56,11 +56,11 @@ export default async function AdminOrganizationsPage() {
                 <tr key={row.id} className="border-b border-white/[0.05]">
                   <td className="px-4 py-3">
                     <div style={{ fontWeight: 520 }}>{row.name}</div>
-                    <div className="text-[12px] text-[rgba(244,245,247,0.4)]">{row.slug || "—"}</div>
+                    <div className="text-[12px] text-[rgba(244,245,247,0.4)]">{row.slug || "-"}</div>
                   </td>
-                  <td className="px-4 py-3 capitalize">{row.status || "—"}</td>
-                  <td className="px-4 py-3 capitalize">{row.pilot_stage || "—"}</td>
-                  <td className="px-4 py-3">{row.owner_email || "—"}</td>
+                  <td className="px-4 py-3 capitalize">{row.status || "-"}</td>
+                  <td className="px-4 py-3 capitalize">{row.pilot_stage || "-"}</td>
+                  <td className="px-4 py-3">{row.owner_email || "-"}</td>
                   <td className="px-4 py-3 tabular-nums text-[rgba(244,245,247,0.55)]">
                     {new Date(row.created_at).toLocaleString()}
                   </td>

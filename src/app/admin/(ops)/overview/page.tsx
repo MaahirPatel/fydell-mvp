@@ -93,7 +93,7 @@ export default async function AdminOverviewPage() {
     <div>
       <AdminPageHeader
         title="Overview"
-        description="Live operational counts from Supabase — what to act on before pilots start landing."
+        description="Live operational counts from Supabase - what to act on before pilots start landing."
         action={
           <AdminPrimaryButton href="/admin/pilot-requests">
             Open pilot requests
@@ -141,7 +141,7 @@ export default async function AdminOverviewPage() {
                         {row.public_reference || row.id.slice(0, 8)}
                       </p>
                       <p className="mt-0.5 truncate text-white/50">
-                        {row.company_name || "—"} · {row.full_name || "—"}
+                        {row.company_name || "-"} · {row.full_name || "-"}
                       </p>
                     </div>
                     <AdminStatusBadge status={row.status} />

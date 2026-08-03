@@ -31,8 +31,12 @@ export async function GET(req: Request) {
     data.user.id
   );
   // Candidate session deep-links (/s/<token>) always win over the generic
-  // account-type destination — an invited candidate must land on their mission.
-  const isSessionDeepLink = next.startsWith("/s/");
+  // account-type destination - an invited candidate must land on their mission.
+  const isSessionDeepLink =
+    next.startsWith("/s/") ||
+    next.startsWith("/invite/") ||
+    next.startsWith("/sim/") ||
+    next.startsWith("/simulations");
   const target =
     isSessionDeepLink && dest.kind !== "admin"
       ? next

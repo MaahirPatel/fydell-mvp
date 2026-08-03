@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Soft page atmosphere — Linear-style spotlight placement with Fydell blue + red.
+ * Soft page atmosphere: Linear-style spotlight placement with Fydell blue + red.
  */
 export default function AmbientBackground() {
   return (

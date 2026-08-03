@@ -166,10 +166,10 @@ export default async function AdminEmailCenterPage({
                       <td className="px-4 py-3 capitalize">{row.status}</td>
                       <td className="px-4 py-3 tabular-nums">{row.attempt_count}</td>
                       <td className="px-4 py-3 text-[12px] text-[rgba(244,245,247,0.5)]">
-                        {row.provider_message_id || "—"}
+                        {row.provider_message_id || "-"}
                       </td>
                       <td className="px-4 py-3 text-[12px] text-[#F26B82]">
-                        {row.last_error || "—"}
+                        {row.last_error || "-"}
                       </td>
                     </tr>
                   ))

@@ -110,7 +110,7 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --content-max: 1160px;
 
-  /* FDE product shell surfaces — distinct from marketing page tokens above.
+  /* App shell surfaces - distinct from marketing page tokens above.
      Scoped as CSS vars here (not @theme) so .fde-shell can override per-tree. */
   --fde-bg: #07080b;
   --fde-panel: #0b0d12;
@@ -122,8 +122,8 @@
   --fde-radius: 12px;
 }
 
-/* FDE app shell — employer + FDE product surfaces (Mission Control, Inbox, etc).
-   Solid primary buttons only: near-white bg, dark text — no gradient headlines. */
+/* App shell - employer and candidate product surfaces.
+   Solid primary buttons only: near-white bg, dark text - no gradient headlines. */
 .fde-shell {
   --fde-bg: #07080b;
   --fde-panel: #0b0d12;
@@ -165,7 +165,7 @@
 
 html {
   min-height: 100%;
-  /* Native scroll — CSS smooth + Lenis both felt worse than other sites */
+  /* Native scroll - CSS smooth + Lenis both felt worse than other sites */
   scroll-behavior: auto;
   background: var(--bg);
 }
@@ -214,7 +214,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Flat solid type — no gradient fills */
+/* Flat solid type - no gradient fills */
 .flat-type,
 .fydell-page h1,
 .fydell-page h2,
@@ -229,7 +229,7 @@ body {
 }
 
 /*
- * Hero — Linear-like rhythm, Fydell content.
+ * Hero - Linear-like rhythm, Fydell content.
  * Nav 56px + ~150px calm opening → heading near y 205–220.
  */
 .hero-display {
@@ -265,7 +265,7 @@ h1.hero-display {
   letter-spacing: -0.012em;
 }
 
-/* Inner marketing pages — slightly quieter than home hero, same family */
+/* Inner marketing pages - slightly quieter than home hero, same family */
 .page-display {
   margin: 0;
   max-width: 790px;
@@ -358,7 +358,7 @@ h1.page-display {
   position: relative;
   z-index: 1;
   border-radius: 15px;
-  /* No cinematic tilt — usable product frame */
+  /* No cinematic tilt - usable product frame */
   transform: none;
 }
 
@@ -769,7 +769,7 @@ nextjs-portal,
   color: var(--muted);
 }
 
-/* Fydell aurora light trails — SVG stroke animation, no blur filters */
+/* Fydell aurora light trails - SVG stroke animation, no blur filters */
 .fydell-aurora-path {
   stroke-dasharray: 420 180;
   stroke-dashoffset: 0;
@@ -856,7 +856,7 @@ nextjs-portal,
   border-radius: inherit;
   pointer-events: none;
   z-index: 2;
-  /* Quiet edge accents only — no purple frame */
+  /* Quiet edge accents only - no purple frame */
   box-shadow:
     inset 1px 0 0 rgba(86, 98, 255, 0.08),
     inset 0 -1px 0 rgba(86, 98, 255, 0.05);

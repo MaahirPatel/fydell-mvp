@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Briefcase, Wrench, Handshake, ArrowRight } from "lucide-react";
 import FydellBrand from "@/components/brand/FydellBrand";
-import { partnerSignupEnabled } from "@/lib/fde/flags";
+import { partnerSignupEnabled } from "@/lib/auth/flags";
 
 type Role = "employer" | "fde" | "partner";
 
@@ -24,7 +24,7 @@ export default function SignupRolePage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/fde/role", {
+      const res = await fetch("/api/auth/role", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role, ...extra }),
@@ -92,7 +92,7 @@ export default function SignupRolePage() {
             How will you use Fydell?
           </h1>
           <p className="mt-4 max-w-[52ch] text-[15px] leading-[1.65] text-white/[0.55]">
-            Pick a path — you can always reach the others from your account settings later.
+            Pick a path. You can always reach the others from your account settings later.
           </p>
 
           <div className="mt-8 grid gap-3">
@@ -107,10 +107,10 @@ export default function SignupRolePage() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[15px] font-semibold text-white">
-                  Business — hire FDEs
+                  Business: hire for technical roles
                 </span>
                 <span className="mt-1 block text-[13px] leading-relaxed text-white/55">
-                  Post a mission, invite an FDE, and review evidence from real deployment work.
+                  Invite candidates to realistic work simulations and review the evidence.
                 </span>
               </span>
               <ArrowRight className="mt-1.5 h-4 w-4 shrink-0 text-white/30 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-white/60" />
@@ -163,9 +163,9 @@ export default function SignupRolePage() {
                 <Wrench className="h-4.5 w-4.5 text-[#a8b8ff]" strokeWidth={1.7} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold text-white">I&apos;m an FDE</span>
+                <span className="block text-[15px] font-semibold text-white">I&apos;m a candidate</span>
                 <span className="mt-1 block text-[13px] leading-relaxed text-white/55">
-                  Get invited to missions, run Project Relay, and build a portable work receipt.
+                  Get invited to simulations, show your work, and build a portable result.
                 </span>
               </span>
               <ArrowRight className="mt-1.5 h-4 w-4 shrink-0 text-white/30 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-white/60" />
@@ -187,7 +187,7 @@ export default function SignupRolePage() {
                       I&apos;m a partner
                     </span>
                     <span className="mt-1 block text-[13px] leading-relaxed text-white/55">
-                      Refer FDEs or employers into the network. Subject to approval.
+                      Refer candidates or employers into the network. Subject to approval.
                     </span>
                   </span>
                   <ArrowRight className="mt-1.5 h-4 w-4 shrink-0 text-white/30 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-white/60" />

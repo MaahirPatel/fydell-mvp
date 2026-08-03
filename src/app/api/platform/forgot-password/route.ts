@@ -70,7 +70,7 @@ export async function POST(req: Request) {
           console.error("[forgot-password] Resend failed", sent.error);
         }
       } else if (linkError) {
-        // Unknown email or Auth error — still return generic OK.
+        // Unknown email or Auth error - still return generic OK.
         console.error("[forgot-password] generateLink failed", linkError.message);
       }
     } catch (err) {

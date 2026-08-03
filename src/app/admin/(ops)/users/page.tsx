@@ -96,7 +96,7 @@ export default async function AdminUsersPage() {
                   (typeof profile?.full_name === "string" && profile.full_name) ||
                   user.user_metadata?.full_name ||
                   (typeof profile?.username === "string" && profile.username) ||
-                  "—";
+                  "-";
                 return (
                   <tr key={user.id} className="border-b border-white/[0.05]">
                     <td className="px-4 py-3">
@@ -118,15 +118,15 @@ export default async function AdminUsersPage() {
                         : "active"}
                     </td>
                     <td className="px-4 py-3">
-                      {(roleMap.get(user.id) || []).join(", ") || "—"}
+                      {(roleMap.get(user.id) || []).join(", ") || "-"}
                     </td>
                     <td className="px-4 py-3 text-[rgba(244,245,247,0.62)]">
-                      {(memberMap.get(user.id) || []).join(", ") || "—"}
+                      {(memberMap.get(user.id) || []).join(", ") || "-"}
                     </td>
                     <td className="px-4 py-3 tabular-nums text-[rgba(244,245,247,0.55)]">
                       {user.last_sign_in_at
                         ? new Date(user.last_sign_in_at).toLocaleString()
-                        : "—"}
+                        : "-"}
                     </td>
                   </tr>
                 );

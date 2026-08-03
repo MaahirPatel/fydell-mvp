@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       email: normalized,
       password: String(password),
       options: {
-        emailRedirectTo: `${site}/auth/callback?next=${encodeURIComponent("/onboarding/employer")}`,
+        emailRedirectTo: `${site}/auth/callback?next=${encodeURIComponent("/app/employer")}`,
         data: {
           full_name: fullName || null,
           company_name: companyName || null,
@@ -127,7 +127,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       needsConfirmation: false,
-      redirectTo: intent === "candidate" ? "/login" : "/onboarding/employer",
+      redirectTo: intent === "candidate" ? "/login" : "/app/employer",
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Could not create account.";

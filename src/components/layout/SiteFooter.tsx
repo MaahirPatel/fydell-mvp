@@ -3,11 +3,9 @@ import FydellBrand from "@/components/brand/FydellBrand";
 
 const PRODUCT = [
   { label: "Product", href: "/product" },
-  { label: "Project Relay", href: "/simulation" },
-  { label: "How It Works", href: "/how-it-works" },
-  { label: "Work Receipts", href: "/work-receipts" },
+  { label: "Roles", href: "/roles" },
+  { label: "Simulations", href: "/simulations" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Post a Mission", href: "/#request-pilot" },
 ];
 
 const COMPANY = [
@@ -61,7 +59,7 @@ export default function SiteFooter() {
           <div className="max-w-[280px]">
             <FydellBrand markSize={22} wordmarkSize={16} className="gap-2" />
             <p className="mt-3 text-[13px] leading-[1.55] text-[rgba(244,245,247,0.4)]">
-              Portable, candidate-owned evidence for Forward Deployed Engineers.
+              Fydell evaluates Applied Technical Roles through realistic work simulations.
             </p>
           </div>
 

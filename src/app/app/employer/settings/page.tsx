@@ -1,14 +1,15 @@
 import { getAuthenticatedUser } from "@/lib/auth/resolve-post-login";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
-import AppSignOutButton from "@/components/fde/AppSignOutButton";
+import SignOutButton from "@/components/employer/SignOutButton";
 
+export const metadata = { title: "Settings | Fydell" };
 export const dynamic = "force-dynamic";
 
 export default async function EmployerSettingsPage() {
   const user = await getAuthenticatedUser();
 
-  let organizationName = "Your workspace";
-  let role = "member";
+  let workspaceName = "Your workspace";
+  let memberRole = "member";
   if (user && isSupabaseConfigured()) {
     const admin = createAdminSupabaseClient();
     const { data: membership } = await admin
@@ -18,60 +19,55 @@ export default async function EmployerSettingsPage() {
       .eq("status", "active")
       .limit(1)
       .maybeSingle();
-    organizationName = (membership?.organizations as { name?: string } | null)?.name || organizationName;
-    role = membership?.role || role;
+    workspaceName =
+      (membership?.organizations as { name?: string } | null)?.name || workspaceName;
+    memberRole = membership?.role || memberRole;
   }
 
   return (
-    <div className="mx-auto max-w-[560px]">
-      <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/45">Settings</p>
-      <h1
-        className="mt-1 text-[28px] text-[#F4F5F7] sm:text-[34px]"
-        style={{ fontWeight: 560, letterSpacing: "-0.035em" }}
-      >
-        Account &amp; workspace
-      </h1>
+    <div className="max-w-[560px]">
+      <h1 className="text-[24px] font-semibold text-slate-900">Settings</h1>
+      <p className="mt-1 text-[15px] text-slate-500">Your workspace and account details.</p>
 
-      <section className="mt-8 rounded-[16px] border border-white/[0.1] bg-[#0A0C11]/85 p-5">
-        <h2 className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/50">
+      <section className="mt-8 rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
           Workspace
         </h2>
-        <dl className="mt-3 space-y-3 text-[13.5px]">
+        <dl className="mt-3 space-y-3 text-[15px]">
           <div className="flex items-center justify-between gap-3">
-            <dt className="text-white/50">Organization</dt>
-            <dd className="font-medium text-white">{organizationName}</dd>
+            <dt className="text-slate-500">Company</dt>
+            <dd className="font-medium text-slate-900">{workspaceName}</dd>
           </div>
           <div className="flex items-center justify-between gap-3">
-            <dt className="text-white/50">Your role</dt>
-            <dd className="font-medium capitalize text-white">{role}</dd>
+            <dt className="text-slate-500">Your role</dt>
+            <dd className="font-medium capitalize text-slate-900">{memberRole}</dd>
           </div>
         </dl>
       </section>
 
-      <section className="mt-6 rounded-[16px] border border-white/[0.1] bg-[#0A0C11]/85 p-5">
-        <h2 className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/50">
+      <section className="mt-5 rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
           Account
         </h2>
-        <dl className="mt-3 space-y-3 text-[13.5px]">
+        <dl className="mt-3 space-y-3 text-[15px]">
           <div className="flex items-center justify-between gap-3">
-            <dt className="text-white/50">Email</dt>
-            <dd className="font-medium text-white">{user?.email || "—"}</dd>
+            <dt className="text-slate-500">Email</dt>
+            <dd className="font-medium text-slate-900">{user?.email || "Not signed in"}</dd>
           </div>
         </dl>
         <div className="mt-5">
-          <AppSignOutButton />
+          <SignOutButton />
         </div>
       </section>
 
-      <section className="mt-6 rounded-[16px] border border-white/[0.1] bg-[#0A0C11]/85 p-5">
-        <h2 className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/50">
-          Data processing &amp; retention
+      <section className="mt-5 rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
+          Data retention
         </h2>
-        <p className="mt-3 text-[13px] leading-relaxed text-white/60">
-          Session evidence, fit scores, and predictive hire estimates are stored for your hiring
-          process and candidate Work Receipts. Export any session&apos;s audit package from Evidence
-          Room. Enterprise DPA / subprocessors documentation is available on request for procurement.
-          Your organization remains the controller for employment decisions made using Fydell outputs.
+        <p className="mt-3 text-[14.5px] leading-relaxed text-slate-600">
+          Candidate submissions, scores and reports are stored so your team can review them
+          during hiring. Your organization stays responsible for employment decisions made
+          using Fydell results.
         </p>
       </section>
     </div>

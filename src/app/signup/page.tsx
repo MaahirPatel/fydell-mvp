@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import FydellBrand from "@/components/brand/FydellBrand";
-import FdeAuthForm from "@/components/fde/FdeAuthForm";
+import SignupForm from "@/components/auth/SignupForm";
 
 function SignupContent() {
   return (
@@ -39,7 +39,7 @@ function SignupContent() {
             right after.
           </p>
           <div className="mt-8">
-            <FdeAuthForm />
+            <SignupForm />
           </div>
 
           <p className="mt-6 text-center text-[13px] text-white/50">
