@@ -5,13 +5,10 @@ export default function FydellBrand({
   className = "",
   markSize = 34,
   wordmarkSize,
-  sheen = false,
 }: {
   className?: string;
   markSize?: number;
-  /** Explicit wordmark size in px. Defaults to a readable scale from the mark. */
   wordmarkSize?: number;
-  sheen?: boolean;
 }) {
   const textSize = wordmarkSize ?? Math.max(22, Math.round(markSize * 0.72));
 
@@ -26,15 +23,18 @@ export default function FydellBrand({
         className="shrink-0 transition-transform duration-200 ease-out group-hover:scale-[1.03]"
       />
       <span
-        className={`leading-none ${sheen ? "wordmark-sheen" : ""}`}
+        className="leading-none"
         style={{
-          fontFamily: "var(--font-geist-sans), var(--font-inter), ui-sans-serif, system-ui, sans-serif",
+          fontFamily:
+            "var(--font-geist-sans), var(--font-inter), ui-sans-serif, system-ui, sans-serif",
           fontSize: textSize,
-          fontWeight: 560,
-          letterSpacing: "-0.045em",
-          color: "#F4F5F7",
-          background: "none",
-          WebkitTextFillColor: "#F4F5F7",
+          fontWeight: 600,
+          letterSpacing: "-0.04em",
+          backgroundImage: "linear-gradient(115deg, #5B8CFF 0%, #7C8CFF 38%, #F26B82 100%)",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          color: "transparent",
+          WebkitTextFillColor: "transparent",
         }}
       >
         fydell
