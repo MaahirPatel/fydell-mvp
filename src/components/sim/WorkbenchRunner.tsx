@@ -59,9 +59,18 @@ interface Payload {
     durationMinutes: number;
     startedAt: string | null;
     endsAt: string | null;
+    curveballPresentedAt?: string | null;
+    curveballAcknowledgedAt?: string | null;
   };
   content: MicroFallback;
   workbench?: CandidateSimulationViewV2;
+  gate?: {
+    consentPolicyVersion: string;
+    consentAccepted: boolean;
+    preflightOk: boolean;
+    preflightLimitations: string[];
+    desktopRequired: boolean;
+  };
   state: {
     revision: number;
     currentTaskId: string | null;
@@ -533,10 +542,24 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
 
   const [submitBusy, setSubmitBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentBusy, setConsentBusy] = useState(false);
+  const [preflightBusy, setPreflightBusy] = useState(false);
+  const [preflightMsg, setPreflightMsg] = useState<string | null>(null);
+  const [tabBlocked, setTabBlocked] = useState(false);
+  const [offline, setOffline] = useState(
+    () => typeof navigator !== "undefined" && !navigator.onLine
+  );
+  const [curveballBanner, setCurveballBanner] = useState<{
+    announcement: string;
+    requiredAdaptation: string;
+  } | null>(null);
 
   const revisionRef = useRef(0);
   const dirtyRef = useRef(false);
   const savingRef = useRef(false);
+  const retryQueueRef = useRef<(() => Promise<void>)[]>([]);
+  const persistRef = useRef<() => Promise<void>>(async () => {});
   const chatEndRef = useRef<HTMLDivElement>(null);
   const drawerInputRef = useRef<HTMLTextAreaElement>(null);
   const semanticLocalRef = useRef<WorkspaceState["semanticEventsLocal"]>([]);
@@ -626,7 +649,9 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   }, [sessionId, router]);
 
   useEffect(() => {
-    void load();
+    queueMicrotask(() => {
+      void load();
+    });
   }, [load]);
 
   useEffect(() => {
@@ -634,7 +659,75 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
     return () => clearInterval(t);
   }, []);
 
+  // Second-tab lock: only one active writer per session.
+  useEffect(() => {
+    if (typeof window === "undefined" || !("BroadcastChannel" in window)) return;
+    const channel = new BroadcastChannel(`fydell-sim-${sessionId}`);
+    const tabId = uid();
+    channel.postMessage({ type: "hello", tabId });
+    channel.onmessage = (ev) => {
+      const data = ev.data as { type?: string; tabId?: string };
+      if (data?.type === "hello" && data.tabId !== tabId) {
+        channel.postMessage({ type: "claim", tabId });
+      }
+      if (data?.type === "claim" && data.tabId !== tabId) {
+        setTabBlocked(true);
+      }
+      if (data?.type === "release" && data.tabId !== tabId) {
+        setTabBlocked(false);
+      }
+    };
+    channel.postMessage({ type: "claim", tabId });
+    return () => {
+      channel.postMessage({ type: "release", tabId });
+      channel.close();
+    };
+  }, [sessionId]);
+
+  useEffect(() => {
+    const onOffline = () => setOffline(true);
+    const onOnline = () => {
+      setOffline(false);
+      const queue = retryQueueRef.current.splice(0);
+      void (async () => {
+        for (const job of queue) await job();
+      })();
+    };
+    window.addEventListener("offline", onOffline);
+    window.addEventListener("online", onOnline);
+    return () => {
+      window.removeEventListener("offline", onOffline);
+      window.removeEventListener("online", onOnline);
+    };
+  }, []);
+
+  // Poll curveball presentation after a fair investigation window.
+  useEffect(() => {
+    if (!payload || payload.session.status !== "active") return;
+    if (payload.session.curveballPresentedAt || curveballBanner) return;
+    const t = setInterval(() => {
+      void fetch(`/api/sim/sessions/${sessionId}/curveball`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "present" }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.presented && data.announcement) {
+            setCurveballBanner({
+              announcement: data.announcement,
+              requiredAdaptation: data.requiredAdaptation || "",
+            });
+            void load();
+          }
+        })
+        .catch(() => {});
+    }, 20000);
+    return () => clearInterval(t);
+  }, [payload, sessionId, curveballBanner, load]);
+
   const persist = useCallback(async () => {
+    if (tabBlocked) return;
     if (savingRef.current || !dirtyRef.current) return;
     savingRef.current = true;
     dirtyRef.current = false;
@@ -649,21 +742,33 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
       reviewedRules,
       semanticEventsLocal: semanticLocalRef.current,
     };
+    const body = {
+      baseRevision: revisionRef.current,
+      deliverable: answers,
+      currentTaskId: activeModuleId === REVIEW_ID ? activeModuleId : activeModuleId,
+      workspace,
+    };
     try {
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        dirtyRef.current = true;
+        setSaveStatus("error");
+        setOffline(true);
+        retryQueueRef.current.push(async () => {
+          dirtyRef.current = true;
+          await persistRef.current();
+        });
+        return;
+      }
       const res = await fetch(`/api/sim/sessions/${sessionId}/state`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          baseRevision: revisionRef.current,
-          deliverable: answers,
-          currentTaskId: activeModuleId === REVIEW_ID ? activeModuleId : activeModuleId,
-          workspace,
-        }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (res.ok) {
         revisionRef.current = data.revision;
         setSaveStatus(dirtyRef.current ? "pending" : "saved");
+        setOffline(false);
       } else if (res.status === 409 && data.conflict) {
         revisionRef.current = data.conflict.revision;
         dirtyRef.current = true;
@@ -675,6 +780,11 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
     } catch {
       dirtyRef.current = true;
       setSaveStatus("error");
+      setOffline(true);
+      retryQueueRef.current.push(async () => {
+        dirtyRef.current = true;
+        await persistRef.current();
+      });
     } finally {
       savingRef.current = false;
     }
@@ -688,7 +798,12 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
     selectedTicketId,
     toggledSteps,
     reviewedRules,
+    tabBlocked,
   ]);
+
+  useEffect(() => {
+    persistRef.current = persist;
+  }, [persist]);
 
   useEffect(() => {
     if (!payload || payload.session.status !== "active" || !dirtyRef.current) return;
@@ -884,9 +999,77 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
     }
   };
 
+  const runPreflight = async () => {
+    setPreflightBusy(true);
+    setPreflightMsg(null);
+    try {
+      let localStorageOk = true;
+      try {
+        window.localStorage.setItem("__fydell_pf", "1");
+        window.localStorage.removeItem("__fydell_pf");
+      } catch {
+        localStorageOk = false;
+      }
+      const res = await fetch(`/api/sim/sessions/${sessionId}/preflight`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
+          userAgent: navigator.userAgent,
+          localStorageOk,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Preflight failed");
+      if (!data.canStart) {
+        setPreflightMsg(
+          (data.result?.limitations || []).join(" ") ||
+            "Desktop and network checks did not pass. Use a laptop or desktop."
+        );
+      } else {
+        setPreflightMsg("Checks passed. You can start when consent is accepted.");
+      }
+      await load();
+    } catch (err) {
+      setPreflightMsg(err instanceof Error ? err.message : "Preflight failed");
+    } finally {
+      setPreflightBusy(false);
+    }
+  };
+
+  const acceptConsent = async () => {
+    if (!consentChecked || !payload?.gate) return;
+    setConsentBusy(true);
+    try {
+      const res = await fetch(`/api/sim/sessions/${sessionId}/consent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accepted: true,
+          policyVersion: payload.gate.consentPolicyVersion,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not record consent");
+      await load();
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Could not record consent");
+    } finally {
+      setConsentBusy(false);
+    }
+  };
+
   const startSession = async () => {
     setSubmitBusy(true);
     try {
+      if (!payload?.gate?.consentAccepted) {
+        throw new Error("Accept the consent terms before starting.");
+      }
+      if (!payload?.gate?.preflightOk) {
+        await runPreflight();
+        throw new Error("Complete the desktop and network checks before starting.");
+      }
       const res = await fetch(`/api/sim/sessions/${sessionId}/start`, { method: "POST" });
       if (!res.ok) {
         const data = await res.json();
@@ -965,27 +1148,109 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   const navModules = modules.filter((m) => m.kind !== "curveball");
 
   if (payload.session.status === "accepted") {
+    const gate = payload.gate;
+    const consentOk = Boolean(gate?.consentAccepted);
+    const preflightOk = Boolean(gate?.preflightOk);
     return (
       <Center wide>
         <p className="text-[12px] font-semibold uppercase tracking-wider text-[#3157D5]">
-          {roleTitle} · {workbench.durationMinutes} minutes
+          {roleTitle} · {workbench.durationMinutes} minutes · desktop required
         </p>
         <h1 className="mt-1 text-2xl font-semibold text-[#0B1020]">{workbench.title}</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-slate-700">{workbench.mission}</p>
         <ul className="mt-5 space-y-2 text-[14px] text-slate-600">
-          <li>· The timer starts when you press Begin. Running out of time does not block submission.</li>
-          <li>· Your work saves automatically. A refresh will not lose anything.</li>
-          <li>
-            · You can message {stakeholder.name} ({stakeholder.role}) at any time.
-          </li>
-          <li>· You get your result right after submitting.</li>
+          <li>· The timer starts only after consent, system checks, and Start evaluation.</li>
+          <li>· Use a laptop or desktop (min 1024px wide). Mobile cannot run the timed session.</li>
+          <li>· Fydell records disclosed work evidence: resources used, questions asked, artifact revisions, and submission.</li>
+          <li>· In-product AI use is observed when present, not banned. No facial or emotion scoring.</li>
+          <li>· You can message {stakeholder.name} ({stakeholder.role}) during the session.</li>
         </ul>
+
+        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4 text-left">
+          <p className="text-[13px] font-semibold text-slate-900">System checks</p>
+          <p className="mt-1 text-[13px] text-slate-600">
+            {preflightOk
+              ? "Desktop, browser, and network checks passed."
+              : "Run real checks for browser, viewport, and API reachability."}
+          </p>
+          {(gate?.preflightLimitations?.length || preflightMsg) && (
+            <p className="mt-2 text-[12.5px] text-amber-800">
+              {preflightMsg || gate?.preflightLimitations?.join(" ")}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => void runPreflight()}
+            disabled={preflightBusy}
+            className="mt-3 rounded-lg border border-slate-300 px-3 py-2 text-[13px] font-medium text-slate-800 hover:bg-slate-50 disabled:opacity-50"
+          >
+            {preflightBusy ? "Checking..." : preflightOk ? "Re-run checks" : "Run system checks"}
+          </button>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 text-left">
+          <label className="flex items-start gap-3 text-[13.5px] text-slate-700">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={consentOk || consentChecked}
+              disabled={consentOk}
+              onChange={(e) => setConsentChecked(e.target.checked)}
+            />
+            <span>
+              I understand the evaluation, collection policy ({gate?.consentPolicyVersion || "consent"}),
+              AI observation policy, and that my work evidence may appear in an employer report and,
+              if I choose later, a private Work Receipt. Consent is not pre-checked.
+            </span>
+          </label>
+          {!consentOk && (
+            <button
+              type="button"
+              onClick={() => void acceptConsent()}
+              disabled={!consentChecked || consentBusy}
+              className="mt-3 rounded-lg bg-slate-900 px-3 py-2 text-[13px] font-medium text-white disabled:opacity-40"
+            >
+              {consentBusy ? "Saving consent..." : "Accept consent"}
+            </button>
+          )}
+          {consentOk && (
+            <p className="mt-2 text-[12.5px] font-medium text-emerald-700">Consent recorded.</p>
+          )}
+        </div>
+
+        {loadError && (
+          <p className="mt-4 text-[13px] text-red-700" role="alert">
+            {loadError}
+          </p>
+        )}
+
         <button
           onClick={() => void startSession()}
-          disabled={submitBusy}
+          disabled={submitBusy || !consentOk || !preflightOk}
           className="mt-7 w-full rounded-xl bg-[#3157D5] px-4 py-3.5 text-[15px] font-semibold text-white hover:bg-[#2746b0] disabled:opacity-50"
         >
-          {submitBusy ? "Setting up..." : `Begin: ${workbench.durationMinutes} minutes`}
+          {submitBusy
+            ? "Starting..."
+            : `Start evaluation: ${workbench.durationMinutes} minutes`}
+        </button>
+      </Center>
+    );
+  }
+
+  if (tabBlocked) {
+    return (
+      <Center>
+        <h1 className="text-xl font-semibold text-[#0B1020]">Session open in another tab</h1>
+        <p className="mt-2 text-[14px] text-slate-600">
+          Close the other tab or continue there to avoid conflicting writes. Your saved work is
+          preserved.
+        </p>
+        <button
+          type="button"
+          onClick={() => setTabBlocked(false)}
+          className="mt-5 rounded-lg border border-slate-300 px-3 py-2 text-[13px]"
+        >
+          I closed the other tab
         </button>
       </Center>
     );
@@ -1025,8 +1290,11 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <span className="hidden text-[12px] sm:inline" role="status" aria-live="polite">
-              {saveStatus === "saved" && <span className="font-medium text-emerald-700">Saved</span>}
-              {(saveStatus === "saving" || saveStatus === "pending") && (
+              {offline && <span className="mr-2 font-medium text-amber-800">Offline</span>}
+              {!offline && saveStatus === "saved" && (
+                <span className="font-medium text-emerald-700">Saved</span>
+              )}
+              {!offline && (saveStatus === "saving" || saveStatus === "pending") && (
                 <span className="font-medium text-amber-700">Saving...</span>
               )}
               {saveStatus === "error" && (
@@ -1034,7 +1302,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                   onClick={() => void persist()}
                   className="rounded bg-red-50 px-2 py-0.5 font-medium text-red-700 hover:bg-red-100"
                 >
-                  Save failed. Retry
+                  Save failed - Retry
                 </button>
               )}
             </span>
@@ -1065,6 +1333,42 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
           <p className="mx-auto max-w-[1280px] px-4 py-2 text-[13.5px] text-amber-900">
             Time has ended. Submit your current work.
           </p>
+        </div>
+      )}
+
+      {(curveballBanner || payload.session.curveballPresentedAt) && (
+        <div className="border-b border-[#3157D5]/30 bg-[#E8EEFB]">
+          <div className="mx-auto flex max-w-[1280px] flex-wrap items-start justify-between gap-3 px-4 py-3">
+            <div>
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-[#3157D5]">
+                Mid-session update
+              </p>
+              <p className="mt-1 text-[13.5px] text-[#0B1020]">
+                {curveballBanner?.announcement ||
+                  "Operations needs residual risk addressed before the next shift."}
+              </p>
+              {curveballBanner?.requiredAdaptation && (
+                <p className="mt-1 text-[12.5px] text-slate-600">
+                  {curveballBanner.requiredAdaptation}
+                </p>
+              )}
+            </div>
+            {!payload.session.curveballAcknowledgedAt && (
+              <button
+                type="button"
+                className="rounded-lg bg-[#3157D5] px-3 py-2 text-[12.5px] font-semibold text-white"
+                onClick={() => {
+                  void fetch(`/api/sim/sessions/${sessionId}/curveball`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "acknowledge" }),
+                  }).then(() => load());
+                }}
+              >
+                Acknowledge update
+              </button>
+            )}
+          </div>
         </div>
       )}
 

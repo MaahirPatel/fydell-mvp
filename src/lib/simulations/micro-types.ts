@@ -73,6 +73,13 @@ export interface MicroCompetency {
   label: string;
 }
 
+export interface MicroCurveball {
+  id: string;
+  stakeholderId: string;
+  announcement: string;
+  requiredAdaptation: string;
+}
+
 export interface MicroSimContent {
   format: "micro";
   schemaVersion: 1;
@@ -109,6 +116,8 @@ export interface MicroSimContent {
   communicationChecks?: MicroCommunicationChecks;
   /** Optional per-sim coverage weight overrides. */
   coverageWeights?: MicroCoverageWeights;
+  /** Optional mid-session change (October pilot and similar). */
+  curveball?: MicroCurveball;
 }
 
 export function isMicroContent(content: unknown): content is MicroSimContent {
@@ -119,12 +128,18 @@ export function validateMicroSim(sim: MicroSimContent): string[] {
   const errors: string[] = [];
   if (!sim.slug) errors.push("Missing slug");
   if (!sim.mission) errors.push("Missing mission");
-  if (sim.durationMinutes !== 5) errors.push("Micro sims must be 5 minutes");
-  if (sim.resources.length < 2 || sim.resources.length > 3)
-    errors.push(`Expected 2-3 resources, got ${sim.resources.length}`);
+  if (sim.durationMinutes < 5 || sim.durationMinutes > 25)
+    errors.push("Micro sims must be 5-25 minutes");
+  if (sim.resources.length < 2 || sim.resources.length > 6)
+    errors.push(`Expected 2-6 resources, got ${sim.resources.length}`);
   if (sim.stakeholders.length !== 1) errors.push("Micro sims have exactly one stakeholder");
   if (sim.questions.length < 3 || sim.questions.length > 5)
     errors.push(`Expected 3-5 questions, got ${sim.questions.length}`);
+  if (sim.curveball) {
+    if (!sim.curveball.announcement) errors.push("curveball.announcement required");
+    if (sim.curveball.stakeholderId !== sim.stakeholders[0]?.id)
+      errors.push("curveball.stakeholderId must match the sim stakeholder");
+  }
 
   const totalPoints =
     sim.questions.reduce((s, q) => s + q.points, 0) + sim.stakeholderPoints;

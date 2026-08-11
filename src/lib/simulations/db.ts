@@ -2,6 +2,9 @@ import "server-only";
 import { createHash, randomBytes } from "crypto";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import type { SimulationContent } from "./types";
+import { invitationGate } from "./invitation-gate";
+
+export { invitationGate } from "./invitation-gate";
 
 export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -41,6 +44,7 @@ export interface InvitationRow {
   organization_id: string;
   template_id: string;
   template_version_id: string;
+  cohort_id: string | null;
   candidate_email: string;
   candidate_name: string | null;
   status: string;
@@ -180,9 +184,12 @@ export async function createInvitation(input: {
   candidateName: string | null;
   invitedBy: string;
   expiresInDays?: number;
+  cohortId?: string | null;
+  /** When set, pin this exact version instead of current. */
+  templateVersionId?: string | null;
 }): Promise<{ invitation: InvitationRow; token: string }> {
   const db = createAdminSupabaseClient();
-  // Pin the version that is current at creation time.
+  // Pin the version that is current at creation time (or cohort-bound version).
   const { data: t, error: tErr } = await db
     .from("sim_templates")
     .select("id, current_version_id, status")
@@ -192,6 +199,7 @@ export async function createInvitation(input: {
   if (t.status !== "published" || !t.current_version_id)
     throw new Error("This simulation is not published");
 
+  const versionId = input.templateVersionId || t.current_version_id;
   const token = mintToken();
   const expiresAt = new Date(
     Date.now() + (input.expiresInDays ?? 14) * 86400000
@@ -201,13 +209,15 @@ export async function createInvitation(input: {
     .insert({
       organization_id: input.organizationId,
       template_id: input.templateId,
-      template_version_id: t.current_version_id,
+      template_version_id: versionId,
+      cohort_id: input.cohortId || null,
       candidate_email: input.candidateEmail.toLowerCase(),
       candidate_name: input.candidateName,
       token_hash: hashToken(token),
       status: "sent",
       invited_by: input.invitedBy,
       expires_at: expiresAt,
+      email_delivery: "not_configured",
     })
     .select("*")
     .single();
@@ -223,14 +233,6 @@ export async function getInvitationByToken(token: string): Promise<InvitationRow
     .eq("token_hash", hashToken(token))
     .maybeSingle();
   return (data as InvitationRow) || null;
-}
-
-export function invitationGate(inv: InvitationRow): { ok: boolean; reason?: string } {
-  if (inv.status === "revoked")
-    return { ok: false, reason: "This invitation has been revoked by the employer." };
-  if (inv.status === "expired" || new Date(inv.expires_at) < new Date())
-    return { ok: false, reason: "This invitation has expired. Ask the employer to resend it." };
-  return { ok: true };
 }
 
 /** Mark opened (first view) : non-fatal if racing. */
@@ -471,6 +473,29 @@ export async function startSession(sessionId: string, userId: string): Promise<S
     throw new Error("This session has already been submitted.");
   if (session.started_at) return session;
 
+  // Consent is required before the authoritative timer starts.
+  const { data: consent } = await db
+    .from("candidate_consents")
+    .select("id")
+    .eq("invitation_id", session.invitation_id)
+    .maybeSingle();
+  if (!consent) {
+    throw new Error("Accept the consent terms before starting the evaluation.");
+  }
+
+  const { data: preflight } = await db
+    .from("preflight_checks")
+    .select("desktop_suitable, network_ok, browser_ok")
+    .eq("invitation_id", session.invitation_id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!preflight?.desktop_suitable || !preflight?.network_ok || !preflight?.browser_ok) {
+    throw new Error(
+      "Complete the desktop and network checks successfully before starting. Small screens are not supported for the timed evaluation."
+    );
+  }
+
   const startedAt = new Date();
   const endsAt = new Date(startedAt.getTime() + session.duration_minutes * 60000);
   const { data, error } = await db
@@ -561,6 +586,7 @@ export async function recordEvent(
     taskId?: string;
     payload?: Record<string, unknown>;
     clientEventId?: string;
+    schemaVersion?: number;
   }
 ): Promise<{ id: string; duplicate: boolean }> {
   const db = createAdminSupabaseClient();
@@ -574,6 +600,7 @@ export async function recordEvent(
       task_id: event.taskId || null,
       payload: event.payload || {},
       client_event_id: event.clientEventId || null,
+      schema_version: event.schemaVersion ?? 1,
     })
     .select("id")
     .single();

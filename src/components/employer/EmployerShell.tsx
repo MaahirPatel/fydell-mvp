@@ -10,8 +10,9 @@ import type { CatalogRole } from "./catalog-types";
 
 const NAV = [
   { href: "/app/employer", label: "Overview", exact: true },
+  { href: "/app/employer/cohort", label: "Pilot cohort", exact: false },
+  { href: "/app/employer/compare", label: "Compare", exact: false },
   { href: "/app/employer/assessments", label: "Simulations", exact: false },
-  { href: "/app/employer/simulations/new", label: "New simulation", exact: false },
   { href: "/app/employer/candidates", label: "Candidates", exact: false },
   { href: "/app/employer/reports", label: "Reports", exact: false },
   { href: "/app/employer/settings", label: "Settings", exact: false },

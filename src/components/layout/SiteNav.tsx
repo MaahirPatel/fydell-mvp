@@ -71,10 +71,10 @@ export default function SiteNav() {
             Sign in
           </Link>
           <Link
-            href="/simulations"
+            href="/request-pilot"
             className="hidden h-8 items-center rounded-full bg-white px-3.5 text-[13px] font-medium text-black transition hover:bg-white/90 sm:inline-flex"
           >
-            Try a simulation
+            Request a pilot
           </Link>
           <button
             type="button"
@@ -109,11 +109,11 @@ export default function SiteNav() {
               Sign in
             </Link>
             <Link
-              href="/simulations"
+              href="/request-pilot"
               onClick={() => setOpen(false)}
               className="mt-2 inline-flex h-10 items-center justify-center rounded-full bg-white text-[14px] font-medium text-black"
             >
-              Try a simulation
+              Request a pilot
             </Link>
           </nav>
         </div>

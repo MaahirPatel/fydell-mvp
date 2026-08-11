@@ -10,10 +10,10 @@ import type { MicroResult } from "@/lib/simulations/micro-scoring";
 import { PROTOTYPE_DISCLAIMER } from "@/lib/simulations/micro-types";
 
 export const metadata = {
-  title: "Fydell | See how technical candidates solve real work",
+  title: "Fydell | See how candidates work before you interview",
   description:
-    "Five-minute work simulations for Applied Technical Roles. Review the work, not just the resume.",
-};
+    "Realistic role-specific work simulations with inspectable evidence reports and candidate-controlled Work Receipts.",
+}
 
 const EXAMPLE_PROBLEMS: Record<string, { problem: string; tools: string }> = {
   data_analyst: {
@@ -223,25 +223,26 @@ export default function HomePage() {
               className="flat-type text-[40px] font-semibold leading-[1.05] tracking-[-0.035em] text-white sm:text-[52px] lg:text-[56px]"
               style={{ textWrap: "balance" }}
             >
-              See how technical candidates solve real work.
+              See how candidates work before deciding whom to interview.
             </h1>
-            <p className="mx-auto mt-5 max-w-[540px] text-[16px] leading-relaxed text-white/50 sm:text-[17px]">
-              Five-minute simulations for applied technical roles. Candidates investigate with real
-              materials. You review cited evidence, not a resume claim.
+            <p className="mx-auto mt-5 max-w-[560px] text-[16px] leading-relaxed text-white/50 sm:text-[17px]">
+              Fydell gives candidates a realistic role-specific task and turns their decisions,
+              evidence, final artifact, and follow-up defense into an inspectable report for
+              employers. Candidates can carry a private Work Receipt with their permission.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
-                href="/simulations"
+                href="/request-pilot"
                 className="inline-flex h-10 items-center rounded-full bg-white px-5 text-[14px] font-medium text-black transition hover:bg-white/90"
               >
-                Try a simulation
+                Request a pilot
               </Link>
-              <a
-                href="#evidence"
+              <Link
+                href="/login"
                 className="inline-flex h-10 items-center rounded-full border border-white/15 px-5 text-[14px] font-medium text-white/80 transition hover:border-white/30 hover:text-white"
               >
-                View an evidence report
-              </a>
+                Sign in
+              </Link>
             </div>
           </div>
 

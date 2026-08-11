@@ -9,6 +9,8 @@ import {
 import { toMicroCandidateView } from "@/lib/simulations/candidate-view";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 import { microToV2, toV2CandidateView } from "@/lib/simulations/v2";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { CONSENT_POLICY_VERSION } from "@/lib/pilot/consent";
 
 export const runtime = "nodejs";
 
@@ -35,6 +37,28 @@ export async function GET(
     }
 
     const [state, messages] = await Promise.all([getSessionState(id), listMessages(id)]);
+    const admin = createAdminSupabaseClient();
+    const [{ data: consent }, { data: preflight }] = await Promise.all([
+      admin
+        .from("candidate_consents")
+        .select("id, policy_version, accepted_at")
+        .eq("invitation_id", session.invitation_id)
+        .maybeSingle(),
+      admin
+        .from("preflight_checks")
+        .select("desktop_suitable, network_ok, browser_ok, limitations, created_at")
+        .eq("invitation_id", session.invitation_id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    const workbench = toV2CandidateView(microToV2(content));
+    const curveballPresented = Boolean(session.curveball_presented_at);
+    if (!curveballPresented) {
+      workbench.modules = workbench.modules.filter((m) => m.kind !== "curveball");
+    }
+
     return NextResponse.json({
       session: {
         id: session.id,
@@ -43,9 +67,20 @@ export async function GET(
         startedAt: session.started_at,
         endsAt: session.ends_at,
         submittedAt: session.submitted_at,
+        curveballPresentedAt: session.curveball_presented_at,
+        curveballAcknowledgedAt: session.curveball_acknowledged_at,
       },
       content: toMicroCandidateView(content),
-      workbench: toV2CandidateView(microToV2(content)),
+      workbench,
+      gate: {
+        consentPolicyVersion: CONSENT_POLICY_VERSION,
+        consentAccepted: Boolean(consent),
+        preflightOk: Boolean(
+          preflight?.desktop_suitable && preflight?.network_ok && preflight?.browser_ok
+        ),
+        preflightLimitations: preflight?.limitations || [],
+        desktopRequired: true,
+      },
       state: {
         revision: state.revision,
         currentTaskId: state.current_task_id,

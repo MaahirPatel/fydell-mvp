@@ -22,6 +22,8 @@ import {
   type V2ScoreResult,
 } from "./scoring";
 import type { SimulationDefinitionV2 } from "./types";
+import { createOralDefenseForSession } from "@/lib/pilot/oral-defense";
+import { buildDefenseQuestions } from "@/lib/pilot/defense-questions";
 
 export type { V2PersistedCompetency, V2PersistedResult } from "./scoring";
 export { isV2PersistedResult } from "./scoring";
@@ -229,23 +231,59 @@ export async function runV2Scoring(sessionId: string): Promise<{ analysisRunId: 
         ? (result.performance / 100).toFixed(4)
         : "0.0000";
 
+    const humanReviewRequired =
+      result.performance === null ||
+      result.coverage < 0.35 ||
+      result.confidence < 0.35 ||
+      result.band === "insufficient";
+
+    const defenseQs = buildDefenseQuestions({
+      strengths: result.strengths,
+      improvements: result.improvements,
+      evidence: result.citations.map((c) => ({
+        id: c.eventOrArtifactId,
+        claim: c.claim,
+      })),
+    });
+
     await db
       .from("sim_analysis_runs")
       .update({
         status: "complete",
         overall,
-        recommendation: recommendationFor(result.band),
+        recommendation: humanReviewRequired
+          ? "further_evidence_required"
+          : recommendationFor(result.band),
         result,
+        interview_questions: defenseQs.map((q) => q.question_text),
+        report_version: 1,
+        is_current: true,
         ai_use_summary: {
           scoringMode: "v2-deterministic",
           engineVersion: ENGINE_VERSION_V2,
           coverage: result.coverage,
           confidence: result.confidence,
+          humanReviewRequired,
           externalAiDisclosed: Boolean(submission.external_ai_disclosed),
         },
         completed_at: new Date().toISOString(),
       })
       .eq("id", run.id);
+
+    try {
+      await createOralDefenseForSession({
+        sessionId,
+        analysisRunId: run.id,
+        strengths: result.strengths,
+        improvements: result.improvements,
+        evidence: result.citations.map((c) => ({
+          id: c.eventOrArtifactId,
+          claim: c.claim,
+        })),
+      });
+    } catch {
+      // Defense creation must not block scoring; facilitator can regenerate.
+    }
 
     if (!session.share_token) {
       await db
@@ -257,15 +295,26 @@ export async function runV2Scoring(sessionId: string): Promise<{ analysisRunId: 
 
     await db
       .from("sim_sessions")
-      .update({ status: "analyzed" })
+      .update({
+        status: "analyzed",
+        report_status: humanReviewRequired ? "human_review_required" : "pending",
+      })
       .eq("id", sessionId)
       .eq("status", "submitted");
     await issueCredential(sessionId);
     await db
       .from("sim_sessions")
-      .update({ status: "report_ready" })
+      .update({
+        status: "report_ready",
+        report_status: humanReviewRequired ? "human_review_required" : "ready",
+      })
       .eq("id", sessionId)
       .eq("status", "analyzed");
+
+    await db
+      .from("sim_invitations")
+      .update({ status: "completed" })
+      .eq("id", session.invitation_id);
 
     return { analysisRunId: run.id };
   } catch (err) {
@@ -273,6 +322,10 @@ export async function runV2Scoring(sessionId: string): Promise<{ analysisRunId: 
       .from("sim_analysis_runs")
       .update({ status: "failed", error: err instanceof Error ? err.message : String(err) })
       .eq("id", run.id);
+    await db
+      .from("sim_sessions")
+      .update({ report_status: "failed" })
+      .eq("id", sessionId);
     throw err;
   }
 }

@@ -319,6 +319,16 @@ export function microToV2(sim: MicroSimContent): SimulationDefinitionV2 {
     });
   }
 
+  if (sim.curveball) {
+    modules.push({
+      id: sim.curveball.id,
+      kind: "curveball",
+      announcement: sim.curveball.announcement,
+      requiredAdaptation: sim.curveball.requiredAdaptation,
+      stakeholderId: sim.curveball.stakeholderId,
+    });
+  }
+
   // Opportunity weights: questions + stakeholder keep their point shares;
   // a small shared resources opportunity is carved from 10% of total mass.
   const questionStakeTotal =
@@ -358,6 +368,23 @@ export function microToV2(sim: MicroSimContent): SimulationDefinitionV2 {
       weight: Math.round(resourceShare * 10000) / 10000,
       label: "Consult scenario resources",
       requiredSignals: sim.resources.map((r) => `resource_opened:${r.id}`),
+    });
+  }
+
+  if (sim.curveball) {
+    const adaptComp = sim.competencies.find((c) => c.key === "adaptation")?.key || "adaptation";
+    // Carve a small adaptation share from the last opportunity if needed.
+    const adaptWeight = 0.1;
+    if (opportunities.length > 0) {
+      const donor = opportunities[opportunities.length - 1];
+      donor.weight = Math.max(0.01, Math.round((donor.weight - adaptWeight) * 10000) / 10000);
+    }
+    opportunities.push({
+      id: "opp_curveball",
+      competencyKey: adaptComp,
+      weight: adaptWeight,
+      label: "Adapt after mid-session change",
+      requiredSignals: ["curveball_presented", "curveball_acknowledged", "deliverable_revised:recommendation"],
     });
   }
 

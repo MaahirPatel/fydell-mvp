@@ -6,6 +6,7 @@
 import { SIMULATION_BY_SLUG } from "./content";
 
 const SLUG_TITLES: Record<string, string> = {
+  "ops-yield-investigation": "Operations performance investigation",
   "missing-delays": "The Missing Delays",
   "duplicate-revenue": "Duplicate Revenue",
   "broken-funnel": "The Broken Funnel",

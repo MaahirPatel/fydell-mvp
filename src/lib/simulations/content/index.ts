@@ -4,6 +4,8 @@ import {
   MICRO_DATA_ANALYST,
   MICRO_SOLUTIONS_ENGINEER,
 } from "./micro-data-analytics";
+import { MICRO_OPS_YIELD } from "./micro-ops-yield";
+export { MICRO_OPS_YIELD, PILOT_EVALUATION_SLUG } from "./micro-ops-yield";
 import {
   MICRO_BSA,
   MICRO_IMPLEMENTATION_CONSULTANT,
@@ -46,7 +48,8 @@ import {
  * this directory remains unpublished and is not seeded to the catalog.)
  */
 export const ALL_SIMULATIONS: MicroSimContent[] = [
-  // Data Analyst
+  // Data Analyst (October pilot flagship first)
+  MICRO_OPS_YIELD,
   MICRO_DATA_ANALYST,
   MICRO_DA_DUPLICATE_REVENUE,
   MICRO_DA_BROKEN_FUNNEL,

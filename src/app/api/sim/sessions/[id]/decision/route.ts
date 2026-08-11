@@ -16,7 +16,12 @@ export async function POST(
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: { decision?: string; notes?: string };
+  let body: {
+    decision?: string;
+    notes?: string;
+    evidenceInfluence?: "changed" | "confirmed" | "no_effect";
+    reviewStatus?: "unreviewed" | "in_review" | "follow_up_needed" | "reviewed";
+  };
   try {
     body = await req.json();
   } catch {
@@ -24,6 +29,12 @@ export async function POST(
   }
   if (!body.decision || !DECISIONS.has(body.decision))
     return NextResponse.json({ error: "Invalid decision" }, { status: 400 });
+  if (
+    body.evidenceInfluence &&
+    !["changed", "confirmed", "no_effect"].includes(body.evidenceInfluence)
+  ) {
+    return NextResponse.json({ error: "Invalid evidenceInfluence" }, { status: 400 });
+  }
 
   try {
     const session = await getSessionForOrgMember(id, user.id);
@@ -35,11 +46,39 @@ export async function POST(
         organization_id: session.organization_id,
         decision: body.decision,
         notes: (body.notes || "").slice(0, 4000),
+        evidence_influence: body.evidenceInfluence || null,
         decided_by: user.id,
       })
-      .select("id, decision, created_at")
+      .select("id, decision, evidence_influence, created_at")
       .single();
     if (error) throw new Error(error.message);
+
+    if (body.reviewStatus) {
+      await admin
+        .from("sim_sessions")
+        .update({ review_status: body.reviewStatus })
+        .eq("id", id)
+        .eq("organization_id", session.organization_id);
+    } else {
+      await admin
+        .from("sim_sessions")
+        .update({ review_status: "reviewed" })
+        .eq("id", id)
+        .eq("organization_id", session.organization_id);
+    }
+
+    await admin.from("pilot_audit_events").insert({
+      organization_id: session.organization_id,
+      actor_user_id: user.id,
+      action: "employer_decision_recorded",
+      entity_type: "sim_session",
+      entity_id: id,
+      payload: {
+        decision: body.decision,
+        evidenceInfluence: body.evidenceInfluence || null,
+      },
+    });
+
     return NextResponse.json({ ok: true, decision: data });
   } catch (err) {
     return NextResponse.json(

@@ -98,13 +98,25 @@ export function EvidenceReportV2({ result }: { result: V2PersistedResult }) {
         </p>
         {result.citations.length ? (
           <ol className="mt-3 space-y-3">
-            {result.citations.map((c, i) => (
-              <li key={`${c.eventOrArtifactId}-${i}`} className="border-l-2 border-violet-300 pl-3">
-                <p className="text-[14px] font-medium text-slate-800">{c.claim}</p>
-                <p className="mt-0.5 text-[13px] leading-relaxed text-slate-600">{c.detail}</p>
-                <p className="mt-0.5 font-mono text-[11px] text-slate-400">{c.eventOrArtifactId}</p>
-              </li>
-            ))}
+            {result.citations.map((c, i) => {
+              const anchor = `evidence-${c.eventOrArtifactId.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+              return (
+                <li
+                  key={`${c.eventOrArtifactId}-${i}`}
+                  id={anchor}
+                  className="scroll-mt-24 border-l-2 border-[#3157D5]/40 pl-3"
+                >
+                  <p className="text-[14px] font-medium text-slate-800">{c.claim}</p>
+                  <p className="mt-0.5 text-[13px] leading-relaxed text-slate-600">{c.detail}</p>
+                  <a
+                    href={`#${anchor}`}
+                    className="mt-0.5 inline-block font-mono text-[11px] text-[#3157D5] hover:underline"
+                  >
+                    {c.eventOrArtifactId}
+                  </a>
+                </li>
+              );
+            })}
           </ol>
         ) : (
           <p className="mt-3 text-[14px] text-slate-500">

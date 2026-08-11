@@ -27,7 +27,7 @@ function check(name: string, cond: boolean, detail?: string) {
 // ---- catalog ---------------------------------------------------------------
 console.log("catalog");
 const slugs = ALL_SIMULATIONS.map((s) => s.slug);
-check("30 simulations registered", ALL_SIMULATIONS.length === 30, `got ${ALL_SIMULATIONS.length}`);
+check("31 simulations registered", ALL_SIMULATIONS.length === 31, `got ${ALL_SIMULATIONS.length}`);
 check("slugs are unique", new Set(slugs).size === slugs.length);
 const roleKeys = new Set(ROLES.map((r) => r.key));
 check(
@@ -36,7 +36,8 @@ check(
 );
 for (const role of ROLES) {
   const count = ALL_SIMULATIONS.filter((s) => s.roleKey === role.key).length;
-  check(`${role.key} has 5 simulations (${count})`, count === 5);
+  const expected = role.key === "data_analyst" ? 6 : 5;
+  check(`${role.key} has ${expected} simulations (${count})`, count === expected);
   const registered = new Set(slugs);
   check(
     `${role.key} simulationSlugs all registered`,

@@ -53,8 +53,9 @@ export const ROLES: RoleDefinition[] = [
       "Prioritization under deadline",
       "Communication",
     ],
-    simulationSlug: "missing-delays",
+    simulationSlug: "ops-yield-investigation",
     simulationSlugs: [
+      "ops-yield-investigation",
       "missing-delays",
       "duplicate-revenue",
       "broken-funnel",

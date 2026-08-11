@@ -188,6 +188,41 @@ for (const table of EVIDENCE_SIBLING_TABLES) {
   });
 }
 
+// October pilot tables (021)
+const OCTOBER_PILOT_TABLES = [
+  "pilot_cohorts",
+  "candidate_consents",
+  "preflight_checks",
+  "oral_defense_sets",
+  "oral_defense_questions",
+  "oral_defense_responses",
+  "sim_receipt_shares",
+  "pilot_audit_events",
+];
+
+for (const table of OCTOBER_PILOT_TABLES) {
+  check(`${table}: defined + RLS + policy`, () => {
+    assertTrue(tableIsDefined(sql, table), `public.${table} is not defined`);
+    assertTrue(hasRlsEnabled(sql, table), `public.${table} must enable RLS`);
+    const { found } = hasNamedPolicy(sql, table);
+    assertTrue(found, `public.${table} has no named policy`);
+  });
+}
+
+check("sim_invitations: cohort_id column added", () => {
+  assertTrue(
+    /alter\s+table\s+public\.sim_invitations[\s\S]*cohort_id/i.test(sql),
+    "021 must add cohort_id to sim_invitations"
+  );
+});
+
+check("sim_employer_decisions: evidence_influence column added", () => {
+  assertTrue(
+    /evidence_influence/i.test(sql),
+    "021 must add evidence_influence"
+  );
+});
+
 // ---------------------------------------------------------------------------
 
 if (failures > 0) {

@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import EmployerReviewActions from "@/components/employer/EmployerReviewActions";
+import { EvidenceReportV2 } from "@/components/sim/EvidenceReportV2";
+import { isV2PersistedResult, type V2PersistedResult } from "@/lib/simulations/v2/scoring";
 
 interface Competency {
   key: string;
@@ -91,10 +94,6 @@ const RECOMMENDATION_COPY: Record<string, { label: string; tone: string }> = {
 export function EvidenceReport({ sessionId }: { sessionId: string }) {
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [decision, setDecision] = useState("");
-  const [decisionNotes, setDecisionNotes] = useState("");
-  const [decisionBusy, setDecisionBusy] = useState(false);
-  const [decisionError, setDecisionError] = useState<string | null>(null);
   const [tab, setTab] = useState<"evidence" | "work" | "timeline" | "interview">("evidence");
 
   const load = useCallback(async () => {
@@ -122,28 +121,6 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
       return () => clearTimeout(t);
     }
   }, [report, load]);
-
-  const recordDecision = async () => {
-    if (!decision) return;
-    setDecisionBusy(true);
-    setDecisionError(null);
-    try {
-      const res = await fetch(`/api/sim/sessions/${sessionId}/decision`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ decision, notes: decisionNotes }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not record the decision");
-      setDecision("");
-      setDecisionNotes("");
-      await load();
-    } catch (err) {
-      setDecisionError(err instanceof Error ? err.message : "Could not record the decision");
-    } finally {
-      setDecisionBusy(false);
-    }
-  };
 
   if (error)
     return (
@@ -379,62 +356,34 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
         </div>
       )}
 
-      {/* decision */}
-      <section aria-labelledby="decision-h" className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 id="decision-h" className="text-[14px] font-semibold text-slate-900">
-          Your decision
-        </h2>
-        {(decisions || []).length > 0 && (
+      {analysis?.result && isV2PersistedResult(analysis.result) && (
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
+          <h2 className="text-[14px] font-semibold text-slate-900">Citation-backed evidence</h2>
+          <p className="mt-1 text-[12.5px] text-slate-500">
+            Click a citation ID to jump to its evidence anchor.
+          </p>
+          <div className="mt-4">
+            <EvidenceReportV2 result={analysis.result as V2PersistedResult} />
+          </div>
+        </section>
+      )}
+
+      {(decisions || []).length > 0 && (
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
+          <h2 className="text-[14px] font-semibold text-slate-900">Prior decisions</h2>
           <ul className="mt-2 space-y-1 text-[12.5px] text-slate-500">
             {(decisions || []).map((d) => (
               <li key={d.id}>
                 Recorded <strong className="text-slate-700">{d.decision.replace(/_/g, " ")}</strong> on{" "}
                 {new Date(d.created_at).toLocaleDateString()}
-                {d.notes && <>: "{d.notes}"</>}
+                {d.notes && <>: &quot;{d.notes}&quot;</>}
               </li>
             ))}
           </ul>
-        )}
-        <div className="mt-3 flex flex-wrap gap-2">
-          {[
-            ["advance", "Advance"],
-            ["hold", "Hold"],
-            ["needs_further_evidence", "Needs more evidence"],
-            ["do_not_advance", "Do not advance"],
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              onClick={() => setDecision(value)}
-              aria-pressed={decision === value}
-              className={`rounded-lg border px-3.5 py-2 text-[13px] font-medium ${
-                decision === value
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-slate-300 text-slate-700 hover:bg-slate-50"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <textarea
-          value={decisionNotes}
-          onChange={(e) => setDecisionNotes(e.target.value)}
-          rows={2}
-          placeholder="Notes (optional)"
-          aria-label="Decision notes"
-          className="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] focus:border-slate-500 focus:outline-none"
-        />
-        {decisionError && (
-          <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-[12.5px] text-red-700">{decisionError}</p>
-        )}
-        <button
-          onClick={() => void recordDecision()}
-          disabled={!decision || decisionBusy}
-          className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
-        >
-          {decisionBusy ? "Recording…" : "Record decision"}
-        </button>
-      </section>
+        </section>
+      )}
+
+      <EmployerReviewActions sessionId={sessionId} />
     </div>
   );
 }

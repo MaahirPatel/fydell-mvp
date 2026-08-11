@@ -43,10 +43,21 @@ export default async function InvitePage({
   const orgName = org?.name || "An employer";
 
   if (!gate.ok) {
+    const title =
+      gate.code === "expired"
+        ? "Invitation expired"
+        : gate.code === "revoked"
+          ? "Invitation revoked"
+          : gate.code === "completed"
+            ? "Invitation already used"
+            : "This invitation is not active";
     return (
       <Shell>
-        <h1 className="text-xl font-semibold text-slate-900">This invitation isn&apos;t active</h1>
+        <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
         <p className="mt-2 text-[14px] text-slate-600">{gate.reason}</p>
+        <p className="mt-3 text-[13px] text-slate-500">
+          Ask the employer to resend or grant an authorized retake if you still need access.
+        </p>
       </Shell>
     );
   }
@@ -92,16 +103,18 @@ export default async function InvitePage({
       <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-5">
         <p className="text-[13px] font-semibold text-slate-800">What to know before you start</p>
         <ul className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-slate-600">
-          <li>· Nothing starts until you press Begin. Opening this page starts no timer.</li>
+          <li>· Desktop required (laptop/desktop, min 1024px wide). The timer does not start on this page.</li>
+          <li>· You will accept a versioned consent and run real system checks before Start evaluation.</li>
           <li>
-            · What&apos;s evaluated: {role?.skillsEvaluated.slice(0, 4).join(", ").toLowerCase()}.
+            · What is evaluated: {role?.skillsEvaluated.slice(0, 4).join(", ").toLowerCase()}.
           </li>
           <li>
-            · Your activity inside the workspace (materials opened, messages, edits) is recorded and
-            becomes your evidence. Nothing outside the workspace is observed.
+            · Fydell records disclosed work evidence inside the workspace (resources, questions,
+            artifact revisions, submission). No facial, emotion, or device-control claims.
           </li>
-          <li>· Your work autosaves. A crash or dropped connection loses nothing.</li>
-          <li>· When you finish, you get a portable result documenting your work. It&apos;s yours to keep and share.</li>
+          <li>· In-product AI use is observed when present, not banned.</li>
+          <li>· The employer receives a citation-backed report. You can later claim a private Work Receipt.</li>
+          <li>· Support: hello@fydell.com. Withdrawal and accommodation requests go through the inviting employer and Fydell support.</li>
         </ul>
       </div>
 
