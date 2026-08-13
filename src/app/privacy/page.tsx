@@ -19,11 +19,15 @@ const FACTS: Array<[string, string]> = [
   ],
   [
     "Who can see it",
-    "The workspace that issued the invitation, and the candidate themselves. Access is enforced by organization membership at the database level. There is no public directory of candidates or results.",
+    "The workspace that issued the invitation, and the candidate themselves. Every table holding candidate work carries a row-level policy scoped to the owning organization, and the server checks membership before returning a session, report or receipt. There is no public directory of candidates or results.",
   ],
   [
     "Candidate control",
-    "A candidate holds a Work Receipt for their own attempt. Sharing it is per-field, per-recipient and time-limited, and can be revoked immediately. Sharing is never automatic.",
+    "A candidate holds a Work Receipt for their own attempt. Sharing it is a link the candidate creates: it carries only the fields they choose, stops working on the date they set, and can be revoked afterwards. Sharing is never automatic.",
+  ],
+  [
+    "How long it is kept",
+    "There is no automatic deletion window yet. Evaluation data stays until it is deleted on request, which is done by hand. If your organization needs a fixed retention period, agree it with us before running a cohort.",
   ],
   [
     "Selling data",

@@ -1,42 +1,96 @@
 import MarketingShell from "@/components/layout/MarketingShell";
-import HeroSimPreview from "@/components/marketing/home/HeroSimPreview";
 import { ButtonLink } from "@/components/marketing/ui";
+import { ProductStage, StageDescription } from "@/components/fydell/ProductStage";
+import { ReportInspector } from "@/components/fydell/ReportInspector";
+import EvidenceWalkthrough from "@/components/marketing/product/EvidenceWalkthrough";
+import {
+  NORTHLINE_DEFENSE_PROMPT,
+  NORTHLINE_RECEIPT,
+  NORTHLINE_SCENARIO,
+} from "@/lib/fixtures/northline";
 
 export const metadata = {
   title: "Product",
   description:
-    "How Fydell works end to end: create a workspace, invite a candidate, read a conclusion with the evidence attached, and interview from what the work showed.",
+    "How Fydell works end to end: set up the evaluation, watch a candidate's work become cited evidence, then review the report, run the follow-up, and return the candidate their receipt.",
 };
 
-const SECTION = "border-t border-[var(--border-subtle)] mkt-section";
+/**
+ * Three chapters, not ten questions.
+ *
+ * The previous version answered nine buyer questions at equal weight, which
+ * made a 4800px page with one visual rhythm. A buyer does not have nine
+ * questions, they have three: what do I set up, what does it actually do, and
+ * what do I get back. Each chapter here owns one of those and carries the
+ * product scene that answers it.
+ */
 
-function QA({
-  question,
-  children,
+const CHAPTER = "border-t border-[var(--border-subtle)] mkt-section-chapter";
+const BAND = "bg-[var(--surface-band)]";
+
+function ChapterHead({
+  index,
+  title,
+  body,
+  className = "",
 }: {
-  question: string;
-  children: React.ReactNode;
+  index: number;
+  title: string;
+  body: string;
+  className?: string;
 }) {
   return (
-    <div className="grid gap-6 lg:grid-cols-12 lg:gap-16">
-      <h2 className="section-heading lg:col-span-5">{question}</h2>
-      <div className="lg:col-span-7">{children}</div>
+    <div className={className}>
+      <p className="text-[12.5px] tabular-nums text-[var(--text-tertiary)]">
+        Chapter {index}
+      </p>
+      <h2 className="section-heading mt-2.5">{title}</h2>
+      <p className="mt-4 max-w-[54ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+        {body}
+      </p>
     </div>
   );
 }
 
-function Body({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="max-w-[62ch] text-[16px] leading-[1.7] text-[var(--text-secondary)]">
-      {children}
-    </p>
-  );
-}
+const SETUP = [
+  {
+    label: "Evaluation",
+    value: NORTHLINE_SCENARIO.evaluation,
+    note: "Published by Fydell. Read-only.",
+  },
+  { label: "Role", value: NORTHLINE_SCENARIO.role, note: null },
+  {
+    label: "Working time",
+    value: NORTHLINE_SCENARIO.duration,
+    note: "One sitting. Progress saves as they go.",
+  },
+  {
+    label: "Scenario",
+    value: `${NORTHLINE_SCENARIO.company}, synthetic`,
+    note: "A fictional manufacturer, not a customer.",
+  },
+];
+
+const STAGES = [
+  "Investigate the files",
+  "Write a conclusion",
+  "Receive changed information",
+  "Revise or defend",
+  "Submit",
+];
+
+const BOUNDARIES = [
+  "It does not make or recommend a hire or reject decision.",
+  "It does not claim to detect external AI use, screen sharing, or remote desktop control.",
+  "It does not verify identity by biometrics.",
+  "It does not produce a single opaque score that stands in for the evidence.",
+  "It does not turn a platform failure into a bad result for the candidate.",
+];
 
 export default function ProductPage() {
   return (
     <MarketingShell>
-      <section className="pb-14 pt-[132px] sm:pt-[148px]">
+      <section className="pb-12 pt-[120px] sm:pt-[132px]">
         <div className="mkt-content">
           <h1 className="page-display">
             An evaluation you can audit, not a score you have to trust.
@@ -57,182 +111,189 @@ export default function ProductPage() {
         </div>
       </section>
 
-      <section className="pb-4">
+      {/* Chapter 1: set the evaluation. */}
+      <section className={CHAPTER}>
         <div className="mkt-content">
-          <HeroSimPreview />
-        </div>
-      </section>
-
-      <section className={SECTION}>
-        <div className="mkt-content">
-          <QA question="What problem does this solve?">
-            <Body>
-              Interviews reward people who talk well about work, and take-home
-              tests reward people with a free weekend. Neither shows you how
-              someone behaves when the data is messy, the metric definition is
-              ambiguous, and a fact changes halfway through. Fydell puts a
-              candidate in exactly that situation for twenty minutes and records
-              what they did.
-            </Body>
-          </QA>
-        </div>
-      </section>
-
-      <section className={SECTION}>
-        <div className="mkt-content">
-          <QA question="How does a company start?">
-            <div className="grid gap-3">
-              {[
-                [
-                  "Create a workspace",
-                  "Sign up with a work email and name your company. That workspace holds your evaluations, candidates and reports, and only people you invite can see it.",
-                ],
-                [
-                  "Invite a candidate",
-                  "Send an invitation by email. The link is single-use, scoped to that candidate, and expires.",
-                ],
-                [
-                  "Read the report",
-                  "When they finish, you get a conclusion, the evidence behind each claim, and follow-up questions generated from their own work.",
-                ],
-              ].map(([title, detail], i) => (
-                <div
-                  key={title}
-                  className="flex gap-4 rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3.5"
-                >
-                  <span
-                    aria-hidden
-                    className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] text-[12px] tabular-nums text-[var(--text-tertiary)]"
-                  >
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[14.5px] font-medium text-[var(--text-primary)]">
-                      {title}
-                    </p>
-                    <p className="mt-1 text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
-                      {detail}
-                    </p>
+          <ChapterHead
+            index={1}
+            title="Set the evaluation"
+            body="There is one released evaluation and Fydell maintains it. You choose the role you are hiring for, check what it measures, and invite candidates to it. You are not asked to author a test."
+          />
+          <div className="mt-9 grid items-start gap-5 lg:grid-cols-2 lg:gap-6">
+            <ProductStage
+              title="Evaluation setup"
+              label="The evaluation an employer selects, shown read-only"
+            >
+              <dl className="divide-y divide-[var(--border-subtle)]">
+                {SETUP.map((row) => (
+                  <div key={row.label} className="px-4 py-2.5">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <dt className="text-[12px] text-[var(--text-tertiary)]">
+                        {row.label}
+                      </dt>
+                      <dd className="text-right text-[13px] text-[var(--text-primary)]">
+                        {row.value}
+                      </dd>
+                    </div>
+                    {row.note ? (
+                      <p className="mt-0.5 text-right text-[11.5px] text-[var(--text-tertiary)]">
+                        {row.note}
+                      </p>
+                    ) : null}
                   </div>
-                </div>
-              ))}
-            </div>
-          </QA>
+                ))}
+              </dl>
+              <StageDescription>
+                The released evaluation is the Operations performance
+                investigation for a Data Analyst, lasting twenty minutes, set in
+                a synthetic scenario. Employers select it; they do not edit it.
+              </StageDescription>
+            </ProductStage>
+
+            <ProductStage
+              title="What the candidate moves through"
+              label="The five stages of the evaluation"
+            >
+              <ol className="divide-y divide-[var(--border-subtle)]">
+                {STAGES.map((stage, i) => (
+                  <li key={stage} className="flex items-center gap-3 px-4 py-2.5">
+                    <span
+                      aria-hidden
+                      className="inline-flex h-[19px] w-[19px] shrink-0 items-center justify-center rounded-[5px] border border-[var(--border-default)] text-[11px] tabular-nums text-[var(--text-tertiary)]"
+                    >
+                      {i + 1}
+                    </span>
+                    <span className="text-[13px] text-[var(--text-secondary)]">
+                      {stage}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </ProductStage>
+          </div>
+
+          <p className="mt-5 max-w-[62ch] text-[13.5px] leading-[1.65] text-[var(--text-tertiary)]">
+            Invitations are single-use, scoped to one candidate, and expire. When
+            you are running several candidates against the same evaluation, they
+            group into a cohort so you can look at them together. A cohort lives
+            inside an evaluation; it is not a separate part of the product.
+          </p>
         </div>
       </section>
 
-      <section className={SECTION}>
+      {/* Chapter 2: watch work become evidence. */}
+      <section className={`${CHAPTER} ${BAND}`}>
         <div className="mkt-content">
-          <QA question="What does the candidate experience?">
-            <Body>
-              They open one link and land directly in the work. There is a
-              business question, three source documents, a stakeholder they can
-              question, and a clock. Progress saves as they go, so a dropped
-              connection does not cost them the attempt. They can see what they
-              have cited and revise it. Nothing is a trick, and nothing is
-              hidden from them that is later used against them.
-            </Body>
-          </QA>
+          <ChapterHead
+            index={2}
+            title="Watch work become evidence"
+            body="This is the part that is hard to describe and easy to show. Step through one candidate's session and see how a file they opened turns into a claim you can check."
+          />
+          <div className="mt-9">
+            <EvidenceWalkthrough />
+          </div>
         </div>
       </section>
 
-      <section className={SECTION}>
+      {/* Chapter 3: review, follow up, return the receipt. */}
+      <section className={CHAPTER}>
         <div className="mkt-content">
-          <QA question="What is in the report?">
-            <div className="rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 sm:p-6">
-              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
-                Structure of every evidence report
-              </p>
-              <ul className="mt-3 divide-y divide-[var(--border-subtle)]">
-                {[
-                  [
-                    "The conclusion",
-                    "What the candidate decided, in their words.",
-                  ],
-                  [
-                    "Each claim, with its support",
-                    "The specific rows and documents that back it up, openable in place.",
-                  ],
-                  [
-                    "Each claim, with its limitation",
-                    "What the evidence does not establish. Written by the candidate, not inferred.",
-                  ],
-                  [
-                    "How they handled the new fact",
-                    "The before and after, so you can see whether they revised or dug in.",
-                  ],
-                  [
-                    "Follow-up questions",
-                    "Generated from their citations, aimed at where the reasoning is thinnest.",
-                  ],
-                ].map(([title, detail]) => (
-                  <li key={title} className="py-2.5 first:pt-0 last:pb-0">
-                    <p className="text-[13.5px] font-medium text-[var(--text-primary)]">
-                      {title}
-                    </p>
-                    <p className="mt-0.5 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
-                      {detail}
-                    </p>
+          <ChapterHead
+            index={3}
+            title="Review, follow up, and return the receipt"
+            body="You get a report that leads with the candidate's conclusion, opens to its sources, and says where it stops. The follow-up question comes from that stopping point, and the candidate keeps their own copy of the work."
+          />
+
+          <div className="mt-9">
+            <ProductStage
+              title="Evidence report"
+              source={`${NORTHLINE_SCENARIO.company} · synthetic`}
+              label="The employer report with each claim openable to its cited source"
+              meta={<span>Review required</span>}
+            >
+              <ReportInspector />
+            </ProductStage>
+          </div>
+
+          <div className="mt-5 grid items-start gap-5 lg:grid-cols-2 lg:gap-6">
+            <ProductStage
+              title="Follow-up, earned by the work"
+              label="An oral defense question derived from a limitation in the candidate's own report"
+            >
+              <div className="p-4">
+                <p className="text-[11.5px] font-medium text-[var(--text-tertiary)]">
+                  Because the candidate wrote
+                </p>
+                <p className="mt-1.5 border-l-2 border-[var(--fydell-risk)] pl-2.5 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+                  {NORTHLINE_DEFENSE_PROMPT.tiedTo}
+                </p>
+                <p className="mt-4 text-[11.5px] font-medium text-[var(--text-tertiary)]">
+                  Ask them
+                </p>
+                <p className="mt-1.5 text-[14px] leading-[1.5] text-[var(--text-primary)]">
+                  {NORTHLINE_DEFENSE_PROMPT.question}
+                </p>
+              </div>
+            </ProductStage>
+
+            <ProductStage
+              title="Work Receipt"
+              source="The candidate's copy"
+              label="What the candidate's Work Receipt contains and who can read it"
+            >
+              <ul className="divide-y divide-[var(--border-subtle)]">
+                {NORTHLINE_RECEIPT.access.map((row) => (
+                  <li
+                    key={row.party}
+                    className="flex items-center justify-between gap-4 px-4 py-2.5"
+                  >
+                    <span className="text-[12.5px] text-[var(--text-secondary)]">
+                      {row.party}
+                    </span>
+                    <span
+                      className={`shrink-0 text-[11.5px] ${
+                        row.state === "No access"
+                          ? "text-[var(--text-tertiary)]"
+                          : "text-[var(--text-primary)]"
+                      }`}
+                    >
+                      {row.state}
+                    </span>
                   </li>
                 ))}
               </ul>
-            </div>
-          </QA>
+              <p className="border-t border-[var(--border-subtle)] px-4 py-3 text-[12px] leading-[1.55] text-[var(--text-tertiary)]">
+                The receipt is private to the candidate and the company that
+                invited them. It is not a public profile and it is not listed
+                anywhere.
+              </p>
+            </ProductStage>
+          </div>
         </div>
       </section>
 
-      <section className={SECTION}>
+      {/* Boundaries, as a calm list rather than a disclaimer wall. */}
+      <section className={`${CHAPTER} ${BAND}`}>
         <div className="mkt-content">
-          <QA question="How do you compare two candidates?">
-            <Body>
-              Side by side, on the same evaluation version, showing where their
-              conclusions and their evidence differ rather than which number is
-              larger. Comparison only becomes available when there are two
-              completed reports on a compatible version, because comparing
-              across versions would be misleading.
-            </Body>
-          </QA>
+          <h2 className="section-heading">Where Fydell stops</h2>
+          <ul className="mt-6 grid gap-x-10 gap-y-3 sm:grid-cols-2">
+            {BOUNDARIES.map((line) => (
+              <li
+                key={line}
+                className="flex gap-2.5 text-[14px] leading-[1.6] text-[var(--text-secondary)]"
+              >
+                <span
+                  aria-hidden
+                  className="mt-[9px] h-px w-3 shrink-0 bg-[var(--border-strong)]"
+                />
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      <section className={SECTION}>
-        <div className="mkt-content">
-          <QA question="What happens to a candidate's data?">
-            <Body>
-              The candidate keeps a Work Receipt. They choose which fields to
-              share, with whom, and for how long, and they can revoke it
-              immediately. It is not a public profile and it is not listed
-              anywhere. Your workspace keeps its own copy of the report for the
-              hiring decision you ran it for.
-            </Body>
-          </QA>
-        </div>
-      </section>
-
-      <section className={SECTION}>
-        <div className="mkt-content">
-          <QA question="What does Fydell deliberately not do?">
-            <ul className="grid gap-3">
-              {[
-                "It does not make or recommend a hire or reject decision.",
-                "It does not claim to detect external AI use, screen sharing, or remote desktop control.",
-                "It does not verify identity by biometrics.",
-                "It does not produce a single opaque score that stands in for the evidence.",
-                "It does not turn a platform failure into a bad result for the candidate.",
-              ].map((line) => (
-                <li
-                  key={line}
-                  className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3 text-[13.5px] leading-[1.65] text-[var(--text-secondary)]"
-                >
-                  {line}
-                </li>
-              ))}
-            </ul>
-          </QA>
-        </div>
-      </section>
-
-      <section className={`${SECTION} pb-24`}>
+      <section className={`${CHAPTER} pb-24`}>
         <div className="mkt-content max-w-[620px]">
           <h2 className="section-heading">Try it on one role.</h2>
           <p className="mt-4 text-[16px] leading-[1.65] text-[var(--text-secondary)]">
