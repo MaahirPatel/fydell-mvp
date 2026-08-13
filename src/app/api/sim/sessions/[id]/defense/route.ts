@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { getSessionForCandidate, getSessionForOrgMember } from "@/lib/simulations/db";
 import { getOralDefense, saveDefenseResponse } from "@/lib/pilot/oral-defense";
+import { isPreviewMode, previewDefense } from "@/lib/dev/preview";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  if (isPreviewMode()) {
+    return NextResponse.json({ defense: previewDefense(id) });
+  }
+
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {

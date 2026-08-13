@@ -29,7 +29,9 @@ export function StatusTag({
   return (
     <span
       className={cn(
-        "inline-flex h-[22px] shrink-0 items-center rounded-[4px] border px-1.5 text-[12px] font-medium leading-none",
+        // Fixed height clipped longer labels like "Consented, not started" on
+        // narrow viewports. The tag keeps its size but no longer wraps inside.
+        "inline-flex h-[22px] shrink-0 items-center whitespace-nowrap rounded-[4px] border px-1.5 text-[12px] font-medium leading-none",
         TONE[tone],
         className,
       )}

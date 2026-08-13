@@ -14,12 +14,18 @@ const WIDTH = Number(process.argv[4] || 1440);
 const HEIGHT = Number(process.argv[5] || 900);
 const OUT = "docs/screenshots/employer";
 
-const ROUTES = [
+const ROUTES: { name: string; path: string; skipWhenEmpty?: boolean }[] = [
   { name: "home", path: "/app/employer" },
   { name: "evaluations", path: "/app/employer/assessments" },
   { name: "candidates", path: "/app/employer/candidates" },
   { name: "reports", path: "/app/employer/reports" },
   { name: "settings", path: "/app/employer/settings" },
+  // Fixture session id. Resolves only under FYDELL_UI_PREVIEW.
+  {
+    name: "report",
+    path: "/app/employer/assessments/report/sess-s6",
+    skipWhenEmpty: true,
+  },
 ];
 
 async function main() {
@@ -28,6 +34,7 @@ async function main() {
   const page = await browser.newPage({ viewport: { width: WIDTH, height: HEIGHT } });
 
   for (const route of ROUTES) {
+    if (route.skipWhenEmpty && SUFFIX === "empty") continue;
     const errors: string[] = [];
     const onConsole = (m: { type: () => string; text: () => string }) => {
       if (m.type() === "error") errors.push(m.text().slice(0, 120));

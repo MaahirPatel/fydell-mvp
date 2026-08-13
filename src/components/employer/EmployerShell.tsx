@@ -88,8 +88,10 @@ function SidebarNav() {
 function MobileNav() {
   const isActive = useIsActive();
   return (
+    /* A scrolling strip hid Settings off the right edge at 390px with nothing
+       to say it was there. Five fixed columns fit, so nothing is hidden. */
     <nav
-      className="flex gap-1 overflow-x-auto border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-3 py-2 md:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="grid grid-cols-5 gap-0.5 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2 py-2 md:hidden"
       aria-label="Workspace"
     >
       {NAV.map(({ href, label, exact }) => {
@@ -99,7 +101,7 @@ function MobileNav() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`flex shrink-0 items-center whitespace-nowrap rounded-[6px] px-3 py-1.5 text-[13px] transition-colors ${
+            className={`flex items-center justify-center rounded-[6px] px-1 py-1.5 text-center text-[12px] leading-tight transition-colors ${
               active
                 ? "bg-white/[0.08] font-medium text-[var(--text-primary)]"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -234,14 +236,16 @@ export default function EmployerShell({
 
           <div className="flex min-w-0 flex-1 flex-col">
             <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-5 sm:px-8">
+              {/* On a phone the sidebar is gone, and with it the only place
+                  that said which workspace you are in. That matters more here
+                  than the wordmark does. */}
               <Link
                 href="/app/employer"
-                className="inline-flex items-center gap-2 md:hidden"
-                aria-label="Fydell"
+                className="inline-flex min-w-0 items-center gap-2 md:hidden"
               >
-                <FydellMark width={20} />
-                <span className="text-[15px] font-semibold leading-none tracking-[-0.04em]">
-                  fydell
+                <FydellMark width={18} />
+                <span className="min-w-0 truncate text-[13.5px] font-medium text-[var(--text-primary)]">
+                  {workspaceName}
                 </span>
               </Link>
               <div className="hidden md:block" />

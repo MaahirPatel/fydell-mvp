@@ -122,7 +122,94 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
           }
         />
       ) : (
-      <Surface tone="panel" className="overflow-hidden">
+      <>
+      {/* A five-column grid on a phone is a sideways scroll with the actions
+          hidden off the right edge, so below the table's usable width the same
+          rows are stacked instead. */}
+      <Surface tone="panel" className="overflow-hidden lg:hidden">
+        <ul>
+          {visible.map((r) => {
+            const stage = stageOf(r);
+            const busy = busyId === r.invitationId;
+            return (
+              <li
+                key={r.invitationId}
+                className="border-b border-[var(--border-subtle)] px-4 py-3 last:border-b-0"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-[14px] font-medium text-[var(--text-primary)]">
+                      {r.name || r.email}
+                    </p>
+                    {r.name ? (
+                      <p className="mt-0.5 truncate text-[12.5px] text-[var(--text-tertiary)]">
+                        {r.email}
+                      </p>
+                    ) : null}
+                  </div>
+                  <RowMenu
+                    label={r.name || r.email}
+                    items={[
+                      {
+                        label: "Resend invitation",
+                        disabled: !r.canResend || busy,
+                        onSelect: () => void act(r.invitationId, "resend"),
+                      },
+                      {
+                        label: "Copy invitation link",
+                        disabled: !r.canResend || busy,
+                        onSelect: () => void act(r.invitationId, "copy"),
+                      },
+                      {
+                        label: "Revoke invitation",
+                        disabled: !r.canRevoke || busy,
+                        destructive: true,
+                        onSelect: () => void act(r.invitationId, "revoke"),
+                      },
+                    ]}
+                  />
+                </div>
+
+                <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <StatusTag tone={stage.tone}>{stage.label}</StatusTag>
+                  {r.result ? (
+                    <span className="text-[13px] text-[var(--text-primary)]">
+                      {r.result}
+                    </span>
+                  ) : null}
+                  {showEvaluation ? (
+                    <span className="text-[12.5px] text-[var(--text-tertiary)]">
+                      {r.simulation}
+                    </span>
+                  ) : null}
+                </div>
+
+                {r.emailDelivery === "failed" ? (
+                  <p className="mt-1.5 text-[12px] text-[var(--fydell-risk)]">
+                    Email failed to send
+                  </p>
+                ) : null}
+                {r.emailDelivery === "not_configured" ? (
+                  <p className="mt-1.5 text-[12px] text-[var(--text-tertiary)]">
+                    Not emailed. Copy the link instead.
+                  </p>
+                ) : null}
+
+                {r.reportReady && r.sessionId ? (
+                  <Link
+                    href={`/app/employer/assessments/report/${r.sessionId}`}
+                    className="mt-2.5 inline-flex h-8 items-center rounded-[8px] border border-[var(--border-strong)] px-2.5 text-[13px] font-medium text-[var(--text-primary)]"
+                  >
+                    View report
+                  </Link>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      </Surface>
+
+      <Surface tone="panel" className="hidden overflow-hidden lg:block">
         <Table className={showEvaluation ? "min-w-[840px]" : "min-w-[640px]"}>
           <THead>
             <TH>Candidate</TH>
@@ -212,6 +299,7 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
           </TBody>
         </Table>
       </Surface>
+      </>
       )}
     </div>
   );

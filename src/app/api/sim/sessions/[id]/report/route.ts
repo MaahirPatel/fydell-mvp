@@ -5,6 +5,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { BAND_LABELS, type EvidenceBand } from "@/lib/simulations/scoring";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 import { isV2PersistedResult } from "@/lib/simulations/v2/scoring";
+import { isPreviewMode, previewReport } from "@/lib/dev/preview";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  if (isPreviewMode()) {
+    const fixture = previewReport(id);
+    return fixture
+      ? NextResponse.json(fixture)
+      : NextResponse.json({ error: "No report for that session" }, { status: 404 });
+  }
+
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
