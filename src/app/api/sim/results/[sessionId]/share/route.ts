@@ -9,8 +9,93 @@ import {
   RECEIPT_FIELD_CATALOG,
   revokeReceiptShare,
 } from "@/lib/pilot/receipt-share";
+import { isPreviewMode, previewReceiptShares } from "@/lib/dev/preview";
 
 export const runtime = "nodejs";
+
+async function requireOwnedSession(sessionId: string, userId: string) {
+  const admin = createAdminSupabaseClient();
+  const { data: session } = await admin
+    .from("sim_sessions")
+    .select("candidate_user_id")
+    .eq("id", sessionId)
+    .maybeSingle();
+  return Boolean(session && session.candidate_user_id === userId);
+}
+
+/**
+ * GET: the shares a candidate has already created for this receipt.
+ *
+ * The token itself is shown once, at creation, and never again: only its hash
+ * is stored. So this lists what exists, who it was for and when it lapses,
+ * which is what a revoke decision actually needs.
+ */
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ sessionId: string }> }
+) {
+  const { sessionId } = await params;
+
+  if (isPreviewMode()) {
+    return NextResponse.json({
+      fieldCatalog: RECEIPT_FIELD_CATALOG,
+      shares: previewReceiptShares(sessionId),
+    });
+  }
+
+  const user = await requireUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await requireOwnedSession(sessionId, user.id))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const admin = createAdminSupabaseClient();
+  const { data, error } = await admin
+    .from("sim_receipt_shares")
+    .select("id, audience_label, allowed_fields, expires_at, revoked_at, created_at")
+    .eq("session_id", sessionId)
+    .eq("candidate_user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: "Could not load shares" }, { status: 500 });
+  }
+
+  const shares = data || [];
+  // Counted separately rather than as an embedded relation: the access log is
+  // append-only and unbounded, and a join here would be resolved by name at
+  // runtime for no benefit over one extra indexed read.
+  const opens = new Map<string, number>();
+  if (shares.length > 0) {
+    const { data: access } = await admin
+      .from("sim_receipt_share_access")
+      .select("share_id")
+      .in(
+        "share_id",
+        shares.map((s) => s.id)
+      )
+      .eq("result", "allowed");
+    for (const row of access || []) {
+      const key = row.share_id as string;
+      opens.set(key, (opens.get(key) || 0) + 1);
+    }
+  }
+
+  const now = Date.now();
+  return NextResponse.json({
+    fieldCatalog: RECEIPT_FIELD_CATALOG,
+    shares: shares.map((s) => ({
+      id: s.id as string,
+      audienceLabel: s.audience_label as string,
+      allowedFields: (s.allowed_fields || []) as string[],
+      expiresAt: s.expires_at as string,
+      createdAt: s.created_at as string,
+      revoked: Boolean(s.revoked_at),
+      expired: new Date(s.expires_at as string).getTime() < now,
+      openedCount: opens.get(s.id as string) || 0,
+    })),
+  });
+}
 
 /**
  * POST: create a field-scoped, expiring Work Receipt share (token hash only in DB).

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { appUrl } from "@/lib/app-url";
+import { isPreviewMode, previewCandidateResult } from "@/lib/dev/preview";
 
 export const runtime = "nodejs";
 
@@ -11,6 +12,14 @@ export async function GET(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params;
+
+  if (isPreviewMode()) {
+    const fixture = previewCandidateResult(sessionId);
+    return fixture
+      ? NextResponse.json(fixture)
+      : NextResponse.json({ ready: false, sessionStatus: "submitted", failed: false });
+  }
+
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

@@ -465,6 +465,91 @@ export function previewReport(sessionId: string) {
 }
 
 /**
+ * The candidate's view of their own result, in the shape
+ * `/api/sim/results/[sessionId]` returns. Same session as the employer report,
+ * so the two sides of one attempt can be compared while auditing.
+ */
+export function previewCandidateResult(sessionId: string) {
+  const report = previewReport(sessionId);
+  if (!report) return null;
+
+  return {
+    ready: true,
+    completedAt: report.session.submittedAt,
+    credential: { credential_number: "FYD-PREVIEW-0001", issued_at: report.session.submittedAt },
+    result: {
+      format: "v2" as const,
+      engineVersion: "v2" as const,
+      simulationTitle: EVALUATION,
+      roleKey: ROLE_KEY,
+      slug: "ops-yield-investigation",
+      performance: 74,
+      coverage: 0.82,
+      confidence: 0.74,
+      band: "established" as const,
+      bandLabel: "Clear evidence",
+      completionSeconds: 1180,
+      competencies: report.analysis.competencies.map((c) => ({
+        key: c.key,
+        label: c.label,
+        performance: Math.round((c.confidence || 0) * 100),
+        coverage: c.coverage,
+        confidence: c.confidence,
+        band: c.band as "strong" | "established" | "developing",
+        bandLabel: c.bandLabel,
+      })),
+      citations: report.analysis.evidence.map((e) => ({
+        claim: e.indicator,
+        eventOrArtifactId: e.excerpts[0] || "",
+        detail: e.explanation,
+      })),
+      strengths: [
+        "Checked the definition of the metric before trusting the number it produced.",
+        "Tied each claim to specific rows rather than asserting a conclusion first.",
+      ],
+      improvements: [
+        "The cause of the residual L2 Day loss was left open. Naming what evidence would settle it would have made the recommendation stronger.",
+      ],
+      disclaimer:
+        "This is a record of one piece of work under time pressure. It is not a prediction of job performance.",
+    },
+  };
+}
+
+/** One live share and one revoked one, so both states of the row are visible. */
+export function previewReceiptShares(sessionId: string) {
+  if (!previewReport(sessionId)) return [];
+  return [
+    {
+      id: "share-live",
+      audienceLabel: "Hiring manager at Aldenmoor",
+      allowedFields: [
+        "role_title",
+        "evaluation_title",
+        "completion_date",
+        "evidence_summaries",
+        "limitations",
+      ],
+      expiresAt: new Date(Date.now() + 21 * 86400000).toISOString(),
+      createdAt: hoursAgo(30),
+      revoked: false,
+      expired: false,
+      openedCount: 2,
+    },
+    {
+      id: "share-revoked",
+      audienceLabel: "Recruiter, first conversation",
+      allowedFields: ["role_title", "evaluation_title", "completion_date"],
+      expiresAt: new Date(Date.now() + 40 * 86400000).toISOString(),
+      createdAt: hoursAgo(52),
+      revoked: true,
+      expired: false,
+      openedCount: 1,
+    },
+  ];
+}
+
+/**
  * The oral defense set for a previewed report. The questions are tied to
  * limitations the candidate wrote, which is the whole point of the feature.
  */

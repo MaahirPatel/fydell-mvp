@@ -4,12 +4,7 @@
  */
 import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import {
-  getVersionContent,
-  issueCredential,
-  listEvents,
-  mintToken,
-} from "../db";
+import { getVersionContent, issueCredential, listEvents } from "../db";
 import { isMicroContent, PROTOTYPE_DISCLAIMER, type MicroSimContent } from "../micro-types";
 import { BAND_LABELS, type EvidenceBand } from "../scoring";
 import { microToV2 } from "./from-micro";
@@ -285,13 +280,16 @@ export async function runV2Scoring(sessionId: string): Promise<{ analysisRunId: 
       // Defense creation must not block scoring; facilitator can regenerate.
     }
 
-    if (!session.share_token) {
-      await db
-        .from("sim_sessions")
-        .update({ share_token: mintToken() })
-        .eq("id", sessionId)
-        .is("share_token", null);
-    }
+    /*
+     * A share token is no longer minted here. Scoring used to create a
+     * permanent public URL for every session, stored in plain text, serving
+     * the whole unredacted result to anyone holding it, with no expiry and no
+     * way for the candidate to withdraw it. Nobody asked for it.
+     *
+     * Sharing now goes through the Work Receipt, where the candidate chooses
+     * the fields, sets an expiry and can revoke. Tokens minted before this
+     * change still resolve so that links already handed out keep working.
+     */
 
     await db
       .from("sim_sessions")

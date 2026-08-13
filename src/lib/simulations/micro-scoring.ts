@@ -36,7 +36,7 @@ import "server-only";
  * Limited. Coverage below 0.45 overrides everything to Insufficient.
  */
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { getVersionContent, issueCredential, listEvents, listMessages, mintToken } from "./db";
+import { getVersionContent, issueCredential, listEvents, listMessages } from "./db";
 import {
   bandForScore,
   isMicroContent,
@@ -1031,14 +1031,11 @@ export async function runMicroScoring(sessionId: string): Promise<{ analysisRunI
       })
       .eq("id", run.id);
 
-    // Share token for the result URL.
-    if (!session.share_token) {
-      await db
-        .from("sim_sessions")
-        .update({ share_token: mintToken() })
-        .eq("id", sessionId)
-        .is("share_token", null);
-    }
+    /*
+     * No share token is minted. See the note in v2/run.ts: sharing is the
+     * candidate's decision, made through the Work Receipt, not a permanent
+     * public URL created for them as a side effect of scoring.
+     */
 
     await db
       .from("sim_sessions")

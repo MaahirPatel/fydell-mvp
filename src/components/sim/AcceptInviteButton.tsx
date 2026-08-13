@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button, ButtonLink } from "@/components/ui/Button";
 
 export function AcceptInviteButton({
   token,
@@ -31,24 +32,46 @@ export function AcceptInviteButton({
     }
   };
 
+  if (emailMismatch) {
+    return (
+      <div>
+        {/* A disabled button with the reason above it leaves the candidate with
+            nothing to press. The way out is a different sign-in, so offer it. */}
+        <p className="max-w-[62ch] rounded-[var(--radius-panel)] border border-[rgba(233,185,73,0.3)] bg-[rgba(233,185,73,0.08)] px-3.5 py-2.5 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+          You are signed in as {signedInEmail}, and this invitation was sent to{" "}
+          {inviteEmail}. Sign in with that address to accept it.
+        </p>
+        <div className="mt-3">
+          <ButtonLink
+            href={`/login?next=${encodeURIComponent(`/invite/${token}`)}`}
+            variant="primary"
+            size="lg"
+          >
+            Sign in as {inviteEmail}
+          </ButtonLink>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {emailMismatch && (
-        <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-800">
-          You&apos;re signed in as {signedInEmail}, but this invitation was sent to {inviteEmail}.
-          Sign in with that email to accept.
-        </p>
-      )}
-      <button
+      <Button
+        variant="primary"
+        size="lg"
+        loading={busy}
         onClick={() => void accept()}
-        disabled={busy || emailMismatch}
-        className="rounded-xl bg-slate-900 px-6 py-3 text-[14px] font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
       >
-        {busy ? "Accepting…" : "Accept invitation"}
-      </button>
-      {error && (
-        <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-700">{error}</p>
-      )}
+        Accept and continue
+      </Button>
+      {error ? (
+        <p
+          role="alert"
+          className="mt-3 max-w-[62ch] text-[13.5px] leading-[1.6] text-[var(--fydell-risk)]"
+        >
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

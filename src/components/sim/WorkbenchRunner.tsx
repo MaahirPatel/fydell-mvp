@@ -9,6 +9,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import FydellMark from "@/components/brand/FydellMark";
+import { CandidateShell } from "@/components/candidate/CandidateShell";
+import { Button } from "@/components/ui/Button";
+import { Surface } from "@/components/ui/Surface";
+import { StatusTag } from "@/components/ui/StatusTag";
 import type {
   CandidateModuleV2,
   CandidateSimulationViewV2,
@@ -596,7 +600,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
     try {
       const res = await fetch(`/api/sim/sessions/${sessionId}`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not load the simulation");
+      if (!res.ok) throw new Error(data.error || "Could not load the evaluation");
       const p = data as Payload;
       setPayload(p);
       setMessages(p.messages.filter((m) => m.thread === "stakeholder"));
@@ -644,7 +648,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
         router.replace(`/sim/${sessionId}/result`);
       }
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : "Could not load the simulation");
+      setLoadError(err instanceof Error ? err.message : "Could not load the evaluation");
     }
   }, [sessionId, router]);
 
@@ -1117,21 +1121,22 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   if (loadError) {
     return (
       <Center>
-        <p className="text-[15px] text-[#0B1020]">{loadError}</p>
-        <button
-          onClick={() => void load()}
-          className="mt-4 rounded-lg bg-[#3157D5] px-4 py-2 text-sm font-semibold text-white hover:bg-[#2746b0]"
-        >
-          Try again
-        </button>
+        <p className="text-[15px] leading-[1.65] text-[var(--text-secondary)]">
+          {loadError}
+        </p>
+        <div className="mt-4">
+          <Button variant="primary" onClick={() => void load()}>
+            Try again
+          </Button>
+        </div>
       </Center>
     );
   }
   if (!payload || !workbench) {
     return (
       <Center>
-        <p className="text-[15px] text-slate-500" role="status">
-          Loading your simulation...
+        <p className="text-[15px] text-[var(--text-secondary)]" role="status">
+          Loading your evaluation.
         </p>
       </Center>
     );
@@ -1153,86 +1158,150 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
     const preflightOk = Boolean(gate?.preflightOk);
     return (
       <Center wide>
-        <p className="text-[12px] font-semibold uppercase tracking-wider text-[#3157D5]">
+        <p className="text-[13px] font-medium text-[var(--text-tertiary)]">
           {roleTitle} · {workbench.durationMinutes} minutes · desktop required
         </p>
-        <h1 className="mt-1 text-2xl font-semibold text-[#0B1020]">{workbench.title}</h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-slate-700">{workbench.mission}</p>
-        <ul className="mt-5 space-y-2 text-[14px] text-slate-600">
-          <li>· The timer starts only after consent, system checks, and Start evaluation.</li>
-          <li>· Use a laptop or desktop (min 1024px wide). Mobile cannot run the timed session.</li>
-          <li>· Fydell records disclosed work evidence: resources used, questions asked, artifact revisions, and submission.</li>
-          <li>· In-product AI use is observed when present, not banned. No facial or emotion scoring.</li>
-          <li>· You can message {stakeholder.name} ({stakeholder.role}) during the session.</li>
-        </ul>
+        <h1 className="mt-2 text-[clamp(1.4rem,2.6vw,1.75rem)] font-medium leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)]">
+          {workbench.title}
+        </h1>
+        <p className="mt-3.5 max-w-[62ch] text-[15px] leading-[1.65] text-[var(--text-secondary)]">
+          {workbench.mission}
+        </p>
 
-        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4 text-left">
-          <p className="text-[13px] font-semibold text-slate-900">System checks</p>
-          <p className="mt-1 text-[13px] text-slate-600">
-            {preflightOk
-              ? "Desktop, browser, and network checks passed."
-              : "Run real checks for browser, viewport, and API reachability."}
-          </p>
-          {(gate?.preflightLimitations?.length || preflightMsg) && (
-            <p className="mt-2 text-[12.5px] text-amber-800">
-              {preflightMsg || gate?.preflightLimitations?.join(" ")}
+        <Surface tone="panel" className="mt-7 overflow-hidden">
+          <div className="border-b border-[var(--border-subtle)] px-4 py-3">
+            <h2 className="text-[13.5px] font-medium text-[var(--text-primary)]">
+              What happens once you start
+            </h2>
+          </div>
+          <ul className="divide-y divide-[var(--border-subtle)]">
+            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+              You have {workbench.durationMinutes} minutes in one sitting. The clock
+              starts when you press the button at the bottom of this page, not
+              before.
+            </li>
+            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+              Your work saves as you go. If your connection drops or you close the
+              tab by accident, you can come back to it, though the clock keeps
+              running.
+            </li>
+            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+              You can ask {stakeholder.name}, the {stakeholder.role.toLowerCase()},
+              questions at any point. Doing so is part of the work, not a penalty.
+            </li>
+            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+              Something may change partway through, as it would at work. You are
+              not being tricked; you are being given new information.
+            </li>
+          </ul>
+        </Surface>
+
+        <Surface tone="panel" className="mt-4 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-3">
+            <h2 className="text-[13.5px] font-medium text-[var(--text-primary)]">
+              System check
+            </h2>
+            {preflightOk ? (
+              <StatusTag tone="good">Passed</StatusTag>
+            ) : (
+              <StatusTag tone="neutral">Not run</StatusTag>
+            )}
+          </div>
+          <div className="px-4 py-3.5">
+            <p className="text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+              {preflightOk
+                ? "Your browser, screen size and connection to Fydell are all fine."
+                : "This checks your browser, your screen size and whether you can reach Fydell. It takes a second and finds problems now rather than at minute twelve."}
             </p>
-          )}
-          <button
-            type="button"
-            onClick={() => void runPreflight()}
-            disabled={preflightBusy}
-            className="mt-3 rounded-lg border border-slate-300 px-3 py-2 text-[13px] font-medium text-slate-800 hover:bg-slate-50 disabled:opacity-50"
-          >
-            {preflightBusy ? "Checking..." : preflightOk ? "Re-run checks" : "Run system checks"}
-          </button>
-        </div>
+            {gate?.preflightLimitations?.length || preflightMsg ? (
+              <p className="mt-2.5 text-[13px] leading-[1.6] text-[#e9c46a]">
+                {preflightMsg || gate?.preflightLimitations?.join(" ")}
+              </p>
+            ) : null}
+            <div className="mt-3.5">
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={preflightBusy}
+                onClick={() => void runPreflight()}
+              >
+                {preflightOk ? "Run the check again" : "Run the check"}
+              </Button>
+            </div>
+          </div>
+        </Surface>
 
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 text-left">
-          <label className="flex items-start gap-3 text-[13.5px] text-slate-700">
-            <input
-              type="checkbox"
-              className="mt-1"
-              checked={consentOk || consentChecked}
-              disabled={consentOk}
-              onChange={(e) => setConsentChecked(e.target.checked)}
-            />
-            <span>
-              I understand the evaluation, collection policy ({gate?.consentPolicyVersion || "consent"}),
-              AI observation policy, and that my work evidence may appear in an employer report and,
-              if I choose later, a private Work Receipt. Consent is not pre-checked.
-            </span>
-          </label>
-          {!consentOk && (
-            <button
-              type="button"
-              onClick={() => void acceptConsent()}
-              disabled={!consentChecked || consentBusy}
-              className="mt-3 rounded-lg bg-slate-900 px-3 py-2 text-[13px] font-medium text-white disabled:opacity-40"
-            >
-              {consentBusy ? "Saving consent..." : "Accept consent"}
-            </button>
-          )}
-          {consentOk && (
-            <p className="mt-2 text-[12.5px] font-medium text-emerald-700">Consent recorded.</p>
-          )}
-        </div>
+        <Surface tone="panel" className="mt-4 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-3">
+            <h2 className="text-[13.5px] font-medium text-[var(--text-primary)]">
+              Your consent
+            </h2>
+            {consentOk ? <StatusTag tone="good">Recorded</StatusTag> : null}
+          </div>
+          <div className="px-4 py-3.5">
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                className="mt-[3px] h-[15px] w-[15px] shrink-0 accent-[var(--fydell-evidence)]"
+                checked={consentOk || consentChecked}
+                disabled={consentOk}
+                onChange={(e) => setConsentChecked(e.target.checked)}
+              />
+              <span className="text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+                I understand that what I open, ask, write and submit inside this
+                workspace is recorded and shown to the company that invited me,
+                that use of the assistant inside the workspace is observed rather
+                than banned, and that I will be able to keep my own copy of this
+                work afterwards.
+              </span>
+            </label>
+            <p className="mt-2.5 pl-[27px] text-[12.5px] text-[var(--text-tertiary)]">
+              Policy version {gate?.consentPolicyVersion || "current"}. This box is
+              never ticked for you.
+            </p>
+            {!consentOk ? (
+              <div className="mt-3.5 pl-[27px]">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={consentBusy}
+                  disabled={!consentChecked}
+                  onClick={() => void acceptConsent()}
+                >
+                  Record my consent
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        </Surface>
 
-        {loadError && (
-          <p className="mt-4 text-[13px] text-red-700" role="alert">
+        {loadError ? (
+          <p className="mt-4 text-[13px] text-[var(--fydell-risk)]" role="alert">
             {loadError}
           </p>
-        )}
+        ) : null}
 
-        <button
-          onClick={() => void startSession()}
-          disabled={submitBusy || !consentOk || !preflightOk}
-          className="mt-7 w-full rounded-xl bg-[#3157D5] px-4 py-3.5 text-[15px] font-semibold text-white hover:bg-[#2746b0] disabled:opacity-50"
-        >
-          {submitBusy
-            ? "Starting..."
-            : `Start evaluation: ${workbench.durationMinutes} minutes`}
-        </button>
+        <div className="mt-7">
+          <Button
+            variant="primary"
+            size="lg"
+            className="w-full sm:w-auto"
+            loading={submitBusy}
+            disabled={!consentOk || !preflightOk}
+            onClick={() => void startSession()}
+          >
+            Start now: {workbench.durationMinutes} minutes
+          </Button>
+          {!consentOk || !preflightOk ? (
+            <p className="mt-2.5 text-[13px] text-[var(--text-tertiary)]">
+              {!preflightOk && !consentOk
+                ? "Run the system check and record your consent first."
+                : !preflightOk
+                  ? "Run the system check first."
+                  : "Record your consent first."}
+            </p>
+          ) : null}
+        </div>
       </Center>
     );
   }
@@ -1240,18 +1309,19 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   if (tabBlocked) {
     return (
       <Center>
-        <h1 className="text-xl font-semibold text-[#0B1020]">Session open in another tab</h1>
-        <p className="mt-2 text-[14px] text-slate-600">
-          Close the other tab or continue there to avoid conflicting writes. Your saved work is
-          preserved.
+        <h1 className="text-[20px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+          This evaluation is open in another tab
+        </h1>
+        <p className="mt-3 text-[14px] leading-[1.65] text-[var(--text-secondary)]">
+          Two tabs writing to the same session can overwrite each other, so only
+          one runs at a time. Carry on in the other tab, or close it and continue
+          here. Nothing you have written is lost either way.
         </p>
-        <button
-          type="button"
-          onClick={() => setTabBlocked(false)}
-          className="mt-5 rounded-lg border border-slate-300 px-3 py-2 text-[13px]"
-        >
-          I closed the other tab
-        </button>
+        <div className="mt-5">
+          <Button variant="secondary" onClick={() => setTabBlocked(false)}>
+            I closed the other tab
+          </Button>
+        </div>
       </Center>
     );
   }
@@ -1494,7 +1564,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     className="mt-0.5 h-4 w-4 accent-[#3157D5]"
                   />
                   <span className="text-[15px]">
-                    I used an external AI tool while completing this simulation.
+                    I used an external AI tool while completing this evaluation.
                   </span>
                 </label>
                 {disclosure.used && (
@@ -1731,7 +1801,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
           className="fixed inset-0 z-50 flex items-center justify-center"
           role="dialog"
           aria-modal="true"
-          aria-label="Leave this simulation?"
+          aria-label="Leave this evaluation?"
         >
           <button
             aria-label="Stay"
@@ -1739,7 +1809,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             className="absolute inset-0 bg-[#0B1020]/40"
           />
           <div className="relative w-full max-w-sm rounded-xl border border-[#D9DEE7] bg-white p-6 shadow-xl">
-            <h2 className="text-[16px] font-semibold">Leave this simulation?</h2>
+            <h2 className="text-[16px] font-semibold">Leave this evaluation?</h2>
             <p className="mt-2 text-[14px] leading-relaxed text-slate-600">
               Your work is saved and you can come back. The timer keeps running while you are away.
             </p>
@@ -2366,14 +2436,14 @@ function Spinner({ dark }: { dark?: boolean }) {
   );
 }
 
+/**
+ * Everything before the timer starts is a page, not the work surface, so it
+ * wears the same graphite chrome as the invitation and the result. The light
+ * workbench below is entered deliberately, on a click, and reads as stepping
+ * into a workspace rather than as an unexplained change of product.
+ */
 function Center({ children, wide }: { children: React.ReactNode; wide?: boolean }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F4F3EF] px-4 py-10">
-      <div
-        className={`w-full ${wide ? "max-w-xl" : "max-w-md"} rounded-xl border border-[#D9DEE7] bg-white p-8 shadow-sm`}
-      >
-        {children}
-      </div>
-    </div>
+    <CandidateShell width={wide ? "default" : "narrow"}>{children}</CandidateShell>
   );
 }

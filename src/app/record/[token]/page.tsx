@@ -1,10 +1,11 @@
-import Link from "next/link";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { hashToken } from "@/lib/simulations/db";
 import { resolveReceiptShare } from "@/lib/pilot/receipt-share";
 import type { ReceiptField } from "@/lib/pilot/receipt-fields";
 import { EvidenceReportV2 } from "@/components/sim/EvidenceReportV2";
 import { isV2PersistedResult, type V2PersistedResult } from "@/lib/simulations/v2/scoring";
+import { CandidateShell } from "@/components/candidate/CandidateShell";
+import { Surface } from "@/components/ui/Surface";
 
 export const metadata = { title: "Work Receipt | Fydell" };
 export const dynamic = "force-dynamic";
@@ -95,75 +96,83 @@ export default async function WorkReceiptPage({
   if (blocked || !result) {
     const title =
       blocked === "expired"
-        ? "Share expired"
+        ? "This link has expired"
         : blocked === "revoked"
-          ? "Share revoked"
-          : "Receipt not found";
+          ? "This link was turned off"
+          : "This link does not work";
     const body =
       blocked === "expired"
-        ? "This share link has expired. Ask the candidate for a new authorized share."
+        ? "The person who shared this receipt set a date for it to stop working, and that date has passed. Only they can issue a new one."
         : blocked === "revoked"
-          ? "This share was revoked by the candidate. The previous URL no longer works."
-          : "This link is invalid or the receipt has not been published.";
+          ? "The person who shared this receipt withdrew access to it. Only they can issue a new link."
+          : "The link may be incomplete, or the receipt it pointed to no longer exists. Ask whoever sent it to you to check.";
     return (
-      <div className="min-h-screen bg-slate-100">
-        <main className="mx-auto max-w-md px-4 py-16">
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-            <h1 className="text-lg font-semibold text-slate-900">{title}</h1>
-            <p className="mt-2 text-[13.5px] text-slate-600">{body}</p>
-          </div>
-        </main>
-      </div>
+      <CandidateShell width="narrow">
+        <h1 className="text-[20px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+          {title}
+        </h1>
+        <p className="mt-3 max-w-[54ch] text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">
+          {body}
+        </p>
+      </CandidateShell>
     );
   }
 
   const roleTitle = ROLE_TITLES[result.roleKey] || result.roleKey;
+  const showsWork =
+    fieldAllowed(allowed, "scenario_score") ||
+    fieldAllowed(allowed, "coverage_confidence") ||
+    fieldAllowed(allowed, "evidence_summaries");
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="bg-[#101a33] text-white">
-        <div className="mx-auto flex h-14 max-w-[1100px] items-center justify-between px-4">
-          <Link href="/" className="text-[15px] font-bold tracking-tight">
-            Fydell
-          </Link>
-        </div>
-      </header>
-      <main className="mx-auto max-w-[1100px] px-4 py-8">
-        <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-5">
-          <p className="text-[12px] font-semibold uppercase tracking-wider text-[#3157D5]">
-            Work receipt (authorized share)
-          </p>
-          {fieldAllowed(allowed, "evaluation_title") && (
-            <h1 className="mt-1 text-xl font-semibold text-slate-900">{result.simulationTitle}</h1>
-          )}
-          <p className="mt-1 text-[14px] text-slate-500">
-            {fieldAllowed(allowed, "role_title") ? `${roleTitle} · ` : ""}
-            {credentialNumber ? `Credential ${credentialNumber}` : "Private receipt projection"}
-          </p>
-          <p className="mt-3 text-[13px] leading-relaxed text-slate-600">
-            This view shows only fields the candidate authorized. It excludes employer-private
-            notes, decisions, hidden rubrics, and raw surveillance streams.
-          </p>
-        </div>
+    <CandidateShell width="wide">
+      <Surface tone="panel" className="mb-5 px-5 py-4">
+        <p className="text-[12.5px] font-medium text-[var(--text-tertiary)]">
+          Work Receipt, shared with you
+        </p>
+        {fieldAllowed(allowed, "evaluation_title") ? (
+          <h1 className="mt-1.5 text-[19px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+            {result.simulationTitle}
+          </h1>
+        ) : null}
+        <p className="mt-1 text-[13.5px] text-[var(--text-secondary)]">
+          {fieldAllowed(allowed, "role_title") ? `${roleTitle} · ` : ""}
+          {credentialNumber ? `Receipt ${credentialNumber}` : "Private receipt"}
+        </p>
+        <p className="mt-3 max-w-[74ch] text-[13px] leading-[1.65] text-[var(--text-tertiary)]">
+          The person who did this work chose what this link contains and when it
+          stops working, and can withdraw it at any time. It does not include the
+          hiring company&apos;s notes or their decision. This page is not a public
+          profile and is not listed anywhere.
+        </p>
+      </Surface>
 
-        {fieldAllowed(allowed, "scenario_score") ||
-        fieldAllowed(allowed, "coverage_confidence") ||
-        fieldAllowed(allowed, "evidence_summaries") ? (
-          <EvidenceReportV2
-            result={{
-              ...result,
-              performance: fieldAllowed(allowed, "scenario_score") ? result.performance : null,
-              citations: fieldAllowed(allowed, "evidence_summaries") ? result.citations : [],
-              strengths: fieldAllowed(allowed, "evidence_summaries") ? result.strengths : [],
-              improvements: fieldAllowed(allowed, "limitations") ? result.improvements : [],
-            }}
-          />
-        ) : (
-          <p className="rounded-xl border border-slate-200 bg-white p-5 text-[14px] text-slate-600">
-            No additional fields were authorized for this share.
+      {showsWork ? (
+        <EvidenceReportV2
+          result={{
+            ...result,
+            performance: fieldAllowed(allowed, "scenario_score")
+              ? result.performance
+              : null,
+            citations: fieldAllowed(allowed, "evidence_summaries")
+              ? result.citations
+              : [],
+            strengths: fieldAllowed(allowed, "evidence_summaries")
+              ? result.strengths
+              : [],
+            improvements: fieldAllowed(allowed, "limitations")
+              ? result.improvements
+              : [],
+          }}
+        />
+      ) : (
+        <Surface tone="panel" className="px-5 py-4">
+          <p className="text-[14px] leading-[1.65] text-[var(--text-secondary)]">
+            This link was scoped to confirm the evaluation only. It does not
+            include the work itself or any assessment of it.
           </p>
-        )}
-      </main>
-    </div>
+        </Surface>
+      )}
+    </CandidateShell>
   );
 }

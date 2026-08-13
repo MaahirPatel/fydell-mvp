@@ -5,7 +5,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getVersionContent } from "@/lib/simulations/db";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 
-export const metadata = { title: "Simulation | Fydell" };
+export const metadata = { title: "Evaluation | Fydell" };
 export const dynamic = "force-dynamic";
 
 export default async function SimulationSessionPage({

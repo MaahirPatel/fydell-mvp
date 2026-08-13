@@ -9,10 +9,31 @@ import { requireUser } from "@/lib/simulations/auth";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
 import { AcceptInviteButton } from "@/components/sim/AcceptInviteButton";
-import { CONTACT_EMAIL } from "@/lib/contact";
+import { CandidateShell } from "@/components/candidate/CandidateShell";
+import { ButtonLink } from "@/components/ui/Button";
+import { Surface } from "@/components/ui/Surface";
+import { ContactLink } from "@/components/ui/ContactLink";
 
 export const metadata = { title: "You're invited | Fydell" };
 export const dynamic = "force-dynamic";
+
+function Dead({ title, detail, hint }: { title: string; detail: string; hint?: string }) {
+  return (
+    <CandidateShell width="narrow">
+      <h1 className="text-[22px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+        {title}
+      </h1>
+      <p className="mt-3 text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">
+        {detail}
+      </p>
+      {hint ? (
+        <p className="mt-3 text-[13.5px] leading-[1.65] text-[var(--text-tertiary)]">
+          {hint}
+        </p>
+      ) : null}
+    </CandidateShell>
+  );
+}
 
 export default async function InvitePage({
   params,
@@ -24,13 +45,10 @@ export default async function InvitePage({
 
   if (!invitation) {
     return (
-      <Shell>
-        <h1 className="text-xl font-semibold text-slate-900">Invitation not found</h1>
-        <p className="mt-2 text-[14px] text-slate-600">
-          This link isn&apos;t valid. Check the link in your email, or ask the employer to send a
-          fresh invitation.
-        </p>
-      </Shell>
+      <Dead
+        title="This invitation link is not valid"
+        detail="The link may have been copied incompletely. Check the one in your email, or ask the company that invited you to send a fresh invitation."
+      />
     );
   }
 
@@ -46,20 +64,18 @@ export default async function InvitePage({
   if (!gate.ok) {
     const title =
       gate.code === "expired"
-        ? "Invitation expired"
+        ? "This invitation has expired"
         : gate.code === "revoked"
-          ? "Invitation revoked"
+          ? "This invitation was withdrawn"
           : gate.code === "completed"
-            ? "Invitation already used"
+            ? "This invitation has already been used"
             : "This invitation is not active";
     return (
-      <Shell>
-        <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
-        <p className="mt-2 text-[14px] text-slate-600">{gate.reason}</p>
-        <p className="mt-3 text-[13px] text-slate-500">
-          Ask the employer to resend or grant an authorized retake if you still need access.
-        </p>
-      </Shell>
+      <Dead
+        title={title}
+        detail={gate.reason}
+        hint={`Ask ${orgName} to send a new invitation if you still need access. They can do that themselves.`}
+      />
     );
   }
 
@@ -80,96 +96,155 @@ export default async function InvitePage({
   }
 
   const next = encodeURIComponent(`/invite/${token}`);
+  const skills = role?.skillsEvaluated.slice(0, 4).join(", ").toLowerCase();
+
+  const facts: [string, string][] = [
+    ["Evaluation", content.title],
+    ["Working time", `${content.durationMinutes} minutes, one sitting`],
+    ["Invitation expires", new Date(invitation.expires_at).toLocaleDateString()],
+  ];
+
+  const recorded: [string, string][] = [
+    [
+      "What you do in the workspace",
+      "The materials you open, the questions you ask, the revisions you make, and what you submit.",
+    ],
+    [
+      "Use of the assistant inside the workspace",
+      "Observed, not banned. Fydell cannot see tools outside the workspace and does not claim to.",
+    ],
+    [
+      "What is never recorded",
+      "No camera, no microphone, no screen recording, no control of your device.",
+    ],
+  ];
 
   return (
-    <Shell wide>
-      <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
-        Work simulation invitation
+    <CandidateShell>
+      <p className="text-[13px] font-medium text-[var(--text-tertiary)]">
+        Invitation from {orgName}
       </p>
-      <h1 className="mt-1 text-2xl font-semibold text-slate-900">
-        {orgName} invited you to show your work
+      <h1 className="mt-2 text-[clamp(1.5rem,3vw,1.9rem)] font-medium leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)]">
+        {orgName} would like to see how you work.
       </h1>
-      <p className="mt-2 text-[14px] leading-relaxed text-slate-600">
-        Instead of another résumé screen, {orgName} wants to see how you actually work. You&apos;ll
-        step into a realistic {role?.title || content.roleKey} scenario: real materials, real
-        stakeholders to talk to, one deliverable.
+      <p className="mt-3.5 max-w-[58ch] text-[15.5px] leading-[1.65] text-[var(--text-secondary)]">
+        This is a piece of real {role?.title || content.roleKey} work rather than a
+        quiz. You get the materials someone in the job would have, you can ask a
+        colleague questions, and you produce one piece of work at the end. There
+        are no trick questions and no single right answer.
       </p>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
-        <Fact label="Scenario" value={content.title} />
-        <Fact label="Time" value={`${content.durationMinutes} minutes, one sitting`} />
-        <Fact label="Expires" value={new Date(invitation.expires_at).toLocaleDateString()} />
-      </div>
-
-      <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-5">
-        <p className="text-[13px] font-semibold text-slate-800">What to know before you start</p>
-        <ul className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-slate-600">
-          <li>· Desktop required (laptop/desktop, min 1024px wide). The timer does not start on this page.</li>
-          <li>· You will accept a versioned consent and run real system checks before Start evaluation.</li>
-          <li>
-            · What is evaluated: {role?.skillsEvaluated.slice(0, 4).join(", ").toLowerCase()}.
-          </li>
-          <li>
-            · Fydell records disclosed work evidence inside the workspace (resources, questions,
-            artifact revisions, submission). No facial, emotion, or device-control claims.
-          </li>
-          <li>· In-product AI use is observed when present, not banned.</li>
-          <li>· The employer receives a citation-backed report. You can later claim a private Work Receipt.</li>
-          <li>· Support: {CONTACT_EMAIL}. Withdrawal and accommodation requests go through the inviting employer and Fydell support.</li>
-        </ul>
-      </div>
+      <dl className="mt-8 grid gap-px overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--border-subtle)] sm:grid-cols-3">
+        {facts.map(([label, value]) => (
+          <div key={label} className="bg-[var(--surface-raised)] px-4 py-3">
+            <dt className="text-[12px] text-[var(--text-tertiary)]">{label}</dt>
+            <dd className="mt-1 text-[13.5px] font-medium text-[var(--text-primary)]">
+              {value}
+            </dd>
+          </div>
+        ))}
+      </dl>
 
       <div className="mt-6">
         {existingSessionId ? (
-          <Link
-            href={`/sim/${existingSessionId}`}
-            className="inline-block rounded-xl bg-slate-900 px-6 py-3 text-[14px] font-semibold text-white hover:bg-slate-800"
-          >
-            Continue to your session
-          </Link>
+          <ButtonLink href={`/sim/${existingSessionId}`} variant="primary" size="lg">
+            Continue where you left off
+          </ButtonLink>
         ) : user ? (
-          <AcceptInviteButton token={token} signedInEmail={user.email} inviteEmail={invitation.candidate_email} />
+          <AcceptInviteButton
+            token={token}
+            signedInEmail={user.email}
+            inviteEmail={invitation.candidate_email}
+          />
         ) : (
           <div className="flex flex-wrap items-center gap-3">
-            <Link
+            <ButtonLink
               href={`/signup?type=candidate&next=${next}`}
-              className="rounded-xl bg-slate-900 px-6 py-3 text-[14px] font-semibold text-white hover:bg-slate-800"
+              variant="primary"
+              size="lg"
             >
-              Create a free account to accept
-            </Link>
-            <Link
-              href={`/login?next=${next}`}
-              className="rounded-xl border border-slate-300 px-6 py-3 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
-            >
+              Create an account to accept
+            </ButtonLink>
+            <ButtonLink href={`/login?next=${next}`} variant="secondary" size="lg">
               I already have an account
-            </Link>
+            </ButtonLink>
           </div>
         )}
-        <p className="mt-3 text-[12px] text-slate-400">
-          Sent to {invitation.candidate_email}. Sign in with that email to accept.
+        <p className="mt-3 text-[13px] text-[var(--text-tertiary)]">
+          Sent to {invitation.candidate_email}. Sign in with that address to accept.
+          The timer does not start on this page, or when you sign in.
         </p>
       </div>
-    </Shell>
-  );
-}
 
-function Shell({ children, wide }: { children: React.ReactNode; wide?: boolean }) {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-12">
-      <div
-        className={`w-full ${wide ? "max-w-2xl" : "max-w-lg"} rounded-2xl border border-slate-200 bg-white p-8 shadow-sm`}
-      >
-        {children}
+      <div className="mt-10 grid gap-5 lg:grid-cols-2">
+        <Surface tone="panel">
+          <div className="border-b border-[var(--border-subtle)] px-4 py-3">
+            <h2 className="text-[13.5px] font-medium text-[var(--text-primary)]">
+              Before you start
+            </h2>
+          </div>
+          <ul className="divide-y divide-[var(--border-subtle)]">
+            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+              Set aside {content.durationMinutes} uninterrupted minutes. Once you
+              start, the clock runs.
+            </li>
+            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+              Use a laptop or desktop at least 1024px wide. There is a lot to read
+              side by side.
+            </li>
+            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+              You will be asked to agree to what is recorded, and to run a quick
+              system check, before the timer begins.
+            </li>
+            {skills ? (
+              <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+                What this looks at: {skills}.
+              </li>
+            ) : null}
+          </ul>
+        </Surface>
+
+        <Surface tone="panel">
+          <div className="border-b border-[var(--border-subtle)] px-4 py-3">
+            <h2 className="text-[13.5px] font-medium text-[var(--text-primary)]">
+              What is recorded
+            </h2>
+          </div>
+          <dl className="divide-y divide-[var(--border-subtle)]">
+            {recorded.map(([label, detail]) => (
+              <div key={label} className="px-4 py-3">
+                <dt className="text-[13px] font-medium text-[var(--text-primary)]">
+                  {label}
+                </dt>
+                <dd className="mt-1 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                  {detail}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </Surface>
       </div>
-    </div>
-  );
-}
 
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-slate-200 p-4">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-1 text-[13.5px] font-medium text-slate-800">{value}</p>
-    </div>
+      <div className="mt-8 border-t border-[var(--border-subtle)] pt-5">
+        <p className="max-w-[70ch] text-[13.5px] leading-[1.7] text-[var(--text-secondary)]">
+          {orgName} receives a report of what you did and the evidence behind it.
+          You keep your own copy, called a Work Receipt, and you decide whether
+          anyone else ever sees it. Your result is not published, not listed, and
+          not visible to any other company.
+        </p>
+        <p className="mt-3 text-[13.5px] leading-[1.7] text-[var(--text-tertiary)]">
+          If you need an adjustment to take part, or something goes wrong during
+          the evaluation, write to <ContactLink /> or reply to the invitation from{" "}
+          {orgName}.{" "}
+          <Link
+            href="/privacy"
+            className="text-[var(--text-secondary)] underline underline-offset-2 hover:text-[var(--text-primary)]"
+          >
+            How your data is handled
+          </Link>
+          .
+        </p>
+      </div>
+    </CandidateShell>
   );
 }

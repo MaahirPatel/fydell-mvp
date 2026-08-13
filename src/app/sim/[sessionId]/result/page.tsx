@@ -15,8 +15,10 @@ export default async function SimulationResultPage({
   const user = await requireUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/sim/${sessionId}/result`)}`);
   return (
-    <div>
-      <div className="mx-auto max-w-3xl px-4 pt-5">
+    <div className="bg-[var(--surface-canvas)]">
+      {/* Renders nothing outside a pilot. Kept on the canvas colour so it does
+          not flash a bare strip above the header when it is absent. */}
+      <div className="mx-auto max-w-[1100px] px-5 empty:hidden sm:px-6">
         <PilotReturnBanner />
       </div>
       <MicroResultClient sessionId={sessionId} />

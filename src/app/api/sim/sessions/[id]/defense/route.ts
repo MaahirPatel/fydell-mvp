@@ -32,9 +32,24 @@ export async function GET(
     if (!defense) return NextResponse.json({ defense: null });
     return NextResponse.json({
       defense: {
-        set: defense.set,
-        questions: defense.questions,
-        responses: defense.responses,
+        set: { id: defense.set.id, status: defense.set.status },
+        /*
+         * Projected, not passed through. The row carries
+         * `expected_understanding`, which is what a good answer looks like.
+         * This endpoint is reachable by the candidate, so returning the row
+         * as-is handed them the answer before they answered.
+         */
+        questions: defense.questions.map((q) => ({
+          id: q.id,
+          question_text: q.question_text,
+          purpose: q.purpose,
+          sort_order: q.sort_order,
+        })),
+        responses: defense.responses.map((r) => ({
+          question_id: r.question_id,
+          response_text: r.response_text,
+          collection_method: r.collection_method,
+        })),
       },
     });
   } catch (err) {

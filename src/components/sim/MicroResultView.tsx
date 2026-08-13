@@ -133,7 +133,7 @@ export function MicroResultView({
   return (
     <div className="space-y-3" data-result-variant={variant}>
       <div className={t.card}>
-        <p className={t.eyebrow}>Simulation completed</p>
+        <p className={t.eyebrow}>Evaluation completed</p>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className={t.title}>{result.simulationTitle}</h1>
@@ -263,7 +263,7 @@ export function MicroResultView({
 
           {reweighted && (
             <p className={`mt-2 ${t.muted}`}>
-              A component marked n/a has no question in this simulation. Its weight is redistributed
+              A component marked n/a has no question in this evaluation. Its weight is redistributed
               across the others.
             </p>
           )}

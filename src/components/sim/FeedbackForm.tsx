@@ -27,7 +27,7 @@ export function FeedbackForm({ sessionId }: { sessionId: string }) {
   const submit = async () => {
     if (busy) return;
     if (!realism) {
-      setError("Please rate how realistic the simulation felt (question 1).");
+      setError("Please rate how realistic the evaluation felt (question 1).");
       return;
     }
     if (!reveals) {
@@ -82,7 +82,7 @@ export function FeedbackForm({ sessionId }: { sessionId: string }) {
       <div className="mt-5 space-y-6">
         {/* 1 realism */}
         <div>
-          <p className="text-[13.5px] font-medium text-slate-800">1. How realistic did this simulation feel?</p>
+          <p className="text-[13.5px] font-medium text-slate-800">1. How realistic did this evaluation feel?</p>
           <div className="mt-2 flex gap-2" role="radiogroup" aria-label="Realism rating">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
