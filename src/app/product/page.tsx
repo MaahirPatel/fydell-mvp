@@ -1,79 +1,83 @@
-import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
+import EvidenceFlow from "@/components/marketing/home/EvidenceFlow";
+import HeroSimPreview from "@/components/marketing/home/HeroSimPreview";
+import { ButtonLink } from "@/components/marketing/ui";
+import { EvidenceRail } from "@/components/marketing/motifs/EvidenceRail";
 
 export const metadata = {
   title: "Product | Fydell",
   description:
-    "One loop: choose a role, solve one realistic problem, submit the work, review the evidence.",
+    "One employer-led Data Analyst work trial: investigate, adapt when facts change, review inspectable evidence, and leave with a private Work Receipt.",
 };
-
-const PIECES = [
-  {
-    title: "The simulation runner",
-    body: "Candidates get a clear mission, two or three resources, a stakeholder to question and a five-minute timer. Work autosaves. A refresh loses nothing.",
-    href: "/simulations",
-    linkLabel: "Try one now",
-  },
-  {
-    title: "The simulation library",
-    body: "Thirty curated simulations across six Applied Technical Roles. Each one tests a single representative decision, not a whole job. No AI-generated filler.",
-    href: "/simulations",
-    linkLabel: "Browse the library",
-  },
-  {
-    title: "The evidence report",
-    body: "Immediate scoring with an evidence band, a competency breakdown and cited actions. Every statement points at something the candidate actually did.",
-    href: "/#evidence",
-    linkLabel: "See a report",
-  },
-  {
-    title: "The employer workspace",
-    body: "Invite candidates by email, track who is in progress, and read reports as they complete. The hiring decision stays with your team.",
-    href: "/request-pilot",
-    linkLabel: "Run a pilot",
-  },
-];
 
 export default function ProductPage() {
   return (
     <MarketingShell>
-      <section className="pb-24">
-        <div className="mkt-content pt-[130px] sm:pt-[150px]">
-          <p
-            className="text-[12.5px] uppercase tracking-[0.09em] text-[rgba(244,245,247,0.4)]"
-            style={{ fontWeight: 560 }}
-          >
-            Product
-          </p>
-          <h1 className="flat-type mt-3 max-w-3xl text-4xl font-semibold leading-tight text-[#F4F5F7] sm:text-5xl">
-            One loop, done well.
+      <section className="pb-16 pt-[112px] sm:pt-[120px]">
+        <div className="mkt-content">
+          <h1 className="flat-type max-w-3xl text-[36px] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-[44px]">
+            A work trial with an inspectable evidence trail
           </h1>
-          <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-[rgba(244,245,247,0.62)]">
-            Choose a role. Solve one realistic problem. Submit the work. Review the evidence.
-            Everything in Fydell exists to make that loop fast, fair and honest.
+          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-white/50">
+            Fydell runs one published Data Analyst evaluation for a versioned employer cohort.
+            Candidates investigate synthetic Northline operations data, revise when facts change,
+            and employers open every consequential claim to its source.
           </p>
-
-          <div className="mt-12 grid gap-5 md:grid-cols-2">
-            {PIECES.map((p) => (
-              <div key={p.title} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
-                <h2 className="text-[16px] font-semibold text-white">{p.title}</h2>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/60">{p.body}</p>
-                <Link
-                  href={p.href}
-                  className="mt-4 inline-block text-[13px] font-semibold text-violet-300 transition hover:text-violet-200"
-                >
-                  {p.linkLabel}
-                </Link>
-              </div>
-            ))}
+          <div className="mt-8 flex flex-wrap gap-3">
+            <ButtonLink href="/request-pilot" variant="primary">
+              Request a pilot
+            </ButtonLink>
+            <ButtonLink href="/login" variant="secondary">
+              Sign in
+            </ButtonLink>
           </div>
+        </div>
+      </section>
 
-          <div className="mt-10 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
-            <h2 className="text-[15px] font-semibold text-white">What we do not claim</h2>
-            <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-white/60">
-              Scores are labeled as prototype evidence. We do not show percentiles, we do not make
-              hire or reject recommendations, and we do not claim to detect AI use outside the
-              product. The evidence is real; the judgment is yours.
+      <section className="border-t border-[var(--border-subtle)] py-16">
+        <div className="mkt-content">
+          <h2 className="flat-type text-[24px] font-semibold tracking-[-0.02em] text-white">
+            Investigation canvas
+          </h2>
+          <p className="mt-2 max-w-xl text-[14.5px] text-white/50">
+            The same Northline ops-yield fixture candidates use in the workbench.
+          </p>
+          <div className="mt-8">
+            <HeroSimPreview />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-[var(--border-subtle)] py-16">
+        <div className="mkt-content">
+          <h2 className="flat-type text-[24px] font-semibold tracking-[-0.02em] text-white">
+            Invite, work, evidence
+          </h2>
+          <div className="mt-8">
+            <EvidenceFlow />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-[var(--border-subtle)] py-16">
+        <div className="mkt-content grid gap-8 lg:grid-cols-2">
+          <div className="rounded-[14px] border border-[var(--border-strong)] bg-[var(--surface-raised)] p-5">
+            <h2 className="text-[16px] font-semibold text-white">Inspectable claims</h2>
+            <EvidenceRail className="mt-4">
+              <p className="text-[14px] text-white">
+                Primary driver is the mid-period HOLD_RECLASS mapping
+              </p>
+              <p className="mt-2 text-[13px] text-white/50">
+                Support, limitation, and source stay visible together.
+              </p>
+            </EvidenceRail>
+          </div>
+          <div className="rounded-[14px] border border-[var(--border-strong)] bg-[var(--surface-raised)] p-5">
+            <h2 className="text-[16px] font-semibold text-white">What we do not claim</h2>
+            <p className="mt-3 text-[13.5px] leading-relaxed text-white/55">
+              We do not automate hire or reject decisions, invent biometric identity, or claim
+              remote-desktop or external-AI detection. Platform failures become review states - not
+              negative candidate scores.
             </p>
           </div>
         </div>

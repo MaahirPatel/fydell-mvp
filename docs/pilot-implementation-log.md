@@ -18,6 +18,15 @@ Update entries in place. No secrets or real candidate data.
 - Public: October message + Request a pilot / Sign in CTAs.
 - Tests: `npm run test:october`, RLS structural includes 021 tables, Playwright public smoke, live RLS script skip-safe.
 
+## 2026-08-13 — Premium visual system + originality lock
+
+- Design evidence: `docs/ui-reference-audit.md`, `docs/design-system.md`, `docs/ui-slop-audit.md` (Four Horsemen + derivative-design audit).
+- Tokens: `--fydell-brand-*`, evidence/action/risk, flat `--surface-canvas` (no body dual glow).
+- Homepage rebuilt as Fydell evidence loop with Northline ops-yield investigation canvas (not Linear clone, not multi-role marketplace).
+- Removed unused glow/Live/logo-cloud landmines; SiteNav rectangular CTA; employer shell graphite chrome.
+- Screenshots: `docs/screenshots/visual-pass/home-1440x900.png`, `home-1280x800.png` - originality gate PASS.
+- `npm run test:copy` PASS; `tsc --noEmit` PASS.
+
 ## 2026-08-11 — Same-day environment closeout
 
 - Applied migration `october_pilot_cohort` to Supabase project `qtrhwrcxthtqvkeerptp`; verified `pilot_cohorts`, consents, defense, receipt share tables + session report/review columns.

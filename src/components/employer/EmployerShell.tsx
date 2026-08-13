@@ -22,10 +22,7 @@ function Brand() {
   return (
     <Link href="/app/employer" className="inline-flex items-center gap-2" aria-label="Fydell">
       <FydellMark width={26} />
-      <span
-        className="text-[17px] leading-none text-slate-900"
-        style={{ fontWeight: 600, letterSpacing: "-0.04em" }}
-      >
+      <span className="text-[17px] font-semibold leading-none tracking-[-0.03em] text-white">
         fydell
       </span>
     </Link>
@@ -45,10 +42,10 @@ function NavLinks({ className, itemClass }: { className: string; itemClass?: str
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={`${itemClass || "flex items-center rounded-lg px-3 py-2 text-[14px]"} ${
+            className={`${itemClass || "relative flex items-center rounded-[6px] px-3 py-2 text-[13.5px]"} ${
               active
-                ? "bg-blue-50 font-semibold text-blue-700"
-                : "font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                ? "bg-white/[0.08] font-medium text-white before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2px] before:rounded-full before:bg-[var(--fydell-evidence,#6b8cff)]"
+                : "font-normal text-white/50 hover:bg-white/[0.04] hover:text-white"
             }`}
           >
             {item.label}
@@ -87,7 +84,7 @@ function HeaderActions({ workspaceName, userEmail }: { workspaceName: string; us
       <button
         type="button"
         onClick={() => open()}
-        className="inline-flex h-9 items-center rounded-lg bg-[#3157D5] px-4 text-[13.5px] font-semibold text-white transition hover:bg-[#2848b8]"
+        className="inline-flex h-9 items-center rounded-[6px] bg-[var(--fydell-action,#e8eaed)] px-4 text-[13.5px] font-medium text-[#090A0D] transition hover:brightness-[0.97]"
       >
         Invite candidate
       </button>
@@ -98,19 +95,19 @@ function HeaderActions({ workspaceName, userEmail }: { workspaceName: string; us
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           aria-label="Account menu"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-[13.5px] font-semibold text-slate-700 hover:bg-slate-300"
+          className="flex h-9 w-9 items-center justify-center rounded-[6px] border border-white/15 bg-white/[0.06] text-[13.5px] font-medium text-white hover:bg-white/[0.1]"
         >
           {initial}
         </button>
         {menuOpen && (
           <div
             role="menu"
-            className="absolute right-0 top-11 z-40 w-60 rounded-xl border border-slate-200 bg-white p-3 shadow-lg"
+            className="absolute right-0 top-11 z-40 w-60 rounded-[10px] border border-white/10 bg-[#0c0d12] p-3 shadow-lg"
           >
-            <p className="truncate text-[13.5px] font-medium text-slate-900">{workspaceName}</p>
-            <p className="mt-0.5 truncate text-[12.5px] text-slate-500">{userEmail}</p>
+            <p className="truncate text-[13.5px] font-medium text-white">{workspaceName}</p>
+            <p className="mt-0.5 truncate text-[12.5px] text-white/45">{userEmail}</p>
             <div className="mt-3">
-              <SignOutButton className="inline-flex h-9 w-full items-center justify-center rounded-lg border border-slate-300 bg-white text-[13.5px] font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50" />
+              <SignOutButton className="inline-flex h-9 w-full items-center justify-center rounded-[6px] border border-white/15 bg-transparent text-[13.5px] font-medium text-white/80 hover:bg-white/[0.06] disabled:opacity-50" />
             </div>
           </div>
         )}
@@ -132,25 +129,25 @@ export default function EmployerShell({
 }) {
   return (
     <InviteModalProvider catalog={catalog}>
-      <div className="min-h-screen bg-[#F6F7F9] text-slate-900">
+      <div className="min-h-screen bg-[var(--surface-canvas,#050507)] text-white">
         <div className="mx-auto flex min-h-screen max-w-[1440px]">
-          <aside className="sticky top-0 hidden h-screen w-[220px] shrink-0 flex-col border-r border-slate-200 bg-white px-3 py-5 md:flex">
+          <aside className="sticky top-0 hidden h-screen w-[220px] shrink-0 flex-col border-r border-white/[0.08] bg-[var(--surface-raised,#0c0d12)] px-3 py-5 md:flex">
             <div className="px-2 pb-6">
               <Brand />
             </div>
             <NavLinks className="flex flex-1 flex-col gap-1" />
-            <div className="mt-auto border-t border-slate-200 px-2 pt-4">
-              <p className="truncate text-[13px] font-medium text-slate-700">{workspaceName}</p>
+            <div className="mt-auto border-t border-white/[0.08] px-2 pt-4">
+              <p className="truncate text-[13px] font-medium text-white/70">{workspaceName}</p>
             </div>
           </aside>
 
           <div className="min-w-0 flex-1">
-            <header className="flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 sm:px-8">
+            <header className="flex h-14 items-center justify-between gap-3 border-b border-white/[0.08] bg-[var(--surface-canvas,#050507)] px-4 sm:px-8">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="md:hidden">
                   <Brand />
                 </div>
-                <p className="hidden truncate text-[14px] text-slate-500 md:block">
+                <p className="hidden truncate text-[13.5px] text-white/45 md:block">
                   {workspaceName}
                 </p>
               </div>
@@ -158,8 +155,8 @@ export default function EmployerShell({
             </header>
 
             <NavLinks
-              className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 md:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              itemClass="flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-1.5 text-[13.5px]"
+              className="flex gap-1 overflow-x-auto border-b border-white/[0.08] bg-[var(--surface-raised,#0c0d12)] px-3 py-2 md:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              itemClass="relative flex shrink-0 items-center whitespace-nowrap rounded-[6px] px-3 py-1.5 text-[13px]"
             />
 
             <main className="px-4 py-8 sm:px-8">{children}</main>

@@ -41,8 +41,8 @@ export default function RequestPilotPage() {
   return (
     <MarketingShell>
       <PageHero
-        title="Run a pilot on a real Applied Technical Role."
-        description="Tell us about the role. We set up your workspace, configure the simulation, and give you a dashboard to invite candidates, all before any billing."
+        title="Run one serious Data Analyst pilot."
+        description="Tell us about your hiring need. We open a versioned cohort on the Operations performance investigation, give you secure invites, and keep evidence inspectable - before any billing."
       />
 
       <section className="pb-20 lg:pb-28">

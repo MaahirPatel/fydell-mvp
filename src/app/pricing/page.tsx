@@ -11,11 +11,11 @@ export const metadata = {
 };
 
 const INCLUDES = [
-  "Curated five-minute simulations for the roles you are hiring",
-  "Secure invite links for the candidates you choose to include",
-  "A realistic work simulation per completed candidate",
-  "A founder-reviewed, cited evidence report for every completed session",
-  "A structured export you can attach to the candidate's record in your ATS",
+  "One published Data Analyst evaluation version for your October cohort",
+  "Secure invite links with truthful delivery status",
+  "A realistic ~20-minute ops-yield work simulation per completed candidate",
+  "Cited evidence report, oral-defense questions, and human review states",
+  "Same-cohort comparison and candidate-controlled Work Receipt sharing",
   "Founder-led pilot setup, with direct access throughout",
 ];
 
@@ -23,7 +23,7 @@ const TERMS = [
   {
     term: "Simulation",
     definition:
-      "One curated five-minute work problem for one of the six Applied Technical Roles.",
+      "One published Data Analyst work investigation (Operations performance investigation) with a curveball and immutable submission.",
   },
   {
     term: "Completion",

@@ -35,7 +35,7 @@ export default function SiteNav() {
   }, [open]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-white/[0.06] bg-[#050507]/80 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)]/92">
       <div className="mkt-content flex h-full items-center justify-between gap-6">
         <FydellBrand markSize={22} wordmarkSize={17} className="gap-2 shrink-0" />
 
@@ -51,10 +51,9 @@ export default function SiteNav() {
                 key={item.label}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`text-[13px] transition-colors ${
+                className={`text-[13px] font-normal transition-colors ${
                   active ? "text-white" : "text-white/45 hover:text-white"
                 }`}
-                style={{ fontWeight: 450, letterSpacing: "-0.01em" }}
               >
                 {item.label}
               </Link>
@@ -65,14 +64,13 @@ export default function SiteNav() {
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="hidden text-[13px] text-white/45 transition-colors hover:text-white sm:inline"
-            style={{ fontWeight: 450 }}
+            className="hidden text-[13px] font-normal text-white/45 transition-colors hover:text-white sm:inline"
           >
             Sign in
           </Link>
           <Link
             href="/request-pilot"
-            className="hidden h-8 items-center rounded-full bg-white px-3.5 text-[13px] font-medium text-black transition hover:bg-white/90 sm:inline-flex"
+            className="hidden h-8 items-center rounded-[6px] bg-[var(--fydell-action,#e8eaed)] px-3.5 text-[13px] font-medium text-[#090A0D] transition hover:brightness-[0.97] sm:inline-flex"
           >
             Request a pilot
           </Link>
@@ -111,7 +109,7 @@ export default function SiteNav() {
             <Link
               href="/request-pilot"
               onClick={() => setOpen(false)}
-              className="mt-2 inline-flex h-10 items-center justify-center rounded-full bg-white text-[14px] font-medium text-black"
+              className="mt-2 inline-flex h-10 items-center justify-center rounded-[6px] bg-[var(--fydell-action,#e8eaed)] text-[14px] font-medium text-[#090A0D]"
             >
               Request a pilot
             </Link>
