@@ -170,7 +170,7 @@ const SEEDS: Seed[] = [
     status: "sent",
     session: null,
     createdHoursAgo: 6,
-    delivery: "bounced",
+    delivery: "failed",
   },
 ];
 

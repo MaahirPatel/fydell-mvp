@@ -5,6 +5,7 @@ import WorkspaceNameForm from "@/components/employer/WorkspaceNameForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Surface, SurfaceHeader } from "@/components/ui/Surface";
 import { ContactLink } from "@/components/ui/ContactLink";
+import { isPreviewMode, PREVIEW_ORG, PREVIEW_USER } from "@/lib/dev/preview";
 
 export const metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
@@ -37,11 +38,12 @@ function Row({
 }
 
 export default async function EmployerSettingsPage() {
-  const user = await getAuthenticatedUser();
+  const preview = isPreviewMode();
+  const user = preview ? PREVIEW_USER : await getAuthenticatedUser();
 
-  let workspaceName = "Your workspace";
-  let memberRole = "member";
-  if (user && isSupabaseConfigured()) {
+  let workspaceName = preview ? PREVIEW_ORG.organizationName : "Your workspace";
+  let memberRole = preview ? "owner" : "member";
+  if (!preview && user && isSupabaseConfigured()) {
     const admin = createAdminSupabaseClient();
     const { data: membership } = await admin
       .from("organization_members")
@@ -96,23 +98,46 @@ export default async function EmployerSettingsPage() {
         </Surface>
 
         <Surface tone="panel">
-          <SurfaceHeader title="Data" />
-          <div className="space-y-3 px-5 py-4 text-[13.5px] leading-[1.7] text-[var(--text-secondary)]">
-            <p>
-              Submissions, scores and reports are retained so your team can review
-              them while a hiring decision is open. They are visible only to members
-              of this workspace.
+          <SurfaceHeader
+            title="Data"
+            description="What this workspace holds and how long it holds it."
+          />
+          <Row
+            label="Who can read it"
+            help="Membership of this workspace is the boundary."
+          >
+            <p className="text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+              Submissions, scores and reports are visible to members of this
+              workspace and to the candidate who produced them. No other company
+              can see them, and there is no public directory.
             </p>
-            <p>
-              Candidates hold their own Work Receipt and control who else sees it.
-              Your organization remains responsible for the employment decisions it
-              makes using these reports.
+          </Row>
+          <Row
+            label="How long it is kept"
+            help="There is no automatic deletion window yet."
+          >
+            <p className="text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+              Evaluation data stays until it is deleted on request. If your
+              organization needs a fixed retention period, agree it with us
+              before running a cohort.
             </p>
-            <p>
-              To export or delete this workspace&apos;s data, email{" "}
-              <ContactLink />.
+          </Row>
+          <Row label="Export or delete" help="Handled by hand, not self-serve.">
+            <p className="text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+              Email <ContactLink /> from an address on this workspace and we will
+              confirm what we hold before acting.
             </p>
-          </div>
+          </Row>
+          <Row
+            label="Responsibility"
+            help="Fydell produces evidence, not decisions."
+          >
+            <p className="text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+              Candidates hold their own Work Receipt and control who else sees
+              it. Your organization remains responsible for the employment
+              decisions it makes using these reports.
+            </p>
+          </Row>
         </Surface>
       </div>
     </div>

@@ -15,11 +15,20 @@ export default async function EmployerCandidatesPage() {
 
   const records = await getInvitationRecords(org.organizationId, 200);
 
+  // When every invitation is to the same evaluation the table drops that
+  // column, so the page header has to carry the fact instead.
+  const evaluations = new Set(records.map((r) => r.simulation).filter(Boolean));
+  const only = evaluations.size === 1 ? [...evaluations][0] : null;
+
   return (
     <div className="max-w-[1180px]">
       <PageHeader
         title="Candidates"
-        description="Everyone this workspace has invited, with where they are in the evaluation."
+        description={
+          only
+            ? `Everyone this workspace has invited to ${only}, with where they have reached.`
+            : "Everyone this workspace has invited, with where they have reached."
+        }
       />
       <div className="mt-7">
         <CandidatesTable rows={records} />

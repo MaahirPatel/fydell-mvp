@@ -44,13 +44,17 @@ async function main() {
       height: document.documentElement.scrollHeight,
       overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
       h1: document.querySelector("h1")?.textContent?.trim().slice(0, 40) ?? "(none)",
-      // Large light rectangles on a dark canvas were a named defect.
+      // Large light rectangles on a dark canvas were a named defect. Alpha has
+      // to be part of the test: the raised surfaces are white at one or two
+      // percent, which is a tint, not a slab.
       whiteSlabs: Array.from(document.querySelectorAll("body *")).filter((el) => {
         const r = el.getBoundingClientRect();
         if (r.width < 200 || r.height < 80) return false;
         const bg = getComputedStyle(el).backgroundColor;
-        const m2 = bg.match(/rgba?\((\d+), (\d+), (\d+)/);
+        const m2 = bg.match(/rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?/);
         if (!m2) return false;
+        const alpha = m2[4] === undefined ? 1 : Number(m2[4]);
+        if (alpha < 0.5) return false;
         return Number(m2[1]) > 180 && Number(m2[2]) > 180 && Number(m2[3]) > 180;
       }).length,
     }));

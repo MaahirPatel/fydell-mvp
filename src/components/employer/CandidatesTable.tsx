@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/Field";
 import { StatusTag, type StatusTone } from "@/components/ui/StatusTag";
 import { Surface } from "@/components/ui/Surface";
 import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
+import { RowMenu } from "@/components/ui/RowMenu";
 import { useInviteModal } from "./InviteCandidateModal";
 import { useInvitationActions } from "./useInvitationActions";
 
@@ -28,20 +29,39 @@ export interface CandidateRow {
   emailDelivery?: string | null;
 }
 
-const STATUS_TONE: Record<string, StatusTone> = {
-  sent: "neutral",
-  opened: "active",
-  accepted: "active",
-  started: "active",
-  completed: "good",
-  expired: "changed",
-  revoked: "risk",
-};
+/**
+ * One stage, not two columns.
+ *
+ * "Invitation: Opened" beside "Progress: Not started" describes a single fact
+ * twice and forces the reader to reconcile them. The stage below is the
+ * furthest point the candidate has actually reached.
+ *
+ * Tone is meaning, not decoration: green only where the candidate genuinely
+ * finished, amber where the workspace needs to act, red where the invitation
+ * is dead. Everything in flight is neutral.
+ */
+function stageOf(r: CandidateRow): { label: string; tone: StatusTone } {
+  if (r.status === "revoked") return { label: "Revoked", tone: "risk" };
+  if (r.status === "expired") return { label: "Expired", tone: "changed" };
+  if (r.reportReady) return { label: "Report ready", tone: "good" };
+  if (r.progress === "Scoring") return { label: "Scoring", tone: "neutral" };
+  if (r.progress === "In progress") return { label: "Working on it", tone: "neutral" };
+  if (r.status === "accepted") return { label: "Consented, not started", tone: "neutral" };
+  if (r.status === "opened") return { label: "Opened the invitation", tone: "neutral" };
+  return { label: "Invited", tone: "neutral" };
+}
 
 export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
   const { open } = useInviteModal();
   const { act, busyId, notice } = useInvitationActions();
   const [query, setQuery] = useState("");
+
+  // A column where every cell says the same thing is width spent on nothing.
+  // With one published evaluation that is exactly what the role column was.
+  const showEvaluation = useMemo(
+    () => new Set(rows.map((r) => r.simulation)).size > 1,
+    [rows],
+  );
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -76,7 +96,7 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name, email or role"
+          placeholder="Search by name or email"
           aria-label="Search candidates"
           className="max-w-[300px]"
         />
@@ -103,95 +123,92 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
         />
       ) : (
       <Surface tone="panel" className="overflow-hidden">
-        <Table className="min-w-[900px]">
+        <Table className={showEvaluation ? "min-w-[840px]" : "min-w-[640px]"}>
           <THead>
             <TH>Candidate</TH>
-            <TH>Role</TH>
-            <TH>Invitation</TH>
-            <TH>Progress</TH>
+            {showEvaluation ? <TH>Evaluation</TH> : null}
+            <TH>Stage</TH>
             <TH>Result</TH>
             <TH align="right">Actions</TH>
           </THead>
           <TBody>
-            {visible.map((r) => (
-              <TR key={r.invitationId}>
-                <TDPrimary>
-                  <span className="block truncate">{r.name || r.email}</span>
-                  {r.name ? (
-                    <span className="mt-0.5 block truncate text-[12.5px] font-normal text-[var(--text-tertiary)]">
-                      {r.email}
-                    </span>
+            {visible.map((r) => {
+              const stage = stageOf(r);
+              const busy = busyId === r.invitationId;
+              return (
+                <TR key={r.invitationId}>
+                  <TDPrimary>
+                    <span className="block truncate">{r.name || r.email}</span>
+                    {r.name ? (
+                      <span className="mt-0.5 block truncate text-[12.5px] font-normal text-[var(--text-tertiary)]">
+                        {r.email}
+                      </span>
+                    ) : null}
+                  </TDPrimary>
+                  {showEvaluation ? (
+                    <TD>
+                      <span className="block truncate">{r.simulation}</span>
+                      <span className="mt-0.5 block truncate text-[12.5px] text-[var(--text-tertiary)]">
+                        {r.roleTitle}
+                      </span>
+                    </TD>
                   ) : null}
-                </TDPrimary>
-                <TD>
-                  <span className="block truncate">{r.roleTitle}</span>
-                  <span className="mt-0.5 block truncate text-[12.5px] text-[var(--text-tertiary)]">
-                    {r.simulation}
-                  </span>
-                </TD>
-                <TD>
-                  <StatusTag tone={STATUS_TONE[r.status] ?? "neutral"}>
-                    {r.statusLabel}
-                  </StatusTag>
-                  {r.emailDelivery === "failed" ? (
-                    <span className="mt-1 block text-[12px] text-[var(--fydell-risk)]">
-                      Email failed to send
-                    </span>
-                  ) : null}
-                </TD>
-                <TD>{r.progress}</TD>
-                <TD>
-                  {r.result ? (
-                    <span className="text-[var(--text-primary)]">{r.result}</span>
-                  ) : (
-                    <span className="text-[var(--text-tertiary)]">Pending</span>
-                  )}
-                </TD>
-                <TD align="right">
-                  <div className="flex items-center justify-end gap-1 whitespace-nowrap">
-                    {r.reportReady && r.sessionId ? (
-                      <Link
-                        href={`/app/employer/assessments/report/${r.sessionId}`}
-                        className="inline-flex h-8 items-center rounded-[8px] px-2.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[rgba(255,255,255,0.06)]"
-                      >
-                        View report
-                      </Link>
+                  <TD>
+                    <StatusTag tone={stage.tone}>{stage.label}</StatusTag>
+                    {r.emailDelivery === "failed" ? (
+                      <span className="mt-1 block text-[12px] text-[var(--fydell-risk)]">
+                        Email failed to send
+                      </span>
                     ) : null}
-                    {r.canResend ? (
-                      <>
-                        <Button
-                          variant="quiet"
-                          size="sm"
-                          onClick={() => void act(r.invitationId, "resend")}
-                          disabled={busyId === r.invitationId}
+                    {r.emailDelivery === "not_configured" ? (
+                      <span className="mt-1 block text-[12px] text-[var(--text-tertiary)]">
+                        Not emailed. Copy the link instead.
+                      </span>
+                    ) : null}
+                  </TD>
+                  <TD>
+                    {r.result ? (
+                      <span className="text-[var(--text-primary)]">{r.result}</span>
+                    ) : (
+                      <span className="text-[var(--text-tertiary)]">Pending</span>
+                    )}
+                  </TD>
+                  <TD align="right">
+                    <div className="flex items-center justify-end gap-1 whitespace-nowrap">
+                      {r.reportReady && r.sessionId ? (
+                        <Link
+                          href={`/app/employer/assessments/report/${r.sessionId}`}
+                          className="inline-flex h-8 items-center rounded-[8px] px-2.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[rgba(255,255,255,0.06)]"
                         >
-                          Resend
-                        </Button>
-                        <Button
-                          variant="quiet"
-                          size="sm"
-                          onClick={() => void act(r.invitationId, "copy")}
-                          disabled={busyId === r.invitationId}
-                        >
-                          Copy link
-                        </Button>
-                      </>
-                    ) : null}
-                    {r.canRevoke ? (
-                      <Button
-                        variant="quiet"
-                        size="sm"
-                        className="text-[var(--fydell-risk)] hover:text-[var(--fydell-risk)]"
-                        onClick={() => void act(r.invitationId, "revoke")}
-                        disabled={busyId === r.invitationId}
-                      >
-                        Revoke
-                      </Button>
-                    ) : null}
-                  </div>
-                </TD>
-              </TR>
-            ))}
+                          View report
+                        </Link>
+                      ) : null}
+                      <RowMenu
+                        label={r.name || r.email}
+                        items={[
+                          {
+                            label: "Resend invitation",
+                            disabled: !r.canResend || busy,
+                            onSelect: () => void act(r.invitationId, "resend"),
+                          },
+                          {
+                            label: "Copy invitation link",
+                            disabled: !r.canResend || busy,
+                            onSelect: () => void act(r.invitationId, "copy"),
+                          },
+                          {
+                            label: "Revoke invitation",
+                            disabled: !r.canRevoke || busy,
+                            destructive: true,
+                            onSelect: () => void act(r.invitationId, "revoke"),
+                          },
+                        ]}
+                      />
+                    </div>
+                  </TD>
+                </TR>
+              );
+            })}
           </TBody>
         </Table>
       </Surface>

@@ -102,6 +102,11 @@ export default async function EmployerHomePage() {
   const hasInvited = invitations.length > 0;
   const hasResults = reports.length > 0;
 
+  // A report that needs review already has a module of its own. Repeating it
+  // under "Recent reports" made a three-report workspace look like five.
+  const reviewIds = new Set(needsReview.map((r) => r.sessionId));
+  const otherReports = reports.filter((r) => !reviewIds.has(r.sessionId));
+
   const steps: SetupStep[] = [
     {
       title: "Your workspace is ready",
@@ -241,16 +246,16 @@ export default async function EmployerHomePage() {
         </section>
       ) : null}
 
-      {hasResults ? (
+      {otherReports.length > 0 ? (
         <section className="mt-9">
           <SectionHeading
-            title="Recent reports"
+            title={needsReview.length > 0 ? "Already reviewed" : "Recent reports"}
             href="/app/employer/reports"
             linkLabel="View all"
           />
           <div className="mt-3">
             <RowList
-              rows={reports.map((r) => ({
+              rows={otherReports.map((r) => ({
                 key: r.sessionId,
                 primary: r.candidate,
                 secondary: [

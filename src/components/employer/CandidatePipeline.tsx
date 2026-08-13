@@ -71,9 +71,24 @@ export default function CandidatePipeline({
     count: invitations.filter(stage.match).length,
   }));
 
+  /**
+   * `email_delivery` is constrained to queued, sent, failed and
+   * not_configured. An unsent link is as stalled as an expired one, because in
+   * both cases the candidate is waiting on the workspace rather than the other
+   * way round.
+   */
   const stalled = invitations.filter(
-    (r) => r.status === "expired" || r.emailDelivery === "bounced"
+    (r) =>
+      r.status === "expired" ||
+      r.emailDelivery === "failed" ||
+      r.emailDelivery === "not_configured"
   );
+
+  const reasonFor = (r: InvitationRecord) => {
+    if (r.emailDelivery === "failed") return "Email failed";
+    if (r.emailDelivery === "not_configured") return "Never emailed";
+    return "Expired";
+  };
 
   return (
     <div className="overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
@@ -131,7 +146,7 @@ export default function CandidatePipeline({
                   {r.name || r.email}
                 </span>
                 <span className="shrink-0 text-[var(--text-tertiary)]">
-                  {r.emailDelivery === "bounced" ? "Email bounced" : "Expired"}
+                  {reasonFor(r)}
                 </span>
               </li>
             ))}
