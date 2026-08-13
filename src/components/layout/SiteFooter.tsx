@@ -1,18 +1,22 @@
 import Link from "next/link";
-import FydellBrand from "@/components/brand/FydellBrand";
+import FydellMark from "@/components/brand/FydellMark";
 
+/**
+ * Roles and Pricing were removed: Roles marketed six role families that do not
+ * exist as products, and Pricing contradicted the single published evaluation.
+ * "Request a pilot" lives here as a quiet secondary path rather than in the
+ * primary navigation.
+ */
 const PRODUCT = [
   { label: "Product", href: "/product" },
-  { label: "Simulations", href: "/simulations" },
-  { label: "Pilot", href: "/request-pilot" },
+  { label: "Evaluation", href: "/simulations" },
   { label: "Trust", href: "/trust" },
 ];
 
 const COMPANY = [
-  { label: "Contact", href: "mailto:hello@fydell.com" },
   { label: "Sign in", href: "/login" },
-  { label: "Roles", href: "/roles" },
-  { label: "Pricing", href: "/pricing" },
+  { label: "Request a pilot", href: "/request-pilot" },
+  { label: "Contact", href: "mailto:hello@fydell.com" },
 ];
 
 const LEGAL = [
@@ -30,13 +34,13 @@ function FooterCol({
 }) {
   return (
     <div>
-      <p className="text-[12.5px] font-medium text-white/45">{title}</p>
+      <p className="text-[12.5px] font-medium text-[var(--text-tertiary)]">{title}</p>
       <ul className="mt-3 space-y-2">
         {links.map((link) => (
           <li key={link.label}>
             <Link
               href={link.href}
-              className="text-[13px] text-white/50 transition-colors duration-150 hover:text-white"
+              className="text-[13px] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
             >
               {link.label}
             </Link>
@@ -49,25 +53,35 @@ function FooterCol({
 
 export default function SiteFooter() {
   return (
-    <footer className="relative z-10 border-t border-[var(--border-subtle)] pt-[80px] pb-8 sm:pb-10">
+    <footer className="border-t border-[var(--border-subtle)] pb-10 pt-14">
       <div className="mkt-content">
         <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
-          <div className="max-w-[280px]">
-            <FydellBrand markSize={22} wordmarkSize={16} className="gap-2" />
-            <p className="mt-3 text-[13px] leading-[1.55] text-white/40">
-              Realistic work trials with inspectable evidence and candidate-controlled Work Receipts.
+          <div className="max-w-[300px]">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2"
+              aria-label="Fydell home"
+            >
+              <FydellMark width={20} />
+              <span className="text-[15px] font-semibold leading-none tracking-[-0.04em] text-[var(--text-primary)]">
+                fydell
+              </span>
+            </Link>
+            <p className="mt-3 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+              Evaluations that show how a candidate works, with evidence your
+              team can open.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-12">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-14">
             <FooterCol title="Product" links={PRODUCT} />
             <FooterCol title="Company" links={COMPANY} />
             <FooterCol title="Legal" links={LEGAL} />
           </div>
         </div>
 
-        <div className="mt-12 flex items-center justify-between border-t border-[var(--border-subtle)] pt-5">
-          <p className="text-[12px] text-white/28">
+        <div className="mt-12 border-t border-[var(--border-subtle)] pt-5">
+          <p className="text-[12px] text-[var(--text-tertiary)]">
             © {new Date().getFullYear()} Fydell, Inc.
           </p>
         </div>

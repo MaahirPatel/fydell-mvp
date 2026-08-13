@@ -2,9 +2,10 @@ import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { ROLES } from "@/lib/simulations/roles";
 import ReportsList from "@/components/employer/ReportsList";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { getReportRecords } from "../_lib/data";
 
-export const metadata = { title: "Reports | Fydell" };
+export const metadata = { title: "Reports" };
 export const dynamic = "force-dynamic";
 
 export default async function EmployerReportsPage({
@@ -13,7 +14,7 @@ export default async function EmployerReportsPage({
   searchParams?: Promise<{ review?: string }>;
 }) {
   const user = await requireUser();
-  if (!user) redirect("/login?next=/app/employer/reports");
+  if (!user) redirect("/login?next=%2Fapp%2Femployer%2Freports");
   const org = await requireOrgMember(user.id);
   if (!org) redirect("/app/employer");
 
@@ -26,15 +27,17 @@ export default async function EmployerReportsPage({
 
   return (
     <div className="max-w-[1080px]">
-      <h1 className="text-[24px] font-semibold text-slate-900">Reports</h1>
-      <p className="mt-1 text-[15px] text-slate-500">
-        Completed simulations with scores and evidence bands.
-      </p>
-      <ReportsList
-        rows={records}
-        roleOptions={roleOptions}
-        initialReviewFilter={initialReviewFilter}
+      <PageHeader
+        title="Reports"
+        description="Completed evaluations. Open one to read the conclusion and the evidence behind it."
       />
+      <div className="mt-7">
+        <ReportsList
+          rows={records}
+          roleOptions={roleOptions}
+          initialReviewFilter={initialReviewFilter}
+        />
+      </div>
     </div>
   );
 }

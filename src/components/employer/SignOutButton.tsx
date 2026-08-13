@@ -26,7 +26,7 @@ export default function SignOutButton({ className = "" }: { className?: string }
       disabled={loading}
       className={
         className ||
-        "inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+        "inline-flex h-9 items-center justify-center rounded-[8px] border border-[var(--border-strong)] px-4 text-[13.5px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[rgba(255,255,255,0.06)] disabled:opacity-50"
       }
     >
       {loading ? "Signing out" : "Sign out"}

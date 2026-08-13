@@ -1,26 +1,28 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { Briefcase, Wrench, Handshake, ArrowRight } from "lucide-react";
-import FydellBrand from "@/components/brand/FydellBrand";
+import { Building2, UserRound, Handshake, ArrowRight } from "lucide-react";
+import AuthShell from "@/components/auth/AuthShell";
+import { Button } from "@/components/ui/Button";
+import { Field, FormError, Input } from "@/components/ui/Field";
 import { partnerSignupEnabled } from "@/lib/auth/flags";
-import { isSafeAppNext } from "@/lib/marketing/ctas";
+import { isCandidateDestination, safeNext, withNext } from "@/lib/auth/safe-next";
 
 type Role = "employer" | "fde" | "partner";
 
 function SignupRoleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextParam = searchParams.get("next");
-  const safeNext = isSafeAppNext(nextParam) ? nextParam : null;
+  const next = safeNext(searchParams.get("next"));
+  // An invited candidate should never be asked how they intend to use Fydell.
+  const invitedCandidate = isCandidateDestination(next);
+
   const [selected, setSelected] = useState<Role | null>(null);
-  const [companyName, setCompanyName] = useState("");
-  const [companyWebsite, setCompanyWebsite] = useState("");
   const [firmName, setFirmName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const autoSubmitted = useRef(false);
 
   const showPartner = partnerSignupEnabled();
 
@@ -35,12 +37,8 @@ function SignupRoleContent() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Request failed");
-      if (
-        role === "employer" &&
-        safeNext &&
-        (safeNext.startsWith("/app/employer") || safeNext.startsWith("/app/simulations"))
-      ) {
-        router.push(safeNext);
+      if (role === "fde" && next) {
+        router.push(next);
         return;
       }
       router.push(data.redirectTo || "/");
@@ -50,208 +48,150 @@ function SignupRoleContent() {
     }
   }
 
-  function toggle(role: Role) {
-    setError(null);
-    setSelected((prev) => (prev === role ? null : role));
-    if (role === "fde") {
-      submitRole("fde");
-    }
+  // Resolve the candidate role silently and continue to the invitation.
+  useEffect(() => {
+    if (!invitedCandidate || autoSubmitted.current) return;
+    autoSubmitted.current = true;
+    void submitRole("fde");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [invitedCandidate]);
+
+  if (invitedCandidate) {
+    return (
+      <AuthShell title="Opening your evaluation">
+        <p role="status" className="text-[14px] text-[var(--text-secondary)]">
+          One moment while we take you to your invitation.
+        </p>
+        {error ? (
+          <div className="mt-4">
+            <FormError>{error}</FormError>
+          </div>
+        ) : null}
+      </AuthShell>
+    );
   }
 
-  function submitEmployer(e: React.FormEvent) {
-    e.preventDefault();
-    if (!companyName.trim()) {
-      setError("Company name is required.");
-      return;
-    }
-    submitRole("employer", {
-      companyName: companyName.trim(),
-      companyWebsite: companyWebsite.trim() || undefined,
-    });
-  }
-
-  function submitPartner(e: React.FormEvent) {
-    e.preventDefault();
-    submitRole("partner", { firmName: firmName.trim() || undefined });
-  }
+  const choices: {
+    role: Role;
+    icon: typeof Building2;
+    title: string;
+    body: string;
+  }[] = [
+    {
+      role: "employer",
+      icon: Building2,
+      title: "I am hiring",
+      body: "Create a workspace, invite candidates to an evaluation, and review the evidence behind their conclusions.",
+    },
+    {
+      role: "fde",
+      icon: UserRound,
+      title: "I am a candidate",
+      body: "Complete evaluations you are invited to and keep a record of the work you produced.",
+    },
+    ...(showPartner
+      ? [
+          {
+            role: "partner" as Role,
+            icon: Handshake,
+            title: "I am a partner",
+            body: "Refer candidates or companies into the network. Partner access is reviewed before it is granted.",
+          },
+        ]
+      : []),
+  ];
 
   return (
-    <div className="relative min-h-[100dvh] overflow-hidden bg-[#050609]">
-      <div className="pointer-events-none absolute right-[-8%] top-[-8%] h-[480px] w-[580px] rounded-full bg-[#3B5BFF]/[0.06] blur-[160px]" />
-      <div className="pointer-events-none absolute left-[-6%] bottom-[-10%] h-[400px] w-[500px] rounded-full bg-[#3B5BFF]/[0.04] blur-[160px]" />
-
-      <header className="relative z-10 mx-auto flex h-[72px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
-        <FydellBrand markSize={42} wordmarkSize={24} />
-        <Link
-          href="/login"
-          className="text-[14px] font-medium text-white/[0.55] transition hover:text-white"
-        >
-          Sign in
-        </Link>
-      </header>
-
-      <main className="relative z-10 mx-auto grid min-h-[calc(100dvh-72px)] max-w-[720px] items-center px-6 pb-16">
-        <section className="w-full">
-          <h1
-            className="text-white"
-            style={{
-              fontSize: "clamp(2rem,3vw,2.8rem)",
-              lineHeight: 1.06,
-              letterSpacing: "-0.04em",
-              fontWeight: 650,
-            }}
-          >
-            How will you use Fydell?
-          </h1>
-          <p className="mt-4 max-w-[52ch] text-[15px] leading-[1.65] text-white/[0.55]">
-            Pick a path. You can always reach the others from your account settings later.
-          </p>
-
-          <div className="mt-8 grid gap-3">
+    <AuthShell
+      title="How will you use Fydell?"
+      description="This decides where you land. You can change it later in settings."
+      width="wide"
+    >
+      <div className="grid gap-2.5">
+        {choices.map(({ role, icon: Icon, title, body }) => (
+          <div key={role}>
             <button
               type="button"
-              onClick={() => toggle("employer")}
+              onClick={() => {
+                setError(null);
+                if (role === "employer") {
+                  router.push(withNext("/onboarding/employer", next));
+                  return;
+                }
+                if (role === "fde") {
+                  void submitRole("fde");
+                  return;
+                }
+                setSelected((prev) => (prev === role ? null : role));
+              }}
               disabled={loading}
-              className="group flex items-start gap-4 rounded-[14px] border border-white/[0.10] bg-[#0A0C11] px-5 py-4 text-left transition hover:border-white/20 hover:bg-[#0E1118] disabled:cursor-not-allowed disabled:opacity-60"
+              aria-expanded={role === "partner" ? selected === role : undefined}
+              className="group flex w-full items-start gap-4 rounded-[var(--radius-frame)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4 py-4 text-left transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-panel)] disabled:pointer-events-none disabled:opacity-50"
             >
-              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-[#3B5BFF]/15">
-                <Briefcase className="h-4.5 w-4.5 text-[#a8b8ff]" strokeWidth={1.7} />
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[7px] border border-[var(--border-default)]">
+                <Icon
+                  className="h-4 w-4 text-[var(--text-secondary)]"
+                  strokeWidth={1.7}
+                  aria-hidden
+                />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold text-white">
-                  Business: hire for technical roles
+                <span className="block text-[14.5px] font-medium text-[var(--text-primary)]">
+                  {title}
                 </span>
-                <span className="mt-1 block text-[13px] leading-relaxed text-white/55">
-                  Invite candidates to realistic work simulations and review the evidence.
+                <span className="mt-1 block text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                  {body}
                 </span>
               </span>
-              <ArrowRight className="mt-1.5 h-4 w-4 shrink-0 text-white/30 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-white/60" />
+              <ArrowRight
+                className="mt-1 h-4 w-4 shrink-0 text-[var(--text-tertiary)] transition-transform group-hover:translate-x-0.5"
+                strokeWidth={1.7}
+                aria-hidden
+              />
             </button>
 
-            {selected === "employer" && (
+            {role === "partner" && selected === "partner" ? (
               <form
-                onSubmit={submitEmployer}
-                className="grid gap-3 rounded-[14px] border border-white/[0.10] bg-[#080B12] px-5 py-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void submitRole("partner", { firmName: firmName.trim() || undefined });
+                }}
+                className="mt-2.5 grid gap-3 rounded-[var(--radius-frame)] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-4 py-4"
               >
-                <label className="block">
-                  <span className="text-[13px] font-medium text-white/[0.66]">Company name</span>
-                  <input
-                    className="platform-input mt-1.5"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="Your company"
+                <Field label="Firm or organisation" htmlFor="partner-firm" optional>
+                  <Input
+                    id="partner-firm"
+                    name="organization"
+                    value={firmName}
+                    onChange={(e) => setFirmName(e.target.value)}
+                    placeholder="Your firm"
+                    autoComplete="organization"
                     autoFocus
-                    required
                   />
-                </label>
-                <label className="block">
-                  <span className="text-[13px] font-medium text-white/[0.66]">
-                    Company website <span className="text-white/35">(optional)</span>
-                  </span>
-                  <input
-                    className="platform-input mt-1.5"
-                    value={companyWebsite}
-                    onChange={(e) => setCompanyWebsite(e.target.value)}
-                    placeholder="acme.com"
-                  />
-                </label>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[#3B5BFF] px-5 text-[14px] font-semibold text-white transition-colors hover:bg-[#2f4fe0] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {loading ? "Working..." : "Continue"}
-                </button>
+                </Field>
+                <Button type="submit" variant="primary" loading={loading}>
+                  {loading ? "Submitting" : "Request partner access"}
+                </Button>
               </form>
-            )}
-
-            <button
-              type="button"
-              onClick={() => toggle("fde")}
-              disabled={loading}
-              className="group flex items-start gap-4 rounded-[14px] border border-white/[0.10] bg-[#0A0C11] px-5 py-4 text-left transition hover:border-white/20 hover:bg-[#0E1118] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-[#3B5BFF]/15">
-                <Wrench className="h-4.5 w-4.5 text-[#a8b8ff]" strokeWidth={1.7} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold text-white">I&apos;m a candidate</span>
-                <span className="mt-1 block text-[13px] leading-relaxed text-white/55">
-                  Get invited to simulations, show your work, and build a portable result.
-                </span>
-              </span>
-              <ArrowRight className="mt-1.5 h-4 w-4 shrink-0 text-white/30 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-white/60" />
-            </button>
-
-            {showPartner && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => toggle("partner")}
-                  disabled={loading}
-                  className="group flex items-start gap-4 rounded-[14px] border border-white/[0.10] bg-[#0A0C11] px-5 py-4 text-left transition hover:border-white/20 hover:bg-[#0E1118] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-[#3B5BFF]/15">
-                    <Handshake className="h-4.5 w-4.5 text-[#a8b8ff]" strokeWidth={1.7} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-semibold text-white">
-                      I&apos;m a partner
-                    </span>
-                    <span className="mt-1 block text-[13px] leading-relaxed text-white/55">
-                      Refer candidates or employers into the network. Subject to approval.
-                    </span>
-                  </span>
-                  <ArrowRight className="mt-1.5 h-4 w-4 shrink-0 text-white/30 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-white/60" />
-                </button>
-
-                {selected === "partner" && (
-                  <form
-                    onSubmit={submitPartner}
-                    className="grid gap-3 rounded-[14px] border border-white/[0.10] bg-[#080B12] px-5 py-4"
-                  >
-                    <label className="block">
-                      <span className="text-[13px] font-medium text-white/[0.66]">
-                        Firm / organization name <span className="text-white/35">(optional)</span>
-                      </span>
-                      <input
-                        className="platform-input mt-1.5"
-                        value={firmName}
-                        onChange={(e) => setFirmName(e.target.value)}
-                        placeholder="Your firm"
-                        autoFocus
-                      />
-                    </label>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[#3B5BFF] px-5 text-[14px] font-semibold text-white transition-colors hover:bg-[#2f4fe0] disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {loading ? "Working..." : "Continue"}
-                    </button>
-                  </form>
-                )}
-              </>
-            )}
+            ) : null}
           </div>
+        ))}
+      </div>
 
-          {error && (
-            <p
-              role="alert"
-              className="mt-5 rounded-[10px] border border-[#fb7185]/40 bg-[#fb7185]/15 px-3.5 py-2.5 text-[13px] font-medium text-[#fecdd3]"
-            >
-              {error}
-            </p>
-          )}
-        </section>
-      </main>
-    </div>
+      {error ? (
+        <div className="mt-5">
+          <FormError>{error}</FormError>
+        </div>
+      ) : null}
+    </AuthShell>
   );
 }
 
 export default function SignupRolePage() {
   return (
-    <Suspense fallback={<div className="min-h-[100dvh] bg-[#050609]" />}>
+    <Suspense
+      fallback={<div className="min-h-[100dvh] bg-[var(--surface-canvas)]" />}
+    >
       <SignupRoleContent />
     </Suspense>
   );

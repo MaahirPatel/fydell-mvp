@@ -4,13 +4,18 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import FydellBrand from "@/components/brand/FydellBrand";
+import FydellMark from "@/components/brand/FydellMark";
 
-/** October-truthful primary nav - no marketplace oversell. */
+/**
+ * Three destinations, one primary action.
+ *
+ * "Pilot" left the primary navigation: it is a quiet secondary path, not a
+ * peer of the product. "Simulations" became "Evaluation" because there is one
+ * evaluation, not a catalogue.
+ */
 const LINKS = [
   { label: "Product", href: "/product" },
-  { label: "Simulations", href: "/simulations" },
-  { label: "Pilot", href: "/request-pilot" },
+  { label: "Evaluation", href: "/simulations" },
   { label: "Trust", href: "/trust" },
 ];
 
@@ -36,11 +41,20 @@ export default function SiteNav() {
   }, [open]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)]/95">
-      <div className="mkt-content flex h-full items-center justify-between gap-6">
-        <FydellBrand markSize={22} wordmarkSize={17} className="gap-2 shrink-0" />
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--border-subtle)] bg-[rgba(8,9,10,0.88)] backdrop-blur-[10px]">
+      <div className="mkt-content flex h-14 items-center justify-between gap-8">
+        <Link
+          href="/"
+          className="inline-flex shrink-0 items-center gap-2"
+          aria-label="Fydell home"
+        >
+          <FydellMark width={20} />
+          <span className="text-[15px] font-semibold leading-none tracking-[-0.04em] text-[var(--text-primary)]">
+            fydell
+          </span>
+        </Link>
 
-        <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">
           {LINKS.map((item) => {
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -49,8 +63,10 @@ export default function SiteNav() {
                 key={item.label}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`text-[13px] font-normal transition-colors ${
-                  active ? "text-white" : "text-white/45 hover:text-white"
+                className={`text-[13.5px] transition-colors ${
+                  active
+                    ? "text-[var(--text-primary)]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
                 {item.label}
@@ -59,61 +75,62 @@ export default function SiteNav() {
           })}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Link
             href="/login"
-            className="hidden text-[13px] font-normal text-white/45 transition-colors hover:text-white sm:inline"
+            className="hidden text-[13.5px] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] sm:inline"
           >
             Sign in
           </Link>
           <Link
-            href="/request-pilot"
-            className="hidden h-8 items-center rounded-[9px] bg-[var(--fydell-action,#e8eaed)] px-3.5 text-[13px] font-medium text-[#090A0D] transition hover:brightness-[0.97] sm:inline-flex"
+            href="/signup"
+            className="hidden h-8 items-center rounded-[8px] bg-[#eceef1] px-3.5 text-[13px] font-medium text-[#0a0b0d] transition-colors hover:bg-white sm:inline-flex"
           >
-            Request a pilot
+            Create workspace
           </Link>
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-white/10 text-white/70 transition hover:text-white lg:hidden"
+            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[var(--border-default)] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] lg:hidden"
           >
-            {open ? <X className="h-4 w-4" strokeWidth={1.7} /> : <Menu className="h-4 w-4" strokeWidth={1.7} />}
+            {open ? (
+              <X className="h-4 w-4" strokeWidth={1.7} aria-hidden />
+            ) : (
+              <Menu className="h-4 w-4" strokeWidth={1.7} aria-hidden />
+            )}
           </button>
         </div>
       </div>
 
-      {open && (
+      {open ? (
         <div className="border-t border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4 py-3 lg:hidden">
           <nav className="flex flex-col gap-0.5" aria-label="Mobile">
             {LINKS.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                onClick={() => setOpen(false)}
-                className="rounded-[6px] px-3 py-2.5 text-[14px] text-white/60 hover:bg-white/[0.04] hover:text-white"
+                className="rounded-[6px] px-3 py-2.5 text-[14.5px] text-[var(--text-secondary)] hover:bg-white/[0.05] hover:text-[var(--text-primary)]"
               >
                 {item.label}
               </Link>
             ))}
             <Link
               href="/login"
-              onClick={() => setOpen(false)}
-              className="rounded-[6px] px-3 py-2.5 text-[14px] text-white/60 hover:text-white"
+              className="rounded-[6px] px-3 py-2.5 text-[14.5px] text-[var(--text-secondary)] hover:bg-white/[0.05] hover:text-[var(--text-primary)]"
             >
               Sign in
             </Link>
             <Link
-              href="/request-pilot"
-              onClick={() => setOpen(false)}
-              className="mt-2 inline-flex h-10 items-center justify-center rounded-[9px] bg-[var(--fydell-action,#e8eaed)] text-[14px] font-medium text-[#090A0D]"
+              href="/signup"
+              className="mt-2 inline-flex h-10 items-center justify-center rounded-[8px] bg-[#eceef1] text-[14px] font-medium text-[#0a0b0d]"
             >
-              Request a pilot
+              Create workspace
             </Link>
           </nav>
         </div>
-      )}
+      ) : null}
     </header>
   );
 }

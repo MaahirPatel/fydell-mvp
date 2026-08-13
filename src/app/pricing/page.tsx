@@ -1,228 +1,92 @@
 import MarketingShell from "@/components/layout/MarketingShell";
-import { Reveal } from "@/components/motion/Reveal";
-import { Container, ButtonLink, TextLink } from "@/components/marketing/ui";
-import PageHero from "@/components/marketing/PageHero";
-import FinalCTA from "@/components/marketing/FinalCTA";
+import { ButtonLink } from "@/components/marketing/ui";
 
 export const metadata = {
-  title: "Pricing · Fydell",
+  title: "Pricing",
   description:
-    "Founding pilots are scoped directly with each company. Sessions lost to a technical failure on Fydell's side are never billed.",
+    "Fydell is in founding pilots. Scope is agreed in writing with each company before anything starts.",
 };
 
-const INCLUDES = [
-  "One published Data Analyst evaluation version for your October cohort",
-  "Secure invite links with truthful delivery status",
-  "A realistic ~20-minute ops-yield work simulation per completed candidate",
-  "Cited evidence report, oral-defense questions, and human review states",
-  "Same-cohort comparison and candidate-controlled Work Receipt sharing",
-  "Founder-led pilot setup, with direct access throughout",
-];
-
-const TERMS = [
-  {
-    term: "Simulation",
-    definition:
-      "One published Data Analyst work investigation (Operations performance investigation) with a curveball and immutable submission.",
-  },
-  {
-    term: "Completion",
-    definition:
-      "One candidate's valid, submitted session. Completions are the unit pilots are scoped around.",
-  },
-  {
-    term: "Invitation",
-    definition:
-      "One candidate invite link. Invitations are not billable by themselves; only completed sessions count.",
-  },
-  {
-    term: "Technical failure",
-    definition:
-      "A session invalidated by Fydell infrastructure (not the candidate's fault). It is never billed and never counts against your pilot's included volume.",
-  },
-];
-
-const FAQS = [
-  {
-    q: "How is a founding pilot priced?",
-    a: "Founding pilots are scoped directly with each company. The price depends on the role, the number of completed simulations you need, and the level of support you want. Contact us and we'll put a specific scope in writing before anything starts.",
-  },
-  {
-    q: "What's the unit of billing?",
-    a: "Completed simulations. An invitation that's never used costs nothing; a session invalidated by a technical failure on our side costs nothing and doesn't consume included volume.",
-  },
-  {
-    q: "Do you integrate with Greenhouse or Ashby?",
-    a: "Not with a live, connected integration today. That's not something we'll claim until it's shipped. What you get now is a structured export built to attach cleanly to the candidate record you already have.",
-  },
-  {
-    q: "What happens if a session fails for technical reasons?",
-    a: "You pay $0 for it. A session flagged as a technical failure (not the candidate's fault) is never billed and never counted as a completed simulation.",
-  },
-  {
-    q: "How do I pay?",
-    a: "Pilots are invoiced directly. No credit card required upfront.",
-  },
-  {
-    q: "What happens after the pilot?",
-    a: "We'll agree ongoing pricing together once you've run a few simulations and seen real evidence. There's no surprise switch to a subscription.",
-  },
+/**
+ * Commercial claims (billing terms, invoicing, credit-card policy) are removed
+ * pending owner sign-off. Only the definitions below are stated, because they
+ * describe how the product counts things, not what it charges.
+ */
+const TERMS: Array<[string, string]> = [
+  [
+    "Evaluation",
+    "One published work investigation at a specific version. Today that is the Operations performance investigation.",
+  ],
+  [
+    "Invitation",
+    "One single-use link sent to one candidate. An invitation that is never opened produces nothing.",
+  ],
+  [
+    "Completion",
+    "One candidate's submitted attempt, which is what produces a report. Pilots are scoped in completions.",
+  ],
+  [
+    "Technical failure",
+    "An attempt invalidated by a fault on Fydell's side rather than the candidate's. It becomes a review state and does not count as a completion.",
+  ],
 ];
 
 export default function PricingPage() {
   return (
     <MarketingShell>
-      <PageHero
-        title="Founding pilots are scoped directly."
-        description="Every founding pilot is put in writing with a specific scope: one configured mission, an agreed number of completed simulations, and a reviewed evidence report for each. Nothing is charged for a technical failure on our side."
-      />
-
-      <section className="pb-16 sm:pb-20 lg:pb-24">
-        <Container>
-          <Reveal>
-            <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
-              <div className="mkt-panel overflow-hidden lg:col-span-7">
-                <div className="border-b border-[var(--border-subtle)] px-6 py-6 sm:px-8 sm:py-7">
-                  <p
-                    className="text-[11px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
-                    style={{ fontWeight: 500 }}
-                  >
-                    Founding pilot
-                  </p>
-                  <div className="mt-3 flex items-end gap-2">
-                    <span
-                      className="text-[#F4F5F7]"
-                      style={{
-                        fontSize: "clamp(2rem, 3.2vw, 2.75rem)",
-                        lineHeight: 1.05,
-                        letterSpacing: "-0.04em",
-                        fontWeight: 560,
-                      }}
-                    >
-                      Scoped directly. Contact us.
-                    </span>
-                  </div>
-                  <p className="mt-4 max-w-[480px] text-[15px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
-                    We agree the scope in writing before anything starts: the mission, the number
-                    of completed simulations included, and what each report covers. Sessions lost
-                    to a technical failure on Fydell&apos;s side are never billed.
-                  </p>
-                </div>
-
-                <div className="px-6 py-6 sm:px-8">
-                  <p
-                    className="mb-4 text-[11px] uppercase tracking-[0.055em] text-[rgba(244,245,247,0.4)]"
-                    style={{ fontWeight: 500 }}
-                  >
-                    Every pilot includes
-                  </p>
-                  <ul className="space-y-0">
-                    {INCLUDES.map((item) => (
-                      <li
-                        key={item}
-                        className="flex items-start gap-3 border-b border-white/[0.04] py-3 text-[14px] leading-[1.5] text-[rgba(244,245,247,0.72)]"
-                      >
-                        <span className="mt-2 h-px w-3 shrink-0 bg-[#5662FF]" aria-hidden />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-8 flex flex-wrap items-center gap-5">
-                    <ButtonLink href="/request-pilot" variant="primary">
-                      Contact us about a pilot
-                    </ButtonLink>
-                    <TextLink href="/trust">Read our trust page</TextLink>
-                  </div>
-                  <p className="mt-5 text-[12px] text-[rgba(244,245,247,0.4)]">
-                    No credit card required. We invoice directly.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col justify-between gap-0 border-t border-[var(--border-subtle)] lg:col-span-4 lg:col-start-9 lg:border-t-0">
-                {[
-                  {
-                    title: "Why scope directly?",
-                    body: "You're paying for completed missions and reviewed evidence reports: not seats, not a candidate headcount, not a platform subscription. Until we've run several pilots, honest scoping beats a price grid.",
-                  },
-                  {
-                    title: "Founder-led",
-                    body: "During the pilot, we help configure the mission and are directly reachable throughout.",
-                  },
-                  {
-                    title: "Technical failures are on us",
-                    body: "If a session breaks for reasons outside the candidate's control, it's flagged as a technical failure, never billed, and never counts against included volume.",
-                  },
-                ].map((item, i, arr) => (
-                  <div
-                    key={item.title}
-                    className={[
-                      "py-6",
-                      i < arr.length - 1 ? "border-b border-[var(--border-subtle)]" : "",
-                    ].join(" ")}
-                  >
-                    <h3 className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
-                      {item.title}
-                    </h3>
-                    <p className="mt-2 text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
-                      {item.body}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Reveal>
-        </Container>
-      </section>
-
-      <section className="mkt-section border-t border-[var(--border-subtle)]">
-        <Container>
-          <Reveal className="max-w-[500px]">
-            <h2 className="section-heading flat-type">What the words mean.</h2>
-            <p className="mt-4 text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
-              Pilot scopes use these four terms, defined the same way in every agreement.
-            </p>
-          </Reveal>
-          <div className="mt-12 border-t border-[var(--border-subtle)]">
-            {TERMS.map((t, i) => (
-              <Reveal key={t.term} delay={0.02 * i}>
-                <div className="grid gap-3 border-b border-[var(--border-subtle)] py-5 sm:grid-cols-[0.9fr_1.4fr] sm:gap-8">
-                  <h3 className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
-                    {t.term}
-                  </h3>
-                  <p className="text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
-                    {t.definition}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
+      <section className="pb-14 pt-[132px] sm:pt-[148px]">
+        <div className="mkt-content max-w-[720px]">
+          <h1 className="page-display">Founding pilots are scoped directly.</h1>
+          <p className="page-lead">
+            Fydell is early enough that a price grid would be a guess. We agree
+            the scope with each company in writing first: which evaluation, how
+            many completions, and what support you want around them.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <ButtonLink href="/request-pilot" variant="primary">
+              Request a pilot
+            </ButtonLink>
+            <ButtonLink href="/signup" variant="secondary">
+              Or create a workspace
+            </ButtonLink>
           </div>
-        </Container>
+        </div>
       </section>
 
-      <section className="mkt-section border-t border-[var(--border-subtle)]">
-        <Container>
-          <Reveal className="max-w-[500px]">
-            <h2 className="section-heading flat-type">Questions about the pilot.</h2>
-          </Reveal>
-          <div className="mt-12 border-t border-[var(--border-subtle)]">
-            {FAQS.map((faq, i) => (
-              <Reveal key={faq.q} delay={0.02 * i}>
-                <div className="grid gap-3 border-b border-[var(--border-subtle)] py-5 sm:grid-cols-[0.9fr_1.4fr] sm:gap-8">
-                  <h3 className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
-                    {faq.q}
-                  </h3>
-                  <p className="text-[14px] leading-[1.55] text-[rgba(244,245,247,0.62)]">
-                    {faq.a}
-                  </p>
-                </div>
-              </Reveal>
+      <section className="mkt-section border-t border-[var(--border-subtle)] pb-24">
+        <div className="mkt-content max-w-[760px]">
+          <h2 className="section-heading">What the words mean</h2>
+          <p className="mt-4 max-w-[58ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+            Every pilot scope uses these four terms with the same definitions.
+          </p>
+          <dl className="mt-8 divide-y divide-[var(--border-subtle)] border-y border-[var(--border-subtle)]">
+            {TERMS.map(([term, definition]) => (
+              <div
+                key={term}
+                className="grid gap-2 py-5 sm:grid-cols-[200px_1fr] sm:gap-8"
+              >
+                <dt className="text-[14.5px] font-medium text-[var(--text-primary)]">
+                  {term}
+                </dt>
+                <dd className="text-[14px] leading-[1.7] text-[var(--text-secondary)]">
+                  {definition}
+                </dd>
+              </div>
             ))}
-          </div>
-        </Container>
+          </dl>
+          <p className="mt-8 text-[14px] leading-[1.7] text-[var(--text-secondary)]">
+            For a specific number, email{" "}
+            <a
+              href="mailto:hello@fydell.com"
+              className="text-[var(--text-primary)] underline underline-offset-2"
+            >
+              hello@fydell.com
+            </a>{" "}
+            with the role you are hiring for and roughly how many candidates you
+            expect to evaluate.
+          </p>
+        </div>
       </section>
-
-      <FinalCTA />
     </MarketingShell>
   );
 }

@@ -1,21 +1,11 @@
-/** Canonical public conversion paths. Keep CTAs consistent across marketing. */
-export const CREATE_SIMULATION_HREF =
-  "/signup?next=/app/employer/simulations/new";
+/**
+ * Canonical public conversion paths. Keep CTAs consistent across marketing.
+ *
+ * Redirect safety lives in a single place: `src/lib/auth/safe-next.ts`.
+ */
+export const CREATE_WORKSPACE_HREF = "/signup";
 
-export const TRY_CANDIDATE_HREF = "/simulations";
+export const SEE_EVALUATION_HREF = "/simulations";
 
-/** Real contact / sales conversation path (existing pilot request form). */
-export const CONTACT_SALES_HREF = "/request-pilot";
-
-/** Safe post-auth destinations accepted from ?next= on signup/login. */
-export function isSafeAppNext(next: string | null): next is string {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) return false;
-  return (
-    next.startsWith("/app/employer") ||
-    next.startsWith("/app/simulations") ||
-    next.startsWith("/invite/") ||
-    next.startsWith("/sim/") ||
-    next.startsWith("/simulations") ||
-    next.startsWith("/s/")
-  );
-}
+/** Quiet secondary path for teams who want a conversation first. */
+export const REQUEST_PILOT_HREF = "/request-pilot";

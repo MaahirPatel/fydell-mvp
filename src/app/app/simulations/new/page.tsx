@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation";
 
-export const metadata = { title: "New simulation | Fydell" };
-
-/** Alias → guided builder under the employer shell. */
+/** Legacy alias. Evaluations are published by Fydell, not built by employers. */
 export default function SimulationsNewAliasPage() {
-  redirect("/app/employer/simulations/new");
+  redirect("/app/employer/assessments");
 }

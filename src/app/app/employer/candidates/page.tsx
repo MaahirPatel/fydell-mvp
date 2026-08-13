@@ -1,14 +1,15 @@
 import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import CandidatesTable from "@/components/employer/CandidatesTable";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { getInvitationRecords } from "../_lib/data";
 
-export const metadata = { title: "Candidates | Fydell" };
+export const metadata = { title: "Candidates" };
 export const dynamic = "force-dynamic";
 
 export default async function EmployerCandidatesPage() {
   const user = await requireUser();
-  if (!user) redirect("/login?next=/app/employer/candidates");
+  if (!user) redirect("/login?next=%2Fapp%2Femployer%2Fcandidates");
   const org = await requireOrgMember(user.id);
   if (!org) redirect("/app/employer");
 
@@ -16,11 +17,13 @@ export default async function EmployerCandidatesPage() {
 
   return (
     <div className="max-w-[1180px]">
-      <h1 className="text-[24px] font-semibold text-slate-900">Candidates</h1>
-      <p className="mt-1 text-[15px] text-slate-500">
-        Everyone you have invited to a simulation, with their progress and results.
-      </p>
-      <CandidatesTable rows={records} />
+      <PageHeader
+        title="Candidates"
+        description="Everyone this workspace has invited, with where they are in the evaluation."
+      />
+      <div className="mt-7">
+        <CandidatesTable rows={records} />
+      </div>
     </div>
   );
 }

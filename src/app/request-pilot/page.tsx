@@ -1,119 +1,96 @@
 import MarketingShell from "@/components/layout/MarketingShell";
-import { Reveal } from "@/components/motion/Reveal";
-import { Container } from "@/components/marketing/ui";
-import PageHero from "@/components/marketing/PageHero";
 import { PilotRequestForm } from "@/components/marketing/PilotRequestForm";
 
 export const metadata = {
-  title: "Request a Pilot · Fydell",
+  title: "Request a pilot",
   description:
-    "Request a founding Fydell pilot to invite candidates into realistic work simulations for Applied Technical Roles. No payment required to start.",
+    "Tell us the role you are hiring for and we will help you set up your first evaluation cohort.",
 };
 
-const DETAILS = [
-  { label: "To start", value: "No payment required" },
-  { label: "Setup fee", value: "None" },
-  { label: "Contract", value: "Not required" },
-  { label: "Turnaround", value: "Reports within 24 hours" },
-  { label: "Managed by", value: "Fydell founder directly" },
-  { label: "Minimum candidates", value: "1" },
-];
-
-const STEPS = [
-  {
-    n: "1",
-    title: "Simulation configured",
-    body: "We help you pick the role and scenario that matches your open position.",
-  },
-  {
-    n: "2",
-    title: "Private invites generated",
-    body: "You receive single-use invite links for the candidates you want to evaluate.",
-  },
-  {
-    n: "3",
-    title: "Evidence reviewed before delivery",
-    body: "Every evidence receipt is checked before you see it.",
-  },
+/**
+ * Compact by design: the form must be reachable without scrolling on a 768px
+ * viewport, so the supporting copy is short and sits beside it, not above it.
+ */
+const STEPS: Array<[string, string]> = [
+  [
+    "We reply with a scope",
+    "Which evaluation fits the role, how many candidates, and what you get back.",
+  ],
+  [
+    "Your workspace is set up",
+    "A cohort on a published evaluation version, with invitations ready to send.",
+  ],
+  [
+    "You read the first report",
+    "A conclusion with its evidence attached, plus questions to take into the interview.",
+  ],
 ];
 
 export default function RequestPilotPage() {
   return (
     <MarketingShell>
-      <PageHero
-        title="Run one serious Data Analyst pilot."
-        description="Tell us about your hiring need. We open a versioned cohort on the Operations performance investigation, give you secure invites, and keep evidence inspectable - before any billing."
-      />
+      <section className="pb-20 pt-[112px] sm:pt-[124px]">
+        <div className="mkt-content">
+          <div className="grid items-start gap-10 lg:grid-cols-12 lg:gap-14">
+            <div className="lg:col-span-5">
+              <h1 className="text-[clamp(2rem,3.4vw,2.6rem)] font-medium leading-[1.08] tracking-[-0.035em] text-[var(--text-primary)]">
+                Run your first pilot.
+              </h1>
+              <p className="mt-4 max-w-[46ch] text-[15.5px] leading-[1.65] text-[var(--text-secondary)]">
+                Tell us what you are hiring for. We will set up the cohort with
+                you and stay reachable while it runs.
+              </p>
 
-      <section className="pb-20 lg:pb-28">
-        <Container>
-          <div className="grid items-start gap-12 lg:grid-cols-12 lg:gap-8">
-            <Reveal className="lg:col-span-5">
-              <div className="border-t border-[var(--border-subtle)]">
-                {DETAILS.map((d) => (
-                  <div
-                    key={d.label}
-                    className="flex items-baseline justify-between gap-4 border-b border-[var(--border-subtle)] py-3.5"
+              <ol className="mt-8 border-t border-[var(--border-subtle)]">
+                {STEPS.map(([title, detail], i) => (
+                  <li
+                    key={title}
+                    className="flex gap-3 border-b border-[var(--border-subtle)] py-3.5"
                   >
-                    <span className="text-[13px] text-[rgba(244,245,247,0.4)]">{d.label}</span>
                     <span
-                      className="text-right text-[13px] text-[#F4F5F7]"
-                      style={{ fontWeight: 520 }}
+                      aria-hidden
+                      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] text-[11px] tabular-nums text-[var(--text-tertiary)]"
                     >
-                      {d.value}
+                      {i + 1}
                     </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-10 space-y-0 border-t border-[var(--border-subtle)]">
-                {STEPS.map((s) => (
-                  <div key={s.n} className="flex gap-3 border-b border-[var(--border-subtle)] py-4">
-                    <span
-                      className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] border border-[var(--border-subtle)] text-[11px] text-[rgba(244,245,247,0.62)]"
-                      style={{ fontWeight: 560 }}
-                    >
-                      {s.n}
-                    </span>
-                    <div>
-                      <p className="text-[14px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
-                        {s.title}
+                    <div className="min-w-0">
+                      <p className="text-[13.5px] font-medium text-[var(--text-primary)]">
+                        {title}
                       </p>
-                      <p className="mt-1 text-[13px] leading-[1.5] text-[rgba(244,245,247,0.62)]">
-                        {s.body}
+                      <p className="mt-0.5 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                        {detail}
                       </p>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ol>
 
-              <p className="mt-8 text-[13px] text-[rgba(244,245,247,0.4)]">
-                Or email{" "}
+              <p className="mt-6 text-[13px] leading-[1.65] text-[var(--text-tertiary)]">
+                In a hurry?{" "}
+                <a
+                  href="/signup"
+                  className="text-[var(--text-secondary)] underline underline-offset-2 hover:text-[var(--text-primary)]"
+                >
+                  Create a workspace
+                </a>{" "}
+                and run the evaluation yourself, or email{" "}
                 <a
                   href="mailto:hello@fydell.com"
-                  className="text-[rgba(244,245,247,0.62)] transition-colors hover:text-[#F4F5F7]"
+                  className="text-[var(--text-secondary)] underline underline-offset-2 hover:text-[var(--text-primary)]"
                 >
                   hello@fydell.com
                 </a>
+                .
               </p>
-            </Reveal>
+            </div>
 
-            <Reveal delay={0.08} className="lg:col-span-6 lg:col-start-7">
-              <div className="mkt-panel p-5 sm:p-6">
-                <p
-                  className="mb-5 text-[13px] text-[#F4F5F7]"
-                  style={{ fontWeight: 560 }}
-                >
-                  Tell us about your role
-                </p>
+            <div className="lg:col-span-6 lg:col-start-7">
+              <div className="rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 sm:p-6">
                 <PilotRequestForm />
-                <p className="mt-4 text-center text-[12px] text-[rgba(244,245,247,0.4)]">
-                  Submitted securely over HTTPS. We reply within one business day.
-                </p>
               </div>
-            </Reveal>
+            </div>
           </div>
-        </Container>
+        </div>
       </section>
     </MarketingShell>
   );

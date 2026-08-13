@@ -9,17 +9,9 @@ interface ContainerProps {
   className?: string;
 }
 
-export function Container({ children, wide, className = "" }: ContainerProps) {
+export function Container({ children, className = "" }: ContainerProps) {
   return (
-    <div
-      className={[
-        "mx-auto w-full px-[18px] sm:px-6 lg:px-7",
-        wide ? "max-w-[1180px]" : "max-w-[1160px]",
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
+    <div className={["mkt-content", className].filter(Boolean).join(" ")}>
       {children}
     </div>
   );
@@ -73,12 +65,10 @@ interface ButtonLinkProps {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    "h-10 rounded-[9px] border border-transparent bg-[#F2F3F5] px-[17px] text-[14px] text-[#090A0D] hover:brightness-[0.97] hover:-translate-y-px",
+  primary: "bg-[#eceef1] text-[#0a0b0d] hover:bg-white active:bg-[#dfe2e6]",
   secondary:
-    "h-10 rounded-[9px] border border-[var(--border-default)] bg-transparent px-[17px] text-[14px] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] hover:-translate-y-px",
-  white:
-    "h-10 rounded-[9px] border border-transparent bg-[#F2F3F5] px-[17px] text-[14px] text-[#090A0D] hover:brightness-[0.97] hover:-translate-y-px",
+    "border border-[var(--border-strong)] text-[var(--text-primary)] hover:border-[rgba(255,255,255,0.3)] hover:bg-[rgba(255,255,255,0.05)]",
+  white: "bg-[#eceef1] text-[#0a0b0d] hover:bg-white active:bg-[#dfe2e6]",
 };
 
 export function ButtonLink({
@@ -91,15 +81,13 @@ export function ButtonLink({
     <Link
       href={href}
       className={[
-        "inline-flex items-center justify-center gap-2",
-        "leading-none",
-        "transition-[color,background,border-color,transform,filter] duration-160 ease-out",
+        "inline-flex h-10 items-center justify-center gap-2 rounded-[8px] px-4 text-[14px] font-medium leading-none tracking-[-0.01em]",
+        "transition-[color,background-color,border-color] duration-150",
         variantStyles[variant],
         className,
       ]
         .filter(Boolean)
         .join(" ")}
-      style={{ fontWeight: 580 }}
     >
       {children}
     </Link>

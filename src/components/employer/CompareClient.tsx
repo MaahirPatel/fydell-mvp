@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ButtonLink } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonTable } from "@/components/ui/Skeleton";
+import { StatusTag } from "@/components/ui/StatusTag";
+import { Surface } from "@/components/ui/Surface";
+import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
 
 interface CompareRow {
   sessionId: string;
@@ -16,8 +22,12 @@ interface CompareRow {
   humanReviewRequired: boolean;
 }
 
+function percent(value: number | null): string {
+  return value === null ? "n/a" : `${Math.round(value * 100)}%`;
+}
+
 export default function CompareClient() {
-  const [rows, setRows] = useState<CompareRow[]>([]);
+  const [rows, setRows] = useState<CompareRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,80 +37,110 @@ export default function CompareClient() {
         if (data.error) throw new Error(data.error);
         setRows(data.candidates || []);
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load"));
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Could not load the comparison")
+      );
   }, []);
 
   if (error) {
-    return <p className="text-[14px] text-red-700">{error}</p>;
+    return <EmptyState title="Could not load the comparison" description={error} />;
   }
-  if (!rows.length) {
+
+  if (rows === null) {
     return (
-      <p className="rounded-xl border border-slate-200 bg-white p-6 text-[14px] text-slate-500">
-        No completed candidates in this cohort yet. Compatible reports will appear here.
-      </p>
+      <Surface tone="panel" className="p-4">
+        <SkeletonTable rows={3} cols={5} />
+      </Surface>
+    );
+  }
+
+  if (rows.length < 2) {
+    return (
+      <EmptyState
+        title="Not enough reports to compare"
+        description="Comparison needs at least two completed reports on the same evaluation version, so the two candidates were given the same work."
+        action={
+          <ButtonLink href="/app/employer/reports" variant="secondary" size="sm">
+            Go to reports
+          </ButtonLink>
+        }
+      />
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-      <table className="min-w-full text-left text-[13px]">
-        <thead className="border-b border-slate-200 bg-slate-50 text-[11.5px] uppercase tracking-wide text-slate-500">
-          <tr>
-            <th className="px-4 py-3">Candidate</th>
-            <th className="px-4 py-3">Score</th>
-            <th className="px-4 py-3">Coverage</th>
-            <th className="px-4 py-3">Confidence</th>
-            <th className="px-4 py-3">Strengths</th>
-            <th className="px-4 py-3">Counterevidence</th>
-            <th className="px-4 py-3">Report</th>
-          </tr>
-        </thead>
-        <tbody>
+    <Surface tone="panel" className="overflow-hidden">
+      <Table className="min-w-[900px]">
+        <THead>
+          <TH>Candidate</TH>
+          <TH align="right">Score</TH>
+          <TH align="right">Coverage</TH>
+          <TH align="right">Confidence</TH>
+          <TH>What they established</TH>
+          <TH>What they missed</TH>
+          <TH align="right">Report</TH>
+        </THead>
+        <TBody>
           {rows.map((r) => (
-            <tr key={r.sessionId} className="border-t border-slate-100 align-top">
-              <td className="px-4 py-3 font-medium text-slate-900">
-                {r.candidate}
-                {r.humanReviewRequired && (
-                  <span className="mt-1 block text-[11.5px] font-normal text-amber-700">
-                    Human review required
-                  </span>
+            <TR key={r.sessionId} className="align-top">
+              <TDPrimary>
+                <span className="block">{r.candidate}</span>
+                {r.humanReviewRequired ? (
+                  <StatusTag tone="changed" className="mt-1.5">
+                    Needs review
+                  </StatusTag>
+                ) : null}
+              </TDPrimary>
+              <TD align="right" className="tabular-nums text-[var(--text-primary)]">
+                {r.performance === null ? (
+                  <span className="text-[var(--text-tertiary)]">Insufficient</span>
+                ) : (
+                  <>
+                    {r.performance}
+                    {r.band ? (
+                      <span className="mt-0.5 block text-[12px] font-normal text-[var(--text-tertiary)]">
+                        {r.band}
+                      </span>
+                    ) : null}
+                  </>
                 )}
-              </td>
-              <td className="px-4 py-3">
-                {r.performance === null ? "Insufficient evidence" : `${r.performance} · ${r.band}`}
-              </td>
-              <td className="px-4 py-3">
-                {r.coverage === null ? "-" : `${Math.round(r.coverage * 100)}%`}
-              </td>
-              <td className="px-4 py-3">
-                {r.confidence === null ? "-" : `${Math.round(r.confidence * 100)}%`}
-              </td>
-              <td className="px-4 py-3 text-slate-600">
-                <ul className="list-disc pl-4">
+              </TD>
+              <TD align="right" className="tabular-nums">
+                {percent(r.coverage)}
+              </TD>
+              <TD align="right" className="tabular-nums">
+                {percent(r.confidence)}
+              </TD>
+              <TD>
+                <ul className="space-y-1">
                   {r.strengths.slice(0, 2).map((s, i) => (
-                    <li key={i}>{s}</li>
+                    <li key={i} className="max-w-[34ch] leading-[1.55]">
+                      {s}
+                    </li>
                   ))}
                 </ul>
-              </td>
-              <td className="px-4 py-3 text-slate-600">
-                <ul className="list-disc pl-4">
+              </TD>
+              <TD>
+                <ul className="space-y-1">
                   {r.counterevidence.slice(0, 2).map((s, i) => (
-                    <li key={i}>{s}</li>
+                    <li key={i} className="max-w-[34ch] leading-[1.55]">
+                      {s}
+                    </li>
                   ))}
                 </ul>
-              </td>
-              <td className="px-4 py-3">
+              </TD>
+              <TD align="right">
                 <Link
                   href={`/app/employer/assessments/report/${r.sessionId}`}
-                  className="font-medium text-[#3157D5] hover:underline"
+                  className="inline-flex h-8 items-center rounded-[8px] px-2.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[rgba(255,255,255,0.06)]"
                 >
-                  Open evidence
+                  Open
                 </Link>
-              </td>
-            </tr>
+              </TD>
+            </TR>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TBody>
+      </Table>
+    </Surface>
   );
 }

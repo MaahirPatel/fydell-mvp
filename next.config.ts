@@ -40,7 +40,11 @@ const nextConfig: NextConfig = {
       { source: "/app/employer/evidence/:path*", destination: "/app/employer", permanent: true },
       { source: "/app/employer/receipts/:path*", destination: "/app/employer", permanent: true },
       { source: "/app/employer/decisions/:path*", destination: "/app/employer", permanent: true },
-      { source: "/app/employer/simulations/:path*", destination: "/app/employer", permanent: true },
+      {
+        source: "/app/employer/simulations/:path*",
+        destination: "/app/employer/assessments",
+        permanent: true,
+      },
     ];
   },
 };

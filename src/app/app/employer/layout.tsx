@@ -1,12 +1,14 @@
 import { randomBytes } from "crypto";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/auth/resolve-post-login";
+import { withNext } from "@/lib/auth/safe-next";
 import { emailDomain, slugifyOrganization } from "@/lib/org/reserved";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import EmployerShell from "@/components/employer/EmployerShell";
 import { getEmployerCatalog } from "./_lib/catalog";
 
-export const metadata = { title: "Employer | Fydell" };
+export const metadata = { title: "Workspace" };
 export const dynamic = "force-dynamic";
 
 const FREE_EMAIL_DOMAINS = new Set([
@@ -74,7 +76,8 @@ async function ensureDefaultOrganization(
 export default async function EmployerAppLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthenticatedUser();
   if (!user) {
-    redirect("/login?next=/app/employer");
+    const requested = (await headers()).get("x-pathname") || "/app/employer";
+    redirect(withNext("/login", requested));
   }
 
   let workspaceName = "Your workspace";

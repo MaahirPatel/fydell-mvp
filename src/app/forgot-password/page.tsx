@@ -1,12 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import FydellBrand from "@/components/brand/FydellBrand";
+import { useSearchParams } from "next/navigation";
+import AuthShell from "@/components/auth/AuthShell";
 import TurnstileField from "@/components/security/TurnstileField";
+import { Button } from "@/components/ui/Button";
+import { Field, FormError, FormSuccess, Input } from "@/components/ui/Field";
+import { withNext } from "@/lib/auth/safe-next";
 
-export default function ForgotPasswordPage() {
+function humanizeResetError(raw: string): string {
+  const lower = raw.toLowerCase();
+  if (lower.includes("rate") || lower.includes("too many")) {
+    return "Too many requests. Wait a few minutes before trying again.";
+  }
+  if (lower.includes("captcha") || lower.includes("turnstile")) {
+    return "The verification check did not complete. Reload the page and try again.";
+  }
+  if (lower.includes("invalid email") || lower.includes("email address")) {
+    return "Enter a valid email address.";
+  }
+  if (lower.includes("network") || lower.includes("fetch")) {
+    return "We could not reach Fydell. Check your connection and try again.";
+  }
+  if (raw.length > 160 || lower.includes("json") || lower.includes("stack")) {
+    return "We could not send the reset link. Try again shortly.";
+  }
+  return raw;
+}
+
+function ForgotPasswordContent() {
+  const next = useSearchParams().get("next");
   const [email, setEmail] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -15,6 +39,7 @@ export default function ForgotPasswordPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError(null);
     try {
@@ -27,83 +52,93 @@ export default function ForgotPasswordPage() {
       if (!res.ok) throw new Error(data.error ?? "Request failed");
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(humanizeResetError(err instanceof Error ? err.message : "Something went wrong"));
     } finally {
       setLoading(false);
     }
   }
 
-  return (
-    <div className="relative min-h-[100dvh] overflow-hidden bg-[#050609]">
-      <div className="pointer-events-none absolute right-[-8%] top-[-8%] h-[480px] w-[580px] rounded-full bg-[#3B5BFF]/[0.06] blur-[160px]" />
-      <header className="relative z-10 mx-auto flex h-[72px] max-w-[1320px] items-center justify-between px-6 lg:px-10">
-        <FydellBrand markSize={34} />
-        <Link
-          href="/login"
-          className="text-[14px] font-medium text-white/[0.55] transition hover:text-white"
-        >
-          Sign in
-        </Link>
-      </header>
+  const backToSignIn = (
+    <Link
+      href={withNext("/login", next)}
+      className="font-medium text-[var(--text-primary)] underline underline-offset-2"
+    >
+      Back to sign in
+    </Link>
+  );
 
-      <main className="relative z-10 mx-auto flex min-h-[calc(100dvh-72px)] max-w-[440px] items-center px-6 pb-16">
-        <div className="w-full overflow-hidden rounded-[20px] border border-white/[0.10] bg-[#080B12] p-7 sm:p-9">
-          <h1 className="text-[24px] font-semibold tracking-[-0.04em] text-white">
-            Reset your password
-          </h1>
-          <p className="mt-2 text-[14px] leading-relaxed text-white/[0.55]">
-            We&apos;ll email you a secure link to choose a new password.
+  if (sent) {
+    return (
+      <AuthShell
+        title="Check your email"
+        description="If an account exists for that address, we have sent a link to choose a new password. The link expires in one hour."
+        footer={backToSignIn}
+      >
+        <div className="grid gap-4">
+          {/* Neutral by design: the response is identical whether or not the
+              account exists, so this form cannot confirm who has an account. */}
+          <FormSuccess>Reset link sent to {email}, if that account exists.</FormSuccess>
+          <p className="text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+            Nothing arrived after a few minutes? Check your spam folder, then{" "}
+            <button
+              type="button"
+              onClick={() => setSent(false)}
+              className="font-medium text-[var(--text-primary)] underline underline-offset-2"
+            >
+              try a different address
+            </button>
+            .
           </p>
-
-          {sent ? (
-            <div className="mt-7 space-y-4">
-              <p className="rounded-[10px] border border-[#3B5BFF]/30 bg-[#3B5BFF]/10 px-3.5 py-2.5 text-[13px] font-medium text-[#a8b8ff]">
-                If an account exists for that email, a reset link has been sent. Check your inbox
-                (and spam).
-              </p>
-              <Link
-                href="/login"
-                className="inline-flex text-[13px] font-semibold text-white hover:underline"
-              >
-                Back to sign in
-              </Link>
-            </div>
-          ) : (
-            <form onSubmit={submit} className="mt-7 grid gap-4">
-              <label className="block">
-                <span className="text-[13px] font-medium text-white/[0.66]">Work email</span>
-                <input
-                  className="platform-input mt-1.5"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
-                  required
-                />
-              </label>
-              <TurnstileField onToken={setCaptchaToken} />
-              {error && (
-                <p
-                  role="alert"
-                  className="rounded-[10px] border border-[#fb7185]/30 bg-[#fb7185]/10 px-3.5 py-2.5 text-[13px] font-medium text-[#fda4b0]"
-                >
-                  {error}
-                </p>
-              )}
-              <button
-                type="submit"
-                disabled={loading}
-                className="group mt-1 inline-flex h-12 items-center justify-center gap-2.5 rounded-[10px] bg-[#3B5BFF] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-[#2f4fe0] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading ? "Sending..." : "Send reset link"}
-                {!loading && (
-                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                )}
-              </button>
-            </form>
-          )}
         </div>
-      </main>
-    </div>
+      </AuthShell>
+    );
+  }
+
+  return (
+    <AuthShell
+      title="Reset your password"
+      description="Enter the email you sign in with and we will send you a link to choose a new password."
+      footer={backToSignIn}
+    >
+      <form onSubmit={submit} className="grid gap-4">
+        <Field label="Work email" htmlFor="reset-email">
+          <Input
+            id="reset-email"
+            name="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@company.com"
+            autoComplete="username"
+            autoFocus
+            required
+          />
+        </Field>
+
+        <TurnstileField onToken={setCaptchaToken} />
+
+        {error ? <FormError>{error}</FormError> : null}
+
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          loading={loading}
+          className="mt-1 w-full"
+        >
+          {loading ? "Sending" : "Send reset link"}
+        </Button>
+      </form>
+    </AuthShell>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense
+      fallback={<div className="min-h-[100dvh] bg-[var(--surface-canvas)]" />}
+    >
+      <ForgotPasswordContent />
+    </Suspense>
   );
 }

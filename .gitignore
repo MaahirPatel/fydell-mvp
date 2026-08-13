@@ -15,6 +15,8 @@ __pycache__/
 *.pyc
 test-results/
 tsc-out.txt
+tsconfig.tsbuildinfo
+lint-errors.txt
 spike-out.txt
 fde-unit-out.txt
 build-out.txt

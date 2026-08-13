@@ -2,48 +2,48 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { resolvePostLoginDestination } from "@/lib/auth/resolve-post-login";
 import { createCompanySession } from "@/lib/auth";
+import {
+  isCandidateDestination,
+  isEmployerDestination,
+  safeNext,
+  withNext,
+} from "@/lib/auth/safe-next";
 
 export const dynamic = "force-dynamic";
-
-function safeNext(next: string | null): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) return "/app/employer";
-  return next;
-}
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
-  const next = safeNext(url.searchParams.get("next"));
+  const rawNext = url.searchParams.get("next");
+  const next = safeNext(rawNext);
+
+  // Preserve the destination across the failure page so a candidate who clicks
+  // an expired link can request a new one and still land on their evaluation.
+  const linkInvalid = withNext("/auth/link-invalid", next);
 
   if (!code) {
-    return NextResponse.redirect(new URL("/auth/link-invalid", url.origin));
+    return NextResponse.redirect(new URL(linkInvalid, url.origin));
   }
 
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
   if (error || !data.user) {
-    return NextResponse.redirect(new URL("/auth/link-invalid", url.origin));
+    return NextResponse.redirect(new URL(linkInvalid, url.origin));
   }
 
   await createCompanySession(data.user.id, data.user.email || "");
-  const dest = await resolvePostLoginDestination(
-    data.user.email || "",
-    data.user.id
-  );
-  // Candidate session deep-links (/s/<token>) always win over the generic
-  // account-type destination - an invited candidate must land on their mission.
-  const isSessionDeepLink =
-    next.startsWith("/s/") ||
-    next.startsWith("/invite/") ||
-    next.startsWith("/sim/") ||
-    next.startsWith("/simulations");
-  const isEmployerBuilderReturn =
-    next.startsWith("/app/employer") || next.startsWith("/app/simulations");
-  const target =
-    ((isSessionDeepLink || isEmployerBuilderReturn) && dest.kind !== "admin")
-      ? next
-      : dest.path === "/app/employer"
-        ? next
-        : dest.path;
+  const dest = await resolvePostLoginDestination(data.user.email || "", data.user.id);
+
+  // Operators are always routed by the server. Otherwise an invited candidate
+  // returns to their evaluation, and an employer returns to where they left.
+  let target = dest.path;
+  if (next && dest.kind !== "admin") {
+    if (isCandidateDestination(next) || isEmployerDestination(next)) {
+      target = next;
+    } else if (dest.path === "/app/employer") {
+      target = next;
+    }
+  }
+
   return NextResponse.redirect(new URL(target, url.origin));
 }

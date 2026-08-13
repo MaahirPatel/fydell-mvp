@@ -1,24 +1,29 @@
 import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import CohortWorkspace from "@/components/employer/CohortWorkspace";
+import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata = { title: "Pilot cohort | Fydell" };
+export const metadata = { title: "Cohort" };
 export const dynamic = "force-dynamic";
 
+/**
+ * A cohort belongs to an evaluation, so this is reached from Evaluations
+ * rather than from the sidebar. The cohort's own name is rendered by
+ * CohortWorkspace from real data.
+ */
 export default async function EmployerCohortPage() {
   const user = await requireUser();
-  if (!user) redirect("/login?next=/app/employer/cohort");
+  if (!user) redirect("/login?next=%2Fapp%2Femployer%2Fcohort");
   const org = await requireOrgMember(user.id);
   if (!org) redirect("/account/setup-required?reason=no_org");
 
   return (
     <div className="max-w-[1080px]">
-      <h1 className="text-[24px] font-semibold text-slate-900">Pilot cohort</h1>
-      <p className="mt-1 text-[15px] text-slate-500">
-        One Data Analyst evaluation for this organization. Invite candidates, track status, and open
-        evidence reports. No fake analytics.
-      </p>
-      <div className="mt-8">
+      <PageHeader
+        title="Cohort"
+        description="A group of candidates working through one version of one evaluation."
+      />
+      <div className="mt-7">
         <CohortWorkspace organizationName={org.organizationName} />
       </div>
     </div>

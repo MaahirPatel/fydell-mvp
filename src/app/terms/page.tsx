@@ -1,31 +1,37 @@
 import MarketingShell from "@/components/layout/MarketingShell";
-import { Container } from "@/components/marketing/ui";
-import PageHero from "@/components/marketing/PageHero";
 
 export const metadata = {
-  title: "Terms · Fydell",
+  title: "Terms",
   description: "Fydell terms of use.",
 };
 
 export default function TermsPage() {
   return (
     <MarketingShell>
-      <PageHero title="Terms." narrow />
-      <section className="pb-20 lg:pb-28">
-        <Container className="max-w-[640px]">
-          <p className="text-[15px] leading-[1.65] text-[rgba(244,245,247,0.62)]">
-            Fydell provides work-trial and evidence-report services for finance hiring. Use of the
-            product is subject to the agreement established for your pilot or subscription. For
-            questions, contact{" "}
+      <section className="pb-14 pt-[132px] sm:pt-[148px]">
+        <div className="mkt-content">
+          <h1 className="page-display">Terms.</h1>
+          <p className="page-lead">
+            Full terms of use are being prepared. Until they are published, the
+            agreement made with your organization governs use of the product.
+          </p>
+        </div>
+      </section>
+
+      <section className="mkt-section border-t border-[var(--border-subtle)] pb-24">
+        <div className="mkt-content max-w-[640px]">
+          <p className="text-[15px] leading-[1.7] text-[var(--text-secondary)]">
+            Fydell provides work-evaluation and evidence-report services to
+            hiring teams. For questions about the current agreement, contact{" "}
             <a
               href="mailto:hello@fydell.com"
-              className="text-[#F4F5F7] underline-offset-2 hover:underline"
+              className="text-[var(--text-primary)] underline underline-offset-2"
             >
               hello@fydell.com
             </a>
             .
           </p>
-        </Container>
+        </div>
       </section>
     </MarketingShell>
   );

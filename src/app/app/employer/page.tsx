@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
-import RecentCandidates from "@/components/employer/RecentCandidates";
-import SimulationLibrary from "@/components/employer/SimulationLibrary";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { MetricStrip } from "@/components/ui/MetricStrip";
+import { StatusTag } from "@/components/ui/StatusTag";
+import { EmptyState } from "@/components/ui/EmptyState";
+import SetupPath, { type SetupStep } from "@/components/employer/SetupPath";
 import { getEmployerCatalog } from "./_lib/catalog";
 import {
   getInvitationRecords,
@@ -11,164 +14,243 @@ import {
   getReportRecords,
 } from "./_lib/data";
 
-export const metadata = { title: "Overview | Fydell" };
+export const metadata = { title: "Home" };
 export const dynamic = "force-dynamic";
 
-function Metric({ label, value }: { label: string; value: number }) {
+function SectionHeading({
+  title,
+  href,
+  linkLabel,
+}: {
+  title: string;
+  href?: string;
+  linkLabel?: string;
+}) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
-      <p className="text-[28px] font-semibold leading-none text-slate-900">{value}</p>
-      <p className="mt-2 text-[13.5px] text-slate-500">{label}</p>
+    <div className="flex items-baseline justify-between gap-3">
+      <h2 className="text-[15px] font-medium tracking-[-0.015em] text-[var(--text-primary)]">
+        {title}
+      </h2>
+      {href && linkLabel ? (
+        <Link
+          href={href}
+          className="text-[13px] text-[var(--text-secondary)] underline-offset-2 transition-colors hover:text-[var(--text-primary)] hover:underline"
+        >
+          {linkLabel}
+        </Link>
+      ) : null}
     </div>
   );
 }
 
-export default async function EmployerOverviewPage() {
+function RowList({
+  rows,
+}: {
+  rows: {
+    key: string;
+    primary: string;
+    secondary: string;
+    href: string;
+    action: string;
+  }[];
+}) {
+  return (
+    <ul className="overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+      {rows.map((r) => (
+        <li
+          key={r.key}
+          className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] px-4 py-3 transition-colors last:border-b-0 hover:bg-white/[0.02]"
+        >
+          <div className="min-w-0">
+            <p className="truncate text-[14px] font-medium text-[var(--text-primary)]">
+              {r.primary}
+            </p>
+            <p className="mt-0.5 truncate text-[13px] text-[var(--text-secondary)]">
+              {r.secondary}
+            </p>
+          </div>
+          <Link
+            href={r.href}
+            className="shrink-0 text-[13px] font-medium text-[var(--action-ink)] underline-offset-2 hover:underline"
+          >
+            {r.action}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export default async function EmployerHomePage() {
   const user = await requireUser();
-  if (!user) redirect("/login?next=/app/employer");
+  if (!user) redirect("/login?next=%2Fapp%2Femployer");
   const org = await requireOrgMember(user.id);
   if (!org) redirect("/account/setup-required?reason=no_org");
 
   const [metrics, invitations, reports, needsReview, catalog] = await Promise.all([
     getOverviewMetrics(org.organizationId),
-    getInvitationRecords(org.organizationId, 8),
+    getInvitationRecords(org.organizationId, 6),
     getReportRecords(org.organizationId, 5),
-    getNeedsReviewRecords(org.organizationId, 8),
+    getNeedsReviewRecords(org.organizationId, 6),
     getEmployerCatalog(),
   ]);
 
-  const recentRows = invitations.map((r) => ({
-    invitationId: r.invitationId,
-    candidate: r.name || r.email,
-    roleTitle: r.roleTitle,
-    simulation: r.simulation,
-    status: r.status,
-    statusLabel: r.statusLabel,
-    result: r.result,
-    sessionId: r.sessionId,
-    reportReady: r.reportReady,
-  }));
+  const activeEvaluation = catalog.flatMap((role) => role.sims)[0] ?? null;
+  const hasInvited = invitations.length > 0;
+  const hasResults = reports.length > 0;
+
+  const steps: SetupStep[] = [
+    {
+      title: "Your workspace is ready",
+      description: "Evaluations, candidates and reports are private to this workspace.",
+      state: "done",
+    },
+    {
+      title: "Invite your first candidate",
+      description:
+        "Send an invitation by email. They complete the evaluation in one sitting.",
+      state: hasInvited ? "done" : "current",
+      action: { label: "Invite a candidate", invite: true },
+    },
+    {
+      title: "Read the evidence report",
+      description:
+        "Open the conclusion, then open the evidence behind each claim before you decide.",
+      state: hasResults ? "done" : hasInvited ? "current" : "upcoming",
+      action: { label: "Go to reports", href: "/app/employer/reports" },
+    },
+  ];
 
   return (
-    <div className="max-w-[1080px]">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-[24px] font-semibold text-slate-900">Overview</h1>
-          <p className="mt-1 text-[15px] text-slate-500">
-            Invite candidates, track attempts, and review citation-backed evidence.
-          </p>
+    <div className="max-w-[900px]">
+      <PageHeader
+        title="Home"
+        description={
+          hasResults
+            ? "Where your evaluations stand right now."
+            : "Three steps to your first evidence report."
+        }
+      />
+
+      {hasResults ? (
+        <div className="mt-7">
+          <MetricStrip
+            items={[
+              { label: "In progress", value: metrics.inProgress },
+              { label: "Completed", value: metrics.completed },
+              { label: "Reports ready", value: metrics.reportsReady },
+              { label: "Needs review", value: metrics.needsReview },
+            ]}
+          />
         </div>
-        <Link
-          href="/app/employer/simulations/new"
-          className="inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3.5 text-[13.5px] font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          New simulation
-        </Link>
-      </div>
-
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Metric label="Candidates in progress" value={metrics.inProgress} />
-        <Metric label="Completed simulations" value={metrics.completed} />
-        <Metric label="Reports ready" value={metrics.reportsReady} />
-        <Metric label="Needs review" value={metrics.needsReview} />
-      </div>
-
-      {needsReview.length > 0 && (
-        <section className="mt-10">
-          <div className="flex items-end justify-between gap-3">
-            <h2 className="text-[17px] font-semibold text-slate-900">Needs review</h2>
-            <Link
-              href="/app/employer/reports?review=needs"
-              className="text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
-            >
-              View all
-            </Link>
-          </div>
-          <ul className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
-            {needsReview.map((r) => (
-              <li key={r.sessionId} className="flex items-center justify-between gap-3 px-4 py-3">
-                <div className="min-w-0">
-                  <p className="truncate text-[15px] font-medium text-slate-900">{r.candidate}</p>
-                  <p className="truncate text-[13px] text-slate-500">
-                    {r.simulation}
-                    {r.bandLabel ? ` · ${r.bandLabel}` : ""}
-                    {r.score !== null ? ` · ${r.score}/100` : ""}
-                  </p>
-                </div>
-                <Link
-                  href={`/app/employer/assessments/report/${r.sessionId}`}
-                  className="shrink-0 text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
-                >
-                  Review report
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+      ) : (
+        <div className="mt-7">
+          <SetupPath steps={steps} />
+        </div>
       )}
 
-      <section className="mt-10">
-        <div className="flex items-end justify-between gap-3">
-          <h2 className="text-[17px] font-semibold text-slate-900">Recent candidates</h2>
-          {recentRows.length > 0 && (
-            <Link
-              href="/app/employer/candidates"
-              className="text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
-            >
-              View all
-            </Link>
-          )}
-        </div>
+      <section className="mt-9">
+        <SectionHeading
+          title="Active evaluation"
+          href="/app/employer/assessments"
+          linkLabel="All evaluations"
+        />
         <div className="mt-3">
-          <RecentCandidates rows={recentRows} />
-        </div>
-      </section>
-
-      <section className="mt-10">
-        <div className="flex items-end justify-between gap-3">
-          <h2 className="text-[17px] font-semibold text-slate-900">Available simulations</h2>
-          <Link
-            href="/app/employer/assessments"
-            className="text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
-          >
-            Browse the library
-          </Link>
-        </div>
-        <div className="mt-3">
-          <SimulationLibrary roles={catalog} compact />
-        </div>
-      </section>
-
-      <section className="mt-10">
-        <h2 className="text-[17px] font-semibold text-slate-900">Recent reports</h2>
-        {reports.length === 0 ? (
-          <p className="mt-3 rounded-xl border border-slate-200 bg-white p-5 text-[14.5px] text-slate-500">
-            Reports appear here after a candidate completes a simulation.
-          </p>
-        ) : (
-          <ul className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
-            {reports.map((r) => (
-              <li key={r.sessionId} className="flex items-center justify-between gap-3 px-4 py-3">
+          {activeEvaluation ? (
+            <div className="rounded-[var(--radius-frame)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4 py-3.5">
+              <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="truncate text-[15px] font-medium text-slate-900">{r.candidate}</p>
-                  <p className="truncate text-[13px] text-slate-500">
-                    {r.simulation}
-                    {r.bandLabel ? ` · ${r.bandLabel}` : ""}
-                    {r.score !== null ? ` · ${r.score}/100` : ""}
-                    {r.needsReview ? " · Needs review" : ""}
+                  <Link
+                    href="/app/employer/assessments"
+                    className="text-[14px] font-medium text-[var(--text-primary)] underline-offset-2 hover:underline"
+                  >
+                    {activeEvaluation.title}
+                  </Link>
+                  <p className="mt-1 line-clamp-2 max-w-[62ch] text-[13px] leading-[1.55] text-[var(--text-secondary)]">
+                    {activeEvaluation.tagline}
                   </p>
                 </div>
-                <Link
-                  href={`/app/employer/assessments/report/${r.sessionId}`}
-                  className="shrink-0 text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
-                >
-                  View report
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+                <StatusTag tone={activeEvaluation.templateId ? "good" : "neutral"}>
+                  {activeEvaluation.templateId ? "Ready" : "Not published"}
+                </StatusTag>
+              </div>
+              <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 border-t border-[var(--border-subtle)] pt-3 text-[12.5px]">
+                <div className="flex gap-1.5">
+                  <dt className="text-[var(--text-tertiary)]">Duration</dt>
+                  <dd className="tabular-nums text-[var(--text-secondary)]">
+                    {activeEvaluation.durationMinutes} min
+                  </dd>
+                </div>
+                <div className="flex gap-1.5">
+                  <dt className="text-[var(--text-tertiary)]">Assesses</dt>
+                  <dd className="text-[var(--text-secondary)]">
+                    {activeEvaluation.competencies.slice(0, 3).join(", ")}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          ) : (
+            <EmptyState
+              title="No evaluation is published yet"
+              description="An evaluation must be published before you can invite candidates to it."
+            />
+          )}
+        </div>
       </section>
+
+      {needsReview.length > 0 ? (
+        <section className="mt-9">
+          <SectionHeading
+            title="Needs review"
+            href="/app/employer/reports?review=needs"
+            linkLabel="View all"
+          />
+          <div className="mt-3">
+            <RowList
+              rows={needsReview.map((r) => ({
+                key: r.sessionId,
+                primary: r.candidate,
+                secondary: [
+                  r.simulation,
+                  r.bandLabel,
+                  r.score !== null ? `${r.score}/100` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
+                href: `/app/employer/assessments/report/${r.sessionId}`,
+                action: "Review",
+              }))}
+            />
+          </div>
+        </section>
+      ) : null}
+
+      {hasResults ? (
+        <section className="mt-9">
+          <SectionHeading
+            title="Recent reports"
+            href="/app/employer/reports"
+            linkLabel="View all"
+          />
+          <div className="mt-3">
+            <RowList
+              rows={reports.map((r) => ({
+                key: r.sessionId,
+                primary: r.candidate,
+                secondary: [
+                  r.simulation,
+                  r.bandLabel,
+                  r.score !== null ? `${r.score}/100` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
+                href: `/app/employer/assessments/report/${r.sessionId}`,
+                action: "Open",
+              }))}
+            />
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

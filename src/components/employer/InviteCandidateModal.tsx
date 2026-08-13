@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Shared invite modal for the employer workspace.
+ * Shared invite drawer for the employer workspace.
  *
  * Wrap a tree in <InviteModalProvider catalog={...}> and call
  * useInviteModal().open({ roleKey, slug }) from any client component.
@@ -10,12 +10,13 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { Drawer } from "@/components/ui/Dialog";
+import { Field, FormError, Input, Select } from "@/components/ui/Field";
 import type { CatalogRole } from "./catalog-types";
 
 interface OpenOptions {
@@ -48,6 +49,12 @@ interface SentResult {
   email: string;
 }
 
+/** With one published evaluation there is nothing to choose, so pick it. */
+function defaultSlugFor(role: CatalogRole | undefined): string {
+  const available = (role?.sims || []).filter((s) => s.templateId);
+  return available.length === 1 ? available[0].slug : "";
+}
+
 export function InviteModalProvider({
   catalog,
   children,
@@ -60,31 +67,31 @@ export function InviteModalProvider({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [roleKey, setRoleKey] = useState(catalog[0]?.key || "");
-  const [slug, setSlug] = useState("");
+  const [slug, setSlug] = useState(() => defaultSlugFor(catalog[0]));
   const [expiresInDays, setExpiresInDays] = useState(14);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState<SentResult | null>(null);
   const [copied, setCopied] = useState(false);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const firstFieldRef = useRef<HTMLInputElement>(null);
 
   const selectedRole = useMemo(
     () => catalog.find((r) => r.key === roleKey) || catalog[0],
     [catalog, roleKey]
   );
   const selectedSim = selectedRole?.sims.find((s) => s.slug === slug) || null;
+  const simOptions = selectedRole?.sims || [];
 
   const open = useCallback(
     (options?: OpenOptions) => {
-      const targetRole =
+      const targetRoleKey =
         (options?.slug &&
           catalog.find((r) => r.sims.some((s) => s.slug === options.slug))?.key) ||
         options?.roleKey ||
         catalog[0]?.key ||
         "";
-      setRoleKey(targetRole);
-      setSlug(options?.slug || "");
+      const targetRole = catalog.find((r) => r.key === targetRoleKey);
+      setRoleKey(targetRoleKey);
+      setSlug(options?.slug || defaultSlugFor(targetRole));
       setName("");
       setEmail("");
       setExpiresInDays(14);
@@ -96,41 +103,7 @@ export function InviteModalProvider({
     [catalog]
   );
 
-  const close = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  // Focus the first field when the modal opens.
-  useEffect(() => {
-    if (isOpen) {
-      const t = setTimeout(() => firstFieldRef.current?.focus(), 30);
-      return () => clearTimeout(t);
-    }
-  }, [isOpen]);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
-      e.stopPropagation();
-      close();
-      return;
-    }
-    // Basic focus trap: keep Tab inside the dialog.
-    if (e.key === "Tab" && dialogRef.current) {
-      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-        'button, input, select, a[href], [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-  };
+  const close = useCallback(() => setIsOpen(false), []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,11 +115,11 @@ export function InviteModalProvider({
       return;
     }
     if (!selectedSim) {
-      setError("Choose a simulation.");
+      setError("Choose an evaluation.");
       return;
     }
     if (!selectedSim.templateId) {
-      setError("This simulation is not available yet. Pick another one.");
+      setError("That evaluation is not published yet. Choose another.");
       return;
     }
 
@@ -200,195 +173,174 @@ export function InviteModalProvider({
   return (
     <InviteModalContext.Provider value={contextValue}>
       {children}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) close();
-          }}
-          onKeyDown={handleKeyDown}
-        >
-          <div
-            ref={dialogRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Invite a candidate"
-            className="w-full max-w-[480px] rounded-2xl bg-white p-6 shadow-xl"
-          >
-            {sent ? (
-              <div>
-                <h2 className="text-[18px] font-semibold text-slate-900">
-                  Invitation created
-                </h2>
-                <p className="mt-2 text-[15px] leading-relaxed text-slate-600">
-                  {sent.emailDelivery === "sent"
-                    ? `An email is on its way to ${sent.email}. You can also share the link directly.`
-                    : `Email is not set up in this environment. Share this link with ${sent.email}.`}
-                </p>
-                <div className="mt-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="min-w-0 flex-1 break-all font-mono text-[12.5px] text-slate-600">
-                    {sent.inviteUrl}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => void copyLink()}
-                    className="shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[13px] font-medium text-slate-700 hover:bg-slate-50"
-                  >
-                    {copied ? "Copied" : "Copy"}
-                  </button>
-                </div>
-                <div className="mt-5 flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSent(null);
-                      setEmail("");
-                      setName("");
-                      setError(null);
-                    }}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
-                  >
-                    Invite another
-                  </button>
-                  <button
-                    type="button"
-                    onClick={close}
-                    className="rounded-lg bg-[#3157D5] px-4 py-2 text-[14px] font-semibold text-white hover:bg-[#2848b8]"
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={(e) => void submit(e)}>
-                <h2 className="text-[18px] font-semibold text-slate-900">
-                  Invite a candidate
-                </h2>
-                <p className="mt-1 text-[14px] text-slate-500">
-                  The candidate gets a private link to a five-minute simulation.
-                </p>
-
-                <div className="mt-5 space-y-4">
-                  <label className="block">
-                    <span className="text-[13.5px] font-medium text-slate-700">
-                      Candidate name
-                    </span>
-                    <input
-                      ref={firstFieldRef}
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Jordan Diaz"
-                      className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-[15px] text-slate-900 focus:border-[#3157D5] focus:outline-none"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="text-[13.5px] font-medium text-slate-700">
-                      Candidate email
-                    </span>
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="jordan@example.com"
-                      className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-[15px] text-slate-900 focus:border-[#3157D5] focus:outline-none"
-                    />
-                  </label>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="text-[13.5px] font-medium text-slate-700">Role</span>
-                      <select
-                        value={roleKey}
-                        onChange={(e) => {
-                          setRoleKey(e.target.value);
-                          setSlug("");
-                        }}
-                        className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14.5px] text-slate-900 focus:border-[#3157D5] focus:outline-none"
-                      >
-                        {catalog.map((r) => (
-                          <option key={r.key} value={r.key}>
-                            {r.title}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label className="block">
-                      <span className="text-[13.5px] font-medium text-slate-700">
-                        Expires in
-                      </span>
-                      <select
-                        value={expiresInDays}
-                        onChange={(e) => setExpiresInDays(Number(e.target.value))}
-                        className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14.5px] text-slate-900 focus:border-[#3157D5] focus:outline-none"
-                      >
-                        {EXPIRATION_OPTIONS.map((o) => (
-                          <option key={o.days} value={o.days}>
-                            {o.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-
-                  <label className="block">
-                    <span className="text-[13.5px] font-medium text-slate-700">
-                      Simulation
-                    </span>
-                    <select
-                      required
-                      value={slug}
-                      onChange={(e) => setSlug(e.target.value)}
-                      className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14.5px] text-slate-900 focus:border-[#3157D5] focus:outline-none"
-                    >
-                      <option value="" disabled>
-                        Choose a simulation
-                      </option>
-                      {(selectedRole?.sims || []).map((s) => (
-                        <option key={s.slug} value={s.slug} disabled={!s.templateId}>
-                          {s.title}
-                          {!s.templateId ? " (not available yet)" : ""}
-                        </option>
-                      ))}
-                    </select>
-                    {selectedSim && (
-                      <p className="mt-1.5 text-[13px] leading-snug text-slate-500">
-                        {selectedSim.tagline}
-                      </p>
-                    )}
-                  </label>
-                </div>
-
-                {error && (
-                  <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-[13.5px] text-red-700">
-                    {error}
-                  </p>
-                )}
-
-                <div className="mt-5 flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={close}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={busy}
-                    className="rounded-lg bg-[#3157D5] px-4 py-2 text-[14px] font-semibold text-white hover:bg-[#2848b8] disabled:opacity-50"
-                  >
-                    {busy ? "Sending" : "Send invitation"}
-                  </button>
-                </div>
-              </form>
-            )}
+      <Drawer
+        open={isOpen}
+        onClose={close}
+        title={sent ? "Invitation created" : "Invite a candidate"}
+        description={
+          sent
+            ? undefined
+            : "They receive one private link. It works once and then expires."
+        }
+        footer={
+          sent ? (
+            <>
+              <Button
+                variant="quiet"
+                onClick={() => {
+                  setSent(null);
+                  setEmail("");
+                  setName("");
+                  setError(null);
+                }}
+              >
+                Invite another
+              </Button>
+              <Button variant="primary" onClick={close}>
+                Done
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="quiet" onClick={close}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                loading={busy}
+                onClick={(e) => void submit(e)}
+              >
+                Send invitation
+              </Button>
+            </>
+          )
+        }
+      >
+        {sent ? (
+          <div className="space-y-4">
+            <div className="rounded-[var(--radius-panel)] border border-[rgba(103,217,160,0.28)] bg-[rgba(103,217,160,0.07)] px-3.5 py-3">
+              <p className="text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+                {sent.emailDelivery === "sent"
+                  ? `An email is on its way to ${sent.email}.`
+                  : `Email delivery is not configured here, so nothing was sent. Share this link with ${sent.email} yourself.`}
+              </p>
+            </div>
+            <div>
+              <p className="text-[12.5px] text-[var(--text-tertiary)]">Secure link</p>
+              <p className="mt-1 break-all rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[rgba(255,255,255,0.03)] px-3 py-2 font-mono text-[12.5px] text-[var(--text-secondary)]">
+                {sent.inviteUrl}
+              </p>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="mt-2"
+                onClick={() => void copyLink()}
+              >
+                {copied ? "Copied" : "Copy link"}
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <form onSubmit={(e) => void submit(e)} className="space-y-4">
+            <Field label="Candidate email" htmlFor="invite-email">
+              <Input
+                id="invite-email"
+                type="email"
+                required
+                autoComplete="off"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="candidate@example.com"
+                invalid={Boolean(error)}
+              />
+            </Field>
+
+            <Field label="Candidate name" htmlFor="invite-name" optional>
+              <Input
+                id="invite-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="How they should be listed"
+              />
+            </Field>
+
+            {catalog.length > 1 ? (
+              <Field label="Role" htmlFor="invite-role">
+                <Select
+                  id="invite-role"
+                  value={roleKey}
+                  onChange={(e) => {
+                    const nextKey = e.target.value;
+                    setRoleKey(nextKey);
+                    setSlug(defaultSlugFor(catalog.find((r) => r.key === nextKey)));
+                  }}
+                >
+                  {catalog.map((r) => (
+                    <option key={r.key} value={r.key}>
+                      {r.title}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            ) : null}
+
+            {simOptions.length > 1 ? (
+              <Field
+                label="Evaluation"
+                htmlFor="invite-sim"
+                help={selectedSim?.tagline}
+              >
+                <Select
+                  id="invite-sim"
+                  required
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Choose an evaluation
+                  </option>
+                  {simOptions.map((s) => (
+                    <option key={s.slug} value={s.slug} disabled={!s.templateId}>
+                      {s.title}
+                      {!s.templateId ? " (not published)" : ""}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            ) : selectedSim ? (
+              <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-3.5 py-3">
+                <p className="text-[12.5px] text-[var(--text-tertiary)]">Evaluation</p>
+                <p className="mt-0.5 text-[13.5px] font-medium text-[var(--text-primary)]">
+                  {selectedSim.title}
+                </p>
+                <p className="mt-1 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+                  {selectedSim.tagline}
+                </p>
+              </div>
+            ) : null}
+
+            <Field label="Link expires in" htmlFor="invite-expiry">
+              <Select
+                id="invite-expiry"
+                value={expiresInDays}
+                onChange={(e) => setExpiresInDays(Number(e.target.value))}
+              >
+                {EXPIRATION_OPTIONS.map((o) => (
+                  <option key={o.days} value={o.days}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+
+            <FormError>{error}</FormError>
+
+            {/* Enter submits the form; the visible control lives in the footer. */}
+            <button type="submit" className="hidden" aria-hidden tabIndex={-1} />
+          </form>
+        )}
+      </Drawer>
     </InviteModalContext.Provider>
   );
 }

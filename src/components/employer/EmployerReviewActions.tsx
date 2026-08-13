@@ -1,10 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { Field, Input, Select, Textarea } from "@/components/ui/Field";
+import { Surface, SurfaceHeader } from "@/components/ui/Surface";
 
 export default function EmployerReviewActions({ sessionId }: { sessionId: string }) {
   const [decision, setDecision] = useState("advance");
-  const [influence, setInfluence] = useState<"changed" | "confirmed" | "no_effect">("confirmed");
+  const [influence, setInfluence] = useState<"changed" | "confirmed" | "no_effect">(
+    "confirmed"
+  );
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -44,10 +49,10 @@ export default function EmployerReviewActions({ sessionId }: { sessionId: string
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
-      setMsg("Decision saved. Fydell never changes hiring decisions automatically.");
+      if (!res.ok) throw new Error(data.error || "Could not save the decision");
+      setMsg("Decision saved.");
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Failed");
+      setMsg(err instanceof Error ? err.message : "Could not save the decision");
     } finally {
       setBusy(false);
     }
@@ -56,7 +61,7 @@ export default function EmployerReviewActions({ sessionId }: { sessionId: string
   const saveFacilitatorNote = async (questionId: string) => {
     const text = responseDrafts[questionId] || "";
     if (!text.trim() || !attestation.trim()) {
-      setMsg("Facilitator notes require a response and an attestation.");
+      setMsg("A facilitator note needs both a response and an attestation.");
       return;
     }
     setBusy(true);
@@ -72,124 +77,136 @@ export default function EmployerReviewActions({ sessionId }: { sessionId: string
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
-      setMsg("Facilitator note saved with collection attestation.");
+      if (!res.ok) throw new Error(data.error || "Could not save the note");
+      setMsg("Facilitator note saved with its collection attestation.");
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Failed");
+      setMsg(err instanceof Error ? err.message : "Could not save the note");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-xl border border-slate-200 bg-white p-5">
-        <h3 className="text-[15px] font-semibold text-slate-900">Human decision</h3>
-        <p className="mt-1 text-[13px] text-slate-500">
-          The hiring team owns the decision. Record whether Fydell evidence changed, confirmed, or
-          did not affect the interview decision.
-        </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="text-[13px] text-slate-600">
-            Decision
-            <select
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-              value={decision}
-              onChange={(e) => setDecision(e.target.value)}
-            >
-              <option value="advance">Advance</option>
-              <option value="hold">Hold</option>
-              <option value="do_not_advance">Decline</option>
-              <option value="needs_further_evidence">Needs further evidence</option>
-            </select>
-          </label>
-          <label className="text-[13px] text-slate-600">
-            Evidence influence
-            <select
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-              value={influence}
-              onChange={(e) =>
-                setInfluence(e.target.value as "changed" | "confirmed" | "no_effect")
-              }
-            >
-              <option value="changed">Changed the interview decision</option>
-              <option value="confirmed">Confirmed the interview decision</option>
-              <option value="no_effect">Did not affect the interview decision</option>
-            </select>
-          </label>
-        </div>
-        <label className="mt-3 block text-[13px] text-slate-600">
-          Reviewer notes
-          <textarea
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-            rows={3}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </label>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => void saveDecision()}
-          className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-[13px] font-medium text-white disabled:opacity-50"
-        >
-          Save decision
-        </button>
-      </section>
-
-      {defense && defense.questions.length > 0 && (
-        <section className="rounded-xl border border-slate-200 bg-white p-5">
-          <h3 className="text-[15px] font-semibold text-slate-900">Oral defense (facilitator path)</h3>
-          <p className="mt-1 text-[13px] text-slate-500">
-            Questions are derived from this candidate&apos;s evidence. Recording is not required.
-            Facilitator notes must include how they were collected.
-          </p>
-          <label className="mt-3 block text-[13px] text-slate-600">
-            Collection attestation
-            <input
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-              placeholder="e.g. Live video call notes entered by Jordan Hale on 2026-10-02"
-              value={attestation}
-              onChange={(e) => setAttestation(e.target.value)}
+    <div className="space-y-5">
+      <Surface tone="panel">
+        <SurfaceHeader
+          title="Your decision"
+          description="The hiring team owns the outcome. Fydell records what you decided and how much the evidence mattered."
+        />
+        <div className="space-y-4 px-5 py-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Decision" htmlFor="review-decision">
+              <Select
+                id="review-decision"
+                value={decision}
+                onChange={(e) => setDecision(e.target.value)}
+              >
+                <option value="advance">Advance</option>
+                <option value="hold">Hold</option>
+                <option value="do_not_advance">Decline</option>
+                <option value="needs_further_evidence">Needs further evidence</option>
+              </Select>
+            </Field>
+            <Field label="Evidence influence" htmlFor="review-influence">
+              <Select
+                id="review-influence"
+                value={influence}
+                onChange={(e) =>
+                  setInfluence(e.target.value as "changed" | "confirmed" | "no_effect")
+                }
+              >
+                <option value="changed">Changed the decision</option>
+                <option value="confirmed">Confirmed the decision</option>
+                <option value="no_effect">Did not affect the decision</option>
+              </Select>
+            </Field>
+          </div>
+          <Field label="Notes" htmlFor="review-notes" optional>
+            <Textarea
+              id="review-notes"
+              rows={3}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="What you concluded, in your own words."
             />
-          </label>
-          <ul className="mt-4 space-y-4">
-            {defense.questions.map((q) => {
-              const existing = defense.responses.find((r) => r.question_id === q.id);
-              return (
-                <li key={q.id} className="rounded-lg border border-slate-100 p-3">
-                  <p className="text-[13.5px] font-medium text-slate-900">{q.question_text}</p>
-                  <p className="mt-1 text-[12px] text-slate-500">{q.purpose}</p>
-                  {existing ? (
-                    <p className="mt-2 text-[13px] text-slate-700">{existing.response_text}</p>
-                  ) : (
-                    <>
-                      <textarea
-                        className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px]"
-                        rows={3}
-                        value={responseDrafts[q.id] || ""}
-                        onChange={(e) =>
-                          setResponseDrafts((d) => ({ ...d, [q.id]: e.target.value }))
-                        }
-                      />
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => void saveFacilitatorNote(q.id)}
-                        className="mt-2 rounded-lg border border-slate-300 px-3 py-1.5 text-[12.5px] font-medium"
-                      >
-                        Save facilitator note
-                      </button>
-                    </>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
+          </Field>
+          <Button variant="primary" loading={busy} onClick={() => void saveDecision()}>
+            Save decision
+          </Button>
+        </div>
+      </Surface>
 
-      {msg && <p className="text-[13px] text-slate-700">{msg}</p>}
+      {defense && defense.questions.length > 0 ? (
+        <Surface tone="panel">
+          <SurfaceHeader
+            title="Oral defense"
+            description="Questions generated from this candidate's own evidence. Recording is not required, but a note must say how it was collected."
+          />
+          <div className="space-y-4 px-5 py-4">
+            <Field
+              label="Collection attestation"
+              htmlFor="review-attestation"
+              help="Who collected these answers, how, and when."
+            >
+              <Input
+                id="review-attestation"
+                placeholder="Live video call, notes entered by Jordan Hale"
+                value={attestation}
+                onChange={(e) => setAttestation(e.target.value)}
+              />
+            </Field>
+
+            <ul className="space-y-3">
+              {defense.questions.map((q) => {
+                const existing = defense.responses.find((r) => r.question_id === q.id);
+                return (
+                  <li
+                    key={q.id}
+                    className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3"
+                  >
+                    <p className="text-[13.5px] font-medium text-[var(--text-primary)]">
+                      {q.question_text}
+                    </p>
+                    <p className="mt-1 text-[12.5px] leading-[1.55] text-[var(--text-tertiary)]">
+                      {q.purpose}
+                    </p>
+                    {existing ? (
+                      <p className="mt-2.5 border-l border-[var(--border-default)] pl-3 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                        {existing.response_text}
+                      </p>
+                    ) : (
+                      <div className="mt-2.5 space-y-2">
+                        <Textarea
+                          rows={3}
+                          aria-label={`Response to: ${q.question_text}`}
+                          value={responseDrafts[q.id] || ""}
+                          onChange={(e) =>
+                            setResponseDrafts((d) => ({ ...d, [q.id]: e.target.value }))
+                          }
+                        />
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() => void saveFacilitatorNote(q.id)}
+                        >
+                          Save note
+                        </Button>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </Surface>
+      ) : null}
+
+      {msg ? (
+        <p role="status" className="text-[13px] text-[var(--text-secondary)]">
+          {msg}
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -1,31 +1,31 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import CompareClient from "@/components/employer/CompareClient";
+import { ButtonLink } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata = { title: "Compare candidates | Fydell" };
+export const metadata = { title: "Compare" };
 export const dynamic = "force-dynamic";
 
+/** Reached from Reports or a cohort. Comparing is an action, not a place. */
 export default async function ComparePage() {
   const user = await requireUser();
-  if (!user) redirect("/login?next=/app/employer/compare");
+  if (!user) redirect("/login?next=%2Fapp%2Femployer%2Fcompare");
   const org = await requireOrgMember(user.id);
   if (!org) redirect("/account/setup-required?reason=no_org");
 
   return (
     <div className="max-w-[1100px]">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-[24px] font-semibold text-slate-900">Compare candidates</h1>
-          <p className="mt-1 text-[15px] text-slate-500">
-            Same organization, same cohort, same evaluation version only. No universal ranking.
-          </p>
-        </div>
-        <Link href="/app/employer/cohort" className="text-[13.5px] font-medium text-[#3157D5]">
-          Back to cohort
-        </Link>
-      </div>
-      <div className="mt-8">
+      <PageHeader
+        title="Compare"
+        description="Two candidates on the same evaluation version, shown side by side. There is no ranking across evaluations or across companies."
+        action={
+          <ButtonLink href="/app/employer/reports" variant="secondary" size="sm">
+            Back to reports
+          </ButtonLink>
+        }
+      />
+      <div className="mt-7">
         <CompareClient />
       </div>
     </div>

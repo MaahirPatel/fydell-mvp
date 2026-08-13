@@ -1,238 +1,324 @@
-import Link from "next/link";
 import { ButtonLink } from "@/components/marketing/ui";
-import { EvidenceRail } from "@/components/marketing/motifs/EvidenceRail";
 
-const sectionClass =
-  "relative z-10 border-t border-[var(--border-subtle)] py-[var(--section-narrative-py)]";
-const h2Class =
-  "flat-type text-[32px] font-semibold leading-[1.08] tracking-[-0.025em] text-white sm:text-[38px] lg:text-[42px]";
-const leadClass = "mt-4 max-w-md text-[16px] leading-relaxed text-white/50";
-const frameClass =
-  "rounded-[14px] border border-[var(--border-strong)] bg-[var(--surface-raised)] p-6 sm:p-7";
+/**
+ * The employer narrative after the hero.
+ *
+ * Every scene renders real Northline fixture content rather than an image of a
+ * dashboard. Sections alternate side so the page has rhythm without needing
+ * decoration, and each one answers a question an employer actually asks.
+ */
 
-/** Fydell-native homepage sections after the hero investigation canvas. */
+const SECTION = "border-t border-[var(--border-subtle)] mkt-section";
+const FRAME =
+  "rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 sm:p-6";
+
+function Copy({ heading, body }: { heading: string; body: string }) {
+  return (
+    <div>
+      <h2 className="section-heading">{heading}</h2>
+      <p className="mt-4 max-w-[46ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+        {body}
+      </p>
+    </div>
+  );
+}
+
+function Row({
+  copy,
+  scene,
+  reverse,
+}: {
+  copy: React.ReactNode;
+  scene: React.ReactNode;
+  reverse?: boolean;
+}) {
+  return (
+    <section className={SECTION}>
+      <div className="mkt-content grid items-center gap-10 lg:grid-cols-12 lg:gap-16">
+        <div
+          className={`lg:col-span-5 ${reverse ? "order-1 lg:order-2" : ""}`}
+        >
+          {copy}
+        </div>
+        <div
+          className={`min-w-0 lg:col-span-7 ${reverse ? "order-2 lg:order-1" : ""}`}
+        >
+          {scene}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function HomeProductStory() {
   return (
     <>
-      <section className={sectionClass}>
-        <div className="mkt-content grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-          <div className="lg:col-span-5">
-            <h2 className={h2Class}>Watch what the candidate actually examined</h2>
-            <p className={leadClass}>
-              Not a skill checklist. Production runs, quality events, and the yield definition for a
-              fictional manufacturer - Northline Components.
-            </p>
-          </div>
-          <div
-            className={`${frameClass} lg:col-span-7`}
-            data-scene="investigate-crop"
-            data-fixture="northline-ops-yield"
-          >
-            <p className="text-[13px] font-medium text-white/90">Current period filter</p>
-            <div className="mt-5 overflow-hidden rounded-[10px] border border-[var(--border-subtle)]">
-              <table className="w-full text-left text-[13px] tabular-nums">
+      <Row
+        copy={
+          <Copy
+            heading="Real material, not a skills checklist"
+            body="Production runs, quality events and the official yield definition for Northline Components, a fictional manufacturer. The candidate has to decide what matters."
+          />
+        }
+        scene={
+          <div className={FRAME} data-scene="investigate-crop">
+            <div className="flex items-baseline justify-between gap-4">
+              <p className="text-[13px] font-medium text-[var(--text-primary)]">
+                production_runs.csv
+              </p>
+              <p className="text-[12.5px] text-[var(--text-tertiary)]">
+                Filtered to current period
+              </p>
+            </div>
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[420px] border-collapse text-left text-[13px] tabular-nums">
                 <thead>
-                  <tr className="border-b border-[var(--border-subtle)] text-white/40">
-                    <th className="px-3.5 py-2.5 font-medium">Line</th>
-                    <th className="px-3.5 py-2.5 font-medium">Shift</th>
-                    <th className="px-3.5 py-2.5 font-medium">Completed / planned</th>
-                    <th className="px-3.5 py-2.5 font-medium">Yield</th>
+                  <tr className="border-b border-[var(--border-subtle)]">
+                    {["Line", "Shift", "Completed / planned", "Yield"].map(
+                      (h, i) => (
+                        <th
+                          key={h}
+                          scope="col"
+                          className={`py-2 pr-4 text-[11.5px] font-medium uppercase tracking-[0.04em] text-[var(--text-tertiary)] ${
+                            i === 3 ? "text-right" : ""
+                          }`}
+                        >
+                          {h}
+                        </th>
+                      ),
+                    )}
                   </tr>
                 </thead>
-                <tbody className="text-white/80">
+                <tbody>
                   <tr className="border-b border-[var(--border-subtle)]">
-                    <td className="px-3.5 py-2.5">L1</td>
-                    <td className="px-3.5 py-2.5">Day</td>
-                    <td className="px-3.5 py-2.5">900 / 1000</td>
-                    <td className="px-3.5 py-2.5">90.0%</td>
+                    <td className="py-2.5 pr-4 text-[var(--text-primary)]">L1</td>
+                    <td className="py-2.5 pr-4 text-[var(--text-secondary)]">Day</td>
+                    <td className="py-2.5 pr-4 text-[var(--text-secondary)]">
+                      900 / 1000
+                    </td>
+                    <td className="py-2.5 pr-4 text-right text-[var(--text-primary)]">
+                      90.0%
+                    </td>
                   </tr>
-                  <tr className="bg-[var(--fydell-evidence)]/10">
-                    <td className="px-3.5 py-2.5 text-white">L2</td>
-                    <td className="px-3.5 py-2.5">Day</td>
-                    <td className="px-3.5 py-2.5">820 / 1000</td>
-                    <td className="px-3.5 py-2.5 text-[var(--fydell-risk)]">82.0%</td>
+                  <tr className="border-b border-[var(--border-subtle)] bg-[rgba(242,107,130,0.07)]">
+                    <td className="py-2.5 pr-4 text-[var(--text-primary)]">L2</td>
+                    <td className="py-2.5 pr-4 text-[var(--text-secondary)]">Day</td>
+                    <td className="py-2.5 pr-4 text-[var(--text-secondary)]">
+                      820 / 1000
+                    </td>
+                    <td className="py-2.5 pr-4 text-right font-medium text-[var(--fydell-risk)]">
+                      82.0%
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-2.5 pr-4 text-[var(--text-primary)]">L1</td>
+                    <td className="py-2.5 pr-4 text-[var(--text-secondary)]">Night</td>
+                    <td className="py-2.5 pr-4 text-[var(--text-secondary)]">
+                      750 / 800
+                    </td>
+                    <td className="py-2.5 pr-4 text-right text-[var(--text-primary)]">
+                      93.8%
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            <EvidenceRail className="mt-5">
-              <p className="text-[13.5px] text-white/75">
-                Bookmarked: L2 Day completed units diverge after accounting for HOLD_RECLASS volume.
-              </p>
-            </EvidenceRail>
-          </div>
-        </div>
-      </section>
-
-      <section className={sectionClass}>
-        <div className="mkt-content grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-          <div
-            className={`order-2 ${frameClass} lg:order-1 lg:col-span-7`}
-            data-scene="revision-delta"
-            data-fixture="northline-ops-yield-curveball"
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-[10px] border border-[var(--border-subtle)] p-5">
-                <p className="text-[12.5px] font-medium text-white/45">Original finding</p>
-                <p className="mt-3 text-[14px] leading-relaxed text-white/80">
-                  Apparent plant-wide yield decline is largely a mid-period classification mapping.
-                </p>
-              </div>
-              <div className="rounded-[10px] border border-[var(--border-subtle)] p-5">
-                <p className="text-[12.5px] font-medium text-white/45">New operational fact</p>
-                <p className="mt-3 text-[14px] leading-relaxed text-white/80">
-                  Reporting-code change confirmed - leadership still needs a next-shift call on
-                  residual risk.
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 rounded-[10px] border border-[var(--border-subtle)] border-l-2 border-l-[var(--fydell-risk)] p-5">
-              <p className="text-[12.5px] font-medium text-white/45">Revised conclusion</p>
-              <p className="mt-3 text-[14px] leading-relaxed text-white">
-                Retain the measurement artifact claim. Add: residual operational signal on L2 Day
-                requires validation before the next shift - not plant-wide blame.
-              </p>
-              <p className="mt-3 text-[13px] text-white/45">
-                Remaining uncertainty: quality events show elevated REWORK_FIT / SCRAP_MATERIAL beyond
-                HOLD_RECLASS.
+            <div className="relative mt-5 border-t border-[var(--border-subtle)] pt-4 pl-3">
+              <span
+                aria-hidden
+                className="absolute bottom-0 left-0 top-4 w-[2px] rounded-full bg-[var(--fydell-evidence)]"
+              />
+              <p className="text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                Bookmarked by the candidate: L2 Day diverges even after the
+                reclassified volume is removed.
               </p>
             </div>
           </div>
-          <div className="order-1 lg:order-2 lg:col-span-5">
-            <h2 className={h2Class}>See what happens when the facts change</h2>
-            <p className={leadClass}>
-              One curveball arrives after investigation. Candidates revise or defend with evidence -
-              not restart from a blank page.
-            </p>
-          </div>
-        </div>
-      </section>
+        }
+      />
 
-      <section className={sectionClass}>
-        <div className="mkt-content grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-          <div className="lg:col-span-5">
-            <h2 className={h2Class}>Open every consequential claim</h2>
-            <p className={leadClass}>
-              Employers see the artifact and the trail: support, limitation, and exact source - not a
-              single opaque score.
-            </p>
+      <Row
+        reverse
+        copy={
+          <Copy
+            heading="What happens when the facts change"
+            body="One new fact arrives after the investigation is under way. The candidate has to revise or defend the conclusion, not restart from a blank page."
+          />
+        }
+        scene={
+          <div className={FRAME} data-scene="revision-delta">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] p-4">
+                <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+                  First conclusion
+                </p>
+                <p className="mt-2.5 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+                  The plant-wide decline is largely a mid-period classification
+                  change, not a production failure.
+                </p>
+              </div>
+              <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] p-4">
+                <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+                  New fact
+                </p>
+                <p className="mt-2.5 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+                  Operations confirms the reporting change, and still needs a
+                  call on real risk before the next shift.
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 rounded-[var(--radius-panel)] border border-[var(--border-subtle)] border-l-2 border-l-[var(--fydell-risk)] p-4">
+              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+                Revised conclusion
+              </p>
+              <p className="mt-2.5 text-[14px] leading-[1.6] text-[var(--text-primary)]">
+                Keep the measurement finding. Add that Line L2 Day carries
+                residual risk and should be validated before the next shift.
+                This is not plant-wide.
+              </p>
+              <p className="mt-3 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                Stated uncertainty: rework and scrap on L2 Day exceed the
+                reclassified volume, and the cause is not yet established.
+              </p>
+            </div>
           </div>
-          <div
-            className={`${frameClass} lg:col-span-7`}
-            data-scene="inspectable-claim"
-            data-fixture="ops-yield-report-sample"
-          >
-            <EvidenceRail>
-              <p className="text-[15px] font-medium text-white">
-                Primary driver is the mid-period HOLD_RECLASS mapping
-              </p>
-              <p className="mt-3 text-[13.5px] text-white/55">
-                Support: reporting note + HOLD_RECLASS only in current quality_events.
-              </p>
-              <p className="mt-2 text-[13.5px] text-white/55">
-                Limitation: mid-period start means plant-wide restatement is approximate.
-              </p>
-              <p className="mt-4 text-[13px] text-[var(--fydell-evidence-selected)]">
-                Source open: Metric dictionary · Reporting-change note
-              </p>
-            </EvidenceRail>
-          </div>
-        </div>
-      </section>
+        }
+      />
 
-      <section className={sectionClass}>
-        <div className="mkt-content grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-          <div
-            className={`${frameClass} lg:col-span-7`}
-            data-scene="oral-defense"
-            data-fixture="ops-yield-defense-sample"
-          >
-            <p className="text-[12.5px] font-medium text-white/45">Evidence-grounded follow-up</p>
-            <p className="mt-4 text-[16px] font-medium leading-snug text-white">
-              You attributed most of the decline to HOLD_RECLASS. Walk us through how you still
-              concluded L2 Day needs action before the next shift.
-            </p>
-            <p className="mt-5 text-[13px] text-white/40">
-              Grounded in the candidate&apos;s cited rows - not a generic interview script or chat bot.
-            </p>
+      <Row
+        copy={
+          <Copy
+            heading="Open any claim and see what it rests on"
+            body="Each consequential claim carries its support, its limitation and the exact source the candidate opened. There is no single opaque score to argue about."
+          />
+        }
+        scene={
+          <div className={FRAME} data-scene="inspectable-claim">
+            <div className="relative pl-3.5">
+              <span
+                aria-hidden
+                className="absolute inset-y-0 left-0 w-[2px] rounded-full bg-[var(--fydell-evidence)]"
+              />
+              <p className="text-[15px] font-medium leading-[1.45] text-[var(--text-primary)]">
+                The primary driver is the mid-period HOLD_RECLASS mapping.
+              </p>
+              <dl className="mt-4 grid gap-3">
+                <div>
+                  <dt className="text-[12px] font-medium text-[var(--text-tertiary)]">
+                    Support
+                  </dt>
+                  <dd className="mt-1 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+                    The reporting note, plus HOLD_RECLASS appearing only in the
+                    current period of quality_events.csv.
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[12px] font-medium text-[var(--text-tertiary)]">
+                    Limitation
+                  </dt>
+                  <dd className="mt-1 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+                    The change began mid-period, so any restatement of the prior
+                    period is approximate.
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[12px] font-medium text-[var(--text-tertiary)]">
+                    Sources opened
+                  </dt>
+                  <dd className="mt-1 text-[13.5px] leading-[1.6] text-[var(--text-primary)]">
+                    Metric dictionary, reporting-change note, quality_events.csv
+                  </dd>
+                </div>
+              </dl>
+            </div>
           </div>
-          <div className="lg:col-span-5">
-            <h2 className={h2Class}>Ask the follow-up the work earned</h2>
-            <p className={leadClass}>
-              Oral-defense questions come from the attempt&apos;s evidence. Facilitator notes are
-              labeled when recording is unavailable.
-            </p>
-          </div>
-        </div>
-      </section>
+        }
+      />
 
-      <section className={sectionClass}>
-        <div className="mkt-content grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-          <div className="lg:col-span-5">
-            <h2 className={h2Class}>Leave with a private Work Receipt</h2>
-            <p className={leadClass}>
-              Candidates control what leaves the platform: field-scoped shares, expiration, and
-              immediate revoke. Not a public profile.
+      <Row
+        reverse
+        copy={
+          <Copy
+            heading="Ask the follow-up the work earned"
+            body="Interview questions are generated from the candidate's own cited rows, so the conversation starts where the evidence gets thin instead of with a generic script."
+          />
+        }
+        scene={
+          <div className={FRAME} data-scene="oral-defense">
+            <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+              Generated follow-up
+            </p>
+            <p className="mt-3 text-[16px] font-medium leading-[1.5] text-[var(--text-primary)]">
+              You attributed most of the decline to HOLD_RECLASS. Walk us
+              through how you still concluded that L2 Day needs action before
+              the next shift.
+            </p>
+            <p className="mt-4 border-t border-[var(--border-subtle)] pt-4 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+              Grounded in the rows this candidate actually cited. When a session
+              is not recorded, the report says so rather than leaving a gap.
             </p>
           </div>
-          <div
-            className={`${frameClass} lg:col-span-7`}
-            data-scene="work-receipt"
-            data-fixture="receipt-share-sample"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border-subtle)] pb-5">
+        }
+      />
+
+      <Row
+        copy={
+          <Copy
+            heading="The candidate keeps a private record"
+            body="A Work Receipt belongs to the candidate. They choose which fields to share, for how long, and they can revoke it at any time. It is not a public profile."
+          />
+        }
+        scene={
+          <div className={FRAME} data-scene="work-receipt">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
               <div>
-                <p className="text-[15px] font-medium text-white">Work Receipt</p>
-                <p className="mt-1.5 text-[13px] text-white/45">
-                  Operations performance investigation · Data Analyst
+                <p className="text-[14.5px] font-medium text-[var(--text-primary)]">
+                  Work Receipt
+                </p>
+                <p className="mt-1 text-[13px] text-[var(--text-secondary)]">
+                  Operations performance investigation
                 </p>
               </div>
-              <p className="rounded-[6px] border border-[var(--border-subtle)] px-2.5 py-1 text-[12.5px] text-white/60">
+              <span className="inline-flex h-[22px] items-center rounded-[4px] border border-[var(--border-default)] px-1.5 text-[12px] text-[var(--text-secondary)]">
                 Private by default
-              </p>
-            </div>
-            <ul className="mt-5 space-y-2.5 text-[13.5px] text-white/70">
-              <li>Demonstrated: metric judgment, residual-risk isolation</li>
-              <li>Scope: this evaluation version only</li>
-              <li>Share: fields selected · expires in 7 days · revocable</li>
-            </ul>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <span className="rounded-[6px] border border-[var(--border-subtle)] px-2.5 py-1.5 text-[12.5px] text-white/55">
-                Authorized share active
-              </span>
-              <span className="rounded-[6px] border border-[var(--border-subtle)] px-2.5 py-1.5 text-[12.5px] text-white/55">
-                Revoke available
               </span>
             </div>
+            <dl className="mt-4 grid gap-2.5 text-[13.5px]">
+              {[
+                ["Demonstrated", "Metric judgement, residual-risk isolation"],
+                ["Scope", "This evaluation version only"],
+                ["Sharing", "Selected fields, expires in 7 days, revocable"],
+              ].map(([label, value]) => (
+                <div key={label} className="flex flex-wrap gap-x-3">
+                  <dt className="w-[104px] shrink-0 text-[var(--text-tertiary)]">
+                    {label}
+                  </dt>
+                  <dd className="min-w-0 flex-1 text-[var(--text-secondary)]">
+                    {value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
-        </div>
-      </section>
+        }
+      />
 
-      <section className={`${sectionClass} pb-28`}>
-        <div className="mkt-content max-w-2xl">
-          <h2 className={h2Class}>Run one serious Data Analyst pilot</h2>
-          <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-white/50">
-            One employer cohort, one published evaluation version, secure invites, inspectable
-            evidence, and candidate-controlled receipts. October scope is this loop - not a
-            marketplace.
+      <section className={`${SECTION} pb-24`}>
+        <div className="mkt-content max-w-[640px]">
+          <h2 className="section-heading">Run it on one real role.</h2>
+          <p className="mt-4 text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+            Create a workspace, invite a candidate, and read the report. There
+            is one evaluation, built properly, rather than a catalogue of short
+            tests.
           </p>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <ButtonLink href="/request-pilot" variant="primary">
-              Request a pilot
+          <div className="mt-8 flex flex-wrap gap-3">
+            <ButtonLink href="/signup" variant="primary">
+              Create your workspace
             </ButtonLink>
             <ButtonLink href="/simulations" variant="secondary">
-              Browse simulations
+              See the evaluation
             </ButtonLink>
           </div>
-          <p className="mt-8 text-[13px] text-white/35">
-            Prefer to explore first?{" "}
-            <Link
-              href="/login"
-              className="text-white/55 underline-offset-2 hover:text-white hover:underline"
-            >
-              Sign in
-            </Link>
-          </p>
         </div>
       </section>
     </>

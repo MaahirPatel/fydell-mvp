@@ -23,7 +23,7 @@ export interface PilotCohortRow {
   updated_at: string;
 }
 
-/** Resolve the published October DA evaluation template + version. */
+/** Resolve the published flagship evaluation template and version. */
 export async function resolvePilotEvaluationTemplate(): Promise<{
   templateId: string;
   templateVersionId: string;
@@ -34,7 +34,7 @@ export async function resolvePilotEvaluationTemplate(): Promise<{
   const hit = published.find((p) => p.template.slug === PILOT_EVALUATION_SLUG);
   if (!hit?.version) {
     throw new Error(
-      `October pilot evaluation "${PILOT_EVALUATION_SLUG}" is not published. Seed templates first.`
+      `Evaluation "${PILOT_EVALUATION_SLUG}" is not published. Seed templates first.`
     );
   }
   return {
@@ -66,7 +66,7 @@ export async function ensureOrgPilotCohort(
     .from("pilot_cohorts")
     .insert({
       organization_id: organizationId,
-      name: "Data Analyst October cohort",
+      name: `${evalTpl.title} cohort`,
       status: "draft",
       template_id: evalTpl.templateId,
       template_version_id: evalTpl.templateVersionId,

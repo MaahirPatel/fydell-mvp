@@ -1,6 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Input } from "@/components/ui/Field";
+import { StatusTag, type StatusTone } from "@/components/ui/StatusTag";
+import { Surface } from "@/components/ui/Surface";
+import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
 import { useInviteModal } from "./InviteCandidateModal";
 import { useInvitationActions } from "./useInvitationActions";
 
@@ -21,121 +28,174 @@ export interface CandidateRow {
   emailDelivery?: string | null;
 }
 
+const STATUS_TONE: Record<string, StatusTone> = {
+  sent: "neutral",
+  opened: "active",
+  accepted: "active",
+  started: "active",
+  completed: "good",
+  expired: "changed",
+  revoked: "risk",
+};
+
 export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
   const { open } = useInviteModal();
   const { act, busyId, notice } = useInvitationActions();
+  const [query, setQuery] = useState("");
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter(
+      (r) =>
+        r.name.toLowerCase().includes(q) ||
+        r.email.toLowerCase().includes(q) ||
+        r.roleTitle.toLowerCase().includes(q),
+    );
+  }, [rows, query]);
 
   if (rows.length === 0) {
     return (
-      <div className="mt-8 rounded-xl border border-slate-200 bg-white p-10 text-center">
-        <p className="text-[16px] font-medium text-slate-900">No candidates yet</p>
-        <p className="mt-1 text-[14.5px] text-slate-500">
-          Invite a candidate to a five-minute simulation to see them here.
-        </p>
-        <button
-          type="button"
-          onClick={() => open()}
-          className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#3157D5] px-4 text-[14px] font-semibold text-white hover:bg-[#2848b8]"
-        >
-          Invite candidate
-        </button>
-      </div>
+      <EmptyState
+        title="No candidates yet"
+        description="Send an invitation and the candidate appears here with their status, progress and result as they move through the evaluation."
+        action={
+          <Button variant="primary" onClick={() => open()}>
+            Invite a candidate
+          </Button>
+        }
+      />
     );
   }
 
   return (
-    <div className="mt-6">
-      {notice && (
-        <p className="mb-2 break-all rounded-lg bg-blue-50 px-3 py-2 text-[13.5px] text-blue-800">
+    <div className="space-y-3">
+      {/* Search only appears once the list is long enough to need it. */}
+      {rows.length > 8 ? (
+        <Input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by name, email or role"
+          aria-label="Search candidates"
+          className="max-w-[300px]"
+        />
+      ) : null}
+
+      {notice ? (
+        <p
+          role="status"
+          className="break-all rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[rgba(255,255,255,0.04)] px-3 py-2 text-[13px] text-[var(--text-secondary)]"
+        >
           {notice}
         </p>
-      )}
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-        <table className="w-full min-w-[960px] text-left text-[14px]">
-          <thead>
-            <tr className="border-b border-slate-200 text-[12px] uppercase tracking-wide text-slate-400">
-              <th className="px-4 py-2.5 font-semibold">Candidate</th>
-              <th className="px-4 py-2.5 font-semibold">Email</th>
-              <th className="px-4 py-2.5 font-semibold">Role</th>
-              <th className="px-4 py-2.5 font-semibold">Simulation</th>
-              <th className="px-4 py-2.5 font-semibold">Invitation</th>
-              <th className="px-4 py-2.5 font-semibold">Progress</th>
-              <th className="px-4 py-2.5 font-semibold">Result</th>
-              <th className="px-4 py-2.5 font-semibold" aria-label="Actions" />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.invitationId} className="border-b border-slate-100 last:border-0">
-                <td className="px-4 py-3 font-medium text-slate-900">{r.name || r.email}</td>
-                <td className="px-4 py-3 text-slate-600">{r.email}</td>
-                <td className="px-4 py-3 text-slate-600">{r.roleTitle}</td>
-                <td className="px-4 py-3 text-slate-600">{r.simulation}</td>
-                <td className="px-4 py-3 text-slate-600">
-                  <span>{r.statusLabel}</span>
-                  {r.emailDelivery === "failed" && (
-                    <span className="mt-1 block text-[12px] font-medium text-red-600">
-                      Email failed
+      ) : null}
+
+      {visible.length === 0 ? (
+        <EmptyState
+          title="No matches"
+          description={`No candidate matches "${query}".`}
+          action={
+            <Button variant="secondary" size="sm" onClick={() => setQuery("")}>
+              Clear search
+            </Button>
+          }
+        />
+      ) : (
+      <Surface tone="panel" className="overflow-hidden">
+        <Table className="min-w-[900px]">
+          <THead>
+            <TH>Candidate</TH>
+            <TH>Role</TH>
+            <TH>Invitation</TH>
+            <TH>Progress</TH>
+            <TH>Result</TH>
+            <TH align="right">Actions</TH>
+          </THead>
+          <TBody>
+            {visible.map((r) => (
+              <TR key={r.invitationId}>
+                <TDPrimary>
+                  <span className="block truncate">{r.name || r.email}</span>
+                  {r.name ? (
+                    <span className="mt-0.5 block truncate text-[12.5px] font-normal text-[var(--text-tertiary)]">
+                      {r.email}
                     </span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-slate-600">{r.progress}</td>
-                <td className="px-4 py-3">
+                  ) : null}
+                </TDPrimary>
+                <TD>
+                  <span className="block truncate">{r.roleTitle}</span>
+                  <span className="mt-0.5 block truncate text-[12.5px] text-[var(--text-tertiary)]">
+                    {r.simulation}
+                  </span>
+                </TD>
+                <TD>
+                  <StatusTag tone={STATUS_TONE[r.status] ?? "neutral"}>
+                    {r.statusLabel}
+                  </StatusTag>
+                  {r.emailDelivery === "failed" ? (
+                    <span className="mt-1 block text-[12px] text-[var(--fydell-risk)]">
+                      Email failed to send
+                    </span>
+                  ) : null}
+                </TD>
+                <TD>{r.progress}</TD>
+                <TD>
                   {r.result ? (
-                    <span className="whitespace-nowrap rounded-full bg-blue-50 px-2.5 py-1 text-[12.5px] font-semibold text-blue-700">
-                      {r.result}
-                    </span>
+                    <span className="text-[var(--text-primary)]">{r.result}</span>
                   ) : (
-                    <span className="text-slate-400">Pending</span>
+                    <span className="text-[var(--text-tertiary)]">Pending</span>
                   )}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-2 whitespace-nowrap">
-                    {r.reportReady && r.sessionId && (
+                </TD>
+                <TD align="right">
+                  <div className="flex items-center justify-end gap-1 whitespace-nowrap">
+                    {r.reportReady && r.sessionId ? (
                       <Link
                         href={`/app/employer/assessments/report/${r.sessionId}`}
-                        className="text-[13.5px] font-semibold text-blue-700 hover:text-blue-600"
+                        className="inline-flex h-8 items-center rounded-[8px] px-2.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[rgba(255,255,255,0.06)]"
                       >
                         View report
                       </Link>
-                    )}
-                    {r.canResend && (
+                    ) : null}
+                    {r.canResend ? (
                       <>
-                        <button
-                          type="button"
+                        <Button
+                          variant="quiet"
+                          size="sm"
                           onClick={() => void act(r.invitationId, "resend")}
                           disabled={busyId === r.invitationId}
-                          className="rounded-lg border border-slate-300 px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
                         >
                           Resend
-                        </button>
-                        <button
-                          type="button"
+                        </Button>
+                        <Button
+                          variant="quiet"
+                          size="sm"
                           onClick={() => void act(r.invitationId, "copy")}
                           disabled={busyId === r.invitationId}
-                          className="rounded-lg border border-slate-300 px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
                         >
                           Copy link
-                        </button>
+                        </Button>
                       </>
-                    )}
-                    {r.canRevoke && (
-                      <button
-                        type="button"
+                    ) : null}
+                    {r.canRevoke ? (
+                      <Button
+                        variant="quiet"
+                        size="sm"
+                        className="text-[var(--fydell-risk)] hover:text-[var(--fydell-risk)]"
                         onClick={() => void act(r.invitationId, "revoke")}
                         disabled={busyId === r.invitationId}
-                        className="rounded-lg border border-slate-300 px-3 py-1.5 text-[13px] font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
                       >
                         Revoke
-                      </button>
-                    )}
+                      </Button>
+                    ) : null}
                   </div>
-                </td>
-              </tr>
+                </TD>
+              </TR>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TBody>
+        </Table>
+      </Surface>
+      )}
     </div>
   );
 }

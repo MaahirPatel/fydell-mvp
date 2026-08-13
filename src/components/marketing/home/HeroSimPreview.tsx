@@ -1,158 +1,225 @@
 "use client";
 
 /**
- * Investigation canvas for the October DA flagship.
- * Fixture: Northline Components ops-yield (synthetic). Not a PM board or chat demo.
+ * The investigation canvas, rendered from the real Northline fixture rather
+ * than a screenshot. Synthetic data; not affiliated with any customer brand.
+ *
+ * The three steps are driven by the visitor, not by a timer. Nothing here
+ * moves on its own.
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-type Phase = "investigate" | "finding" | "revise";
+type Step = "investigate" | "conclusion" | "revised";
 
-const ROWS = [
+const ROWS: {
+  period: "prior" | "current";
+  line: string;
+  shift: string;
+  planned: number;
+  completed: number;
+  scrap: number;
+  yield: string;
+  reclass?: boolean;
+  residual?: boolean;
+}[] = [
   { period: "prior", line: "L1", shift: "Day", planned: 1000, completed: 940, scrap: 30, yield: "94.0%" },
   { period: "prior", line: "L2", shift: "Day", planned: 1000, completed: 930, scrap: 35, yield: "93.0%" },
-  { period: "current", line: "L1", shift: "Day", planned: 1000, completed: 900, scrap: 45, yield: "90.0%", hold: true },
-  { period: "current", line: "L2", shift: "Day", planned: 1000, completed: 820, scrap: 90, yield: "82.0%", residual: true },
+  { period: "prior", line: "L1", shift: "Night", planned: 800, completed: 760, scrap: 20, yield: "95.0%" },
+  { period: "current", line: "L1", shift: "Day", planned: 1000, completed: 900, scrap: 45, yield: "90.0%", reclass: true },
+  { period: "current", line: "L2", shift: "Day", planned: 1000, completed: 820, scrap: 90, yield: "82.0%", reclass: true, residual: true },
   { period: "current", line: "L1", shift: "Night", planned: 800, completed: 750, scrap: 25, yield: "93.8%" },
+  { period: "current", line: "L2", shift: "Night", planned: 900, completed: 860, scrap: 20, yield: "95.6%" },
 ];
 
-const PHASES: { id: Phase; label: string; note: string }[] = [
+const STEPS: {
+  id: Step;
+  label: string;
+  heading: string;
+  body: string;
+}[] = [
   {
     id: "investigate",
     label: "Investigate",
-    note: "Filter current period. Compare completed vs planned by line and shift.",
+    heading: "Working from the raw data",
+    body: "Reported yield fell from 93.2 percent. Both periods are on screen before any conclusion is written.",
   },
   {
-    id: "finding",
-    label: "Working conclusion",
-    note: "HOLD_RECLASS mid-period mapping treats holds like scrap. Prior period was not restated.",
+    id: "conclusion",
+    label: "First conclusion",
+    heading: "Most of the drop is a reporting change",
+    body: "HOLD_RECLASS was introduced mid-period and routes held units out of good output. The prior period was never restated, so the two are not comparable.",
   },
   {
-    id: "revise",
-    label: "Facts changed",
-    note: "Reporting change confirmed - residual risk still sits on L2 Day. Validate before next shift.",
+    id: "revised",
+    label: "After the facts change",
+    heading: "One real risk survives the correction",
+    body: "Line L2 Day still carries rework and scrap beyond the reclassified volume. That is an operational issue and it should be validated before the next shift.",
   },
 ];
 
+const EVIDENCE: { id: Step[]; title: string; detail: string; tone: "evidence" | "risk" }[] = [
+  {
+    id: ["conclusion", "revised"],
+    title: "HOLD_RECLASS events",
+    detail: "Q-303 and Q-304, current period only",
+    tone: "evidence",
+  },
+  {
+    id: ["conclusion", "revised"],
+    title: "Metric dictionary",
+    detail: "Yield excludes units that leave good output",
+    tone: "evidence",
+  },
+  {
+    id: ["revised"],
+    title: "L2 Day rework and scrap",
+    detail: "90 units, above the reclassified volume",
+    tone: "risk",
+  },
+];
+
+const FILES = [
+  "production_runs.csv",
+  "quality_events.csv",
+  "Metric dictionary",
+];
+
 export default function HeroSimPreview() {
-  const [phase, setPhase] = useState<Phase>("investigate");
-  const [filterCurrent, setFilterCurrent] = useState(true);
+  const [step, setStep] = useState<Step>("investigate");
+  const [currentOnly, setCurrentOnly] = useState(false);
 
-  useEffect(() => {
-    const order: Phase[] = ["investigate", "finding", "revise"];
-    let i = 0;
-    const t = setInterval(() => {
-      i = (i + 1) % order.length;
-      const next = order[i];
-      setPhase(next);
-      setFilterCurrent(next !== "investigate");
-    }, 4200);
-    return () => clearInterval(t);
-  }, []);
-
-  const visible = filterCurrent ? ROWS.filter((r) => r.period === "current") : ROWS;
-  const active = PHASES.find((p) => p.id === phase)!;
+  const active = STEPS.find((s) => s.id === step)!;
+  const rows = currentOnly ? ROWS.filter((r) => r.period === "current") : ROWS;
+  const evidence = EVIDENCE.filter((e) => e.id.includes(step));
 
   return (
     <div
-      className="overflow-hidden rounded-[14px] border border-[var(--border-strong)] bg-[var(--surface-raised)] shadow-[var(--shadow-card)]"
+      className="overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)] shadow-[var(--shadow-panel)]"
       data-scene="investigation-canvas"
       data-fixture="northline-ops-yield"
     >
-      {/* Window chrome - utilitarian, not decorative glow */}
-      <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-4 py-2.5">
-        <div className="flex items-center gap-2.5">
-          <span className="text-[13px] font-medium text-white/90">Operations performance investigation</span>
-          <span className="text-[12px] text-white/35">Northline Components</span>
+      <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] px-4 py-2.5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="truncate text-[13px] font-medium text-[var(--text-primary)]">
+            Operations performance investigation
+          </span>
+          <span className="hidden shrink-0 text-[12.5px] text-[var(--text-tertiary)] sm:inline">
+            Northline Components
+          </span>
         </div>
-        <div className="flex items-center gap-3 text-[12px] text-white/40">
+        <div className="flex shrink-0 items-center gap-3 text-[12.5px] text-[var(--text-tertiary)]">
           <span className="tabular-nums">19:42 left</span>
-          <span className="text-white/25">|</span>
+          <span aria-hidden>·</span>
           <span>Saved</span>
         </div>
       </div>
 
-      <div className="grid min-h-[440px] lg:min-h-[480px] lg:grid-cols-[210px_1fr_240px]">
-        {/* Brief */}
+      <div className="grid lg:grid-cols-[188px_minmax(0,1fr)_248px]">
         <aside className="border-b border-[var(--border-subtle)] p-4 lg:border-b-0 lg:border-r">
-          <p className="text-[12px] font-medium text-white/50">Business question</p>
-          <p className="mt-2 text-[13px] leading-relaxed text-white/80">
-            Reported plant yield fell from 93.2%. Is production worse, or did reporting change?
+          <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+            Business question
           </p>
-          <p className="mt-4 text-[12px] font-medium text-white/50">Resources</p>
-          <ul className="mt-2 space-y-1.5 text-[12.5px]">
-            <li className="rounded-[6px] bg-white/[0.06] px-2.5 py-1.5 text-white">
-              production_runs.csv
-            </li>
-            <li className="rounded-[6px] px-2.5 py-1.5 text-white/55 hover:bg-white/[0.03]">
-              quality_events.csv
-            </li>
-            <li className="rounded-[6px] px-2.5 py-1.5 text-white/55 hover:bg-white/[0.03]">
-              Metric dictionary
-            </li>
+          <p className="mt-2 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+            Reported yield fell. Is production worse, or did reporting change?
+          </p>
+          <p className="mt-5 text-[12px] font-medium text-[var(--text-tertiary)]">
+            Resources
+          </p>
+          <ul className="mt-2 space-y-0.5">
+            {FILES.map((file, i) => (
+              <li
+                key={file}
+                className={`rounded-[5px] px-2 py-1.5 text-[12.5px] ${
+                  i === 0
+                    ? "bg-white/[0.06] text-[var(--text-primary)]"
+                    : "text-[var(--text-secondary)]"
+                }`}
+              >
+                {file}
+              </li>
+            ))}
           </ul>
         </aside>
 
-        {/* Table */}
-        <div className="border-b border-[var(--border-subtle)] p-4 lg:border-b-0 lg:border-r">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setFilterCurrent(false)}
-              className={`rounded-[6px] border px-2.5 py-1 text-[12px] transition ${
-                !filterCurrent
-                  ? "border-white/25 bg-white/[0.08] text-white"
-                  : "border-transparent text-white/45 hover:text-white/70"
-              }`}
-            >
-              All periods
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterCurrent(true)}
-              className={`rounded-[6px] border px-2.5 py-1 text-[12px] transition ${
-                filterCurrent
-                  ? "border-white/25 bg-white/[0.08] text-white"
-                  : "border-transparent text-white/45 hover:text-white/70"
-              }`}
-            >
-              Current period
-            </button>
+        <div className="min-w-0 border-b border-[var(--border-subtle)] p-4 lg:border-b-0 lg:border-r">
+          <div
+            className="mb-3 inline-flex rounded-[6px] border border-[var(--border-subtle)] p-0.5"
+            role="group"
+            aria-label="Filter rows by period"
+          >
+            {[
+              { label: "All periods", value: false },
+              { label: "Current only", value: true },
+            ].map((option) => (
+              <button
+                key={option.label}
+                type="button"
+                onClick={() => setCurrentOnly(option.value)}
+                aria-pressed={currentOnly === option.value}
+                className={`rounded-[4px] px-2.5 py-1 text-[12px] transition-colors ${
+                  currentOnly === option.value
+                    ? "bg-white/[0.09] text-[var(--text-primary)]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
-          <div className="overflow-x-auto rounded-[10px] border border-[var(--border-subtle)]">
-            <table className="w-full min-w-[480px] border-collapse text-left text-[12px] tabular-nums">
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[430px] border-collapse text-left text-[12.5px] tabular-nums">
+              <caption className="sr-only">
+                Production runs by period, line and shift
+              </caption>
               <thead>
-                <tr className="border-b border-[var(--border-subtle)] bg-white/[0.03] text-white/45">
-                  <th className="px-2.5 py-2 font-medium">Period</th>
-                  <th className="px-2.5 py-2 font-medium">Line</th>
-                  <th className="px-2.5 py-2 font-medium">Shift</th>
-                  <th className="px-2.5 py-2 font-medium">Planned</th>
-                  <th className="px-2.5 py-2 font-medium">Completed</th>
-                  <th className="px-2.5 py-2 font-medium">Yield</th>
+                <tr className="border-b border-[var(--border-subtle)]">
+                  {["Period", "Line", "Shift", "Planned", "Completed", "Yield"].map(
+                    (head, i) => (
+                      <th
+                        key={head}
+                        scope="col"
+                        className={`py-2 pr-3 text-[11.5px] font-medium uppercase tracking-[0.04em] text-[var(--text-tertiary)] ${
+                          i > 2 ? "text-right" : ""
+                        }`}
+                      >
+                        {head}
+                      </th>
+                    ),
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {visible.map((r) => {
-                  const highlight =
-                    (phase !== "investigate" && r.hold) ||
-                    (phase === "revise" && r.residual);
+                {rows.map((r) => {
+                  const flagged = step !== "investigate" && r.reclass;
+                  const risky = step === "revised" && r.residual;
                   return (
                     <tr
                       key={`${r.period}-${r.line}-${r.shift}`}
-                      className={`border-b border-[var(--border-subtle)] last:border-0 ${
-                        highlight ? "bg-[var(--fydell-evidence)]/10" : ""
+                      className={`border-b border-[var(--border-subtle)] last:border-b-0 ${
+                        risky
+                          ? "bg-[rgba(242,107,130,0.07)]"
+                          : flagged
+                            ? "bg-[rgba(233,185,73,0.07)]"
+                            : ""
                       }`}
                     >
-                      <td className="px-2.5 py-2 text-white/70">{r.period}</td>
-                      <td className="px-2.5 py-2 text-white">{r.line}</td>
-                      <td className="px-2.5 py-2 text-white/70">{r.shift}</td>
-                      <td className="px-2.5 py-2 text-white/70">{r.planned}</td>
-                      <td className="px-2.5 py-2 text-white/70">{r.completed}</td>
+                      <td className="py-2 pr-3 text-[var(--text-secondary)]">{r.period}</td>
+                      <td className="py-2 pr-3 text-[var(--text-primary)]">{r.line}</td>
+                      <td className="py-2 pr-3 text-[var(--text-secondary)]">{r.shift}</td>
+                      <td className="py-2 pr-3 text-right text-[var(--text-secondary)]">
+                        {r.planned}
+                      </td>
+                      <td className="py-2 pr-3 text-right text-[var(--text-secondary)]">
+                        {r.completed}
+                      </td>
                       <td
-                        className={`px-2.5 py-2 font-medium ${
-                          r.residual && phase === "revise"
+                        className={`py-2 pr-3 text-right font-medium ${
+                          risky
                             ? "text-[var(--fydell-risk)]"
-                            : "text-white"
+                            : flagged
+                              ? "text-[var(--fydell-changed)]"
+                              : "text-[var(--text-primary)]"
                         }`}
                       >
                         {r.yield}
@@ -165,51 +232,65 @@ export default function HeroSimPreview() {
           </div>
         </div>
 
-        {/* Evidence tray + conclusion */}
-        <aside className="flex flex-col gap-3 p-4">
-          <p className="text-[12px] font-medium text-white/50">Evidence tray</p>
-          <div className="space-y-2">
-            <div className="relative rounded-[10px] border border-[var(--border-subtle)] bg-white/[0.02] py-2.5 pl-3 pr-2.5 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[2px] before:rounded-full before:bg-[var(--fydell-evidence)]">
-              <p className="text-[12px] font-medium text-white">HOLD_RECLASS events</p>
-              <p className="mt-0.5 text-[11.5px] leading-snug text-white/45">
-                Appear only in current period (Q-303, Q-304)
-              </p>
-            </div>
-            <div
-              className={`relative rounded-[10px] border border-[var(--border-subtle)] bg-white/[0.02] py-2.5 pl-3 pr-2.5 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[2px] before:rounded-full ${
-                phase === "revise"
-                  ? "before:bg-[var(--fydell-risk)]"
-                  : "before:bg-white/20"
-              }`}
-            >
-              <p className="text-[12px] font-medium text-white">L2 Day scrap / rework</p>
-              <p className="mt-0.5 text-[11.5px] leading-snug text-white/45">
-                Elevated beyond reclass volume
-              </p>
-            </div>
-          </div>
+        <aside className="flex flex-col p-4">
+          <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+            {active.id === "investigate" ? "Notes" : "Conclusion"}
+          </p>
+          <p className="mt-2 text-[12.5px] font-medium leading-[1.45] text-[var(--text-primary)]">
+            {active.heading}
+          </p>
+          <p className="mt-1.5 text-[12px] leading-[1.6] text-[var(--text-secondary)]">
+            {active.body}
+          </p>
 
-          <div className="mt-auto rounded-[10px] border border-[var(--border-subtle)] bg-white/[0.03] p-3">
-            <p className="text-[12px] font-medium text-white/50">{active.label}</p>
-            <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/75">{active.note}</p>
-          </div>
+          {evidence.length > 0 ? (
+            <>
+              <p className="mt-5 text-[12px] font-medium text-[var(--text-tertiary)]">
+                Cited evidence
+              </p>
+              <ul className="mt-2 space-y-1.5">
+                {evidence.map((item) => (
+                  <li
+                    key={item.title}
+                    className="relative rounded-[6px] border border-[var(--border-subtle)] py-2 pl-3 pr-2.5"
+                  >
+                    <span
+                      aria-hidden
+                      className={`absolute inset-y-1.5 left-0 w-[2px] rounded-full ${
+                        item.tone === "risk"
+                          ? "bg-[var(--fydell-risk)]"
+                          : "bg-[var(--fydell-evidence)]"
+                      }`}
+                    />
+                    <p className="text-[12px] font-medium text-[var(--text-primary)]">
+                      {item.title}
+                    </p>
+                    <p className="mt-0.5 text-[11.5px] leading-[1.45] text-[var(--text-secondary)]">
+                      {item.detail}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
         </aside>
       </div>
 
-      {/* Phase selector - compact, not pill ornaments */}
-      <div className="flex flex-wrap gap-1 border-t border-[var(--border-subtle)] px-3 py-2">
-        {PHASES.map((p) => (
+      <div className="flex flex-wrap items-center gap-1 border-t border-[var(--border-subtle)] px-3 py-2">
+        {STEPS.map((s, i) => (
           <button
-            key={p.id}
+            key={s.id}
             type="button"
-            onClick={() => setPhase(p.id)}
-            className={`rounded-[6px] px-2.5 py-1 text-[12px] transition ${
-              phase === p.id
-                ? "bg-white/[0.1] text-white"
-                : "text-white/40 hover:text-white/70"
+            onClick={() => setStep(s.id)}
+            aria-pressed={step === s.id}
+            className={`rounded-[5px] px-2.5 py-1 text-[12px] transition-colors ${
+              step === s.id
+                ? "bg-white/[0.09] text-[var(--text-primary)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
-            {p.label}
+            <span className="tabular-nums text-[var(--text-tertiary)]">{i + 1}</span>{" "}
+            {s.label}
           </button>
         ))}
       </div>
