@@ -12,31 +12,30 @@ export const metadata = {
 export default function HomePage() {
   return (
     <MarketingShell>
-      <section className="relative overflow-hidden pb-10 pt-[112px] sm:pt-[120px] lg:pb-14">
+      <section className="relative overflow-hidden pb-16 pt-[96px] sm:pt-[104px] lg:pb-20">
         <div className="mkt-content relative z-10">
-          <div className="max-w-[640px]">
+          <div className="max-w-[740px]">
             <h1
-              className="flat-type text-[36px] font-semibold leading-[1.08] tracking-[-0.03em] text-white sm:text-[44px] lg:text-[48px]"
-              style={{ textWrap: "balance" }}
+              className="flat-type text-[40px] font-semibold leading-[1.05] tracking-[-0.03em] text-white sm:text-[52px] lg:text-[58px]"
+              style={{ textWrap: "balance", fontWeight: 600 }}
             >
               Real work before you interview - with evidence you can open.
             </h1>
-            <p className="mt-5 max-w-[520px] text-[15px] leading-relaxed text-white/50 sm:text-[16px]">
-              Candidates complete a realistic Data Analyst investigation. Fydell turns their
-              decisions, artifacts, revisions, and follow-up defense into an inspectable report.
-              Candidates keep a private Work Receipt they control.
+            <p className="mt-6 max-w-[540px] text-[16px] leading-relaxed text-white/50">
+              A candidate investigates real work, collects evidence, and produces an inspectable
+              conclusion you can open claim by claim.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-9 flex flex-wrap items-center gap-3">
               <ButtonLink href="/request-pilot" variant="primary">
                 Request a pilot
               </ButtonLink>
-              <ButtonLink href="/login" variant="secondary">
-                Sign in
+              <ButtonLink href="/product" variant="secondary">
+                See the product
               </ButtonLink>
             </div>
           </div>
 
-          <div className="relative mt-12 sm:mt-14">
+          <div className="relative mt-14 sm:mt-16 lg:mt-[72px]">
             <HeroSimPreview />
           </div>
         </div>

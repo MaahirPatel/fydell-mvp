@@ -1,17 +1,18 @@
 # UI slop audit
 
-Status values: `PASS` | `FAIL` | `UNVERIFIED`. Updated 2026-08-13 after homepage gate capture.
+Status values: `PASS` | `FAIL` | `UNVERIFIED`. Updated 2026-08-13 after spacious homepage + Simulations feed revision.
 
 ## Four Horsemen checklist
 
 | Route | Lazy selection | Oversized eyebrows | Decorative pills | Glow / purple wash |
 | --- | --- | --- | --- | --- |
-| `/` | PASS (2px evidence rail / compact selected tabs) | PASS (no section ALL-CAPS eyebrows) | PASS (no Live/New capsules; Saved is factual autosave label) | PASS (flat canvas; no dual radials / pedestal glow) |
+| `/` | PASS (2px evidence rail / compact selected tabs) | PASS (no ALL-CAPS eyebrows) | PASS (no Live/New capsules) | PASS (flat canvas) |
+| `/simulations` | PASS (text filter, not ribbon slabs) | PASS (sentence-case filters) | PASS (removed violet "5 simulations" pills) | PASS |
 | `/product` | PASS | PASS | PASS | PASS |
-| `/pricing` | PASS (existing denser marketing; no Live pills) | PASS | PASS | PASS |
+| `/pricing` | PASS | PASS | PASS | PASS |
 | `/trust` | PASS | PASS | PASS | PASS |
 | `/request-pilot` | PASS | PASS | PASS | PASS |
-| Employer chrome | PASS (2px rail on active nav) | PASS | PASS | PASS (graphite shell; paper content panels OK) |
+| Employer chrome | PASS (2px rail on active nav) | PASS | PASS | PASS |
 
 ## Broader failure modes
 
@@ -19,20 +20,21 @@ Status values: `PASS` | `FAIL` | `UNVERIFIED`. Updated 2026-08-13 after homepage
 | --- | --- |
 | Logo cloud | PASS absent |
 | Fake analytics | PASS absent |
-| Marketplace multi-role hero | PASS replaced with Northline ops-yield canvas |
-| Violet interactive chrome | PASS demoted; action uses `--fydell-action` |
+| Marketplace multi-role hero | PASS Northline ops-yield canvas |
+| Violet interactive chrome | PASS removed from simulations catalog |
 | Pedestal glow under product | PASS removed |
-| Pill CTAs | PASS rectangular 6–9px controls |
+| Pill CTAs | PASS rectangular ~9px |
+| Linear Now clone | PASS pacing borrowed; Fydell sim cards + evidence marks, not blog line-art |
 
 ## Derivative-design audit
 
 | Test | Result | Notes |
 | --- | --- | --- |
-| Fydell-without-the-logo | PASS | Hero + Northline yield table / evidence tray reads as hiring work trial |
-| Linear-with-different-copy | PASS | Left-aligned Fydell narrative + investigation canvas is not a Linear board/chat homepage |
-| Product-truth | PASS | Scene = `HeroSimPreview` / `investigation-canvas`; fixture = northline-ops-yield rows from `micro-ops-yield.ts` |
-| Asset-provenance | PASS | Canonical FydellMark; no Linear assets |
-| Similarity (restraint only) | PASS | Shared: calm density, hairline borders. Not shared: geometry, PM language, violet, figure labels |
+| Fydell-without-the-logo | PASS | Workbench, evidence tray, revision delta, receipt |
+| Linear-with-different-copy | PASS | Investigation + evidence motifs ≠ issue board / agent chat |
+| Product-truth | PASS | Scenes traced to Northline / marketing compositions |
+| Asset-provenance | PASS | Canonical mark; no Linear assets |
+| First-viewport identity | PASS | Hero ~58px + Northline workbench / evidence tray dominate |
 
 ## Screenshot evidence
 
@@ -40,17 +42,19 @@ Status values: `PASS` | `FAIL` | `UNVERIFIED`. Updated 2026-08-13 after homepage
 | --- | --- | --- |
 | 1440×900 | `docs/screenshots/visual-pass/home-1440x900.png` | originality PASS |
 | 1280×800 | `docs/screenshots/visual-pass/home-1280x800.png` | originality PASS |
+| 1440×900 | `docs/screenshots/visual-pass/simulations-1440x900.png` | Now-like pacing; Fydell sim feed PASS |
 
-## Product-truth inventory (homepage scenes)
+## Product-truth inventory
 
 | Scene | Component | Fixture | Interaction |
 | --- | --- | --- | --- |
-| Investigation canvas | `HeroSimPreview` | Northline production_runs rows | Filter + phase advance (read-only marketing) |
-| Investigate crop | `HomeProductStory` | Same yield rows | Static crop |
-| Revision delta | `HomeProductStory` | Curveball adaptation copy | Static |
-| Inspectable claim | `EvidenceRail` + claim copy | Reporting note / HOLD_RECLASS | Static |
-| Oral defense | `HomeProductStory` | Evidence-grounded question | Static |
-| Work Receipt | `HomeProductStory` | Share/revoke states | Static |
+| Investigation canvas | `HeroSimPreview` | northline-ops-yield | Filter + phase (marketing) |
+| Investigate crop | `HomeProductStory` | Same rows | Static |
+| Revision delta | `HomeProductStory` | Curveball | Static |
+| Inspectable claim | `EvidenceRail` | HOLD_RECLASS | Static |
+| Oral defense | `HomeProductStory` | Evidence question | Static |
+| Work Receipt | `HomeProductStory` | Share/revoke | Static |
+| Simulations grid | `SimulationsFeed` | `ALL_SIMULATIONS` | Role filter |
 
 ## Exceptions
 

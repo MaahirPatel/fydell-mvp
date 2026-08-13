@@ -1,8 +1,7 @@
 # UI reference audit
 
-Date: 2026-08-13  
-Scope: October pilot public + app chrome visual system  
-References: Linear (discipline only), supplied anti-slop crops, shipped Fydell product
+Date: 2026-08-13 (revision)  
+Scope: Public visual system - Linear as discipline reference only
 
 ## Reference boundary
 
@@ -11,61 +10,59 @@ References: Linear (discipline only), supplied anti-slop crops, shipped Fydell p
 | Grid discipline | Actual grid values and composition |
 | Calm vertical rhythm | Section order and visual narrative |
 | Product-led imagery | Workbench, evidence, curveball, report, receipt |
-| Restrained typography | Type scale, font decisions, and copy |
-| Opaque layered surfaces | Color, border, elevation, and component silhouettes |
-| Progressive workflow story | Hiring-work-trial evidence loop |
+| Restrained typography | Geist type scale, copy, tracking |
+| Opaque layered surfaces | Color, border, elevation, silhouettes |
+| Progressive workflow story | Hiring work-trial evidence loop |
 
-Linear is not a visual identity kit. Do not copy its homepage geometry, type scale, violet accents, issue-board language, figure labels, or product-window treatment.
+## Comparison
+
+| Linear principle | Current Fydell state | Fydell-specific implementation |
+| --- | --- | --- |
+| Strong product-led hero | Real workbench exists but composition is compressed | Enlarge and stage the Northline investigation |
+| One workflow per section | Multiple compact sections | Give each evidence-loop moment its own visual chapter (~700-900px) |
+| Confident hierarchy | 48px hero and ~30px section titles | Fydell 56-60px / 36-44px scale (not Linear 64px) |
+| Restrained surfaces | Mostly successful | Preserve opaque graphite; improve contrast |
+| Product as imagery | Truthful but small | Enlarge real components; evidence connections |
+| Distinct product identity | Color underused | Evidence trace, revision delta, inspectable claim, receipt |
+
+## Must not copy
+
+| Prohibited Linear attribute |
+| --- |
+| Exact header height, nav spacing, link placement |
+| Hero coordinates, max widths, 64px type, line breaks |
+| Inter typography |
+| Exact neutral palette / yellow-violet status accents |
+| Fully rounded CTA pills |
+| Issue board, agent chat, inbox, roadmap, diffs metaphors |
+| FIG labels / numbered product taxonomy |
+| Monochrome isometric line-art cubes |
+| Three-column principle section with FIG art |
+| Product-window framing, floating panes, cropping recipes |
+| Section order, animation choreography, copy patterns |
+| Logos, screenshots, icons, customer marks, CSS measurements |
 
 ## Fydell visual thesis
 
 > A candidate performs realistic work, the facts change, and every consequential conclusion can be traced back to evidence.
 
-Primary metaphor: Northline ops-yield investigation canvas, not project management, kanban, or AI chat.
+## Navigation intent (October)
 
-## Four Horsemen mapping (anti-references)
-
-| Anti-crop | Horseman | Current Fydell risk |
+| Link | Route | Notes |
 | --- | --- | --- |
-| Thick gold/colored selected ribbon | Lazy selected states | RoleExplorer / card selection must use 2–3px rail + contrast only |
-| Wide-tracked ALL-CAPS "LETTER SPACING" | Oversized eyebrows | HeroSimPreview stage labels, product page eyebrows |
-| Glowing green "Live" pill | Random status pills | LiveIndicator (unused), Saved/event capsules in hero preview |
-| Purple glow inside rounded panel | Glow lights / purple gradients | AmbientBackground dual radials, body background washes |
+| Product | `/product` | Method / loop |
+| Simulations | `/simulations` | Spacious catalog (Now-like pacing, Fydell content) |
+| Pilot | `/request-pilot` | Primary conversion |
+| Trust | `/trust` | Truthful claims |
+| Sign in | `/login` | Auth |
+| Request a pilot | `/request-pilot` | Rectangular CTA |
 
-## What to preserve
+Roles and Pricing remain reachable from footer when useful; primary nav must not oversell a marketplace.
 
-- Canonical Fydell mark (blue→red) and white wordmark on graphite
-- Graphite canvas `#050507`
-- Product-led hero with workbench under copy
-- Rectangular marketing `ButtonLink` pattern
-- Dark `MicroResultView` for evidence samples
-- October CTAs: Request a pilot / Sign in
+## Screenshot gate (2026-08-13)
 
-## What to remove or replace
-
-- Multi-role marketplace hero stories (Missing Delays rotation) → single ops-yield Northline fixture
-- Pedestal / box glows under product frames
-- Decorative uppercase tracking labels
-- Violet as default interactive accent on RoleExplorer / EvidenceFlow
-- Unused slop landmines: TrustedBy, Glow*, LiveIndicator, GlassPanel, FydellAurora
-- Pill CTAs on homepage / nav primary action
-
-## Route design intent (primary action)
-
-| Route | Primary action | Imagery |
-| --- | --- | --- |
-| `/` | Request a pilot | Ops-yield investigation → revision → claim → defense → receipt |
-| `/product` | Understand the evaluation loop | Same motifs, one crop per section |
-| `/pricing` | Choose pilot path | Dense operational copy, no fake charts |
-| `/trust` | Read security/privacy truth | Opaque surfaces, no glow cards |
-| `/request-pilot` | Submit request | Form-first, quiet chrome |
-| `/app/employer/*` | Operate cohort | Graphite chrome alignment |
-| `/sim/[id]` | Complete work trial | Investigation canvas (app density) |
-
-## Linear principles used (not copied)
-
-- Product scene dominates first viewport
-- Short copy, strong hierarchy
-- One workflow step per section
-- Opaque surfaces, hairline borders
-- Restrained motion only for state change
+| Capture | Result |
+| --- | --- |
+| Home 1440x900 | PASS - workbench + evidence rails; not PM board |
+| Home 1280x800 | PASS |
+| Simulations 1440x900 | PASS - spacious title, sentence-case filters, 3-col Fydell cards; no violet pills / uppercase eyebrows |

@@ -72,7 +72,7 @@ export default function HeroSimPreview() {
         </div>
       </div>
 
-      <div className="grid min-h-[380px] lg:grid-cols-[200px_1fr_220px]">
+      <div className="grid min-h-[440px] lg:min-h-[480px] lg:grid-cols-[210px_1fr_240px]">
         {/* Brief */}
         <aside className="border-b border-[var(--border-subtle)] p-4 lg:border-b-0 lg:border-r">
           <p className="text-[12px] font-medium text-white/50">Business question</p>

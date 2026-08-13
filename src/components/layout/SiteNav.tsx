@@ -6,11 +6,12 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import FydellBrand from "@/components/brand/FydellBrand";
 
+/** October-truthful primary nav - no marketplace oversell. */
 const LINKS = [
   { label: "Product", href: "/product" },
-  { label: "Roles", href: "/roles" },
   { label: "Simulations", href: "/simulations" },
-  { label: "Pricing", href: "/pricing" },
+  { label: "Pilot", href: "/request-pilot" },
+  { label: "Trust", href: "/trust" },
 ];
 
 export default function SiteNav() {
@@ -35,14 +36,11 @@ export default function SiteNav() {
   }, [open]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)]/92">
+    <header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)]/95">
       <div className="mkt-content flex h-full items-center justify-between gap-6">
         <FydellBrand markSize={22} wordmarkSize={17} className="gap-2 shrink-0" />
 
-        <nav
-          className="hidden items-center gap-7 lg:flex"
-          aria-label="Primary"
-        >
+        <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
           {LINKS.map((item) => {
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -70,7 +68,7 @@ export default function SiteNav() {
           </Link>
           <Link
             href="/request-pilot"
-            className="hidden h-8 items-center rounded-[6px] bg-[var(--fydell-action,#e8eaed)] px-3.5 text-[13px] font-medium text-[#090A0D] transition hover:brightness-[0.97] sm:inline-flex"
+            className="hidden h-8 items-center rounded-[9px] bg-[var(--fydell-action,#e8eaed)] px-3.5 text-[13px] font-medium text-[#090A0D] transition hover:brightness-[0.97] sm:inline-flex"
           >
             Request a pilot
           </Link>
@@ -79,7 +77,7 @@ export default function SiteNav() {
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-white/70 transition hover:text-white lg:hidden"
+            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-white/10 text-white/70 transition hover:text-white lg:hidden"
           >
             {open ? <X className="h-4 w-4" strokeWidth={1.7} /> : <Menu className="h-4 w-4" strokeWidth={1.7} />}
           </button>
@@ -87,14 +85,14 @@ export default function SiteNav() {
       </div>
 
       {open && (
-        <div className="border-t border-white/[0.06] bg-[#050507] px-4 py-3 lg:hidden">
+        <div className="border-t border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4 py-3 lg:hidden">
           <nav className="flex flex-col gap-0.5" aria-label="Mobile">
             {LINKS.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-[14px] text-white/60 hover:bg-white/[0.04] hover:text-white"
+                className="rounded-[6px] px-3 py-2.5 text-[14px] text-white/60 hover:bg-white/[0.04] hover:text-white"
               >
                 {item.label}
               </Link>
@@ -102,14 +100,14 @@ export default function SiteNav() {
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-2.5 text-[14px] text-white/60 hover:text-white"
+              className="rounded-[6px] px-3 py-2.5 text-[14px] text-white/60 hover:text-white"
             >
               Sign in
             </Link>
             <Link
               href="/request-pilot"
               onClick={() => setOpen(false)}
-              className="mt-2 inline-flex h-10 items-center justify-center rounded-[6px] bg-[var(--fydell-action,#e8eaed)] text-[14px] font-medium text-[#090A0D]"
+              className="mt-2 inline-flex h-10 items-center justify-center rounded-[9px] bg-[var(--fydell-action,#e8eaed)] text-[14px] font-medium text-[#090A0D]"
             >
               Request a pilot
             </Link>

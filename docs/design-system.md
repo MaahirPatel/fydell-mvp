@@ -2,88 +2,67 @@
 
 ## Fydell visual thesis
 
-Fydell is a work-trial and evidence product. Surfaces should make investigation, revision under changed facts, and citation-backed claims feel precise and trustworthy.
+Fydell is a work-trial and evidence product. Visual grammar comes from investigation, revision under changed facts, and citation-backed claims - not issue tracking or agent chat.
 
-## Canonical logo and mark
+## Typography (Geist)
 
-- Use repository `FydellMark` / `FydellBrand` only. Do not redraw or Linearize the symbol.
-- Wordmark is white on graphite.
-- Blue→red lives in the mark; do not wash pages with that gradient.
+Keep Geist. Distinct from Linear/Inter.
 
-## Color palette and semantic tokens
+| Role | Desktop size | Weight | Notes |
+| --- | --- | --- | --- |
+| Display / hero | 56-60px | 600 | LH 1.02-1.08; tracking ~-0.03em |
+| Major section | 36-44px | 600 | tracking ~-0.025em |
+| Product UI title | 18-24px | 600 | |
+| Body | 15-17px | 400-450 | natural tracking |
+| Metadata | 12-13px | 500 | sentence case only |
+| Data / timers | 12-13px | 450 | tabular-nums |
 
-| Token | Role |
+No wide-tracked uppercase eyebrows.
+
+## Grid and spacing
+
+- Content width: ~1160-1220px (`--page-max-width: 1180px`)
+- 4px base / 8px rhythm
+- Major narrative sections: ~700-900px desktop when content justifies
+- One idea per viewport; do not stack two major moments
+
+## Radii
+
+- Control: 6px
+- Panel: 10px
+- Frame: 14px
+- CTAs: rectangular ~9px - never Linear pills
+
+## Color semantics
+
+| Token | Use |
 | --- | --- |
-| `--surface-canvas` | Page / shell background |
-| `--surface-raised` | Panels, product frames |
-| `--surface-paper` | Optional light reading surface inside dark shell |
-| `--border-subtle` / `--border-strong` | Hairline hierarchy |
-| `--fydell-brand-blue` / `--fydell-brand-red` | Brand mark + rare local accents |
-| `--fydell-action` | Primary actions, focusable emphasis |
-| `--fydell-evidence` | Evidence affordances |
-| `--fydell-evidence-selected` | Selected claim / citation |
-| `--fydell-risk` | Risk / integrity warning |
-| `--fydell-integrity` | Integrity / disclosure signals |
+| `--surface-canvas` | Page chrome |
+| `--surface-raised` | Panels / product frames |
+| `--surface-paper` | Long report reading |
+| `--fydell-brand-blue` | Evidence, selection, citations |
+| `--fydell-brand-red` | Changed info, residual risk, integrity |
+| `--fydell-action` | Primary CTA fill (near-white) |
+| `--fydell-evidence` / `--fydell-evidence-selected` | Trace + open citation |
+| `--fydell-risk` | Residual risk / contradiction |
+| `--fydell-integrity` | Integrity / disclosure |
 
-Neutrals dominate. Accents appear only when they encode action, evidence, selection, change, risk, or integrity. Linear violet is not a default accent.
+No purple fog, violet default accents, gradient text, or glowing frames.
 
-## Type
+## Motifs
 
-- Stack: Geist Sans / Inter (existing). Kept because operational density and tabular data already use it; not changed to imitate Linear.
-- Sentence case by default.
-- Natural tracking for body, nav, buttons, labels.
-- Display headings: restrained negative tracking only (`≈ -0.02em` to `-0.035em`).
-- Uppercase: rare compact metadata, ≤ ~`0.06em` tracking, never section eyebrows.
-- Tabular numerals for timers, counts, yields, scores.
+1. **Evidence trace** - 2px blue rail/connector: source -> bookmark -> claim -> opened citation  
+2. **Changed-information delta** - original / new fact / revised / uncertainty (layout + labels, not git diff)  
+3. **Inspectable claim** - claim, support, limitation, source, open action  
+4. **Work Receipt** - private record: identity, trial, evidence, scope, share, expiry, revoke  
+5. **Investigation canvas** - Northline workbench as primary brand image  
 
-### Scale (Fydell-derived)
+## CTA rules
 
-| Role | Size | Weight |
-| --- | --- | --- |
-| Display | 36–48px | 600 |
-| Page title | 28–34px | 600 |
-| Section title | 22–26px | 600 |
-| Body | 15–16px | 400–450 |
-| Label | 13–14px | 500 |
-| Metadata | 11–12px | 500 |
-| Data / table | 12–13px tabular | 450 |
+- Primary: rectangular, high contrast, `Request a pilot`
+- Secondary: rectangular outline / ghost
+- No capsules except true toggles/avatars if required
 
-## Spacing and radius
+## Motion
 
-- 4px base, 8px primary rhythm.
-- Radius: 6 / 10 / 14px. Capsules only for compact controls that require them.
-- Marketing spacing is generous; app chrome is denser.
-
-## Original motifs
-
-### Evidence rail
-
-2–3px accent rail on the leading edge of a claim, citation, or receipt evidence row. Communicates **traceability**, not decoration. Never an oversized ribbon or silhouette-changing slab.
-
-### Investigation canvas
-
-Workbench anatomy: brief → resource tabs → readable table → filter/compare → evidence tray → working conclusion → autosave status (factual only).
-
-### Revision delta
-
-Original finding / new fact / retained or revised conclusion / evidence reason. Accessible without color alone (labels + structure). No theatrical red/green diff chrome.
-
-### Inspectable claim
-
-`claim → support → limitation/counterexample → source`. Opening a citation is a signature interaction.
-
-### Work Receipt composition
-
-Private professional record: identity, trial completed, demonstrated evidence, scope/limitations, share state, expiry, revoke. Not a certificate, NFT, or social badge.
-
-## Marketing vs application density
-
-| | Marketing | Application |
-| --- | --- | --- |
-| Spacing | Larger section rhythm | Compact tables/forms |
-| Surfaces | Graphite raised frames | Graphite + optional paper for long reports |
-| Motion | Rare, explanatory | Autosave, curveball, citation open |
-
-## Focus
-
-Visible focus rings on dark and light surfaces (`outline` / ring with brand-blue at low opacity). Hover ≠ selected ≠ focus.
+Only for product state: filter, phase, citation open, autosave. Respect `prefers-reduced-motion`.

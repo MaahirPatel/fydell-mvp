@@ -3,15 +3,16 @@ import FydellBrand from "@/components/brand/FydellBrand";
 
 const PRODUCT = [
   { label: "Product", href: "/product" },
-  { label: "Roles", href: "/roles" },
   { label: "Simulations", href: "/simulations" },
-  { label: "Pricing", href: "/pricing" },
+  { label: "Pilot", href: "/request-pilot" },
+  { label: "Trust", href: "/trust" },
 ];
 
 const COMPANY = [
   { label: "Contact", href: "mailto:hello@fydell.com" },
-  { label: "Trust", href: "/trust" },
   { label: "Sign in", href: "/login" },
+  { label: "Roles", href: "/roles" },
+  { label: "Pricing", href: "/pricing" },
 ];
 
 const LEGAL = [
@@ -29,18 +30,13 @@ function FooterCol({
 }) {
   return (
     <div>
-      <p
-        className="text-[11px] uppercase tracking-[0.06em] text-[rgba(244,245,247,0.4)]"
-        style={{ fontWeight: 550 }}
-      >
-        {title}
-      </p>
+      <p className="text-[12.5px] font-medium text-white/45">{title}</p>
       <ul className="mt-3 space-y-2">
         {links.map((link) => (
           <li key={link.label}>
             <Link
               href={link.href}
-              className="text-[13px] text-[rgba(244,245,247,0.62)] transition-colors duration-150 hover:text-[#F4F5F7]"
+              className="text-[13px] text-white/50 transition-colors duration-150 hover:text-white"
             >
               {link.label}
             </Link>
@@ -58,8 +54,8 @@ export default function SiteFooter() {
         <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
           <div className="max-w-[280px]">
             <FydellBrand markSize={22} wordmarkSize={16} className="gap-2" />
-            <p className="mt-3 text-[13px] leading-[1.55] text-[rgba(244,245,247,0.4)]">
-              Fydell evaluates Applied Technical Roles through realistic work simulations.
+            <p className="mt-3 text-[13px] leading-[1.55] text-white/40">
+              Realistic work trials with inspectable evidence and candidate-controlled Work Receipts.
             </p>
           </div>
 
@@ -71,7 +67,7 @@ export default function SiteFooter() {
         </div>
 
         <div className="mt-12 flex items-center justify-between border-t border-[var(--border-subtle)] pt-5">
-          <p className="text-[12px] text-[rgba(244,245,247,0.28)]">
+          <p className="text-[12px] text-white/28">
             © {new Date().getFullYear()} Fydell, Inc.
           </p>
         </div>

@@ -28,7 +28,12 @@
 
 :root {
   --page-bg: #050507;
-  --page-max-width: 1160px;
+  --page-max-width: 1180px;
+  --type-display: clamp(2.75rem, 4.2vw, 3.75rem);
+  --type-section: clamp(2rem, 3vw, 2.625rem);
+  --type-body: 1rem;
+  --type-meta: 0.8125rem;
+  --section-narrative-py: clamp(5.5rem, 10vh, 7.5rem);
   --surface-canvas: #050507;
   --surface-raised: #0c0d12;
   --surface-paper: #f4f5f7;
@@ -402,11 +407,11 @@ h1.page-display {
 }
 
 .section-heading {
-  max-width: 500px;
+  max-width: 560px;
   color: #f4f5f7;
-  font-size: clamp(2.375rem, 3.2vw, 2.875rem);
-  font-weight: 540;
-  line-height: 1.06;
+  font-size: var(--type-section);
+  font-weight: 600;
+  line-height: 1.08;
   letter-spacing: -0.038em;
 }
 
