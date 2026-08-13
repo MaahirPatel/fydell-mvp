@@ -170,3 +170,65 @@ journeys end to end: refresh persistence, authorization boundaries, invitation d
 simulation completion, report generation, and Work Receipt sharing and revocation. The
 live project was deliberately left untouched; it holds real organizations and sessions, so
 it is not a safe place to seed test candidates.
+
+---
+
+# Productization pass
+
+Second pass, covering the candidate path and the parts of the employer app that
+the first pass could not render. Readiness and remaining blockers are in
+`docs/paid-product-readiness.md`; this section records the defects.
+
+The throwaway fixture layer described above is now a committed module,
+`src/lib/dev/preview.ts`, refused when `NODE_ENV` is `production` and reached
+through `npm run dev:preview`. It covers the employer data layer, the evidence
+report, the oral defense set, the candidate result and the receipt share list,
+which is what made the screens below auditable at all.
+
+## Candidate routes
+
+Classes: **L** no shared chrome, **M** bespoke palette instead of tokens,
+**N** retired terminology in candidate-visible copy, **O** dead end with no way
+onward, **P** capability the backend supports but the UI hides.
+
+| Route | L | M | N | O | P |
+| --- | --- | --- | --- | --- | --- |
+| `/invite/[token]` | FAIL to PASS | FAIL to PASS | FAIL to PASS | PASS | n/a |
+| `/app/candidate` | FAIL to PASS | FAIL to PASS | FAIL to PASS | FAIL to PASS | n/a |
+| `/sim/[id]` pre-start and consent | FAIL to PASS | FAIL to PASS | FAIL to PASS | PASS | n/a |
+| `/sim/[id]` workbench | by design | by design | FAIL to PASS | PASS | n/a |
+| `/sim/[id]/result` | FAIL to PASS | FAIL to PASS | FAIL to PASS | FAIL to PASS | FAIL to PASS |
+| `/record/[token]` | FAIL to PASS | FAIL to PASS | PASS | PASS | n/a |
+| `/results/[token]` | FAIL to PASS | FAIL to PASS | FAIL to PASS | PASS | n/a |
+
+The workbench keeps a light surface deliberately: it is twenty minutes of
+reading dense tabular material and writing prose, and a reading surface is the
+right call there. Every screen around it was brought onto the shared chrome, so
+it is now entered on a click rather than arrived at without explanation.
+
+## Defects found and fixed
+
+| Defect | Effect | Fix |
+| --- | --- | --- |
+| Scoring minted a permanent public URL for every session, plaintext, no expiry, no revoke, serving the full unredacted result | Any leaked link exposed a candidate's work forever, and nothing told them the link existed | No longer minted. Existing tokens still resolve so nothing already shared breaks, and that page says what kind of link it is |
+| `GET /defense` returned whole rows including `expected_understanding` | The endpoint authorizes the candidate, so it handed them the answer key before they answered | Projected to the fields the caller needs |
+| Work Receipt offered one button that minted a 30-day link with fields chosen for the candidate | Field scoping, expiry, audience and revoke all existed server-side and none were reachable | `WorkReceiptPermission`, plus a `GET` on the share route to list and revoke |
+| Completed evaluations on the candidate home linked nowhere | Finishing the work stranded you; the receipt number sat in a separate list with nothing to open | Rows link to the result, receipt shown on the row it belongs to |
+| Creating a receipt silently nulled the legacy share hash | Two share models presented as peers, one disabling the other | One model. The legacy page explains itself |
+| `EvidenceReportV2` was five white cards with violet bars | The named light-slab defect, on the screen a candidate is most likely to keep | Rebuilt on tokens. One bar colour, band strength said in words |
+| `StatusTag` had a fixed height | "Consented, not started" clipped in half at 390px | Minimum height, no internal wrap |
+| Candidates table scrolled sideways with actions off-screen | Unusable on a phone | Card list below the table's usable width |
+| Employer mobile nav scrolled Settings past the right edge | A destination existed with nothing to indicate it | Five fixed columns |
+| The white-slab detector ignored alpha | Reported a two percent white tint as a slab, so real results were buried in false ones | Alpha parsed and thresholded |
+
+## Machine-checked results, this pass
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Accessibility, 20 routes including employer and candidate | `npm run test:a11y` | 0 findings |
+| Responsive, 18 routes at 390/768/1280/1440 | `npm run test:responsive` | 0 defects across 72 renders |
+
+`audit-responsive.ts` checks horizontal overflow, light slabs on the graphite
+canvas, console errors, non-200 responses, and text under 11.5px. The text
+check found 34 runs of 11px labelling on the homepage; citation locators,
+trace stage names and panel eyebrows moved to 12px, which is the floor now.

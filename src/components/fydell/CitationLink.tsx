@@ -71,7 +71,7 @@ export function CitationLink({
       <span className="truncate text-[12px] text-[var(--text-secondary)]">
         {citation.source}
       </span>
-      <span className="shrink-0 text-[11.5px] tabular-nums text-[var(--text-tertiary)]">
+      <span className="shrink-0 text-[12px] tabular-nums text-[var(--text-tertiary)]">
         {citation.locator}
       </span>
     </>
@@ -125,10 +125,10 @@ export function CitationSource({
     <div className="overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-canvas)]">
       <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] px-2.5 py-1.5">
         <CitationMarker index={citation.index} tone={tone} />
-        <span className="truncate text-[11.5px] text-[var(--text-secondary)]">
+        <span className="truncate text-[12px] text-[var(--text-secondary)]">
           {citation.source}
         </span>
-        <span className="ml-auto shrink-0 text-[11px] tabular-nums text-[var(--text-tertiary)]">
+        <span className="ml-auto shrink-0 text-[12px] tabular-nums text-[var(--text-tertiary)]">
           {citation.locator}
         </span>
       </div>
@@ -136,7 +136,7 @@ export function CitationSource({
         {lines.map((line, i) => (
           <div
             key={i}
-            className={`flex gap-2 px-2.5 py-1 text-[11.5px] tabular-nums ${
+            className={`flex gap-2 px-2.5 py-1 text-[12px] tabular-nums ${
               line.highlight
                 ? "text-[var(--text-primary)]"
                 : "text-[var(--text-tertiary)]"

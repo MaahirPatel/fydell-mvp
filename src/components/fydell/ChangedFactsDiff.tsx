@@ -26,7 +26,7 @@ export function ChangedFactsDiff({ className = "" }: { className?: string }) {
     <div className={className}>
       <div className="grid gap-px overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--border-subtle)] sm:grid-cols-2">
         <div className="bg-[var(--surface-raised)] p-3.5">
-          <p className="text-[11px] font-medium text-[var(--text-tertiary)]">
+          <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
             {fact.before.label}
           </p>
           <p className="mt-1.5 text-[12.5px] leading-[1.5] text-[var(--text-tertiary)] line-through decoration-[rgba(242,107,130,0.6)] decoration-1">
@@ -38,7 +38,7 @@ export function ChangedFactsDiff({ className = "" }: { className?: string }) {
             aria-hidden
             className="absolute inset-y-3 left-0 w-[2px] rounded-full bg-[var(--fydell-changed)]"
           />
-          <p className="text-[11px] font-medium text-[var(--fydell-changed)]">
+          <p className="text-[12px] font-medium text-[var(--fydell-changed)]">
             {fact.after.label}
           </p>
           <p className="mt-1.5 text-[12.5px] leading-[1.5] text-[var(--text-primary)]">
@@ -48,7 +48,7 @@ export function ChangedFactsDiff({ className = "" }: { className?: string }) {
       </div>
 
       <div className="mt-3 rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-3.5">
-        <p className="text-[11px] font-medium text-[var(--text-tertiary)]">
+        <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
           Claim affected
         </p>
         <p className="mt-1 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">

@@ -53,7 +53,7 @@ export function ReportInspector({
   return (
     <div className={className}>
       <div className="px-4 py-3.5">
-        <p className="text-[11px] font-medium text-[var(--text-tertiary)]">
+        <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
           Candidate conclusion
         </p>
         <p className="mt-1.5 text-[13px] leading-[1.5] text-[var(--text-primary)]">
@@ -63,7 +63,7 @@ export function ReportInspector({
 
       <div className="grid border-t border-[var(--border-subtle)] lg:grid-cols-[minmax(0,1fr)_260px]">
         <div className="border-b border-[var(--border-subtle)] p-2 lg:border-b-0 lg:border-r">
-          <p className="px-2 pb-1.5 pt-1 text-[11px] font-medium text-[var(--text-tertiary)]">
+          <p className="px-2 pb-1.5 pt-1 text-[12px] font-medium text-[var(--text-tertiary)]">
             Claims. Select one to open its evidence.
           </p>
           <ul className="space-y-0.5">
@@ -104,7 +104,7 @@ export function ReportInspector({
                       {claim.citations.map((c) => (
                         <span
                           key={`${c.source}-${c.locator}`}
-                          className="inline-flex items-center gap-1 text-[11px] text-[var(--text-tertiary)]"
+                          className="inline-flex items-center gap-1 text-[12px] text-[var(--text-tertiary)]"
                         >
                           <CitationLink citation={c} />
                         </span>
@@ -118,14 +118,14 @@ export function ReportInspector({
         </div>
 
         <div className="p-3">
-          <p className="text-[11px] font-medium text-[var(--text-tertiary)]">
+          <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
             How the candidate got there
           </p>
           <p className="mt-1.5 text-[12px] leading-[1.5] text-[var(--text-secondary)]">
             {open.action}
           </p>
 
-          <p className="mt-4 text-[11px] font-medium text-[var(--text-tertiary)]">
+          <p className="mt-4 text-[12px] font-medium text-[var(--text-tertiary)]">
             Cited source
           </p>
           <div className="mt-1.5 space-y-1">
@@ -146,7 +146,7 @@ export function ReportInspector({
 
           {open.limitation ? (
             <>
-              <p className="mt-4 text-[11px] font-medium text-[var(--text-tertiary)]">
+              <p className="mt-4 text-[12px] font-medium text-[var(--text-tertiary)]">
                 Where this claim stops
               </p>
               <p className="mt-1 border-l-2 border-[var(--fydell-risk)] pl-2 text-[11.5px] leading-[1.5] text-[var(--text-secondary)]">

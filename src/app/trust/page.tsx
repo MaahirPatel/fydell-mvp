@@ -171,7 +171,7 @@ const NOT_CLAIMED = [
 
 function StateTag({ children }: { children: string }) {
   return (
-    <span className="shrink-0 rounded-[var(--radius-control)] border border-[var(--border-subtle)] px-2 py-[3px] text-[11px] text-[var(--text-tertiary)]">
+    <span className="shrink-0 rounded-[var(--radius-control)] border border-[var(--border-subtle)] px-2 py-[3px] text-[12px] text-[var(--text-tertiary)]">
       {children}
     </span>
   );

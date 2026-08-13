@@ -98,7 +98,7 @@ export default function WorkspacePreviewScene({
         </div>
 
         <div className="border-t border-[var(--border-subtle)] px-4 py-3">
-          <p className="text-[11px] font-medium text-[var(--text-tertiary)]">
+          <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
             A claim from the report it produces
           </p>
           <p className="mt-1.5 border-l-2 border-[var(--fydell-evidence)] pl-2.5 text-[12.5px] leading-[1.5] text-[var(--text-primary)]">

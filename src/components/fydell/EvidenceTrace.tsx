@@ -94,7 +94,7 @@ function Horizontal({
                 />
               ) : null}
             </div>
-            <p className="mt-2.5 text-[11px] font-medium text-[var(--text-tertiary)]">
+            <p className="mt-2.5 text-[12px] font-medium text-[var(--text-tertiary)]">
               {STAGE_NAME[node.stage]}
             </p>
             <p
@@ -150,7 +150,7 @@ function Vertical({
         const isSelected = selected === i;
         const body = (
           <>
-            <p className="text-[11px] font-medium text-[var(--text-tertiary)]">
+            <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
               {STAGE_NAME[node.stage]}
             </p>
             <p
