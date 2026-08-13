@@ -20,12 +20,15 @@ const LINKS = [
 ];
 
 export default function SiteNav() {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  /*
+   * The menu is stored as the route it was opened on rather than a boolean, so
+   * navigating away closes it by derivation instead of by an effect that fires
+   * a second render after the new route has already painted.
+   */
+  const [openedOn, setOpenedOn] = useState<string | null>(null);
+  const open = openedOn === pathname;
+  const setOpen = (next: boolean) => setOpenedOn(next ? pathname : null);
 
   useEffect(() => {
     if (!open) return;
@@ -90,7 +93,7 @@ export default function SiteNav() {
           </Link>
           <button
             type="button"
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setOpen(!open)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[var(--border-default)] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] lg:hidden"

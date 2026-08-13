@@ -18,13 +18,13 @@ import { validateMicroSim } from "../src/lib/simulations/micro-types";
 function loadEnv() {
   for (const file of [".env.goldenpath", ".env.local", ".env"]) {
     try {
-      let raw = readFileSync(resolve(process.cwd(), file));
+      const raw = readFileSync(resolve(process.cwd(), file));
       let text = raw.toString("utf8");
       if (text.includes("\u0000")) text = raw.toString("utf16le");
       for (const line of text.split(/\r?\n/)) {
         const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
         if (!m) continue;
-        let value = m[2].replace(/^["']|["']$/g, "");
+        const value = m[2].replace(/^["']|["']$/g, "");
         if (!value || value === "[SENSITIVE]") continue;
         if (!process.env[m[1]]) process.env[m[1]] = value;
       }

@@ -100,23 +100,31 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
   const [issued, setIssued] = useState<{ url: string; expiresAt: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/sim/results/${sessionId}/share`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not load your share links");
-      setCatalog(data.fieldCatalog || []);
-      setShares(data.shares || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load your share links");
-    } finally {
-      setLoaded(true);
-    }
-  }, [sessionId]);
+  // Bumped after issuing or revoking a share to re-read the server's list.
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/sim/results/${sessionId}/share`);
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok) throw new Error(data.error || "Could not load your share links");
+        setCatalog(data.fieldCatalog || []);
+        setShares(data.shares || []);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Could not load your share links");
+        }
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId, reloadKey]);
 
   const toggle = (field: string) => {
     setSelected((current) =>
@@ -143,7 +151,7 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
       if (!res.ok) throw new Error(data.error || "Could not create the link");
       setIssued({ url: data.recordUrl, expiresAt: data.expiresAt });
       setAudience("");
-      await load();
+      setReloadKey((k) => k + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create the link");
     } finally {
@@ -163,7 +171,7 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not revoke the link");
       if (issued) setIssued(null);
-      await load();
+      setReloadKey((k) => k + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not revoke the link");
     } finally {

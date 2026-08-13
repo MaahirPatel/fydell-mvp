@@ -31,7 +31,7 @@ console.log("After login, platform_user_roles must include an active role for th
 
 if (write) {
   const envPath = join(process.cwd(), ".env.local");
-  let contents = existsSync(envPath) ? readFileSync(envPath, "utf8") : "";
+  const contents = existsSync(envPath) ? readFileSync(envPath, "utf8") : "";
   const lines = contents.split(/\r?\n/);
   const set = (key: string, value: string) => {
     const idx = lines.findIndex((l) => l.startsWith(`${key}=`));

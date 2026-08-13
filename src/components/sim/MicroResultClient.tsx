@@ -32,35 +32,50 @@ export function MicroResultClient({ sessionId }: { sessionId: string }) {
   const attemptsRef = useRef(0);
   const feedbackRef = useRef<HTMLDivElement>(null);
 
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/sim/results/${sessionId}`);
-      const data = (await res.json()) as ResultPayload & { error?: string };
-      if (!res.ok) throw new Error(data.error || "Could not load your result");
-      setPayload(data);
-      setError(null);
-      if (!data.ready) {
+  // Each poll re-runs the effect rather than the fetch calling itself.
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    void (async () => {
+      try {
+        const res = await fetch(`/api/sim/results/${sessionId}`);
+        const data = (await res.json()) as ResultPayload & { error?: string };
+        if (cancelled) return;
+        if (!res.ok) throw new Error(data.error || "Could not load your result");
+        setPayload(data);
+        setError(null);
+        if (data.ready) return;
+
         attemptsRef.current += 1;
         // Retry scoring if it failed, then keep polling.
         if (data.failed && attemptsRef.current <= 3) {
           await fetch(`/api/sim/sessions/${sessionId}/analyze`, { method: "POST" }).catch(
             () => {}
           );
+          if (cancelled) return;
         }
-        if (attemptsRef.current < 20) setTimeout(() => void load(), 2500);
-        else
+        if (attemptsRef.current < 20) {
+          timer = setTimeout(() => setReloadKey((k) => k + 1), 2500);
+        } else {
           setError(
             "Scoring is taking longer than expected. Refresh this page in a moment. Your work is saved."
           );
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Could not load your result");
+        }
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load your result");
-    }
-  }, [sessionId]);
+    })();
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [sessionId, reloadKey]);
 
   if (error && !payload?.ready) {
     return (
@@ -74,7 +89,7 @@ export function MicroResultClient({ sessionId }: { sessionId: string }) {
               variant="primary"
               onClick={() => {
                 attemptsRef.current = 0;
-                void load();
+                setReloadKey((k) => k + 1);
               }}
             >
               Try again

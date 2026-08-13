@@ -1,22 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useStoredString } from "@/lib/client/local-storage";
+import { PILOT_PROFILE_KEY } from "@/components/pilot/profile-storage";
 
 /**
  * Shown on the result page only when a pilot tester profile exists in
  * localStorage. Guides the tester back to the structured feedback form.
  */
 export default function PilotReturnBanner() {
-  const [isPilotTester, setIsPilotTester] = useState(false);
-
-  useEffect(() => {
-    try {
-      setIsPilotTester(Boolean(window.localStorage.getItem("fydell.pilot.profile")));
-    } catch {
-      /* storage unavailable */
-    }
-  }, []);
+  const isPilotTester = Boolean(useStoredString(PILOT_PROFILE_KEY));
 
   if (!isPilotTester) return null;
 

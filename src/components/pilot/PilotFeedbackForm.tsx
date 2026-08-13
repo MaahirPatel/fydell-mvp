@@ -19,10 +19,11 @@ import {
 } from "@/components/pilot/pilot-data";
 import { ROLE_QUESTIONS } from "@/components/pilot/role-questions";
 import {
-  readPilotProfile,
+  PILOT_PROFILE_KEY,
+  parsePilotProfile,
   savePilotProfile,
-  type PilotProfile,
 } from "@/components/pilot/profile-storage";
+import { useIsHydrated, useStoredString } from "@/lib/client/local-storage";
 import {
   ChoiceGroup,
   PilotSection,
@@ -35,11 +36,24 @@ type SubmitStatus = "idle" | "submitting" | "error";
 
 export default function PilotFeedbackForm() {
   const router = useRouter();
-  const [profile, setProfile] = useState<PilotProfile>({});
-  const [loaded, setLoaded] = useState(false);
+  /*
+   * The tester's stored profile is read as an external store and everything
+   * seeded from it is derived, so the form never copies storage into state
+   * after mount.
+   */
+  const storedRaw = useStoredString(PILOT_PROFILE_KEY);
+  const profile = useMemo(() => parsePilotProfile(storedRaw), [storedRaw]);
+  const loaded = useIsHydrated();
 
   // Which simulation was completed (from localStorage, or picked here).
-  const [roleKey, setRoleKey] = useState<RoleKey | null>(null);
+  const [roleKeyEdit, setRoleKeyEdit] = useState<RoleKey | null | undefined>(undefined);
+  const roleKey =
+    roleKeyEdit !== undefined
+      ? roleKeyEdit
+      : profile.roleKey && ROLE_BY_KEY[profile.roleKey]
+        ? profile.roleKey
+        : null;
+  const setRoleKey = (next: RoleKey | null) => setRoleKeyEdit(next);
 
   // Product clarity
   const [clarity, setClarity] = useState<number | null>(null);
@@ -80,13 +94,6 @@ export default function PilotFeedbackForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const saved = readPilotProfile();
-    setProfile(saved);
-    if (saved.roleKey && ROLE_BY_KEY[saved.roleKey]) setRoleKey(saved.roleKey);
-    setLoaded(true);
-  }, []);
-
   const roleQuestions = roleKey ? ROLE_QUESTIONS[roleKey] : null;
 
   const simPickerOptions = useMemo(
@@ -104,12 +111,11 @@ export default function PilotFeedbackForm() {
     if (!key) return;
     setRoleKey(key);
     setRoleAnswers(Array(8).fill(""));
-    const next = savePilotProfile({
+    savePilotProfile({
       roleKey: key,
       templateSlug: PILOT_SIMS[key].slug,
       simulationTitle: PILOT_SIMS[key].title,
     });
-    setProfile(next);
   }
 
   function hasAnyAnswer(): boolean {

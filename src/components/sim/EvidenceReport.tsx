@@ -121,33 +121,41 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
     "evidence"
   );
 
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/sim/sessions/${sessionId}/report`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not load the report");
-      if (!data.ready) {
-        // Trigger analysis (idempotent) and poll.
-        void fetch(`/api/sim/sessions/${sessionId}/analyze`, { method: "POST" }).catch(
-          () => {}
-        );
-      }
-      setReport(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load the report");
-    }
-  }, [sessionId]);
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/sim/sessions/${sessionId}/report`);
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok) throw new Error(data.error || "Could not load the report");
+        if (!data.ready) {
+          // Trigger analysis (idempotent) and poll.
+          void fetch(`/api/sim/sessions/${sessionId}/analyze`, { method: "POST" }).catch(
+            () => {}
+          );
+        }
+        setReport(data);
+        setError(null);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Could not load the report");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId, reloadKey]);
+
   useEffect(() => {
-    if (report && !report.ready) {
-      const t = setTimeout(() => void load(), 5000);
-      return () => clearTimeout(t);
-    }
-  }, [report, load]);
+    if (!report || report.ready) return;
+    const t = setTimeout(reload, 5000);
+    return () => clearTimeout(t);
+  }, [report, reload]);
 
   if (error) {
     return (
@@ -155,7 +163,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
         title="Could not load this report"
         description={error}
         action={
-          <Button variant="secondary" size="sm" onClick={() => void load()}>
+          <Button variant="secondary" size="sm" onClick={reload}>
             Try again
           </Button>
         }

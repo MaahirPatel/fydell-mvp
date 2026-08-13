@@ -1,33 +1,58 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FAMILIARITY_OPTIONS,
   PERSPECTIVE_OPTIONS,
   isValidEmail,
 } from "@/components/pilot/pilot-data";
-import { readPilotProfile, savePilotProfile } from "@/components/pilot/profile-storage";
+import {
+  PILOT_PROFILE_KEY,
+  parsePilotProfile,
+  savePilotProfile,
+} from "@/components/pilot/profile-storage";
+import { useStoredString } from "@/lib/client/local-storage";
 import { ChoiceGroup, PrimaryButton, TextField } from "@/components/pilot/PilotUi";
+
+interface Draft {
+  perspective: string | null;
+  familiarity: string | null;
+  name: string;
+  email: string;
+  organization: string;
+}
 
 export default function PilotProfileForm() {
   const router = useRouter();
-  const [perspective, setPerspective] = useState<string | null>(null);
-  const [familiarity, setFamiliarity] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [organization, setOrganization] = useState("");
   const [errors, setErrors] = useState<{ perspective?: string; familiarity?: string; email?: string }>({});
 
-  // Pre-fill from a previous visit.
-  useEffect(() => {
-    const saved = readPilotProfile();
-    if (saved.perspective) setPerspective(saved.perspective);
-    if (saved.familiarity) setFamiliarity(saved.familiarity);
-    if (saved.name) setName(saved.name);
-    if (saved.email) setEmail(saved.email);
-    if (saved.organization) setOrganization(saved.organization);
-  }, []);
+  /*
+   * A previous visit pre-fills the form. The stored profile is read as an
+   * external store and the fields are derived from it, so nothing has to be
+   * copied into state after mount.
+   */
+  const storedRaw = useStoredString(PILOT_PROFILE_KEY);
+  const [edits, setEdits] = useState<Partial<Draft>>({});
+  const { perspective, familiarity, name, email, organization } = useMemo<Draft>(() => {
+    const saved = parsePilotProfile(storedRaw);
+    return {
+      perspective: saved.perspective ?? null,
+      familiarity: saved.familiarity ?? null,
+      name: saved.name ?? "",
+      email: saved.email ?? "",
+      organization: saved.organization ?? "",
+      ...edits,
+    };
+  }, [storedRaw, edits]);
+
+  const edit = <K extends keyof Draft>(key: K) => (value: Draft[K]) =>
+    setEdits((prev) => ({ ...prev, [key]: value }));
+  const setPerspective = edit("perspective");
+  const setFamiliarity = edit("familiarity");
+  const setName = edit("name");
+  const setEmail = edit("email");
+  const setOrganization = edit("organization");
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

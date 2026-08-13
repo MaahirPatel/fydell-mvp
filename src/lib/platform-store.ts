@@ -35,7 +35,7 @@ interface Store {
   roles: CompanyRole[];
 }
 
-function useAuthBackend(): boolean {
+function authBackendEnabled(): boolean {
   return isSupabaseAuthConfigured() && isMvpRpcConfigured();
 }
 
@@ -91,7 +91,7 @@ export async function createUser(
   const normalized = email.trim().toLowerCase();
   const company = companyName.trim() || "Your workspace";
 
-  if (useAuthBackend()) {
+  if (authBackendEnabled()) {
     const auth = getSupabaseAuthClient();
     const { data, error } = await auth.auth.signUp({
       email: normalized,
@@ -162,7 +162,7 @@ export async function verifyUser(
 ): Promise<CompanyUser | null> {
   const normalized = email.trim().toLowerCase();
 
-  if (useAuthBackend()) {
+  if (authBackendEnabled()) {
     const auth = getSupabaseAuthClient();
     const { data, error } = await auth.auth.signInWithPassword({
       email: normalized,
@@ -196,7 +196,7 @@ export async function verifyUser(
 }
 
 export async function getUserById(id: string): Promise<CompanyUser | null> {
-  if (useAuthBackend()) {
+  if (authBackendEnabled()) {
     const row = await rpc.rpcGetCompanyProfile(id);
     return row ? profileToUser(row) : null;
   }
@@ -208,7 +208,7 @@ export async function completeOnboarding(
   userId: string,
   answers: OnboardingAnswers
 ): Promise<CompanyUser> {
-  if (useAuthBackend()) {
+  if (authBackendEnabled()) {
     const row = await rpc.rpcCompleteCompanyOnboarding(
       userId,
       answers as unknown as Record<string, unknown>

@@ -3,7 +3,7 @@ import InvitationActions from "@/components/admin/InvitationActions";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminInvitationsPage() {
+async function loadInvitations() {
   let rows: Array<{
     id: string;
     email: string;
@@ -29,6 +29,13 @@ export default async function AdminInvitationsPage() {
       .limit(200);
     rows = data || [];
   }
+
+  // Read alongside the query so every row is judged against the same instant.
+  return { rows, now: Date.now() };
+}
+
+export default async function AdminInvitationsPage() {
+  const { rows, now } = await loadInvitations();
 
   return (
     <div>
@@ -60,10 +67,9 @@ export default async function AdminInvitationsPage() {
               </tr>
             ) : (
               rows.map((row) => {
-                const expired =
-                  row.expires_at && new Date(row.expires_at).getTime() < Date.now()
-                    ? true
-                    : false;
+                const expired = Boolean(
+                  row.expires_at && new Date(row.expires_at).getTime() < now
+                );
                 return (
                   <tr key={row.id} className="border-b border-white/[0.05]">
                     <td className="px-4 py-3">{row.email}</td>

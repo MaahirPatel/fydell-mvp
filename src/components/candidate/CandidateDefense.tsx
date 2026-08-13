@@ -10,7 +10,7 @@
  * a call.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Field";
 import { Surface, SurfaceHeader } from "@/components/ui/Surface";
@@ -36,24 +36,30 @@ export function CandidateDefense({ sessionId }: { sessionId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/sim/sessions/${sessionId}/defense`);
-      const data = await res.json();
-      if (res.ok && data.defense) {
-        setQuestions(data.defense.questions || []);
-        setResponses(data.defense.responses || []);
-      }
-    } catch {
-      // A missing defense set is normal, not an error worth showing.
-    } finally {
-      setLoaded(true);
-    }
-  }, [sessionId]);
+  // Bumped after a save to pull the server's view of the answers back in.
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/sim/sessions/${sessionId}/defense`);
+        const data = await res.json();
+        if (cancelled) return;
+        if (res.ok && data.defense) {
+          setQuestions(data.defense.questions || []);
+          setResponses(data.defense.responses || []);
+        }
+      } catch {
+        // A missing defense set is normal, not an error worth showing.
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId, reloadKey]);
 
   const save = async (questionId: string) => {
     const text = (drafts[questionId] || "").trim();
@@ -73,7 +79,7 @@ export function CandidateDefense({ sessionId }: { sessionId: string }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not save your answer");
       setDrafts((d) => ({ ...d, [questionId]: "" }));
-      await load();
+      setReloadKey((k) => k + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save your answer");
     } finally {

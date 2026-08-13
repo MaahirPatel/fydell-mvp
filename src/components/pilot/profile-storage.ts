@@ -20,13 +20,21 @@ export interface PilotProfile {
   updatedAt?: string;
 }
 
+/** Pure parse, so components can derive a profile from a stored string. */
+export function parsePilotProfile(raw: string | null): PilotProfile {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? (parsed as PilotProfile) : {};
+  } catch {
+    return {};
+  }
+}
+
 export function readPilotProfile(): PilotProfile {
   if (typeof window === "undefined") return {};
   try {
-    const raw = window.localStorage.getItem(PILOT_PROFILE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? (parsed as PilotProfile) : {};
+    return parsePilotProfile(window.localStorage.getItem(PILOT_PROFILE_KEY));
   } catch {
     return {};
   }
@@ -41,6 +49,12 @@ export function savePilotProfile(patch: Partial<PilotProfile>): PilotProfile {
   if (typeof window !== "undefined") {
     try {
       window.localStorage.setItem(PILOT_PROFILE_KEY, JSON.stringify(next));
+      /*
+       * The browser only fires `storage` at *other* tabs, so components in this
+       * one reading the profile as an external store would keep showing the old
+       * value. Announce the write locally as well.
+       */
+      window.dispatchEvent(new StorageEvent("storage", { key: PILOT_PROFILE_KEY }));
     } catch {
       // Storage may be unavailable (private mode). The flow still works;
       // the tester can re-enter details on the feedback page.
