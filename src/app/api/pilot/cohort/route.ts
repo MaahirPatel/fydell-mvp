@@ -62,10 +62,8 @@ export async function GET() {
       invitations: rows,
     });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to load cohort" },
-      { status: 500 }
-    );
+    console.error("[api/pilot/cohort] GET failed", err);
+    return NextResponse.json({ error: "Could not load this cohort." }, { status: 500 });
   }
 }
 
@@ -92,9 +90,7 @@ export async function PATCH(req: NextRequest) {
     const cohort = await setCohortStatus(org.organizationId, existing.id, body.status);
     return NextResponse.json({ ok: true, cohort });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not update cohort" },
-      { status: 400 }
-    );
+    console.error("[api/pilot/cohort] PATCH failed", err);
+    return NextResponse.json({ error: "Could not update this cohort." }, { status: 400 });
   }
 }

@@ -12,7 +12,13 @@ import { chromium } from "playwright";
 
 const BASE = process.argv[2] || "http://localhost:3000";
 
-const ROUTES = [
+/** Comma-separated override, so the signed-in app can be audited too. */
+const ROUTE_OVERRIDE = (process.argv[3] || "")
+  .split(",")
+  .map((r) => r.trim())
+  .filter(Boolean);
+
+const PUBLIC_ROUTES = [
   "/",
   "/product",
   "/simulations",
@@ -27,6 +33,8 @@ const ROUTES = [
   "/forgot-password",
   "/reset-password",
 ];
+
+const ROUTES = ROUTE_OVERRIDE.length > 0 ? ROUTE_OVERRIDE : PUBLIC_ROUTES;
 
 type Finding = {
   kind: "contrast" | "heading" | "name" | "alt";

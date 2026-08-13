@@ -68,9 +68,7 @@ export async function GET() {
       candidates: rows,
     });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Compare failed" },
-      { status: 500 }
-    );
+    console.error("[api/pilot/compare] GET failed", err);
+    return NextResponse.json({ error: "Could not load the comparison." }, { status: 500 });
   }
 }

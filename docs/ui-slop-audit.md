@@ -48,9 +48,9 @@ metric cards on first run, **I** filters and controls shown before any data exis
 | `/app/employer/compare` | FAIL to PASS | n/a | n/a | PASS | FAIL to PASS |
 | report detail | FAIL to PASS | n/a | n/a | PASS | FAIL to PASS |
 
-Authenticated routes were verified for routing, redirect and compile correctness only.
-Their rendered states remain **UNVERIFIED** against real data until a development
-Supabase environment is available; see the open item at the end of this file.
+Authenticated routes were rendered and audited against local fixtures in both a
+first-run and a populated state, at all three widths. What that covers and what it does
+not is set out under "Dashboard verification" below.
 
 ## Root causes, and what closed them
 
@@ -125,6 +125,34 @@ because the point of those captures is that the form fits without scrolling.
 No screenshot contains a real email address, workspace name or production identifier.
 All captures are unauthenticated, so no customer data is present in any of them.
 
+## Dashboard verification
+
+The seven employer screens were rendered by temporarily feeding the real pages fixture
+data through their existing data functions, so what was audited is the shipped component
+tree and not a mock of it. The fixture layer was removed afterwards and is not in the
+repository. Screens were captured first-run and populated at 1440x900, 1366x768 and
+1280x800 into `docs/screenshots/dashboard/`.
+
+`npm run test:a11y` accepts a comma-separated route list as its second argument, which is
+how the signed-in routes were audited. Both states returned 0 findings across contrast,
+heading order, accessible names, focus visibility and 200 percent zoom.
+
+Three defects were found this way and fixed:
+
+| Defect | Effect on a company | Fix |
+| --- | --- | --- |
+| Evaluations listed all 31 catalogue entries, 30 of them unpublished five-minute drafts | The screen read as a marketplace of short tests and contradicted the public site, and 30 rows could not be invited to | `getEmployerCatalog()` now returns only published templates, so the workspace lists what it can actually use |
+| API errors returned `err.message` verbatim | Cohort and Compare showed end users the names of environment variables and `.env.local` | The configuration error now logs operator detail server-side and throws a neutral message; both dashboard routes return a fixed string |
+| The employer layout sent every unauthenticated request to the workspace root | Signing in from a deep link dropped the requested page | The path is carried from middleware and the layout redirects to it |
+
+Overlays were exercised rather than eyeballed: the invite drawer opens from the top-bar
+action and closes on Escape, the candidate preview dialog opens from an Evaluations row,
+and the row menu offers preview and invite. No page errors were raised during any of it.
+
+What this does **not** cover, because it needs a real backend: invitation delivery,
+session persistence across refresh, authorization boundaries between workspaces, report
+generation, and Work Receipt sharing and revocation.
+
 ## Claims held back pending owner sign-off
 
 Left out of the shipped copy rather than invented:
@@ -139,5 +167,6 @@ Left out of the shipped copy rather than invented:
 
 A development or preview Supabase environment is still needed to verify the authenticated
 journeys end to end: refresh persistence, authorization boundaries, invitation delivery,
-simulation completion, report generation, and Work Receipt sharing and revocation. Until
-then those rows above are correctness-of-routing only.
+simulation completion, report generation, and Work Receipt sharing and revocation. The
+live project was deliberately left untouched; it holds real organizations and sessions, so
+it is not a safe place to seed test candidates.

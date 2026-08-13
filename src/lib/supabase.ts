@@ -11,6 +11,10 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 let cached: SupabaseClient | null = null;
 
+/** Shown to end users when the backend is unreachable or misconfigured. */
+export const SERVICE_UNAVAILABLE_MESSAGE =
+  "This workspace is temporarily unavailable. Try again in a moment.";
+
 export function supabaseUrl(): string | undefined {
   return process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 }
@@ -40,10 +44,14 @@ export function getSupabaseAdmin(): SupabaseClient {
   const serviceKey = supabaseServiceKey();
 
   if (!url || !serviceKey) {
-    throw new Error(
-      "Missing Supabase admin credentials. Set NEXT_PUBLIC_SUPABASE_URL and " +
-        "SUPABASE_SERVICE_ROLE_KEY (or the legacy SUPABASE_URL / SUPABASE_SERVICE_KEY) in .env.local."
+    // Several route handlers return err.message straight to the browser, so
+    // this text reaches end users. The operator detail goes to the server log;
+    // the thrown message stays free of variable names and file paths.
+    console.error(
+      "[supabase] Missing admin credentials. Set NEXT_PUBLIC_SUPABASE_URL and " +
+        "SUPABASE_SERVICE_ROLE_KEY (or the legacy SUPABASE_URL / SUPABASE_SERVICE_KEY)."
     );
+    throw new Error(SERVICE_UNAVAILABLE_MESSAGE);
   }
 
   cached = createClient(url, serviceKey, {
@@ -62,9 +70,11 @@ export function getSupabaseAuthClient(): SupabaseClient {
   const url = supabaseUrl();
   const anon = supabaseAnonKey();
   if (!url || !anon) {
-    throw new Error(
-      "Missing Supabase auth credentials. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local."
+    console.error(
+      "[supabase] Missing auth credentials. Set NEXT_PUBLIC_SUPABASE_URL and " +
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY."
     );
+    throw new Error(SERVICE_UNAVAILABLE_MESSAGE);
   }
   return createClient(url, anon, {
     auth: { persistSession: false, autoRefreshToken: false }

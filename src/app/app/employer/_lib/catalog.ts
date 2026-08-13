@@ -21,7 +21,7 @@ export async function getEmployerCatalog(): Promise<CatalogRole[]> {
     for (const t of data || []) idBySlug.set(t.slug, t.id);
   }
 
-  return ROLES.map((role) => ({
+  const roles = ROLES.map((role) => ({
     key: role.key,
     title: role.title,
     sims: role.simulationSlugs
@@ -51,4 +51,12 @@ export async function getEmployerCatalog(): Promise<CatalogRole[]> {
       })
       .filter((s): s is CatalogSim => s !== null),
   }));
+
+  // Only evaluations that exist as published templates are workspace inventory.
+  // The code registry also holds unpublished drafts, and listing those turned
+  // the Evaluations screen into a catalogue of short tests a company cannot
+  // invite anyone to, which is the opposite of what the product sells.
+  return roles
+    .map((role) => ({ ...role, sims: role.sims.filter((s) => s.templateId) }))
+    .filter((role) => role.sims.length > 0);
 }
