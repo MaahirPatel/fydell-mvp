@@ -187,7 +187,6 @@ export default function SignupForm({ path }: { path?: SignupPath }) {
           name="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="At least 8 characters"
           minLength={8}
           autoComplete="new-password"
           invalid={Boolean(fieldErrors.password)}

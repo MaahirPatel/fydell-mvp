@@ -1,4 +1,5 @@
 import MarketingShell from "@/components/layout/MarketingShell";
+import { ContactLink } from "@/components/ui/ContactLink";
 
 export const metadata = {
   title: "Terms",
@@ -23,13 +24,7 @@ export default function TermsPage() {
           <p className="text-[15px] leading-[1.7] text-[var(--text-secondary)]">
             Fydell provides work-evaluation and evidence-report services to
             hiring teams. For questions about the current agreement, contact{" "}
-            <a
-              href="mailto:hello@fydell.com"
-              className="text-[var(--text-primary)] underline underline-offset-2"
-            >
-              hello@fydell.com
-            </a>
-            .
+            <ContactLink />.
           </p>
         </div>
       </section>

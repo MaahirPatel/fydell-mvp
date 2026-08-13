@@ -107,10 +107,11 @@ export default function HeroSimPreview() {
             Northline Components
           </span>
         </div>
+        {/* "Saved" used to sit here. It was a static word with no save behind
+            it, which is exactly the decorative status pill the product should
+            not ship. The timer stays because the task really is timed. */}
         <div className="flex shrink-0 items-center gap-3 text-[12.5px] text-[var(--text-tertiary)]">
           <span className="tabular-nums">19:42 left</span>
-          <span aria-hidden>·</span>
-          <span>Saved</span>
         </div>
       </div>
 
@@ -276,23 +277,48 @@ export default function HeroSimPreview() {
         </aside>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1 border-t border-[var(--border-subtle)] px-3 py-2">
-        {STEPS.map((s, i) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => setStep(s.id)}
-            aria-pressed={step === s.id}
-            className={`rounded-[5px] px-2.5 py-1 text-[12px] transition-colors ${
-              step === s.id
-                ? "bg-white/[0.09] text-[var(--text-primary)]"
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            }`}
-          >
-            <span className="tabular-nums text-[var(--text-tertiary)]">{i + 1}</span>{" "}
-            {s.label}
-          </button>
-        ))}
+      {/* Selection is a filled index and a top rail, not a background pill. The
+          control keeps one silhouette whether or not a step is active, so the
+          footer does not turn into a field of capsules. */}
+      <div className="flex flex-wrap items-stretch border-t border-[var(--border-subtle)]">
+        {STEPS.map((s, i) => {
+          const active = step === s.id;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => setStep(s.id)}
+              aria-pressed={active}
+              className="group relative flex items-center gap-2 px-3.5 py-2.5 text-[12px] transition-colors"
+            >
+              <span
+                aria-hidden
+                className={`absolute inset-x-0 top-0 h-[2px] ${
+                  active ? "bg-[var(--fydell-evidence)]" : "bg-transparent"
+                }`}
+              />
+              <span
+                aria-hidden
+                className={`inline-flex h-[17px] w-[17px] items-center justify-center rounded-[4px] border text-[10.5px] tabular-nums ${
+                  active
+                    ? "border-[rgba(107,140,255,0.5)] bg-[rgba(107,140,255,0.18)] text-[#a9bcff]"
+                    : "border-[var(--border-default)] text-[var(--text-tertiary)]"
+                }`}
+              >
+                {i + 1}
+              </span>
+              <span
+                className={
+                  active
+                    ? "font-medium text-[var(--text-primary)]"
+                    : "text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]"
+                }
+              >
+                {s.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

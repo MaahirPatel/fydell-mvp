@@ -6,6 +6,7 @@ import { MetricStrip } from "@/components/ui/MetricStrip";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { EmptyState } from "@/components/ui/EmptyState";
 import SetupPath, { type SetupStep } from "@/components/employer/SetupPath";
+import CandidatePipeline from "@/components/employer/CandidatePipeline";
 import { getEmployerCatalog } from "./_lib/catalog";
 import {
   getInvitationRecords,
@@ -89,7 +90,9 @@ export default async function EmployerHomePage() {
 
   const [metrics, invitations, reports, needsReview, catalog] = await Promise.all([
     getOverviewMetrics(org.organizationId),
-    getInvitationRecords(org.organizationId, 6),
+    // The pipeline counts every stage, so it needs the whole set rather than a
+    // page of it.
+    getInvitationRecords(org.organizationId, 200),
     getReportRecords(org.organizationId, 5),
     getNeedsReviewRecords(org.organizationId, 6),
     getEmployerCatalog(),
@@ -122,7 +125,9 @@ export default async function EmployerHomePage() {
   ];
 
   return (
-    <div className="max-w-[900px]">
+    /* A new workspace has one thing to do, so it stays in a single readable
+       column. A running workspace has status to scan, so it uses the width. */
+    <div className={hasResults ? "max-w-[1180px]" : "max-w-[900px]"}>
       <PageHeader
         title="Home"
         description={
@@ -149,7 +154,15 @@ export default async function EmployerHomePage() {
         </div>
       )}
 
-      <section className="mt-9">
+      <div
+        className={
+          hasResults
+            ? "mt-9 grid items-start gap-x-8 gap-y-9 xl:grid-cols-[minmax(0,1fr)_320px]"
+            : "contents"
+        }
+      >
+        <div className={hasResults ? "min-w-0" : "contents"}>
+      <section className={hasResults ? "" : "mt-9"}>
         <SectionHeading
           title="Active evaluation"
           href="/app/employer/assessments"
@@ -170,8 +183,11 @@ export default async function EmployerHomePage() {
                     {activeEvaluation.tagline}
                   </p>
                 </div>
-                <StatusTag tone={activeEvaluation.templateId ? "good" : "neutral"}>
-                  {activeEvaluation.templateId ? "Ready" : "Not published"}
+                {/* Neutral, not green. Green is reserved for a candidate
+                    actually finishing something; a published evaluation is a
+                    state of the catalogue, not an achievement. */}
+                <StatusTag tone="neutral">
+                  {activeEvaluation.templateId ? "Published" : "Not published"}
                 </StatusTag>
               </div>
               <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 border-t border-[var(--border-subtle)] pt-3 text-[12.5px]">
@@ -251,6 +267,21 @@ export default async function EmployerHomePage() {
           </div>
         </section>
       ) : null}
+        </div>
+
+        {hasResults ? (
+          <aside className="min-w-0">
+            <SectionHeading
+              title="Candidate status"
+              href="/app/employer/candidates"
+              linkLabel="All candidates"
+            />
+            <div className="mt-3">
+              <CandidatePipeline invitations={invitations} />
+            </div>
+          </aside>
+        ) : null}
+      </div>
     </div>
   );
 }

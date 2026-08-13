@@ -5,6 +5,7 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import { hashIp } from "@/lib/ops/platform-roles";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { verifyCaptchaToken } from "@/lib/security/captcha";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const runtime = "nodejs";
 
@@ -85,8 +86,7 @@ export async function POST(req: Request) {
   if (!isSupabaseConfigured() && (process.env.VERCEL || process.env.NODE_ENV === "production")) {
     return NextResponse.json(
       {
-        error:
-          "Request storage is temporarily unavailable. Please email admin@fydell.com or try again shortly.",
+        error: `Request storage is temporarily unavailable. Please email ${CONTACT_EMAIL} or try again shortly.`,
         errorId: `cfg-${Date.now().toString(36)}`,
       },
       { status: 503 }

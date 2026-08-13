@@ -24,5 +24,5 @@ Dark cinematic SaaS: near-black atmosphere, cyan↔magenta accents, glass produc
 ## Product constraints (do not break)
 - Invite-only Meridian access; no public live sim unlock
 - Atlas / Sentinel / Harbor stay unavailable
-- Request a pilot / Book a demo → lead form (hello@fydell.com)
+- Request a pilot / Book a demo → lead form (admin@fydell.com)
 - Auth, invites, Supabase dual-write, admin preserved

@@ -1,5 +1,6 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { ButtonLink } from "@/components/marketing/ui";
+import { ContactLink } from "@/components/ui/ContactLink";
 
 export const metadata = {
   title: "Pricing",
@@ -76,12 +77,7 @@ export default function PricingPage() {
           </dl>
           <p className="mt-8 text-[14px] leading-[1.7] text-[var(--text-secondary)]">
             For a specific number, email{" "}
-            <a
-              href="mailto:hello@fydell.com"
-              className="text-[var(--text-primary)] underline underline-offset-2"
-            >
-              hello@fydell.com
-            </a>{" "}
+            <ContactLink />{" "}
             with the role you are hiring for and roughly how many candidates you
             expect to evaluate.
           </p>

@@ -1,5 +1,6 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { PilotRequestForm } from "@/components/marketing/PilotRequestForm";
+import { ContactLink } from "@/components/ui/ContactLink";
 
 export const metadata = {
   title: "Request a pilot",
@@ -74,12 +75,7 @@ export default function RequestPilotPage() {
                   Create a workspace
                 </a>{" "}
                 and run the evaluation yourself, or email{" "}
-                <a
-                  href="mailto:hello@fydell.com"
-                  className="text-[var(--text-secondary)] underline underline-offset-2 hover:text-[var(--text-primary)]"
-                >
-                  hello@fydell.com
-                </a>
+                <ContactLink className="text-[var(--text-secondary)] underline underline-offset-2 hover:text-[var(--text-primary)]" />
                 .
               </p>
             </div>

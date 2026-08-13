@@ -1,5 +1,6 @@
 import Link from "next/link";
 import FydellMark from "@/components/brand/FydellMark";
+import { CONTACT_MAILTO } from "@/lib/contact";
 
 /**
  * Roles and Pricing were removed: Roles marketed six role families that do not
@@ -16,7 +17,7 @@ const PRODUCT = [
 const COMPANY = [
   { label: "Sign in", href: "/login" },
   { label: "Request a pilot", href: "/request-pilot" },
-  { label: "Contact", href: "mailto:hello@fydell.com" },
+  { label: "Contact", href: CONTACT_MAILTO },
 ];
 
 const LEGAL = [

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:preview": "node scripts/dev-preview.mjs",
     "build": "npm run build:sim && next build",
     "build:next": "next build",
     "build:sim": "esbuild js/sim/browser-entry.js --bundle --format=iife --outfile=sim-engine.js --platform=browser --target=es2018 --loader:.ts=ts --loader:.json=json",
@@ -24,6 +25,8 @@
     "test:copy": "npx tsx scripts/scan-retired-terms.ts",
     "test:a11y": "npx tsx scripts/audit-accessibility.ts",
     "capture:screens": "npx tsx scripts/capture-screenshots.ts",
+    "capture:gate": "npx tsx scripts/capture-gate.ts",
+    "measure:baseline": "npx tsx scripts/measure-baseline.ts",
     "test:release": "npm run test:sims && npm run test:v2 && npm run test:october && npm run test:auth && npm run test:copy && npm run typecheck",
     "test:rls-smoke": "npx tsx scripts/test-rls-smoke.ts",
     "test:pilot-golden-path": "npx tsx scripts/test-pilot-golden-path.ts",

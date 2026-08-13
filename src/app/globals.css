@@ -13,6 +13,7 @@
 @theme {
   /* Surfaces */
   --color-canvas: #08090a;
+  --color-band: #0b0c10;
   --color-raised: #0e1014;
   --color-panel: #121419;
   --color-panel-hover: #171a20;
@@ -39,6 +40,7 @@
   --color-changed: #e9b949;
   --color-risk: #f26b82;
   --color-good: #67d9a0;
+  --color-verified: #b07fd0;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
@@ -48,8 +50,12 @@
 }
 
 :root {
-  /* ---- Surfaces ---- */
+  /* ---- Surfaces ----
+     `band` is one step off the canvas. It exists so a long page can separate
+     into chapters without alternating light and dark blocks; the difference is
+     deliberately small enough that it reads as depth rather than as a stripe. */
   --surface-canvas: #08090a;
+  --surface-band: #0b0c10;
   --surface-raised: #0e1014;
   --surface-panel: #121419;
   --surface-hover: #171a20;
@@ -75,6 +81,10 @@
   --fydell-changed: #e9b949;
   --fydell-good: #67d9a0;
   --action-ink: #8f9bff;
+
+  /* Where a source line and a contradiction line meet: a claim that has been
+     checked against its evidence. Local accent only, never a surface fill. */
+  --fydell-verified: #b07fd0;
 
   /* ---- Radius ---- */
   --radius-control: 6px;
@@ -267,6 +277,21 @@ nextjs-portal,
   }
 }
 
+/* Chapters in a continuous story sit closer than standalone sections. At the
+   full 120px rhythm a five-part narrative spends over a thousand pixels on
+   padding alone, which reads as the page running out of things to say. */
+.mkt-section-chapter {
+  padding-top: var(--space-9);
+  padding-bottom: var(--space-9);
+}
+
+@media (min-width: 1024px) {
+  .mkt-section-chapter {
+    padding-top: var(--space-10);
+    padding-bottom: var(--space-10);
+  }
+}
+
 .mkt-panel {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-frame);
@@ -305,6 +330,19 @@ nextjs-portal,
   font-weight: 550;
   line-height: 1.02;
   letter-spacing: -0.042em;
+  text-wrap: balance;
+}
+
+/* The headline when it shares the first viewport with a product scene. Smaller
+   than .hero-display because it occupies five columns rather than the full
+   width, and a display size tuned for 1120px looks shouted at 470px. */
+.hero-display-split {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2.375rem, 3.6vw, 3.25rem);
+  font-weight: 550;
+  line-height: 1.04;
+  letter-spacing: -0.04em;
   text-wrap: balance;
 }
 

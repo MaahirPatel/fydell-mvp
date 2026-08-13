@@ -4,9 +4,14 @@ import FydellMark from "@/components/brand/FydellMark";
 /**
  * One calm frame for every authentication screen.
  *
- * Single column, form-dominant, no split-screen marketing bullets and no
- * decorative wash. The composition is the same on login, signup, password
- * reset and workspace creation so the flow never feels like three products.
+ * Screens that create something (signup, login) pass an `aside` scene showing
+ * what the company is about to get. Screens that only recover access (password
+ * reset, link expired) stay single-column, because a product pitch beside a
+ * reset form is noise.
+ *
+ * The form keeps its 400px measure in both cases. Widening a form to fill a
+ * desktop does not improve it; giving the empty half something true to say
+ * does.
  */
 export default function AuthShell({
   title,
@@ -14,13 +19,40 @@ export default function AuthShell({
   children,
   footer,
   width = "narrow",
+  aside,
 }: {
   title: string;
   description?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   width?: "narrow" | "wide";
+  aside?: React.ReactNode;
 }) {
+  const column = (
+    <div
+      className={
+        width === "wide" ? "w-full max-w-[520px]" : "w-full max-w-[400px]"
+      }
+    >
+      <h1 className="text-[26px] font-semibold leading-[1.15] tracking-[-0.032em] text-[var(--text-primary)]">
+        {title}
+      </h1>
+      {description ? (
+        <p className="mt-2.5 text-[14px] leading-[1.6] text-[var(--text-secondary)]">
+          {description}
+        </p>
+      ) : null}
+
+      <div className="mt-8">{children}</div>
+
+      {footer ? (
+        <div className="mt-7 border-t border-[var(--border-subtle)] pt-5 text-[13.5px] text-[var(--text-secondary)]">
+          {footer}
+        </div>
+      ) : null}
+    </div>
+  );
+
   return (
     <div className="flex min-h-[100dvh] flex-col bg-[var(--surface-canvas)]">
       <header className="flex h-16 shrink-0 items-center px-6 sm:px-10">
@@ -36,33 +68,22 @@ export default function AuthShell({
         </Link>
       </header>
 
-      <main
-        id="main"
-        className="flex flex-1 items-start justify-center px-6 pb-20 pt-8 sm:pt-14"
-      >
-        <div
-          className={
-            width === "wide" ? "w-full max-w-[520px]" : "w-full max-w-[400px]"
-          }
+      {aside ? (
+        <main
+          id="main"
+          className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-12 px-6 pb-20 pt-8 sm:px-10 sm:pt-12 lg:flex-row lg:items-start lg:gap-16"
         >
-          <h1 className="text-[26px] font-semibold leading-[1.15] tracking-[-0.032em] text-[var(--text-primary)]">
-            {title}
-          </h1>
-          {description ? (
-            <p className="mt-2.5 text-[14px] leading-[1.6] text-[var(--text-secondary)]">
-              {description}
-            </p>
-          ) : null}
-
-          <div className="mt-8">{children}</div>
-
-          {footer ? (
-            <div className="mt-7 border-t border-[var(--border-subtle)] pt-5 text-[13.5px] text-[var(--text-secondary)]">
-              {footer}
-            </div>
-          ) : null}
-        </div>
-      </main>
+          <div className="flex justify-center lg:block lg:shrink-0">{column}</div>
+          <div className="min-w-0 flex-1">{aside}</div>
+        </main>
+      ) : (
+        <main
+          id="main"
+          className="flex flex-1 items-start justify-center px-6 pb-20 pt-8 sm:pt-14"
+        >
+          {column}
+        </main>
+      )}
     </div>
   );
 }

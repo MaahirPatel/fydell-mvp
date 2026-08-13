@@ -133,7 +133,7 @@ For GF-facing summaries, prefer employer report links plus pilot-feedback CSV ex
 
 | Role | Contact |
 |---|---|
-| Pilot support (employers / candidates) | hello@fydell.com |
+| Pilot support (employers / candidates) | admin@fydell.com |
 | Platform ops / admin access | admin@fydell.com |
 | On-call engineering | Fydell founder (primary); escalate via hello@ with `P0` in subject |
 

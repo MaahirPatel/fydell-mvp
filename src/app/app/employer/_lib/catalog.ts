@@ -9,10 +9,13 @@ import { SIMULATION_BY_SLUG } from "@/lib/simulations/content";
 import { toMicroCandidateView } from "@/lib/simulations/candidate-view";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import type { CatalogRole, CatalogSim } from "@/components/employer/catalog-types";
+import { isPreviewMode, PREVIEW_TEMPLATE } from "@/lib/dev/preview";
 
 export async function getEmployerCatalog(): Promise<CatalogRole[]> {
   const idBySlug = new Map<string, string>();
-  if (isSupabaseConfigured()) {
+  if (isPreviewMode()) {
+    idBySlug.set(PREVIEW_TEMPLATE.slug, PREVIEW_TEMPLATE.id);
+  } else if (isSupabaseConfigured()) {
     const admin = createAdminSupabaseClient();
     const { data } = await admin
       .from("sim_templates")

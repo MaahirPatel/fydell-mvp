@@ -1,4 +1,6 @@
 import MarketingShell from "@/components/layout/MarketingShell";
+import { ContactLink } from "@/components/ui/ContactLink";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata = {
   title: "Privacy",
@@ -29,7 +31,7 @@ const FACTS: Array<[string, string]> = [
   ],
   [
     "Requests",
-    "To access, correct or delete your data, email hello@fydell.com from the address on the record. We will confirm what we hold and act on the request.",
+    `To access, correct or delete your data, email ${CONTACT_EMAIL} from the address on the record. We will confirm what we hold and act on the request.`,
   ],
 ];
 
@@ -66,13 +68,7 @@ export default function PrivacyPage() {
           </dl>
           <p className="mt-8 text-[14px] leading-[1.7] text-[var(--text-secondary)]">
             Questions go to{" "}
-            <a
-              href="mailto:hello@fydell.com"
-              className="text-[var(--text-primary)] underline underline-offset-2"
-            >
-              hello@fydell.com
-            </a>
-            .
+            <ContactLink />.
           </p>
         </div>
       </section>

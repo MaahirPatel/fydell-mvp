@@ -1,4 +1,5 @@
 import MarketingShell from "@/components/layout/MarketingShell";
+import { ContactLink } from "@/components/ui/ContactLink";
 
 export const metadata = {
   title: "Security",
@@ -66,12 +67,7 @@ export default function SecurityPage() {
           </dl>
           <p className="mt-8 text-[14px] leading-[1.7] text-[var(--text-secondary)]">
             To report a vulnerability, email{" "}
-            <a
-              href="mailto:security@fydell.com"
-              className="text-[var(--text-primary)] underline underline-offset-2"
-            >
-              security@fydell.com
-            </a>
+            <ContactLink kind="security" />
             . We will confirm receipt and tell you what we are doing about it.
           </p>
         </div>

@@ -1,4 +1,5 @@
 import MarketingShell from "@/components/layout/MarketingShell";
+import { ContactLink } from "@/components/ui/ContactLink";
 
 export const metadata = {
   title: "Trust",
@@ -194,13 +195,7 @@ export default function TrustPage() {
           <h2 className="section-heading">Questions about any of this?</h2>
           <p className="mt-4 text-[16px] leading-[1.65] text-[var(--text-secondary)]">
             Ask directly at{" "}
-            <a
-              href="mailto:hello@fydell.com"
-              className="text-[var(--text-primary)] underline underline-offset-2"
-            >
-              hello@fydell.com
-            </a>
-            . If something on this page is not accurate, we would rather correct
+            <ContactLink />. If something on this page is not accurate, we would rather correct
             it than defend it.
           </p>
         </div>

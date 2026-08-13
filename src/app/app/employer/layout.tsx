@@ -6,6 +6,7 @@ import { withNext } from "@/lib/auth/safe-next";
 import { emailDomain, slugifyOrganization } from "@/lib/org/reserved";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import EmployerShell from "@/components/employer/EmployerShell";
+import { isPreviewMode, PREVIEW_ORG, PREVIEW_USER } from "@/lib/dev/preview";
 import { getEmployerCatalog } from "./_lib/catalog";
 
 export const metadata = { title: "Workspace" };
@@ -74,6 +75,19 @@ async function ensureDefaultOrganization(
 }
 
 export default async function EmployerAppLayout({ children }: { children: React.ReactNode }) {
+  // Design and QA preview. Disabled in production builds; see lib/dev/preview.
+  if (isPreviewMode()) {
+    return (
+      <EmployerShell
+        workspaceName={PREVIEW_ORG.organizationName}
+        userEmail={PREVIEW_USER.email}
+        catalog={await getEmployerCatalog()}
+      >
+        {children}
+      </EmployerShell>
+    );
+  }
+
   const user = await getAuthenticatedUser();
   if (!user) {
     const requested = (await headers()).get("x-pathname") || "/app/employer";

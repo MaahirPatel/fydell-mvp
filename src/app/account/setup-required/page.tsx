@@ -1,5 +1,6 @@
 import Link from "next/link";
 import FydellBrand from "@/components/brand/FydellBrand";
+import { CONTACT_EMAIL, CONTACT_MAILTO } from "@/lib/contact";
 
 const REASONS: Record<string, string> = {
   unaffiliated:
@@ -44,8 +45,8 @@ export default async function SetupRequiredPage({
             </>
           )}
           <li>
-            <a href="mailto:admin@fydell.com" className="underline hover:text-white">
-              Contact admin@fydell.com
+            <a href={CONTACT_MAILTO} className="underline hover:text-white">
+              Contact {CONTACT_EMAIL}
             </a>
           </li>
           <li>

@@ -9,6 +9,7 @@ import { requireUser } from "@/lib/simulations/auth";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
 import { AcceptInviteButton } from "@/components/sim/AcceptInviteButton";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata = { title: "You're invited | Fydell" };
 export const dynamic = "force-dynamic";
@@ -114,7 +115,7 @@ export default async function InvitePage({
           </li>
           <li>· In-product AI use is observed when present, not banned.</li>
           <li>· The employer receives a citation-backed report. You can later claim a private Work Receipt.</li>
-          <li>· Support: hello@fydell.com. Withdrawal and accommodation requests go through the inviting employer and Fydell support.</li>
+          <li>· Support: {CONTACT_EMAIL}. Withdrawal and accommodation requests go through the inviting employer and Fydell support.</li>
         </ul>
       </div>
 

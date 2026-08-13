@@ -6,6 +6,13 @@ import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
 import type { RoleKey } from "@/lib/simulations/types";
+import {
+  isPreviewMode,
+  previewInvitations,
+  previewMetrics,
+  previewNeedsReview,
+  previewReports,
+} from "@/lib/dev/preview";
 
 export const INVITATION_STATUS_LABEL: Record<string, string> = {
   sent: "Invited",
@@ -111,6 +118,7 @@ export async function getInvitationRecords(
   organizationId: string,
   limit = 200
 ): Promise<InvitationRecord[]> {
+  if (isPreviewMode()) return previewInvitations(limit);
   const admin = createAdminSupabaseClient();
   const { data } = await admin
     .from("sim_invitations")
@@ -177,6 +185,7 @@ export async function getReportRecords(
   organizationId: string,
   limit = 300
 ): Promise<ReportRecord[]> {
+  if (isPreviewMode()) return previewReports(limit);
   const admin = createAdminSupabaseClient();
   const { data } = await admin
     .from("sim_sessions")
@@ -229,6 +238,7 @@ export interface OverviewMetrics {
 }
 
 export async function getOverviewMetrics(organizationId: string): Promise<OverviewMetrics> {
+  if (isPreviewMode()) return previewMetrics();
   const admin = createAdminSupabaseClient();
   const { data } = await admin
     .from("sim_sessions")
@@ -258,6 +268,7 @@ export async function getNeedsReviewRecords(
   organizationId: string,
   limit = 20
 ): Promise<ReportRecord[]> {
+  if (isPreviewMode()) return previewNeedsReview(limit);
   const reports = await getReportRecords(organizationId, 300);
   return reports.filter((r) => r.needsReview).slice(0, limit);
 }

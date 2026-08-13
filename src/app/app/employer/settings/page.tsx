@@ -4,6 +4,7 @@ import SignOutButton from "@/components/employer/SignOutButton";
 import WorkspaceNameForm from "@/components/employer/WorkspaceNameForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Surface, SurfaceHeader } from "@/components/ui/Surface";
+import { ContactLink } from "@/components/ui/ContactLink";
 
 export const metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
@@ -109,13 +110,7 @@ export default async function EmployerSettingsPage() {
             </p>
             <p>
               To export or delete this workspace&apos;s data, email{" "}
-              <a
-                href="mailto:hello@fydell.com"
-                className="text-[var(--text-primary)] underline underline-offset-2"
-              >
-                hello@fydell.com
-              </a>
-              .
+              <ContactLink />.
             </p>
           </div>
         </Surface>
