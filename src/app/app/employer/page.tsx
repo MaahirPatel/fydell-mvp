@@ -56,23 +56,23 @@ function RowList({
   }[];
 }) {
   return (
-    <ul className="overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+    <ul className="overflow-hidden rounded-[1rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-sm">
       {rows.map((r) => (
         <li
           key={r.key}
-          className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] px-4 py-3 transition-colors last:border-b-0 hover:bg-white/[0.02]"
+          className="group flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] px-5 py-4 transition-colors last:border-b-0 hover:bg-[var(--color-panel-hover)]"
         >
           <div className="min-w-0">
-            <p className="truncate text-[14px] font-medium text-[var(--text-primary)]">
+            <p className="truncate text-[14.5px] font-medium text-[var(--text-primary)] transition-colors group-hover:text-white">
               {r.primary}
             </p>
-            <p className="mt-0.5 truncate text-[13px] text-[var(--text-secondary)]">
+            <p className="mt-1 truncate text-[13.5px] text-[var(--text-secondary)]">
               {r.secondary}
             </p>
           </div>
           <Link
             href={r.href}
-            className="shrink-0 text-[13px] font-medium text-[var(--action-ink)] underline-offset-2 hover:underline"
+            className="shrink-0 rounded-full bg-white/[0.04] px-4 py-1.5 text-[13px] font-medium text-[var(--action-ink)] transition-colors hover:bg-white/[0.08]"
           >
             {r.action}
           </Link>
@@ -173,18 +173,18 @@ export default async function EmployerHomePage() {
           href="/app/employer/assessments"
           linkLabel="All evaluations"
         />
-        <div className="mt-3">
+        <div className="mt-4">
           {activeEvaluation ? (
-            <div className="rounded-[var(--radius-frame)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4 py-3.5">
+            <div className="group rounded-[1rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-5 py-4 transition-colors hover:bg-[var(--color-panel-hover)]">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <Link
                     href="/app/employer/assessments"
-                    className="text-[14px] font-medium text-[var(--text-primary)] underline-offset-2 hover:underline"
+                    className="text-[15px] font-medium text-[var(--text-primary)] transition-colors group-hover:text-white"
                   >
                     {activeEvaluation.title}
                   </Link>
-                  <p className="mt-1 line-clamp-2 max-w-[62ch] text-[13px] leading-[1.55] text-[var(--text-secondary)]">
+                  <p className="mt-1.5 line-clamp-2 max-w-[62ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
                     {activeEvaluation.tagline}
                   </p>
                 </div>
@@ -195,16 +195,16 @@ export default async function EmployerHomePage() {
                   {activeEvaluation.templateId ? "Published" : "Not published"}
                 </StatusTag>
               </div>
-              <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 border-t border-[var(--border-subtle)] pt-3 text-[12.5px]">
-                <div className="flex gap-1.5">
-                  <dt className="text-[var(--text-tertiary)]">Duration</dt>
-                  <dd className="tabular-nums text-[var(--text-secondary)]">
+              <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-t border-[var(--border-subtle)] pt-4 text-[13px]">
+                <div className="flex items-center gap-2">
+                  <dt className="text-[var(--text-tertiary)] uppercase tracking-wider text-[11px] font-medium">Duration</dt>
+                  <dd className="tabular-nums font-medium text-[var(--text-secondary)]">
                     {activeEvaluation.durationMinutes} min
                   </dd>
                 </div>
-                <div className="flex gap-1.5">
-                  <dt className="text-[var(--text-tertiary)]">Assesses</dt>
-                  <dd className="text-[var(--text-secondary)]">
+                <div className="flex items-center gap-2">
+                  <dt className="text-[var(--text-tertiary)] uppercase tracking-wider text-[11px] font-medium">Assesses</dt>
+                  <dd className="font-medium text-[var(--text-secondary)]">
                     {activeEvaluation.competencies.slice(0, 3).join(", ")}
                   </dd>
                 </div>
