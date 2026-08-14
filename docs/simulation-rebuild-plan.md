@@ -21,9 +21,9 @@ without it.
 |---|---|---|
 | 0 | Audit, ledger, hermetic runner, lint zero, security migration | **done, except the dev environment** |
 | 0b | Isolated Supabase project, gated seed, `.env.example` | **blocked on project creation** |
-| 1 | Domain types and server-side state machines | not started |
+| 1 | Domain types and server-side state machines | **defined and tested; not yet enforced at any call site** |
 | 2 | Simulation Definition V3 schema and attempt manifest | not started |
-| 3 | Northline resource bundle with stable IDs and checksums | not started |
+| 3 | Northline resource bundle with stable IDs and checksums | **bundle, ground truth and fixture test done; not yet served to a workbench** |
 | 4 | Durable workbench: leases, outbox, idempotency, recovery | not started |
 | 5 | Submission as an atomic server-controlled boundary | not started |
 | 6 | Analysis Engine V3 and the evidence graph | not started |
@@ -78,6 +78,68 @@ untouched.
 **Not yet applied to any database.** It must be applied to the isolated project
 first and the employer report, defense generation and health check re-verified
 before it goes near production.
+
+## Phases 1 and 3: completed in this pass
+
+Both are deterministic and need no database, which is why they were sequenced
+ahead of the blocked environment work.
+
+### Phase 1: the state machines
+
+`src/lib/simulations/v3/state.ts` declares five machines — invitation, attempt,
+analysis, defense, receipt — as data rather than as scattered `if` statements.
+Each edge names the actors allowed to traverse it, so authorization is part of
+the transition rather than a check someone remembers to write beside it.
+
+Three properties the loop depends on, now enforced by `npm run test:states`:
+
+- **Repeats are safe.** A retried submission, a re-opened invitation link and a
+  second revoke all succeed without claiming a change happened. Retryable
+  operations need this or the outbox in phase 4 has nothing to build on.
+- **The order cannot be skipped.** An attempt cannot reach a report without
+  passing through submission, a submitted attempt cannot return to active, and a
+  finished report cannot be reopened. `submission_pending` falls back to
+  `active` on failure rather than advancing, which is what makes phase 5's
+  atomic boundary expressible.
+- **Actors are separated.** A candidate cannot mark their own defense reviewed,
+  void their own attempt, or authorize their own retake. No employer actor
+  appears anywhere in the receipt machine, which is the state-machine expression
+  of "the candidate controls the receipt" — asserted directly, so a later edit
+  that hands an employer a revoke right fails the suite.
+
+`assertSameTenant` is separate on purpose: a transition can be perfectly legal
+in isolation and still be refused because the record belongs to another
+organization. The test asserts exactly that pairing.
+
+Structural checks run over every machine: no unreachable state, no non-terminal
+dead end, no edge to an undeclared state, no outgoing edge from a terminal
+state. Adding a state without wiring it in fails.
+
+**What this is not:** no call site enforces these yet. The machines are the
+contract; wiring them into the session and invitation routes is phase 5 and
+after. Until then a route can still make a move the machine forbids.
+
+### Phase 3: the Northline bundle
+
+`src/lib/simulations/v3/content/northline/data.ts` holds the scenario as
+structured records — production runs, quality events, reported metrics, and
+three documents — every row and section carrying a stable ID. `EvidenceSourceRef`
+addresses a cell, a row or a section by those IDs, so a citation points at a
+coordinate rather than at a quoted string that drifts when the data is edited.
+
+`truth.ts` recomputes the scenario's facts from the bundle instead of restating
+them. Nothing in the ground truth is typed twice.
+
+`npm run test:v3` verifies structure, SHA-256 checksums over canonicalized
+content, internal arithmetic, and that every evidence reference resolves. It
+already caught the reason this rebuild exists: the published yields in the
+original scenario did not reconcile with the events that were supposed to
+explain them. A candidate doing the arithmetic correctly would have disagreed
+with the answer key. The data was corrected; the test now fails if any row moves
+without the expected values and checksums moving with it.
+
+**What this is not:** the bundle is not yet reachable from a template version or
+a workbench. That needs the phase 2 definition schema and the attempt manifest.
 
 ## Phase 0b: the isolated environment
 
@@ -141,9 +203,17 @@ Phases touching analysis add golden fixtures. Phases touching UI add
 
 ## Honest statement of scale
 
-The brief describes 20 phases. Phase 0 is one of them, and it is the only one
-complete. The engine rebuild proper — native V3 definitions, a checksummed
-resource bundle, durable sync with leases and an outbox, atomic submission, an
-evidence graph with real source coordinates, immutable defense sets, and the
-test suite that proves all of it — is a multi-week effort and should not be
-represented otherwise in any status update.
+The brief describes 20 phases. Three are complete: 0, 1 and 3. All three are
+deterministic groundwork that runs without a database, which is precisely why
+they could be finished while the environment stays blocked.
+
+What remains is the larger half and it is not sequenced this way by accident.
+Durable sync with leases and an outbox, atomic submission, an evidence graph,
+immutable defense sets and the golden-path suite all need a database to be
+verified rather than asserted. The isolated project is still the gate. Until the
+existing loop has been run end to end against it, phases 4 through 9 would be
+built on ten integrity risks that have been inferred from source and never
+observed.
+
+This remains a multi-week effort and should not be represented otherwise in any
+status update.
