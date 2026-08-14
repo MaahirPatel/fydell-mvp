@@ -32,7 +32,7 @@ addressed. Reconciliation:
 
 - `/results/[token]` was left readable for links already handed out. The brief
   requires the raw path be locked down so a `share_token` cannot grant full
-  public result access. Scheduled in the plan; not yet done.
+  public result access. **Now done.** See "Closed since this audit" below.
 
 **Confirmed by this audit, unchanged**
 
@@ -241,10 +241,23 @@ rows, so any answer the candidate already gave is destroyed with them. The brief
 forbids exactly this. Not fixed in this pass; it belongs to the oral-defense
 rebuild.
 
-### 6. `/results/[token]` bypasses candidate control
+### 6. `/results/[token]` bypasses candidate control — CLOSED
 
 `sim_sessions.share_token` is plaintext, has no expiry and cannot be revoked.
-Minting stopped, but existing tokens still resolve to a full unredacted result.
+Minting stopped, but existing tokens still resolved to a full unredacted result.
+
+Closed. The route no longer reads its token, opens no client and renders nothing
+about the attempt, so the URL discloses nothing whoever holds it. A second leak
+found while fixing this: `GET /api/sim/results/[sessionId]` returned a `shareUrl`
+built from the plaintext token, and that route is reachable by any active member
+of the candidate's organization, so an employer could mint themselves a permanent
+public link to work the candidate is supposed to control. The field is gone and
+no caller depended on it.
+
+`npm run test:disclosure` guards both, plus the general rule that nothing queries
+or writes a plaintext `share_token`. The column itself is left in place; dropping
+it is data loss and belongs with the retirement plan, once it can be checked
+against a real database.
 
 ### 7. Analysis has no queue and a silent fallback
 

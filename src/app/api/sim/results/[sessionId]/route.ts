@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { appUrl } from "@/lib/app-url";
 import { isPreviewMode, previewCandidateResult } from "@/lib/dev/preview";
 
 export const runtime = "nodejs";
@@ -24,9 +23,16 @@ export async function GET(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const admin = createAdminSupabaseClient();
+  /*
+   * share_token is deliberately not selected. It is plaintext, unscoped and
+   * cannot be revoked, and this route is reachable by any member of the
+   * candidate's organization, so returning it handed an employer a permanent
+   * public link to work the candidate is supposed to control. Disclosure runs
+   * through sim_receipt_shares only.
+   */
   const { data: session } = await admin
     .from("sim_sessions")
-    .select("id, candidate_user_id, organization_id, status, share_token")
+    .select("id, candidate_user_id, organization_id, status")
     .eq("id", sessionId)
     .maybeSingle();
   if (!session) return NextResponse.json({ error: "Session not found" }, { status: 404 });
@@ -68,7 +74,6 @@ export async function GET(
     ready: true,
     result: run.result,
     completedAt: run.completed_at,
-    shareUrl: session.share_token ? `${appUrl()}/results/${session.share_token}` : null,
     credential: credential || null,
   });
 }
