@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { assertProjectBinding } from "@/lib/supabase/project-guard";
 
 // Server-only Supabase client using the service role key. This bypasses RLS,
 // so it must NEVER be imported into client components. All DB access flows
@@ -54,6 +55,17 @@ export function getSupabaseAdmin(): SupabaseClient {
     throw new Error(SERVICE_UNAVAILABLE_MESSAGE);
   }
 
+  // Fail closed if the key and the URL name different projects, or if this
+  // environment is not allowed to touch the project the URL points at. The
+  // reason goes to the server log; the browser only ever sees the generic
+  // message, since route handlers surface err.message directly.
+  try {
+    assertProjectBinding(process.env, { requireServiceKey: true });
+  } catch (err) {
+    console.error(`[supabase] ${err instanceof Error ? err.message : String(err)}`);
+    throw new Error(SERVICE_UNAVAILABLE_MESSAGE);
+  }
+
   cached = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false }
   });
@@ -74,6 +86,12 @@ export function getSupabaseAuthClient(): SupabaseClient {
       "[supabase] Missing auth credentials. Set NEXT_PUBLIC_SUPABASE_URL and " +
         "NEXT_PUBLIC_SUPABASE_ANON_KEY."
     );
+    throw new Error(SERVICE_UNAVAILABLE_MESSAGE);
+  }
+  try {
+    assertProjectBinding(process.env);
+  } catch (err) {
+    console.error(`[supabase] ${err instanceof Error ? err.message : String(err)}`);
     throw new Error(SERVICE_UNAVAILABLE_MESSAGE);
   }
   return createClient(url, anon, {

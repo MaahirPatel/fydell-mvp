@@ -1372,7 +1372,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                   onClick={() => void persist()}
                   className="rounded bg-[rgba(242,107,130,0.1)] px-2 py-0.5 font-medium text-[var(--fydell-risk)] hover:bg-[rgba(242,107,130,0.16)]"
                 >
-                  Save failed — Retry
+                  Save failed. Retry
                 </button>
               )}
             </span>

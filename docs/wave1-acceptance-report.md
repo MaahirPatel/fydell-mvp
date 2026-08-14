@@ -1,7 +1,7 @@
 # Wave 1 acceptance report — wave1-rc1
 
 **Branch:** `wave1-rc1`  
-**Freeze commit:** `ec9e6b6`  
+**Release candidate:** `wave1-rc2`, the database security fix. `75c177b` is the historical rc1; first freeze was `ec9e6b6`. See `docs/wave1-rc.md`.  
 **Date:** 14 August 2026  
 **Recommendation: NO-SHIP**
 
@@ -21,12 +21,17 @@ Feature work is frozen. Only acceptance failures may change this branch. The oth
 | GSAP removed | Pass |
 | Public CTA is Request a pilot | Pass |
 | Employer catalog is DA-01 only | Pass (code) |
+| `organizations` RLS: anon, candidate, outsider and removed member cannot read or write | Pass (live matrix on fydell-dev, `023`) |
+| `scenario_events_candidate` respects base-table RLS and is not a write path | Pass (live matrix on fydell-dev, `023`/`024`) |
+| Authored content, answer keys, scoring fixtures and evaluator-only fields unreachable below `service_role` | Pass (live matrix on fydell-dev) |
+| Migration source cannot regress either finding | Pass (`npm run test:db-security`, 17 checks) |
+| Server refuses a key/URL project mismatch, a public service key, or production without opt-in | Pass (`npm run test:project-guard`, 11 checks) |
 
 ## What is not proven
 
 | Gate | Result | Severity |
 |---|---|---|
-| Fresh non-production DB with production-equivalent sim schema | **Blocked** | P0 |
+| Fresh non-production DB with production-equivalent sim schema | **Applied on fydell-dev**, security verified; config not proven | P0 remaining: staging config / live app |
 | Fresh golden path (signup → revoke) | **Not executed** | P0 |
 | Recovery golden path | **Not executed** | P0 |
 | Live adversarial matrix | **Not executed** | P0 |
@@ -37,27 +42,14 @@ Feature work is frozen. Only acceptance failures may change this branch. The oth
 
 Two Supabase projects exist in the Fydell org:
 
-- `fydell` — production. Untouched. Do not reset. Do not seed.
-- `fydell-dev` — empty of user rows, healthy, **missing migrations 015–022**. There is no `sim_templates` / `sim_sessions` / `sim_invitations` table. DA-01 cannot run there yet.
+- `fydell` (`qtrhwrcxthtqvkeerptp`) — production. Untouched. Do not reset. Do not seed.
+- `fydell-dev` (`btbmvrvynnrhapjdkunz`) — **migrations 001–022 applied**. DA-01 fixture published (`ops-yield-investigation` / `northline-ops-yield@3.0.0`). Record: `docs/wave1-staging-apply-record.md`.
 
-Local Docker is not installed, so a local Supabase stack cannot be started on this machine.
+Schema-equivalent is not configuration-equivalent. Auth redirects, Resend, storage, jobs, and analysis env still need a staging-only check. `.env.local` is production and must not be loaded for writes.
 
-Applying 015–022 to `fydell-dev` is the correct provision step. It was not applied automatically: that is a live-schema write and needs an explicit go-ahead. Dry-run:
+API smoke and both golden paths are still blocked: there is no fydell-dev service-role key in `.env.staging.local`, and the Supabase CLI is not logged in. Create owner / member / candidate / outsider accounts through the product after that key exists. Do not copy the production service-role key. The service-role key is for narrowly scoped server operations only; it bypasses RLS, so it must never back a smoke test, a golden path or an RLS acceptance check.
 
-```
-npx tsx scripts/provision-wave1-staging.ts
-```
-
-After confirmation, on **fydell-dev only**:
-
-```
-WAVE1_APPLY_MIGRATIONS=1 npx tsx scripts/provision-wave1-staging.ts
-npx tsx scripts/seed-da01.ts
-```
-
-Then create owner / member / candidate / outsider / removed-member accounts through the product, not SQL.
-
-Also outstanding on `fydell-dev`: `public.organizations` has RLS disabled. Do not enable it without policies. Service-role writes would keep working; client reads would break.
+Both P0 database findings are **closed and verified** by migrations `023` and `024`, applied to `fydell-dev` only. `public.organizations` now has RLS enabled and forced with member-read-only access and no client write policy; `public.scenario_events_candidate` is `security_invoker = true`, revoked from `anon` and read-only for `authenticated`. Verification, including the full anonymous / owner / member / candidate / outsider / removed-member read and write matrix, is in `docs/wave1-db-security-verification.md`. Supabase security advisors now report no ERROR-level finding.
 
 Email: leave Resend unset for the empty-workspace / not-configured case. Use a sandbox key only when testing `sent`.
 
@@ -72,7 +64,7 @@ Harness: `WAVE1_LIVE=1 GOLDEN_PATH_BASE_URL=http://localhost:3000 npm run test:w
 
 Evidence file: `docs/wave1-acceptance-evidence.json` (written when the harness runs).
 
-Until staging has the sim schema, the live harness correctly fails closed.
+The sim schema is on fydell-dev. The live harness still fails closed until the app runs on `.env.staging.local` with a fydell-dev service-role key.
 
 ## Adversarial matrix
 
@@ -119,21 +111,25 @@ Protocol: `docs/wave1-hiring-manager-protocol.md`. Not executed. Wave 1 does not
 
 **P0**
 
-1. `fydell-dev` lacks the simulation schema. The DA-01 loop cannot run.
+1. Live API smoke cannot start: staging auth, redirect URLs, storage and the analysis provider are not configured, and the fydell-dev service-role key is not available to the app (CLI not logged in; MCP does not expose it). Schema is applied and its security is verified; configuration is not.
 2. Both recorded golden paths are unexecuted.
 3. Live adversarial suite is unexecuted.
+
+The two database P0s previously listed here are closed. See `docs/wave1-db-security-verification.md`.
 
 **P1**
 
 1. Visual approval unsigned (authenticated surfaces not captured).
 2. Hiring-manager paid-pilot test not run.
-3. `organizations` RLS disabled on staging (do not enable without policies).
-4. Product hero had a second button; changed to a quiet text link on this branch. Re-capture after staging is live.
+3. Product hero had a second button; changed to a quiet text link on this branch. Re-capture after staging is live.
+4. Real invitation delivery is unproven. Resend unset honestly yields `not_configured`, which is the empty state, not evidence that email works. A staging email-provider path must be tested end to end before the GlobalFoundries pilot; copied invitation links are acceptable only for the first golden path.
+5. `FYDELL_ALLOW_PRODUCTION_DB=true` must be set in the production environment before the next production release. rc2 puts the production project on an explicit denylist and the server otherwise refuses to build its Supabase clients. Deliberate and fail-closed, but it will break a deploy that forgets it.
 
 **P2**
 
 1. Workbench restyle is token-mapped, not a full control-system rewrite.
 2. Marketing `/product` scenes still need a dedicated visual pass against the live workbench.
+3. Default privileges in `public` grant `ALL` on every new table to `anon` and `authenticated`, so RLS is the only thing denying writes on most `sim_*` tables. Verified holding, but a migration that creates a table and forgets RLS would be exposed on landing. Tighten the defaults before the pilot.
 
 ## Ship / no-ship
 

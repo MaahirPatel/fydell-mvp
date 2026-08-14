@@ -1,0 +1,28 @@
+{
+  "at": "2026-08-14T22:37:11.467Z",
+  "allowlisted": {
+    "name": "fydell-dev",
+    "ref": "btbmvrvynnrhapjdkunz",
+    "host": "db.btbmvrvynnrhapjdkunz.supabase.co"
+  },
+  "denied": {
+    "ref": "qtrhwrcxthtqvkeerptp",
+    "host": "db.qtrhwrcxthtqvkeerptp.supabase.co"
+  },
+  "resolved": {
+    "ref": "btbmvrvynnrhapjdkunz",
+    "host": "db.btbmvrvynnrhapjdkunz.supabase.co",
+    "source": "mcp-allowlist-no-staging-env"
+  },
+  "plan": [
+    "015_fde_evidence_math.sql",
+    "016_attempt_kind.sql",
+    "017_workspace_engine.sql",
+    "018_shadow_lock.sql",
+    "019_applied_roles_simulations.sql",
+    "020_micro_sims_feedback.sql",
+    "021_october_pilot_cohort.sql",
+    "022_close_answer_key_reads.sql"
+  ],
+  "rcCommitMustBe": "75c177b or later on wave1-rc1"
+}

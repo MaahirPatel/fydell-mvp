@@ -19,11 +19,11 @@ export const INVITATION_LABEL = {
 } as const;
 
 export const EMAIL_DELIVERY_LABEL = {
-  not_configured: "Email not configured — copyable link available",
+  not_configured: "Email not configured, copyable link available",
   queued: "Email queued",
   sent: "Email sent",
   delivered: "Email delivered",
-  failed: "Email failed — copyable link available",
+  failed: "Email failed, copyable link available",
 } as const;
 
 export const ATTEMPT_LABEL = {

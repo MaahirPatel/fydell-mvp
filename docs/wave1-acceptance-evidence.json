@@ -1,0 +1,121 @@
+{
+  "startedAt": "2026-08-14T22:23:25.716Z",
+  "finishedAt": "2026-08-14T22:23:25.718Z",
+  "mode": "offline-contract",
+  "evidence": [
+    {
+      "id": "analysis.no-keyword-fallback",
+      "area": "Analysis",
+      "route": "contract",
+      "actor": "system",
+      "expected": "DA-01 cannot use keyword fallback",
+      "observed": "true",
+      "errors": [],
+      "pass": true,
+      "severity": "P0",
+      "at": "2026-08-14T22:23:25.717Z"
+    },
+    {
+      "id": "invite.expired",
+      "area": "Invitations",
+      "route": "/invite/[token]",
+      "actor": "candidate",
+      "expected": "expired gate",
+      "observed": "expired",
+      "errors": [],
+      "pass": true,
+      "severity": "P0",
+      "at": "2026-08-14T22:23:25.718Z"
+    },
+    {
+      "id": "invite.revoked",
+      "area": "Invitations",
+      "route": "/invite/[token]",
+      "actor": "candidate",
+      "expected": "revoked gate",
+      "observed": "revoked",
+      "errors": [],
+      "pass": true,
+      "severity": "P0",
+      "at": "2026-08-14T22:23:25.718Z"
+    },
+    {
+      "id": "invite.reused",
+      "area": "Invitations",
+      "route": "/invite/[token]",
+      "actor": "candidate",
+      "expected": "completed/used gate",
+      "observed": "completed",
+      "errors": [],
+      "pass": true,
+      "severity": "P0",
+      "at": "2026-08-14T22:23:25.718Z"
+    },
+    {
+      "id": "invite.not-configured",
+      "area": "Invitations",
+      "route": "/api/sim/invitations",
+      "actor": "employer",
+      "expected": "copyable link is not delivered",
+      "observed": "Email not configured — copyable link available",
+      "errors": [],
+      "pass": true,
+      "severity": "P0",
+      "at": "2026-08-14T22:23:25.718Z"
+    },
+    {
+      "id": "perm.candidate-cannot-invite",
+      "area": "Permissions",
+      "route": "contract",
+      "actor": "candidate",
+      "expected": "candidate cannot invite",
+      "observed": "false",
+      "errors": [],
+      "pass": true,
+      "severity": "P0",
+      "at": "2026-08-14T22:23:25.718Z"
+    },
+    {
+      "id": "perm.outsider-cannot-view-report",
+      "area": "Permissions",
+      "route": "contract",
+      "actor": "viewer",
+      "expected": "cross-org is forbidden at the route, viewer cannot invite",
+      "observed": "viewer.invite=false",
+      "errors": [],
+      "pass": true,
+      "severity": "P0",
+      "at": "2026-08-14T22:23:25.718Z"
+    },
+    {
+      "id": "live.skipped",
+      "area": "Empty states",
+      "route": "n/a",
+      "actor": "system",
+      "expected": "set WAVE1_LIVE=1 and GOLDEN_PATH_BASE_URL to run the HTTP loop",
+      "observed": "offline contract cases only",
+      "errors": [
+        "live golden path not executed"
+      ],
+      "pass": false,
+      "severity": "P0",
+      "at": "2026-08-14T22:23:25.718Z"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "live.skipped",
+      "area": "Empty states",
+      "route": "n/a",
+      "actor": "system",
+      "expected": "set WAVE1_LIVE=1 and GOLDEN_PATH_BASE_URL to run the HTTP loop",
+      "observed": "offline contract cases only",
+      "errors": [
+        "live golden path not executed"
+      ],
+      "pass": false,
+      "severity": "P0",
+      "at": "2026-08-14T22:23:25.718Z"
+    }
+  ]
+}

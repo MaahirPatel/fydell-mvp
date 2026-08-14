@@ -1,0 +1,35 @@
+{
+  "capturedAt": "2026-08-14T22:34:00.000Z",
+  "project": {
+    "name": "fydell-dev",
+    "ref": "btbmvrvynnrhapjdkunz",
+    "host": "db.btbmvrvynnrhapjdkunz.supabase.co",
+    "status": "ACTIVE_HEALTHY"
+  },
+  "denied": {
+    "name": "fydell",
+    "ref": "qtrhwrcxthtqvkeerptp",
+    "host": "db.qtrhwrcxthtqvkeerptp.supabase.co"
+  },
+  "appliedThrough": "014_durable_jobs",
+  "migrations001to014": [
+    "001_mvp_core",
+    "002_fpa_meridian",
+    "003_pilot_requests",
+    "004_mvp_schema_note",
+    "005_company_profiles_note",
+    "006_platform_ops",
+    "006a_organizations_base",
+    "007_orgs_invitations",
+    "008_profiles_account_status",
+    "009_org_rls_helpers",
+    "010_pilot_lifecycle",
+    "011_fde_core_loop",
+    "012_fde_account_type_check_fix",
+    "013_action_inbox",
+    "014_durable_jobs"
+  ],
+  "simTablesPresent": false,
+  "rlsDisabledBefore": ["public.organizations", "public.system_heartbeats"],
+  "userRows": 0
+}
