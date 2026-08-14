@@ -18,18 +18,19 @@ export function MetricStrip({
   return (
     <dl
       className={cn(
-        "flex flex-wrap items-stretch divide-x divide-[var(--border-subtle)] overflow-hidden rounded-[1.25rem] border border-[var(--border-subtle)] bg-[var(--surface-panel)] shadow-sm",
+        "flex flex-wrap items-stretch divide-x divide-[var(--border-subtle)] overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-panel)] shadow-[var(--shadow-panel)] relative",
         className,
       )}
     >
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[rgba(255,255,255,0.04)] to-transparent" />
       {items.map((item) => (
-        <div key={item.label} className="min-w-[132px] flex-1 px-5 py-4 bg-gradient-to-b from-[var(--surface-raised)] to-[var(--surface-panel)]">
-          <dt className="text-[13px] font-medium text-[var(--text-tertiary)] uppercase tracking-wider">{item.label}</dt>
-          <dd className="mt-2 text-[26px] font-medium leading-none tabular-nums tracking-tight text-[var(--text-primary)]">
+        <div key={item.label} className="min-w-[132px] flex-1 px-5 py-4 relative group hover:bg-white/[0.02] transition-colors">
+          <dt className="text-[12.5px] font-medium text-[var(--text-tertiary)] uppercase tracking-wider">{item.label}</dt>
+          <dd className="mt-1 text-[26px] font-semibold leading-none tabular-nums tracking-[-0.02em] text-[var(--text-primary)] relative z-10 drop-shadow-sm">
             {item.value}
           </dd>
           {item.hint ? (
-            <p className="mt-2 text-[12.5px] text-[var(--text-tertiary)] opacity-80">{item.hint}</p>
+            <p className="mt-1.5 text-[12px] text-[var(--text-tertiary)] opacity-80">{item.hint}</p>
           ) : null}
         </div>
       ))}

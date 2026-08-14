@@ -7,6 +7,7 @@ import { StatusTag } from "@/components/ui/StatusTag";
 import { EmptyState } from "@/components/ui/EmptyState";
 import SetupPath, { type SetupStep } from "@/components/employer/SetupPath";
 import CandidatePipeline from "@/components/employer/CandidatePipeline";
+import EmployerClientAnimator from "@/components/employer/EmployerClientAnimator";
 import { getEmployerCatalog } from "./_lib/catalog";
 import {
   getInvitationRecords,
@@ -56,23 +57,24 @@ function RowList({
   }[];
 }) {
   return (
-    <ul className="overflow-hidden rounded-[1rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-sm">
+    <ul className="overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-panel)] shadow-[var(--shadow-panel)]">
       {rows.map((r) => (
         <li
           key={r.key}
-          className="group flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] px-5 py-4 transition-colors last:border-b-0 hover:bg-[var(--color-panel-hover)]"
+          className="group relative flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] px-5 py-4 transition-colors last:border-b-0 hover:bg-white/[0.03]"
         >
+          <div className="absolute inset-y-0 left-0 w-[2px] bg-transparent transition-colors group-hover:bg-[var(--action-ink)]" />
           <div className="min-w-0">
             <p className="truncate text-[14.5px] font-medium text-[var(--text-primary)] transition-colors group-hover:text-white">
               {r.primary}
             </p>
-            <p className="mt-1 truncate text-[13.5px] text-[var(--text-secondary)]">
+            <p className="mt-1 truncate text-[13px] text-[var(--text-secondary)]">
               {r.secondary}
             </p>
           </div>
           <Link
             href={r.href}
-            className="shrink-0 rounded-full bg-white/[0.04] px-4 py-1.5 text-[13px] font-medium text-[var(--action-ink)] transition-colors hover:bg-white/[0.08]"
+            className="shrink-0 rounded-full px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] bg-[var(--surface-raised)] border border-[var(--border-subtle)] transition-all hover:text-white hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
           >
             {r.action}
           </Link>
@@ -83,6 +85,9 @@ function RowList({
 }
 
 export default async function EmployerHomePage() {
+  // #region agent log
+  fetch('http://127.0.0.1:7392/ingest/681204a9-761a-4288-901b-c44a46a40f3b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7f0598'},body:JSON.stringify({sessionId:'7f0598',hypothesisId:'H2',location:'src/app/app/employer/page.tsx:64',message:'Rendering restored employer page',data:{},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
   const user = await requireUser();
   if (!user) redirect("/login?next=%2Fapp%2Femployer");
   const org = await requireOrgMember(user.id);
@@ -133,91 +138,91 @@ export default async function EmployerHomePage() {
     /* A new workspace has one thing to do, so it stays in a single readable
        column. A running workspace has status to scan, so it uses the width. */
     <div className={hasResults ? "max-w-[1180px]" : "max-w-[900px]"}>
-      <PageHeader
-        title="Home"
-        description={
-          hasResults
-            ? "Where your evaluations stand right now."
-            : "Three steps to your first evidence report."
-        }
-      />
-
-      {hasResults ? (
-        <div className="mt-7">
-          <MetricStrip
-            items={[
-              { label: "In progress", value: metrics.inProgress },
-              { label: "Completed", value: metrics.completed },
-              { label: "Reports ready", value: metrics.reportsReady },
-              { label: "Needs review", value: metrics.needsReview },
-            ]}
-          />
-        </div>
-      ) : (
-        <div className="mt-7">
-          <SetupPath steps={steps} />
-        </div>
-      )}
-
-      <div
-        className={
-          hasResults
-            ? "mt-9 grid items-start gap-x-8 gap-y-9 xl:grid-cols-[minmax(0,1fr)_320px]"
-            : "contents"
-        }
-      >
-        <div className={hasResults ? "min-w-0" : "contents"}>
-      <section className={hasResults ? "" : "mt-9"}>
-        <SectionHeading
-          title="Active evaluation"
-          href="/app/employer/assessments"
-          linkLabel="All evaluations"
+      <EmployerClientAnimator>
+        <PageHeader
+          title="Home"
+          description={
+            hasResults
+              ? "Where your evaluations stand right now."
+              : "Three steps to your first evidence report."
+          }
         />
-        <div className="mt-4">
-          {activeEvaluation ? (
-            <div className="group rounded-[1rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-5 py-4 transition-colors hover:bg-[var(--color-panel-hover)]">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <Link
-                    href="/app/employer/assessments"
-                    className="text-[15px] font-medium text-[var(--text-primary)] transition-colors group-hover:text-white"
-                  >
-                    {activeEvaluation.title}
-                  </Link>
-                  <p className="mt-1.5 line-clamp-2 max-w-[62ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
-                    {activeEvaluation.tagline}
-                  </p>
-                </div>
-                {/* Neutral, not green. Green is reserved for a candidate
-                    actually finishing something; a published evaluation is a
-                    state of the catalogue, not an achievement. */}
-                <StatusTag tone="neutral">
-                  {activeEvaluation.templateId ? "Published" : "Not published"}
-                </StatusTag>
-              </div>
-              <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-t border-[var(--border-subtle)] pt-4 text-[13px]">
-                <div className="flex items-center gap-2">
-                  <dt className="text-[var(--text-tertiary)] uppercase tracking-wider text-[11px] font-medium">Duration</dt>
-                  <dd className="tabular-nums font-medium text-[var(--text-secondary)]">
-                    {activeEvaluation.durationMinutes} min
-                  </dd>
-                </div>
-                <div className="flex items-center gap-2">
-                  <dt className="text-[var(--text-tertiary)] uppercase tracking-wider text-[11px] font-medium">Assesses</dt>
-                  <dd className="font-medium text-[var(--text-secondary)]">
-                    {activeEvaluation.competencies.slice(0, 3).join(", ")}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          ) : (
-            <EmptyState
-              title="No evaluation is published yet"
-              description="An evaluation must be published before you can invite candidates to it."
+
+        {hasResults ? (
+          <div className="mt-7 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--fydell-brand-blue)]/5 to-transparent blur-[40px] -z-10 mix-blend-screen opacity-60" />
+            <MetricStrip
+              items={[
+                { label: "In progress", value: metrics.inProgress },
+                { label: "Completed", value: metrics.completed },
+                { label: "Reports ready", value: metrics.reportsReady },
+                { label: "Needs review", value: metrics.needsReview },
+              ]}
             />
-          )}
-        </div>
-      </section>
+          </div>
+        ) : (
+          <div className="mt-7">
+            <SetupPath steps={steps} />
+          </div>
+        )}
+
+        <div
+          className={
+            hasResults
+              ? "mt-9 grid items-start gap-x-8 gap-y-9 xl:grid-cols-[minmax(0,1fr)_320px]"
+              : "contents"
+          }
+        >
+          <div className={hasResults ? "min-w-0" : "contents"}>
+            <section className={hasResults ? "" : "mt-9"}>
+              <SectionHeading
+                title="Active evaluation"
+                href="/app/employer/assessments"
+                linkLabel="All evaluations"
+              />
+              <div className="mt-3">
+                {activeEvaluation ? (
+                  <div className="rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-panel)] shadow-[var(--shadow-panel)] px-5 py-4 transition-colors hover:border-[var(--border-strong)] relative overflow-hidden">
+                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[rgba(255,255,255,0.03)] to-transparent" />
+                    <div className="flex items-start justify-between gap-4 relative z-10">
+                      <div className="min-w-0">
+                        <Link
+                          href="/app/employer/assessments"
+                          className="text-[15px] font-medium text-[var(--text-primary)] underline-offset-2 hover:underline"
+                        >
+                          {activeEvaluation.title}
+                        </Link>
+                        <p className="mt-1 line-clamp-2 max-w-[62ch] text-[14px] leading-[1.55] text-[var(--text-secondary)]">
+                          {activeEvaluation.tagline}
+                        </p>
+                      </div>
+                      <StatusTag tone="neutral">
+                        {activeEvaluation.templateId ? "Published" : "Not published"}
+                      </StatusTag>
+                    </div>
+                    <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-1.5 border-t border-[var(--border-subtle)] pt-3 text-[13px] relative z-10">
+                      <div className="flex gap-1.5">
+                        <dt className="text-[var(--text-tertiary)]">Duration</dt>
+                        <dd className="tabular-nums text-[var(--text-secondary)] font-medium">
+                          {activeEvaluation.durationMinutes} min
+                        </dd>
+                      </div>
+                      <div className="flex gap-1.5">
+                        <dt className="text-[var(--text-tertiary)]">Assesses</dt>
+                        <dd className="text-[var(--text-secondary)] font-medium">
+                          {activeEvaluation.competencies.slice(0, 3).join(", ")}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                ) : (
+                  <EmptyState
+                    title="No evaluation is published yet"
+                    description="An evaluation must be published before you can invite candidates to it."
+                  />
+                )}
+              </div>
+            </section>
 
       {needsReview.length > 0 ? (
         <section className="mt-9">
@@ -287,6 +292,7 @@ export default async function EmployerHomePage() {
           </aside>
         ) : null}
       </div>
+      </EmployerClientAnimator>
     </div>
   );
 }
