@@ -4,7 +4,7 @@
 |---|---|
 | `ec9e6b6` | First freeze of the Wave 1 product/contract work |
 | `75c177b` | **`wave1-rc1`.** Historical. Not evidence-only: it changed product code (`src/app/product/page.tsx` dual CTA to one button plus a quiet link), added the acceptance harness, and recorded the no-ship gate. |
-| see below | **`wave1-rc2`.** The database security fix. Current release candidate. |
+| `e120af8` | **`wave1-rc2`.** The database security fix. Current release candidate. |
 
 ## Why rc2 exists
 
