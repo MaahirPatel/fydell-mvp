@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import StorageMigration from "@/components/layout/StorageMigration";
 import "./globals.css";
-
-const geist = GeistSans;
 
 export const metadata: Metadata = {
   title: {
@@ -21,8 +20,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={geist.variable}>
-      <body className={geist.className}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className={GeistSans.className}>
         <StorageMigration />
         {children}
       </body>

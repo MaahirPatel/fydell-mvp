@@ -1,6 +1,7 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import HeroSimPreview from "@/components/marketing/home/HeroSimPreview";
 import { ButtonLink } from "@/components/marketing/ui";
+import { ProductSpotlight } from "@/components/fydell/ProductSpotlight";
 import { ChangedFactsDiff } from "@/components/fydell/ChangedFactsDiff";
 import { ProductStage } from "@/components/fydell/ProductStage";
 import {
@@ -122,20 +123,20 @@ const DEPLOYMENT = [
 export default function EvaluationPage() {
   return (
     <MarketingShell>
-      <section className="pb-12 pt-[124px] sm:pt-[136px]">
+      <section className="pb-12 pt-[128px] sm:pt-[144px]">
         <div className="mkt-content">
-          <p className="text-[13px] font-medium text-[var(--text-tertiary)]">
+          <p className="section-eyebrow">
             {NORTHLINE_SCENARIO.role} · {NORTHLINE_SCENARIO.duration}
           </p>
-          <h1 className="page-display mt-3">{NORTHLINE_SCENARIO.evaluation}</h1>
+          <h1 className="page-display mt-4">{NORTHLINE_SCENARIO.evaluation}</h1>
           <p className="page-lead">
             Reported yield fell last period at {NORTHLINE_SCENARIO.company}. The
             candidate has to work out how much of that is a measurement change
             and how much is real, then say what to do before the next shift.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="/signup" variant="primary">
-              Create your workspace
+          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <ButtonLink href="/request-pilot" variant="primary">
+              Request a pilot
             </ButtonLink>
             <ButtonLink href="/product" variant="secondary">
               How the product works
@@ -154,7 +155,9 @@ export default function EvaluationPage() {
 
       <section className="pb-4">
         <div className="mkt-content">
-          <HeroSimPreview />
+          <ProductSpotlight>
+            <HeroSimPreview />
+          </ProductSpotlight>
         </div>
       </section>
 
@@ -392,8 +395,8 @@ export default function EvaluationPage() {
             they finish.
           </p>
           <div className="mt-8">
-            <ButtonLink href="/signup" variant="primary">
-              Create your workspace
+            <ButtonLink href="/request-pilot" variant="primary">
+              Request a pilot
             </ButtonLink>
           </div>
         </div>

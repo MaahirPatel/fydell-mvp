@@ -1,5 +1,6 @@
 import Link from "next/link";
 import FydellMark from "@/components/brand/FydellMark";
+import { ProductSpotlight } from "@/components/fydell/ProductSpotlight";
 
 /**
  * One calm frame for every authentication screen.
@@ -9,9 +10,9 @@ import FydellMark from "@/components/brand/FydellMark";
  * reset, link expired) stay single-column, because a product pitch beside a
  * reset form is noise.
  *
- * The form keeps its 400px measure in both cases. Widening a form to fill a
- * desktop does not improve it; giving the empty half something true to say
- * does.
+ * The form keeps its 400px measure in both cases. The empty half is filled by
+ * a real product scene, vertically centered, so the page does not read as a
+ * form floating in unused black.
  */
 export default function AuthShell({
   title,
@@ -34,11 +35,9 @@ export default function AuthShell({
         width === "wide" ? "w-full max-w-[520px]" : "w-full max-w-[400px]"
       }
     >
-      <h1 className="text-[26px] font-semibold leading-[1.15] tracking-[-0.032em] text-[var(--text-primary)]">
-        {title}
-      </h1>
+      <h1 className="auth-display">{title}</h1>
       {description ? (
-        <p className="mt-2.5 text-[14px] leading-[1.6] text-[var(--text-secondary)]">
+        <p className="mt-3 max-w-[42ch] text-[15px] leading-[1.6] text-[var(--text-secondary)]">
           {description}
         </p>
       ) : null}
@@ -46,7 +45,7 @@ export default function AuthShell({
       <div className="mt-8">{children}</div>
 
       {footer ? (
-        <div className="mt-7 border-t border-[var(--border-subtle)] pt-5 text-[13.5px] text-[var(--text-secondary)]">
+        <div className="mt-8 border-t border-[var(--border-subtle)] pt-5 text-[13.5px] text-[var(--text-secondary)]">
           {footer}
         </div>
       ) : null}
@@ -54,15 +53,17 @@ export default function AuthShell({
   );
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-[var(--surface-canvas)]">
-      <header className="flex h-16 shrink-0 items-center px-6 sm:px-10">
+    <div className="relative flex min-h-[100dvh] flex-col bg-[var(--surface-canvas)]">
+      <div className="auth-canvas" aria-hidden />
+
+      <header className="relative z-10 flex h-[68px] shrink-0 items-center px-6 sm:px-10">
         <Link
           href="/"
           className="inline-flex items-center gap-2.5"
           aria-label="Fydell home"
         >
-          <FydellMark width={24} />
-          <span className="text-[17px] font-semibold leading-none tracking-[-0.04em] text-[var(--text-primary)]">
+          <FydellMark width={22} />
+          <span className="text-[16px] font-medium leading-none tracking-[-0.03em] text-[var(--text-primary)]">
             fydell
           </span>
         </Link>
@@ -71,15 +72,21 @@ export default function AuthShell({
       {aside ? (
         <main
           id="main"
-          className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-12 px-6 pb-20 pt-8 sm:px-10 sm:pt-12 lg:flex-row lg:items-start lg:gap-16"
+          className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-1 items-center px-6 py-10 sm:px-10 lg:py-14"
         >
-          <div className="flex justify-center lg:block lg:shrink-0">{column}</div>
-          <div className="min-w-0 flex-1">{aside}</div>
+          <div className="grid w-full items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="flex justify-center lg:col-span-5 lg:block">
+              {column}
+            </div>
+            <div className="min-w-0 lg:col-span-7">
+              <ProductSpotlight>{aside}</ProductSpotlight>
+            </div>
+          </div>
         </main>
       ) : (
         <main
           id="main"
-          className="flex flex-1 items-start justify-center px-6 pb-20 pt-8 sm:pt-14"
+          className="relative z-10 flex flex-1 items-center justify-center px-6 py-12"
         >
           {column}
         </main>

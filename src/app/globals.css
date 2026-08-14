@@ -14,20 +14,19 @@
   /* Surfaces */
   --color-canvas: #08090a;
   --color-band: #0b0c10;
-  --color-raised: #0e1014;
-  --color-panel: #121419;
-  --color-panel-hover: #171a20;
-  --color-paper: #f4f5f7;
+  --color-raised: #0e1013;
+  --color-panel: #12151a;
+  --color-panel-hover: #171b22;
+  --color-paper: #f5f7f8;
 
-  /* Text. Contrast ratios are against --color-canvas (#08090a).
-     primary 17.8:1 - secondary 8.9:1 - tertiary 5.7:1 */
-  --color-ink: #f4f5f7;
-  --color-ink-2: #a8adb8;
-  --color-ink-3: #848a96;
+  /* Text. Contrast ratios are against --color-canvas (#08090a). */
+  --color-ink: #f5f7f8;
+  --color-ink-2: #b6bbc4;
+  --color-ink-3: #858b96;
 
   /* Lines */
-  --color-line: rgba(255, 255, 255, 0.08);
-  --color-line-2: rgba(255, 255, 255, 0.12);
+  --color-line: rgba(255, 255, 255, 0.075);
+  --color-line-2: rgba(255, 255, 255, 0.13);
   --color-line-3: rgba(255, 255, 255, 0.18);
 
   /* State. Blue is action and active investigation, amber is changed
@@ -44,6 +43,7 @@
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-pop: 0 8px 28px rgba(0, 0, 0, 0.5);
@@ -55,21 +55,23 @@
      into chapters without alternating light and dark blocks; the difference is
      deliberately small enough that it reads as depth rather than as a stripe. */
   --surface-canvas: #08090a;
+  --surface-deep: #050607;
   --surface-band: #0b0c10;
-  --surface-raised: #0e1014;
-  --surface-panel: #121419;
-  --surface-hover: #171a20;
-  --surface-paper: #f4f5f7;
+  --surface-raised: #0e1013;
+  --surface-panel: #12151a;
+  --surface-hover: #1b2028;
+  --surface-selected: #202631;
+  --surface-paper: #f5f7f8;
 
   /* ---- Borders ---- */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-default: rgba(255, 255, 255, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.075);
+  --border-default: rgba(255, 255, 255, 0.13);
   --border-strong: rgba(255, 255, 255, 0.18);
 
   /* ---- Text ---- */
-  --text-primary: #f4f5f7;
-  --text-secondary: #a8adb8;
-  --text-tertiary: #848a96;
+  --text-primary: #f5f7f8;
+  --text-secondary: #b6bbc4;
+  --text-tertiary: #858b96;
 
   /* ---- Brand and state ---- */
   --fydell-brand-blue: #5662ff;
@@ -106,13 +108,13 @@
   --space-12: 144px;
 
   /* ---- Type scale ---- */
-  --type-display: clamp(2.5rem, 4.4vw, 3.875rem);
-  --type-page: clamp(2.125rem, 3.4vw, 2.875rem);
-  --type-section: clamp(1.75rem, 2.6vw, 2.25rem);
+  --type-display: clamp(3.75rem, 6vw, 5.5rem);
+  --type-page: clamp(3.25rem, 5vw, 4.75rem);
+  --type-section: clamp(2.5rem, 4vw, 3.75rem);
 
   /* ---- Layout ---- */
-  --page-max-width: 1200px;
-  --section-narrative-py: clamp(5rem, 9vh, 7rem);
+  --page-max-width: 1360px;
+  --section-narrative-py: clamp(7.5rem, 12vh, 11rem);
 
   /* ---- Elevation and motion ---- */
   --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -250,18 +252,18 @@ nextjs-portal,
   margin-inline: auto;
   width: 100%;
   max-width: var(--page-max-width);
-  padding-inline: 20px;
+  padding-inline: 24px;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .mkt-content {
-    padding-inline: 32px;
+    padding-inline: 40px;
   }
 }
 
 @media (min-width: 1024px) {
   .mkt-content {
-    padding-inline: 40px;
+    padding-inline: 64px;
   }
 }
 
@@ -324,12 +326,12 @@ nextjs-portal,
 
 .hero-display {
   margin: 0;
-  max-width: 16ch;
+  max-width: 14ch;
   color: var(--text-primary);
   font-size: var(--type-display);
-  font-weight: 550;
-  line-height: 1.02;
-  letter-spacing: -0.042em;
+  font-weight: 510;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
   text-wrap: balance;
 }
 
@@ -339,50 +341,69 @@ nextjs-portal,
 .hero-display-split {
   margin: 0;
   color: var(--text-primary);
-  font-size: clamp(2.375rem, 3.6vw, 3.25rem);
-  font-weight: 550;
+  font-size: clamp(2.5rem, 3.8vw, 3.5rem);
+  font-weight: 510;
   line-height: 1.04;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.034em;
+  text-wrap: balance;
+}
+
+.auth-display {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+  font-weight: 510;
+  line-height: 1.1;
+  letter-spacing: -0.032em;
   text-wrap: balance;
 }
 
 .page-display {
   margin: 0;
-  max-width: 20ch;
+  max-width: 18ch;
   color: var(--text-primary);
   font-size: var(--type-page);
-  font-weight: 550;
-  line-height: 1.05;
+  font-weight: 510;
+  line-height: 1;
   letter-spacing: -0.038em;
   text-wrap: balance;
 }
 
 .page-lead {
-  margin: 20px 0 0;
-  max-width: 58ch;
+  margin: 24px 0 0;
+  max-width: 46ch;
   color: var(--text-secondary);
-  font-size: 17px;
+  font-size: 1.25rem;
   font-weight: 430;
-  line-height: 1.6;
-  letter-spacing: -0.008em;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
 }
 
 .section-heading {
-  max-width: 22ch;
+  max-width: 18ch;
   color: var(--text-primary);
   font-size: var(--type-section);
-  font-weight: 550;
-  line-height: 1.1;
+  font-weight: 500;
+  line-height: 1.04;
   letter-spacing: -0.032em;
 }
 
 .section-desc {
-  max-width: 56ch;
+  max-width: 46ch;
   color: var(--text-secondary);
-  font-size: 17px;
+  font-size: 1.2rem;
   font-weight: 430;
-  line-height: 1.6;
+  line-height: 1.55;
   letter-spacing: -0.008em;
+}
+
+.section-eyebrow {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
 }
 
 .stage-label {
@@ -416,7 +437,7 @@ nextjs-portal,
 .platform-input,
 .platform-select {
   width: 100%;
-  height: 40px;
+  height: 42px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-panel);
   background: var(--surface-panel);
@@ -424,6 +445,7 @@ nextjs-portal,
   outline: none;
   padding: 0 12px;
   font-size: 14.5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transition:
     border-color 150ms var(--ease),
     box-shadow 150ms var(--ease);
@@ -494,6 +516,89 @@ textarea.platform-input {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes fydell-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Product frame: a quiet top-edge light, the way Linear stages software. */
+.product-frame {
+  position: relative;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 28px 80px -28px rgba(0, 0, 0, 0.72);
+}
+
+.product-frame::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.product-spotlight {
+  pointer-events: none;
+  position: absolute;
+  inset: -18% -8% 4%;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 8%, rgba(245, 247, 248, 0.07), transparent 62%),
+    radial-gradient(ellipse 90% 40% at 50% 100%, rgba(0, 0, 0, 0.45), transparent 70%);
+}
+
+.product-spotlight-soft {
+  opacity: 0.7;
+}
+
+.product-spotlight-brand {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 8%, rgba(245, 247, 248, 0.07), transparent 62%),
+    radial-gradient(ellipse 36% 28% at 78% 0%, rgba(86, 98, 255, 0.06), transparent 58%),
+    radial-gradient(ellipse 90% 40% at 50% 100%, rgba(0, 0, 0, 0.45), transparent 70%);
+}
+
+.fydell-canvas-light {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 42% at 50% -10%, rgba(245, 247, 248, 0.045), transparent 58%),
+    linear-gradient(180deg, transparent 70%, rgba(0, 0, 0, 0.35));
+}
+
+.auth-canvas {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(245, 247, 248, 0.04), transparent 62%);
+}
+
+.reveal-in {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-in {
+    animation: fydell-rise 720ms var(--ease);
+  }
+
+  .reveal-in-delay-1 {
+    animation-delay: 80ms;
+  }
+
+  .reveal-in-delay-2 {
+    animation-delay: 160ms;
   }
 }
 

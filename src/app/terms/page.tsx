@@ -41,9 +41,10 @@ export default function TermsPage() {
         <div className="mkt-content">
           <h1 className="page-display">Terms.</h1>
           <p className="page-lead">
-            Standard terms of use have not been published yet. Rather than post
-            boilerplate that says nothing, this page states what currently
-            governs use of Fydell and how to get a copy of it.
+            Effective 14 August 2026. Standard terms of use have not been
+            published yet. Rather than post boilerplate that says nothing, this
+            page states what currently governs use of Fydell and how to get a
+            copy of it.
           </p>
         </div>
       </section>

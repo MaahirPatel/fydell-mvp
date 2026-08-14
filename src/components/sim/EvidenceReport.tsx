@@ -32,12 +32,16 @@ interface Evidence {
 }
 interface Report {
   ready: boolean;
+  failed?: boolean;
+  reviewState?: "processing" | "review_required" | "ready" | "failed";
   message?: string;
   sessionStatus?: string;
   candidate?: { email: string; name: string | null };
   simulation?: {
     title: string;
     roleKey: string;
+    slug?: string | null;
+    version?: string | null;
     deliverableFields: { key: string; label: string }[];
   };
   session?: {
@@ -182,9 +186,25 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
   }
 
   if (!report.ready) {
+    if (report.failed) {
+      return (
+        <EmptyState
+          title="Analysis failed"
+          description={
+            report.message ??
+            "This evaluation was not scored. Keyword fallback is not allowed for DA-01."
+          }
+          action={
+            <Button variant="secondary" size="sm" onClick={reload}>
+              Retry analysis
+            </Button>
+          }
+        />
+      );
+    }
     return (
       <EmptyState
-        title="Report not ready yet"
+        title="Report still processing"
         description={`${report.message ?? "Analysis is still running."} This page refreshes on its own.`}
       />
     );
@@ -270,8 +290,33 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
         ) : null}
         <p className="mt-3 max-w-[74ch] text-[12.5px] leading-[1.6] text-[var(--text-tertiary)]">
           Bands describe how strong the observed evidence is, not a ranking. This report
-          shows what the candidate did so you can judge it yourself.
+          shows what the candidate did so you can judge it yourself. Fydell analysis is
+          not an employer decision.
         </p>
+        <dl className="mt-3 grid gap-3 border-t border-[var(--border-subtle)] pt-3 sm:grid-cols-3">
+          <div>
+            <dt className="text-[12px] text-[var(--text-tertiary)]">Simulation version</dt>
+            <dd className="mt-0.5 font-mono text-[12.5px] text-[var(--text-primary)]">
+              {simulation.version || simulation.slug || "unversioned"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[12px] text-[var(--text-tertiary)]">Analysis version</dt>
+            <dd className="mt-0.5 font-mono text-[12.5px] text-[var(--text-primary)]">
+              {analysis.engineVersion || "v2"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[12px] text-[var(--text-tertiary)]">Review state</dt>
+            <dd className="mt-0.5 text-[13px] text-[var(--text-primary)]">
+              {report.reviewState === "review_required"
+                ? "Needs review"
+                : report.reviewState === "failed"
+                  ? "Failed"
+                  : "Ready"}
+            </dd>
+          </div>
+        </dl>
       </Surface>
 
       {analysis.citations && analysis.citations.length > 0 ? (

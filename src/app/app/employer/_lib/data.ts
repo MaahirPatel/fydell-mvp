@@ -13,6 +13,7 @@ import {
   previewNeedsReview,
   previewReports,
 } from "@/lib/dev/preview";
+import { invitationTruth } from "@/lib/contracts/lifecycle";
 
 export const INVITATION_STATUS_LABEL: Record<string, string> = {
   sent: "Invited",
@@ -153,7 +154,10 @@ export async function getInvitationRecords(
       roleTitle: roleTitleFor(template?.role_key),
       simulation: template?.title || "",
       status,
-      statusLabel: INVITATION_STATUS_LABEL[status] || status,
+      statusLabel: invitationTruth({
+        status,
+        emailDelivery: inv.email_delivery as string | null,
+      }).label,
       progress: session
         ? SESSION_PROGRESS_LABEL[session.status] || session.status
         : "Not started",

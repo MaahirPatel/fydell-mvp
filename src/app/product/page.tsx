@@ -29,23 +29,21 @@ const CHAPTER = "border-t border-[var(--border-subtle)] mkt-section-chapter";
 const BAND = "bg-[var(--surface-band)]";
 
 function ChapterHead({
-  index,
+  eyebrow,
   title,
   body,
   className = "",
 }: {
-  index: number;
+  eyebrow: string;
   title: string;
   body: string;
   className?: string;
 }) {
   return (
     <div className={className}>
-      <p className="text-[12.5px] tabular-nums text-[var(--text-tertiary)]">
-        Chapter {index}
-      </p>
-      <h2 className="section-heading mt-2.5">{title}</h2>
-      <p className="mt-4 max-w-[54ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+      <p className="section-eyebrow">{eyebrow}</p>
+      <h2 className="section-heading mt-3">{title}</h2>
+      <p className="mt-5 max-w-[46ch] text-[1.2rem] leading-[1.55] text-[var(--text-secondary)]">
         {body}
       </p>
     </div>
@@ -56,7 +54,7 @@ const SETUP = [
   {
     label: "Evaluation",
     value: NORTHLINE_SCENARIO.evaluation,
-    note: "Published by Fydell. Read-only.",
+    note: "Maintained by Fydell. Read-only.",
   },
   { label: "Role", value: NORTHLINE_SCENARIO.role, note: null },
   {
@@ -90,9 +88,10 @@ const BOUNDARIES = [
 export default function ProductPage() {
   return (
     <MarketingShell>
-      <section className="pb-12 pt-[120px] sm:pt-[132px]">
+      <section className="pb-12 pt-[128px] sm:pt-[144px]">
         <div className="mkt-content">
-          <h1 className="page-display">
+          <p className="section-eyebrow">Product</p>
+          <h1 className="page-display mt-4">
             An evaluation you can audit, not a score you have to trust.
           </h1>
           <p className="page-lead">
@@ -100,9 +99,9 @@ export default function ProductPage() {
             concluded, opens the evidence behind it, and interviews from there.
             Nothing in the report is a number you cannot trace back to a row.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="/signup" variant="primary">
-              Create your workspace
+          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <ButtonLink href="/request-pilot" variant="primary">
+              Request a pilot
             </ButtonLink>
             <ButtonLink href="/simulations" variant="secondary">
               See the evaluation
@@ -115,7 +114,7 @@ export default function ProductPage() {
       <section className={CHAPTER}>
         <div className="mkt-content">
           <ChapterHead
-            index={1}
+            eyebrow="Setup"
             title="Set the evaluation"
             body="There is one released evaluation and Fydell maintains it. You choose the role you are hiring for, check what it measures, and invite candidates to it. You are not asked to author a test."
           />
@@ -185,7 +184,7 @@ export default function ProductPage() {
       <section className={`${CHAPTER} ${BAND}`}>
         <div className="mkt-content">
           <ChapterHead
-            index={2}
+            eyebrow="Evidence"
             title="Watch work become evidence"
             body="This is the part that is hard to describe and easy to show. Step through one candidate's session and see how a file they opened turns into a claim you can check."
           />
@@ -199,13 +198,14 @@ export default function ProductPage() {
       <section className={CHAPTER}>
         <div className="mkt-content">
           <ChapterHead
-            index={3}
+            eyebrow="What you receive"
             title="Review, follow up, and return the receipt"
             body="You get a report that leads with the candidate's conclusion, opens to its sources, and says where it stops. The follow-up question comes from that stopping point, and the candidate keeps their own copy of the work."
           />
 
           <div className="mt-9">
             <ProductStage
+              chrome="app"
               title="Evidence report"
               source={`${NORTHLINE_SCENARIO.company} · synthetic`}
               label="The employer report with each claim openable to its cited source"
@@ -308,8 +308,8 @@ export default function ProductPage() {
             .
           </p>
           <div className="mt-8">
-            <ButtonLink href="/signup" variant="primary">
-              Create your workspace
+            <ButtonLink href="/request-pilot" variant="primary">
+              Request a pilot
             </ButtonLink>
           </div>
         </div>

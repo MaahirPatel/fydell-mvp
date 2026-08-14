@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import AuthShell from "@/components/auth/AuthShell";
 import LoginForm from "@/components/auth/LoginForm";
-import WorkspacePreviewScene from "@/components/auth/WorkspacePreviewScene";
 import { isCandidateDestination, withNext } from "@/lib/auth/safe-next";
 
 function LoginContent() {
@@ -18,9 +17,8 @@ function LoginContent() {
       description={
         candidate
           ? "Sign in and we will take you straight back to your evaluation."
-          : undefined
+          : "Continue to the workspace where you invite candidates and inspect their evidence."
       }
-      aside={candidate ? undefined : <WorkspacePreviewScene variant="login" />}
       footer={
         <>
           New to Fydell?{" "}

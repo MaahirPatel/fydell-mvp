@@ -15,7 +15,7 @@ import FydellMark from "@/components/brand/FydellMark";
  */
 const LINKS = [
   { label: "Product", href: "/product" },
-  { label: "Evaluation", href: "/simulations" },
+  { label: "Evaluations", href: "/simulations" },
   { label: "Trust", href: "/trust" },
 ];
 
@@ -44,15 +44,15 @@ export default function SiteNav() {
   }, [open]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--border-subtle)] bg-[rgba(8,9,10,0.88)] backdrop-blur-[10px]">
-      <div className="mkt-content flex h-14 items-center justify-between gap-8">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--border-subtle)] bg-[rgba(8,9,10,0.82)] backdrop-blur-[16px]">
+      <div className="mkt-content flex h-16 items-center justify-between gap-8">
         <Link
           href="/"
-          className="inline-flex shrink-0 items-center gap-2"
+          className="inline-flex shrink-0 items-center gap-2.5"
           aria-label="Fydell home"
         >
-          <FydellMark width={20} />
-          <span className="text-[15px] font-semibold leading-none tracking-[-0.04em] text-[var(--text-primary)]">
+          <FydellMark width={22} />
+          <span className="text-[16px] font-medium leading-none tracking-[-0.03em] text-[var(--text-primary)]">
             fydell
           </span>
         </Link>
@@ -86,10 +86,10 @@ export default function SiteNav() {
             Sign in
           </Link>
           <Link
-            href="/signup"
-            className="hidden h-8 items-center rounded-[8px] bg-[#eceef1] px-3.5 text-[13px] font-medium text-[#0a0b0d] transition-colors hover:bg-white sm:inline-flex"
+            href="/request-pilot"
+            className="hidden h-8 items-center rounded-full bg-[#eceef1] px-3.5 text-[13px] font-medium text-[#0a0b0d] transition-colors hover:bg-white sm:inline-flex"
           >
-            Create workspace
+            Request a pilot
           </Link>
           <button
             type="button"
@@ -126,10 +126,10 @@ export default function SiteNav() {
               Sign in
             </Link>
             <Link
-              href="/signup"
+              href="/request-pilot"
               className="mt-2 inline-flex h-10 items-center justify-center rounded-[8px] bg-[#eceef1] text-[14px] font-medium text-[#0a0b0d]"
             >
-              Create workspace
+              Request a pilot
             </Link>
           </nav>
         </div>

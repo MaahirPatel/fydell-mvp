@@ -5,6 +5,7 @@ import { runMicroScoring } from "@/lib/simulations/micro-scoring";
 import { getVersionContent } from "@/lib/simulations/db";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 import { runV2Scoring } from "@/lib/simulations/v2/run";
+import { mayUseKeywordFallback } from "@/lib/contracts/da01";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -14,7 +15,8 @@ export const maxDuration = 120;
  * called by the post-submission page and the employer report page, so a
  * failed run can always be retried without duplicating results.
  *
- * Prefers scoring v2 for micro content; falls back to runMicroScoring on error.
+ * DA-01 is pinned to v2. Keyword micro-scoring is never an equivalent fallback
+ * for that evaluation. Other micros may still fall back.
  */
 export async function POST(
   _req: NextRequest,
@@ -60,6 +62,19 @@ export async function POST(
       const { analysisRunId } = await runV2Scoring(id);
       return NextResponse.json({ ok: true, analysisRunId, engineVersion: "v2" });
     } catch (v2Err) {
+      if (!mayUseKeywordFallback(content.slug)) {
+        console.error("[analyze] DA-01 v2 scoring failed; no keyword fallback:", v2Err);
+        return NextResponse.json(
+          {
+            ok: false,
+            code: "analysis_failed",
+            error:
+              "Analysis failed. This evaluation cannot be scored by the keyword fallback.",
+            engineVersion: "v2",
+          },
+          { status: 500 },
+        );
+      }
       console.error("[analyze] v2 scoring failed, falling back to micro:", v2Err);
       const { analysisRunId } = await runMicroScoring(id);
       return NextResponse.json({

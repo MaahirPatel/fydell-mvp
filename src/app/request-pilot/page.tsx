@@ -37,14 +37,15 @@ const STEPS: Array<[string, string]> = [
 export default function RequestPilotPage() {
   return (
     <MarketingShell>
-      <section className="pb-14 pt-[112px] sm:pt-[124px]">
+      <section className="pb-14 pt-[128px] sm:pt-[144px]">
         <div className="mkt-content">
           <div className="grid items-start gap-10 lg:grid-cols-12 lg:gap-14">
             <div className="lg:col-span-5">
-              <h1 className="text-[clamp(2rem,3.4vw,2.6rem)] font-medium leading-[1.08] tracking-[-0.035em] text-[var(--text-primary)]">
+              <p className="section-eyebrow">Pilot</p>
+              <h1 className="page-display mt-4">
                 Run your first pilot.
               </h1>
-              <p className="mt-4 max-w-[46ch] text-[15.5px] leading-[1.65] text-[var(--text-secondary)]">
+              <p className="mt-5 max-w-[42ch] text-[1.2rem] leading-[1.55] text-[var(--text-secondary)]">
                 Tell us what you are hiring for. We will set up the cohort with
                 you and stay reachable while it runs.
               </p>

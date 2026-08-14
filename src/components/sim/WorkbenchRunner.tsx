@@ -416,7 +416,7 @@ function InteractiveTable({
 
   if (!table.headers.length) {
     return (
-      <div className="whitespace-pre-wrap px-5 py-5 text-[14px] leading-relaxed text-[#0B1020]">
+      <div className="whitespace-pre-wrap px-5 py-5 text-[14px] leading-relaxed text-[var(--text-primary)]">
         {content}
       </div>
     );
@@ -424,8 +424,8 @@ function InteractiveTable({
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-wrap items-center gap-3 border-b border-[#D9DEE7] px-4 py-2.5">
-        <p className="mr-auto text-[13px] font-semibold text-[#0B1020]">{title}</p>
+      <div className="flex flex-wrap items-center gap-3 border-b border-[var(--border-subtle)] px-4 py-2.5">
+        <p className="mr-auto text-[13px] font-semibold text-[var(--text-primary)]">{title}</p>
         <input
           type="search"
           value={query}
@@ -438,21 +438,21 @@ function InteractiveTable({
           }}
           placeholder="Filter rows…"
           aria-label={`Filter ${title}`}
-          className="w-52 rounded-md border border-[#D9DEE7] bg-white px-2.5 py-1.5 text-[13px] text-[#0B1020] placeholder:text-slate-400 focus:border-[#3157D5] focus:outline-none disabled:bg-slate-50"
+          className="w-52 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2.5 py-1.5 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
         />
-        <span className="text-[12px] text-slate-500">
+        <span className="text-[12px] text-[var(--text-tertiary)]">
           {filtered.length} of {table.rows.length} · {flagged.length} flagged
         </span>
       </div>
       <div className="overflow-auto">
         <table className="w-full border-collapse text-[13px]">
-          <thead className="sticky top-0 z-10 bg-[#F4F3EF]">
+          <thead className="sticky top-0 z-10 bg-[var(--surface-canvas)]">
             <tr>
-              <th className="w-10 border-b border-[#D9DEE7] px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <th className="w-10 border-b border-[var(--border-subtle)] px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
                 Flag
               </th>
               {table.headers.map((h, i) => (
-                <th key={i} className="border-b border-[#D9DEE7] p-0 text-left">
+                <th key={i} className="border-b border-[var(--border-subtle)] p-0 text-left">
                   <button
                     type="button"
                     disabled={locked}
@@ -463,11 +463,11 @@ function InteractiveTable({
                       setSortDir(nextDir);
                       onSort(h, nextDir === 1 ? "asc" : "desc");
                     }}
-                    className="flex w-full items-center gap-1 px-3 py-2 font-semibold text-[#0B1020] hover:bg-white disabled:cursor-not-allowed"
+                    className="flex w-full items-center gap-1 px-3 py-2 font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-hover)] disabled:cursor-not-allowed"
                   >
                     {h}
                     {sortCol === i && (
-                      <span aria-hidden className="text-slate-400">
+                      <span aria-hidden className="text-[var(--text-tertiary)]">
                         {sortDir === 1 ? "↑" : "↓"}
                       </span>
                     )}
@@ -484,21 +484,21 @@ function InteractiveTable({
                   key={r.id}
                   onClick={() => !locked && onFlag(r.id)}
                   className={`cursor-pointer ${
-                    isFlagged ? "bg-[#E8EEFB]" : "odd:bg-white even:bg-[#F8F8F6]"
-                  } ${locked ? "cursor-not-allowed opacity-70" : "hover:bg-[#EEF2FB]"}`}
+                    isFlagged ? "bg-[var(--surface-selected)]" : "odd:bg-[var(--surface-raised)] even:bg-[var(--surface-panel)]"
+                  } ${locked ? "cursor-not-allowed opacity-70" : "hover:bg-[var(--surface-hover)]"}`}
                 >
-                  <td className="border-b border-[#E8ECF2] px-2 py-1.5 text-center">
+                  <td className="border-b border-[var(--border-subtle)] px-2 py-1.5 text-center">
                     <span
                       aria-hidden
                       className={`inline-block h-2.5 w-2.5 rounded-sm ${
-                        isFlagged ? "bg-[#3157D5]" : "border border-[#D9DEE7] bg-white"
+                        isFlagged ? "bg-[var(--fydell-brand-blue)]" : "border border-[var(--border-subtle)] bg-[var(--surface-raised)]"
                       }`}
                     />
                   </td>
                   {table.headers.map((_, ci) => (
                     <td
                       key={ci}
-                      className="whitespace-nowrap border-b border-[#E8ECF2] px-3 py-1.5 font-mono text-[12.5px] text-[#0B1020]"
+                      className="whitespace-nowrap border-b border-[var(--border-subtle)] px-3 py-1.5 font-mono text-[12.5px] text-[var(--text-primary)]"
                     >
                       {r.cells[ci] ?? ""}
                     </td>
@@ -509,7 +509,7 @@ function InteractiveTable({
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-slate-500">No rows match that filter.</p>
+          <p className="px-4 py-8 text-center text-sm text-[var(--text-tertiary)]">No rows match that filter.</p>
         )}
       </div>
     </div>
@@ -1214,7 +1214,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                 : "This checks your browser, your screen size and whether you can reach Fydell. It takes a second and finds problems now rather than at minute twelve."}
             </p>
             {gate?.preflightLimitations?.length || preflightMsg ? (
-              <p className="mt-2.5 text-[13px] leading-[1.6] text-[#e9c46a]">
+              <p className="mt-2.5 text-[13px] leading-[1.6] text-[var(--fydell-changed)]">
                 {preflightMsg || gate?.preflightLimitations?.join(" ")}
               </p>
             ) : null}
@@ -1342,13 +1342,13 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   const firstName = stakeholder.name.split(" ")[0];
 
   return (
-    <div className="min-h-screen bg-[#F4F3EF] text-[#0B1020]">
-      <header className="sticky top-0 z-40 border-b border-[#D9DEE7] bg-white">
+    <div className="min-h-screen bg-[var(--surface-canvas)] text-[var(--text-primary)]">
+      <header className="sticky top-0 z-40 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <div className="mx-auto flex h-14 max-w-[1280px] items-center gap-4 px-4">
           <span className="inline-flex items-center gap-2" aria-label="Fydell">
             <FydellMark width={24} />
             <span
-              className="text-[16px] leading-none tracking-tight text-[#0B1020]"
+              className="text-[16px] leading-none tracking-tight text-[var(--text-primary)]"
               style={{ fontWeight: 560, letterSpacing: "-0.045em" }}
             >
               fydell
@@ -1356,33 +1356,33 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
           </span>
           <div className="hidden min-w-0 sm:block">
             <p className="truncate text-[13.5px] font-semibold leading-tight">{workbench.title}</p>
-            <p className="truncate text-[11.5px] text-slate-500">{roleTitle}</p>
+            <p className="truncate text-[11.5px] text-[var(--text-tertiary)]">{roleTitle}</p>
           </div>
           <div className="ml-auto flex items-center gap-3">
             <span className="hidden text-[12px] sm:inline" role="status" aria-live="polite">
-              {offline && <span className="mr-2 font-medium text-amber-800">Offline</span>}
+              {offline && <span className="mr-2 font-medium text-[var(--fydell-changed)]">Offline</span>}
               {!offline && saveStatus === "saved" && (
-                <span className="font-medium text-emerald-700">Saved</span>
+                <span className="font-medium text-[var(--fydell-good)]">Saved</span>
               )}
               {!offline && (saveStatus === "saving" || saveStatus === "pending") && (
-                <span className="font-medium text-amber-700">Saving...</span>
+                <span className="font-medium text-[var(--fydell-changed)]">Saving…</span>
               )}
               {saveStatus === "error" && (
                 <button
                   onClick={() => void persist()}
-                  className="rounded bg-red-50 px-2 py-0.5 font-medium text-red-700 hover:bg-red-100"
+                  className="rounded bg-[rgba(242,107,130,0.1)] px-2 py-0.5 font-medium text-[var(--fydell-risk)] hover:bg-[rgba(242,107,130,0.16)]"
                 >
-                  Save failed - Retry
+                  Save failed — Retry
                 </button>
               )}
             </span>
             <span
               className={`rounded-md px-2.5 py-1 font-mono text-[14px] font-semibold tabular-nums ${
                 timeUp
-                  ? "bg-red-50 text-red-700"
+                  ? "bg-[rgba(242,107,130,0.1)] text-[var(--fydell-risk)]"
                   : remaining < 60
-                    ? "bg-amber-50 text-amber-800"
-                    : "bg-[#F4F3EF] text-[#0B1020]"
+                    ? "bg-[rgba(233,185,73,0.1)] text-[var(--fydell-changed)]"
+                    : "bg-[var(--surface-panel)] text-[var(--text-primary)]"
               }`}
               aria-label={timeUp ? "Time has ended" : `${mm} minutes ${ss} seconds remaining`}
             >
@@ -1390,7 +1390,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             </span>
             <button
               onClick={() => setExitOpen(true)}
-              className="rounded-lg border border-[#D9DEE7] px-3 py-1.5 text-[12.5px] font-medium text-[#0B1020] hover:bg-[#F4F3EF]"
+              className="rounded-lg border border-[var(--border-subtle)] px-3 py-1.5 text-[12.5px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-canvas)]"
             >
               Exit
             </button>
@@ -1399,26 +1399,26 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
       </header>
 
       {timeUp && (
-        <div className="border-b border-amber-200 bg-amber-50">
-          <p className="mx-auto max-w-[1280px] px-4 py-2 text-[13.5px] text-amber-900">
+        <div className="border-b border-[rgba(233,185,73,0.28)] bg-[rgba(233,185,73,0.08)]">
+          <p className="mx-auto max-w-[1280px] px-4 py-2 text-[13.5px] text-[var(--fydell-changed)]">
             Time has ended. Submit your current work.
           </p>
         </div>
       )}
 
       {(curveballBanner || payload.session.curveballPresentedAt) && (
-        <div className="border-b border-[#3157D5]/30 bg-[#E8EEFB]">
+        <div className="border-b border-[var(--fydell-brand-blue)]/30 bg-[var(--surface-selected)]">
           <div className="mx-auto flex max-w-[1280px] flex-wrap items-start justify-between gap-3 px-4 py-3">
             <div>
-              <p className="text-[12px] font-semibold uppercase tracking-wider text-[#3157D5]">
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">
                 Mid-session update
               </p>
-              <p className="mt-1 text-[13.5px] text-[#0B1020]">
+              <p className="mt-1 text-[13.5px] text-[var(--text-primary)]">
                 {curveballBanner?.announcement ||
                   "Operations needs residual risk addressed before the next shift."}
               </p>
               {curveballBanner?.requiredAdaptation && (
-                <p className="mt-1 text-[12.5px] text-slate-600">
+                <p className="mt-1 text-[12.5px] text-[var(--text-secondary)]">
                   {curveballBanner.requiredAdaptation}
                 </p>
               )}
@@ -1426,7 +1426,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             {!payload.session.curveballAcknowledgedAt && (
               <button
                 type="button"
-                className="rounded-lg bg-[#3157D5] px-3 py-2 text-[12.5px] font-semibold text-white"
+                className="rounded-lg bg-[var(--fydell-brand-blue)] px-3 py-2 text-[12.5px] font-semibold text-white"
                 onClick={() => {
                   void fetch(`/api/sim/sessions/${sessionId}/curveball`, {
                     method: "POST",
@@ -1444,15 +1444,15 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
 
       <div className="mx-auto flex max-w-[1280px] flex-col gap-0 lg:flex-row">
         {/* Left rail */}
-        <aside className="w-full shrink-0 border-b border-[#D9DEE7] bg-white lg:sticky lg:top-14 lg:max-h-screen lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+        <aside className="w-full shrink-0 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] lg:sticky lg:top-14 lg:max-h-screen lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
           <div className="space-y-5 p-4">
             <section>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#3157D5]">Briefing</p>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-slate-700">{workbench.mission}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">Briefing</p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--text-secondary)]">{workbench.mission}</p>
             </section>
 
             <section>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Modules</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Modules</p>
               <ul className="mt-2 space-y-0.5">
                 {navModules.map((m) => (
                   <li key={m.id}>
@@ -1462,8 +1462,8 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                       aria-current={activeModuleId === m.id ? "true" : undefined}
                       className={
                         activeModuleId === m.id
-                          ? "flex w-full items-center rounded-md bg-[#E8EEFB] px-2.5 py-2 text-left text-[13px] font-medium text-[#3157D5]"
-                          : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-[#0B1020] hover:bg-[#F4F3EF]"
+                          ? "flex w-full items-center rounded-md bg-[var(--surface-selected)] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--fydell-brand-blue)]"
+                          : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-canvas)]"
                       }
                     >
                       <span className="min-w-0 truncate">{moduleLabel(m)}</span>
@@ -1481,8 +1481,8 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     aria-current={activeModuleId === REVIEW_ID ? "true" : undefined}
                     className={
                       activeModuleId === REVIEW_ID
-                        ? "flex w-full items-center rounded-md bg-[#E8EEFB] px-2.5 py-2 text-left text-[13px] font-medium text-[#3157D5]"
-                        : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-[#0B1020] hover:bg-[#F4F3EF]"
+                        ? "flex w-full items-center rounded-md bg-[var(--surface-selected)] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--fydell-brand-blue)]"
+                        : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-canvas)]"
                     }
                   >
                     Review and submit
@@ -1494,10 +1494,10 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
-              className="w-full rounded-lg border border-[#D9DEE7] bg-[#F4F3EF] px-3 py-3 text-left hover:border-[#3157D5]"
+              className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-3 text-left hover:border-[var(--fydell-brand-blue)]"
             >
-              <p className="text-[13px] font-semibold text-[#0B1020]">Ask {firstName}</p>
-              <p className="mt-0.5 text-[12px] text-slate-500">{stakeholder.role}</p>
+              <p className="text-[13px] font-semibold text-[var(--text-primary)]">Ask {firstName}</p>
+              <p className="mt-0.5 text-[12px] text-[var(--text-tertiary)]">{stakeholder.role}</p>
             </button>
           </div>
         </aside>
@@ -1506,7 +1506,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
         <main className="min-w-0 flex-1 p-4 pb-16 sm:p-6">
           {activeModuleId === REVIEW_ID ? (
             <div className="space-y-4">
-              <section className="rounded-xl border border-[#D9DEE7] bg-white p-6">
+              <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
                 <h2 className="text-[17px] font-semibold">Review before you submit</h2>
                 <dl className="mt-4 space-y-4">
                   {decisionModules.map((m) => {
@@ -1514,10 +1514,10 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     const val = answers[m.id];
                     return (
                       <div key={m.id}>
-                        <dt className="text-[12px] font-semibold uppercase tracking-wider text-slate-500">
+                        <dt className="text-[12px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
                           {m.prompt}
                         </dt>
-                        <dd className="mt-0.5 text-[15px] text-[#0B1020]">
+                        <dd className="mt-0.5 text-[15px] text-[var(--text-primary)]">
                           {Array.isArray(val) ? (
                             val.length ? (
                               <ul className="list-disc space-y-0.5 pl-5">
@@ -1541,10 +1541,10 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     if (m.kind !== "written_deliverable") return null;
                     return (
                       <div key={m.id}>
-                        <dt className="text-[12px] font-semibold uppercase tracking-wider text-slate-500">
+                        <dt className="text-[12px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
                           {m.prompt}
                         </dt>
-                        <dd className="mt-0.5 whitespace-pre-line text-[15px] text-[#0B1020]">
+                        <dd className="mt-0.5 whitespace-pre-line text-[15px] text-[var(--text-primary)]">
                           {String(answers[m.id] ?? "").trim() || "Not written yet."}
                         </dd>
                       </div>
@@ -1553,7 +1553,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                 </dl>
               </section>
 
-              <section className="rounded-xl border border-[#D9DEE7] bg-white p-6">
+              <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
                 <label className="flex cursor-pointer items-start gap-3">
                   <input
                     type="checkbox"
@@ -1561,7 +1561,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     onChange={(e) =>
                       setAnswer(DISCLOSURE_KEY, { used: e.target.checked, note: disclosure.note })
                     }
-                    className="mt-0.5 h-4 w-4 accent-[#3157D5]"
+                    className="mt-0.5 h-4 w-4 accent-[var(--fydell-brand-blue)]"
                   />
                   <span className="text-[15px]">
                     I used an external AI tool while completing this evaluation.
@@ -1577,16 +1577,16 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     maxLength={200}
                     placeholder="Optional: which tool and how you used it"
                     aria-label="How you used the AI tool (optional)"
-                    className="mt-3 w-full rounded-lg border border-[#D9DEE7] px-4 py-2.5 text-[14px] focus:border-[#3157D5] focus:outline-none"
+                    className="mt-3 w-full rounded-lg border border-[var(--border-subtle)] px-4 py-2.5 text-[14px] focus:border-[var(--fydell-brand-blue)] focus:outline-none"
                   />
                 )}
-                <p className="mt-3 text-[12.5px] text-slate-500">
+                <p className="mt-3 text-[12.5px] text-[var(--text-tertiary)]">
                   Disclosure is welcome. It does not lower your score by itself.
                 </p>
               </section>
 
               {submitError && (
-                <p className="rounded-xl bg-red-50 px-4 py-3 text-[14px] text-red-700" role="alert">
+                <p className="rounded-xl bg-[rgba(242,107,130,0.1)] px-4 py-3 text-[14px] text-[var(--fydell-risk)]" role="alert">
                   {submitError}
                 </p>
               )}
@@ -1594,7 +1594,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
               <button
                 onClick={() => void submit()}
                 disabled={submitBusy}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#3157D5] px-6 py-3 text-[15px] font-semibold text-white hover:bg-[#2746b0] disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--fydell-brand-blue)] px-6 py-3 text-[15px] font-semibold text-white hover:bg-[#6872ff] disabled:opacity-50"
               >
                 {submitBusy && <Spinner />}
                 {submitBusy ? "Submitting..." : "Submit my work"}
@@ -1701,26 +1701,26 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
           <button
             aria-label="Close conversation"
             onClick={() => setDrawerOpen(false)}
-            className="absolute inset-0 bg-[#0B1020]/40"
+            className="absolute inset-0 bg-black/50"
           />
-          <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
-            <div className="flex items-start justify-between border-b border-[#D9DEE7] px-5 py-4">
+          <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-[var(--surface-raised)] shadow-2xl">
+            <div className="flex items-start justify-between border-b border-[var(--border-subtle)] px-5 py-4">
               <div>
                 <p className="text-[15px] font-semibold">{stakeholder.name}</p>
-                <p className="text-[12.5px] text-slate-500">
+                <p className="text-[12.5px] text-[var(--text-tertiary)]">
                   {stakeholder.role} · {workbench.companyName}
                 </p>
               </div>
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="rounded-lg px-2.5 py-1 text-[13px] font-medium text-slate-500 hover:bg-[#F4F3EF]"
+                className="rounded-lg px-2.5 py-1 text-[13px] font-medium text-[var(--text-tertiary)] hover:bg-[var(--surface-canvas)]"
               >
                 Close
               </button>
             </div>
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
               {messages.length === 0 && (
-                <p className="text-[13.5px] text-slate-400">
+                <p className="text-[13.5px] text-[var(--text-tertiary)]">
                   {stakeholder.blurb} Ask about anything that seems unclear.
                 </p>
               )}
@@ -1729,38 +1729,38 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                   key={m.id}
                   className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-[14px] leading-relaxed ${
                     m.sender === "candidate"
-                      ? "ml-auto bg-[#3157D5] text-white"
-                      : "bg-[#F4F3EF] text-[#0B1020]"
+                      ? "ml-auto bg-[var(--fydell-brand-blue)] text-white"
+                      : "bg-[var(--surface-canvas)] text-[var(--text-primary)]"
                   }`}
                 >
                   <p className="whitespace-pre-line">{m.body}</p>
                 </div>
               ))}
               {chatBusy && (
-                <p className="flex items-center gap-2 text-[12px] text-slate-400" role="status">
+                <p className="flex items-center gap-2 text-[12px] text-[var(--text-tertiary)]" role="status">
                   <Spinner dark /> Sending...
                 </p>
               )}
               {!chatBusy && !chatError && chatDelivered && (
-                <p className="text-right text-[11.5px] text-slate-400" role="status">
+                <p className="text-right text-[11.5px] text-[var(--text-tertiary)]" role="status">
                   Delivered
                 </p>
               )}
               <div ref={chatEndRef} />
             </div>
             {chatError && (
-              <div className="flex items-center justify-between gap-3 border-t border-red-100 bg-red-50 px-5 py-2">
-                <p className="text-[12.5px] text-red-700">{chatError}</p>
+              <div className="flex items-center justify-between gap-3 border-t border-[rgba(242,107,130,0.28)] bg-[rgba(242,107,130,0.08)] px-5 py-2">
+                <p className="text-[12.5px] text-[var(--fydell-risk)]">{chatError}</p>
                 <button
                   onClick={() => void sendChat(stakeholder)}
-                  className="shrink-0 rounded-lg bg-red-600 px-3 py-1 text-[12px] font-semibold text-white hover:bg-red-700"
+                  className="shrink-0 rounded-lg bg-[var(--fydell-risk)] px-3 py-1 text-[12px] font-semibold text-white hover:bg-[#d85a70]"
                 >
                   Retry
                 </button>
               </div>
             )}
             <form
-              className="flex shrink-0 items-end gap-2 border-t border-[#D9DEE7] bg-white p-4"
+              className="flex shrink-0 items-end gap-2 border-t border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4"
               onSubmit={(e) => {
                 e.preventDefault();
                 void sendChat(stakeholder);
@@ -1781,12 +1781,12 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                 disabled={locked}
                 placeholder={`Message ${firstName}...`}
                 aria-label="Message"
-                className="min-h-[46px] flex-1 resize-none rounded-lg border border-[#D9DEE7] px-3 py-2.5 text-[14px] focus:border-[#3157D5] focus:outline-none disabled:bg-slate-50"
+                className="min-h-[46px] flex-1 resize-none rounded-lg border border-[var(--border-subtle)] px-3 py-2.5 text-[14px] focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
               />
               <button
                 type="submit"
                 disabled={!chatDraft.trim() || chatBusy || locked}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#3157D5] px-4 py-2.5 text-[14px] font-semibold text-white hover:bg-[#2746b0] disabled:opacity-40"
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--fydell-brand-blue)] px-4 py-2.5 text-[14px] font-semibold text-white hover:bg-[#6872ff] disabled:opacity-40"
               >
                 {chatBusy && <Spinner />}
                 Send
@@ -1806,24 +1806,24 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
           <button
             aria-label="Stay"
             onClick={() => setExitOpen(false)}
-            className="absolute inset-0 bg-[#0B1020]/40"
+            className="absolute inset-0 bg-black/50"
           />
-          <div className="relative w-full max-w-sm rounded-xl border border-[#D9DEE7] bg-white p-6 shadow-xl">
+          <div className="relative w-full max-w-sm rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6 shadow-xl">
             <h2 className="text-[16px] font-semibold">Leave this evaluation?</h2>
-            <p className="mt-2 text-[14px] leading-relaxed text-slate-600">
+            <p className="mt-2 text-[14px] leading-relaxed text-[var(--text-secondary)]">
               Your work is saved and you can come back. The timer keeps running while you are away.
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <button
                 onClick={() => setExitOpen(false)}
                 autoFocus
-                className="rounded-lg border border-[#D9DEE7] px-4 py-2.5 text-[14px] font-medium hover:bg-[#F4F3EF]"
+                className="rounded-lg border border-[var(--border-subtle)] px-4 py-2.5 text-[14px] font-medium hover:bg-[var(--surface-canvas)]"
               >
                 Stay
               </button>
               <button
                 onClick={() => router.push("/app/candidate")}
-                className="rounded-lg bg-[#3157D5] px-4 py-2.5 text-[14px] font-semibold text-white hover:bg-[#2746b0]"
+                className="rounded-lg bg-[var(--fydell-brand-blue)] px-4 py-2.5 text-[14px] font-semibold text-white hover:bg-[#6872ff]"
               >
                 Leave
               </button>
@@ -1884,10 +1884,10 @@ function ModulePanel({
 }) {
   if (module.kind === "briefing") {
     return (
-      <section className="rounded-xl border border-[#D9DEE7] bg-white p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#3157D5]">Briefing</p>
+      <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">Briefing</p>
         <h2 className="mt-1 text-[18px] font-semibold">{module.title}</h2>
-        <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-slate-700">
+        <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--text-secondary)]">
           {module.body}
         </p>
       </section>
@@ -1896,11 +1896,11 @@ function ModulePanel({
 
   if (module.kind === "resource_doc") {
     return (
-      <section className="overflow-hidden rounded-xl border border-[#D9DEE7] bg-white">
-        <div className="border-b border-[#D9DEE7] px-5 py-3">
+      <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+        <div className="border-b border-[var(--border-subtle)] px-5 py-3">
           <p className="text-[13.5px] font-semibold">{module.title}</p>
         </div>
-        <div className="whitespace-pre-wrap px-5 py-5 text-[14.5px] leading-relaxed text-[#0B1020]">
+        <div className="whitespace-pre-wrap px-5 py-5 text-[14.5px] leading-relaxed text-[var(--text-primary)]">
           {module.content}
         </div>
       </section>
@@ -1909,7 +1909,7 @@ function ModulePanel({
 
   if (module.kind === "resource_table") {
     return (
-      <section className="overflow-hidden rounded-xl border border-[#D9DEE7] bg-white">
+      <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <InteractiveTable
           resourceId={module.resourceId}
           title={module.title}
@@ -1929,15 +1929,15 @@ function ModulePanel({
     const activeId = activeTableTab || ids[0] || "";
     const active = tableByResource.get(activeId);
     return (
-      <section className="overflow-hidden rounded-xl border border-[#D9DEE7] bg-white">
-        <div className="border-b border-[#D9DEE7] px-5 py-3">
+      <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+        <div className="border-b border-[var(--border-subtle)] px-5 py-3">
           <p className="text-[13.5px] font-semibold">{module.title}</p>
           {module.instructions && (
-            <p className="mt-1 text-[13px] text-slate-600">{module.instructions}</p>
+            <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
           )}
         </div>
         {ids.length > 1 && (
-          <div className="flex gap-1 border-b border-[#D9DEE7] px-3 pt-2">
+          <div className="flex gap-1 border-b border-[var(--border-subtle)] px-3 pt-2">
             {ids.map((rid) => {
               const meta = tableByResource.get(rid);
               return (
@@ -1946,8 +1946,8 @@ function ModulePanel({
                   onClick={() => onTableTab(rid)}
                   className={`rounded-t-md px-3 py-2 text-[13px] font-medium ${
                     rid === activeId
-                      ? "border border-b-0 border-[#D9DEE7] bg-white text-[#3157D5]"
-                      : "text-slate-600 hover:text-[#0B1020]"
+                      ? "border border-b-0 border-[var(--border-subtle)] bg-[var(--surface-raised)] text-[var(--fydell-brand-blue)]"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   }`}
                 >
                   {meta?.title || rid}
@@ -1968,7 +1968,7 @@ function ModulePanel({
             onFilter={(query) => onFilter(activeId, query)}
           />
         ) : (
-          <p className="px-5 py-8 text-sm text-slate-500">No table resources available.</p>
+          <p className="px-5 py-8 text-sm text-[var(--text-tertiary)]">No table resources available.</p>
         )}
       </section>
     );
@@ -1981,21 +1981,21 @@ function ModulePanel({
     const capTables = caps ? parseMarkdownTables(caps.content) : [];
     const capTable = capTables[0] || { headers: [] as string[], rows: [] as string[][] };
     return (
-      <section className="overflow-hidden rounded-xl border border-[#D9DEE7] bg-white">
-        <div className="border-b border-[#D9DEE7] px-5 py-3">
+      <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+        <div className="border-b border-[var(--border-subtle)] px-5 py-3">
           <p className="text-[13.5px] font-semibold">{module.title}</p>
           {module.instructions && (
-            <p className="mt-1 text-[13px] text-slate-600">{module.instructions}</p>
+            <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
           )}
         </div>
         <div className="grid gap-0 lg:grid-cols-2">
-          <div className="border-b border-[#D9DEE7] lg:border-b-0 lg:border-r">
-            <div className="border-b border-[#D9DEE7] bg-[#F4F3EF] px-4 py-2">
-              <p className="text-[12px] font-semibold uppercase tracking-wider text-slate-500">
+          <div className="border-b border-[var(--border-subtle)] lg:border-b-0 lg:border-r">
+            <div className="border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4 py-2">
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
                 Requirements
               </p>
             </div>
-            <ul className="divide-y divide-[#E8ECF2]">
+            <ul className="divide-y divide-[var(--border-subtle)]">
               {requirements.map((item, idx) => {
                 const itemId = `req_${idx}`;
                 const mapped = mappedRequirements.includes(itemId);
@@ -2006,28 +2006,28 @@ function ModulePanel({
                       disabled={locked}
                       onClick={() => onMapRequirement(itemId, module.requirementsResourceId)}
                       className={`flex w-full items-start gap-3 px-4 py-3 text-left text-[14px] ${
-                        mapped ? "bg-[#E8EEFB]" : "hover:bg-[#F8F8F6]"
+                        mapped ? "bg-[var(--surface-selected)]" : "hover:bg-[var(--surface-panel)]"
                       } ${locked ? "cursor-not-allowed opacity-70" : ""}`}
                     >
                       <span
                         aria-hidden
                         className={`mt-1 inline-block h-2.5 w-2.5 shrink-0 rounded-sm ${
-                          mapped ? "bg-[#3157D5]" : "border border-[#D9DEE7] bg-white"
+                          mapped ? "bg-[var(--fydell-brand-blue)]" : "border border-[var(--border-subtle)] bg-[var(--surface-raised)]"
                         }`}
                       />
-                      <span className="text-[#0B1020]">{item}</span>
+                      <span className="text-[var(--text-primary)]">{item}</span>
                     </button>
                   </li>
                 );
               })}
               {requirements.length === 0 && (
-                <li className="px-4 py-6 text-sm text-slate-500">No requirements listed.</li>
+                <li className="px-4 py-6 text-sm text-[var(--text-tertiary)]">No requirements listed.</li>
               )}
             </ul>
           </div>
           <div>
-            <div className="border-b border-[#D9DEE7] bg-[#F4F3EF] px-4 py-2">
-              <p className="text-[12px] font-semibold uppercase tracking-wider text-slate-500">
+            <div className="border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4 py-2">
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
                 Capabilities
               </p>
             </div>
@@ -2039,7 +2039,7 @@ function ModulePanel({
                       {capTable.headers.map((h, i) => (
                         <th
                           key={i}
-                          className="border-b border-[#D9DEE7] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500"
+                          className="border-b border-[var(--border-subtle)] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]"
                         >
                           {h}
                         </th>
@@ -2057,13 +2057,13 @@ function ModulePanel({
                           key={rowId}
                           onClick={() => !locked && onFlag(module.capabilitiesResourceId, rowId)}
                           className={`cursor-pointer ${
-                            isFlagged ? "bg-[#E8EEFB]" : "odd:bg-white even:bg-[#F8F8F6]"
-                          } ${locked ? "cursor-not-allowed opacity-70" : "hover:bg-[#EEF2FB]"}`}
+                            isFlagged ? "bg-[var(--surface-selected)]" : "odd:bg-[var(--surface-raised)] even:bg-[var(--surface-panel)]"
+                          } ${locked ? "cursor-not-allowed opacity-70" : "hover:bg-[var(--surface-hover)]"}`}
                         >
                           {cells.map((c, ci) => (
                             <td
                               key={ci}
-                              className="border-b border-[#E8ECF2] px-3 py-2 text-[#0B1020]"
+                              className="border-b border-[var(--border-subtle)] px-3 py-2 text-[var(--text-primary)]"
                             >
                               {c}
                             </td>
@@ -2075,7 +2075,7 @@ function ModulePanel({
                 </table>
               </div>
             ) : (
-              <div className="whitespace-pre-wrap px-4 py-4 text-[14px] text-[#0B1020]">
+              <div className="whitespace-pre-wrap px-4 py-4 text-[14px] text-[var(--text-primary)]">
                 {caps?.content || "No capabilities listed."}
               </div>
             )}
@@ -2090,21 +2090,21 @@ function ModulePanel({
     const tickets = ticketRes ? parseTicketsFromTable(ticketRes.content) : [];
     const selected = tickets.find((t) => t.id === selectedTicketId) || null;
     const severityClass: Record<string, string> = {
-      critical: "bg-red-100 text-red-800",
-      high: "bg-amber-100 text-amber-900",
-      medium: "bg-slate-100 text-slate-700",
-      low: "bg-emerald-50 text-emerald-800",
+      critical: "bg-[rgba(242,107,130,0.12)] text-[var(--fydell-risk)]",
+      high: "bg-[rgba(233,185,73,0.12)] text-[var(--fydell-changed)]",
+      medium: "bg-[var(--surface-panel)] text-[var(--text-secondary)]",
+      low: "bg-[rgba(103,217,160,0.12)] text-[var(--fydell-good)]",
     };
     return (
-      <section className="overflow-hidden rounded-xl border border-[#D9DEE7] bg-white">
-        <div className="border-b border-[#D9DEE7] px-5 py-3">
+      <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+        <div className="border-b border-[var(--border-subtle)] px-5 py-3">
           <p className="text-[13.5px] font-semibold">{module.title}</p>
           {module.instructions && (
-            <p className="mt-1 text-[13px] text-slate-600">{module.instructions}</p>
+            <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
           )}
         </div>
         <div className="grid gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <ul className="divide-y divide-[#E8ECF2] border-b border-[#D9DEE7] lg:border-b-0 lg:border-r">
+          <ul className="divide-y divide-[var(--border-subtle)] border-b border-[var(--border-subtle)] lg:border-b-0 lg:border-r">
             {tickets.map((t) => (
               <li key={t.id}>
                 <button
@@ -2112,11 +2112,11 @@ function ModulePanel({
                   disabled={locked}
                   onClick={() => onSelectTicket(t.id, module.ticketResourceId)}
                   className={`flex w-full flex-col gap-1 px-4 py-3 text-left ${
-                    selectedTicketId === t.id ? "bg-[#E8EEFB]" : "hover:bg-[#F8F8F6]"
+                    selectedTicketId === t.id ? "bg-[var(--surface-selected)]" : "hover:bg-[var(--surface-panel)]"
                   } ${locked ? "cursor-not-allowed opacity-70" : ""}`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-[13px] font-semibold text-[#0B1020]">
+                    <span className="font-mono text-[13px] font-semibold text-[var(--text-primary)]">
                       {t.id}
                     </span>
                     <span
@@ -2124,33 +2124,33 @@ function ModulePanel({
                     >
                       {t.severity}
                     </span>
-                    <span className="ml-auto text-[12px] text-slate-500">{t.time}</span>
+                    <span className="ml-auto text-[12px] text-[var(--text-tertiary)]">{t.time}</span>
                   </div>
-                  <p className="text-[13.5px] text-slate-700">{t.customer}</p>
+                  <p className="text-[13.5px] text-[var(--text-secondary)]">{t.customer}</p>
                 </button>
               </li>
             ))}
             {tickets.length === 0 && (
-              <li className="px-4 py-6 text-sm text-slate-500">No open tickets.</li>
+              <li className="px-4 py-6 text-sm text-[var(--text-tertiary)]">No open tickets.</li>
             )}
           </ul>
           <div className="px-5 py-4">
             {selected ? (
               <>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-[#3157D5]">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">
                   Ticket detail
                 </p>
-                <h3 className="mt-1 font-mono text-[16px] font-semibold text-[#0B1020]">
+                <h3 className="mt-1 font-mono text-[16px] font-semibold text-[var(--text-primary)]">
                   {selected.id}
                 </h3>
-                <p className="mt-1 text-[14px] text-slate-600">{selected.customer}</p>
-                <p className="mt-3 text-[12px] text-slate-500">Reported {selected.time} UTC</p>
-                <p className="mt-3 text-[14.5px] leading-relaxed text-[#0B1020]">
+                <p className="mt-1 text-[14px] text-[var(--text-secondary)]">{selected.customer}</p>
+                <p className="mt-3 text-[12px] text-[var(--text-tertiary)]">Reported {selected.time} UTC</p>
+                <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--text-primary)]">
                   {selected.report}
                 </p>
               </>
             ) : (
-              <p className="text-[14px] text-slate-500">Select a ticket to inspect the report.</p>
+              <p className="text-[14px] text-[var(--text-tertiary)]">Select a ticket to inspect the report.</p>
             )}
           </div>
         </div>
@@ -2162,17 +2162,17 @@ function ModulePanel({
     const done = toggledSteps.length;
     const total = module.steps.length;
     return (
-      <section className="overflow-hidden rounded-xl border border-[#D9DEE7] bg-white">
-        <div className="border-b border-[#D9DEE7] px-5 py-3">
+      <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+        <div className="border-b border-[var(--border-subtle)] px-5 py-3">
           <p className="text-[13.5px] font-semibold">{module.title}</p>
           {module.instructions && (
-            <p className="mt-1 text-[13px] text-slate-600">{module.instructions}</p>
+            <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
           )}
-          <p className="mt-1 text-[12px] text-slate-500">
+          <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
             {done} of {total} steps confirmed
           </p>
         </div>
-        <ol className="divide-y divide-[#E8ECF2]">
+        <ol className="divide-y divide-[var(--border-subtle)]">
           {module.steps.map((step, idx) => {
             const on = toggledSteps.includes(step.id);
             return (
@@ -2182,22 +2182,22 @@ function ModulePanel({
                   disabled={locked}
                   onClick={() => onToggleStep(step.id)}
                   className={`flex w-full items-start gap-3 px-5 py-3.5 text-left ${
-                    on ? "bg-[#E8EEFB]" : "hover:bg-[#F8F8F6]"
+                    on ? "bg-[var(--surface-selected)]" : "hover:bg-[var(--surface-panel)]"
                   } ${locked ? "cursor-not-allowed opacity-70" : ""}`}
                 >
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-[#D9DEE7] bg-white text-[12px] font-semibold text-slate-500">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-raised)] text-[12px] font-semibold text-[var(--text-tertiary)]">
                     {on ? "✓" : idx + 1}
                   </span>
                   <span>
                     <span
                       className={`block text-[14.5px] font-medium ${
-                        on ? "text-[#3157D5] line-through decoration-[#3157D5]/40" : "text-[#0B1020]"
+                        on ? "text-[var(--fydell-brand-blue)] line-through decoration-[var(--fydell-brand-blue)]/40" : "text-[var(--text-primary)]"
                       }`}
                     >
                       {step.label}
                     </span>
                     {step.detail && (
-                      <span className="mt-0.5 block text-[12.5px] text-slate-500">{step.detail}</span>
+                      <span className="mt-0.5 block text-[12.5px] text-[var(--text-tertiary)]">{step.detail}</span>
                     )}
                   </span>
                 </button>
@@ -2217,14 +2217,14 @@ function ModulePanel({
       .filter(Boolean) as { title: string; content: string }[];
     return (
       <section className="space-y-4">
-        <div className="overflow-hidden rounded-xl border border-[#D9DEE7] bg-white">
-          <div className="border-b border-[#D9DEE7] px-5 py-3">
+        <div className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+          <div className="border-b border-[var(--border-subtle)] px-5 py-3">
             <p className="text-[13.5px] font-semibold">{module.title}</p>
             {module.instructions && (
-              <p className="mt-1 text-[13px] text-slate-600">{module.instructions}</p>
+              <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
             )}
           </div>
-          <ul className="divide-y divide-[#E8ECF2]">
+          <ul className="divide-y divide-[var(--border-subtle)]">
             {rules.map((rule, idx) => {
               const open = reviewedRules.includes(rule.id);
               return (
@@ -2234,23 +2234,23 @@ function ModulePanel({
                     disabled={locked}
                     onClick={() => onReviewRule(rule.id, module.rulesResourceId)}
                     className={`flex w-full items-start justify-between gap-3 px-5 py-3.5 text-left ${
-                      open ? "bg-[#E8EEFB]" : "hover:bg-[#F8F8F6]"
+                      open ? "bg-[var(--surface-selected)]" : "hover:bg-[var(--surface-panel)]"
                     } ${locked ? "cursor-not-allowed opacity-70" : ""}`}
                   >
                     <span>
-                      <span className="font-mono text-[13px] font-semibold text-[#0B1020]">
+                      <span className="font-mono text-[13px] font-semibold text-[var(--text-primary)]">
                         {idx + 1}. {rule.id}
                       </span>
-                      <span className="mt-0.5 block text-[13.5px] text-slate-600">
+                      <span className="mt-0.5 block text-[13.5px] text-[var(--text-secondary)]">
                         {rule.condition || "No condition listed"}
                       </span>
                       {open && (
-                        <span className="mt-2 block text-[14px] text-[#0B1020]">
+                        <span className="mt-2 block text-[14px] text-[var(--text-primary)]">
                           Routes to: <strong className="font-semibold">{rule.routesTo || "-"}</strong>
                         </span>
                       )}
                     </span>
-                    <span className="shrink-0 text-[12px] font-medium text-slate-500">
+                    <span className="shrink-0 text-[12px] font-medium text-[var(--text-tertiary)]">
                       {open ? "Reviewed" : "Expand"}
                     </span>
                   </button>
@@ -2258,16 +2258,16 @@ function ModulePanel({
               );
             })}
             {rules.length === 0 && (
-              <li className="px-5 py-6 text-sm text-slate-500">No workflow rules found.</li>
+              <li className="px-5 py-6 text-sm text-[var(--text-tertiary)]">No workflow rules found.</li>
             )}
           </ul>
         </div>
         {context.map((doc) => (
-          <div key={doc.title} className="overflow-hidden rounded-xl border border-[#D9DEE7] bg-white">
-            <div className="border-b border-[#D9DEE7] px-5 py-3">
+          <div key={doc.title} className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+            <div className="border-b border-[var(--border-subtle)] px-5 py-3">
               <p className="text-[13.5px] font-semibold">{doc.title}</p>
             </div>
-            <div className="whitespace-pre-wrap px-5 py-4 text-[14px] leading-relaxed text-[#0B1020]">
+            <div className="whitespace-pre-wrap px-5 py-4 text-[14px] leading-relaxed text-[var(--text-primary)]">
               {doc.content}
             </div>
           </div>
@@ -2278,10 +2278,10 @@ function ModulePanel({
 
   if (module.kind === "structured_decision") {
     return (
-      <section className="rounded-xl border border-[#D9DEE7] bg-white p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#3157D5]">Decision</p>
+      <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">Decision</p>
         <h2 className="mt-1 text-[16px] font-semibold">{module.prompt}</h2>
-        {module.helpText && <p className="mt-1 text-[13.5px] text-slate-500">{module.helpText}</p>}
+        {module.helpText && <p className="mt-1 text-[13.5px] text-[var(--text-tertiary)]">{module.helpText}</p>}
 
         {module.decisionKind === "single_select" && (
           <div className="mt-4 space-y-2" role="radiogroup" aria-label={module.prompt}>
@@ -2290,8 +2290,8 @@ function ModulePanel({
                 key={o}
                 className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-[15px] ${
                   answers[module.id] === o
-                    ? "border-[#3157D5] bg-[#E8EEFB]"
-                    : "border-[#D9DEE7] hover:border-slate-300"
+                    ? "border-[var(--fydell-brand-blue)] bg-[var(--surface-selected)]"
+                    : "border-[var(--border-subtle)] hover:border-[var(--border-strong)]"
                 } ${locked ? "cursor-not-allowed opacity-70" : ""}`}
               >
                 <input
@@ -2300,7 +2300,7 @@ function ModulePanel({
                   checked={answers[module.id] === o}
                   disabled={locked}
                   onChange={() => onAnswer(module.id, o, "decision_selected")}
-                  className="h-4 w-4 accent-[#3157D5]"
+                  className="h-4 w-4 accent-[var(--fydell-brand-blue)]"
                 />
                 {o}
               </label>
@@ -2318,8 +2318,8 @@ function ModulePanel({
                   key={o}
                   className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-[15px] ${
                     selected
-                      ? "border-[#3157D5] bg-[#E8EEFB]"
-                      : "border-[#D9DEE7] hover:border-slate-300"
+                      ? "border-[var(--fydell-brand-blue)] bg-[var(--surface-selected)]"
+                      : "border-[var(--border-subtle)] hover:border-[var(--border-strong)]"
                   } ${locked ? "cursor-not-allowed opacity-70" : ""}`}
                 >
                   <input
@@ -2336,7 +2336,7 @@ function ModulePanel({
                         "evidence_selected"
                       );
                     }}
-                    className="h-4 w-4 accent-[#3157D5]"
+                    className="h-4 w-4 accent-[var(--fydell-brand-blue)]"
                   />
                   {o}
                 </label>
@@ -2359,7 +2359,7 @@ function ModulePanel({
               )
             }
             aria-label={module.prompt}
-            className="mt-4 w-56 rounded-lg border border-[#D9DEE7] px-3 py-3 font-mono text-[15px] focus:border-[#3157D5] focus:outline-none disabled:bg-slate-50"
+            className="mt-4 w-56 rounded-lg border border-[var(--border-subtle)] px-3 py-3 font-mono text-[15px] focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
           />
         )}
       </section>
@@ -2370,12 +2370,12 @@ function ModulePanel({
     const limit = module.maxChars ?? 500;
     const text = String(answers[module.id] ?? "");
     return (
-      <section className="rounded-xl border border-[#D9DEE7] bg-white p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#3157D5]">
+      <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">
           Written response
         </p>
         <h2 className="mt-1 text-[16px] font-semibold">{module.prompt}</h2>
-        {module.helpText && <p className="mt-1 text-[13.5px] text-slate-500">{module.helpText}</p>}
+        {module.helpText && <p className="mt-1 text-[13.5px] text-[var(--text-tertiary)]">{module.helpText}</p>}
         <textarea
           value={text}
           disabled={locked}
@@ -2386,9 +2386,9 @@ function ModulePanel({
           rows={6}
           maxLength={limit}
           aria-label={module.prompt}
-          className="mt-4 w-full resize-y rounded-lg border border-[#D9DEE7] px-4 py-3 text-[15px] leading-relaxed focus:border-[#3157D5] focus:outline-none disabled:bg-slate-50"
+          className="mt-4 w-full resize-y rounded-lg border border-[var(--border-subtle)] px-4 py-3 text-[15px] leading-relaxed focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
         />
-        <p className="mt-1 text-right text-[12px] text-slate-400" aria-live="polite">
+        <p className="mt-1 text-right text-[12px] text-[var(--text-tertiary)]" aria-live="polite">
           {text.length} / {limit}
         </p>
       </section>
@@ -2397,14 +2397,14 @@ function ModulePanel({
 
   if (module.kind === "stakeholder") {
     return (
-      <section className="rounded-xl border border-[#D9DEE7] bg-white p-6">
+      <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
         <h2 className="text-[16px] font-semibold">{module.title || "Stakeholder"}</h2>
-        <p className="mt-2 text-[14px] text-slate-600">
+        <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
           Open the conversation panel to ask {stakeholderName} clarifying questions.
         </p>
         <button
           onClick={onOpenStakeholder}
-          className="mt-4 rounded-lg bg-[#3157D5] px-4 py-2.5 text-[14px] font-semibold text-white hover:bg-[#2746b0]"
+          className="mt-4 rounded-lg bg-[var(--fydell-brand-blue)] px-4 py-2.5 text-[14px] font-semibold text-white hover:bg-[#6872ff]"
         >
           Ask {stakeholderName}
         </button>
@@ -2414,10 +2414,10 @@ function ModulePanel({
 
   if (module.kind === "curveball") {
     return (
-      <section className="rounded-xl border border-[#D9DEE7] bg-white p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-700">Update</p>
+      <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-changed)]">Update</p>
         <p className="mt-2 text-[15px] leading-relaxed">{module.announcement}</p>
-        <p className="mt-3 text-[14px] text-slate-600">{module.requiredAdaptation}</p>
+        <p className="mt-3 text-[14px] text-[var(--text-secondary)]">{module.requiredAdaptation}</p>
       </section>
     );
   }
@@ -2430,17 +2430,15 @@ function Spinner({ dark }: { dark?: boolean }) {
     <span
       aria-hidden
       className={`inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-t-transparent ${
-        dark ? "border-slate-400" : "border-white/70"
+        dark ? "border-[var(--text-tertiary)]" : "border-white/70"
       }`}
     />
   );
 }
 
 /**
- * Everything before the timer starts is a page, not the work surface, so it
- * wears the same graphite chrome as the invitation and the result. The light
- * workbench below is entered deliberately, on a click, and reads as stepping
- * into a workspace rather than as an unexplained change of product.
+ * Preflight, invitation, workbench and result share the same graphite chrome.
+ * The work surface is no longer a separate light product.
  */
 function Center({ children, wide }: { children: React.ReactNode; wide?: boolean }) {
   return (

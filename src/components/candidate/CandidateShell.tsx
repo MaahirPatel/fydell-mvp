@@ -10,8 +10,8 @@ import FydellMark from "@/components/brand/FydellMark";
  * handed between three products, so the graphite canvas that the rest of
  * Fydell uses now runs the length of that path.
  *
- * The workbench keeps its own light surface deliberately: it is a reading and
- * writing environment for twenty minutes of dense material, not a page.
+ * The workbench uses the same graphite canvas so the attempt does not look
+ * like a different product from the invitation and the report.
  */
 export function CandidateShell({
   children,

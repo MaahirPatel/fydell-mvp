@@ -42,8 +42,9 @@ export default function SecurityPage() {
         <div className="mkt-content">
           <h1 className="page-display">Security.</h1>
           <p className="page-lead">
-            The controls below are implemented today. Fydell holds no
-            third-party security certification, and does not imply one.
+            Effective 14 August 2026. The controls below are implemented today.
+            Fydell holds no third-party security certification, and does not
+            imply one.
           </p>
         </div>
       </section>

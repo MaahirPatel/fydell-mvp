@@ -10,7 +10,7 @@ import { CONTACT_MAILTO } from "@/lib/contact";
  */
 const PRODUCT = [
   { label: "Product", href: "/product" },
-  { label: "Evaluation", href: "/simulations" },
+  { label: "Evaluations", href: "/simulations" },
   { label: "Trust", href: "/trust" },
 ];
 

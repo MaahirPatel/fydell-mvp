@@ -6,6 +6,7 @@ import { fydellEmailShell, isResendConfigured, sendResendHtml } from "@/lib/emai
 import { appUrl } from "@/lib/app-url";
 import { ensureOrgPilotCohort } from "@/lib/pilot/cohort";
 import { PILOT_EVALUATION_SLUG } from "@/lib/simulations/content/micro-ops-yield";
+import { invitationTruth } from "@/lib/contracts/lifecycle";
 
 export const runtime = "nodejs";
 
@@ -150,12 +151,10 @@ export async function POST(req: NextRequest) {
         .from("sim_invitations")
         .update({ email_delivery: delivery })
         .eq("id", invitation.id);
-      const deliveryLabel =
-        delivery === "sent"
-          ? "Sent"
-          : delivery === "failed"
-            ? "Email failed - link created"
-            : "Link created - not emailed";
+      const deliveryLabel = invitationTruth({
+        status: "sent",
+        emailDelivery: delivery,
+      }).label;
       created.push({
         id: invitation.id,
         email: candidate.email,

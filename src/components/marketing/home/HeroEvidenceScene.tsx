@@ -12,6 +12,7 @@ import { NORTHLINE_SCENARIO } from "@/lib/fixtures/northline";
 export default function HeroEvidenceScene() {
   return (
     <ProductStage
+      chrome="app"
       title="Evidence report"
       source={`${NORTHLINE_SCENARIO.company} · synthetic`}
       label="Employer evidence report showing a candidate conclusion with openable claims"

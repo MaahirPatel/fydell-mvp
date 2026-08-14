@@ -66,6 +66,7 @@ export default function SignupForm({ path }: { path?: SignupPath }) {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   function validate(): boolean {
     const next: Record<string, string> = {};
@@ -74,6 +75,9 @@ export default function SignupForm({ path }: { path?: SignupPath }) {
     if (password.length < 8) next.password = "Use at least 8 characters.";
     if (path === "employer" && !companyName.trim()) {
       next.companyName = "Enter your company name.";
+    }
+    if (!acceptedTerms) {
+      next.acceptedTerms = "Accept the terms and privacy notice to continue.";
     }
     setFieldErrors(next);
     return Object.keys(next).length === 0;
@@ -196,6 +200,30 @@ export default function SignupForm({ path }: { path?: SignupPath }) {
           required
         />
       </Field>
+
+      <label className="flex items-start gap-3 text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
+        <input
+          type="checkbox"
+          checked={acceptedTerms}
+          onChange={(e) => setAcceptedTerms(e.target.checked)}
+          className="mt-0.5 h-4 w-4 accent-[var(--fydell-brand-blue)]"
+          required
+        />
+        <span>
+          I agree to the{" "}
+          <a href="/terms" className="text-[var(--text-primary)] underline underline-offset-2">
+            terms
+          </a>{" "}
+          and{" "}
+          <a href="/privacy" className="text-[var(--text-primary)] underline underline-offset-2">
+            privacy notice
+          </a>
+          .
+        </span>
+      </label>
+      {fieldErrors.acceptedTerms ? (
+        <p className="text-[13px] text-[var(--fydell-risk)]">{fieldErrors.acceptedTerms}</p>
+      ) : null}
 
       {error ? <FormError>{error}</FormError> : null}
 

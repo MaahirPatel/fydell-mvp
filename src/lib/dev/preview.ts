@@ -28,6 +28,7 @@ import type {
   ReportRecord,
 } from "@/app/app/employer/_lib/data";
 import { INVITATION_STATUS_LABEL } from "@/app/app/employer/_lib/data";
+import { invitationTruth } from "@/lib/contracts/lifecycle";
 import type { OrgContext } from "@/lib/simulations/auth";
 
 export function isPreviewMode(): boolean {
@@ -197,7 +198,10 @@ export function previewInvitations(limit = 200): InvitationRecord[] {
     roleTitle: ROLE_TITLE,
     simulation: EVALUATION,
     status: seed.status,
-    statusLabel: INVITATION_STATUS_LABEL[seed.status] || seed.status,
+    statusLabel: invitationTruth({
+      status: seed.status,
+      emailDelivery: seed.delivery,
+    }).label,
     progress: seed.session ? PROGRESS[seed.session] : "Not started",
     result: resultLabel(seed),
     sessionId: seed.session ? `sess-${seed.id}` : null,

@@ -46,9 +46,9 @@ export default function PrivacyPage() {
         <div className="mkt-content">
           <h1 className="page-display">Privacy.</h1>
           <p className="page-lead">
-            A plain summary of what Fydell holds and why. A full policy will
-            replace this page; until then, this describes actual practice rather
-            than boilerplate.
+            A plain summary of what Fydell holds and why. Effective 14 August
+            2026. A full policy will replace this page; until then, this
+            describes actual practice rather than boilerplate.
           </p>
         </div>
       </section>

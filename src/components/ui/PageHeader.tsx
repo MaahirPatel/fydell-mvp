@@ -25,11 +25,11 @@ export function PageHeader({
       )}
     >
       <div className="min-w-0">
-        <h1 className="text-[26px] font-medium leading-tight tracking-[-0.035em] text-[var(--text-primary)]">
+        <h1 className="text-[22px] font-semibold leading-tight tracking-[-0.028em] text-[var(--text-primary)]">
           {title}
         </h1>
         {description ? (
-          <p className="mt-2.5 max-w-[65ch] text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">
+          <p className="mt-2 max-w-[68ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
             {description}
           </p>
         ) : null}

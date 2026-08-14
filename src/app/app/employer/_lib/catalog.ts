@@ -1,8 +1,8 @@
 import "server-only";
 /**
- * Builds the employer-facing simulation catalog: six roles, five simulations
- * each, from the code registry, joined with database template ids by slug
- * (invitations need the database id). Preview data is candidate-safe.
+ * Builds the employer-facing catalog. Wave 1 shows only DA-01
+ * (`ops-yield-investigation`). Other authored micros stay out of the default
+ * production list. Preview data is candidate-safe.
  */
 import { ROLES } from "@/lib/simulations/roles";
 import { SIMULATION_BY_SLUG } from "@/lib/simulations/content";
@@ -10,6 +10,7 @@ import { toMicroCandidateView } from "@/lib/simulations/candidate-view";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import type { CatalogRole, CatalogSim } from "@/components/employer/catalog-types";
 import { isPreviewMode, PREVIEW_TEMPLATE } from "@/lib/dev/preview";
+import { WAVE1_EVALUATION_SLUG } from "@/lib/contracts/roles";
 
 export async function getEmployerCatalog(): Promise<CatalogRole[]> {
   const idBySlug = new Map<string, string>();
@@ -60,6 +61,11 @@ export async function getEmployerCatalog(): Promise<CatalogRole[]> {
   // the Evaluations screen into a catalogue of short tests a company cannot
   // invite anyone to, which is the opposite of what the product sells.
   return roles
-    .map((role) => ({ ...role, sims: role.sims.filter((s) => s.templateId) }))
+    .map((role) => ({
+      ...role,
+      sims: role.sims.filter(
+        (s) => s.templateId && s.slug === WAVE1_EVALUATION_SLUG,
+      ),
+    }))
     .filter((role) => role.sims.length > 0);
 }

@@ -218,11 +218,13 @@ export function InviteModalProvider({
       >
         {sent ? (
           <div className="space-y-4">
-            <div className="rounded-[var(--radius-panel)] border border-[rgba(103,217,160,0.28)] bg-[rgba(103,217,160,0.07)] px-3.5 py-3">
+            <div className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3.5 py-3">
               <p className="text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
-                {sent.emailDelivery === "sent"
-                  ? `An email is on its way to ${sent.email}.`
-                  : `Email delivery is not configured here, so nothing was sent. Share this link with ${sent.email} yourself.`}
+                {sent.emailDelivery === "sent" || sent.emailDelivery === "delivered"
+                  ? `Email ${sent.emailDelivery === "delivered" ? "delivered to" : "sent to"} ${sent.email}. The invitation record is created.`
+                  : sent.emailDelivery === "failed"
+                    ? `The invitation record was created, but email failed. Share this copyable link with ${sent.email}. This is not a delivered invitation.`
+                    : `The invitation record was created. Email is not configured, so nothing was sent. Share this copyable development link with ${sent.email}. This is not a delivered invitation.`}
               </p>
             </div>
             <div>

@@ -180,15 +180,17 @@ function StateTag({ children }: { children: string }) {
 export default function TrustPage() {
   return (
     <MarketingShell>
-      <section className="pb-12 pt-[124px] sm:pt-[136px]">
+      <section className="pb-12 pt-[128px] sm:pt-[144px]">
         <div className="mkt-content">
-          <h1 className="page-display">
-            What is kept, who can read it, and what we do not have yet.
+          <p className="section-eyebrow">Trust</p>
+          <h1 className="page-display mt-4">
+            Evidence you can inspect. Access you can control.
           </h1>
           <p className="page-lead">
-            An evaluation is only useful if you can check it, and a vendor is
-            only useful if you can check them. This page describes the system as
-            it is built today, including the parts that are not finished.
+            Workspace isolation, scoped invitations, frozen submissions and
+            inspectable evidence are implemented today. Limitations stay on this
+            page so they are not discovered in procurement, but they do not lead
+            the product.
           </p>
         </div>
       </section>

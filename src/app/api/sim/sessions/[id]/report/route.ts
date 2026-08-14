@@ -6,6 +6,7 @@ import { BAND_LABELS, type EvidenceBand } from "@/lib/simulations/scoring";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 import { isV2PersistedResult } from "@/lib/simulations/v2/scoring";
 import { isPreviewMode, previewReport } from "@/lib/dev/preview";
+import { DA01_CONTENT_VERSION, DA01_SLUG } from "@/lib/contracts/da01";
 
 export const runtime = "nodejs";
 
@@ -40,12 +41,33 @@ export async function GET(
       .maybeSingle();
 
     if (!run) {
+      const { data: failed } = await admin
+        .from("sim_analysis_runs")
+        .select("id, error, engine_version")
+        .eq("session_id", id)
+        .eq("status", "failed")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (failed) {
+        return NextResponse.json({
+          ready: false,
+          failed: true,
+          sessionStatus: session.status,
+          reviewState: "failed",
+          engineVersion: failed.engine_version || "v2",
+          message:
+            "Analysis failed. This evaluation was not scored by keyword fallback. Retry analysis or mark the attempt for review.",
+        });
+      }
       return NextResponse.json({
         ready: false,
+        failed: false,
         sessionStatus: session.status,
+        reviewState: "processing",
         message:
           session.status === "submitted"
-            ? "Analysis is still running. Refresh in a moment."
+            ? "Analysis is still running. This page refreshes on its own."
             : "This session has not been submitted yet.",
       });
     }
@@ -97,6 +119,8 @@ export async function GET(
 
     return NextResponse.json({
       ready: true,
+      failed: false,
+      reviewState: "ready",
       candidate: {
         email: invitation?.candidate_email,
         name: invitation?.candidate_name,
@@ -104,6 +128,13 @@ export async function GET(
       simulation: {
         title: content.title,
         roleKey: content.roleKey,
+        slug: isMicroContent(content) ? content.slug : null,
+        version:
+          isMicroContent(content) && content.slug === DA01_SLUG
+            ? DA01_CONTENT_VERSION
+            : isMicroContent(content)
+              ? `${content.slug}@${content.schemaVersion ?? 1}`
+              : null,
         durationMinutes: content.durationMinutes,
         deliverableFields,
       },

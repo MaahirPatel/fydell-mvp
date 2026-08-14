@@ -238,7 +238,7 @@ export default function EvaluationList({ roles }: { roles: CatalogRole[] }) {
                 </button>
                 {/* Not green: green is reserved for something a candidate
                     actually finished, not for a template being available. */}
-                <StatusTag>{sim.templateId ? "Published" : "Draft"}</StatusTag>
+                {sim.templateId ? null : <StatusTag>Prototype</StatusTag>}
               </div>
               <p className="mt-0.5 truncate text-[13px] text-[var(--text-secondary)]">
                 {sim.tagline}
