@@ -26,6 +26,7 @@ import {
   WAVE1_TYPE,
   WAVE1_WORKING_ROLE,
 } from "../src/lib/contracts";
+import { invitationGate } from "../src/lib/simulations/invitation-gate";
 
 let failures = 0;
 
@@ -104,6 +105,24 @@ ok("candidate cannot view employer report", can("candidate", "view_report") === 
 ok("candidate can submit", can("candidate", "submit_attempt"));
 ok("all five actors exist", ALL_ACTORS.length === 5);
 ok("invite is owner/admin only", WAVE1_PERMISSIONS.invite_candidate.join(",") === "owner,admin");
+
+section("Invitation gates");
+ok(
+  "expired invitation is blocked",
+  invitationGate({ status: "sent", expires_at: "2000-01-01T00:00:00.000Z" }).code === "expired",
+);
+ok(
+  "revoked invitation is blocked",
+  invitationGate({ status: "revoked", expires_at: "2099-01-01T00:00:00.000Z" }).code === "revoked",
+);
+ok(
+  "used invitation is blocked",
+  invitationGate({ status: "completed", expires_at: "2099-01-01T00:00:00.000Z" }).code === "completed",
+);
+ok(
+  "active invitation is allowed",
+  invitationGate({ status: "sent", expires_at: "2099-01-01T00:00:00.000Z" }).ok === true,
+);
 
 section("Design contract");
 ok("display type is Linear-scale", WAVE1_TYPE.display.includes("3.75rem"));
