@@ -12,8 +12,18 @@ import { ButtonLink } from "@/components/marketing/ui";
  * editorial, so switching axis is what signals "this is the end" without
  * needing a heavier band, a bigger type size, or decoration.
  */
+function Arrow() {
+  return (
+    <span
+      aria-hidden
+      className="-mr-0.5 transition-transform duration-150 ease-[var(--ease)] group-hover:translate-x-[3px]"
+    >
+      →
+    </span>
+  );
+}
+
 export default function ClosingCTA({
-  eyebrow,
   title,
   body,
   note,
@@ -21,7 +31,6 @@ export default function ClosingCTA({
   secondary,
   className = "",
 }: {
-  eyebrow?: string;
   title: string;
   body: string;
   note?: string;
@@ -41,21 +50,24 @@ export default function ClosingCTA({
     >
       <div className="mkt-content">
         <div className="mx-auto flex max-w-[640px] flex-col items-center text-center">
-          {eyebrow ? <p className="section-eyebrow">{eyebrow}</p> : null}
-          <h2 className="section-heading mt-3 max-w-none text-balance">
-            {title}
-          </h2>
+          <h2 className="section-heading max-w-none text-balance">{title}</h2>
           <p className="mt-5 max-w-[52ch] text-[1.125rem] leading-[1.6] text-[var(--text-secondary)]">
             {body}
           </p>
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <ButtonLink href={primary.href} variant="primary">
+            <ButtonLink href={primary.href} variant="primary" className="group">
               {primary.label}
+              <Arrow />
             </ButtonLink>
             {secondary ? (
-              <ButtonLink href={secondary.href} variant="secondary">
+              <ButtonLink
+                href={secondary.href}
+                variant="secondary"
+                className="group"
+              >
                 {secondary.label}
+                <Arrow />
               </ButtonLink>
             ) : null}
           </div>

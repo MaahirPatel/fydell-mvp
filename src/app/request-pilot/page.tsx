@@ -41,10 +41,7 @@ export default function RequestPilotPage() {
         <div className="mkt-content">
           <div className="grid items-start gap-10 lg:grid-cols-12 lg:gap-14">
             <div className="lg:col-span-5">
-              <p className="section-eyebrow">Pilot</p>
-              <h1 className="page-display mt-4">
-                Run your first pilot.
-              </h1>
+              <h1 className="page-display">Run your first pilot.</h1>
               <p className="mt-5 max-w-[42ch] text-[1.2rem] leading-[1.55] text-[var(--text-secondary)]">
                 Tell us what you are hiring for. We will set up the cohort with
                 you and stay reachable while it runs.

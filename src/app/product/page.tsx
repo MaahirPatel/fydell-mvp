@@ -30,20 +30,17 @@ const CHAPTER = "border-t border-[var(--border-subtle)] mkt-section-chapter";
 const BAND = "bg-[var(--surface-band)]";
 
 function ChapterHead({
-  eyebrow,
   title,
   body,
   className = "",
 }: {
-  eyebrow: string;
   title: string;
   body: string;
   className?: string;
 }) {
   return (
     <div className={className}>
-      <p className="section-eyebrow">{eyebrow}</p>
-      <h2 className="section-heading mt-3">{title}</h2>
+      <h2 className="section-heading">{title}</h2>
       <p className="mt-5 max-w-[46ch] text-[1.2rem] leading-[1.55] text-[var(--text-secondary)]">
         {body}
       </p>
@@ -91,8 +88,7 @@ export default function ProductPage() {
     <MarketingShell>
       <section className="pb-12 pt-[128px] sm:pt-[144px]">
         <div className="mkt-content">
-          <p className="section-eyebrow">Product</p>
-          <h1 className="page-display mt-4">
+          <h1 className="page-display">
             An evaluation you can audit, not a score you have to trust.
           </h1>
           <p className="page-lead">
@@ -118,7 +114,6 @@ export default function ProductPage() {
       <section className={CHAPTER}>
         <div className="mkt-content">
           <ChapterHead
-            eyebrow="Setup"
             title="Set the evaluation"
             body="There is one released evaluation and Fydell maintains it. You choose the role you are hiring for, check what it measures, and invite candidates to it. You are not asked to author a test."
           />
@@ -188,7 +183,6 @@ export default function ProductPage() {
       <section className={`${CHAPTER} ${BAND}`}>
         <div className="mkt-content">
           <ChapterHead
-            eyebrow="Evidence"
             title="Watch work become evidence"
             body="This is the part that is hard to describe and easy to show. Step through one candidate's session and see how a file they opened turns into a claim you can check."
           />
@@ -202,7 +196,6 @@ export default function ProductPage() {
       <section className={CHAPTER}>
         <div className="mkt-content">
           <ChapterHead
-            eyebrow="What you receive"
             title="Review, follow up, and return the receipt"
             body="You get a report that leads with the candidate's conclusion, opens to its sources, and says where it stops. The follow-up question comes from that stopping point, and the candidate keeps their own copy of the work."
           />

@@ -182,8 +182,7 @@ export default function TrustPage() {
     <MarketingShell>
       <section className="pb-12 pt-[128px] sm:pt-[144px]">
         <div className="mkt-content">
-          <p className="section-eyebrow">Trust</p>
-          <h1 className="page-display mt-4">
+          <h1 className="page-display">
             Evidence you can inspect. Access you can control.
           </h1>
           <p className="page-lead">

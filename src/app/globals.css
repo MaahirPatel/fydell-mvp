@@ -268,6 +268,42 @@ button {
   color: #fff;
 }
 
+/* The parts we did not draw still carry the design. Left at their defaults the
+   scrollbar and caret are the two surfaces that give away an assembled page. */
+* {
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+html {
+  caret-color: var(--action-ink);
+}
+
 /* Focus. 2px ring at 7.9:1 against the canvas, well clear of the 3:1 minimum.
    The outline follows each element's own radius, so none is set here. */
 :focus-visible {
@@ -379,6 +415,57 @@ nextjs-portal,
   text-wrap: balance;
 }
 
+/* The centred homepage headline. Sized so the authored two-line break holds
+   from 1280 up without re-wrapping, which is why the measure is capped in px
+   rather than ch: the break is composed, not left to the browser. */
+.hero-centered {
+  margin: 0 auto;
+  max-width: 760px;
+  color: var(--text-primary);
+  font-size: clamp(2.25rem, 5.25vw, 4.75rem);
+  font-weight: 530;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  text-align: center;
+  text-wrap: pretty;
+}
+
+/* The authored break holds from 430px up. Below that the first line no longer
+   fits and forcing it strands "before" alone, so the phone wraps naturally. */
+.hero-break {
+  display: none;
+}
+
+@media (min-width: 430px) {
+  .hero-break {
+    display: inline;
+  }
+}
+
+.hero-centered-lede {
+  margin: 22px auto 0;
+  max-width: 60ch;
+  color: var(--text-secondary);
+  font-size: 1.1875rem;
+  font-weight: 430;
+  line-height: 1.55;
+  letter-spacing: -0.008em;
+  text-align: center;
+}
+
+/* The feature-section heading. Smaller than .section-heading because it sits
+   in a narrow copy column beside a dominant visual rather than spanning the
+   page, and a size tuned for full width reads as shouting at 420px. */
+.feature-heading {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  font-weight: 520;
+  line-height: 1.1;
+  letter-spacing: -0.032em;
+  text-wrap: balance;
+}
+
 /* The headline when it shares the first viewport with a product scene. Smaller
    than .hero-display because it occupies five columns rather than the full
    width, and a display size tuned for 1120px looks shouted at 470px. */
@@ -439,15 +526,6 @@ nextjs-portal,
   font-weight: 430;
   line-height: 1.55;
   letter-spacing: -0.008em;
-}
-
-.section-eyebrow {
-  margin: 0;
-  color: var(--text-tertiary);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: 0.01em;
 }
 
 .stage-label {
@@ -563,17 +641,6 @@ textarea.platform-input {
   }
 }
 
-@keyframes fydell-rise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 /* Product frame: a quiet top-edge light, the way Linear stages software. */
 .product-frame {
   position: relative;
@@ -626,24 +693,6 @@ textarea.platform-input {
   inset: 0;
   background:
     radial-gradient(ellipse 60% 40% at 50% 0%, rgba(245, 247, 248, 0.04), transparent 62%);
-}
-
-.reveal-in {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .reveal-in {
-    animation: fydell-rise 720ms var(--ease);
-  }
-
-  .reveal-in-delay-1 {
-    animation-delay: 80ms;
-  }
-
-  .reveal-in-delay-2 {
-    animation-delay: 160ms;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

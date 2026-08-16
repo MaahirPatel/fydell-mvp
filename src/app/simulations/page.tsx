@@ -125,10 +125,10 @@ export default function EvaluationPage() {
     <MarketingShell>
       <section className="pb-12 pt-[128px] sm:pt-[144px]">
         <div className="mkt-content">
-          <p className="section-eyebrow">
+          <h1 className="page-display">{NORTHLINE_SCENARIO.evaluation}</h1>
+          <p className="mt-4 text-[14px] tabular-nums text-[var(--text-tertiary)]">
             {NORTHLINE_SCENARIO.role} · {NORTHLINE_SCENARIO.duration}
           </p>
-          <h1 className="page-display mt-4">{NORTHLINE_SCENARIO.evaluation}</h1>
           <p className="page-lead">
             Reported yield fell last period at {NORTHLINE_SCENARIO.company}. The
             candidate has to work out how much of that is a measurement change
