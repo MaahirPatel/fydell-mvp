@@ -17,10 +17,18 @@ export default function MarketingShell({ children }: { children: React.ReactNode
         </a>
         <AmbientBackground />
         <SiteNav />
-        <main id="main" className="relative z-10">
-          {children}
-        </main>
-        <SiteFooter />
+        {/*
+          AmbientBackground is fixed and paints an opaque canvas. A positioned
+          element paints above non-positioned ones no matter where it sits in
+          the DOM, so anything sharing this canvas has to be lifted explicitly.
+          Only <main> used to be, which left the footer rendered at full size
+          and full opacity underneath a black rectangle. Lifting the whole
+          content column means a new sibling cannot reintroduce that.
+        */}
+        <div className="relative z-10">
+          <main id="main">{children}</main>
+          <SiteFooter />
+        </div>
       </div>
     </LenisProvider>
   );

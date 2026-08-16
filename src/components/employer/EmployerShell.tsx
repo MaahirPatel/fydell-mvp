@@ -8,6 +8,7 @@ import {
   ClipboardList,
   FileText,
   House,
+  Plus,
   Settings,
   Users,
 } from "lucide-react";
@@ -47,6 +48,14 @@ const NAV = [
   },
 ];
 
+const ROLE_LABEL: Record<string, string> = {
+  owner: "Owner",
+  admin: "Admin",
+  member: "Member",
+  reviewer: "Reviewer",
+  viewer: "Viewer",
+};
+
 function useIsActive() {
   const pathname = usePathname();
   return (href: string, exact: boolean) =>
@@ -64,10 +73,10 @@ function SidebarNav() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`relative flex items-center gap-2.5 rounded-[6px] px-2.5 py-[7px] text-[13.5px] transition-colors ${
+            className={`relative flex items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 py-[7px] text-[13.5px] transition-colors duration-[var(--motion-fast)] ${
               active
-                ? "bg-white/[0.07] font-medium text-[var(--text-primary)]"
-                : "text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]"
+                ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]"
+                : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
             }`}
           >
             {active ? (
@@ -101,9 +110,9 @@ function MobileNav() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`flex items-center justify-center rounded-[6px] px-1 py-1.5 text-center text-[12px] leading-tight transition-colors ${
+            className={`flex items-center justify-center rounded-[var(--radius-control)] px-1 py-1.5 text-center text-[12px] leading-tight transition-colors duration-[var(--motion-fast)] ${
               active
-                ? "bg-white/[0.08] font-medium text-[var(--text-primary)]"
+                ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
@@ -118,9 +127,13 @@ function MobileNav() {
 function AccountMenu({
   workspaceName,
   userEmail,
+  userName,
+  userRole,
 }: {
   workspaceName: string;
   userEmail: string;
+  userName: string;
+  userRole: string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -141,7 +154,11 @@ function AccountMenu({
     };
   }, [open]);
 
-  const initials = (userEmail || workspaceName || "?").charAt(0).toUpperCase();
+  // Prefer a real name, then the local part of the address. An address is a
+  // login, not an identity, and it truncates to nothing in a 232px rail.
+  const displayName = userName || userEmail.split("@")[0] || workspaceName;
+  const initials = (displayName || "?").charAt(0).toUpperCase();
+  const roleLabel = userRole ? ROLE_LABEL[userRole] ?? userRole.replaceAll("_", " ") : "";
 
   return (
     <div className="relative" ref={ref}>
@@ -150,13 +167,20 @@ function AccountMenu({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex w-full items-center gap-2.5 rounded-[6px] px-2 py-2 text-left transition-colors hover:bg-white/[0.05]"
+        className="flex w-full items-center gap-2.5 rounded-[var(--radius-control)] px-2 py-2 text-left transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
       >
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[5px] border border-[var(--border-default)] bg-white/[0.05] text-[11.5px] font-medium text-[var(--text-primary)]">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] text-[12px] font-medium text-[var(--text-primary)]">
           {initials}
         </span>
-        <span className="min-w-0 flex-1 truncate text-[12.5px] text-[var(--text-secondary)]">
-          {userEmail}
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[13px] font-medium leading-tight text-[var(--text-primary)]">
+            {displayName}
+          </span>
+          {roleLabel ? (
+            <span className="mt-0.5 block truncate text-[11.5px] capitalize leading-tight text-[var(--text-tertiary)]">
+              {roleLabel}
+            </span>
+          ) : null}
         </span>
         <ChevronDown
           className="h-3.5 w-3.5 shrink-0 text-[var(--text-tertiary)]"
@@ -167,7 +191,7 @@ function AccountMenu({
       {open ? (
         <div
           role="menu"
-          className="absolute bottom-11 left-0 z-40 w-[228px] rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 shadow-[var(--shadow-pop)]"
+          className="absolute bottom-[52px] left-0 z-40 w-[228px] rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 shadow-[var(--shadow-pop)]"
         >
           <p className="truncate text-[13px] font-medium text-[var(--text-primary)]">
             {workspaceName}
@@ -176,7 +200,7 @@ function AccountMenu({
             {userEmail}
           </p>
           <div className="mt-3">
-            <SignOutButton className="inline-flex h-8 w-full items-center justify-center rounded-[6px] border border-[var(--border-strong)] text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-white/[0.06] disabled:opacity-50" />
+            <SignOutButton className="inline-flex h-8 w-full items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-strong)] text-[13px] font-medium text-[var(--text-primary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] disabled:opacity-50" />
           </div>
         </div>
       ) : null}
@@ -184,14 +208,20 @@ function AccountMenu({
   );
 }
 
-function TopBarActions() {
+/**
+ * Inviting is the one action available from anywhere in the workspace, so it
+ * lives in the rail rather than the top bar. It used to render in both the top
+ * bar and the page header, which read as two different buttons.
+ */
+function SidebarInvite() {
   const { open } = useInviteModal();
   return (
     <button
       type="button"
       onClick={() => open()}
-      className="inline-flex h-8 items-center rounded-[8px] bg-[#eceef1] px-3.5 text-[13px] font-medium text-[#0a0b0d] transition-colors hover:bg-white"
+      className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3 text-[13px] font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]"
     >
+      <Plus className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
       Invite candidate
     </button>
   );
@@ -200,11 +230,15 @@ function TopBarActions() {
 export default function EmployerShell({
   workspaceName,
   userEmail,
+  userName = "",
+  userRole = "",
   catalog,
   children,
 }: {
   workspaceName: string;
   userEmail: string;
+  userName?: string;
+  userRole?: string;
   catalog: CatalogRole[];
   children: React.ReactNode;
 }) {
@@ -217,7 +251,7 @@ export default function EmployerShell({
         <div className="flex min-h-screen">
           <aside className="sticky top-0 hidden h-screen w-[232px] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-raised)] px-3 py-3 md:flex">
             <div className="flex items-center gap-2.5 rounded-[6px] px-2 py-2">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[5px] bg-white/[0.08] text-[11.5px] font-semibold text-[var(--text-primary)]">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-[var(--surface-selected)] text-[11.5px] font-semibold text-[var(--text-primary)]">
                 {workspaceInitial}
               </span>
               <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[var(--text-primary)]">
@@ -229,32 +263,46 @@ export default function EmployerShell({
               <SidebarNav />
             </div>
 
-            <div className="mt-auto border-t border-[var(--border-subtle)] pt-2">
-              <AccountMenu workspaceName={workspaceName} userEmail={userEmail} />
+            <div className="mt-auto space-y-2 pt-2">
+              <div className="px-1">
+                <SidebarInvite />
+              </div>
+              <div className="border-t border-[var(--border-subtle)] pt-2">
+                <AccountMenu
+                  workspaceName={workspaceName}
+                  userEmail={userEmail}
+                  userName={userName}
+                  userRole={userRole}
+                />
+              </div>
             </div>
           </aside>
 
           <div className="flex min-w-0 flex-1 flex-col">
-            <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-5 sm:px-8">
-              {/* On a phone the sidebar is gone, and with it the only place
-                  that said which workspace you are in. That matters more here
-                  than the wordmark does. */}
-              <Link
-                href="/app/employer"
-                className="inline-flex min-w-0 items-center gap-2 md:hidden"
-              >
+            {/* Below md the rail is gone, so the top bar carries the things it
+                held: which workspace you are in, and the one global action.
+                On desktop both live in the rail and a bar here would be an
+                empty 56px strip above every page. */}
+            <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-5 md:hidden">
+              <Link href="/app/employer" className="inline-flex min-w-0 items-center gap-2">
                 <FydellMark width={18} />
                 <span className="min-w-0 truncate text-[13.5px] font-medium text-[var(--text-primary)]">
                   {workspaceName}
                 </span>
               </Link>
-              <div className="hidden md:block" />
-              <TopBarActions />
+              <div className="w-[150px] shrink-0">
+                <SidebarInvite />
+              </div>
             </header>
 
             <MobileNav />
 
-            <main className="min-w-0 flex-1 px-5 py-7 sm:px-8">{children}</main>
+            {/* The rail governs the width, so 1280 to 1440 is used fully. The
+                cap only binds past about 1736px, where a four-item metric row
+                stretched across the full canvas stops being scannable. */}
+            <main className="min-w-0 flex-1 px-5 py-7 sm:px-8">
+              <div className="mx-auto w-full max-w-[1440px]">{children}</div>
+            </main>
           </div>
         </div>
       </div>

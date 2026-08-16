@@ -26,7 +26,7 @@ export default async function EmployerReportsPage({
   const roleOptions = ROLES.map((r) => ({ key: r.key, title: r.title }));
 
   return (
-    <div className="max-w-[1080px]">
+    <div>
       <PageHeader
         title="Reports"
         description="Completed evaluations. Open one to read the conclusion and the evidence behind it."

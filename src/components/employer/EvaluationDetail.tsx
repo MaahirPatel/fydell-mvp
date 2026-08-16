@@ -9,7 +9,7 @@
  * is published this becomes a list again; see EvaluationList.
  */
 import { Button } from "@/components/ui/Button";
-import { StatusTag } from "@/components/ui/StatusTag";
+import { Panel } from "@/components/ui/Panel";
 import { useInviteModal } from "./InviteCandidateModal";
 import type { CatalogSim } from "./catalog-types";
 
@@ -32,7 +32,12 @@ export interface EvaluationUsage {
   reportsReady: number;
 }
 
-function Panel({
+/**
+ * The shared Panel at reference density. This screen is a stack of short
+ * lists, so it uses a tighter header strip than a PanelSection while keeping
+ * the same frame, hairlines and type scale.
+ */
+function DetailPanel({
   title,
   aside,
   children,
@@ -42,15 +47,15 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-2.5">
-        <h2 className="text-[13px] font-medium text-[var(--text-primary)]">
+    <Panel>
+      <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+        <h2 className="text-app-body font-medium text-[var(--text-primary)]">
           {title}
         </h2>
         {aside}
       </div>
       {children}
-    </section>
+    </Panel>
   );
 }
 
@@ -81,61 +86,61 @@ export default function EvaluationDetail({
   return (
     <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="grid gap-5">
-        <Panel
+        <DetailPanel
           title="What the candidate is asked to do"
           aside={
-            <span className="text-[12px] tabular-nums text-[var(--text-tertiary)]">
+            <span className="text-app-meta tabular-nums text-[var(--text-tertiary)]">
               {sim.preview.companyName}
             </span>
           }
         >
-          <p className="px-4 py-3.5 text-[13.5px] leading-[1.7] text-[var(--text-secondary)]">
+          <p className="px-4 py-3.5 text-app-body leading-[1.7] text-[var(--text-secondary)]">
             {sim.preview.brief}
           </p>
-        </Panel>
+        </DetailPanel>
 
         <div className="grid gap-5 lg:grid-cols-2">
-          <Panel title="Working materials">
+          <DetailPanel title="Working materials">
             <ul className="divide-y divide-[var(--border-subtle)]">
               {sim.preview.resources.map((r) => (
                 <li
                   key={r.title}
                   className="flex items-center justify-between gap-3 px-4 py-2.5"
                 >
-                  <span className="min-w-0 truncate text-[13px] text-[var(--text-primary)]">
+                  <span className="min-w-0 truncate text-app-body text-[var(--text-primary)]">
                     {r.title}
                   </span>
-                  <span className="shrink-0 text-[12px] text-[var(--text-tertiary)]">
+                  <span className="shrink-0 text-app-meta text-[var(--text-tertiary)]">
                     {RESOURCE_KIND_LABEL[r.kind] || "Document"}
                   </span>
                 </li>
               ))}
               <li className="flex items-center justify-between gap-3 px-4 py-2.5">
-                <span className="min-w-0 truncate text-[13px] text-[var(--text-primary)]">
+                <span className="min-w-0 truncate text-app-body text-[var(--text-primary)]">
                   Conversation with {sim.preview.stakeholder.name}
                 </span>
-                <span className="shrink-0 text-[12px] text-[var(--text-tertiary)]">
+                <span className="shrink-0 text-app-meta text-[var(--text-tertiary)]">
                   {sim.preview.stakeholder.role}
                 </span>
               </li>
             </ul>
-          </Panel>
+          </DetailPanel>
 
-          <Panel title="What it measures">
+          <DetailPanel title="What it measures">
             <ul className="divide-y divide-[var(--border-subtle)]">
               {sim.competencies.map((c) => (
-                <li key={c} className="px-4 py-2.5 text-[13px] text-[var(--text-secondary)]">
+                <li key={c} className="px-4 py-2.5 text-app-body text-[var(--text-secondary)]">
                   {c}
                 </li>
               ))}
             </ul>
-          </Panel>
+          </DetailPanel>
         </div>
 
-        <Panel
+        <DetailPanel
           title="The questions candidates answer"
           aside={
-            <span className="text-[12px] text-[var(--text-tertiary)]">
+            <span className="text-app-meta text-[var(--text-tertiary)]">
               Answer keys are hidden here and from candidates
             </span>
           }
@@ -145,30 +150,30 @@ export default function EvaluationDetail({
               <li key={i} className="flex gap-3 px-4 py-3">
                 <span
                   aria-hidden
-                  className="mt-[1px] shrink-0 text-[12px] tabular-nums text-[var(--text-tertiary)]"
+                  className="mt-[1px] shrink-0 text-app-meta tabular-nums text-[var(--text-tertiary)]"
                 >
                   {i + 1}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+                  <p className="text-app-body leading-[1.6] text-[var(--text-secondary)]">
                     {q.prompt}
                   </p>
-                  <p className="mt-0.5 text-[12px] text-[var(--text-tertiary)]">
+                  <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">
                     {QUESTION_KIND_LABEL[q.kind] || q.kind}
                   </p>
                 </div>
               </li>
             ))}
           </ol>
-        </Panel>
+        </DetailPanel>
       </div>
 
       <div className="grid gap-5">
-        <Panel title="In this workspace">
+        <DetailPanel title="In this workspace">
           {/* Four zeros is not a status, it is a shrug. Say the one true thing
               instead and put the action right under it. */}
           {counts.every(([, v]) => v === 0) ? (
-            <p className="px-4 py-3 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+            <p className="px-4 py-3 text-app-body leading-[1.6] text-[var(--text-secondary)]">
               Nobody has been invited to this yet. Send one invitation and this
               becomes a live count.
             </p>
@@ -179,10 +184,10 @@ export default function EvaluationDetail({
                 key={label}
                 className="flex items-center justify-between gap-3 px-4 py-2.5"
               >
-                <dt className="text-[13px] text-[var(--text-secondary)]">
+                <dt className="text-app-body text-[var(--text-secondary)]">
                   {label}
                 </dt>
-                <dd className="text-[13px] tabular-nums text-[var(--text-primary)]">
+                <dd className="text-app-body tabular-nums text-[var(--text-primary)]">
                   {value}
                 </dd>
               </div>
@@ -199,54 +204,54 @@ export default function EvaluationDetail({
               Invite a candidate
             </Button>
           </div>
-        </Panel>
+        </DetailPanel>
 
-        <Panel title="Details">
+        <DetailPanel title="Details">
           <dl className="divide-y divide-[var(--border-subtle)]">
             <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-              <dt className="text-[13px] text-[var(--text-secondary)]">Role</dt>
-              <dd className="text-[13px] text-[var(--text-primary)]">
+              <dt className="text-app-body text-[var(--text-secondary)]">Role</dt>
+              <dd className="text-app-body text-[var(--text-primary)]">
                 {roleTitle}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-              <dt className="text-[13px] text-[var(--text-secondary)]">
+              <dt className="text-app-body text-[var(--text-secondary)]">
                 Working time
               </dt>
-              <dd className="text-[13px] tabular-nums text-[var(--text-primary)]">
+              <dd className="text-app-body tabular-nums text-[var(--text-primary)]">
                 {sim.durationMinutes} min
               </dd>
             </div>
             <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-              <dt className="text-[13px] text-[var(--text-secondary)]">
+              <dt className="text-app-body text-[var(--text-secondary)]">
                 Maintained by
               </dt>
-              <dd className="text-[13px] text-[var(--text-primary)]">Fydell</dd>
+              <dd className="text-app-body text-[var(--text-primary)]">Fydell</dd>
             </div>
           </dl>
-          <p className="border-t border-[var(--border-subtle)] px-4 py-3 text-[12.5px] leading-[1.6] text-[var(--text-tertiary)]">
+          <p className="border-t border-[var(--border-subtle)] px-4 py-3 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
             The scenario is synthetic and the evaluation is read-only. It cannot
             be edited from a workspace, so every candidate sees the same version.
           </p>
-        </Panel>
+        </DetailPanel>
 
         {unpublished.length > 0 ? (
-          <Panel title="Not available yet">
+          <DetailPanel title="Not available yet">
             <ul className="divide-y divide-[var(--border-subtle)]">
               {unpublished.map((title) => (
                 <li
                   key={title}
-                  className="px-4 py-2.5 text-[13px] text-[var(--text-tertiary)]"
+                  className="px-4 py-2.5 text-app-body text-[var(--text-tertiary)]"
                 >
                   {title}
                 </li>
               ))}
             </ul>
-            <p className="border-t border-[var(--border-subtle)] px-4 py-3 text-[12.5px] leading-[1.6] text-[var(--text-tertiary)]">
+            <p className="border-t border-[var(--border-subtle)] px-4 py-3 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
               These are in development. They cannot be invited to until they are
               released.
             </p>
-          </Panel>
+          </DetailPanel>
         ) : null}
       </div>
     </div>

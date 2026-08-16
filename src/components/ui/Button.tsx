@@ -11,7 +11,9 @@ export type ButtonVariant =
   | "destructive"
   | "accent";
 
-export type ButtonSize = "sm" | "md" | "lg";
+/** `cta` is the marketing call to action: taller than a product control, but
+ *  short of the full-width `lg` used in auth and onboarding forms. */
+export type ButtonSize = "sm" | "md" | "cta" | "lg";
 
 const BASE =
   "relative inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-[8px] font-medium tracking-[-0.01em] transition-[background-color,border-color,color,opacity] duration-150 disabled:pointer-events-none disabled:opacity-45 aria-disabled:pointer-events-none aria-disabled:opacity-45";
@@ -19,7 +21,7 @@ const BASE =
 const VARIANT: Record<ButtonVariant, string> = {
   // Near-white on graphite. The single loudest control on any given screen.
   primary:
-    "bg-[#eceef1] text-[#0a0b0d] hover:bg-white active:bg-[#dfe2e6]",
+    "bg-[var(--control-solid)] text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]",
   // Bordered. Sits beside primary without competing.
   secondary:
     "border border-[var(--border-strong)] bg-transparent text-[var(--text-primary)] hover:border-[rgba(255,255,255,0.3)] hover:bg-[rgba(255,255,255,0.05)] active:bg-[rgba(255,255,255,0.08)]",
@@ -36,6 +38,7 @@ const VARIANT: Record<ButtonVariant, string> = {
 const SIZE: Record<ButtonSize, string> = {
   sm: "h-8 px-3 text-[13px]",
   md: "h-9 px-3.5 text-[13.5px]",
+  cta: "h-10 px-4 text-[14px]",
   lg: "h-11 px-5 text-[15px]",
 };
 
@@ -52,6 +55,7 @@ type CommonProps = {
 const ICON_SIZE: Record<ButtonSize, string> = {
   sm: "h-8 w-8 p-0",
   md: "h-9 w-9 p-0",
+  cta: "h-10 w-10 p-0",
   lg: "h-11 w-11 p-0",
 };
 

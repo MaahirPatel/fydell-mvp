@@ -41,7 +41,7 @@ export function TH({
     <th
       scope="col"
       className={cn(
-        "px-4 py-2.5 text-[12px] font-medium uppercase tracking-[0.04em] text-[var(--text-tertiary)]",
+        "px-4 py-2.5 text-app-meta font-medium uppercase tracking-[0.04em] text-[var(--text-tertiary)]",
         align === "right" ? "text-right" : "text-left",
         className,
       )}
@@ -64,7 +64,7 @@ export function TR({
   return (
     <tr
       className={cn(
-        "border-b border-[var(--border-subtle)] transition-colors last:border-b-0 hover:bg-[rgba(255,255,255,0.025)]",
+        "border-b border-[var(--border-subtle)] transition-colors duration-[var(--motion-fast)] last:border-b-0 hover:bg-[var(--surface-hover)]",
         className,
       )}
       {...rest}
@@ -85,7 +85,7 @@ export function TD({
   return (
     <td
       className={cn(
-        "px-4 py-3 text-[13.5px] text-[var(--text-secondary)] align-middle",
+        "px-4 py-3 text-app-body text-[var(--text-secondary)] align-middle",
         align === "right" ? "text-right" : "text-left",
         className,
       )}

@@ -13,13 +13,13 @@ export function AdminPageHeader({
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
         <h1
-          className="text-[28px] text-[#F4F5F7] sm:text-[32px]"
-          style={{ fontWeight: 560, letterSpacing: "-0.038em" }}
+          className="text-app-page text-[var(--text-primary)]"
+          style={{ fontWeight: 560 }}
         >
           {title}
         </h1>
         {description ? (
-          <p className="mt-2 max-w-[56ch] text-[14px] leading-relaxed text-white/60">
+          <p className="mt-2 max-w-[56ch] text-app-body text-[var(--text-secondary)]">
             {description}
           </p>
         ) : null}
@@ -43,19 +43,19 @@ export function AdminMetricCard({
   return (
     <Link
       href={href}
-      className="group rounded-[14px] border border-white/[0.1] bg-gradient-to-b from-[#0E1118] to-[#0A0C11] px-4 py-4 transition-[border-color,transform,background] duration-150 hover:-translate-y-px hover:border-white/22"
+      className="group rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-4 transition-colors duration-[var(--motion-fast)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-panel)]"
     >
-      <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/55">
+      <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
         {label}
       </p>
       <p
-        className="mt-2.5 text-[34px] leading-none tabular-nums text-white"
+        className="mt-2.5 text-[34px] leading-none tabular-nums text-[var(--text-primary)]"
         style={{ fontWeight: 560, letterSpacing: "-0.04em" }}
       >
         {value}
       </p>
       {hint ? (
-        <p className="mt-2 text-[12px] text-white/40 transition-colors group-hover:text-white/55">
+        <p className="mt-2 text-app-meta text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] group-hover:text-[var(--text-secondary)]">
           {hint}
         </p>
       ) : null}
@@ -73,9 +73,9 @@ export function AdminPanel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[16px] border border-white/[0.1] bg-[#0A0C11] p-5 sm:p-6">
+    <section className="rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/55">
+        <h2 className="text-app-meta font-medium uppercase tracking-[0.06em] text-[var(--text-tertiary)]">
           {title}
         </h2>
         {action}
@@ -87,32 +87,50 @@ export function AdminPanel({
 
 export function AdminEmpty({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-[12px] border border-dashed border-white/12 bg-white/[0.015] px-4 py-10 text-center text-[13px] leading-relaxed text-white/55">
+    <div className="rounded-[var(--radius-panel)] border border-dashed border-[var(--border-default)] px-4 py-10 text-center text-app-body text-[var(--text-secondary)]">
       {children}
     </div>
   );
 }
 
-const STATUS_TONE: Record<string, string> = {
-  new: "bg-[#3B5BFF]/15 text-[#A8B4FF] ring-[#3B5BFF]/25",
-  reviewing: "bg-[#8B5CF6]/15 text-[#C4B5FD] ring-[#8B5CF6]/25",
-  contacted: "bg-[#06B6D4]/15 text-[#67E8F9] ring-[#06B6D4]/25",
-  qualified: "bg-[#06B6D4]/15 text-[#67E8F9] ring-[#06B6D4]/25",
-  approved: "bg-[#10B981]/15 text-[#6EE7B7] ring-[#10B981]/25",
-  needs_information: "bg-[#F59E0B]/15 text-[#FCD34D] ring-[#F59E0B]/25",
-  rejected: "bg-[#F43F5E]/15 text-[#FDA4AF] ring-[#F43F5E]/25",
-  archived: "bg-white/5 text-white/50 ring-white/10",
-  pending: "bg-[#F59E0B]/15 text-[#FCD34D] ring-[#F59E0B]/25",
-  sent: "bg-[#10B981]/15 text-[#6EE7B7] ring-[#10B981]/25",
-  failed: "bg-[#F43F5E]/15 text-[#FDA4AF] ring-[#F43F5E]/25",
-  bounced: "bg-[#F43F5E]/15 text-[#FDA4AF] ring-[#F43F5E]/25",
+/**
+ * Four tones, matching the four state meanings in the token layer. A status is
+ * either neutral, actively moving, waiting on someone, resolved, or failed.
+ * Anything that does not map to one of those reads neutral rather than
+ * inventing a sixth colour.
+ */
+const TONE = {
+  neutral:
+    "bg-[var(--surface-hover)] text-[var(--text-secondary)] ring-[var(--border-default)]",
+  active:
+    "bg-[color-mix(in_srgb,var(--fydell-evidence)_15%,transparent)] text-[var(--fydell-evidence)] ring-[color-mix(in_srgb,var(--fydell-evidence)_28%,transparent)]",
+  attention:
+    "bg-[color-mix(in_srgb,var(--fydell-changed)_15%,transparent)] text-[var(--fydell-changed)] ring-[color-mix(in_srgb,var(--fydell-changed)_28%,transparent)]",
+  done: "bg-[color-mix(in_srgb,var(--fydell-good)_15%,transparent)] text-[var(--fydell-good)] ring-[color-mix(in_srgb,var(--fydell-good)_28%,transparent)]",
+  failed:
+    "bg-[color-mix(in_srgb,var(--fydell-risk)_15%,transparent)] text-[var(--fydell-risk)] ring-[color-mix(in_srgb,var(--fydell-risk)_28%,transparent)]",
+} as const;
+
+const STATUS_TONE: Record<string, keyof typeof TONE> = {
+  new: "active",
+  reviewing: "active",
+  contacted: "active",
+  qualified: "active",
+  sent: "active",
+  pending: "attention",
+  needs_information: "attention",
+  approved: "done",
+  archived: "neutral",
+  rejected: "failed",
+  failed: "failed",
+  bounced: "failed",
 };
 
 export function AdminStatusBadge({ status }: { status: string }) {
-  const tone = STATUS_TONE[status] || "bg-white/5 text-white/65 ring-white/10";
+  const tone = TONE[STATUS_TONE[status] ?? "neutral"];
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium capitalize ring-1 ring-inset ${tone}`}
+      className={`inline-flex items-center rounded-[var(--radius-tag)] px-2 py-0.5 text-app-meta font-medium capitalize ring-1 ring-inset ${tone}`}
     >
       {status.replaceAll("_", " ")}
     </span>
@@ -129,7 +147,7 @@ export function AdminPrimaryButton({
   return (
     <Link
       href={href}
-      className="inline-flex h-10 items-center rounded-[9px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C] transition-[filter,transform] hover:-translate-y-px hover:brightness-[0.97]"
+      className="inline-flex h-9 items-center rounded-[var(--radius-control)] bg-[var(--surface-paper)] px-3.5 text-app-body font-medium text-[var(--surface-canvas)] transition-opacity duration-[var(--motion-fast)] hover:opacity-90"
     >
       {children}
     </Link>
@@ -144,7 +162,10 @@ export function AdminTextLink({
   children: React.ReactNode;
 }) {
   return (
-    <Link href={href} className="text-[12px] text-white/65 transition-colors hover:text-white">
+    <Link
+      href={href}
+      className="text-app-meta text-[var(--text-secondary)] transition-colors duration-[var(--motion-fast)] hover:text-[var(--text-primary)]"
+    >
       {children}
     </Link>
   );

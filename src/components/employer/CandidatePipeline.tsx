@@ -1,17 +1,22 @@
 import Link from "next/link";
+import { cn } from "@/lib/cn";
 import type { InvitationRecord } from "@/app/app/employer/_lib/data";
 
 /**
- * Where every invited candidate currently stands.
+ * Where every invited candidate currently stands, as a distribution across the
+ * pipeline rather than a list of counts.
  *
  * The stages are the real `sim_invitations.status` and `sim_sessions.status`
- * values collapsed into the six a hiring team actually acts on. Nothing is
- * inferred: a candidate appears in a stage because a row says so.
+ * values collapsed into the six a hiring team acts on. Nothing is inferred: a
+ * candidate appears in a stage because a row says so.
  *
- * Stages with no one in them still render, at low emphasis, because an empty
- * stage is information. Hiding them would make the pipeline change shape every
- * time somebody progresses.
+ * This is deliberately not a chart. A single pilot cohort has no time series,
+ * so plotting it over time would draw a shape out of noise. The question a
+ * hiring team actually has is "where is everyone right now", and that is a
+ * distribution.
  */
+
+type Tone = "waiting" | "active" | "done";
 
 type Stage = {
   key: string;
@@ -20,6 +25,12 @@ type Stage = {
   match: (r: InvitationRecord) => boolean;
   /** Where the team goes to act on this stage. */
   href: string;
+  /**
+   * Waiting means the ball is in the candidate's court, active means work is
+   * underway, done means there is something to read. Three meanings, three
+   * colours, matching the token layer.
+   */
+  tone: Tone;
 };
 
 const STAGES: Stage[] = [
@@ -28,94 +39,135 @@ const STAGES: Stage[] = [
     label: "Invited",
     match: (r) => r.status === "sent",
     href: "/app/employer/candidates",
+    tone: "waiting",
   },
   {
     key: "opened",
-    label: "Opened the invitation",
+    label: "Opened",
     match: (r) => r.status === "opened",
     href: "/app/employer/candidates",
+    tone: "waiting",
   },
   {
     key: "consented",
-    label: "Consented, not started",
+    label: "Consented",
     match: (r) => r.status === "accepted" && r.progress === "Not started",
     href: "/app/employer/candidates",
+    tone: "waiting",
   },
   {
     key: "working",
-    label: "Working on it",
+    label: "Working",
     match: (r) => r.progress === "In progress",
     href: "/app/employer/candidates",
+    tone: "active",
   },
   {
     key: "scoring",
-    label: "Submitted, scoring",
+    label: "Scoring",
     match: (r) => r.progress === "Scoring",
     href: "/app/employer/candidates",
+    tone: "active",
   },
   {
     key: "ready",
     label: "Report ready",
     match: (r) => r.reportReady,
     href: "/app/employer/reports",
+    tone: "done",
   },
 ];
+
+const FILL: Record<Tone, string> = {
+  waiting: "var(--viz-idle)",
+  active: "var(--viz-active)",
+  done: "var(--viz-done)",
+};
 
 export default function CandidatePipeline({
   invitations,
 }: {
   invitations: InvitationRecord[];
 }) {
-  const counts = STAGES.map((stage) => ({
+  const stages = STAGES.map((stage) => ({
     ...stage,
     count: invitations.filter(stage.match).length,
   }));
-
-  /**
-   * `email_delivery` is constrained to queued, sent, failed and
-   * not_configured. An unsent link is as stalled as an expired one, because in
-   * both cases the candidate is waiting on the workspace rather than the other
-   * way round.
-   */
-  const stalled = invitations.filter(
-    (r) =>
-      r.status === "expired" ||
-      r.emailDelivery === "failed" ||
-      r.emailDelivery === "not_configured"
-  );
-
-  const reasonFor = (r: InvitationRecord) => {
-    if (r.emailDelivery === "failed") return "Email failed";
-    if (r.emailDelivery === "not_configured") return "Never emailed";
-    return "Expired";
-  };
+  const total = stages.reduce((sum, stage) => sum + stage.count, 0);
 
   return (
-    <div className="overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
-      <ol>
-        {counts.map((stage) => {
+    <div>
+      {total > 0 ? (
+        <div
+          className="flex h-2 w-full gap-[2px] overflow-hidden rounded-full bg-[var(--viz-track)]"
+          role="img"
+          aria-label={stages
+            .filter((s) => s.count > 0)
+            .map((s) => `${s.label}: ${s.count}`)
+            .join(", ")}
+        >
+          {stages
+            .filter((stage) => stage.count > 0)
+            .map((stage) => (
+              <span
+                key={stage.key}
+                className="h-full rounded-full first:rounded-l-full last:rounded-r-full"
+                style={{
+                  width: `${(stage.count / total) * 100}%`,
+                  background: FILL[stage.tone],
+                }}
+              />
+            ))}
+        </div>
+      ) : null}
+
+      {/* Empty stages still render, at low emphasis, because an empty stage is
+          information. Hiding them would make the pipeline change shape every
+          time somebody progresses. */}
+      <ol
+        className={cn(
+          "grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-6",
+          total > 0 && "mt-4",
+        )}
+      >
+        {stages.map((stage) => {
           const empty = stage.count === 0;
           return (
-            <li key={stage.key}>
+            <li key={stage.key} className="min-w-0">
               <Link
                 href={stage.href}
-                className="flex items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-2.5 transition-colors hover:bg-white/[0.02]"
+                className="group block min-w-0 rounded-[var(--radius-control)] py-0.5"
               >
-                <span
-                  className={`text-[13px] ${
-                    empty
-                      ? "text-[var(--text-tertiary)]"
-                      : "text-[var(--text-secondary)]"
-                  }`}
-                >
-                  {stage.label}
+                <span className="flex items-center gap-1.5">
+                  <span
+                    aria-hidden
+                    className="h-[7px] w-[7px] shrink-0 rounded-full"
+                    style={{
+                      background: empty ? "var(--viz-track)" : FILL[stage.tone],
+                      boxShadow: empty
+                        ? "inset 0 0 0 1px var(--border-default)"
+                        : undefined,
+                    }}
+                  />
+                  <span
+                    className={cn(
+                      "truncate text-app-meta",
+                      empty
+                        ? "text-[var(--text-tertiary)]"
+                        : "text-[var(--text-secondary)]",
+                      "transition-colors duration-[var(--motion-fast)] group-hover:text-[var(--text-primary)]",
+                    )}
+                  >
+                    {stage.label}
+                  </span>
                 </span>
                 <span
-                  className={`text-[14px] tabular-nums ${
+                  className={cn(
+                    "mt-1 block text-[20px] leading-none tabular-nums tracking-[-0.02em]",
                     empty
-                      ? "text-[var(--text-tertiary)]"
-                      : "font-medium text-[var(--text-primary)]"
-                  }`}
+                      ? "font-normal text-[var(--text-tertiary)]"
+                      : "font-medium text-[var(--text-primary)]",
+                  )}
                 >
                   {stage.count}
                 </span>
@@ -124,35 +176,6 @@ export default function CandidatePipeline({
           );
         })}
       </ol>
-
-      {stalled.length > 0 ? (
-        <div className="px-4 py-2.5">
-          <p className="flex items-center gap-2 text-[12.5px] text-[var(--text-secondary)]">
-            <span
-              aria-hidden
-              className="h-[7px] w-[7px] shrink-0 rounded-full border border-[rgba(233,185,73,0.6)] bg-[rgba(233,185,73,0.25)]"
-            />
-            {stalled.length === 1
-              ? "1 invitation needs attention"
-              : `${stalled.length} invitations need attention`}
-          </p>
-          <ul className="mt-1.5 space-y-1">
-            {stalled.slice(0, 3).map((r) => (
-              <li
-                key={r.invitationId}
-                className="flex items-baseline justify-between gap-3 text-[12px]"
-              >
-                <span className="truncate text-[var(--text-secondary)]">
-                  {r.name || r.email}
-                </span>
-                <span className="shrink-0 text-[var(--text-tertiary)]">
-                  {reasonFor(r)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
     </div>
   );
 }

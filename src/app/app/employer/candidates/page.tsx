@@ -21,7 +21,7 @@ export default async function EmployerCandidatesPage() {
   const only = evaluations.size === 1 ? [...evaluations][0] : null;
 
   return (
-    <div className="max-w-[1180px]">
+    <div>
       <PageHeader
         title="Candidates"
         description={

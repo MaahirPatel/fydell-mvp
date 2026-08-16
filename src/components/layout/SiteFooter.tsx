@@ -7,6 +7,11 @@ import { CONTACT_MAILTO } from "@/lib/contact";
  * exist as products, and Pricing contradicted the single published evaluation.
  * "Request a pilot" lives here as a quiet secondary path rather than in the
  * primary navigation.
+ *
+ * Legal sits in the baseline row rather than in a third column. It is the one
+ * group a reader looks for by location instead of by name, and moving it down
+ * lets the two real navigation columns spread across the width instead of
+ * bunching against the right edge.
  */
 const PRODUCT = [
   { label: "Product", href: "/product" },
@@ -35,13 +40,18 @@ function FooterCol({
 }) {
   return (
     <div>
-      <p className="text-[12.5px] font-medium text-[var(--text-tertiary)]">{title}</p>
-      <ul className="mt-3 space-y-2">
+      {/* The title has to outrank the links it heads. It previously used
+          --text-tertiary against --text-secondary links, which read as a dimmer
+          label above brighter items and inverted the hierarchy. */}
+      <p className="text-[13px] font-medium leading-none text-[var(--text-primary)]">
+        {title}
+      </p>
+      <ul className="mt-4 space-y-2.5">
         {links.map((link) => (
           <li key={link.label}>
             <Link
               href={link.href}
-              className="text-[13px] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+              className="text-[13.5px] leading-none text-[var(--text-secondary)] transition-colors duration-150 hover:text-[var(--text-primary)]"
             >
               {link.label}
             </Link>
@@ -54,10 +64,10 @@ function FooterCol({
 
 export default function SiteFooter() {
   return (
-    <footer className="border-t border-[var(--border-subtle)] pb-10 pt-14">
+    <footer className="border-t border-[var(--border-subtle)] pb-12 pt-16 lg:pt-20">
       <div className="mkt-content">
-        <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
-          <div className="max-w-[300px]">
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
+          <div className="lg:col-span-4">
             <Link
               href="/"
               className="inline-flex items-center gap-2"
@@ -68,23 +78,38 @@ export default function SiteFooter() {
                 fydell
               </span>
             </Link>
-            <p className="mt-3 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+            <p className="mt-4 max-w-[34ch] text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
               Evaluations that show how a candidate works, with evidence your
               team can open.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-14">
+          {/* Two groups cannot fill a twelve-column row by sitting side by
+              side; they bunch and leave a void at the right gutter. Spreading
+              them to the edges of the remaining measure balances the row
+              against the brand block instead. */}
+          <div className="flex flex-wrap gap-x-16 gap-y-10 lg:col-span-7 lg:col-start-6 lg:justify-between">
             <FooterCol title="Product" links={PRODUCT} />
             <FooterCol title="Company" links={COMPANY} />
-            <FooterCol title="Legal" links={LEGAL} />
           </div>
         </div>
 
-        <div className="mt-12 border-t border-[var(--border-subtle)] pt-5">
-          <p className="text-[12px] text-[var(--text-tertiary)]">
+        <div className="mt-16 flex flex-col gap-4 border-t border-[var(--border-subtle)] pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[12.5px] text-[var(--text-tertiary)]">
             © {new Date().getFullYear()} Fydell, Inc.
           </p>
+          <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            {LEGAL.map((link) => (
+              <li key={link.label}>
+                <Link
+                  href={link.href}
+                  className="text-[12.5px] text-[var(--text-tertiary)] transition-colors duration-150 hover:text-[var(--text-primary)]"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </footer>

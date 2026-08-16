@@ -6,8 +6,11 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Input, Select } from "@/components/ui/Field";
 import { StatusTag } from "@/components/ui/StatusTag";
-import { Surface } from "@/components/ui/Surface";
+import { Panel } from "@/components/ui/Panel";
+import { Tabs } from "@/components/ui/Tabs";
 import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
+
+const TABS_ID = "reports-review";
 
 export interface ReportRow {
   sessionId: string;
@@ -100,71 +103,46 @@ export default function ReportsList({
   const showFilters = rows.length > 3;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div
-          className="inline-flex rounded-[8px] border border-[var(--border-default)] p-0.5"
-          role="tablist"
-          aria-label="Review status"
-        >
-          {(
-            [
-              { key: "all" as const, label: "All", count: rows.length },
-              {
-                key: "needs_review" as const,
-                label: "Needs review",
-                count: needsReviewCount,
-              },
-              {
-                key: "decided" as const,
-                label: "Decided",
-                count: rows.length - needsReviewCount,
-              },
-            ] as const
-          ).map((tab) => {
-            const selected = reviewFilter === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                role="tab"
-                aria-selected={selected}
-                onClick={() => setReviewFilter(tab.key)}
-                className={[
-                  "inline-flex h-8 items-center gap-1.5 rounded-[6px] px-3 text-[13px] font-medium transition-colors",
-                  selected
-                    ? "bg-[rgba(255,255,255,0.09)] text-[var(--text-primary)]"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
-                ].join(" ")}
-              >
-                {tab.label}
-                <span className="tabular-nums text-[var(--text-tertiary)]">
-                  {tab.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[var(--border-subtle)]">
+        <Tabs
+          idBase={TABS_ID}
+          label="Review status"
+          value={reviewFilter}
+          onValueChange={(v) => setReviewFilter(v as ReviewFilter)}
+          className="border-b-0"
+          items={[
+            { value: "all", label: "All", count: rows.length },
+            { value: "needs_review", label: "Needs review", count: needsReviewCount },
+            {
+              value: "decided",
+              label: "Decided",
+              count: rows.length - needsReviewCount,
+            },
+          ]}
+        />
 
         {/* Contextual, not a permanent destination, and off until it can work. */}
-        {canCompare ? (
-          <ButtonLink href="/app/employer/compare" variant="secondary" size="sm">
-            Compare reports
-          </ButtonLink>
-        ) : (
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled
-            title="Comparison needs two completed reports on the same evaluation."
-          >
-            Compare reports
-          </Button>
-        )}
+        <div className="pb-2">
+          {canCompare ? (
+            <ButtonLink href="/app/employer/compare" variant="secondary" size="sm">
+              Compare reports
+            </ButtonLink>
+          ) : (
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled
+              title="Comparison needs two completed reports on the same evaluation."
+            >
+              Compare reports
+            </Button>
+          )}
+        </div>
       </div>
 
       {showFilters ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <Input
             type="search"
             value={search}
@@ -208,6 +186,12 @@ export default function ReportsList({
         </div>
       ) : null}
 
+      <div
+        role="tabpanel"
+        id={`${TABS_ID}-panel`}
+        aria-labelledby={`${TABS_ID}-tab-${reviewFilter}`}
+        className="mt-4"
+      >
       {visible.length === 0 ? (
         <EmptyState
           title={
@@ -222,7 +206,7 @@ export default function ReportsList({
           }
         />
       ) : (
-        <Surface tone="panel" className="overflow-hidden">
+        <Panel>
           <Table className="min-w-[840px]">
             <THead>
               <TH>Candidate</TH>
@@ -271,7 +255,7 @@ export default function ReportsList({
                         })
                       : "n/a"}
                     {r.needsReview ? (
-                      <span className="mt-0.5 block text-[12px] text-[#e9c46a]">
+                      <span className="mt-0.5 block text-app-meta text-[var(--fydell-changed)]">
                         Needs review
                       </span>
                     ) : null}
@@ -279,7 +263,7 @@ export default function ReportsList({
                   <TD align="right">
                     <Link
                       href={`/app/employer/assessments/report/${r.sessionId}`}
-                      className="inline-flex h-8 items-center rounded-[8px] px-2.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[rgba(255,255,255,0.06)]"
+                      className="inline-flex h-8 items-center rounded-[var(--radius-control)] px-2.5 text-app-body font-medium text-[var(--text-primary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
                     >
                       Open
                     </Link>
@@ -288,8 +272,9 @@ export default function ReportsList({
               ))}
             </TBody>
           </Table>
-        </Surface>
+        </Panel>
       )}
+      </div>
     </div>
   );
 }

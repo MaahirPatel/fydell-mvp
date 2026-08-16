@@ -81,6 +81,8 @@ export default async function EmployerAppLayout({ children }: { children: React.
       <EmployerShell
         workspaceName={PREVIEW_ORG.organizationName}
         userEmail={PREVIEW_USER.email}
+        userName=""
+        userRole="owner"
         catalog={await getEmployerCatalog()}
       >
         {children}
@@ -95,26 +97,31 @@ export default async function EmployerAppLayout({ children }: { children: React.
   }
 
   let workspaceName = "Your workspace";
+  let userName = "";
+  let userRole = "";
   if (isSupabaseConfigured()) {
     const admin = createAdminSupabaseClient();
     const { data: membership } = await admin
       .from("organization_members")
-      .select("organization_id, organizations(name)")
+      .select("organization_id, role, organizations(name)")
       .eq("user_id", user.id)
       .eq("status", "active")
       .limit(1)
       .maybeSingle();
+
+    userRole = (membership?.role as string | null) || "";
 
     if (!membership?.organization_id) {
       // No org yet. Route by account type; employers (or missing type) get a
       // default workspace instead of a missing onboarding route.
       const { data: profile } = await admin
         .from("profiles")
-        .select("account_type")
+        .select("account_type, full_name")
         .eq("id", user.id)
         .maybeSingle();
 
       const accountType = profile?.account_type as string | null | undefined;
+      userName = (profile?.full_name as string | null) || "";
 
       if (accountType === "unresolved") {
         redirect("/signup/role");
@@ -136,16 +143,30 @@ export default async function EmployerAppLayout({ children }: { children: React.
         redirect("/account/setup-required?reason=org_create_failed");
       }
       workspaceName = createdName;
+      userRole = "owner";
     } else {
       const org = membership.organizations as { name?: string } | null;
       workspaceName = org?.name || workspaceName;
+
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      userName = (profile?.full_name as string | null) || "";
     }
   }
 
   const catalog = await getEmployerCatalog();
 
   return (
-    <EmployerShell workspaceName={workspaceName} userEmail={user.email || ""} catalog={catalog}>
+    <EmployerShell
+      workspaceName={workspaceName}
+      userEmail={user.email || ""}
+      userName={userName}
+      userRole={userRole}
+      catalog={catalog}
+    >
       {children}
     </EmployerShell>
   );

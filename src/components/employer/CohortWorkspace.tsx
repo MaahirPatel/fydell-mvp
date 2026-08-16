@@ -357,7 +357,7 @@ export default function CohortWorkspace({
                           {session?.id ? (
                             <Link
                               href={`/app/employer/assessments/report/${session.id}`}
-                              className="inline-flex h-8 items-center rounded-[8px] px-2.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[rgba(255,255,255,0.06)]"
+                              className="inline-flex h-8 items-center rounded-[var(--radius-control)] px-2.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
                             >
                               Open report
                             </Link>

@@ -1,4 +1,4 @@
-import { ButtonLink, TextLink } from "@/components/marketing/ui";
+import ClosingCTA from "@/components/marketing/ClosingCTA";
 import { ProductStage, StageDescription } from "@/components/fydell/ProductStage";
 import { ProductSpotlight } from "@/components/fydell/ProductSpotlight";
 import { ChangedFactsDiff } from "@/components/fydell/ChangedFactsDiff";
@@ -172,25 +172,14 @@ export default function HomeProductStory() {
         </div>
       </section>
 
-      <section className={`${DIVIDE} ${BAND} mkt-section pb-28`}>
-        <div className="mkt-content max-w-[720px]">
-          <p className="section-eyebrow">Start with one role</p>
-          <h2 className="section-heading mt-3">Run it on one real hire.</h2>
-          <p className="mt-5 text-[1.2rem] leading-[1.55] text-[var(--text-secondary)]">
-            Request a pilot, invite a Data Analyst candidate, and read the
-            evidence report. There is one evaluation, built properly.
-          </p>
-          <p className="mt-4 text-[15px] leading-[1.6] text-[var(--text-tertiary)]">
-            Provided materials include {NORTHLINE_RESOURCES.map((r) => r.name).join(", ")}.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-3">
-            <ButtonLink href="/request-pilot" variant="primary">
-              Request a pilot
-            </ButtonLink>
-            <TextLink href="/trust">Read how access works</TextLink>
-          </div>
-        </div>
-      </section>
+      <ClosingCTA
+        eyebrow="Start with one role"
+        title="Run it on one real hire."
+        body="Request a pilot, invite a Data Analyst candidate, and read the evidence report. There is one evaluation, built properly."
+        note={`Provided materials include ${NORTHLINE_RESOURCES.map((r) => r.name).join(", ")}.`}
+        primary={{ href: "/request-pilot", label: "Request a pilot" }}
+        secondary={{ href: "/trust", label: "Read how access works" }}
+      />
     </>
   );
 }

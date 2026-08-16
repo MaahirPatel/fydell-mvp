@@ -1,4 +1,5 @@
 import MarketingShell from "@/components/layout/MarketingShell";
+import ClosingCTA from "@/components/marketing/ClosingCTA";
 import { ButtonLink } from "@/components/marketing/ui";
 import { ProductStage, StageDescription } from "@/components/fydell/ProductStage";
 import { ReportInspector } from "@/components/fydell/ReportInspector";
@@ -296,27 +297,12 @@ export default function ProductPage() {
         </div>
       </section>
 
-      <section className={`${CHAPTER} pb-24`}>
-        <div className="mkt-content max-w-[620px]">
-          <h2 className="section-heading">Try it on one role.</h2>
-          <p className="mt-4 text-[16px] leading-[1.65] text-[var(--text-secondary)]">
-            Create a workspace and invite your first candidate. If you would
-            rather talk it through first,{" "}
-            <a
-              href="/request-pilot"
-              className="text-[var(--text-primary)] underline underline-offset-2"
-            >
-              request a pilot
-            </a>
-            .
-          </p>
-          <div className="mt-8">
-            <ButtonLink href="/request-pilot" variant="primary">
-              Request a pilot
-            </ButtonLink>
-          </div>
-        </div>
-      </section>
+      <ClosingCTA
+        title="Try it on one role."
+        body="Run the evaluation against the role you are hiring for, then read the report your team would read."
+        primary={{ href: "/request-pilot", label: "Request a pilot" }}
+        secondary={{ href: "/simulations", label: "See the evaluation" }}
+      />
     </MarketingShell>
   );
 }

@@ -268,6 +268,72 @@ export async function getOverviewMetrics(organizationId: string): Promise<Overvi
   };
 }
 
+export interface WorkspaceHealth {
+  /** Whether the workspace can actually send an invitation email. */
+  emailConfigured: boolean;
+  /** Invitations the candidate cannot act on until the workspace intervenes. */
+  stalled: { invitationId: string; who: string; reason: string }[];
+  /** Analysis runs that failed, so a submitted attempt has no report. */
+  failedAnalyses: number;
+  /** Attempts submitted with no completed analysis run behind them. */
+  awaitingAnalysis: number;
+}
+
+/**
+ * Everything that is quietly wrong in a workspace, in one read.
+ *
+ * These are the failures a hiring team otherwise discovers from a candidate
+ * email asking why their link does not work.
+ */
+export async function getWorkspaceHealth(
+  organizationId: string,
+  invitations: InvitationRecord[]
+): Promise<WorkspaceHealth> {
+  const emailConfigured = Boolean(process.env.RESEND_API_KEY);
+
+  const stalled = invitations
+    .filter(
+      (r) =>
+        r.status === "expired" ||
+        r.emailDelivery === "failed" ||
+        r.emailDelivery === "not_configured"
+    )
+    .map((r) => ({
+      invitationId: r.invitationId,
+      who: r.name || r.email,
+      reason:
+        r.emailDelivery === "failed"
+          ? "Email failed to send"
+          : r.emailDelivery === "not_configured"
+            ? "Never emailed, link must be shared"
+            : "Invitation expired",
+    }));
+
+  if (isPreviewMode()) {
+    return { emailConfigured, stalled, failedAnalyses: 0, awaitingAnalysis: 0 };
+  }
+
+  const admin = createAdminSupabaseClient();
+  const { data } = await admin
+    .from("sim_sessions")
+    .select("id, status, sim_analysis_runs(status)")
+    .eq("organization_id", organizationId)
+    .in("status", ["submitted", "analyzed", "report_ready"])
+    .limit(1000);
+
+  let failedAnalyses = 0;
+  let awaitingAnalysis = 0;
+  for (const session of data || []) {
+    const runs = session.sim_analysis_runs as { status: string }[] | { status: string } | null;
+    const list = Array.isArray(runs) ? runs : runs ? [runs] : [];
+    if (list.some((r) => r.status === "complete")) continue;
+    if (list.some((r) => r.status === "failed")) failedAnalyses += 1;
+    else if (session.status === "submitted") awaitingAnalysis += 1;
+  }
+
+  return { emailConfigured, stalled, failedAnalyses, awaitingAnalysis };
+}
+
 export async function getNeedsReviewRecords(
   organizationId: string,
   limit = 20

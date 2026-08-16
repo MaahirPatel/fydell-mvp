@@ -15,8 +15,8 @@
   --color-canvas: #08090a;
   --color-band: #0b0c10;
   --color-raised: #0e1013;
-  --color-panel: #12151a;
-  --color-panel-hover: #171b22;
+  --color-panel: #13161b;
+  --color-panel-hover: #181c22;
   --color-paper: #f5f7f8;
 
   /* Text. Contrast ratios are against --color-canvas (#08090a). */
@@ -41,6 +41,19 @@
   --color-good: #67d9a0;
   --color-verified: #b07fd0;
 
+  /* Fixed product type scale, exposed as text-app-* utilities. Deliberately
+     not fluid: see the note on the :root declarations below. */
+  --text-app-page: 1.625rem;
+  --text-app-page--line-height: 1.15;
+  --text-app-page--letter-spacing: -0.026em;
+  --text-app-section: 1.0625rem;
+  --text-app-section--line-height: 1.3;
+  --text-app-section--letter-spacing: -0.014em;
+  --text-app-body: 0.875rem;
+  --text-app-body--line-height: 1.5;
+  --text-app-meta: 0.78125rem;
+  --text-app-meta--line-height: 1.4;
+
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -58,8 +71,8 @@
   --surface-deep: #050607;
   --surface-band: #0b0c10;
   --surface-raised: #0e1013;
-  --surface-panel: #12151a;
-  --surface-hover: #1b2028;
+  --surface-panel: #13161b;
+  --surface-hover: #181c22;
   --surface-selected: #202631;
   --surface-paper: #f5f7f8;
 
@@ -83,12 +96,29 @@
   --fydell-changed: #e9b949;
   --fydell-good: #67d9a0;
   --action-ink: #8f9bff;
+  --action-ink-ring: rgba(143, 155, 255, 0.28);
+
+  /* The one inverted control. Near-white rather than pure white so it sits on
+     the canvas as a surface rather than a light source. */
+  --control-solid: #eceef1;
+  --control-solid-hover: #ffffff;
+  --control-solid-active: #dfe2e6;
+  --control-solid-ink: #0a0b0d;
 
   /* Where a source line and a contradiction line meet: a claim that has been
      checked against its evidence. Local accent only, never a surface fill. */
   --fydell-verified: #b07fd0;
 
+  /* Visualisation reuses the state meanings above rather than introducing a
+     categorical palette. A pipeline of stages is ordered, not categorical. */
+  --viz-track: rgba(255, 255, 255, 0.06);
+  --viz-idle: rgba(255, 255, 255, 0.2);
+  --viz-active: var(--fydell-evidence);
+  --viz-done: var(--fydell-good);
+  --viz-attention: var(--fydell-changed);
+
   /* ---- Radius ---- */
+  --radius-tag: 4px;
   --radius-control: 6px;
   --radius-panel: 10px;
   --radius-frame: 14px;
@@ -107,13 +137,25 @@
   --space-11: 120px;
   --space-12: 144px;
 
-  /* ---- Type scale ---- */
-  --type-display: clamp(3.75rem, 6vw, 5.5rem);
-  --type-page: clamp(3.25rem, 5vw, 4.75rem);
-  --type-section: clamp(2.5rem, 4vw, 3.75rem);
+  /* ---- Marketing type scale. Fluid, because a landing page is read once at
+     whatever width the reader arrives with. ---- */
+  --type-display: clamp(3.5rem, 6vw, 5.25rem);
+  --type-page: clamp(3rem, 5vw, 4.25rem);
+  --type-section: clamp(2.375rem, 4vw, 3.5rem);
+
+  /* ---- Product type scale. Fixed, because a console is read every day and
+     gets learned. A fluid clamp makes the same screen a different size on
+     every machine, which is the enemy of earned familiarity. ---- */
+  --type-app-page: 1.625rem;
+  --type-app-section: 1.0625rem;
+  --type-app-body: 0.875rem;
+  --type-app-meta: 0.78125rem;
+  --lh-app-page: 1.15;
+  --lh-app-section: 1.3;
+  --lh-app-body: 1.5;
 
   /* ---- Layout ---- */
-  --page-max-width: 1360px;
+  --page-max-width: 1320px;
   --section-narrative-py: clamp(7.5rem, 12vh, 11rem);
 
   /* ---- Elevation and motion ---- */
@@ -121,6 +163,8 @@
   --shadow-pop: 0 8px 28px rgba(0, 0, 0, 0.5);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-fast: 140ms;
+  --motion-panel: 190ms;
 
   /* ---- Aliases kept for surfaces still referencing older names ---- */
   --page-bg: var(--surface-canvas);
@@ -224,11 +268,11 @@ button {
   color: #fff;
 }
 
-/* Focus. 2px ring at 7.9:1 against the canvas, well clear of the 3:1 minimum. */
+/* Focus. 2px ring at 7.9:1 against the canvas, well clear of the 3:1 minimum.
+   The outline follows each element's own radius, so none is set here. */
 :focus-visible {
   outline: 2px solid var(--action-ink);
   outline-offset: 2px;
-  border-radius: var(--radius-control);
 }
 
 nextjs-portal,
@@ -263,7 +307,7 @@ nextjs-portal,
 
 @media (min-width: 1024px) {
   .mkt-content {
-    padding-inline: 64px;
+    padding-inline: 48px;
   }
 }
 
@@ -465,7 +509,7 @@ textarea.platform-input {
 .platform-select:focus-visible {
   outline: none;
   border-color: var(--action-ink);
-  box-shadow: 0 0 0 3px rgba(86, 98, 255, 0.28);
+  box-shadow: 0 0 0 3px var(--action-ink-ring);
 }
 
 .platform-input:disabled {

@@ -20,7 +20,7 @@ export type SetupStep = {
 function StepAction({ action }: { action: NonNullable<SetupStep["action"]> }) {
   const { open } = useInviteModal();
   const className =
-    "inline-flex h-8 shrink-0 items-center rounded-[8px] bg-[#eceef1] px-3.5 text-[13px] font-medium text-[#0a0b0d] transition-colors hover:bg-white";
+    "inline-flex h-8 shrink-0 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-[13px] font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]";
 
   if (action.invite) {
     return (
@@ -36,57 +36,66 @@ function StepAction({ action }: { action: NonNullable<SetupStep["action"]> }) {
   );
 }
 
+/**
+ * Renders inside a Panel section, so it carries no frame of its own. The
+ * current step gets a raised band and the only action, because a checklist
+ * where every row is equally loud is a list, not a path.
+ */
 export default function SetupPath({ steps }: { steps: SetupStep[] }) {
   return (
-    <ol className="overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
-      {steps.map((step, i) => (
-        <li
-          key={step.title}
-          className="flex items-center gap-4 border-b border-[var(--border-subtle)] px-5 py-4 last:border-b-0"
-        >
-          <span
-            aria-hidden
-            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[12px] font-medium tabular-nums ${
-              step.state === "done"
-                ? "border-[rgba(103,217,160,0.4)] text-[var(--fydell-good)]"
-                : step.state === "current"
-                  ? "border-[var(--border-strong)] text-[var(--text-primary)]"
-                  : "border-[var(--border-subtle)] text-[var(--text-tertiary)]"
+    <ol className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-subtle)]">
+      {steps.map((step, i) => {
+        const current = step.state === "current";
+        return (
+          <li
+            key={step.title}
+            aria-current={current ? "step" : undefined}
+            className={`flex items-center gap-3.5 border-b border-[var(--border-subtle)] px-4 py-3 last:border-b-0 ${
+              current ? "bg-[var(--surface-panel)]" : ""
             }`}
           >
-            {step.state === "done" ? (
-              <Check className="h-3.5 w-3.5" strokeWidth={2.2} />
-            ) : (
-              i + 1
-            )}
-          </span>
-
-          <div className="min-w-0 flex-1">
-            <p
-              className={`text-[14px] font-medium ${
-                step.state === "upcoming"
-                  ? "text-[var(--text-secondary)]"
-                  : "text-[var(--text-primary)]"
+            <span
+              aria-hidden
+              className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border text-[11.5px] font-medium tabular-nums ${
+                step.state === "done"
+                  ? "border-[color-mix(in_srgb,var(--fydell-good)_45%,transparent)] text-[var(--fydell-good)]"
+                  : current
+                    ? "border-[var(--border-strong)] text-[var(--text-primary)]"
+                    : "border-[var(--border-subtle)] text-[var(--text-tertiary)]"
               }`}
             >
-              {step.title}
-            </p>
-            <p
-              className={`mt-0.5 text-[13px] leading-[1.55] ${
-                step.state === "upcoming"
-                  ? "text-[var(--text-tertiary)]"
-                  : "text-[var(--text-secondary)]"
-              }`}
-            >
-              {step.description}
-            </p>
-          </div>
+              {step.state === "done" ? (
+                <Check className="h-3 w-3" strokeWidth={2.4} />
+              ) : (
+                i + 1
+              )}
+            </span>
 
-          {step.state === "current" && step.action ? (
-            <StepAction action={step.action} />
-          ) : null}
-        </li>
-      ))}
+            <div className="min-w-0 flex-1">
+              <p
+                className={`text-app-body font-medium ${
+                  step.state === "upcoming"
+                    ? "text-[var(--text-secondary)]"
+                    : "text-[var(--text-primary)]"
+                }`}
+              >
+                {step.title}
+              </p>
+              <p
+                className={`mt-0.5 text-app-meta leading-[1.5] ${
+                  step.state === "upcoming"
+                    ? "text-[var(--text-tertiary)]"
+                    : "text-[var(--text-secondary)]"
+                }`}
+              >
+                {step.description}
+              </p>
+            </div>
+
+            {current && step.action ? <StepAction action={step.action} /> : null}
+          </li>
+        );
+      })}
     </ol>
   );
 }

@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { type ReactNode } from "react";
+import {
+  ButtonLink as BaseButtonLink,
+  type ButtonLinkProps as BaseButtonLinkProps,
+} from "@/components/ui/Button";
 
 // ─── Container ───────────────────────────────────────────────────────────────
 
@@ -55,43 +59,16 @@ export function EditorialHeader({
 
 // ─── ButtonLink ───────────────────────────────────────────────────────────────
 
-type ButtonVariant = "primary" | "secondary" | "white";
-
-interface ButtonLinkProps {
-  href: string;
-  variant?: ButtonVariant;
-  children: ReactNode;
-  className?: string;
-}
-
-const variantStyles: Record<ButtonVariant, string> = {
-  primary: "bg-[#eceef1] text-[#0a0b0d] hover:bg-white active:bg-[#dfe2e6]",
-  secondary:
-    "border border-[var(--border-strong)] text-[var(--text-primary)] hover:border-[rgba(255,255,255,0.3)] hover:bg-[rgba(255,255,255,0.05)]",
-  white: "bg-[#eceef1] text-[#0a0b0d] hover:bg-white active:bg-[#dfe2e6]",
-};
-
+/**
+ * Marketing call to action. One implementation, shared with the product: this
+ * is the canonical Button at the taller marketing size.
+ */
 export function ButtonLink({
-  href,
+  size = "cta",
   variant = "primary",
-  children,
-  className = "",
-}: ButtonLinkProps) {
-  return (
-    <Link
-      href={href}
-      className={[
-        "inline-flex h-10 items-center justify-center gap-2 rounded-[8px] px-4 text-[14px] font-medium leading-none tracking-[-0.01em]",
-        "transition-[color,background-color,border-color] duration-150",
-        variantStyles[variant],
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      {children}
-    </Link>
-  );
+  ...rest
+}: BaseButtonLinkProps) {
+  return <BaseButtonLink size={size} variant={variant} {...rest} />;
 }
 
 export function TextLink({

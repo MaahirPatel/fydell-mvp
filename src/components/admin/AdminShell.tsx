@@ -31,7 +31,6 @@ const NAV_GROUPS = [
     items: [
       { href: "/admin/settings", label: "Settings" },
       { href: "/admin/settings/security", label: "Security" },
-      { href: "/admin/dashboard", label: "Legacy candidates" },
     ],
   },
 ];
@@ -47,18 +46,9 @@ export default function AdminShell({
   const role = (admin.roles[0] || "admin").replaceAll("_", " ");
 
   return (
-    <div className="min-h-screen bg-[#050609] text-[#F4F5F7]">
-      <div
-        className="pointer-events-none fixed inset-0 opacity-80"
-        style={{
-          background:
-            "radial-gradient(900px 420px at 12% -10%, rgba(59,91,255,0.10), transparent 55%), radial-gradient(700px 360px at 100% 0%, rgba(16,185,129,0.05), transparent 50%)",
-        }}
-        aria-hidden
-      />
-
+    <div className="min-h-screen bg-[var(--surface-canvas)] text-[var(--text-primary)]">
       <div className="relative mx-auto flex min-h-screen max-w-[1480px]">
-        <aside className="hidden w-[260px] shrink-0 flex-col border-r border-white/[0.08] bg-[#07080B]/90 px-4 py-5 backdrop-blur-sm md:flex">
+        <aside className="hidden w-[260px] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-deep)] px-4 py-5 md:flex">
           <div className="px-2 pt-1">
             <FydellBrand markSize={40} wordmarkSize={22} />
           </div>
@@ -66,7 +56,7 @@ export default function AdminShell({
           <nav className="mt-8 flex flex-1 flex-col gap-6 overflow-y-auto pb-4">
             {NAV_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="mb-2 px-3 text-[10px] font-medium uppercase tracking-[0.1em] text-white/35">
+                <p className="mb-2 px-3 text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--text-tertiary)]">
                   {group.label}
                 </p>
                 <div className="flex flex-col gap-0.5">
@@ -79,10 +69,10 @@ export default function AdminShell({
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`rounded-[10px] px-3 py-2 text-[13px] transition-colors ${
+                        className={`rounded-[var(--radius-panel)] px-3 py-2 text-[13px] transition-colors duration-[var(--motion-fast)] ${
                           active
-                            ? "bg-white/[0.09] text-white"
-                            : "text-white/60 hover:bg-white/[0.04] hover:text-white"
+                            ? "bg-[var(--surface-selected)] text-[var(--text-primary)]"
+                            : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                         }`}
                         style={{ fontWeight: active ? 560 : 450 }}
                       >
@@ -95,15 +85,19 @@ export default function AdminShell({
             ))}
           </nav>
 
-          <div className="mt-auto space-y-3 border-t border-white/[0.08] px-1 pt-4">
+          <div className="mt-auto space-y-3 border-t border-[var(--border-subtle)] px-1 pt-4">
             <div>
-              <p className="truncate text-[12.5px] text-white">{admin.email}</p>
-              <p className="mt-1 text-[11px] capitalize text-white/50">{role}</p>
+              <p className="truncate text-[12.5px] text-[var(--text-primary)]">
+                {admin.email}
+              </p>
+              <p className="mt-1 text-[11px] capitalize text-[var(--text-tertiary)]">
+                {role}
+              </p>
             </div>
             <LogoutButton />
             <Link
               href="/"
-              className="block px-1 text-[12px] text-white/40 transition-colors hover:text-white/75"
+              className="block px-1 text-[12px] text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:text-[var(--text-primary)]"
             >
               ← Back to fydell.com
             </Link>
@@ -111,7 +105,7 @@ export default function AdminShell({
         </aside>
 
         <div className="min-w-0 flex-1">
-          <header className="flex items-center justify-between border-b border-white/[0.08] bg-[#07080B]/85 px-4 py-3 backdrop-blur-sm md:hidden">
+          <header className="flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-deep)] px-4 py-3 md:hidden">
             <FydellBrand markSize={34} wordmarkSize={18} />
             <div className="w-[108px]">
               <LogoutButton />

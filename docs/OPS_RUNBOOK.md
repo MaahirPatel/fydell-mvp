@@ -125,7 +125,7 @@ Full sequence: [migration-runbook.md](./migration-runbook.md).
 | Evidence reports | In-app at `/app/employer/assessments/report/{sessionId}`; browser print-to-PDF |
 | Pilot feedback (CSV) | `/admin/pilot-feedback` → **Export CSV** |
 | Email / audit trail | `/admin/email`, `/admin/audit` (read-only; no bulk export UI) |
-| Legacy candidate PDFs | `/admin/dashboard` → candidate detail (legacy path) |
+| Legacy candidate PDFs | API only, `GET /api/admin/candidates/{id}/pdf`. The legacy `/admin/dashboard` UI was retired; it read the pre-pilot `candidates` tables that the DA-01 flow does not write to. |
 
 For GF-facing summaries, prefer employer report links plus pilot-feedback CSV export.
 

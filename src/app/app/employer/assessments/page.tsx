@@ -53,7 +53,7 @@ export default async function EmployerEvaluationsPage() {
           title="Evaluations"
           description="This is exactly what a candidate sees. It is maintained by Fydell and cannot be edited from a workspace."
           meta={
-            <span className="text-[14px] font-medium text-[var(--text-primary)]">
+            <span className="text-app-body font-medium text-[var(--text-primary)]">
               {only.sim.title}
             </span>
           }
@@ -72,7 +72,7 @@ export default async function EmployerEvaluationsPage() {
             }}
           />
         </div>
-        <p className="mt-8 text-[13px] leading-[1.6] text-[var(--text-tertiary)]">
+        <p className="mt-8 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
           Solutions Engineer and Sales Engineer evaluations are coming later.
           They are not published catalogs.
         </p>

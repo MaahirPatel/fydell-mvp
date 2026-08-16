@@ -62,7 +62,7 @@ function RowMenu({
   }, [open]);
 
   const itemClass =
-    "block w-full rounded-[5px] px-2.5 py-1.5 text-left text-[13px] text-[var(--text-secondary)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text-primary)] disabled:pointer-events-none disabled:opacity-45";
+    "block w-full rounded-[5px] px-2.5 py-1.5 text-left text-[13px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:pointer-events-none disabled:opacity-45";
 
   return (
     <div className="relative" ref={ref}>
@@ -225,7 +225,7 @@ export default function EvaluationList({ roles }: { roles: CatalogRole[] }) {
         {entries.map(({ sim, roleKey }) => (
           <li
             key={`${roleKey}-${sim.slug}`}
-            className="flex items-center gap-4 border-b border-[var(--border-subtle)] px-4 py-3 transition-colors last:border-b-0 hover:bg-white/[0.02]"
+            className="flex items-center gap-4 border-b border-[var(--border-subtle)] px-4 py-3 transition-colors last:border-b-0 hover:bg-[var(--surface-hover)]"
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2.5">

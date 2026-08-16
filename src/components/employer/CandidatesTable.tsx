@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Field";
 import { StatusTag, type StatusTone } from "@/components/ui/StatusTag";
-import { Surface } from "@/components/ui/Surface";
+import { Panel } from "@/components/ui/Panel";
 import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
 import { RowMenu } from "@/components/ui/RowMenu";
 import { useInviteModal } from "./InviteCandidateModal";
@@ -105,7 +105,7 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
       {notice ? (
         <p
           role="status"
-          className="break-all rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[rgba(255,255,255,0.04)] px-3 py-2 text-[13px] text-[var(--text-secondary)]"
+          className="break-all rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-3 py-2 text-app-body text-[var(--text-secondary)]"
         >
           {notice}
         </p>
@@ -126,7 +126,7 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
       {/* A five-column grid on a phone is a sideways scroll with the actions
           hidden off the right edge, so below the table's usable width the same
           rows are stacked instead. */}
-      <Surface tone="panel" className="overflow-hidden lg:hidden">
+      <Panel className="lg:hidden">
         <ul>
           {visible.map((r) => {
             const stage = stageOf(r);
@@ -138,11 +138,11 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-[14px] font-medium text-[var(--text-primary)]">
+                    <p className="truncate text-app-body font-medium text-[var(--text-primary)]">
                       {r.name || r.email}
                     </p>
                     {r.name ? (
-                      <p className="mt-0.5 truncate text-[12.5px] text-[var(--text-tertiary)]">
+                      <p className="mt-0.5 truncate text-app-meta text-[var(--text-tertiary)]">
                         {r.email}
                       </p>
                     ) : null}
@@ -173,24 +173,24 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
                 <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2">
                   <StatusTag tone={stage.tone}>{stage.label}</StatusTag>
                   {r.result ? (
-                    <span className="text-[13px] text-[var(--text-primary)]">
+                    <span className="text-app-body text-[var(--text-primary)]">
                       {r.result}
                     </span>
                   ) : null}
                   {showEvaluation ? (
-                    <span className="text-[12.5px] text-[var(--text-tertiary)]">
+                    <span className="text-app-meta text-[var(--text-tertiary)]">
                       {r.simulation}
                     </span>
                   ) : null}
                 </div>
 
                 {r.emailDelivery === "failed" ? (
-                  <p className="mt-1.5 text-[12px] text-[var(--fydell-risk)]">
+                  <p className="mt-1.5 text-app-meta text-[var(--fydell-risk)]">
                     Email failed to send
                   </p>
                 ) : null}
                 {r.emailDelivery === "not_configured" ? (
-                  <p className="mt-1.5 text-[12px] text-[var(--text-tertiary)]">
+                  <p className="mt-1.5 text-app-meta text-[var(--text-tertiary)]">
                     Not emailed. Copy the link instead.
                   </p>
                 ) : null}
@@ -198,7 +198,7 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
                 {r.reportReady && r.sessionId ? (
                   <Link
                     href={`/app/employer/assessments/report/${r.sessionId}`}
-                    className="mt-2.5 inline-flex h-8 items-center rounded-[8px] border border-[var(--border-strong)] px-2.5 text-[13px] font-medium text-[var(--text-primary)]"
+                    className="mt-2.5 inline-flex h-8 items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] px-2.5 text-app-body font-medium text-[var(--text-primary)]"
                   >
                     View report
                   </Link>
@@ -207,9 +207,9 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
             );
           })}
         </ul>
-      </Surface>
+      </Panel>
 
-      <Surface tone="panel" className="hidden overflow-hidden lg:block">
+      <Panel className="hidden lg:block">
         <Table className={showEvaluation ? "min-w-[840px]" : "min-w-[640px]"}>
           <THead>
             <TH>Candidate</TH>
@@ -227,7 +227,7 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
                   <TDPrimary>
                     <span className="block truncate">{r.name || r.email}</span>
                     {r.name ? (
-                      <span className="mt-0.5 block truncate text-[12.5px] font-normal text-[var(--text-tertiary)]">
+                      <span className="mt-0.5 block truncate text-app-meta font-normal text-[var(--text-tertiary)]">
                         {r.email}
                       </span>
                     ) : null}
@@ -235,7 +235,7 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
                   {showEvaluation ? (
                     <TD>
                       <span className="block truncate">{r.simulation}</span>
-                      <span className="mt-0.5 block truncate text-[12.5px] text-[var(--text-tertiary)]">
+                      <span className="mt-0.5 block truncate text-app-meta text-[var(--text-tertiary)]">
                         {r.roleTitle}
                       </span>
                     </TD>
@@ -243,12 +243,12 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
                   <TD>
                     <StatusTag tone={stage.tone}>{stage.label}</StatusTag>
                     {r.emailDelivery === "failed" ? (
-                      <span className="mt-1 block text-[12px] text-[var(--fydell-risk)]">
+                      <span className="mt-1 block text-app-meta text-[var(--fydell-risk)]">
                         Email failed to send
                       </span>
                     ) : null}
                     {r.emailDelivery === "not_configured" ? (
-                      <span className="mt-1 block text-[12px] text-[var(--text-tertiary)]">
+                      <span className="mt-1 block text-app-meta text-[var(--text-tertiary)]">
                         Not emailed. Copy the link instead.
                       </span>
                     ) : null}
@@ -265,7 +265,7 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
                       {r.reportReady && r.sessionId ? (
                         <Link
                           href={`/app/employer/assessments/report/${r.sessionId}`}
-                          className="inline-flex h-8 items-center rounded-[8px] px-2.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[rgba(255,255,255,0.06)]"
+                          className="inline-flex h-8 items-center rounded-[var(--radius-control)] px-2.5 text-app-body font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
                         >
                           View report
                         </Link>
@@ -298,7 +298,7 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
             })}
           </TBody>
         </Table>
-      </Surface>
+      </Panel>
       </>
       )}
     </div>
