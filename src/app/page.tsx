@@ -24,7 +24,7 @@ function CtaArrow() {
 export default function HomePage() {
   return (
     <MarketingShell>
-      <section className="pb-10 pt-[132px] sm:pt-[152px]">
+      <section className="pb-8 pt-[120px] sm:pt-[136px]">
         <div className="mkt-content">
           {/* The break is authored rather than left to text-wrap, because the
               two lines are the composition. */}
@@ -37,18 +37,18 @@ export default function HomePage() {
             Give a candidate a realistic data problem, then review the
             conclusion, evidence, and reasoning behind it.
           </p>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <ButtonLink href="/signup" variant="primary" className="group">
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
+            <ButtonLink href="/signup" variant="primary" className="group rounded-full">
               Create your workspace
               <CtaArrow />
             </ButtonLink>
-            <ButtonLink href="/simulations" variant="secondary" className="group">
+            <ButtonLink href="/simulations" variant="secondary" className="group rounded-full">
               See the evaluation
               <CtaArrow />
             </ButtonLink>
           </div>
 
-          <ProductSpotlight brand className="mt-16 lg:mt-20">
+          <ProductSpotlight brand className="mt-14 lg:mt-[72px]">
             <HeroComposition />
           </ProductSpotlight>
         </div>

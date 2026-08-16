@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import ClosingCTA from "@/components/marketing/ClosingCTA";
 import { ProductStage, StageDescription } from "@/components/fydell/ProductStage";
-import { ProductSpotlight } from "@/components/fydell/ProductSpotlight";
+import { DesktopStage } from "@/components/fydell/ProductDesktop";
 import { ChangedFactsDiff } from "@/components/fydell/ChangedFactsDiff";
 import { ReportInspector } from "@/components/fydell/ReportInspector";
 import HeroSimPreview from "@/components/marketing/home/HeroSimPreview";
@@ -46,9 +46,9 @@ function FeatureCopy({
   linkLabel: string;
 }) {
   return (
-    <div className="max-w-[420px]">
+    <div className="max-w-[380px]">
       <h2 className="feature-heading">{heading}</h2>
-      <p className="mt-4 text-[1.0625rem] leading-[1.6] text-[var(--text-secondary)]">
+      <p className="mt-3.5 text-[1rem] leading-[1.6] text-[var(--text-secondary)]">
         {body}
       </p>
       <FeatureLink href={href}>{linkLabel}</FeatureLink>
@@ -77,7 +77,7 @@ function FeatureSplit({
   children: ReactNode;
 }) {
   return (
-    <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-14">
+    <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
       <div
         className={
           side === "right"
@@ -99,7 +99,7 @@ function FeatureSplit({
             : "min-w-0 lg:order-1 lg:col-span-8 lg:col-start-1 lg:row-start-1"
         }
       >
-        {children}
+        <DesktopStage>{children}</DesktopStage>
       </div>
     </div>
   );
@@ -113,17 +113,17 @@ export default function HomeProductStory() {
           unreadable product visual proves nothing. */}
       <section className={CHAPTER}>
         <div className="mkt-content">
-          <div className="max-w-[560px]">
+          <div className="max-w-[480px]">
             <h2 className="feature-heading">Work becomes evidence</h2>
-            <p className="mt-4 text-[1.0625rem] leading-[1.6] text-[var(--text-secondary)]">
+            <p className="mt-3.5 text-[1rem] leading-[1.6] text-[var(--text-secondary)]">
               Follow how the candidate moves from source files to claims,
               citations, and a final conclusion.
             </p>
             <FeatureLink href="/product">See the work trail</FeatureLink>
           </div>
-          <ProductSpotlight intensity="soft" className="mt-12">
+          <DesktopStage className="mt-10">
             <HeroSimPreview />
-          </ProductSpotlight>
+          </DesktopStage>
         </div>
       </section>
 
@@ -160,7 +160,15 @@ export default function HomeProductStory() {
             href="/simulations"
             linkLabel="View the changed-fact workflow"
           >
-            <ChangedFactsDiff />
+            <ProductStage
+              title="Changed fact"
+              source={NORTHLINE_SCENARIO.evaluation}
+              label="Original brief beside the new information and the candidate revision"
+            >
+              <div className="p-4">
+                <ChangedFactsDiff />
+              </div>
+            </ProductStage>
           </FeatureSplit>
         </div>
       </section>
