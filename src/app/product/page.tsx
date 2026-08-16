@@ -1,7 +1,9 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import ClosingCTA from "@/components/marketing/ClosingCTA";
+import { PageIntro } from "@/components/marketing/PageIntro";
 import { ButtonLink } from "@/components/marketing/ui";
 import { ProductStage, StageDescription } from "@/components/fydell/ProductStage";
+import { DesktopStage } from "@/components/fydell/ProductDesktop";
 import { ReportInspector } from "@/components/fydell/ReportInspector";
 import EvidenceWalkthrough from "@/components/marketing/product/EvidenceWalkthrough";
 import {
@@ -41,7 +43,7 @@ function ChapterHead({
   return (
     <div className={className}>
       <h2 className="section-heading">{title}</h2>
-      <p className="mt-5 max-w-[46ch] text-[1.2rem] leading-[1.55] text-[var(--text-secondary)]">
+      <p className="section-desc mt-4">
         {body}
       </p>
     </div>
@@ -86,17 +88,11 @@ const BOUNDARIES = [
 export default function ProductPage() {
   return (
     <MarketingShell>
-      <section className="pb-12 pt-[128px] sm:pt-[144px]">
-        <div className="mkt-content">
-          <h1 className="page-display">
-            An evaluation you can audit, not a score you have to trust.
-          </h1>
-          <p className="page-lead">
-            A candidate does a piece of real work. Your team reads what they
-            concluded, opens the evidence behind it, and interviews from there.
-            Nothing in the report is a number you cannot trace back to a row.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+      <PageIntro
+        title="An evaluation you can audit, not a score you have to trust."
+        lead="A candidate does a piece of real work. Your team reads what they concluded, opens the evidence behind it, and interviews from there. Nothing in the report is a number you cannot trace back to a row."
+        actions={
+          <>
             <ButtonLink href="/request-pilot" variant="primary">
               Request a pilot
             </ButtonLink>
@@ -106,9 +102,9 @@ export default function ProductPage() {
             >
               See the evaluation
             </a>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       {/* Chapter 1: set the evaluation. */}
       <section className={CHAPTER}>
@@ -187,7 +183,9 @@ export default function ProductPage() {
             body="This is the part that is hard to describe and easy to show. Step through one candidate's session and see how a file they opened turns into a claim you can check."
           />
           <div className="mt-9">
-            <EvidenceWalkthrough />
+            <DesktopStage>
+              <EvidenceWalkthrough />
+            </DesktopStage>
           </div>
         </div>
       </section>
@@ -201,15 +199,17 @@ export default function ProductPage() {
           />
 
           <div className="mt-9">
-            <ProductStage
-              chrome="app"
-              title="Evidence report"
-              source={`${NORTHLINE_SCENARIO.company} · synthetic`}
-              label="The employer report with each claim openable to its cited source"
-              meta={<span>Review required</span>}
-            >
-              <ReportInspector />
-            </ProductStage>
+            <DesktopStage>
+              <ProductStage
+                chrome="app"
+                title="Evidence report"
+                source={`${NORTHLINE_SCENARIO.company} · synthetic`}
+                label="The employer report with each claim openable to its cited source"
+                meta={<span>Review required</span>}
+              >
+                <ReportInspector />
+              </ProductStage>
+            </DesktopStage>
           </div>
 
           <div className="mt-5 grid items-start gap-5 lg:grid-cols-2 lg:gap-6">

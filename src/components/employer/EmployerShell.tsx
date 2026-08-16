@@ -242,8 +242,6 @@ export default function EmployerShell({
   catalog: CatalogRole[];
   children: React.ReactNode;
 }) {
-  const workspaceInitial = (workspaceName || "W").charAt(0).toUpperCase();
-
   return (
     <ToastProvider>
     <InviteModalProvider catalog={catalog}>
@@ -251,10 +249,8 @@ export default function EmployerShell({
         <div className="flex min-h-screen">
           <aside className="sticky top-0 hidden h-screen w-[232px] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-raised)] px-3 py-3 md:flex">
             <div className="flex items-center gap-2.5 rounded-[6px] px-2 py-2">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-[var(--surface-selected)] text-[11.5px] font-semibold text-[var(--text-primary)]">
-                {workspaceInitial}
-              </span>
-              <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[var(--text-primary)]">
+              <FydellMark width={18} />
+              <span className="min-w-0 flex-1 truncate text-[13px] font-medium tracking-[-0.018em] text-[var(--text-primary)]">
                 {workspaceName}
               </span>
             </div>

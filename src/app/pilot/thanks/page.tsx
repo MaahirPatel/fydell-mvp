@@ -12,13 +12,13 @@ export default function PilotThanksPage() {
       <Container className="pt-[168px] sm:pt-[180px] lg:pt-[200px]">
         <Reveal className="mx-auto max-w-[640px]">
           <h1 className="flat-type page-display">Thank you</h1>
-          <p className="mt-6 text-[16px] leading-[1.7] text-[rgba(244,245,247,0.72)]">
+          <p className="page-lead">
             Your feedback is saved. It goes straight to the people building
             Fydell.
           </p>
 
           <div className="mt-10 rounded-[16px] border border-white/[0.09] bg-white/[0.025] p-6 sm:p-7">
-            <p className="text-[13px] uppercase tracking-[0.06em] text-[rgba(244,245,247,0.5)]" style={{ fontWeight: 560 }}>
+            <p className="text-[13px] font-medium text-[var(--text-tertiary)]">
               What happens next
             </p>
             <ul className="mt-4 space-y-3 text-[15px] leading-[1.6] text-[rgba(244,245,247,0.82)]">

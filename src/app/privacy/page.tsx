@@ -1,4 +1,5 @@
 import MarketingShell from "@/components/layout/MarketingShell";
+import { PageIntro } from "@/components/marketing/PageIntro";
 import { ContactLink } from "@/components/ui/ContactLink";
 import { CONTACT_EMAIL } from "@/lib/contact";
 
@@ -42,16 +43,10 @@ const FACTS: Array<[string, string]> = [
 export default function PrivacyPage() {
   return (
     <MarketingShell>
-      <section className="pb-14 pt-[132px] sm:pt-[148px]">
-        <div className="mkt-content">
-          <h1 className="page-display">Privacy.</h1>
-          <p className="page-lead">
-            A plain summary of what Fydell holds and why. Effective 14 August
-            2026. A full policy will replace this page; until then, this
-            describes actual practice rather than boilerplate.
-          </p>
-        </div>
-      </section>
+      <PageIntro
+        title="Privacy."
+        lead="A plain summary of what Fydell holds and why. Effective 14 August 2026. A full policy will replace this page; until then, this describes actual practice rather than boilerplate."
+      />
 
       <section className="mkt-section border-t border-[var(--border-subtle)] pb-24">
         <div className="mkt-content max-w-[760px]">

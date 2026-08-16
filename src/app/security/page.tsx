@@ -1,4 +1,5 @@
 import MarketingShell from "@/components/layout/MarketingShell";
+import { PageIntro } from "@/components/marketing/PageIntro";
 import { ContactLink } from "@/components/ui/ContactLink";
 
 export const metadata = {
@@ -38,16 +39,10 @@ const CONTROLS: Array<[string, string]> = [
 export default function SecurityPage() {
   return (
     <MarketingShell>
-      <section className="pb-14 pt-[132px] sm:pt-[148px]">
-        <div className="mkt-content">
-          <h1 className="page-display">Security.</h1>
-          <p className="page-lead">
-            Effective 14 August 2026. The controls below are implemented today.
-            Fydell holds no third-party security certification, and does not
-            imply one.
-          </p>
-        </div>
-      </section>
+      <PageIntro
+        title="Security."
+        lead="Effective 14 August 2026. The controls below are implemented today. Fydell holds no third-party security certification, and does not imply one."
+      />
 
       <section className="mkt-section border-t border-[var(--border-subtle)] pb-24">
         <div className="mkt-content max-w-[760px]">

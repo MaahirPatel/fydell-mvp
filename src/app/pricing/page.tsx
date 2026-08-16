@@ -1,4 +1,5 @@
 import MarketingShell from "@/components/layout/MarketingShell";
+import { PageIntro } from "@/components/marketing/PageIntro";
 import { ButtonLink } from "@/components/marketing/ui";
 import { ContactLink } from "@/components/ui/ContactLink";
 
@@ -35,29 +36,25 @@ const TERMS: Array<[string, string]> = [
 export default function PricingPage() {
   return (
     <MarketingShell>
-      <section className="pb-14 pt-[132px] sm:pt-[148px]">
-        <div className="mkt-content max-w-[720px]">
-          <h1 className="page-display">Founding pilots are scoped directly.</h1>
-          <p className="page-lead">
-            Fydell is early enough that a price grid would be a guess. We agree
-            the scope with each company in writing first: which evaluation, how
-            many completions, and what support you want around them.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+      <PageIntro
+        title="Founding pilots are scoped directly."
+        lead="Fydell is early enough that a price grid would be a guess. We agree the scope with each company in writing first: which evaluation, how many completions, and what support you want around them."
+        actions={
+          <>
             <ButtonLink href="/request-pilot" variant="primary">
               Request a pilot
             </ButtonLink>
             <ButtonLink href="/signup" variant="secondary">
               Or create a workspace
             </ButtonLink>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       <section className="mkt-section border-t border-[var(--border-subtle)] pb-24">
         <div className="mkt-content max-w-[760px]">
           <h2 className="section-heading">What the words mean</h2>
-          <p className="mt-4 max-w-[58ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+          <p className="section-desc mt-4">
             Every pilot scope uses these four terms with the same definitions.
           </p>
           <dl className="mt-8 divide-y divide-[var(--border-subtle)] border-y border-[var(--border-subtle)]">

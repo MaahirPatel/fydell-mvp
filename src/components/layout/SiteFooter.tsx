@@ -74,7 +74,7 @@ export default function SiteFooter() {
               aria-label="Fydell home"
             >
               <FydellMark width={20} />
-              <span className="text-[15px] font-semibold leading-none tracking-[-0.04em] text-[var(--text-primary)]">
+              <span className="text-[15px] font-medium leading-none tracking-[-0.03em] text-[var(--text-primary)]">
                 fydell
               </span>
             </Link>

@@ -48,7 +48,7 @@ function FeatureCopy({
   return (
     <div className="max-w-[380px]">
       <h2 className="feature-heading">{heading}</h2>
-      <p className="mt-3.5 text-[1rem] leading-[1.6] text-[var(--text-secondary)]">
+      <p className="section-desc mt-3.5">
         {body}
       </p>
       <FeatureLink href={href}>{linkLabel}</FeatureLink>
@@ -115,7 +115,7 @@ export default function HomeProductStory() {
         <div className="mkt-content">
           <div className="max-w-[480px]">
             <h2 className="feature-heading">Work becomes evidence</h2>
-            <p className="mt-3.5 text-[1rem] leading-[1.6] text-[var(--text-secondary)]">
+            <p className="section-desc mt-3.5">
               Follow how the candidate moves from source files to claims,
               citations, and a final conclusion.
             </p>

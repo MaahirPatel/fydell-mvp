@@ -51,7 +51,7 @@ export default function ClosingCTA({
       <div className="mkt-content">
         <div className="mx-auto flex max-w-[640px] flex-col items-center text-center">
           <h2 className="section-heading max-w-none text-balance">{title}</h2>
-          <p className="mt-5 max-w-[52ch] text-[1.125rem] leading-[1.6] text-[var(--text-secondary)]">
+          <p className="section-desc mx-auto mt-4 text-center">
             {body}
           </p>
 

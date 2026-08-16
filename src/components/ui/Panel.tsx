@@ -90,7 +90,7 @@ export function PanelLabel({
   return (
     <p
       className={cn(
-        "text-app-meta font-medium uppercase tracking-[0.06em] text-[var(--text-tertiary)]",
+        "text-app-meta font-medium text-[var(--text-tertiary)]",
         className,
       )}
     >

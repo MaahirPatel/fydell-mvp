@@ -66,9 +66,17 @@ export function EditorialHeader({
 export function ButtonLink({
   size = "cta",
   variant = "primary",
+  className,
   ...rest
 }: BaseButtonLinkProps) {
-  return <BaseButtonLink size={size} variant={variant} {...rest} />;
+  return (
+    <BaseButtonLink
+      size={size}
+      variant={variant}
+      className={["rounded-full", className].filter(Boolean).join(" ")}
+      {...rest}
+    />
+  );
 }
 
 export function TextLink({

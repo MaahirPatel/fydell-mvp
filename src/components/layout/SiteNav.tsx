@@ -66,13 +66,19 @@ export default function SiteNav() {
                 key={item.label}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`text-[13.5px] transition-colors ${
+                className={`relative text-[13.5px] tracking-[-0.011em] transition-colors ${
                   active
                     ? "text-[var(--text-primary)]"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
                 {item.label}
+                {active ? (
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-0 -bottom-[21px] h-px bg-[var(--text-primary)]"
+                  />
+                ) : null}
               </Link>
             );
           })}

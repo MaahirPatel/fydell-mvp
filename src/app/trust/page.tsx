@@ -1,6 +1,8 @@
 import MarketingShell from "@/components/layout/MarketingShell";
+import { PageIntro } from "@/components/marketing/PageIntro";
 import { ContactLink } from "@/components/ui/ContactLink";
 import { ProductStage } from "@/components/fydell/ProductStage";
+import { DesktopStage } from "@/components/fydell/ProductDesktop";
 import { EvidenceTrace } from "@/components/fydell/EvidenceTrace";
 import { CitationSource } from "@/components/fydell/CitationLink";
 import {
@@ -180,19 +182,10 @@ function StateTag({ children }: { children: string }) {
 export default function TrustPage() {
   return (
     <MarketingShell>
-      <section className="pb-12 pt-[128px] sm:pt-[144px]">
-        <div className="mkt-content">
-          <h1 className="page-display">
-            Evidence you can inspect. Access you can control.
-          </h1>
-          <p className="page-lead">
-            Workspace isolation, scoped invitations, frozen submissions and
-            inspectable evidence are implemented today. Limitations stay on this
-            page so they are not discovered in procurement, but they do not lead
-            the product.
-          </p>
-        </div>
-      </section>
+      <PageIntro
+        title="Evidence you can inspect. Access you can control."
+        lead="Workspace isolation, scoped invitations, frozen submissions and inspectable evidence are implemented today. Limitations stay on this page so they are not discovered in procurement, but they do not lead the product."
+      />
 
       {/* Lifecycle. The state column is the point: it says where the record
           stops being changeable, which is the question an auditor asks. */}
@@ -200,7 +193,7 @@ export default function TrustPage() {
         <div className="mkt-content grid gap-10 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-4">
             <h2 className="section-heading">The life of one evaluation</h2>
-            <p className="mt-4 max-w-[42ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+            <p className="section-desc mt-4">
               Six records, created in order. The right-hand tag says whether that
               record can still change.
             </p>
@@ -241,7 +234,7 @@ export default function TrustPage() {
       <section className={`${SECTION} ${BAND}`}>
         <div className="mkt-content">
           <h2 className="section-heading">Who can read what</h2>
-          <p className="mt-4 max-w-[58ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+          <p className="section-desc mt-4">
             There is no shared pool of candidates. A company sees the attempts it
             invited and nothing else, and that boundary is a policy on the table
             as well as a check in the code.
@@ -345,19 +338,20 @@ export default function TrustPage() {
         <div className="mkt-content grid items-start gap-10 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-5">
             <h2 className="section-heading">Where a claim comes from</h2>
-            <p className="mt-4 max-w-[46ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+            <p className="section-desc mt-4">
               A claim in a report is not a summary of a score. It names the
               material it rests on and carries the lines the candidate was
               looking at, so you can disagree with one claim without discarding
               the report.
             </p>
-            <p className="mt-4 max-w-[46ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+            <p className="section-desc mt-4">
               Alongside it, the session keeps an ordered record of what was
               opened, asked and changed. That record is what makes a limitation
               or a late revision legible instead of suspicious.
             </p>
           </div>
           <div className="lg:col-span-7">
+            <DesktopStage>
             <ProductStage
               title="One claim, traced"
               source="Northline Components · synthetic"
@@ -382,6 +376,7 @@ export default function TrustPage() {
                 />
               </div>
             </ProductStage>
+            </DesktopStage>
           </div>
         </div>
       </section>
@@ -389,7 +384,7 @@ export default function TrustPage() {
       <section className={`${SECTION} ${BAND}`}>
         <div className="mkt-content">
           <h2 className="section-heading">Security and legal readiness</h2>
-          <p className="mt-4 max-w-[58ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+          <p className="section-desc mt-4">
             Fydell is early. The left column is built and you can ask us to
             demonstrate any line of it. The right column is not, and we would
             rather you learn that here than in a security review.
@@ -460,7 +455,7 @@ export default function TrustPage() {
       <section className={`${SECTION} pb-24`}>
         <div className="mkt-content max-w-[620px]">
           <h2 className="section-heading">Questions about any of this?</h2>
-          <p className="mt-4 text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+          <p className="section-desc mt-4">
             Ask directly at <ContactLink />. If something on this page is not
             accurate, we would rather correct it than defend it.
           </p>

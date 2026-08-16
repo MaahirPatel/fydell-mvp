@@ -27,10 +27,7 @@ export default function PilotRoleCards() {
             key={roleKey}
             className="flex flex-col rounded-[16px] border border-white/[0.09] bg-white/[0.025] p-5 transition-colors duration-150 hover:border-white/[0.18] sm:p-6"
           >
-            <h2
-              className="text-[18px] text-[#F4F5F7]"
-              style={{ fontWeight: 580, letterSpacing: "-0.015em" }}
-            >
+            <h2 className="text-[18px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
               {role.title}
             </h2>
             <p className="mt-2 text-[15px] leading-[1.6] text-[rgba(244,245,247,0.66)]">
@@ -38,7 +35,7 @@ export default function PilotRoleCards() {
             </p>
 
             <div className="mt-5 border-t border-white/[0.07] pt-4">
-              <p className="text-[12px] uppercase tracking-[0.06em] text-[rgba(244,245,247,0.45)]" style={{ fontWeight: 560 }}>
+              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
                 Recommended simulation
               </p>
               <p className="mt-1.5 flex items-baseline gap-2.5">
@@ -52,7 +49,7 @@ export default function PilotRoleCards() {
             </div>
 
             <div className="mt-4">
-              <p className="text-[12px] uppercase tracking-[0.06em] text-[rgba(244,245,247,0.45)]" style={{ fontWeight: 560 }}>
+              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
                 Skills observed
               </p>
               <ul className="mt-2 space-y-1.5">

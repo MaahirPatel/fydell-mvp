@@ -20,7 +20,7 @@ export default function PilotIntroPage() {
       <Container className="pt-[168px] sm:pt-[180px] lg:pt-[200px]">
         <Reveal className="mx-auto max-w-[680px]">
           <h1 className="flat-type page-display">Welcome to Fydell</h1>
-          <p className="mt-6 text-[16px] leading-[1.7] text-[rgba(244,245,247,0.72)]">
+          <p className="page-lead">
             Fydell uses short work simulations to show how candidates solve
             realistic technical problems. Today, you will complete one
             five-minute simulation and review the evidence Fydell produces
@@ -30,7 +30,7 @@ export default function PilotIntroPage() {
           </p>
 
           <div className="mt-10 rounded-[16px] border border-white/[0.09] bg-white/[0.025] p-6 sm:p-7">
-            <p className="text-[13px] uppercase tracking-[0.06em] text-[rgba(244,245,247,0.5)]" style={{ fontWeight: 560 }}>
+            <p className="text-[13px] font-medium text-[var(--text-tertiary)]">
               You may
             </p>
             <ul className="mt-4 space-y-3">
@@ -43,7 +43,7 @@ export default function PilotIntroPage() {
             </ul>
           </div>
 
-          <p className="mt-8 text-[16px] leading-[1.7] text-[rgba(244,245,247,0.72)]">
+          <p className="section-desc mt-8">
             Please do not worry about achieving a perfect score. Honest
             interaction gives us better feedback.
           </p>

@@ -42,7 +42,7 @@ export default function RequestPilotPage() {
           <div className="grid items-start gap-10 lg:grid-cols-12 lg:gap-14">
             <div className="lg:col-span-5">
               <h1 className="page-display">Run your first pilot.</h1>
-              <p className="mt-5 max-w-[42ch] text-[1.2rem] leading-[1.55] text-[var(--text-secondary)]">
+              <p className="page-lead">
                 Tell us what you are hiring for. We will set up the cohort with
                 you and stay reachable while it runs.
               </p>
@@ -99,7 +99,7 @@ export default function RequestPilotPage() {
       <section className="border-t border-[var(--border-subtle)] mkt-section-chapter bg-[var(--surface-band)]">
         <div className="mkt-content">
           <h2 className="section-heading">What you have at the end of it</h2>
-          <p className="mt-4 max-w-[56ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+          <p className="section-desc mt-4">
             A pilot is not a demo call. It is one real role, run through the
             product, with three things left over.
           </p>

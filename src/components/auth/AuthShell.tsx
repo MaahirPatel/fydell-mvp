@@ -1,6 +1,7 @@
 import Link from "next/link";
 import FydellMark from "@/components/brand/FydellMark";
 import { ProductSpotlight } from "@/components/fydell/ProductSpotlight";
+import { DesktopStage } from "@/components/fydell/ProductDesktop";
 
 /**
  * One calm frame for every authentication screen.
@@ -37,7 +38,7 @@ export default function AuthShell({
     >
       <h1 className="auth-display">{title}</h1>
       {description ? (
-        <p className="mt-3 max-w-[42ch] text-[15px] leading-[1.6] text-[var(--text-secondary)]">
+        <p className="mt-3 max-w-[42ch] text-[15px] font-[430] leading-[1.6] tracking-[-0.006em] text-[var(--text-secondary)]">
           {description}
         </p>
       ) : null}
@@ -79,7 +80,9 @@ export default function AuthShell({
               {column}
             </div>
             <div className="min-w-0 lg:col-span-7">
-              <ProductSpotlight>{aside}</ProductSpotlight>
+              <ProductSpotlight>
+                <DesktopStage>{aside}</DesktopStage>
+              </ProductSpotlight>
             </div>
           </div>
         </main>

@@ -1,4 +1,5 @@
 import MarketingShell from "@/components/layout/MarketingShell";
+import { PageIntro } from "@/components/marketing/PageIntro";
 import { ContactLink } from "@/components/ui/ContactLink";
 
 export const metadata = {
@@ -37,17 +38,10 @@ const TERMS: Array<[string, string]> = [
 export default function TermsPage() {
   return (
     <MarketingShell>
-      <section className="pb-14 pt-[132px] sm:pt-[148px]">
-        <div className="mkt-content">
-          <h1 className="page-display">Terms.</h1>
-          <p className="page-lead">
-            Effective 14 August 2026. Standard terms of use have not been
-            published yet. Rather than post boilerplate that says nothing, this
-            page states what currently governs use of Fydell and how to get a
-            copy of it.
-          </p>
-        </div>
-      </section>
+      <PageIntro
+        title="Terms."
+        lead="Effective 14 August 2026. Standard terms of use have not been published yet. Rather than post boilerplate that says nothing, this page states what currently governs use of Fydell and how to get a copy of it."
+      />
 
       <section className="mkt-section border-t border-[var(--border-subtle)] pb-24">
         <div className="mkt-content max-w-[720px]">

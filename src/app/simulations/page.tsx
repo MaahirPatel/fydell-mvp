@@ -1,7 +1,8 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import HeroSimPreview from "@/components/marketing/home/HeroSimPreview";
+import { PageIntro } from "@/components/marketing/PageIntro";
 import { ButtonLink } from "@/components/marketing/ui";
-import { ProductSpotlight } from "@/components/fydell/ProductSpotlight";
+import { DesktopStage } from "@/components/fydell/ProductDesktop";
 import { ChangedFactsDiff } from "@/components/fydell/ChangedFactsDiff";
 import { ProductStage } from "@/components/fydell/ProductStage";
 import {
@@ -123,27 +124,29 @@ const DEPLOYMENT = [
 export default function EvaluationPage() {
   return (
     <MarketingShell>
-      <section className="pb-12 pt-[128px] sm:pt-[144px]">
-        <div className="mkt-content">
-          <h1 className="page-display">{NORTHLINE_SCENARIO.evaluation}</h1>
-          <p className="mt-4 text-[14px] tabular-nums text-[var(--text-tertiary)]">
+      <PageIntro
+        title={NORTHLINE_SCENARIO.evaluation}
+        meta={
+          <p className="text-[14px] tabular-nums text-[var(--text-tertiary)]">
             {NORTHLINE_SCENARIO.role} · {NORTHLINE_SCENARIO.duration}
           </p>
-          <p className="page-lead">
-            Reported yield fell last period at {NORTHLINE_SCENARIO.company}. The
-            candidate has to work out how much of that is a measurement change
-            and how much is real, then say what to do before the next shift.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+        }
+        lead={`Reported yield fell last period at ${NORTHLINE_SCENARIO.company}. The candidate has to work out how much of that is a measurement change and how much is real, then say what to do before the next shift.`}
+        actions={
+          <>
             <ButtonLink href="/request-pilot" variant="primary">
               Request a pilot
             </ButtonLink>
             <ButtonLink href="/product" variant="secondary">
               How the product works
             </ButtonLink>
-          </div>
+          </>
+        }
+      />
 
-          <dl className="mt-10 flex flex-wrap gap-x-14 gap-y-5 border-t border-[var(--border-subtle)] pt-6">
+      <section className="pb-12">
+        <div className="mkt-content">
+          <dl className="flex flex-wrap gap-x-14 gap-y-5 border-t border-[var(--border-subtle)] pt-6">
             <Fact label="Discipline" value="Data analysis" />
             <Fact label="Duration" value="20 minutes, one sitting" />
             <Fact label="Company in the scenario" value={NORTHLINE_SCENARIO.company} />
@@ -155,9 +158,9 @@ export default function EvaluationPage() {
 
       <section className="pb-4">
         <div className="mkt-content">
-          <ProductSpotlight>
+          <DesktopStage>
             <HeroSimPreview />
-          </ProductSpotlight>
+          </DesktopStage>
         </div>
       </section>
 
@@ -165,7 +168,7 @@ export default function EvaluationPage() {
         <div className="mkt-content grid gap-10 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-5">
             <h2 className="section-heading">What the candidate is given</h2>
-            <p className="mt-4 max-w-[46ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+            <p className="section-desc mt-4">
               No instructions on where to look. The material is realistic enough
               that deciding what matters is itself part of the work.
             </p>
@@ -218,15 +221,17 @@ export default function EvaluationPage() {
               ))}
             </ol>
             <div className="lg:col-span-7">
-              <ProductStage
-                title="Stage 3, as the candidate sees it"
-                source={`${NORTHLINE_SCENARIO.company} · synthetic`}
-                label="The changed fact, the claim it affects, and the candidate's response"
-              >
-                <div className="p-4">
-                  <ChangedFactsDiff />
-                </div>
-              </ProductStage>
+              <DesktopStage>
+                <ProductStage
+                  title="Stage 3, as the candidate sees it"
+                  source={`${NORTHLINE_SCENARIO.company} · synthetic`}
+                  label="The changed fact, the claim it affects, and the candidate's response"
+                >
+                  <div className="p-4">
+                    <ChangedFactsDiff />
+                  </div>
+                </ProductStage>
+              </DesktopStage>
             </div>
           </div>
         </div>
@@ -275,7 +280,7 @@ export default function EvaluationPage() {
       <section className={`${SECTION} ${BAND}`}>
         <div className="mkt-content">
           <h2 className="section-heading">What comes out of it</h2>
-          <p className="mt-4 max-w-[58ch] text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+          <p className="section-desc mt-4 max-w-[58ch]">
             Two artefacts, one for each side. They contain the same work; they do
             not contain the same things.
           </p>
@@ -390,7 +395,7 @@ export default function EvaluationPage() {
       <section className={`${SECTION} pb-24`}>
         <div className="mkt-content max-w-[620px]">
           <h2 className="section-heading">Send it to one candidate.</h2>
-          <p className="mt-4 text-[16px] leading-[1.65] text-[var(--text-secondary)]">
+          <p className="section-desc mt-4">
             Create a workspace, invite someone by email, and read the report when
             they finish.
           </p>

@@ -27,7 +27,7 @@ export function PageHeader({
       <div className="min-w-0">
         <h1
           className="text-app-page text-[var(--text-primary)]"
-          style={{ fontWeight: 560 }}
+          style={{ fontWeight: 510 }}
         >
           {title}
         </h1>

@@ -38,7 +38,7 @@ function SectionLink({ href, label }: { href: string; label: string }) {
 function MetricBand({
   items,
 }: {
-  items: { label: string; value: number; href: string }[];
+  items: { label: string; value: number; href: string; color: string }[];
 }) {
   return (
     <dl className="grid grid-cols-2 divide-x divide-y divide-[var(--border-subtle)] sm:grid-cols-4 sm:divide-y-0">
@@ -51,7 +51,10 @@ function MetricBand({
           <dt className="text-app-meta text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] group-hover:text-[var(--text-secondary)]">
             {item.label}
           </dt>
-          <dd className="mt-1.5 text-[26px] font-medium leading-none tabular-nums tracking-[-0.025em] text-[var(--text-primary)]">
+          <dd
+            className="mt-1.5 text-[26px] font-medium leading-none tabular-nums tracking-[-0.025em]"
+            style={{ color: item.value > 0 ? item.color : "var(--text-tertiary)" }}
+          >
             {item.value}
           </dd>
         </Link>
@@ -267,13 +270,29 @@ export default async function EmployerHomePage() {
   const setupComplete = completedSteps === steps.length;
 
   const metricItems = [
-    { label: "In progress", value: metrics.inProgress, href: "/app/employer/candidates" },
-    { label: "Completed", value: metrics.completed, href: "/app/employer/candidates" },
-    { label: "Reports ready", value: metrics.reportsReady, href: "/app/employer/reports" },
+    {
+      label: "In progress",
+      value: metrics.inProgress,
+      href: "/app/employer/candidates",
+      color: "var(--fydell-evidence)",
+    },
+    {
+      label: "Completed",
+      value: metrics.completed,
+      href: "/app/employer/candidates",
+      color: "var(--fydell-good)",
+    },
+    {
+      label: "Reports ready",
+      value: metrics.reportsReady,
+      href: "/app/employer/reports",
+      color: "var(--fydell-verified)",
+    },
     {
       label: "Needs review",
       value: metrics.needsReview,
       href: "/app/employer/reports?review=needs",
+      color: "var(--fydell-changed)",
     },
   ];
   const showMetrics = metricItems.some((m) => m.value > 0);

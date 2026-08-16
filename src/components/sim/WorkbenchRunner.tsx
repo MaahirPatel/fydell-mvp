@@ -1355,7 +1355,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             </span>
           </span>
           <div className="hidden min-w-0 sm:block">
-            <p className="truncate text-[13.5px] font-semibold leading-tight">{workbench.title}</p>
+            <p className="truncate text-[13.5px] font-medium leading-tight">{workbench.title}</p>
             <p className="truncate text-[11.5px] text-[var(--text-tertiary)]">{roleTitle}</p>
           </div>
           <div className="ml-auto flex items-center gap-3">
@@ -1410,7 +1410,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
         <div className="border-b border-[var(--fydell-brand-blue)]/30 bg-[var(--surface-selected)]">
           <div className="mx-auto flex max-w-[1280px] flex-wrap items-start justify-between gap-3 px-4 py-3">
             <div>
-              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">
+              <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">
                 Mid-session update
               </p>
               <p className="mt-1 text-[13.5px] text-[var(--text-primary)]">
@@ -1447,12 +1447,12 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
         <aside className="w-full shrink-0 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] lg:sticky lg:top-14 lg:max-h-screen lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
           <div className="space-y-5 p-4">
             <section>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">Briefing</p>
+              <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">Briefing</p>
               <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--text-secondary)]">{workbench.mission}</p>
             </section>
 
             <section>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Modules</p>
+              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">Modules</p>
               <ul className="mt-2 space-y-0.5">
                 {navModules.map((m) => (
                   <li key={m.id}>
@@ -1462,10 +1462,16 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                       aria-current={activeModuleId === m.id ? "true" : undefined}
                       className={
                         activeModuleId === m.id
-                          ? "flex w-full items-center rounded-md bg-[var(--surface-selected)] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--fydell-brand-blue)]"
-                          : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-canvas)]"
+                          ? "relative flex w-full items-center rounded-md bg-[var(--surface-selected)] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-primary)]"
+                          : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       }
                     >
+                      {activeModuleId === m.id ? (
+                        <span
+                          aria-hidden
+                          className="absolute inset-y-1.5 left-0 w-[2px] rounded-full bg-[var(--fydell-evidence)]"
+                        />
+                      ) : null}
                       <span className="min-w-0 truncate">{moduleLabel(m)}</span>
                     </button>
                   </li>
@@ -1481,10 +1487,16 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     aria-current={activeModuleId === REVIEW_ID ? "true" : undefined}
                     className={
                       activeModuleId === REVIEW_ID
-                        ? "flex w-full items-center rounded-md bg-[var(--surface-selected)] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--fydell-brand-blue)]"
-                        : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-canvas)]"
+                        ? "relative flex w-full items-center rounded-md bg-[var(--surface-selected)] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-primary)]"
+                        : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                     }
                   >
+                    {activeModuleId === REVIEW_ID ? (
+                      <span
+                        aria-hidden
+                        className="absolute inset-y-1.5 left-0 w-[2px] rounded-full bg-[var(--fydell-evidence)]"
+                      />
+                    ) : null}
                     Review and submit
                   </button>
                 </li>
@@ -1507,14 +1519,14 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
           {activeModuleId === REVIEW_ID ? (
             <div className="space-y-4">
               <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-                <h2 className="text-[17px] font-semibold">Review before you submit</h2>
+                <h2 className="text-[17px] font-medium tracking-[-0.02em]">Review before you submit</h2>
                 <dl className="mt-4 space-y-4">
                   {decisionModules.map((m) => {
                     if (m.kind !== "structured_decision") return null;
                     const val = answers[m.id];
                     return (
                       <div key={m.id}>
-                        <dt className="text-[12px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+                        <dt className="text-[12px] font-medium text-[var(--text-tertiary)]">
                           {m.prompt}
                         </dt>
                         <dd className="mt-0.5 text-[15px] text-[var(--text-primary)]">
@@ -1541,7 +1553,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     if (m.kind !== "written_deliverable") return null;
                     return (
                       <div key={m.id}>
-                        <dt className="text-[12px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+                        <dt className="text-[12px] font-medium text-[var(--text-tertiary)]">
                           {m.prompt}
                         </dt>
                         <dd className="mt-0.5 whitespace-pre-line text-[15px] text-[var(--text-primary)]">
@@ -1809,7 +1821,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             className="absolute inset-0 bg-black/50"
           />
           <div className="relative w-full max-w-sm rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6 shadow-xl">
-            <h2 className="text-[16px] font-semibold">Leave this evaluation?</h2>
+            <h2 className="text-[16px] font-medium tracking-[-0.018em]">Leave this evaluation?</h2>
             <p className="mt-2 text-[14px] leading-relaxed text-[var(--text-secondary)]">
               Your work is saved and you can come back. The timer keeps running while you are away.
             </p>
@@ -1885,8 +1897,8 @@ function ModulePanel({
   if (module.kind === "briefing") {
     return (
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">Briefing</p>
-        <h2 className="mt-1 text-[18px] font-semibold">{module.title}</h2>
+        <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">Briefing</p>
+        <h2 className="mt-1 text-[18px] font-medium tracking-[-0.02em]">{module.title}</h2>
         <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--text-secondary)]">
           {module.body}
         </p>
@@ -1898,7 +1910,7 @@ function ModulePanel({
     return (
       <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <p className="text-[13.5px] font-semibold">{module.title}</p>
+          <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
         </div>
         <div className="whitespace-pre-wrap px-5 py-5 text-[14.5px] leading-relaxed text-[var(--text-primary)]">
           {module.content}
@@ -1931,7 +1943,7 @@ function ModulePanel({
     return (
       <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <p className="text-[13.5px] font-semibold">{module.title}</p>
+          <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
           {module.instructions && (
             <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
           )}
@@ -1983,7 +1995,7 @@ function ModulePanel({
     return (
       <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <p className="text-[13.5px] font-semibold">{module.title}</p>
+          <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
           {module.instructions && (
             <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
           )}
@@ -1991,7 +2003,7 @@ function ModulePanel({
         <div className="grid gap-0 lg:grid-cols-2">
           <div className="border-b border-[var(--border-subtle)] lg:border-b-0 lg:border-r">
             <div className="border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4 py-2">
-              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
                 Requirements
               </p>
             </div>
@@ -2027,7 +2039,7 @@ function ModulePanel({
           </div>
           <div>
             <div className="border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4 py-2">
-              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
                 Capabilities
               </p>
             </div>
@@ -2098,7 +2110,7 @@ function ModulePanel({
     return (
       <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <p className="text-[13.5px] font-semibold">{module.title}</p>
+          <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
           {module.instructions && (
             <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
           )}
@@ -2137,7 +2149,7 @@ function ModulePanel({
           <div className="px-5 py-4">
             {selected ? (
               <>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">
+                <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">
                   Ticket detail
                 </p>
                 <h3 className="mt-1 font-mono text-[16px] font-semibold text-[var(--text-primary)]">
@@ -2164,7 +2176,7 @@ function ModulePanel({
     return (
       <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <p className="text-[13.5px] font-semibold">{module.title}</p>
+          <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
           {module.instructions && (
             <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
           )}
@@ -2219,7 +2231,7 @@ function ModulePanel({
       <section className="space-y-4">
         <div className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
           <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-            <p className="text-[13.5px] font-semibold">{module.title}</p>
+            <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
             {module.instructions && (
               <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
             )}
@@ -2279,8 +2291,8 @@ function ModulePanel({
   if (module.kind === "structured_decision") {
     return (
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">Decision</p>
-        <h2 className="mt-1 text-[16px] font-semibold">{module.prompt}</h2>
+        <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">Decision</p>
+        <h2 className="mt-1 text-[16px] font-medium tracking-[-0.018em]">{module.prompt}</h2>
         {module.helpText && <p className="mt-1 text-[13.5px] text-[var(--text-tertiary)]">{module.helpText}</p>}
 
         {module.decisionKind === "single_select" && (
@@ -2371,10 +2383,10 @@ function ModulePanel({
     const text = String(answers[module.id] ?? "");
     return (
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-brand-blue)]">
+        <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">
           Written response
         </p>
-        <h2 className="mt-1 text-[16px] font-semibold">{module.prompt}</h2>
+        <h2 className="mt-1 text-[16px] font-medium tracking-[-0.018em]">{module.prompt}</h2>
         {module.helpText && <p className="mt-1 text-[13.5px] text-[var(--text-tertiary)]">{module.helpText}</p>}
         <textarea
           value={text}
@@ -2398,7 +2410,7 @@ function ModulePanel({
   if (module.kind === "stakeholder") {
     return (
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-        <h2 className="text-[16px] font-semibold">{module.title || "Stakeholder"}</h2>
+        <h2 className="text-[16px] font-medium tracking-[-0.018em]">{module.title || "Stakeholder"}</h2>
         <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
           Open the conversation panel to ask {stakeholderName} clarifying questions.
         </p>
@@ -2415,7 +2427,7 @@ function ModulePanel({
   if (module.kind === "curveball") {
     return (
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--fydell-changed)]">Update</p>
+        <p className="text-[12px] font-medium text-[var(--fydell-changed)]">Update</p>
         <p className="mt-2 text-[15px] leading-relaxed">{module.announcement}</p>
         <p className="mt-3 text-[14px] text-[var(--text-secondary)]">{module.requiredAdaptation}</p>
       </section>

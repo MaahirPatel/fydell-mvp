@@ -32,7 +32,8 @@ export function ProductStage({
     <>
       <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="truncate text-[13px] font-medium text-[var(--text-primary)]">
+          {chrome === "plain" ? <FydellMark width={14} /> : null}
+          <span className="truncate text-[13px] font-medium tracking-[-0.018em] text-[var(--text-primary)]">
             {title}
           </span>
           {source ? (

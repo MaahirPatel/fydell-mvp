@@ -1,12 +1,12 @@
 /**
- * The hero poster: an open Fydell session.
+ * The hero poster: an open Fydell session, staged the way Linear stages an
+ * issue — three panes, hairline structure, one related window floating on
+ * the desk.
  *
- * Two related windows on a graphite desk — the employer report the visitor
- * is being asked to trust, and the candidate workbench that produced it.
  * Deliberately static. The interactive inspector lives in the section below.
- *
  * Every value is the released Northline fixture.
  */
+import type { ReactNode } from "react";
 import { AppWindow, DesktopStage } from "@/components/fydell/ProductDesktop";
 import {
   CITATION_SOURCES,
@@ -24,48 +24,6 @@ const RUNS = [
   { period: "current", line: "L2", shift: "Day", completed: 820, scrap: 90, yield: "82.0%", risk: true },
   { period: "current", line: "L2", shift: "Night", completed: 860, scrap: 20, yield: "95.6%" },
 ];
-
-function ClaimRow({
-  text,
-  index,
-  tone,
-  active,
-}: {
-  text: string;
-  index: number;
-  tone: "neutral" | "risk";
-  active: boolean;
-}) {
-  const rail = tone === "risk" ? "var(--fydell-risk)" : "var(--fydell-evidence)";
-  return (
-    <li
-      className="relative rounded-[var(--radius-control)] py-1.5 pl-3 pr-2"
-      style={{ background: active ? "var(--surface-hover)" : undefined }}
-    >
-      <span
-        aria-hidden
-        className="absolute inset-y-1 left-0 w-[2px] rounded-full"
-        style={{ background: active ? rail : "transparent" }}
-      />
-      <span
-        className="block text-[12.5px] leading-[1.4]"
-        style={{ color: active ? "var(--text-primary)" : "var(--text-secondary)" }}
-      >
-        {text}
-      </span>
-      <span
-        className="mt-1 inline-flex items-center gap-1 rounded-[var(--radius-tag)] px-1.5 py-0.5 text-[11px] tabular-nums"
-        style={{
-          background:
-            tone === "risk" ? "rgba(242,107,130,0.12)" : "rgba(107,140,255,0.12)",
-          color: tone === "risk" ? "var(--fydell-risk)" : "var(--fydell-evidence)",
-        }}
-      >
-        {index} cited
-      </span>
-    </li>
-  );
-}
 
 function WorkbenchTable() {
   return (
@@ -120,18 +78,29 @@ function WorkbenchTable() {
   );
 }
 
+function MetaRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-3 py-2">
+      <span className="shrink-0 text-[12px] text-[var(--text-tertiary)]">{label}</span>
+      <span className="min-w-0 text-right text-[12.5px] leading-[1.4] text-[var(--text-primary)]">
+        {children}
+      </span>
+    </div>
+  );
+}
+
 export default function HeroComposition() {
   const excerpt = CITATION_SOURCES.reclassEvents;
 
   return (
-    <DesktopStage className="lg:pb-[168px]">
+    <DesktopStage className="lg:pb-[176px]">
       <div className="relative">
         <AppWindow
-          title="Evidence report"
-          meta={`${NORTHLINE_SCENARIO.company} · synthetic`}
+          title="fydell"
+          meta="Reports"
           session={{ label: "In review", tone: "verified" }}
         >
-          <div className="grid lg:grid-cols-[176px_minmax(0,1fr)]">
+          <div className="grid lg:grid-cols-[188px_minmax(0,1fr)_220px]">
             <aside
               aria-hidden
               className="hidden border-r border-[var(--border-subtle)] bg-[var(--surface-deep)] px-2.5 py-3 lg:block"
@@ -140,89 +109,124 @@ export default function HeroComposition() {
                 {APP_NAV.map((item) => (
                   <li
                     key={item}
-                    className={`rounded-[6px] px-2 py-1.5 text-[12px] ${
+                    className={`relative rounded-[6px] px-2.5 py-1.5 text-[12.5px] ${
                       item === "Reports"
-                        ? "bg-white/[0.06] text-[var(--text-primary)]"
+                        ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]"
                         : "text-[var(--text-secondary)]"
                     }`}
                   >
+                    {item === "Reports" ? (
+                      <span
+                        aria-hidden
+                        className="absolute inset-y-1.5 left-0 w-[2px] rounded-full bg-[var(--fydell-evidence)]"
+                      />
+                    ) : null}
                     {item}
                   </li>
                 ))}
               </ul>
+              <p className="mt-5 px-2.5 text-[11px] font-medium text-[var(--text-tertiary)]">
+                Open
+              </p>
+              <p className="mt-1.5 rounded-[6px] bg-white/[0.04] px-2.5 py-1.5 text-[12px] leading-[1.4] text-[var(--text-secondary)]">
+                {NORTHLINE_SCENARIO.evaluation}
+              </p>
             </aside>
 
-            <div className="min-w-0">
-              <div className="px-4 py-3">
-                <p className="text-[11.5px] font-medium text-[var(--text-tertiary)]">
-                  Candidate conclusion
-                </p>
-                <p className="mt-1.5 max-w-[64ch] text-[13px] leading-[1.5] text-[var(--text-primary)]">
-                  {NORTHLINE_CONCLUSION}
-                </p>
+            <div className="min-w-0 px-5 py-4 sm:px-6 sm:py-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className="inline-flex items-center gap-1.5 text-[12px] font-medium"
+                  style={{ color: "var(--fydell-verified)" }}
+                >
+                  <span
+                    aria-hidden
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ background: "var(--fydell-verified)" }}
+                  />
+                  In review
+                </span>
+                <span className="text-[12px] text-[var(--text-tertiary)]">
+                  {NORTHLINE_SCENARIO.company} · synthetic
+                </span>
               </div>
+              <h3 className="mt-2 text-[22px] font-medium leading-[1.2] tracking-[-0.028em] text-[var(--text-primary)]">
+                Evidence report
+              </h3>
+              <p className="mt-3 max-w-[62ch] text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
+                {NORTHLINE_CONCLUSION}
+              </p>
 
-              <div className="grid border-t border-[var(--border-subtle)] lg:grid-cols-[minmax(0,1fr)_250px]">
-                <div className="border-b border-[var(--border-subtle)] p-2 lg:border-b-0 lg:border-r">
-                  <p className="px-2 pb-1 pt-1 text-[11.5px] font-medium text-[var(--text-tertiary)]">
-                    Claims
-                  </p>
-                  <ul className="space-y-0.5">
-                    {NORTHLINE_CLAIMS.map((claim, i) => (
-                      <ClaimRow
-                        key={claim.id}
-                        text={claim.text}
-                        index={claim.citations.length}
-                        tone={claim.tone}
-                        active={i === 0}
+              <p className="mt-6 text-[12px] font-medium text-[var(--text-tertiary)]">
+                Claims
+              </p>
+              <ol className="mt-2 space-y-0">
+                {NORTHLINE_CLAIMS.map((claim, i) => {
+                  const color =
+                    claim.tone === "risk"
+                      ? "var(--fydell-risk)"
+                      : i === 0
+                        ? "var(--fydell-evidence)"
+                        : "var(--fydell-verified)";
+                  return (
+                    <li
+                      key={claim.id}
+                      className="relative border-b border-[var(--border-subtle)] py-2.5 last:border-b-0"
+                    >
+                      <span
+                        aria-hidden
+                        className="absolute left-0 top-3.5 h-1.5 w-1.5 rounded-full"
+                        style={{ background: color }}
                       />
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="p-3">
-                  <p className="text-[11.5px] font-medium text-[var(--text-tertiary)]">
-                    Cited source
-                  </p>
-                  <p className="mt-1.5 font-mono text-[11px] text-[var(--fydell-evidence)]">
-                    quality_events.csv · Q-303, Q-304
-                  </p>
-                  <div className="mt-2 overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-deep)]">
-                    {excerpt.map((line) => (
-                      <p
-                        key={line.text}
-                        className="truncate px-2 py-1 font-mono text-[10.5px] leading-[1.45]"
-                        style={{
-                          background: line.highlight
-                            ? "rgba(107,140,255,0.13)"
-                            : undefined,
-                          color: line.highlight
-                            ? "var(--text-primary)"
-                            : "var(--text-tertiary)",
-                        }}
-                      >
-                        {line.text}
+                      <p className="pl-4 text-[13px] leading-[1.45] text-[var(--text-primary)]">
+                        {claim.text}
                       </p>
-                    ))}
-                  </div>
-                  <p className="mt-3 text-[11.5px] font-medium text-[var(--text-tertiary)]">
-                    Where this claim stops
-                  </p>
-                  <p
-                    className="mt-1 pl-2 text-[11px] leading-[1.5] text-[var(--text-secondary)]"
-                    style={{ borderLeft: "2px solid var(--fydell-risk)" }}
-                  >
-                    {NORTHLINE_CLAIMS[2].limitation}
-                  </p>
-                </div>
-              </div>
+                      <p className="mt-1 pl-4 text-[11.5px] text-[var(--text-tertiary)]">
+                        {claim.citations.length} cited
+                        {claim.limitation ? " · limitation recorded" : ""}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ol>
             </div>
+
+            <aside className="border-t border-[var(--border-subtle)] px-4 py-4 lg:border-l lg:border-t-0">
+              <MetaRow label="Status">
+                <span style={{ color: "var(--fydell-verified)" }}>In review</span>
+              </MetaRow>
+              <MetaRow label="Role">{NORTHLINE_SCENARIO.role}</MetaRow>
+              <MetaRow label="Duration">{NORTHLINE_SCENARIO.duration}</MetaRow>
+              <MetaRow label="Source">quality_events.csv</MetaRow>
+
+              <p className="mt-4 text-[12px] font-medium text-[var(--text-tertiary)]">
+                Cited rows
+              </p>
+              <div className="mt-2 overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-deep)]">
+                {excerpt.map((line) => (
+                  <p
+                    key={line.text}
+                    className="truncate px-2 py-1 font-mono text-[10.5px] leading-[1.45]"
+                    style={{
+                      background: line.highlight
+                        ? "rgba(107,140,255,0.13)"
+                        : undefined,
+                      color: line.highlight
+                        ? "var(--text-primary)"
+                        : "var(--text-tertiary)",
+                    }}
+                  >
+                    {line.text}
+                  </p>
+                ))}
+              </div>
+            </aside>
           </div>
         </AppWindow>
 
         <div
           aria-hidden
-          className="pointer-events-none absolute left-5 top-full z-10 hidden w-[min(440px,48%)] -translate-y-12 lg:block xl:left-7 xl:w-[460px]"
+          className="pointer-events-none absolute right-5 top-full z-10 hidden w-[min(440px,46%)] -translate-y-12 lg:block xl:right-7 xl:w-[460px]"
         >
           <AppWindow
             compact
