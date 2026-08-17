@@ -51,10 +51,17 @@ function stageOf(r: CandidateRow): { label: string; tone: StatusTone } {
   return { label: "Invited", tone: "neutral" };
 }
 
-export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
+export default function CandidatesTable({
+  rows,
+  initialQuery = "",
+}: {
+  rows: CandidateRow[];
+  /** Prefilled when another surface linked here about one candidate. */
+  initialQuery?: string;
+}) {
   const { open } = useInviteModal();
   const { act, busyId, notice } = useInvitationActions();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
 
   // A column where every cell says the same thing is width spent on nothing.
   // With one published evaluation that is exactly what the role column was.
@@ -90,8 +97,9 @@ export default function CandidatesTable({ rows }: { rows: CandidateRow[] }) {
 
   return (
     <div className="space-y-3">
-      {/* Search only appears once the list is long enough to need it. */}
-      {rows.length > 8 ? (
+      {/* Search appears once the list is long enough to need it, and whenever a
+          filter is actually applied, so an incoming link can always be cleared. */}
+      {rows.length > 8 || query ? (
         <Input
           type="search"
           value={query}

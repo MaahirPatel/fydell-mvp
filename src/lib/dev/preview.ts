@@ -23,7 +23,10 @@ import "server-only";
  *   FYDELL_UI_PREVIEW=1 FYDELL_UI_PREVIEW_STATE=empty …  brand-new workspace
  */
 import type {
+  ActivityEvent,
+  AttentionItem,
   InvitationRecord,
+  OperationalSnapshot,
   OverviewMetrics,
   ReportRecord,
 } from "@/app/app/employer/_lib/data";
@@ -69,8 +72,16 @@ export const PREVIEW_TEMPLATE = {
   id: "00000000-0000-4000-8000-0000000000b1",
 };
 
-/** Fixed offsets from a fixed instant, so screenshots do not change run to run. */
-const T0 = Date.UTC(2026, 7, 10, 9, 0, 0);
+/**
+ * One clock for every fixture, anchored to process start.
+ *
+ * A fixed past instant made surfaces that render elapsed time report fixtures as
+ * months old, and let two panels describe the same event as "1d" and "1w"
+ * because they measured from different origins. Anchoring to now means an offset
+ * of `n` hours renders as exactly `n` hours everywhere, so panels reconcile and
+ * screenshots stay comparable between runs.
+ */
+const T0 = Date.now();
 const hoursAgo = (h: number) => new Date(T0 - h * 3_600_000).toISOString();
 
 type Seed = {
@@ -113,11 +124,13 @@ const SEEDS: Seed[] = [
     delivery: "delivered",
   },
   {
+    // Past the 72h stalled threshold on purpose, so the attention rule that
+    // reports it has actually fired rather than being asserted by a fixture.
     id: "s3",
     name: "Casey Placeholder",
     status: "accepted",
     session: "accepted",
-    createdHoursAgo: 26,
+    createdHoursAgo: 96,
     delivery: "delivered",
   },
   {
@@ -134,7 +147,8 @@ const SEEDS: Seed[] = [
     status: "completed",
     session: "submitted",
     createdHoursAgo: 52,
-    submittedHoursAgo: 2,
+    // Past the 2h analysis threshold, so "analysis is late" is a fired rule.
+    submittedHoursAgo: 3,
     delivery: "delivered",
   },
   {
@@ -582,6 +596,100 @@ export function previewDefense(sessionId: string) {
     ],
     responses: [] as { question_id: string; response_text: string }[],
   };
+}
+
+/**
+ * The attention queue and activity feed for a workspace that has been running
+ * long enough to accumulate both failures and successes.
+ *
+ * Every timestamp comes from the shared fixture clock and the same offsets the
+ * seeds use, so an event described here is the same age wherever else it appears.
+ */
+export function previewOperationalSnapshot(): OperationalSnapshot {
+  if (previewState() === "empty") return { attention: [], activity: [] };
+
+  const at = hoursAgo;
+  const candidates = (email: string) =>
+    `/app/employer/candidates?q=${encodeURIComponent(email)}`;
+  const report = (id: string) => `/app/employer/assessments/report/sess-${id}`;
+  const emailFor = (name: string) => `${name.split(" ")[0].toLowerCase()}@example.com`;
+
+  const attention: AttentionItem[] = [
+    {
+      key: "s9-email-failed",
+      invitationId: "s9",
+      candidate: "Indigo Mock",
+      email: emailFor("Indigo Mock"),
+      evaluation: EVALUATION,
+      state: "Invited",
+      reason: "The invitation email failed to send, so it never arrived.",
+      since: at(6),
+      severity: "blocking",
+      primary: { label: "Copy link", invitationAction: "copy" },
+      secondary: { label: "Resend", invitationAction: "resend" },
+    },
+    {
+      key: "s8-expired",
+      invitationId: "s8",
+      candidate: "Harper Dummy",
+      email: emailFor("Harper Dummy"),
+      evaluation: EVALUATION,
+      state: "Invited",
+      reason: "The invitation expired before it was accepted.",
+      since: at(400),
+      severity: "action",
+      primary: { label: "Resend", invitationAction: "resend" },
+    },
+    {
+      key: "s6-needs-review",
+      invitationId: "s6",
+      candidate: "Frankie Synthetic",
+      email: emailFor("Frankie Synthetic"),
+      evaluation: EVALUATION,
+      state: "Report ready",
+      reason: "The report is ready and no hiring decision has been recorded.",
+      since: at(25),
+      severity: "action",
+      primary: { label: "Review", href: report("s6") },
+    },
+    {
+      key: "s3-stalled",
+      invitationId: "s3",
+      candidate: "Casey Placeholder",
+      email: emailFor("Casey Placeholder"),
+      evaluation: EVALUATION,
+      state: "Accepted",
+      reason: "Accepted more than 72 hours ago and never started.",
+      since: at(92),
+      severity: "action",
+      primary: { label: "Open candidate", href: candidates(emailFor("Casey Placeholder")) },
+    },
+    {
+      key: "s5-analysis-late",
+      invitationId: "s5",
+      candidate: "Emerson Fixture",
+      email: emailFor("Emerson Fixture"),
+      evaluation: EVALUATION,
+      state: "Submitted",
+      reason: "Analysis has been running for longer than 2 hours.",
+      since: at(3),
+      severity: "waiting",
+      primary: { label: "Open candidate", href: candidates(emailFor("Emerson Fixture")) },
+    },
+  ];
+
+  const activity: ActivityEvent[] = [
+    { key: "a1", at: at(3), who: "Emerson Fixture", what: "Final submission received", href: report("s5") },
+    { key: "a2", at: at(3.4), who: "Emerson Fixture", what: "Changed information released", href: null },
+    { key: "a3", at: at(4), who: "Devon Testcase", what: "Simulation started", href: candidates(emailFor("Devon Testcase")) },
+    { key: "a4", at: at(6), who: "Indigo Mock", what: "Invitation email failed", href: candidates(emailFor("Indigo Mock")) },
+    { key: "a5", at: at(20), who: "Gray Specimen", what: "Decision recorded", href: report("s7") },
+    { key: "a6", at: at(25), who: "Frankie Synthetic", what: "Analysis completed", href: report("s6") },
+    { key: "a7", at: at(26), who: "Frankie Synthetic", what: "Final submission received", href: report("s6") },
+    { key: "a8", at: at(92), who: "Casey Placeholder", what: "Invitation accepted", href: candidates(emailFor("Casey Placeholder")) },
+  ];
+
+  return { attention, activity };
 }
 
 export function previewMetrics(): OverviewMetrics {

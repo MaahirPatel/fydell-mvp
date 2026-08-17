@@ -40,6 +40,7 @@
     "capture:employer": "tsx scripts/capture-employer.ts",
     "capture:candidate": "tsx scripts/capture-candidate.ts",
     "capture:gate": "tsx scripts/capture-gate.ts",
+    "check:candidate-filter": "tsx scripts/check-candidate-filter.ts",
     "measure:baseline": "tsx scripts/measure-baseline.ts",
     "test:release": "npm run test:sims && npm run test:v2 && npm run test:v3 && npm run test:states && npm run test:disclosure && npm run test:october && npm run test:auth && npm run test:copy && npm run test:db-security && npm run test:project-guard && npm run test:identity && npm run test:availability && npm run typecheck",
     "test:rls-smoke": "tsx scripts/test-rls-smoke.ts",

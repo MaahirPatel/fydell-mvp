@@ -7,11 +7,20 @@ import { getInvitationRecords } from "../_lib/data";
 export const metadata = { title: "Candidates" };
 export const dynamic = "force-dynamic";
 
-export default async function EmployerCandidatesPage() {
+export default async function EmployerCandidatesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ q?: string }>;
+}) {
   const user = await requireUser();
   if (!user) redirect("/login?next=%2Fapp%2Femployer%2Fcandidates");
   const org = await requireOrgMember(user.id);
   if (!org) redirect("/app/employer");
+
+  // Home's attention queue links here filtered to one person, so the row it was
+  // talking about is the row you land on.
+  const params = (await searchParams) || {};
+  const initialQuery = typeof params.q === "string" ? params.q : "";
 
   const records = await getInvitationRecords(org.organizationId, 200);
 
@@ -31,7 +40,7 @@ export default async function EmployerCandidatesPage() {
         }
       />
       <div className="mt-7">
-        <CandidatesTable rows={records} />
+        <CandidatesTable rows={records} initialQuery={initialQuery} />
       </div>
     </div>
   );
