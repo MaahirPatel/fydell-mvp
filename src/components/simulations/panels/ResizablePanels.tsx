@@ -4,7 +4,7 @@ import { useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 /**
- * Lightweight custom resizable panels — no external library.
+ * Lightweight custom resizable panels, no external library.
  * Drag handlers are attached only inside event callbacks (not during render).
  */
 export function ResizablePanels({

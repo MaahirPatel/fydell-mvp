@@ -1,7 +1,7 @@
 import type { JsonValue } from "./common";
 
 /**
- * World / scenario events — things the simulation does.
+ * World / scenario events, things the simulation does.
  * Distinct from candidate telemetry.
  */
 export type ScenarioEventKind =

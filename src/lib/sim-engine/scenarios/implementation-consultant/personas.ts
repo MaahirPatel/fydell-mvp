@@ -25,7 +25,7 @@ export const brightpathPeople: SimulationPersonDefinition[] = [
       {
         id: "duplicate_rehire",
         statement:
-          "E-104 is a rehire. The newer row with the August 10 start date is the correct one — keep that and drop the older duplicate.",
+          "E-104 is a rehire. The newer row with the August 10 start date is the correct one, keep that and drop the older duplicate.",
         hidden: true,
         disclosure: {
           whenAskedAbout: ["ask_schema", "ask_evidence", "request_clarification"],

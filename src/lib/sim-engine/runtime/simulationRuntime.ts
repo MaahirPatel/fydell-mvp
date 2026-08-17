@@ -48,7 +48,7 @@ function defaultWorkbench(scenario: SimulationScenarioDefinition): SimulationAtt
 
   return {
     code: apiFirst
-      ? `// Integration script — Northstar Health CRM sync\nconst payload = {\n  customer_id: 18402,\n  owner_email: "alex@northstar.health",\n  account_name: "Northstar Health"\n};\n\n// TODO: POST to /v1/accounts with Authorization: Bearer <token>\n`
+      ? `// Integration script, Northstar Health CRM sync\nconst payload = {\n  customer_id: 18402,\n  owner_email: "alex@northstar.health",\n  account_name: "Northstar Health"\n};\n\n// TODO: POST to /v1/accounts with Authorization: Bearer <token>\n`
       : `// Optional scratch pad\n`,
     language: "javascript",
     apiMethod: "POST",
@@ -471,7 +471,7 @@ export class SimulationRuntime {
         },
       },
     };
-    // If request id issued and candidate asks later — also set fact unlock path via world
+    // If request id issued and candidate asks later, also set fact unlock path via world
     if (result.requestId && result.status === 422) {
       this.attempt = {
         ...this.attempt,

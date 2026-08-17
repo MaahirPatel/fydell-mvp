@@ -65,7 +65,7 @@ export interface SimulationMessage {
   conversationId: string;
   personId: string;
   direction: "inbound" | "outbound";
-  /** Person conversation — never an AI tool interaction. */
+  /** Person conversation, never an AI tool interaction. */
   kind: "person_message";
   body: string;
   intent?: MessageIntent;
@@ -82,7 +82,7 @@ export interface SimulationConversation {
   unread: boolean;
 }
 
-/** AI assistant / tool usage — distinct from PersonConversation. */
+/** AI assistant / tool usage, distinct from PersonConversation. */
 export interface AiToolInteraction {
   id: string;
   kind: "ai_tool";

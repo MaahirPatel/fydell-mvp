@@ -4,7 +4,7 @@
  * Server-authorized persistence for engine attempts.
  *
  * Writes go through the service role because `sim_session_state` grants
- * `authenticated` SELECT only — a candidate can read their own state, but no
+ * `authenticated` SELECT only, a candidate can read their own state, but no
  * client may write it directly. Every call re-checks that the session belongs to
  * the caller before touching a row.
  *

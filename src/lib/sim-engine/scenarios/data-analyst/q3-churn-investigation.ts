@@ -2,24 +2,24 @@ import type { SimulationScenarioDefinition } from "../../types";
 import { churnPeople } from "./personas";
 
 /**
- * Q3 churn investigation — Data Analyst reference scenario.
+ * Q3 churn investigation, Data Analyst reference scenario.
  *
  * Multiple valid paths (none uniquely "correct sequence"):
  * A) Brief → schema → churn by plan → conclude mix/Growth
  * B) Brief → ask Product → mix disclosure → confirm with SQL
  * C) Brief → billing resource → billing query → refine with plan mix
- * D) Dead-end: ticket volume only (red herring) — should not unlock found_churn_driver
+ * D) Dead-end: ticket volume only (red herring), should not unlock found_churn_driver
  *
  * Primary driver in ground truth: Growth plan mix shift + elevated Growth churn,
- * with billing failures as a secondary contributor — not support tickets.
+ * with billing failures as a secondary contributor, not support tickets.
  */
 export const q3ChurnInvestigationScenario: SimulationScenarioDefinition = {
   metadata: {
     id: "q3-churn-investigation",
     slug: "q3-churn-investigation",
-    title: "Q3 churn — mix, usage, or billing?",
+    title: "Q3 churn, mix, usage, or billing?",
     description:
-      "Headline churn rose ~18% QoQ. Determine whether the increase is driven by customer mix, product usage, or billing failures — and write a defensible memo for the VP of CS.",
+      "Headline churn rose ~18% QoQ. Determine whether the increase is driven by customer mix, product usage, or billing failures, and write a defensible memo for the VP of CS.",
     roleKey: "data_analyst",
     estimatedDurationMinutes: 25,
     timeLimitSeconds: 25 * 60,
@@ -172,22 +172,22 @@ Do not invent precision you cannot support from queries and people.`,
   resources: [
     {
       id: "res_churn_brief",
-      title: "Brief — Q3 churn spike",
+      title: "Brief, Q3 churn spike",
       kind: "brief",
       initiallyVisible: true,
       summary: "Board question, competing theories, deadline",
       searchableText: "churn board pack Growth billing usage tickets",
-      content: `# Brief — Q3 churn spike
+      content: `# Brief, Q3 churn spike
 
 **Ask:** Why did paid churn rise ~18% QoQ?
 
 **Definition (Finance):** paid subscriptions with \`status='churned'\` and \`churned_at\` in 2026-07-01 … 2026-10-01. Exclude trials.
 
 ## Competing theories
-1. **Mix** — more Growth-plan customers (structurally higher churn)
-2. **Usage** — engagement decline precedes cancel
-3. **Billing** — payment failures → involuntary churn
-4. **Support** — ticket volume / quality (often raised in Slack; treat carefully)
+1. **Mix**, more Growth-plan customers (structurally higher churn)
+2. **Usage**, engagement decline precedes cancel
+3. **Billing**, payment failures → involuntary churn
+4. **Support**, ticket volume / quality (often raised in Slack; treat carefully)
 
 ## Deliverable
 A short memo to Amina Okonkwo (VP CS): primary driver, evidence, what you ruled out, caveats.
@@ -195,7 +195,7 @@ A short memo to Amina Okonkwo (VP CS): primary driver, evidence, what you ruled 
     },
     {
       id: "res_schema",
-      title: "Warehouse schema — subscriptions & related",
+      title: "Warehouse schema, subscriptions & related",
       kind: "schema",
       initiallyVisible: true,
       summary: "Tables and grain",
@@ -247,7 +247,7 @@ A short memo to Amina Okonkwo (VP CS): primary driver, evidence, what you ruled 
     },
     {
       id: "res_metric_dict",
-      title: "Metric dictionary — churn",
+      title: "Metric dictionary, churn",
       kind: "documentation",
       initiallyVisible: true,
       summary: "Finance vs Product definitions",
@@ -256,7 +256,7 @@ A short memo to Amina Okonkwo (VP CS): primary driver, evidence, what you ruled 
 
 **Paid churn (Finance, board):** count of paid subscriptions that became churned in the quarter / average paid base.
 
-**Product cancel rate:** distinct from Finance — includes product-initiated cancels only; excludes involuntary billing churn in some reports.
+**Product cancel rate:** distinct from Finance, includes product-initiated cancels only; excludes involuntary billing churn in some reports.
 
 Use **Finance paid churn** for this investigation unless Amina says otherwise.
 `,
@@ -266,7 +266,7 @@ Use **Finance paid churn** for this investigation unless Amina says otherwise.
       title: "Invoice failure sample (Q3)",
       kind: "csv",
       initiallyVisible: true,
-      summary: "Small extract — failed invoices by plan",
+      summary: "Small extract, failed invoices by plan",
       searchableText: "invoices failed Growth expired card",
       onOpenFlags: { opened_billing_resource: true },
       content: `# Invoice failure sample (Q3 extract)
@@ -288,7 +288,7 @@ Notes: Growth dominates failures. Pair with SQL on invoices + subscriptions befo
       summary: "Revealed after opening invoice sample or running billing SQL",
       searchableText: "payment failure Growth expired card",
       onOpenFlags: { opened_billing_resource: true },
-      content: `# Billing ops note — August
+      content: `# Billing ops note, August
 
 Elevated \`invoices.status='failed'\` on Growth plan, primarily expired cards.
 
@@ -299,14 +299,14 @@ Do not treat billing failures as the sole board explanation without comparing pl
     },
     {
       id: "res_slack_noise",
-      title: "Slack excerpt — support theory",
+      title: "Slack excerpt, support theory",
       kind: "markdown",
       initiallyVisible: true,
       summary: "Red herring pressure",
       searchableText: "tickets SSO password",
       content: `# Slack (excerpt)
 
-**AE:** Ticket volume is through the roof — churn must be support quality.
+**AE:** Ticket volume is through the roof, churn must be support quality.
 
 **Support Lead:** Most are SSO password resets. Please don't put that in the board pack.
 `,
@@ -397,7 +397,7 @@ Do not treat billing failures as the sole board explanation without comparing pl
         {
           kind: "SEND_MESSAGE",
           personId: "person_amina",
-          body: "If you have a working theory, send me a draft memo — primary driver, what you ruled out, and what you'd want to verify next. Prefer honesty over false precision.",
+          body: "If you have a working theory, send me a draft memo, primary driver, what you ruled out, and what you'd want to verify next. Prefer honesty over false precision.",
         },
         { kind: "CHANGE_TASK_PRIORITY", taskId: "task_memo", priority: "critical" },
       ],
@@ -547,7 +547,7 @@ Do not treat billing failures as the sole board explanation without comparing pl
   aiAssistant: {
     modelLabel: "Fydell Assistant (mock)",
     fallbackResponse:
-      "I can help you structure the investigation. Compare plan mix, billing failures, and usage — and treat support ticket volume skeptically unless cancel_intent dominates.",
+      "I can help you structure the investigation. Compare plan mix, billing failures, and usage, and treat support ticket volume skeptically unless cancel_intent dominates.",
     responses: [
       {
         id: "ai_mix",
@@ -559,7 +559,7 @@ Do not treat billing failures as the sole board explanation without comparing pl
         id: "ai_billing",
         whenPromptIncludes: ["billing", "failed", "invoice"],
         response:
-          "Failed invoices can contribute, especially on Growth. Quantify churned accounts with a prior failure — and still compare against mix before calling billing the primary driver.",
+          "Failed invoices can contribute, especially on Growth. Quantify churned accounts with a prior failure, and still compare against mix before calling billing the primary driver.",
       },
       {
         id: "ai_tickets",
@@ -577,7 +577,7 @@ Do not treat billing failures as the sole board explanation without comparing pl
   },
 };
 
-/** BI Analyst variant — same world, metric-reasoning emphasis in copy. */
+/** BI Analyst variant, same world, metric-reasoning emphasis in copy. */
 export const q3ChurnInvestigationBiScenario: SimulationScenarioDefinition = {
   ...q3ChurnInvestigationScenario,
   metadata: {
@@ -585,9 +585,9 @@ export const q3ChurnInvestigationBiScenario: SimulationScenarioDefinition = {
     id: "q3-churn-investigation-bi",
     slug: "q3-churn-investigation-bi",
     roleKey: "bi_analyst",
-    title: "Q3 churn metric — reconcile the board pack",
+    title: "Q3 churn metric, reconcile the board pack",
     description:
-      "Reconcile the board churn metric. Determine whether mix, usage, or billing explains the QoQ move — with explicit metric definitions.",
+      "Reconcile the board churn metric. Determine whether mix, usage, or billing explains the QoQ move, with explicit metric definitions.",
   },
   versions: {
     ...q3ChurnInvestigationScenario.versions,

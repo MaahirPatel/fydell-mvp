@@ -1,6 +1,6 @@
 /**
  * Maps legacy micro-sim slugs → sim-engine catalog scenario ids.
- * Used only when SIM_ENGINE_SELF_SERVE opt-in is enabled — never the default
+ * Used only when SIM_ENGINE_SELF_SERVE opt-in is enabled, never the default
  * production path to WorkbenchRunner.
  */
 export const LEGACY_SLUG_TO_ENGINE_SCENARIO: Record<string, string> = {

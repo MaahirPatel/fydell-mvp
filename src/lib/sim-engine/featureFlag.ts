@@ -18,7 +18,7 @@ export function isSimEngineEnabled(): boolean {
  * lab engine instead of creating a production WorkbenchRunner session.
  *
  * Requires SIM_ENGINE_ENABLED (lab) AND SIM_ENGINE_SELF_SERVE=1.
- * Default off everywhere — including development — so WorkbenchRunner remains
+ * Default off everywhere, including development, so WorkbenchRunner remains
  * the default self-serve path until explicitly enabled.
  */
 export function isSimEngineSelfServeOptIn(): boolean {

@@ -83,7 +83,7 @@ export function buildStrongFixture(scenario: SimulationScenarioDefinition): Simu
     kind: "customer_message",
     title: "Customer update",
     content:
-      "Priya — we confirmed the failures are schema validation on customer_id (UUID required after yesterday's validation deploy). Auth is healthy. We've corrected the payload and verified a 201. Residual risk: other jobs still sending numeric IDs should be updated before overnight sync.",
+      "Priya, we confirmed the failures are schema validation on customer_id (UUID required after yesterday's validation deploy). Auth is healthy. We've corrected the payload and verified a 201. Residual risk: other jobs still sending numeric IDs should be updated before overnight sync.",
     elapsedMs: 220_000,
   });
   const reco = upsertArtifact(customer.artifacts, {

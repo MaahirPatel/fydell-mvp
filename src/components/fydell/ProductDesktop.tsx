@@ -6,8 +6,7 @@ import FydellMark from "@/components/brand/FydellMark";
  * The graphite desk a product window sits on.
  *
  * Cursor stages software on a painted landscape. Fydell has no truthful
- * equivalent, so the slot is a solid graphite field with a faint grain —
- * depth without decoration, and nothing that could be mistaken for another
+ * equivalent, so the slot is a solid graphite field with a faint grain, * depth without decoration, and nothing that could be mistaken for another
  * company's imagery.
  */
 export function DesktopStage({
@@ -36,7 +35,7 @@ const SESSION_COLOR: Record<SessionTone, string> = {
 
 /**
  * A Fydell application window. Title bar, session state, product surface.
- * Not macOS chrome, not a screenshot frame — the same header language the
+ * Not macOS chrome, not a screenshot frame, the same header language the
  * live console already uses.
  */
 export function AppWindow({

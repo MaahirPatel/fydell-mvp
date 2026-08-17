@@ -21,7 +21,7 @@ export const churnPeople: SimulationPersonDefinition[] = [
       {
         id: "exec_wants_driver",
         statement:
-          "The exec team saw churn up ~18% QoQ on the board pack. They want the primary driver — mix, usage, or billing — not three equally weighted theories.",
+          "The exec team saw churn up ~18% QoQ on the board pack. They want the primary driver (mix, usage, or billing), not three equally weighted theories.",
       },
       {
         id: "definition_caution",
@@ -46,7 +46,7 @@ export const churnPeople: SimulationPersonDefinition[] = [
       {
         id: "billing_had_spike",
         statement:
-          "We did see an elevated payment-failure rate in August — mostly expired cards on the Growth plan — but I don't know if that explains the board churn number.",
+          "We did see an elevated payment-failure rate in August, mostly expired cards on the Growth plan, but I don't know if that explains the board churn number.",
         hidden: true,
         disclosure: {
           whenAskedAbout: ["ask_status", "ask_evidence", "ask_schema"],
@@ -78,7 +78,7 @@ export const churnPeople: SimulationPersonDefinition[] = [
       {
         id: "usage_decline_hypothesis",
         statement:
-          "We hypothesized Growth-plan accounts with <3 active days in the last 30 cancel more often — but that may be correlation with plan mix, not causation.",
+          "We hypothesized Growth-plan accounts with <3 active days in the last 30 cancel more often, but that may be correlation with plan mix, not causation.",
         disclosure: {
           whenAskedAbout: ["ask_status", "ask_evidence", "other"],
         },
@@ -108,7 +108,7 @@ export const churnPeople: SimulationPersonDefinition[] = [
       {
         id: "tickets_red_herring",
         statement:
-          "Ticket volume was up, but most were password resets after an SSO change — not cancel intent. Don't treat ticket count as the churn driver.",
+          "Ticket volume was up, but most were password resets after an SSO change, not cancel intent. Don't treat ticket count as the churn driver.",
         disclosure: {
           whenAskedAbout: ["ask_status", "ask_evidence", "other"],
         },

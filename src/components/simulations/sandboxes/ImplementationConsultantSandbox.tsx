@@ -43,7 +43,7 @@ export function ImplementationConsultantSandbox({ runtime, debug }: SimulationRe
     "Phased import:\n- Clean rows today:\n- Fixes before Monday:\n- Verification:\n"
   );
   const [customerDraft, setCustomerDraft] = useState(
-    "Hi Priya — here's the Monday plan for the employee import…"
+    "Hi Priya, here's the Monday plan for the employee import…"
   );
 
   const resourceItems = useMemo(

@@ -41,7 +41,7 @@ export function SolutionsEngineerSandbox({ runtime, debug }: SimulationRendererP
   const [chatDraft, setChatDraft] = useState("");
   const [aiDraft, setAiDraft] = useState("");
   const [customerDraft, setCustomerDraft] = useState(
-    "Hi Priya — I'm investigating the CRM sync validation failures. I'll confirm root cause against the live error payload and share a supported fix path shortly."
+    "Hi Priya, I'm investigating the CRM sync validation failures. I'll confirm root cause against the live error payload and share a supported fix path shortly."
   );
   const [recoDraft, setRecoDraft] = useState("");
   const [execDraft, setExecDraft] = useState("");

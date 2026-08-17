@@ -8,7 +8,7 @@ export const skedraSupportPeople: SimulationPersonDefinition[] = [
     channel: "internal",
     avatarInitials: "SO",
     objectives: ["Confirm what changed in R-2214", "Revert config quickly if called"],
-    constraints: ["Busy on the incident bridge — needs specific questions"],
+    constraints: ["Busy on the incident bridge, needs specific questions"],
     communicationStyle: "Terse, factual, fast when asked about release/auth path.",
     knowledge: [
       {
@@ -24,7 +24,7 @@ export const skedraSupportPeople: SimulationPersonDefinition[] = [
       {
         id: "password_untouched",
         statement:
-          "Password logins are untouched. That's why the status page is green — its checks use a password test account. Only SSO customers with drifting IdPs are hitting this.",
+          "Password logins are untouched. That's why the status page is green, its checks use a password test account. Only SSO customers with drifting IdPs are hitting this.",
         hidden: true,
         disclosure: {
           whenAskedAbout: ["ask_status", "ask_evidence", "ask_auth"],
@@ -46,7 +46,7 @@ export const skedraSupportPeople: SimulationPersonDefinition[] = [
       {
         id: "needs_update",
         statement:
-          "Three SSO customers are escalating. Give me something we can stand behind — likely cause, who is affected, and what we're doing next. Don't tell them to reset passwords if this is SAML.",
+          "Three SSO customers are escalating. Give me something we can stand behind, likely cause, who is affected, and what we're doing next. Don't tell them to reset passwords if this is SAML.",
         disclosure: {
           whenAskedAbout: ["ask_status", "request_escalation", "make_recommendation"],
         },

@@ -12,7 +12,7 @@ export interface SqlExecuteResult {
 }
 
 /**
- * Deterministic structural SQL mock — not a real database.
+ * Deterministic structural SQL mock, not a real database.
  * Recognizes SELECT/FROM/WHERE/JOIN/GROUP BY patterns via configured matchers.
  */
 export function executeSqlQuery(

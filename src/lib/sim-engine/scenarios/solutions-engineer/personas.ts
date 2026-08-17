@@ -1,7 +1,7 @@
 import type { SimulationPersonDefinition } from "../../types";
 
 /**
- * Northstar Health — Solutions Engineer personas.
+ * Northstar Health, Solutions Engineer personas.
  * Knowledge is scoped. Disclosure rules gate hidden facts.
  */
 export const northstarPeople: SimulationPersonDefinition[] = [
@@ -30,7 +30,7 @@ export const northstarPeople: SimulationPersonDefinition[] = [
       {
         id: "intermittent_validation",
         statement:
-          "Production sync jobs intermittently return validation failures — not every record, but enough to break the demo dataset.",
+          "Production sync jobs intermittently return validation failures, not every record, but enough to break the demo dataset.",
         disclosure: {
           whenAskedAbout: ["ask_status", "ask_schema", "ask_evidence", "other"],
         },
@@ -46,7 +46,7 @@ export const northstarPeople: SimulationPersonDefinition[] = [
       {
         id: "wants_workaround",
         statement:
-          "If you can give us a production workaround tonight, we'll take it — but it has to survive the board demo.",
+          "If you can give us a production workaround tonight, we'll take it, but it has to survive the board demo.",
         hidden: true,
         disclosure: {
           whenAskedAbout: ["request_escalation", "ask_status"],
@@ -99,7 +99,7 @@ export const northstarPeople: SimulationPersonDefinition[] = [
       {
         id: "auth_healthy",
         statement:
-          "Auth systems look healthy on our side — token issuance and validation metrics are normal for the last 24 hours.",
+          "Auth systems look healthy on our side, token issuance and validation metrics are normal for the last 24 hours.",
         disclosure: {
           whenAskedAbout: ["ask_auth", "ask_status"],
         },
@@ -107,7 +107,7 @@ export const northstarPeople: SimulationPersonDefinition[] = [
       {
         id: "schema_validation_deployed",
         statement:
-          "We deployed stricter schema validation yesterday afternoon. customer_id must now be a UUID string — numeric IDs that used to coerce will 422 with INVALID_FIELD.",
+          "We deployed stricter schema validation yesterday afternoon. customer_id must now be a UUID string, numeric IDs that used to coerce will 422 with INVALID_FIELD.",
         hidden: true,
         disclosure: {
           whenAskedAbout: ["ask_deployment", "ask_schema"],

@@ -16,7 +16,7 @@ export const northstarIntegrationScenario: SimulationScenarioDefinition = {
   metadata: {
     id: "northstar-integration",
     slug: "northstar-integration",
-    title: "Northstar Health — CRM sync failure before board demo",
+    title: "Northstar Health, CRM sync failure before board demo",
     description:
       "Northstar Health is synchronizing enterprise accounts from its CRM into Acme Cloud. Auth works in Postman, but production requests intermittently return validation failures. Board demo is tomorrow.",
     roleKey: "solutions_engineer",
@@ -40,7 +40,7 @@ Your job:
 5. Communicate a customer-safe update.
 6. Leave a concise technical recommendation for leadership.
 
-Multiple investigation paths are valid. Do not chase a single "correct sequence" — arrive at a defensible diagnosis and artifacts.`,
+Multiple investigation paths are valid. Do not chase a single "correct sequence", arrive at a defensible diagnosis and artifacts.`,
   },
 
   versions: {
@@ -177,7 +177,7 @@ Multiple investigation paths are valid. Do not chase a single "correct sequence"
     {
       id: "task_escalation_response",
       title: "Respond to customer escalation",
-      description: "Appears if the customer escalates — de-escalate with facts.",
+      description: "Appears if the customer escalates, de-escalate with facts.",
       initialStatus: "LOCKED",
       priority: "critical",
       competencyIds: ["customer_communication", "stakeholder_judgment"],
@@ -196,12 +196,12 @@ Multiple investigation paths are valid. Do not chase a single "correct sequence"
   resources: [
     {
       id: "res_customer_brief",
-      title: "Customer brief — Northstar Health",
+      title: "Customer brief, Northstar Health",
       kind: "brief",
       initiallyVisible: true,
       summary: "Account context, demo timing, conflicting theories",
       searchableText: "board demo CRM sync ownership schema",
-      content: `# Customer brief — Northstar Health
+      content: `# Customer brief, Northstar Health
 
 **Account:** Northstar Health (enterprise healthcare)
 **Integration:** CRM → Acme Cloud account synchronization
@@ -222,10 +222,10 @@ Multiple investigation paths are valid. Do not chase a single "correct sequence"
     },
     {
       id: "res_api_docs",
-      title: "Acme Cloud Accounts API — documentation",
+      title: "Acme Cloud Accounts API, documentation",
       kind: "documentation",
       initiallyVisible: true,
-      summary: "Endpoints, auth, rate limits — contains a realistic ambiguity",
+      summary: "Endpoints, auth, rate limits, contains a realistic ambiguity",
       searchableText: "POST /v1/accounts Authorization rate limit",
       content: `# Accounts API
 
@@ -246,7 +246,7 @@ All requests require:
 \`\`\`
 
 > **Note (outdated section):** Older guides show \`customer_id\` as an integer.
-> Current validation rules are maintained by the platform team — see schema reference.
+> Current validation rules are maintained by the platform team, see schema reference.
 
 ## Rate limits
 120 requests / minute per token. Bursting can return 429.
@@ -254,7 +254,7 @@ All requests require:
 ## Errors
 - \`401\` Unauthorized
 - \`404\` Unknown path
-- \`422\` INVALID_FIELD — body failed schema validation
+- \`422\` INVALID_FIELD, body failed schema validation
 `,
     },
     {
@@ -282,7 +282,7 @@ If Postman succeeds with the same token, auth is unlikely to be the primary prod
       initiallyVisible: true,
       summary: "Field types for POST /v1/accounts",
       searchableText: "customer_id uuid owner_email account_name",
-      content: `# Request schema — POST /v1/accounts
+      content: `# Request schema, POST /v1/accounts
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
@@ -314,7 +314,7 @@ Platform schema validation was tightened. Integer \`customer_id\` values that pr
     },
     {
       id: "res_deploy_notes",
-      title: "Deployment notes — schema validation",
+      title: "Deployment notes, schema validation",
       kind: "markdown",
       initiallyVisible: false,
       summary: "Revealed after engineering discloses yesterday's deploy",
@@ -441,7 +441,7 @@ hint=integer_coercion_removed_in_yesterday_deploy
         { kind: "REVEAL_RESOURCE", resourceId: "res_deploy_notes" },
         {
           kind: "SHOW_NOTIFICATION",
-          message: "New resource available: Deployment notes — schema validation",
+          message: "New resource available: Deployment notes, schema validation",
           tone: "success",
         },
         { kind: "UNLOCK_TOOL", toolId: "tool_logs" },
@@ -489,8 +489,8 @@ hint=integer_coercion_removed_in_yesterday_deploy
         {
           kind: "ADD_INBOX_ITEM",
           personId: "person_priya",
-          subject: "Escalation — board demo at risk",
-          body: "We need a clear status in the next hour. If this isn't fixed overnight, the board demo fails. Please confirm root cause and whether we have a supported path — not a guess.",
+          subject: "Escalation, board demo at risk",
+          body: "We need a clear status in the next hour. If this isn't fixed overnight, the board demo fails. Please confirm root cause and whether we have a supported path, not a guess.",
         },
         {
           kind: "CREATE_TASK",
@@ -550,7 +550,7 @@ hint=integer_coercion_removed_in_yesterday_deploy
       actions: [
         {
           kind: "SHOW_NOTIFICATION",
-          message: "API request succeeded — capture your customer update and technical recommendation",
+          message: "API request succeeded, capture your customer update and technical recommendation",
           tone: "success",
         },
         { kind: "CHANGE_TASK_PRIORITY", taskId: "task_customer_update", priority: "critical" },
@@ -603,13 +603,13 @@ hint=integer_coercion_removed_in_yesterday_deploy
   aiAssistant: {
     modelLabel: "Fydell Assistant (mock)",
     fallbackResponse:
-      "I can help you reason about the failure. Share the status code or ask about auth vs schema vs ownership. I won't invent production facts — verify against docs and engineering.",
+      "I can help you reason about the failure. Share the status code or ask about auth vs schema vs ownership. I won't invent production facts, verify against docs and engineering.",
     responses: [
       {
         id: "ai_422",
         whenPromptIncludes: ["422", "invalid_field"],
         response:
-          "A 422 INVALID_FIELD usually means the body failed schema validation. Compare the payload field types to the current schema reference — especially customer_id. Auth succeeding in Postman makes 401 less likely as the primary cause.",
+          "A 422 INVALID_FIELD usually means the body failed schema validation. Compare the payload field types to the current schema reference, especially customer_id. Auth succeeding in Postman makes 401 less likely as the primary cause.",
       },
       {
         id: "ai_auth",

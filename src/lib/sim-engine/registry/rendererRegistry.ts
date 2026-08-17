@@ -13,7 +13,7 @@ export interface RendererDefinition {
   roleKey: RoleKey;
   label: string;
   status: RendererStatus;
-  /** Lazy component reference — never a fake stub for unimplemented roles. */
+  /** Lazy component reference, never a fake stub for unimplemented roles. */
   component: ComponentType<SimulationRendererProps>;
 }
 

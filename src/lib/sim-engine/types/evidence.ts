@@ -89,6 +89,6 @@ export interface AnalysisResult {
   inferences: EvidenceInference[];
   sections: AnalysisSection[];
   playback: PlaybackEntry[];
-  /** Present only when enough evidence exists — never invented. */
+  /** Present only when enough evidence exists, never invented. */
   overallNarrative: string;
 }

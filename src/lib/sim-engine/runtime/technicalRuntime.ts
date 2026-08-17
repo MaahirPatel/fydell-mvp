@@ -33,7 +33,7 @@ export interface ApiExecuteResult {
 }
 
 /**
- * Deterministic API mock — multiple failure states, recoverable.
+ * Deterministic API mock, multiple failure states, recoverable.
  * Not a single scripted success path.
  */
 export function executeApiRequest(
@@ -245,7 +245,7 @@ export function runIntegrationCode(
     if (/customer_id\s*[:=]\s*\d+/.test(trimmed) && !/customer_id\s*[:=]\s*['\"][0-9a-f-]{36}/i.test(trimmed)) {
       return {
         output:
-          "Script executed locally. Warning: customer_id looks numeric — recent schema validation expects UUID.",
+          "Script executed locally. Warning: customer_id looks numeric, recent schema validation expects UUID.",
         success: false,
       };
     }

@@ -18,7 +18,7 @@ export interface SimulationTaskDefinition {
   priority: TaskPriority;
   /** Task IDs that must complete before this can become AVAILABLE. */
   dependsOn?: string[];
-  /** If present, completion is derived — not checkbox-driven. */
+  /** If present, completion is derived, not checkbox-driven. */
   completion?: TaskCompletionRule;
   competencyIds?: string[];
 }
@@ -114,7 +114,7 @@ export interface SimulationCompetencyDefinition {
   id: string;
   label: string;
   description: string;
-  /** Weight for presentation only — never a magic score alone. */
+  /** Weight for presentation only, never a magic score alone. */
   weight?: number;
 }
 

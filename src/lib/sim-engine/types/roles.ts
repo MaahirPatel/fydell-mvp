@@ -21,7 +21,7 @@ export interface RoleSimulationCapabilities {
   defaultCapabilities: SimulationCapability[];
 }
 
-/** Capability union — prefer a set over a boolean swamp. */
+/** Capability union, prefer a set over a boolean swamp. */
 export type SimulationCapability =
   | "tasks"
   | "resources"

@@ -1,5 +1,5 @@
 /**
- * Deterministic product-demo heuristics — NOT scientifically validated hiring predictors.
+ * Deterministic product-demo heuristics, NOT scientifically validated hiring predictors.
  * Every inference must cite observations.
  */
 import type {
@@ -265,7 +265,7 @@ export function deriveCompetencies(
     });
   };
 
-  /** Only evaluate competencies declared on the scenario — never invent extras. */
+  /** Only evaluate competencies declared on the scenario, never invent extras. */
   for (const def of scenario.competencies) {
     switch (def.id) {
       case "api_troubleshooting": {
@@ -764,7 +764,7 @@ export function buildSections(
     body: "Outcomes are observation-backed. INSUFFICIENT_EVIDENCE means we should not invent a score.",
     items: competencies.map((c) => ({
       id: c.competencyId,
-      label: `${c.label} — ${c.outcome.replaceAll("_", " ").toLowerCase()} (${Math.round(c.confidence * 100)}% confidence)`,
+      label: `${c.label}: ${c.outcome.replaceAll("_", " ").toLowerCase()} (${Math.round(c.confidence * 100)}% confidence)`,
       detail: c.inferences[0]?.statement ?? c.strengths[0] ?? c.concerns[0],
       eventIds: c.supportingEventIds,
       artifactIds: c.supportingArtifactIds,
@@ -858,7 +858,7 @@ export function buildSections(
     kind: "follow_up",
     title: "Follow-up",
     hasContent: true,
-    body: "What remains uncertain — better than inventing scores.",
+    body: "What remains uncertain, better than inventing scores.",
     items: followUps.map((q, i) => ({ id: `fq_${i}`, label: q })),
   });
 

@@ -5,7 +5,7 @@ import type { TelemetryEvent } from "@/lib/sim-engine/types";
 
 /**
  * Ref-backed telemetry helpers for UI surfaces.
- * Does not rerender on every keystroke — count is throttled.
+ * Does not rerender on every keystroke, count is throttled.
  */
 export function useSimulationTelemetry(opts?: {
   onBlur?: (reason: "window" | "visibility") => void;

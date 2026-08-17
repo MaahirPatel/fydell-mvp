@@ -2,14 +2,14 @@ import type { SimulationScenarioDefinition } from "../../types";
 import { northlinePeople } from "./northline-personas";
 
 /**
- * Northline Components — operations yield investigation (Data Analyst).
+ * Northline Components, operations yield investigation (Data Analyst).
  *
  * SYNTHETIC. Northline Components is a fictional manufacturer. This is the
  * released Data Analyst evaluation the pilot actually ships, so the same
  * scenario can appear in the product and in marketing without drift.
  *
  * The question: reported yield fell from 93.2 percent. Is production actually
- * worse, or did reporting change? Ground truth — most of the drop is a
+ * worse, or did reporting change? Ground truth, most of the drop is a
  * mid-period reporting change (HOLD_RECLASS, live day 9), but line L2 Day still
  * carries a genuine residual loss that should be checked before the next shift.
  *
@@ -20,9 +20,9 @@ export const northlineOperationsYieldScenario: SimulationScenarioDefinition = {
   metadata: {
     id: "northline-operations-yield",
     slug: "northline-operations-yield",
-    title: "Northline yield — real drop or reporting change?",
+    title: "Northline yield, real drop or reporting change?",
     description:
-      "Reported plant yield fell from 93.2 percent. Determine whether production genuinely got worse or whether a mid-period reporting change moved the number — and write a defensible recommendation for the Operations Manager.",
+      "Reported plant yield fell from 93.2 percent. Determine whether production genuinely got worse or whether a mid-period reporting change moved the number, and write a defensible recommendation for the Operations Manager.",
     roleKey: "data_analyst",
     estimatedDurationMinutes: 20,
     timeLimitSeconds: 20 * 60,
@@ -181,12 +181,12 @@ Do not claim a cause you cannot support from the data and the people.`,
   resources: [
     {
       id: "res_brief",
-      title: "Brief — reported yield drop",
+      title: "Brief, reported yield drop",
       kind: "brief",
       initiallyVisible: true,
       summary: "Ops question, the new code, deadline",
       searchableText: "yield drop reporting HOLD_RECLASS production scrap",
-      content: `# Brief — reported yield drop
+      content: `# Brief, reported yield drop
 
 **Ask:** Reported yield fell from 93.2 percent this period. Is production actually worse, or did reporting change?
 
@@ -234,28 +234,28 @@ HOLD_RECLASS appears only in the current period. Prior periods were not restated
     },
     {
       id: "res_dictionary",
-      title: "Metric dictionary — yield",
+      title: "Metric dictionary, yield",
       kind: "documentation",
       initiallyVisible: true,
       summary: "How yield is defined and what it excludes",
       searchableText: "yield definition completed_good planned HOLD_RECLASS restate",
       onOpenFlags: { opened_metric_dictionary: true },
-      content: `# Metric dictionary — yield
+      content: `# Metric dictionary, yield
 
 **yield** = completed_good / planned
 
-**completed_good** excludes any unit that does not leave as good output — including units in \`HOLD_RECLASS\`.
+**completed_good** excludes any unit that does not leave as good output, including units in \`HOLD_RECLASS\`.
 
 Prior periods are **not** restated when a disposition code changes. Two periods reported under different rules are not directly comparable.`,
     },
     {
       id: "res_ops_note",
-      title: "Ops note — L2 Day (revealed)",
+      title: "Ops note, L2 Day (revealed)",
       kind: "log",
       initiallyVisible: false,
       summary: "Revealed after the residual comparison",
       searchableText: "L2 Day residual scrap real loss shift",
-      content: `# Ops note — L2 Day
+      content: `# Ops note, L2 Day
 
 After backing out reclassified volume, L2 Day still shows more scrap than the prior period. The loss looks real, but the data does not establish a cause. Check the line before the next shift.`,
     },
@@ -315,7 +315,7 @@ After backing out reclassified volume, L2 Day still shows more scrap than the pr
         {
           kind: "SEND_MESSAGE",
           personId: "person_marcus",
-          body: "Correction on the disposition code: HOLD_RECLASS went live on day 9 of this 20-day period, not on day 1. Anything before day 9 was reported the old way — so the reclassification only affects part of the period. Does that change your read?",
+          body: "Correction on the disposition code: HOLD_RECLASS went live on day 9 of this 20-day period, not on day 1. Anything before day 9 was reported the old way, so the reclassification only affects part of the period. Does that change your read?",
         },
         { kind: "UPDATE_WORLD_STATE", flag: "changed_info_released", value: true },
         {
@@ -411,13 +411,13 @@ After backing out reclassified volume, L2 Day still shows more scrap than the pr
         id: "ai_reclass",
         whenPromptIncludes: ["reclass", "reporting", "code"],
         response:
-          "HOLD_RECLASS only exists in the current period and leaves the numerator. Quantify its volume, then estimate how much of the reported drop it explains — but note prior periods were never restated, so any corrected gap is an estimate.",
+          "HOLD_RECLASS only exists in the current period and leaves the numerator. Quantify its volume, then estimate how much of the reported drop it explains, but note prior periods were never restated, so any corrected gap is an estimate.",
       },
       {
         id: "ai_residual",
         whenPromptIncludes: ["residual", "scrap", "l2", "line"],
         response:
-          "After backing out reclassified volume, compare residual scrap by line against the prior period. If one line is still elevated, that is a real loss — but the data shows the loss, not the cause.",
+          "After backing out reclassified volume, compare residual scrap by line against the prior period. If one line is still elevated, that is a real loss, but the data shows the loss, not the cause.",
       },
       {
         id: "ai_memo",

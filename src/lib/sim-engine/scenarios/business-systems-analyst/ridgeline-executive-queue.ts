@@ -2,7 +2,7 @@ import type { SimulationScenarioDefinition } from "../../types";
 import { ridgelinePeople } from "./personas";
 
 /**
- * Ridgeline Executive Queue — BSA reference scenario.
+ * Ridgeline Executive Queue, BSA reference scenario.
  *
  * Config-only polymorphism proof: uses workflow_rules + shared panels via
  * ConfigDrivenSandbox (no RoleKey-specific layout branching required).
@@ -18,9 +18,9 @@ export const ridgelineExecutiveQueueScenario: SimulationScenarioDefinition = {
   metadata: {
     id: "ridgeline-executive-queue",
     slug: "ridgeline-executive-queue",
-    title: "Ridgeline — the executive queue",
+    title: "Ridgeline, the executive queue",
     description:
-      "Ordinary purchases are routing to executives after a policy update. The system isn't broken — find the rule interaction, quantify impact, and recommend a compliance-safe fix.",
+      "Ordinary purchases are routing to executives after a policy update. The system isn't broken, find the rule interaction, quantify impact, and recommend a compliance-safe fix.",
     roleKey: "business_systems_analyst",
     estimatedDurationMinutes: 25,
     timeLimitSeconds: 25 * 60,
@@ -148,7 +148,7 @@ Multiple investigation paths are valid.`,
     {
       id: "task_fix",
       title: "Recommend a compliance-safe fix",
-      description: "Backfill + precise 'new vendor' definition — not delete R0.",
+      description: "Backfill + precise 'new vendor' definition, not delete R0.",
       initialStatus: "AVAILABLE",
       priority: "critical",
       competencyIds: ["systems_judgment"],
@@ -170,12 +170,12 @@ Multiple investigation paths are valid.`,
   resources: [
     {
       id: "res_brief",
-      title: "Brief — executive queue",
+      title: "Brief, executive queue",
       kind: "brief",
       initiallyVisible: true,
       summary: "Routine buys hitting CFO desk",
       searchableText: "executive routing policy R0",
-      content: `# Brief — Executive queue
+      content: `# Brief, Executive queue
 
 Ordinary purchases are landing on executives. Teams are starting to bypass approvals.
 
@@ -226,7 +226,7 @@ R0 is evaluated **before** all amount-based rules.
     },
     {
       id: "res_systems_note",
-      title: "Systems note — vendor migration",
+      title: "Systems note, vendor migration",
       kind: "documentation",
       initiallyVisible: true,
       summary: "pending_verification until first completed PO",
@@ -330,7 +330,7 @@ Auditors flagged p-card bypasses when approval queues became unusable. Any fix t
         {
           kind: "SEND_MESSAGE",
           personId: "person_lee",
-          body: "I need the root cause and a count before I escalate to Finance — and please don't propose deleting the new-vendor review entirely.",
+          body: "I need the root cause and a count before I escalate to Finance, and please don't propose deleting the new-vendor review entirely.",
         },
         { kind: "CHANGE_TASK_PRIORITY", taskId: "task_summary", priority: "critical" },
       ],
@@ -344,7 +344,7 @@ Auditors flagged p-card bypasses when approval queues became unusable. Any fix t
         {
           kind: "SEND_MESSAGE",
           personId: "person_farah",
-          body: "Deleting R0 or blanket auto-approval fails compliance. Keep executive review for genuinely new vendors — fix the migration status and the definition.",
+          body: "Deleting R0 or blanket auto-approval fails compliance. Keep executive review for genuinely new vendors, fix the migration status and the definition.",
         },
         {
           kind: "SHOW_NOTIFICATION",

@@ -1,6 +1,6 @@
 /**
  * The hero poster: an open Fydell session, staged the way Linear stages an
- * issue — three panes, hairline structure, one related window floating on
+ * issue, three panes, hairline structure, one related window floating on
  * the desk.
  *
  * Deliberately static. The interactive inspector lives in the section below.

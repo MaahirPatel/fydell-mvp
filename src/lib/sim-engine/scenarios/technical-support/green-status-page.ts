@@ -2,7 +2,7 @@ import type { SimulationScenarioDefinition } from "../../types";
 import { skedraSupportPeople } from "./personas";
 
 /**
- * Green status page incident — Technical Support Engineer reference scenario.
+ * Green status page incident, Technical Support Engineer reference scenario.
  *
  * Multiple valid paths:
  * A) Tickets → auth log → release notes → ask Sam → escalate + customer update
@@ -15,7 +15,7 @@ export const greenStatusPageScenario: SimulationScenarioDefinition = {
   metadata: {
     id: "green-status-page-incident",
     slug: "green-status-page-incident",
-    title: "Skedra — green status page, SSO login failures",
+    title: "Skedra, green status page, SSO login failures",
     description:
       "Multiple customers report intermittent SSO login failures. The status page is green. Triage tickets, isolate the likely cause, escalate with evidence, and write a customer update you can stand behind.",
     roleKey: "technical_support_engineer",
@@ -152,7 +152,7 @@ Multiple investigation paths are valid.`,
     {
       id: "task_customer",
       title: "Write customer update",
-      description: "Scope, likely cause, next action — no password-reset misdirection.",
+      description: "Scope, likely cause, next action, no password-reset misdirection.",
       initialStatus: "AVAILABLE",
       priority: "high",
       competencyIds: ["customer_communication"],
@@ -320,7 +320,7 @@ If \`saml_validate\` skew errors cluster after an auth release:
         {
           kind: "SEND_MESSAGE",
           personId: "person_jordan",
-          body: "I need a customer update in the next few minutes. Scope, likely cause, next action — and please don't push password resets if this is SSO.",
+          body: "I need a customer update in the next few minutes. Scope, likely cause, next action, and please don't push password resets if this is SSO.",
         },
         { kind: "CHANGE_TASK_PRIORITY", taskId: "task_customer", priority: "critical" },
       ],
@@ -334,7 +334,7 @@ If \`saml_validate\` skew errors cluster after an auth release:
         {
           kind: "SEND_MESSAGE",
           personId: "person_sam",
-          body: "Password path looks fine in the logs. Don't send a password-reset blast — this is clustering on saml_validate after R-2214.",
+          body: "Password path looks fine in the logs. Don't send a password-reset blast, this is clustering on saml_validate after R-2214.",
         },
         {
           kind: "SHOW_NOTIFICATION",
@@ -399,7 +399,7 @@ If \`saml_validate\` skew errors cluster after an auth release:
         id: "ai_triage",
         whenPromptIncludes: ["ticket", "triage", "t-883"],
         response:
-          "T-881, T-882, and T-884 look SSO/IdP related. T-883 is a single-user password mismatch after a password change — usually unrelated.",
+          "T-881, T-882, and T-884 look SSO/IdP related. T-883 is a single-user password mismatch after a password change, usually unrelated.",
       },
       {
         id: "ai_customer",

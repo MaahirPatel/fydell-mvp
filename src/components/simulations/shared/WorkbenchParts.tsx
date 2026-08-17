@@ -354,7 +354,7 @@ export function AiAssistant({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-[11px] text-[var(--text-tertiary)]">
-        AI Assistant (tool) — distinct from coworker chat
+        AI Assistant (tool), distinct from coworker chat
       </div>
       <div className="min-h-0 flex-1 space-y-3 overflow-auto p-3">
         {history.map((h) => (
@@ -1307,7 +1307,7 @@ export function DatasetTable({
 const CONFIDENCE_OPTIONS: EvidenceClaim["confidence"][] = ["low", "medium", "high"];
 
 /**
- * Evidence pack builder — the defining Fydell capability. A claim is connected
+ * Evidence pack builder, the defining Fydell capability. A claim is connected
  * to citations from real sources, carries an explicit assumption, a limitation,
  * and a confidence, so the report can never read a conclusion as certainty.
  */

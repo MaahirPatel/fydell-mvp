@@ -28,7 +28,7 @@ export interface SimulationToolDefinition {
 }
 
 /**
- * Assembled scenario definition — the single authoring contract.
+ * Assembled scenario definition, the single authoring contract.
  * Files may be split physically; this is the assembled object.
  */
 export interface SimulationScenarioDefinition {
@@ -145,7 +145,7 @@ export interface AiAssistantConfig {
   modelLabel: string;
   responses: Array<{
     id: string;
-    /** Match against prompt keywords (assistant only — personas use disclosure). */
+    /** Match against prompt keywords (assistant only, personas use disclosure). */
     whenPromptIncludes: string[];
     response: string;
   }>;
@@ -159,7 +159,7 @@ export interface SqlTableDef {
 }
 
 /**
- * Pattern-matched SQL results — not a full SQL engine.
+ * Pattern-matched SQL results, not a full SQL engine.
  * First matching pattern wins; otherwise structural errors or empty result.
  */
 export interface SqlRuntimeConfig {

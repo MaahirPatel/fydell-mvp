@@ -32,7 +32,7 @@ export function useSimulationRuntime(
     return () => runtime.dispose();
   }, [runtime]);
 
-  // Dev persistence only — not production durability
+  // Dev persistence only, not production durability
   useEffect(() => {
     if (!opts?.persist) return;
     if (attempt.status === "NOT_STARTED") return;

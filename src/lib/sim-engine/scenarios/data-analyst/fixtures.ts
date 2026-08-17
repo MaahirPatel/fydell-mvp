@@ -95,7 +95,7 @@ export function buildDaStrongFixture(scenario: SimulationScenarioDefinition): Si
   const memo = upsertArtifact(attempt.artifacts, {
     kind: "analysis_memo",
     title: "Analysis memo",
-    content: `Primary driver: Growth plan mix shift — Growth share of paid base rose and accounts for ~61% of Q3 churned subscriptions.
+    content: `Primary driver: Growth plan mix shift, Growth share of paid base rose and accounts for ~61% of Q3 churned subscriptions.
 
 Evidence: churn-by-plan query and base mix shift; billing failures are elevated on Growth but secondary.
 

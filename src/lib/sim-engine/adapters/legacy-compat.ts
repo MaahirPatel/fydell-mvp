@@ -1,7 +1,7 @@
 /**
  * Compatibility boundary between NEW ENGINE DOMAIN and LEGACY/LIVE domain.
  *
- * Pure mappers — defined and unit-tested, NOT wired to production DB writes.
+ * Pure mappers, defined and unit-tested, NOT wired to production DB writes.
  */
 import type { SimulationAttempt, TelemetryEvent, CompetencyEvidence, EvidenceObservation } from "../types";
 

@@ -23,7 +23,7 @@ export function initPeople(
 
 /**
  * Classify candidate message into an intent.
- * Deterministic, multi-signal — not a single includes() for the whole reply.
+ * Deterministic, multi-signal, not a single includes() for the whole reply.
  */
 export function classifyIntent(message: string): MessageIntent {
   const m = message.toLowerCase();
@@ -142,7 +142,7 @@ export class DeterministicPersonaRuntime implements PersonaRuntime {
 
     if (person.outOfScope?.some((t) => message.toLowerCase().includes(t.toLowerCase()))) {
       return {
-        body: `I can't speak to that from my side — you'd need someone closer to that area. Happy to help on ${person.title.toLowerCase()} topics.`,
+        body: `I can't speak to that from my side, you'd need someone closer to that area. Happy to help on ${person.title.toLowerCase()} topics.`,
         unlockedFactIds: unlocked,
         topicsDiscussed: topics,
         intent,
@@ -151,7 +151,7 @@ export class DeterministicPersonaRuntime implements PersonaRuntime {
 
     if (intent === "greeting") {
       return {
-        body: `Hey — ${person.name} here. What's going on?`,
+        body: `Hey, ${person.name} here. What's going on?`,
         unlockedFactIds: unlocked,
         topicsDiscussed: topics,
         intent,
@@ -172,7 +172,7 @@ export class DeterministicPersonaRuntime implements PersonaRuntime {
         body:
           person.channel === "customer"
             ? "I appreciate the urgency, but please don't commit to a timeline until we confirm a fix path with engineering."
-            : "Careful — we shouldn't promise production timelines we can't back. Let's confirm the diagnosis first.",
+            : "Careful, we shouldn't promise production timelines we can't back. Let's confirm the diagnosis first.",
         unlockedFactIds: unlocked,
         topicsDiscussed: topics,
         intent,
@@ -214,12 +214,12 @@ export class DeterministicPersonaRuntime implements PersonaRuntime {
       };
     }
 
-    // Already unlocked related facts — restate briefly
+    // Already unlocked related facts, restate briefly
     const known = person.knowledge.filter((f) => unlocked.includes(f.id) || alwaysKnown.includes(f));
     if (known.length > 0 && intent !== "other") {
       const fact = known[0];
       return {
-        body: `As I mentioned — ${fact.statement} Anything else you need to dig into?`,
+        body: `As I mentioned, ${fact.statement} Anything else you need to dig into?`,
         unlockedFactIds: unlocked,
         topicsDiscussed: topics,
         intent,
@@ -238,7 +238,7 @@ export class DeterministicPersonaRuntime implements PersonaRuntime {
 
     if (intent === "request_clarification") {
       return {
-        body: "Happy to clarify — can you point me at the exact error, field, or timestamp you're looking at?",
+        body: "Happy to clarify, can you point me at the exact error, field, or timestamp you're looking at?",
         unlockedFactIds: unlocked,
         topicsDiscussed: topics,
         intent,
@@ -262,13 +262,13 @@ function buildDisclosureReply(
 ): string {
   const lead =
     intent === "ask_deployment"
-      ? "On deployments —"
+      ? "On deployments:"
       : intent === "ask_auth"
-        ? "On auth —"
+        ? "On auth:"
         : intent === "ask_schema"
-          ? "On the schema side —"
+          ? "On the schema side:"
           : intent === "ask_logs"
-            ? "On logging —"
+            ? "On logging:"
             : `${person.name}:`;
   return `${lead} ${fact.statement}`;
 }
@@ -284,17 +284,17 @@ function partialKnowledgeReply(person: SimulationPersonDefinition, intent: Messa
     case "ask_logs":
       return "I need a request ID or approximate timestamp to pull a useful log line.";
     case "ask_evidence":
-      return "I can share what I know once we're looking at the right artifact — error body, request ID, or the field that failed.";
+      return "I can share what I know once we're looking at the right artifact, error body, request ID, or the field that failed.";
     case "make_recommendation":
       return "That sounds reasonable as a working theory. Validate it against the error payload before we socialize it.";
     case "request_escalation":
       return person.channel === "customer"
         ? "Understood on the urgency. Let's keep the board update factual until we have a confirmed fix."
-        : "If we escalate, we need a crisp diagnosis — error, impact, and what we've ruled out.";
+        : "If we escalate, we need a crisp diagnosis, error, impact, and what we've ruled out.";
     default:
       return `I'm not sure I follow. My focus is ${person.title.toLowerCase()}. Try asking about status, the error, deployments, auth, or logs.`;
   }
 }
 
-/** Future seam — do not implement now. */
+/** Future seam, do not implement now. */
 export type LLMPersonaRuntime = PersonaRuntime;

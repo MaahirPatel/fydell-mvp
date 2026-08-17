@@ -2,7 +2,7 @@ import type { JsonValue } from "./common";
 import type { MessageIntent } from "./people";
 
 /**
- * Candidate / system telemetry — what the candidate did or the runtime observed.
+ * Candidate / system telemetry, what the candidate did or the runtime observed.
  * Distinct from ScenarioEvent (world events).
  */
 export type TelemetryEventType =

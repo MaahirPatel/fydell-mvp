@@ -7,7 +7,7 @@ export interface WorkbenchTabSpec {
 
 /**
  * Config-only polymorphism: center/right workbench tabs are derived from
- * scenario.capabilities + optional workbench configs — not RoleKey switches.
+ * scenario.capabilities + optional workbench configs, not RoleKey switches.
  */
 export function centerTabsForScenario(scenario: SimulationScenarioDefinition): WorkbenchTabSpec[] {
   const caps = new Set(scenario.capabilities);

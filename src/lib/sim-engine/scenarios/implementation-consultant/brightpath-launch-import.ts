@@ -2,7 +2,7 @@ import type { SimulationScenarioDefinition } from "../../types";
 import { brightpathPeople } from "./personas";
 
 /**
- * Brightpath launch-day import — Implementation Consultant reference scenario.
+ * Brightpath launch-day import, Implementation Consultant reference scenario.
  *
  * Multiple valid paths:
  * A) Import file → rules → map fields → phased plan to Priya
@@ -15,7 +15,7 @@ export const brightpathLaunchImportScenario: SimulationScenarioDefinition = {
   metadata: {
     id: "brightpath-launch-import",
     slug: "brightpath-launch-import",
-    title: "Brightpath — launch-day employee import",
+    title: "Brightpath, launch-day employee import",
     description:
       "Brightpath goes live Monday. Their employee import has date, manager, and duplicate issues. The importer silently skips invalid rows. Decide what can launch safely and tell the customer the plan.",
     roleKey: "implementation_consultant",
@@ -166,14 +166,14 @@ Multiple paths are valid. Do not invent a single scripted sequence.`,
   resources: [
     {
       id: "res_brief",
-      title: "Brief — Monday go-live",
+      title: "Brief, Monday go-live",
       kind: "brief",
       initiallyVisible: true,
       summary: "Fixed date, silent skip risk",
       searchableText: "monday launch import brightpath",
-      content: `# Brief — Brightpath launch
+      content: `# Brief, Brightpath launch
 
-**Go-live:** Monday (contractual — cannot move).
+**Go-live:** Monday (contractual, cannot move).
 
 **Risk:** Importer **silently skips** invalid rows. Customers will believe people are in the system when they are not.
 
@@ -185,7 +185,7 @@ Multiple paths are valid. Do not invent a single scripted sequence.`,
       title: "import.csv (sample)",
       kind: "csv",
       initiallyVisible: true,
-      summary: "8 rows — defects present",
+      summary: "8 rows, defects present",
       searchableText: "employee_id start_date manager_email E-104",
       onOpenFlags: { opened_import_file: true },
       content: `# import.csv
@@ -339,7 +339,7 @@ Defect classes: MM/DD/YYYY dates (E-102, E-105), missing manager (E-106), duplic
         {
           kind: "SEND_MESSAGE",
           personId: "person_priya",
-          body: "I need the Monday plan today — what will be in the system, what's still being fixed, and how we'll know nothing was silently dropped.",
+          body: "I need the Monday plan today, what will be in the system, what's still being fixed, and how we'll know nothing was silently dropped.",
         },
         { kind: "CHANGE_TASK_PRIORITY", taskId: "task_plan", priority: "critical" },
       ],
@@ -353,7 +353,7 @@ Defect classes: MM/DD/YYYY dates (E-102, E-105), missing manager (E-106), duplic
         {
           kind: "SEND_MESSAGE",
           personId: "person_marcus",
-          body: "Importing as-is is not acceptable here — silent skips mean people disappear without an error. Phase clean rows and validate counts.",
+          body: "Importing as-is is not acceptable here, silent skips mean people disappear without an error. Phase clean rows and validate counts.",
         },
         {
           kind: "SHOW_NOTIFICATION",
