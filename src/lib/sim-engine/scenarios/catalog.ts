@@ -4,6 +4,7 @@ import {
   q3ChurnInvestigationBiScenario,
   q3ChurnInvestigationScenario,
 } from "./data-analyst/q3-churn-investigation";
+import { northlineOperationsYieldScenario } from "./data-analyst/northline-operations-yield";
 import { brightpathLaunchImportScenario } from "./implementation-consultant/brightpath-launch-import";
 import { greenStatusPageScenario } from "./technical-support/green-status-page";
 import { ridgelineExecutiveQueueScenario } from "./business-systems-analyst/ridgeline-executive-queue";
@@ -14,6 +15,7 @@ import { ridgelineExecutiveQueueScenario } from "./business-systems-analyst/ridg
  */
 export const SCENARIO_BY_ID: Record<string, SimulationScenarioDefinition> = {
   "northstar-integration": northstarIntegrationScenario,
+  "northline-operations-yield": northlineOperationsYieldScenario,
   "q3-churn-investigation": q3ChurnInvestigationScenario,
   "q3-churn-investigation-bi": q3ChurnInvestigationBiScenario,
   "brightpath-launch-import": brightpathLaunchImportScenario,

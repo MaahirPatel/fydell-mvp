@@ -4,8 +4,10 @@ import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/auth/resolve-post-login";
 import { withNext } from "@/lib/auth/safe-next";
 import { emailDomain, slugifyOrganization } from "@/lib/org/reserved";
-import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
+import { createAdminSupabaseClient, supabaseAdminStatus } from "@/lib/supabase/admin";
 import EmployerShell from "@/components/employer/EmployerShell";
+import WorkspaceUnavailable from "@/components/employer/WorkspaceUnavailable";
+import { memberIdentity } from "@/lib/workspace/identity";
 import { isPreviewMode, PREVIEW_ORG, PREVIEW_USER } from "@/lib/dev/preview";
 import { getEmployerCatalog } from "./_lib/catalog";
 
@@ -25,6 +27,17 @@ const FREE_EMAIL_DOMAINS = new Set([
   "proton.me",
   "protonmail.com",
 ]);
+
+/**
+ * A short token the operator can paste into a support thread. It carries the
+ * failure kind and the minute it happened, which is enough to find the matching
+ * server log line without identifying the person who hit it.
+ */
+function workspaceFailureReference(reason: string): string {
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
+  const kind = reason === "missing_credentials" ? "CFG" : "REF";
+  return `WS-${kind}-${stamp}`;
+}
 
 function defaultWorkspaceName(email: string): string {
   const domain = emailDomain(email);
@@ -81,7 +94,8 @@ export default async function EmployerAppLayout({ children }: { children: React.
       <EmployerShell
         workspaceName={PREVIEW_ORG.organizationName}
         userEmail={PREVIEW_USER.email}
-        userName=""
+        userName={PREVIEW_USER.fullName}
+        userAvatarUrl={PREVIEW_USER.avatarUrl}
         userRole="owner"
         catalog={await getEmployerCatalog()}
       >
@@ -96,10 +110,23 @@ export default async function EmployerAppLayout({ children }: { children: React.
     redirect(withNext("/login", requested));
   }
 
+  // Presence of credentials is not the same as being able to use them. Asking
+  // first means a refused project renders a specific, recoverable state rather
+  // than throwing into the error boundary or, worse, rendering an empty
+  // console that reads as "you have no candidates".
+  const adminStatus = supabaseAdminStatus();
+  if (adminStatus.status !== "ready") {
+    const reference = workspaceFailureReference(adminStatus.status);
+    console.error(
+      `[employer] Workspace unavailable (${adminStatus.status}, ref ${reference}): ${adminStatus.detail}`
+    );
+    return <WorkspaceUnavailable reason={adminStatus.status} reference={reference} />;
+  }
+
   let workspaceName = "Your workspace";
-  let userName = "";
+  let identity = memberIdentity(user.email || "", null, user.user_metadata);
   let userRole = "";
-  if (isSupabaseConfigured()) {
+  {
     const admin = createAdminSupabaseClient();
     const { data: membership } = await admin
       .from("organization_members")
@@ -116,12 +143,12 @@ export default async function EmployerAppLayout({ children }: { children: React.
       // default workspace instead of a missing onboarding route.
       const { data: profile } = await admin
         .from("profiles")
-        .select("account_type, full_name")
+        .select("account_type, full_name, display_name, avatar_url")
         .eq("id", user.id)
         .maybeSingle();
 
       const accountType = profile?.account_type as string | null | undefined;
-      userName = (profile?.full_name as string | null) || "";
+      identity = memberIdentity(user.email || "", profile, user.user_metadata);
 
       if (accountType === "unresolved") {
         redirect("/signup/role");
@@ -150,10 +177,10 @@ export default async function EmployerAppLayout({ children }: { children: React.
 
       const { data: profile } = await admin
         .from("profiles")
-        .select("full_name")
+        .select("full_name, display_name, avatar_url")
         .eq("id", user.id)
         .maybeSingle();
-      userName = (profile?.full_name as string | null) || "";
+      identity = memberIdentity(user.email || "", profile, user.user_metadata);
     }
   }
 
@@ -162,8 +189,9 @@ export default async function EmployerAppLayout({ children }: { children: React.
   return (
     <EmployerShell
       workspaceName={workspaceName}
-      userEmail={user.email || ""}
-      userName={userName}
+      userEmail={identity.email}
+      userName={identity.name}
+      userAvatarUrl={identity.avatarUrl}
       userRole={userRole}
       catalog={catalog}
     >

@@ -5,6 +5,7 @@ import WorkspaceNameForm from "@/components/employer/WorkspaceNameForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
 import { ContactLink } from "@/components/ui/ContactLink";
+import { memberIdentity, type AuthIdentityMetadata } from "@/lib/workspace/identity";
 import { isPreviewMode, PREVIEW_ORG, PREVIEW_USER } from "@/lib/dev/preview";
 
 export const metadata = { title: "Settings" };
@@ -43,6 +44,11 @@ export default async function EmployerSettingsPage() {
 
   let workspaceName = preview ? PREVIEW_ORG.organizationName : "Your workspace";
   let memberRole = preview ? "owner" : "member";
+  let identity = memberIdentity(
+    user?.email || "",
+    preview ? { full_name: PREVIEW_USER.fullName, avatar_url: PREVIEW_USER.avatarUrl } : null,
+    preview ? null : (user as { user_metadata?: AuthIdentityMetadata } | null)?.user_metadata
+  );
   if (!preview && user && isSupabaseConfigured()) {
     const admin = createAdminSupabaseClient();
     const { data: membership } = await admin
@@ -55,6 +61,17 @@ export default async function EmployerSettingsPage() {
     workspaceName =
       (membership?.organizations as { name?: string } | null)?.name || workspaceName;
     memberRole = membership?.role || memberRole;
+
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("full_name, display_name, avatar_url")
+      .eq("id", user.id)
+      .maybeSingle();
+    identity = memberIdentity(
+      user.email || "",
+      profile,
+      (user as { user_metadata?: AuthIdentityMetadata }).user_metadata
+    );
   }
 
   const canEdit = MANAGER_ROLES.has(memberRole);
@@ -85,10 +102,49 @@ export default async function EmployerSettingsPage() {
         </Panel>
 
         <Panel>
-          <PanelSection title="Account" />
-          <Row label="Email">
-            <p className="truncate text-app-body text-[var(--text-primary)]">
-              {user?.email || "Not signed in"}
+          <PanelSection
+            title="Account"
+            description="Taken from what you entered when you created this account."
+          />
+          <Row label="You">
+            <div className="flex items-center gap-3">
+              {identity.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- avatar
+                // hosts are not known ahead of time.
+                <img
+                  src={identity.avatarUrl}
+                  alt=""
+                  width={36}
+                  height={36}
+                  referrerPolicy="no-referrer"
+                  className="h-9 w-9 shrink-0 rounded-[var(--radius-control)] border border-[var(--border-default)] object-cover"
+                />
+              ) : (
+                <span
+                  aria-hidden
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-raised)] text-[13px] font-medium text-[var(--text-primary)]"
+                >
+                  {identity.initials}
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-app-body text-[var(--text-primary)]">
+                  {identity.name || "No name on record"}
+                </p>
+                <p className="truncate text-app-meta text-[var(--text-secondary)]">
+                  {identity.email || "Not signed in"}
+                </p>
+              </div>
+            </div>
+          </Row>
+          <Row
+            label="Photo"
+            help="Only set if your sign-in provider supplied one."
+          >
+            <p className="text-app-body leading-[1.6] text-[var(--text-secondary)]">
+              {identity.avatarUrl
+                ? "Supplied by your sign-in provider. Change it there and it changes here."
+                : "No photo on this account, so your initials are shown instead. There is no upload here yet."}
             </p>
           </Row>
           <Row

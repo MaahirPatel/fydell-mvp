@@ -28,9 +28,68 @@ export function supabaseServiceKey(): string | undefined {
   return process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
 }
 
-/** True when the service-role admin client can be constructed. */
+/**
+ * True when admin credentials are present.
+ *
+ * Presence is not the same as usability: the credentials can still name the
+ * wrong project, in which case `getSupabaseAdmin()` throws. Callers that want
+ * to render a specific failure instead of throwing should use
+ * `supabaseAdminStatus()`.
+ */
 export function isSupabaseConfigured(): boolean {
   return Boolean(supabaseUrl() && supabaseServiceKey());
+}
+
+/**
+ * `missing_credentials`: nothing to connect with.
+ * `project_refused`: credentials exist but the guard will not allow this
+ * environment to use the project they name.
+ */
+export type AdminClientFailure = "missing_credentials" | "project_refused";
+
+/**
+ * A string discriminant rather than an `ok` boolean: this project compiles
+ * with `strict` off, where TypeScript will not narrow a union on the
+ * truthiness of a boolean member, so a boolean would push every caller into
+ * casts.
+ */
+export type AdminClientStatus =
+  | { status: "ready" }
+  | {
+      status: AdminClientFailure;
+      /** Operator-facing. Log it; do not render it. */
+      detail: string;
+    };
+
+/**
+ * Whether `getSupabaseAdmin()` would succeed, answered without throwing.
+ *
+ * `isSupabaseConfigured()` only checks that the variables are set, so a server
+ * could pass that check and then throw on the very next line. Surfaces that
+ * must distinguish "not configured" from "refused" from "working" ask here
+ * first.
+ */
+export function supabaseAdminStatus(): AdminClientStatus {
+  if (cached) return { status: "ready" };
+
+  if (!supabaseUrl() || !supabaseServiceKey()) {
+    return {
+      status: "missing_credentials",
+      detail:
+        "Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or the " +
+        "legacy SUPABASE_URL / SUPABASE_SERVICE_KEY).",
+    };
+  }
+
+  try {
+    assertProjectBinding(process.env, { requireServiceKey: true });
+    return { status: "ready" };
+  } catch (err) {
+    return {
+      status: "project_refused",
+      detail: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
 /** True when the public anon client (used for Supabase Auth) can be built. */

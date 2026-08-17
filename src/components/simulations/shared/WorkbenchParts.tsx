@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+
+type Json = import("@/lib/sim-engine/types").JsonValue;
 
 export function CodeEditorSurface({
   value,
@@ -1098,5 +1100,434 @@ export function DevInspector({
           .join(" | ")}
       </div>
     </aside>
+  );
+}
+
+/* ------------------------------------------------------------ dataset table */
+
+function isNumericColumn(rows: Array<Record<string, Json>>, col: string): boolean {
+  const vals = rows.map((r) => r[col]).filter((v) => v !== null && v !== undefined);
+  if (!vals.length) return false;
+  return vals.every((v) => typeof v === "number");
+}
+
+/**
+ * Interactive dataset surface used as the primary analysis canvas. Sortable
+ * columns, text filter, pagination, and row selection so a candidate can cite a
+ * specific row into the evidence pack. Not a picture of a spreadsheet.
+ */
+export function DatasetTable({
+  columns,
+  rows,
+  caption,
+  selectedRowIndex,
+  onSelectRow,
+  pageSize = 9,
+}: {
+  columns: string[];
+  rows: Array<Record<string, Json>>;
+  caption?: string;
+  selectedRowIndex?: number;
+  onSelectRow?: (index: number, row: Record<string, Json>) => void;
+  pageSize?: number;
+}) {
+  const [query, setQuery] = useState("");
+  const [sortCol, setSortCol] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [page, setPage] = useState(0);
+
+  const numericCols = useMemo(
+    () => new Set(columns.filter((c) => isNumericColumn(rows, c))),
+    [columns, rows]
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const base = rows.map((row, index) => ({ row, index }));
+    const matched = q
+      ? base.filter(({ row }) =>
+          columns.some((c) => formatCell(row[c]).toLowerCase().includes(q))
+        )
+      : base;
+    if (!sortCol) return matched;
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...matched].sort((a, b) => {
+      const av = a.row[sortCol];
+      const bv = b.row[sortCol];
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+      return formatCell(av).localeCompare(formatCell(bv)) * dir;
+    });
+  }, [rows, columns, query, sortCol, sortDir]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, pageCount - 1);
+  const pageRows = filtered.slice(safePage * pageSize, safePage * pageSize + pageSize);
+
+  function toggleSort(col: string) {
+    if (sortCol === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortCol(col);
+      setSortDir("asc");
+    }
+    setPage(0);
+  }
+
+  return (
+    <div className="flex h-full min-h-0 flex-col bg-[var(--surface-canvas)]">
+      <div className="flex items-center gap-3 border-b border-[var(--border-subtle)] px-3 py-2">
+        <span className="font-mono text-app-meta text-[var(--text-tertiary)]">
+          {caption ?? `${rows.length} rows`}
+        </span>
+        <div className="flex-1" />
+        <input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPage(0);
+          }}
+          placeholder="Filter rows"
+          aria-label="Filter dataset rows"
+          className="platform-input h-7 w-44 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-app-meta text-[var(--text-primary)]"
+        />
+      </div>
+      <div className="min-h-0 flex-1 overflow-auto">
+        <table className="w-full border-collapse text-left text-app-meta">
+          <thead className="sticky top-0 z-10 bg-[var(--surface-raised)]">
+            <tr>
+              <th className="w-8 border-b border-[var(--border-default)] px-2 py-1.5 text-right font-normal text-[var(--text-tertiary)]">
+                #
+              </th>
+              {columns.map((col) => {
+                const active = sortCol === col;
+                return (
+                  <th
+                    key={col}
+                    className={cn(
+                      "border-b border-[var(--border-default)] px-2 py-1.5 font-medium text-[var(--text-secondary)]",
+                      numericCols.has(col) ? "text-right" : "text-left"
+                    )}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleSort(col)}
+                      className={cn(
+                        "inline-flex items-center gap-1 hover:text-[var(--text-primary)]",
+                        active && "text-[var(--text-primary)]"
+                      )}
+                    >
+                      <span>{col}</span>
+                      <span className="font-mono text-[var(--text-tertiary)]">
+                        {active ? (sortDir === "asc" ? "↑" : "↓") : ""}
+                      </span>
+                    </button>
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {pageRows.map(({ row, index }) => {
+              const selected = index === selectedRowIndex;
+              return (
+                <tr
+                  key={index}
+                  onClick={() => onSelectRow?.(index, row)}
+                  className={cn(
+                    onSelectRow && "cursor-pointer",
+                    selected
+                      ? "bg-[var(--surface-selected)]"
+                      : "hover:bg-[var(--surface-hover)]"
+                  )}
+                >
+                  <td className="border-b border-[var(--border-subtle)] px-2 py-1.5 text-right font-mono text-[var(--text-tertiary)] tabular-nums">
+                    {index + 1}
+                  </td>
+                  {columns.map((col) => (
+                    <td
+                      key={col}
+                      className={cn(
+                        "border-b border-[var(--border-subtle)] px-2 py-1.5 font-mono text-[var(--text-primary)]",
+                        numericCols.has(col) ? "text-right tabular-nums" : "text-left"
+                      )}
+                    >
+                      {formatCell(row[col])}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+            {!pageRows.length ? (
+              <tr>
+                <td
+                  colSpan={columns.length + 1}
+                  className="px-3 py-6 text-center text-app-meta text-[var(--text-tertiary)]"
+                >
+                  No rows match “{query}”.
+                </td>
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex items-center gap-3 border-t border-[var(--border-subtle)] px-3 py-1.5 text-app-meta text-[var(--text-tertiary)]">
+        <span className="tabular-nums">
+          {filtered.length} of {rows.length} rows
+        </span>
+        <div className="flex-1" />
+        <button
+          type="button"
+          disabled={safePage <= 0}
+          onClick={() => setPage((p) => Math.max(0, p - 1))}
+          className="rounded-[var(--radius-control)] px-2 py-0.5 hover:bg-[var(--surface-hover)] disabled:opacity-40"
+        >
+          Prev
+        </button>
+        <span className="tabular-nums">
+          {safePage + 1}/{pageCount}
+        </span>
+        <button
+          type="button"
+          disabled={safePage >= pageCount - 1}
+          onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+          className="rounded-[var(--radius-control)] px-2 py-0.5 hover:bg-[var(--surface-hover)] disabled:opacity-40"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------- evidence inspector */
+
+export type EvidenceClaim = {
+  id: string;
+  text: string;
+  citations: string[];
+  assumption?: string;
+  limitation?: string;
+  confidence: "low" | "medium" | "high";
+};
+
+const CONFIDENCE_OPTIONS: EvidenceClaim["confidence"][] = ["low", "medium", "high"];
+
+/**
+ * Evidence pack builder — the defining Fydell capability. A claim is connected
+ * to citations from real sources, carries an explicit assumption, a limitation,
+ * and a confidence, so the report can never read a conclusion as certainty.
+ */
+export function EvidenceInspector({
+  claims,
+  availableSources,
+  pendingCitation,
+  onAddClaim,
+  onRemoveClaim,
+  onClearPending,
+  readOnly,
+}: {
+  claims: EvidenceClaim[];
+  availableSources: string[];
+  pendingCitation?: string;
+  onAddClaim: (claim: Omit<EvidenceClaim, "id">) => void;
+  onRemoveClaim: (id: string) => void;
+  onClearPending?: () => void;
+  readOnly?: boolean;
+}) {
+  const [text, setText] = useState("");
+  const [citations, setCitations] = useState<string[]>([]);
+  const [assumption, setAssumption] = useState("");
+  const [limitation, setLimitation] = useState("");
+  const [confidence, setConfidence] = useState<EvidenceClaim["confidence"]>("medium");
+
+  const allSources = useMemo(() => {
+    const set = new Set<string>(availableSources);
+    if (pendingCitation) set.add(pendingCitation);
+    return Array.from(set);
+  }, [availableSources, pendingCitation]);
+
+  function toggleCitation(source: string) {
+    setCitations((prev) =>
+      prev.includes(source) ? prev.filter((s) => s !== source) : [...prev, source]
+    );
+  }
+
+  function submit() {
+    if (text.trim().length < 8) return;
+    onAddClaim({
+      text: text.trim(),
+      citations,
+      assumption: assumption.trim() || undefined,
+      limitation: limitation.trim() || undefined,
+      confidence,
+    });
+    setText("");
+    setCitations([]);
+    setAssumption("");
+    setLimitation("");
+    setConfidence("medium");
+    onClearPending?.();
+  }
+
+  const unsupported = claims.filter((c) => c.citations.length === 0).length;
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] px-3 py-2 text-app-meta text-[var(--text-tertiary)]">
+        <span>Evidence pack</span>
+        <span className="font-mono">·</span>
+        <span className="tabular-nums">{claims.length} claims</span>
+        {unsupported > 0 ? (
+          <span className="ml-auto text-[var(--fydell-risk)]">
+            {unsupported} unsupported
+          </span>
+        ) : null}
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-auto">
+        {claims.length ? (
+          <ul className="divide-y divide-[var(--border-subtle)]">
+            {claims.map((c) => (
+              <li key={c.id} className="px-3 py-2.5">
+                <div className="flex items-start gap-2">
+                  <p className="flex-1 text-app-body text-[var(--text-primary)]">{c.text}</p>
+                  {!readOnly ? (
+                    <button
+                      type="button"
+                      aria-label="Remove claim"
+                      onClick={() => onRemoveClaim(c.id)}
+                      className="text-app-meta text-[var(--text-tertiary)] hover:text-[var(--fydell-risk)]"
+                    >
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+                {c.citations.length ? (
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    {c.citations.map((cit, i) => (
+                      <span
+                        key={cit}
+                        className="inline-flex items-center gap-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-1.5 py-0.5 font-mono text-app-meta text-[var(--text-secondary)]"
+                      >
+                        <span className="text-[var(--action-ink)]">[{i + 1}]</span>
+                        {cit}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-1.5 text-app-meta text-[var(--fydell-risk)]">
+                    No citation attached
+                  </div>
+                )}
+                {c.assumption ? (
+                  <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
+                    <span className="text-[var(--text-secondary)]">Assumes</span> {c.assumption}
+                  </p>
+                ) : null}
+                {c.limitation ? (
+                  <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
+                    <span className="text-[var(--text-secondary)]">Limit</span> {c.limitation}
+                  </p>
+                ) : null}
+                <div className="mt-1 text-app-meta text-[var(--text-tertiary)]">
+                  Confidence <span className="text-[var(--text-secondary)]">{c.confidence}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="px-3 py-4 text-app-meta text-[var(--text-tertiary)]">
+            No claims yet. Select a row in the dataset, write a claim, and attach the source it rests on.
+          </div>
+        )}
+      </div>
+
+      {!readOnly ? (
+        <div className="border-t border-[var(--border-default)] bg-[var(--surface-panel)] p-3">
+          <label className="mb-1 block text-app-meta text-[var(--text-tertiary)]" htmlFor="claim-text">
+            New claim
+          </label>
+          <textarea
+            id="claim-text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="What did the data show?"
+            className="platform-input h-14 w-full resize-none rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-canvas)] p-2 text-app-body text-[var(--text-primary)]"
+          />
+          {pendingCitation ? (
+            <div className="mt-1.5 text-app-meta text-[var(--text-secondary)]">
+              Selected source: <span className="font-mono text-[var(--action-ink)]">{pendingCitation}</span>
+            </div>
+          ) : null}
+          {allSources.length ? (
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {allSources.map((s) => {
+                const on = citations.includes(s);
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => toggleCitation(s)}
+                    className={cn(
+                      "rounded-[var(--radius-control)] border px-1.5 py-0.5 font-mono text-app-meta",
+                      on
+                        ? "border-[var(--action-ink)] bg-[var(--surface-selected)] text-[var(--text-primary)]"
+                        : "border-[var(--border-default)] bg-[var(--surface-canvas)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+                    )}
+                  >
+                    {s}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <input
+              value={assumption}
+              onChange={(e) => setAssumption(e.target.value)}
+              placeholder="Assumption"
+              aria-label="Assumption"
+              className="platform-input h-7 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-2 text-app-meta text-[var(--text-primary)]"
+            />
+            <input
+              value={limitation}
+              onChange={(e) => setLimitation(e.target.value)}
+              placeholder="Limitation"
+              aria-label="Limitation"
+              className="platform-input h-7 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-2 text-app-meta text-[var(--text-primary)]"
+            />
+          </div>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-app-meta text-[var(--text-tertiary)]">Confidence</span>
+            <div className="inline-flex flex-1 overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-default)]">
+              {CONFIDENCE_OPTIONS.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setConfidence(opt)}
+                  className={cn(
+                    "flex-1 px-2 py-0.5 text-app-meta capitalize",
+                    confidence === opt
+                      ? "bg-[var(--surface-selected)] text-[var(--text-primary)]"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+                  )}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={submit}
+            disabled={text.trim().length < 8}
+            className="mt-2 w-full"
+          >
+            Add to pack
+          </Button>
+        </div>
+      ) : null}
+    </div>
   );
 }

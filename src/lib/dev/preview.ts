@@ -44,6 +44,9 @@ export function previewState(): "empty" | "active" {
 export const PREVIEW_USER = {
   id: "00000000-0000-4000-8000-000000000001",
   email: "owner@example.com",
+  /** Stands in for the name given at signup. No avatar: none was uploaded. */
+  fullName: "Sample Owner",
+  avatarUrl: null as string | null,
 };
 
 export const PREVIEW_ORG: OrgContext = {

@@ -9,14 +9,17 @@ import { ResizablePanels } from "../panels/ResizablePanels";
 import {
   AiAssistant,
   AnalysisMemoComposer,
+  DatasetTable,
   DevInspector,
   DocumentationViewer,
+  EvidenceInspector,
   InternalChat,
   NotificationToasts,
   ResourceBrowser,
   SqlWorkbench,
   TaskList,
 } from "../shared/WorkbenchParts";
+import type { EvidenceClaim } from "../shared/WorkbenchParts";
 import { Tabs, TabPanel } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 
@@ -30,17 +33,37 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
   const scenario = runtime.scenario;
   const readOnly = attempt.status === "SUBMITTED";
   const [submitOpen, setSubmitOpen] = useState(false);
-  const [centerTab, setCenterTab] = useState("sql");
-  const [rightTab, setRightTab] = useState("people");
-  const [activeResource, setActiveResource] = useState<string | undefined>("res_churn_brief");
+
+  const tables = scenario.sqlRuntime?.tables ?? [];
+  const firstResourceId = scenario.resources[0]?.id;
+  const firstPersonId = scenario.people[0]?.id;
+
+  const [centerTab, setCenterTab] = useState(tables.length ? "data" : "sql");
+  const [rightTab, setRightTab] = useState("evidence");
+  const [activeResource, setActiveResource] = useState<string | undefined>(firstResourceId);
   const [resourceQuery, setResourceQuery] = useState("");
-  const [activePerson, setActivePerson] = useState<string | undefined>("person_amina");
+  const [activePerson, setActivePerson] = useState<string | undefined>(firstPersonId);
   const [chatDraft, setChatDraft] = useState("");
   const [aiDraft, setAiDraft] = useState("");
   const [memoDraft, setMemoDraft] = useState(
-    "Primary driver:\n\nEvidence:\n\nRuled out:\n\nCaveats / next check:\n"
+    "Answer:\n\nEvidence:\n\nWhat changed:\n\nCaveats / next check:\n"
   );
   const [execDraft, setExecDraft] = useState("");
+
+  const [activeTable, setActiveTable] = useState<string | undefined>(tables[0]?.name);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | undefined>(undefined);
+  const [pendingCitation, setPendingCitation] = useState<string | undefined>(undefined);
+  const [claims, setClaims] = useState<EvidenceClaim[]>([]);
+
+  const activeTableDef = tables.find((t) => t.name === activeTable) ?? tables[0];
+
+  const citationSources = useMemo(() => {
+    const openedResources = scenario.resources
+      .filter((r) => attempt.resources[r.id]?.opened)
+      .map((r) => r.title);
+    const tableNames = tables.map((t) => t.name);
+    return Array.from(new Set([...tableNames, ...openedResources]));
+  }, [scenario.resources, attempt.resources, tables]);
 
   const resourceItems = useMemo(
     () =>
@@ -90,25 +113,29 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
           onSubmit={() => undefined}
           submitDisabled
         />
-        <div className="mx-auto flex max-w-2xl flex-1 flex-col justify-center gap-4 p-6">
-          <h1 className="text-[22px] font-semibold tracking-tight text-[var(--text-primary)]">
+        <div className="mx-auto flex max-w-[42rem] flex-1 flex-col justify-center gap-5 px-6 py-10">
+          <h1 className="text-app-page font-medium text-[var(--text-primary)]">
             {scenario.metadata.title}
           </h1>
-          <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
+          <p className="text-app-body leading-relaxed text-[var(--text-secondary)]">
             {scenario.metadata.description}
           </p>
-          <pre className="whitespace-pre-wrap rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-4 text-[12px] text-[var(--text-secondary)]">
-            {scenario.metadata.instructions}
-          </pre>
-          <Button
-            variant="primary"
-            onClick={() => {
-              runtime.start();
-              if (activeResource) runtime.openResource(activeResource);
-            }}
-          >
-            Start simulation
-          </Button>
+          <div className="border-y border-[var(--border-subtle)] py-4">
+            <pre className="whitespace-pre-wrap font-sans text-app-meta leading-relaxed text-[var(--text-secondary)]">
+              {scenario.metadata.instructions}
+            </pre>
+          </div>
+          <div>
+            <Button
+              variant="primary"
+              onClick={() => {
+                runtime.start();
+                if (activeResource) runtime.openResource(activeResource);
+              }}
+            >
+              Start simulation
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -126,18 +153,20 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
       />
       <div className="min-h-0 flex-1">
         <ResizablePanels
+          leftDefault={208}
+          rightDefault={280}
           left={
-            <div className="flex h-full min-h-0 flex-col">
-              <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-[var(--text-tertiary)]">
-                Tasks
+            <div className="flex h-full min-h-0 flex-col bg-[var(--surface-panel)]">
+              <div className="border-b border-[var(--border-subtle)] px-3 py-2.5 text-app-meta font-medium text-[var(--text-tertiary)]">
+                Mission
               </div>
               <div className="min-h-0 flex-1 overflow-auto">
                 <TaskList tasks={taskRows} onOpen={(id) => runtime.openTask(id)} />
               </div>
-              <div className="border-t border-[var(--border-subtle)] px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-[var(--text-tertiary)]">
-                Resources
+              <div className="border-t border-[var(--border-subtle)] px-3 py-2.5 text-app-meta font-medium text-[var(--text-tertiary)]">
+                Sources
               </div>
-              <div className="min-h-[40%] overflow-hidden">
+              <div className="min-h-[42%] overflow-hidden">
                 <ResourceBrowser
                   items={resourceItems}
                   activeId={activeResource}
@@ -161,12 +190,56 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
                 label="Workbench"
                 idBase="da-center"
                 items={[
-                  { value: "sql", label: "SQL" },
-                  { value: "docs", label: "Docs" },
+                  ...(tables.length ? [{ value: "data", label: "Data" }] : []),
+                  { value: "sql", label: "Query" },
+                  { value: "docs", label: "Sources" },
                 ]}
                 value={centerTab}
                 onValueChange={setCenterTab}
               />
+              {tables.length ? (
+                <TabPanel value="data" active={centerTab === "data"} idBase="da-center" className="min-h-0 flex-1 overflow-hidden">
+                  <div className="flex h-full min-h-0 flex-col">
+                    {tables.length > 1 ? (
+                      <div className="flex gap-1 border-b border-[var(--border-subtle)] px-2 py-1.5">
+                        {tables.map((t) => (
+                          <button
+                            key={t.name}
+                            type="button"
+                            onClick={() => {
+                              setActiveTable(t.name);
+                              setSelectedRowIndex(undefined);
+                            }}
+                            className={
+                              (activeTableDef?.name === t.name
+                                ? "bg-[var(--surface-selected)] text-[var(--text-primary)] "
+                                : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] ") +
+                              "rounded-[var(--radius-control)] px-2 py-0.5 font-mono text-app-meta"
+                            }
+                          >
+                            {t.name}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                    {activeTableDef ? (
+                      <div className="min-h-0 flex-1">
+                        <DatasetTable
+                          columns={activeTableDef.columns}
+                          rows={activeTableDef.rows}
+                          caption={`${activeTableDef.name} · ${activeTableDef.rows.length} rows`}
+                          selectedRowIndex={selectedRowIndex}
+                          onSelectRow={(index) => {
+                            setSelectedRowIndex(index);
+                            setPendingCitation(`${activeTableDef.name} · row ${index + 1}`);
+                            setRightTab("evidence");
+                          }}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                </TabPanel>
+              ) : null}
               <TabPanel value="sql" active={centerTab === "sql"} idBase="da-center" className="min-h-0 flex-1 overflow-hidden">
                 <SqlWorkbench
                   dialectLabel={scenario.sqlRuntime?.dialectLabel}
@@ -182,24 +255,54 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
                 {activeResDef ? (
                   <DocumentationViewer title={activeResDef.title} content={activeResDef.content} />
                 ) : (
-                  <div className="p-4 text-[13px] text-[var(--text-tertiary)]">Select a resource</div>
+                  <div className="p-4 text-app-body text-[var(--text-tertiary)]">Select a source from the mission rail</div>
                 )}
               </TabPanel>
             </div>
           }
           right={
-            <div className="flex h-full min-h-0 flex-col">
+            <div className="flex h-full min-h-0 flex-col bg-[var(--surface-panel)]">
               <Tabs
-                label="Collaboration"
+                label="Evidence"
                 idBase="da-right"
                 items={[
-                  { value: "people", label: "People" },
-                  { value: "ai", label: "AI" },
+                  { value: "evidence", label: "Evidence" },
                   { value: "memo", label: "Memo" },
+                  { value: "people", label: "People" },
+                  { value: "ai", label: "Assistant" },
                 ]}
                 value={rightTab}
                 onValueChange={setRightTab}
               />
+              <TabPanel value="evidence" active={rightTab === "evidence"} idBase="da-right" className="min-h-0 flex-1 overflow-hidden">
+                <EvidenceInspector
+                  claims={claims}
+                  availableSources={citationSources}
+                  pendingCitation={pendingCitation}
+                  onAddClaim={(claim) =>
+                    setClaims((prev) => [...prev, { ...claim, id: `claim-${Date.now()}` }])
+                  }
+                  onRemoveClaim={(id) => setClaims((prev) => prev.filter((c) => c.id !== id))}
+                  onClearPending={() => {
+                    setPendingCitation(undefined);
+                    setSelectedRowIndex(undefined);
+                  }}
+                  readOnly={readOnly}
+                />
+              </TabPanel>
+              <TabPanel value="memo" active={rightTab === "memo"} idBase="da-right" className="min-h-0 flex-1 overflow-hidden">
+                <AnalysisMemoComposer
+                  memo={memoDraft}
+                  execSummary={execDraft}
+                  onChangeMemo={setMemoDraft}
+                  onChangeExec={setExecDraft}
+                  onSaveMemo={() => runtime.saveArtifact("analysis_memo", "Analysis memo", memoDraft)}
+                  onSaveExec={() =>
+                    runtime.saveArtifact("executive_summary", "Executive summary", execDraft)
+                  }
+                  readOnly={readOnly}
+                />
+              </TabPanel>
               <TabPanel value="people" active={rightTab === "people"} idBase="da-right" className="min-h-0 flex-1 overflow-hidden">
                 <InternalChat
                   people={people}
@@ -228,19 +331,6 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
                   readOnly={readOnly}
                 />
               </TabPanel>
-              <TabPanel value="memo" active={rightTab === "memo"} idBase="da-right" className="min-h-0 flex-1 overflow-hidden">
-                <AnalysisMemoComposer
-                  memo={memoDraft}
-                  execSummary={execDraft}
-                  onChangeMemo={setMemoDraft}
-                  onChangeExec={setExecDraft}
-                  onSaveMemo={() => runtime.saveArtifact("analysis_memo", "Analysis memo", memoDraft)}
-                  onSaveExec={() =>
-                    runtime.saveArtifact("executive_summary", "Executive summary", execDraft)
-                  }
-                  readOnly={readOnly}
-                />
-              </TabPanel>
             </div>
           }
         />
@@ -248,7 +338,7 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
       <NotificationToasts items={attempt.world.notifications} />
       {debug ? <DevInspector attempt={attempt} /> : null}
       {attempt.status === "SUBMITTED" ? (
-        <div className="border-t border-[var(--border-default)] bg-[var(--surface-panel)] px-4 py-3 text-[13px] text-[var(--text-secondary)]">
+        <div className="border-t border-[var(--border-default)] bg-[var(--surface-panel)] px-4 py-3 text-app-body text-[var(--text-secondary)]">
           Attempt submitted.{" "}
           <a
             className="text-[var(--action-ink)] underline"

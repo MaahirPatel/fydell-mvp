@@ -20,7 +20,17 @@ const nextConfig: NextConfig = {
       { source: "/employer/:path*", destination: "/login", permanent: true },
       { source: "/dashboard/:path*", destination: "/app/employer", permanent: true },
       { source: "/platform/:path*", destination: "/app/employer", permanent: true },
-      { source: "/onboarding/:path*", destination: "/app/employer", permanent: true },
+      // /onboarding/employer is a live route, not a retired one: it names the
+      // workspace for people who picked "I am hiring" after signing up without
+      // a company. The catch-all used to swallow it, so that step never ran and
+      // the layout silently named the workspace after their email domain. Only
+      // the other legacy onboarding URLs redirect.
+      { source: "/onboarding", destination: "/app/employer", permanent: true },
+      {
+        source: "/onboarding/:path((?!employer$).*)",
+        destination: "/app/employer",
+        permanent: true,
+      },
       // Old internal ops
       { source: "/ops/:path*", destination: "/admin", permanent: true },
       // Old marketing pages
@@ -40,9 +50,13 @@ const nextConfig: NextConfig = {
       { source: "/app/employer/evidence/:path*", destination: "/app/employer", permanent: true },
       { source: "/app/employer/receipts/:path*", destination: "/app/employer", permanent: true },
       { source: "/app/employer/decisions/:path*", destination: "/app/employer", permanent: true },
+      // The retired "create a simulation" surface. Simulations now live at
+      // /app/employer/workbench, which is a new path rather than a reuse of
+      // this one, because a permanent redirect stays cached in browsers that
+      // ever followed it.
       {
         source: "/app/employer/simulations/:path*",
-        destination: "/app/employer/assessments",
+        destination: "/app/employer/workbench",
         permanent: true,
       },
     ];

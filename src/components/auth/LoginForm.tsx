@@ -35,7 +35,16 @@ function humanizeLoginError(raw: string): string {
   if (lower.includes("network") || lower.includes("fetch") || lower.includes("timeout")) {
     return "We could not reach Fydell. Check your connection and try again.";
   }
-  if (lower.includes("supabase") || lower.includes("database") || lower.includes("503")) {
+  if (
+    lower.includes("supabase") ||
+    lower.includes("database") ||
+    lower.includes("503") ||
+    // Post-login resolution builds the admin client, so a refused project
+    // reaches this form as the workspace copy. On a sign-in page that reads as
+    // "your workspace is broken" when the accurate statement is that sign-in
+    // itself cannot complete right now.
+    lower.includes("workspace is temporarily unavailable")
+  ) {
     return "Sign-in is temporarily unavailable. Try again shortly.";
   }
   if (raw.length > 160 || lower.includes("json") || lower.includes("stack")) {
