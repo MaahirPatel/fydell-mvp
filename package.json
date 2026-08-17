@@ -41,6 +41,7 @@
     "measure:baseline": "tsx scripts/measure-baseline.ts",
     "test:release": "npm run test:sims && npm run test:v2 && npm run test:v3 && npm run test:states && npm run test:disclosure && npm run test:october && npm run test:auth && npm run test:copy && npm run test:db-security && npm run test:project-guard && npm run typecheck",
     "test:rls-smoke": "tsx scripts/test-rls-smoke.ts",
+    "test:sim-engine": "tsx scripts/test-sim-engine-runtime.ts && tsx scripts/test-sim-engine-analysis.ts",
     "test:pilot-golden-path": "tsx scripts/test-pilot-golden-path.ts",
     "test:e2e": "playwright test",
     "verify:migrations": "tsx scripts/verify-migration-state.ts",
