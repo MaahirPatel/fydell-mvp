@@ -19,7 +19,12 @@ import {
   SqlWorkbench,
   TaskList,
 } from "../shared/WorkbenchParts";
-import type { EvidenceClaim } from "../shared/WorkbenchParts";
+import {
+  claimsToJson,
+  EVIDENCE_CLAIMS_KEY,
+  readEvidenceClaims,
+  type EvidenceClaim,
+} from "@/lib/sim-engine/evidence/claims";
 import { Tabs, TabPanel } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 
@@ -53,7 +58,12 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
   const [activeTable, setActiveTable] = useState<string | undefined>(tables[0]?.name);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | undefined>(undefined);
   const [pendingCitation, setPendingCitation] = useState<string | undefined>(undefined);
-  const [claims, setClaims] = useState<EvidenceClaim[]>([]);
+
+  // The evidence pack is candidate work, so it lives in the attempt rather than
+  // in component state and is captured by the durable snapshot.
+  const claims = useMemo(() => readEvidenceClaims(attempt.extras), [attempt.extras]);
+  const writeClaims = (next: EvidenceClaim[]) =>
+    runtime.updateExtras({ [EVIDENCE_CLAIMS_KEY]: claimsToJson(next) });
 
   const activeTableDef = tables.find((t) => t.name === activeTable) ?? tables[0];
 
@@ -280,9 +290,9 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
                   availableSources={citationSources}
                   pendingCitation={pendingCitation}
                   onAddClaim={(claim) =>
-                    setClaims((prev) => [...prev, { ...claim, id: `claim-${Date.now()}` }])
+                    writeClaims([...claims, { ...claim, id: `claim-${Date.now()}` }])
                   }
-                  onRemoveClaim={(id) => setClaims((prev) => prev.filter((c) => c.id !== id))}
+                  onRemoveClaim={(id) => writeClaims(claims.filter((c) => c.id !== id))}
                   onClearPending={() => {
                     setPendingCitation(undefined);
                     setSelectedRowIndex(undefined);

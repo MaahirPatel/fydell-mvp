@@ -3,6 +3,9 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import type { EvidenceClaim } from "@/lib/sim-engine/evidence/claims";
+
+export type { EvidenceClaim };
 
 type Json = import("@/lib/sim-engine/types").JsonValue;
 
@@ -1300,15 +1303,6 @@ export function DatasetTable({
 }
 
 /* -------------------------------------------------------- evidence inspector */
-
-export type EvidenceClaim = {
-  id: string;
-  text: string;
-  citations: string[];
-  assumption?: string;
-  limitation?: string;
-  confidence: "low" | "medium" | "high";
-};
 
 const CONFIDENCE_OPTIONS: EvidenceClaim["confidence"][] = ["low", "medium", "high"];
 

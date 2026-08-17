@@ -1,5 +1,6 @@
 import type {
   AiToolInteraction,
+  JsonValue,
   SimulationAttempt,
   SimulationScenarioDefinition,
   TelemetryEvent,
@@ -352,6 +353,20 @@ export class SimulationRuntime {
       type: "INPUT_CHANGE",
       payload: { field: "workbench", length: (patch.code ?? patch.apiBody ?? patch.sqlQuery ?? "").length },
     });
+    this.emit();
+  }
+
+  /**
+   * Durable scratch for surfaces that own structured candidate work the core
+   * attempt shape does not model, such as the evidence pack. Kept in `extras`
+   * so it is captured by the durable snapshot and survives a refresh instead of
+   * living in component state.
+   */
+  updateExtras(patch: Record<string, JsonValue>): void {
+    this.attempt = {
+      ...this.attempt,
+      extras: { ...(this.attempt.extras ?? {}), ...patch },
+    };
     this.emit();
   }
 
