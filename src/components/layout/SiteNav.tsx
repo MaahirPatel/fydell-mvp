@@ -6,11 +6,15 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import FydellMark from "@/components/brand/FydellMark";
 
+/**
+ * Contact is deliberately absent here. It is the commercial action, so it sits
+ * in the action group as a button rather than competing with the explanatory
+ * pages as a fourth link of equal weight.
+ */
 const LINKS = [
   { label: "How it works", href: "/how-it-works" },
   { label: "Pricing", href: "/pricing" },
   { label: "Trust", href: "/trust" },
-  { label: "Contact", href: "/contact" },
 ];
 
 export default function SiteNav() {
@@ -61,19 +65,22 @@ export default function SiteNav() {
           : "border-transparent bg-transparent"
       }`}
     >
-      <div className="mkt-content flex h-16 items-center justify-between gap-8">
+      <div className="mkt-content flex h-[68px] items-center justify-between gap-8">
         <Link
           href="/"
           className="inline-flex shrink-0 items-center gap-2.5"
           aria-label="Fydell home"
         >
-          <FydellMark width={22} />
-          <span className="text-[16px] font-semibold leading-none tracking-[-0.024em] text-[var(--text-primary)]">
+          <FydellMark width={24} />
+          <span className="text-[17px] font-semibold leading-none tracking-[-0.026em] text-[var(--text-primary)]">
             fydell
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-7 min-[900px]:flex" aria-label="Primary">
+        {/* Every destination carries the same weight and full text contrast.
+            Dimming the inactive links made the whole bar read as disabled
+            chrome; the current page is marked by the rule beneath it instead. */}
+        <nav className="hidden items-center gap-8 min-[900px]:flex" aria-label="Primary">
           {LINKS.map((item) => {
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -82,17 +89,13 @@ export default function SiteNav() {
                 key={item.label}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative text-[13.5px] tracking-[-0.011em] transition-colors ${
-                  active
-                    ? "text-[var(--text-primary)]"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                }`}
+                className="relative text-[14px] font-medium tracking-[-0.011em] text-[var(--text-primary)] transition-opacity duration-150 hover:opacity-65"
               >
                 {item.label}
                 {active ? (
                   <span
                     aria-hidden
-                    className="absolute inset-x-0 -bottom-[21px] h-px bg-[var(--text-primary)]"
+                    className="absolute inset-x-0 -bottom-[23px] h-[1.5px] bg-[var(--text-primary)]"
                   />
                 ) : null}
               </Link>
@@ -100,16 +103,22 @@ export default function SiteNav() {
           })}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="hidden text-[13.5px] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] sm:inline"
+            className="hidden text-[14px] font-medium text-[var(--text-primary)] transition-opacity duration-150 hover:opacity-65 sm:inline"
           >
             Sign in
           </Link>
           <Link
+            href="/contact"
+            className="hidden h-9 items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-raised)] px-4 text-[13.5px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] min-[900px]:inline-flex"
+          >
+            Contact sales
+          </Link>
+          <Link
             href="/signup"
-            className="hidden h-8 items-center rounded-full bg-[var(--control-solid)] px-4 text-[13px] font-medium text-[var(--control-solid-ink)] transition-colors hover:bg-[var(--control-solid-hover)] sm:inline-flex"
+            className="hidden h-9 items-center rounded-full bg-[var(--control-solid)] px-4 text-[13.5px] font-medium text-[var(--control-solid-ink)] transition-colors hover:bg-[var(--control-solid-hover)] sm:inline-flex"
           >
             Get started
           </Link>
@@ -118,7 +127,7 @@ export default function SiteNav() {
             onClick={() => setOpen(!open)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[var(--border-default)] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] min-[900px]:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-strong)] text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] min-[900px]:hidden"
           >
             {open ? (
               <X className="h-4 w-4" strokeWidth={1.7} aria-hidden />
@@ -132,24 +141,24 @@ export default function SiteNav() {
       {open ? (
         <div className="border-t border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4 py-3 min-[900px]:hidden">
           <nav className="flex flex-col gap-0.5" aria-label="Mobile">
-            {LINKS.map((item) => (
+            {[...LINKS, { label: "Contact sales", href: "/contact" }].map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className="rounded-[6px] px-3 py-2.5 text-[14.5px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                className="rounded-[8px] px-3 py-2.5 text-[15px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
               >
                 {item.label}
               </Link>
             ))}
             <Link
               href="/login"
-              className="rounded-[6px] px-3 py-2.5 text-[14.5px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+              className="rounded-[8px] px-3 py-2.5 text-[15px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
             >
               Sign in
             </Link>
             <Link
               href="/signup"
-              className="mt-2 inline-flex h-10 items-center justify-center rounded-full bg-[var(--control-solid)] text-[14px] font-medium text-[var(--control-solid-ink)]"
+              className="mt-2 inline-flex h-11 items-center justify-center rounded-full bg-[var(--control-solid)] text-[14.5px] font-medium text-[var(--control-solid-ink)]"
             >
               Get started
             </Link>

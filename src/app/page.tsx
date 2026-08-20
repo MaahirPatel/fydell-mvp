@@ -26,8 +26,8 @@ export default function HomePage() {
                 <ButtonLink href="/signup" variant="primary">
                   Get started
                 </ButtonLink>
-                <ButtonLink href="/contact" variant="soft">
-                  Contact sales
+                <ButtonLink href="/how-it-works" variant="soft">
+                  See how it works
                 </ButtonLink>
               </div>
             </div>

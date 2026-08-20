@@ -859,7 +859,7 @@ textarea.platform-input {
   --control-solid-hover: #241c14;
   --control-solid-active: #1b150f;
   --control-solid-ink: #fbf9f5;
-  --nav-scrim: rgba(251, 249, 245, 0.72);
+  --nav-scrim: rgba(251, 249, 245, 0.86);
 
   /* ---- State, retuned for a light ground. The dark-theme values are all
      tuned for luminance against near-black and turn pastel on ivory. ---- */
