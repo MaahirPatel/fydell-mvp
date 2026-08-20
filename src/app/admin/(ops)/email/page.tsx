@@ -72,7 +72,7 @@ export default async function AdminEmailCenterPage({
           <h1 className="text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
             Email Center
           </h1>
-          <p className="mt-2 text-[14px] text-[rgba(244,245,247,0.62)]">
+          <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
             Outbox survives provider failures. Retry without losing customer records.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default async function AdminEmailCenterPage({
         >
           <button
             type="submit"
-            className="h-9 rounded-[8px] bg-[#F1F2F4] px-3 text-[12.5px] text-[#08090C]"
+            className="h-9 rounded-[8px] bg-[var(--control-solid)] px-3 text-[12.5px] text-[var(--control-solid-ink)]"
             style={{ fontWeight: 560 }}
           >
             Process queue now
@@ -99,8 +99,8 @@ export default async function AdminEmailCenterPage({
             href={`/admin/email?tab=${key}`}
             className={`rounded-[8px] px-3 py-1.5 text-[12.5px] ${
               tab === key
-                ? "bg-white/10 text-[#F4F5F7]"
-                : "text-[rgba(244,245,247,0.55)] hover:text-[#F4F5F7]"
+                ? "bg-[var(--surface-selected)] text-[var(--text-primary)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
             {label}
@@ -108,11 +108,11 @@ export default async function AdminEmailCenterPage({
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-[14px] border border-[rgba(255,255,255,0.095)]">
+      <div className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
         <div className="overflow-x-auto">
           {tab === "suppressions" ? (
             <table className="min-w-full text-left text-[13px]">
-              <thead className="border-b border-[rgba(255,255,255,0.08)] bg-[#0B0D12] text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] font-medium text-[var(--text-secondary)]">
                 <tr>
                   <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Reason</th>
@@ -122,16 +122,16 @@ export default async function AdminEmailCenterPage({
               <tbody>
                 {suppressions.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-[rgba(244,245,247,0.5)]">
+                    <td colSpan={3} className="px-4 py-8 text-center text-[var(--text-secondary)]">
                       No suppressions.
                     </td>
                   </tr>
                 ) : (
                   suppressions.map((row) => (
-                    <tr key={row.id} className="border-b border-white/[0.05]">
+                    <tr key={row.id} className="border-b border-[var(--border-subtle)]">
                       <td className="px-4 py-3">{row.email}</td>
                       <td className="px-4 py-3 capitalize">{row.reason}</td>
-                      <td className="px-4 py-3 tabular-nums text-[rgba(244,245,247,0.55)]">
+                      <td className="px-4 py-3 tabular-nums text-[var(--text-secondary)]">
                         {new Date(row.created_at).toLocaleString()}
                       </td>
                     </tr>
@@ -141,7 +141,7 @@ export default async function AdminEmailCenterPage({
             </table>
           ) : (
             <table className="min-w-full text-left text-[13px]">
-              <thead className="border-b border-[rgba(255,255,255,0.08)] bg-[#0B0D12] text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] font-medium text-[var(--text-secondary)]">
                 <tr>
                   <th className="px-4 py-3">Recipient</th>
                   <th className="px-4 py-3">Template</th>
@@ -154,18 +154,18 @@ export default async function AdminEmailCenterPage({
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-[rgba(244,245,247,0.5)]">
+                    <td colSpan={6} className="px-4 py-8 text-center text-[var(--text-secondary)]">
                       No emails in this view.
                     </td>
                   </tr>
                 ) : (
                   rows.map((row) => (
-                    <tr key={row.id} className="border-b border-white/[0.05]">
+                    <tr key={row.id} className="border-b border-[var(--border-subtle)]">
                       <td className="px-4 py-3">{row.recipient_email}</td>
                       <td className="px-4 py-3">{row.template_key}</td>
                       <td className="px-4 py-3 capitalize">{row.status}</td>
                       <td className="px-4 py-3 tabular-nums">{row.attempt_count}</td>
-                      <td className="px-4 py-3 text-[12px] text-[rgba(244,245,247,0.5)]">
+                      <td className="px-4 py-3 text-[12px] text-[var(--text-secondary)]">
                         {row.provider_message_id || "-"}
                       </td>
                       <td className="px-4 py-3 text-[12px] text-[#F26B82]">

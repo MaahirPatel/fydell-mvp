@@ -87,7 +87,7 @@ export default async function AdminShadowAuditPage() {
         {locks.length === 0 ? (
           <AdminEmpty>No shadow-pilot decision locks recorded yet.</AdminEmpty>
         ) : (
-          <ul className="divide-y divide-white/[0.06]">
+          <ul className="divide-y divide-[var(--border-subtle)]">
             {locks.map((lock) => {
               const lockReveals = revealsByLock.get(lock.id) || [];
               const firstReveal = lockReveals[lockReveals.length - 1];
@@ -97,29 +97,35 @@ export default async function AdminShadowAuditPage() {
               return (
                 <li key={lock.id} className="py-3 text-[13px]">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-white/85">
+                    <span className="text-[var(--text-primary)]">
                       {missionTitles[lock.mission_id] || "Mission"} ·{" "}
                       {orgNames[lock.organization_id] || "Organization"}
                     </span>
-                    <span className="font-medium capitalize text-white">{lock.decision}</span>
+                    <span className="font-medium capitalize text-[var(--text-primary)]">{lock.decision}</span>
                   </div>
-                  <p className="mt-1 text-[12px] text-white/50">
+                  <p className="mt-1 text-[12px] text-[var(--text-secondary)]">
                     Locked {new Date(lock.locked_at).toLocaleString()} · confidence{" "}
                     {lock.confidence} · by {lock.locked_by.slice(0, 8)}…
                   </p>
-                  <p className="mt-1 text-[12px] text-white/45">{lock.reasons}</p>
+                  <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">{lock.reasons}</p>
                   {firstReveal ? (
                     <p className="mt-1 text-[12px]">
-                      <span className={orderOk ? "text-[#8EE4B8]" : "text-[#fda4b0]"}>
-                        {orderOk ? "✓ Sequence valid" : "✗ SEQUENCE VIOLATION"}
+                      <span
+                        className={
+                          orderOk
+                            ? "text-[var(--status-positive-ink)]"
+                            : "text-[var(--fydell-risk)]"
+                        }
+                      >
+                        {orderOk ? "✓ Sequence valid" : "✗ Sequence violation"}
                       </span>{" "}
-                      <span className="text-white/50">
+                      <span className="text-[var(--text-secondary)]">
                         - revealed {new Date(firstReveal.revealed_at).toLocaleString()} by{" "}
                         {firstReveal.revealed_by.slice(0, 8)}…
                       </span>
                     </p>
                   ) : (
-                    <p className="mt-1 text-[12px] text-white/40">Report not yet revealed.</p>
+                    <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">Report not yet revealed.</p>
                   )}
                 </li>
               );

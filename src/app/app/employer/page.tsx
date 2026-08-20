@@ -168,7 +168,10 @@ export default async function EmployerHomePage() {
   const org = await requireOrgMember(user.id);
   if (!org) redirect("/account/setup-required?reason=no_org");
 
-  // One instant for the whole page, so every elapsed reading agrees.
+  // One instant for the whole page, so every elapsed reading agrees. This is an
+  // async Server Component: it runs once per request and never re-renders, so
+  // the purity rule for client render does not apply here.
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
 
   const [metrics, invitations, reports, catalog, snapshot] = await Promise.all([

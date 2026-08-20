@@ -112,7 +112,7 @@ function CsvTable({ content }: { content: string }) {
           </thead>
           <tbody>
             {filtered.map((r, ri) => (
-              <tr key={ri} className="odd:bg-white even:bg-slate-50/60">
+              <tr key={ri} className="odd:bg-[var(--surface-raised)] even:bg-[var(--surface-band)]">
                 {headers.map((_, ci) => (
                   <td
                     key={ci}
@@ -226,7 +226,7 @@ function MarkdownDoc({ content }: { content: string }) {
                 </thead>
                 <tbody>
                   {rows.map((r, ri) => (
-                    <tr key={ri} className="odd:bg-white even:bg-slate-50/50">
+                    <tr key={ri} className="odd:bg-[var(--surface-raised)] even:bg-[var(--surface-band)]">
                       {headers.map((_, ci) => (
                         <td key={ci} className="border border-slate-200 px-3 py-2 text-slate-800">
                           {inlineMd(r[ci] ?? "")}

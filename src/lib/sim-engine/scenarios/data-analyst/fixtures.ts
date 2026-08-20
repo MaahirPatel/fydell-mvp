@@ -202,3 +202,189 @@ export function buildDaWeakFixture(scenario: SimulationScenarioDefinition): Simu
 
   return attempt;
 }
+
+export type NorthlineArchetype =
+  | "TECHNICALLY_STRONG_POOR_COMMUNICATION"
+  | "OVERREACTS_TO_CHANGE"
+  | "IGNORES_CHANGE"
+  | "EXCELLENT";
+
+function buildNorthlineFixture(
+  scenario: SimulationScenarioDefinition,
+  archetype: NorthlineArchetype
+): SimulationAttempt {
+  let attempt = createAttempt(scenario, `northline-${archetype.toLowerCase()}`);
+  const startedAt = 1_787_170_000_000;
+  attempt = {
+    ...attempt,
+    status: "SUBMITTED",
+    metadata: { ...attempt.metadata, startedAt, submittedAt: startedAt + 420_000 },
+  };
+
+  const record = (type: string, payload: Record<string, unknown>, elapsedMs: number) => {
+    attempt = {
+      ...attempt,
+      telemetry: [
+        ...attempt.telemetry,
+        {
+          id: `evt-${String(attempt.telemetry.length + 1).padStart(3, "0")}`,
+          type,
+          timestamp: startedAt + elapsedMs,
+          elapsedMs,
+          payload,
+        } as SimulationAttempt["telemetry"][number],
+      ],
+    };
+  };
+
+  const flag = (name: string, value: string | number | boolean | null, elapsedMs: number) => {
+    attempt = { ...attempt, world: setWorldFlag(attempt.world, name, value, elapsedMs) };
+  };
+
+  record("SIMULATION_STARTED", { scenarioId: scenario.metadata.id, seed: attempt.metadata.seed }, 0);
+  record("RESOURCE_OPENED", { resourceId: "res_production" }, 20_000);
+  record("RESOURCE_OPENED", { resourceId: "res_quality" }, 35_000);
+  record("RESOURCE_OPENED", { resourceId: "res_dictionary" }, 50_000);
+  flag("opened_quality_events", true, 35_000);
+  flag("opened_metric_dictionary", true, 50_000);
+
+  for (const query of [
+    {
+      elapsedMs: 80_000,
+      sql: "SELECT period, AVG(yield_pct) FROM production_runs GROUP BY period",
+      patternId: "yield_by_period",
+      rowCount: 2,
+      worldFlag: "ran_yield_query",
+    },
+    {
+      elapsedMs: 110_000,
+      sql: "SELECT period, SUM(units) FROM quality_events WHERE disposition='HOLD_RECLASS' GROUP BY period",
+      patternId: "reclass_by_period",
+      rowCount: 2,
+      worldFlag: "ran_reclass_query",
+    },
+    {
+      elapsedMs: 145_000,
+      sql: "SELECT line, shift, SUM(scrap) FROM production_runs GROUP BY line, shift",
+      patternId: "residual_scrap",
+      rowCount: 4,
+      worldFlag: "ran_residual_query",
+    },
+  ]) {
+    record(
+      "SQL_EXECUTE",
+      {
+        sql: query.sql,
+        success: true,
+        rowCount: query.rowCount,
+        patternId: query.patternId,
+        columns: [],
+      },
+      query.elapsedMs
+    );
+    flag(query.worldFlag, true, query.elapsedMs);
+  }
+  flag("identified_reporting_change", true, 110_000);
+  flag("identified_residual_loss", true, 145_000);
+
+  const firstMemo = upsertArtifact(attempt.artifacts, {
+    kind: "analysis_memo",
+    title: "Recommendation",
+    content:
+      "Working view: HOLD_RECLASS explains most of the headline movement. L2 Day retains a residual loss. Timing is still an assumption.",
+    elapsedMs: 170_000,
+  });
+  attempt = { ...attempt, artifacts: firstMemo.artifacts };
+  record(
+    "ARTIFACT_CREATED",
+    { artifactId: firstMemo.artifact.id, kind: "analysis_memo" },
+    170_000
+  );
+
+  flag("changed_info_released", true, 180_000);
+  attempt = {
+    ...attempt,
+    world: {
+      ...attempt.world,
+      scenarioEvents: [
+        ...attempt.world.scenarioEvents,
+        {
+          id: "world-hold-reclass-day-9",
+          kind: "PERSON_REPLIED",
+          label: "Quality Lead corrected HOLD_RECLASS start date to day 9",
+          createdAtMs: 180_000,
+          payload: { factId: "HOLD_RECLASS_DAY_9" },
+        },
+      ],
+    },
+  };
+
+  let finalMemo: string;
+  if (archetype === "OVERREACTS_TO_CHANGE") {
+    finalMemo =
+      "The day-9 correction invalidates the entire analysis. Stop both lines immediately and discard all earlier findings. No conclusion is possible.";
+  } else if (archetype === "EXCELLENT") {
+    record(
+      "MESSAGE_SENT",
+      {
+        personId: "person_marcus",
+        conversationId: "northline-quality",
+        intent: "ask_evidence",
+        preview: "I have revised the period split. Can you confirm the release record and whether L2 Day has a known cause?",
+      },
+      205_000
+    );
+    finalMemo =
+      "Recommendation: do not treat the 1.8-point reported drop as a plant-wide production decline. The 144 HOLD_RECLASS units introduced from day 9 explain the aggregate gap when restored for comparability. Preserve the L2 Day exception: residual scrap is 200 units versus 160 prior, while other shifts are flat or offsetting. Check L2 Day before the next shift, but do not claim a cause from these files. Limitation: prior periods were not restated, so the adjusted comparison is an estimate.";
+  } else {
+    finalMemo =
+      "Adjusted result: HOLD_RECLASS from day 9 explains the aggregate yield gap; 144 held units restore comparability. L2 Day still has 40 more scrap units than prior. Validate the line before next shift. Prior periods were not restated.";
+  }
+
+  if (archetype !== "IGNORES_CHANGE") {
+    const revised = upsertArtifact(attempt.artifacts, {
+      kind: "analysis_memo",
+      title: "Recommendation",
+      content: finalMemo,
+      elapsedMs: 240_000,
+    });
+    attempt = { ...attempt, artifacts: revised.artifacts };
+    record(
+      "ARTIFACT_UPDATED",
+      { artifactId: revised.artifact.id, kind: "analysis_memo", length: finalMemo.length },
+      240_000
+    );
+  }
+
+  if (archetype === "TECHNICALLY_STRONG_POOR_COMMUNICATION") {
+    attempt = {
+      ...attempt,
+      artifacts: Object.fromEntries(
+        Object.entries(attempt.artifacts).map(([id, artifact]) => [
+          id,
+          {
+            ...artifact,
+            content:
+              "ΔY decomposes to HOLD_RECLASS numerator exclusion (144 units from day 9); residual L2 Day Δscrap=+40. Recommend targeted process verification. Comparability caveat applies.",
+          },
+        ])
+      ),
+    };
+  }
+
+  record("SIMULATION_SUBMITTED", { artifactIds: Object.keys(attempt.artifacts) }, 300_000);
+  return attempt;
+}
+
+export const buildNorthlineTechnicalStrongPoorCommunicationFixture = (
+  scenario: SimulationScenarioDefinition
+) => buildNorthlineFixture(scenario, "TECHNICALLY_STRONG_POOR_COMMUNICATION");
+
+export const buildNorthlineOverreactsFixture = (scenario: SimulationScenarioDefinition) =>
+  buildNorthlineFixture(scenario, "OVERREACTS_TO_CHANGE");
+
+export const buildNorthlineIgnoresChangeFixture = (scenario: SimulationScenarioDefinition) =>
+  buildNorthlineFixture(scenario, "IGNORES_CHANGE");
+
+export const buildNorthlineExcellentFixture = (scenario: SimulationScenarioDefinition) =>
+  buildNorthlineFixture(scenario, "EXCELLENT");

@@ -159,15 +159,16 @@ export interface SqlTableDef {
 }
 
 /**
- * Pattern-matched SQL results, not a full SQL engine.
- * First matching pattern wins; otherwise structural errors or empty result.
+ * In-memory SQL tables plus post-execution observation classifiers.
+ * Query results always come from the SQL engine; patterns only set scenario
+ * flags after a successful query and never substitute canned rows.
  */
 export interface SqlRuntimeConfig {
   dialectLabel: string;
   tables: SqlTableDef[];
   patterns: Array<{
     id: string;
-    /** All substrings must appear (case-insensitive) for a match. */
+    /** All substrings must appear (case-insensitive) to classify a successful query. */
     whenSqlIncludes: string[];
     columns: string[];
     rows: Array<Record<string, JsonValue>>;

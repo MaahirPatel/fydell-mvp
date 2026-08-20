@@ -44,7 +44,7 @@ export function CodeEditorSurface({
           <option value="python">Python</option>
         </select>
         <div className="flex-1" />
-        <Button size="sm" variant="accent" onClick={onRun} disabled={readOnly}>
+        <Button size="sm" variant="primary" onClick={onRun} disabled={readOnly}>
           Run
         </Button>
       </div>
@@ -110,7 +110,7 @@ export function ApiConsole({
           onChange={(e) => onChange({ path: e.target.value })}
           aria-label="API path"
         />
-        <Button size="sm" variant="accent" onClick={onExecute} disabled={readOnly}>
+        <Button size="sm" variant="primary" onClick={onExecute} disabled={readOnly}>
           Send
         </Button>
       </div>
@@ -207,6 +207,26 @@ export function DocumentationViewer({ title, content }: { title: string; content
   );
 }
 
+/**
+ * Task state is stored as an enum and must not reach the candidate that way.
+ * `COMPLETED` shouted in a side panel is a database value leaking into the
+ * interface; the candidate is doing a job, not reading our schema.
+ */
+const TASK_STATE_LABEL: Record<string, string> = {
+  LOCKED: "Locked",
+  AVAILABLE: "Open",
+  IN_PROGRESS: "In progress",
+  COMPLETED: "Done",
+  BLOCKED: "Blocked",
+};
+
+function taskStateLabel(status: string) {
+  return (
+    TASK_STATE_LABEL[status] ??
+    status.charAt(0) + status.slice(1).toLowerCase().replace(/_/g, " ")
+  );
+}
+
 export function TaskList({
   tasks,
   onOpen,
@@ -225,11 +245,13 @@ export function TaskList({
           >
             <div className="flex items-center justify-between gap-2">
               <span className="text-[12px] font-medium text-[var(--text-primary)]">{t.title}</span>
-              <span className="text-[10px] uppercase tracking-wide text-[var(--text-tertiary)]">
-                {t.status}
+              <span className="shrink-0 text-[12px] text-[var(--text-tertiary)]">
+                {taskStateLabel(t.status)}
               </span>
             </div>
-            <div className="mt-1 text-[11px] text-[var(--text-tertiary)]">{t.description}</div>
+            <div className="mt-1 text-[12px] leading-[1.45] text-[var(--text-tertiary)]">
+              {t.description}
+            </div>
           </button>
         </li>
       ))}
@@ -266,7 +288,7 @@ export function InternalChat({
             className={cn(
               "shrink-0 rounded-[var(--radius-control)] border px-2 py-1 text-left text-[11px]",
               activePersonId === p.id
-                ? "border-[var(--fydell-brand-blue)] bg-[var(--surface-selected)]"
+                ? "border-[var(--text-primary)] bg-[var(--surface-selected)]"
                 : "border-[var(--border-default)]"
             )}
             onClick={() => onSelectPerson(p.id)}
@@ -474,7 +496,7 @@ export function SqlWorkbench({
           {knownTables?.length ? ` · ${knownTables.join(", ")}` : ""}
         </div>
         <div className="flex-1" />
-        <Button size="sm" variant="accent" onClick={onExecute} disabled={readOnly || !value.trim()}>
+        <Button size="sm" variant="primary" onClick={onExecute} disabled={readOnly || !value.trim()}>
           Run query
         </Button>
       </div>
@@ -731,7 +753,7 @@ export function TicketQueue({
   return (
     <div className="flex h-full min-h-0">
       <div className="flex w-[42%] min-w-0 flex-col border-r border-[var(--border-default)]">
-        <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-[var(--text-tertiary)]">
+        <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-[12px] font-medium text-[var(--text-tertiary)]">
           {title ?? "Tickets"}
         </div>
         <ul className="min-h-0 flex-1 overflow-auto p-1">
@@ -747,7 +769,7 @@ export function TicketQueue({
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-mono text-[11px] text-[var(--text-primary)]">{t.id}</span>
-                  <span className="text-[10px] uppercase text-[var(--text-tertiary)]">{t.severity}</span>
+                  <span className="text-[12px] text-[var(--text-tertiary)]">{t.severity}</span>
                 </div>
                 <div className="text-[11px] text-[var(--text-secondary)]">{t.customer}</div>
                 <div className="text-[10px] text-[var(--text-tertiary)]">

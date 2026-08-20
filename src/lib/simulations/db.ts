@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash, randomBytes } from "crypto";
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import type { SimulationContent } from "./types";
 import { invitationGate } from "./invitation-gate";
 
@@ -226,6 +226,7 @@ export async function createInvitation(input: {
 }
 
 export async function getInvitationByToken(token: string): Promise<InvitationRow | null> {
+  if (!isSupabaseConfigured()) return null;
   const db = createAdminSupabaseClient();
   const { data } = await db
     .from("sim_invitations")

@@ -4,18 +4,25 @@
 **product** (the employer console, the simulation, and the evidence report are the primary surfaces; the public site exists to demonstrate what the product already does, never to promise what it does not)
 
 ## What Fydell is
-Fydell replaces the take-home assignment and the unverifiable resume claim with a short, realistic piece of work. An employer invites a candidate to a scoped scenario. The candidate works inside Fydell while a disclosed work trail is recorded. Fydell turns that trail into an evidence report the employer can inspect, and a private Work Receipt the candidate owns and controls.
+Fydell is a managed proof-of-work talent network for technical customer-facing roles, starting with Solutions Engineers. A company gives Fydell a real role. Candidates do realistic work while material facts change. Fydell returns a handful of people worth interviewing, a sixty-second decision brief, and what to probe next.
 
-The product is judged on whether a hiring manager can read a report and say "I understand how this person works" without re-doing the evaluation themselves.
+The product is judged on whether a hiring manager learned something they would not have known from a resume, and whether the next interview changed.
 
-## Pilot scope (the only thing that ships)
-One role, one evaluation, one cohort:
+Software is how we create the advantage. It is not what we sell.
 
-- **Role:** Data Analyst
-- **Evaluation:** Northline Components operations performance investigation (`DA-01`)
-- **Not in scope:** every other role, every other scenario, multi-scenario catalogs, comparison across cohorts, benchmarking
+## Two isolated loops
+- **Wave 1 (production, unchanged):** Data Analyst, Northline DA-01, `/sim/[sessionId]`, WorkbenchRunner, v2 scoring.
+- **Proof graph (new, isolated):** Solutions Engineer, `proof_*` tables, `/work/[token]`, Python analysis worker, human-reviewed briefs.
 
-Marketing, onboarding, and the console must all reflect this. If a surface implies a library of evaluations, it is wrong.
+Do not mix their event ledgers.
+
+## Pilot scope for the proof graph
+Find is still manual. Match is still founder-selected. Prove is the product: changing work, ordered events, two-pass evidence, oral defense, human review.
+
+Not in scope: ATS, job board, candidate social network, Fydell Score, seat-based assessment SaaS, automated ranking.
+
+## What Fydell is (legacy Wave 1 framing)
+The DA-01 path still replaces an unverifiable take-home with a scoped piece of analyst work and an evidence report. That path remains live and must not be rewritten for this graph.
 
 ## Users and what each one needs
 | User | Needs |

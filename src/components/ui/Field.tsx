@@ -118,7 +118,7 @@ export function PasswordInput({
         aria-pressed={shown}
         aria-controls={id}
         aria-label={shown ? "Hide password" : "Show password"}
-        className="absolute right-1 top-1 flex h-8 w-9 items-center justify-center rounded-[6px] text-[var(--text-secondary)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text-primary)]"
+        className="absolute right-1 top-1 flex h-8 w-9 items-center justify-center rounded-[6px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
       >
         {shown ? (
           <EyeOff className="h-4 w-4" strokeWidth={1.7} aria-hidden />
@@ -136,7 +136,7 @@ export function FormError({ children }: { children: React.ReactNode }) {
   return (
     <div
       role="alert"
-      className="rounded-[var(--radius-panel)] border border-[rgba(242,107,130,0.35)] bg-[rgba(242,107,130,0.08)] px-3.5 py-2.5 text-[13px] leading-[1.5] text-[#ffb3c0]"
+      className="rounded-[var(--radius-panel)] border border-[color-mix(in_srgb,var(--fydell-risk)_28%,transparent)] bg-[color-mix(in_srgb,var(--fydell-risk)_7%,transparent)] px-3.5 py-2.5 text-[13px] leading-[1.5] text-[var(--fydell-risk)]"
     >
       {children}
     </div>
@@ -148,7 +148,7 @@ export function FormSuccess({ children }: { children: React.ReactNode }) {
   return (
     <div
       role="status"
-      className="rounded-[var(--radius-panel)] border border-[rgba(103,217,160,0.3)] bg-[rgba(103,217,160,0.08)] px-3.5 py-2.5 text-[13px] leading-[1.5] text-[#8fe6bb]"
+      className="rounded-[var(--radius-panel)] border border-[var(--status-positive-line)] bg-[var(--status-positive-bg)] px-3.5 py-2.5 text-[13px] leading-[1.5] text-[var(--status-positive-ink)]"
     >
       {children}
     </div>

@@ -1,8 +1,35 @@
 import type { NextConfig } from "next";
 
+/**
+ * alasql powers the in-browser SQL sandbox in the analyst simulation, and it
+ * needs pinning to its browser build.
+ *
+ * Its `exports` map is `{ node: dist/alasql.fs.js, browser: dist/alasql.min.js,
+ * default: dist/alasql.fs.js }`. The `.fs` build requires `react-native-fs`,
+ * which ships untranspiled Flow syntax; when the bundler resolves the `node`
+ * condition for a client chunk it follows that require, fails to parse it, and
+ * takes down every route in the app.
+ *
+ * The obvious workaround of deep-importing `alasql/dist/alasql.js` cannot work:
+ * the same `exports` map exposes only `.` and `./precompile`, so any other
+ * subpath is refused even though the file is present on disk. That leaves
+ * aliasing to a real file path as the only reliable route, so both the bare
+ * specifier and the tempting deep one are pinned to the browser build.
+ *
+ * This is safe rather than merely expedient: the sandbox queries fixture tables
+ * held in memory and must never reach a file system.
+ */
+const ALASQL_BROWSER_BUILD = "./node_modules/alasql/dist/alasql.min.js";
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  turbopack: {
+    resolveAlias: {
+      alasql: ALASQL_BROWSER_BUILD,
+      "alasql/dist/alasql.js": ALASQL_BROWSER_BUILD,
+    },
+  },
   async redirects() {
     // Legacy product surfaces. Old URLs must never 404 or render retired UI.
     return [
@@ -34,15 +61,19 @@ const nextConfig: NextConfig = {
       // Old internal ops
       { source: "/ops/:path*", destination: "/admin", permanent: true },
       // Old marketing pages
-      { source: "/simulation", destination: "/simulations", permanent: true },
-      { source: "/sample-report", destination: "/", permanent: true },
-      { source: "/work-receipts", destination: "/", permanent: true },
-      { source: "/how-it-works", destination: "/product", permanent: true },
-      { source: "/for-finance", destination: "/product", permanent: true },
-      { source: "/solutions", destination: "/product", permanent: true },
-      { source: "/resources", destination: "/product", permanent: true },
-      { source: "/network", destination: "/product", permanent: true },
-      { source: "/company", destination: "/product", permanent: true },
+      { source: "/simulation", destination: "/how-it-works", permanent: true },
+      { source: "/simulations", destination: "/how-it-works", permanent: true },
+      { source: "/product", destination: "/how-it-works", permanent: true },
+      { source: "/evidence-report", destination: "/how-it-works", permanent: true },
+      { source: "/request-pilot", destination: "/contact", permanent: true },
+      { source: "/security", destination: "/trust", permanent: true },
+      { source: "/sample-report", destination: "/how-it-works", permanent: true },
+      { source: "/work-receipts", destination: "/how-it-works", permanent: true },
+      { source: "/for-finance", destination: "/how-it-works", permanent: true },
+      { source: "/solutions", destination: "/how-it-works", permanent: true },
+      { source: "/resources", destination: "/how-it-works", permanent: true },
+      { source: "/network", destination: "/how-it-works", permanent: true },
+      { source: "/company", destination: "/contact", permanent: true },
       // Old app areas
       { source: "/app/fde/:path*", destination: "/app/candidate", permanent: true },
       { source: "/app/employer/missions/:path*", destination: "/app/employer", permanent: true },

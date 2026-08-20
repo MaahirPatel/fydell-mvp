@@ -1,0 +1,8 @@
+[project]
+name = "fydell-evidence-engine"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["fastapi>=0.110", "uvicorn>=0.27"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

@@ -25,6 +25,7 @@ function ok(name: string, condition: boolean, detail = "") {
   }
 }
 
+async function main(): Promise<void> {
 console.log("sim-engine runtime");
 
 const validation = validateScenario(northstarIntegrationScenario);
@@ -138,18 +139,21 @@ ok(
 daRuntime.openResource("res_schema");
 ok("schema open sets opened_schema", daRuntime.getAttempt().world.flags.opened_schema === true);
 
-daRuntime.executeSql();
+await daRuntime.executeSql();
 ok(
   "plan-mix SQL sets found_churn_driver",
   daRuntime.getAttempt().world.flags.found_churn_driver === true,
-  JSON.stringify(daRuntime.getAttempt().world.flags)
+  JSON.stringify({
+    flags: daRuntime.getAttempt().world.flags,
+    result: daRuntime.getAttempt().workbench.lastSqlResult,
+  })
 );
 ok("SQL result rows present", (daRuntime.getAttempt().workbench.lastSqlResult?.rowCount ?? 0) > 0);
 
 daRuntime.updateWorkbench({
   sqlQuery: "SELECT category, COUNT(*) FROM support_tickets GROUP BY category",
 });
-daRuntime.executeSql();
+await daRuntime.executeSql();
 ok("ticket query sets ran_ticket_query", daRuntime.getAttempt().world.flags.ran_ticket_query === true);
 
 daRuntime.openResource("res_invoice_sample");
@@ -301,3 +305,9 @@ if (failures > 0) {
   process.exit(1);
 }
 console.log("All sim-engine runtime checks passed.");
+}
+
+void main().catch((error: unknown) => {
+  console.error(error);
+  process.exit(1);
+});

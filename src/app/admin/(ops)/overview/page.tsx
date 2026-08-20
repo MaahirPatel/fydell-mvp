@@ -123,7 +123,7 @@ export default async function AdminOverviewPage() {
           {recent.length === 0 ? (
             <AdminEmpty>
               No requests yet. When a finance lead submits{" "}
-              <Link href="/request-pilot" className="text-white/80 underline">
+              <Link href="/request-pilot" className="text-[var(--text-primary)] underline">
                 /request-pilot
               </Link>
               , it appears here with a FYD reference.
@@ -134,13 +134,13 @@ export default async function AdminOverviewPage() {
                 <li key={row.id}>
                   <Link
                     href={`/admin/pilot-requests/${row.id}`}
-                    className="flex items-start justify-between gap-3 rounded-[12px] border border-white/[0.06] px-3.5 py-3 text-[13px] transition-colors hover:border-white/15 hover:bg-white/[0.02]"
+                    className="flex items-start justify-between gap-3 rounded-[var(--radius-control)] px-3.5 py-3 text-[13px] transition-colors hover:bg-[var(--surface-hover)]"
                   >
                     <div className="min-w-0">
-                      <p className="font-medium text-white">
+                      <p className="font-medium text-[var(--text-primary)]">
                         {row.public_reference || row.id.slice(0, 8)}
                       </p>
-                      <p className="mt-0.5 truncate text-white/50">
+                      <p className="mt-0.5 truncate text-[var(--text-secondary)]">
                         {row.company_name || "-"} · {row.full_name || "-"}
                       </p>
                     </div>
@@ -163,14 +163,14 @@ export default async function AdminOverviewPage() {
               {failedEmails.map((row) => (
                 <li
                   key={row.id}
-                  className="rounded-[12px] border border-white/[0.06] px-3.5 py-3 text-[13px]"
+                  className="rounded-[var(--radius-control)] bg-[var(--surface-band)] px-3.5 py-3 text-[13px]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-white">
+                      <p className="truncate font-medium text-[var(--text-primary)]">
                         {row.recipient_email}
                       </p>
-                      <p className="mt-0.5 text-white/50">
+                      <p className="mt-0.5 text-[var(--text-secondary)]">
                         {row.template_key}
                         {row.last_error ? ` · ${row.last_error}` : ""}
                       </p>

@@ -72,6 +72,20 @@ function isServiceRoleKey(value: string): boolean {
 }
 
 /**
+ * True when a value has the shape of a real service-role key (legacy JWT with
+ * `role: service_role`, or a modern `sb_secret_…` secret). Placeholders such as
+ * `paste-your-key-here` must not count as configured: treating them as ready
+ * lets signup create Auth users and then fail on the first admin call.
+ *
+ * Never log or return the value.
+ */
+export function isPlausibleServiceRoleKey(value: string | undefined): boolean {
+  if (!value) return false;
+  if (value.startsWith("sb_secret_")) return value.length >= 24;
+  return isServiceRoleKey(value);
+}
+
+/**
  * A service-role key in a NEXT_PUBLIC_ variable is shipped to the browser by
  * Next.js. That is unrecoverable once deployed, so it is a hard stop.
  */
@@ -121,6 +135,11 @@ export function assertProjectBinding(
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
   if (options.requireServiceKey && !serviceKey) {
     throw new SupabaseProjectMismatchError("SUPABASE_SERVICE_ROLE_KEY is not set.");
+  }
+  if (options.requireServiceKey && serviceKey && !isPlausibleServiceRoleKey(serviceKey)) {
+    throw new SupabaseProjectMismatchError(
+      "SUPABASE_SERVICE_ROLE_KEY is set but is not a service-role key."
+    );
   }
 
   const serviceRef = projectRefFromKey(serviceKey);

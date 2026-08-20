@@ -59,14 +59,20 @@ const LIFECYCLE = [
   {
     step: "Analysis",
     detail:
-      "Rules in code run over the snapshot. No model decides the outcome, and the same snapshot always produces the same result.",
-    state: "Reproducible",
+      "A versioned analysis pass turns the ordered work trail into observations, uncertainties and candidate-specific defense questions.",
+    state: "Versioned",
   },
   {
-    step: "Report and receipt",
+    step: "Human review",
     detail:
-      "The employer report and the candidate's Work Receipt are assembled from that analysis.",
-    state: "Readable, not editable",
+      "A Fydell reviewer checks every publishable claim against supporting events, counterevidence and the applicable rubric.",
+    state: "Required in pilot",
+  },
+  {
+    step: "Brief and receipt",
+    detail:
+      "The employer receives a decision brief. Portable candidate evidence is assembled separately so employer-private judgment never enters a Work Receipt.",
+    state: "Separate views",
   },
 ];
 
@@ -150,9 +156,10 @@ const IN_PLACE = [
   "Server-side reads check organization membership before a session, report or receipt is returned.",
   "A submission snapshot that the database itself refuses to let anyone edit after the fact.",
   "An append-only audit record of workspace actions.",
-  "Scoring in plain code, with a test that scores the same submission twice and requires an identical result.",
+  "Versioned analysis outputs that preserve supporting events, counterevidence, confidence, model, prompt and rubric versions.",
+  "Human review before evidence is published to an employer during the pilot.",
   "Managed Postgres with encryption at rest, in a single region.",
-  "Synthetic scenario data. Northline Components is fictional and is not modelled on a customer.",
+  "Synthetic scenario data. Northstar and Acme are fictional and are not modelled on customers.",
 ];
 
 const NOT_YET = [
@@ -194,7 +201,7 @@ export default function TrustPage() {
           <div className="lg:col-span-4">
             <h2 className="section-heading">The life of one evaluation</h2>
             <p className="section-desc mt-4">
-              Six records, created in order. The right-hand tag says whether that
+              Seven stages, created in order. The right-hand tag says whether that
               record can still change.
             </p>
           </div>
@@ -358,7 +365,7 @@ export default function TrustPage() {
               label="A claim, the excerpt it rests on, and the stages of the session behind it"
             >
               <div className="border-b border-[var(--border-subtle)] p-4">
-                <p className="border-l-2 border-[var(--fydell-risk)] pl-3 text-[13.5px] leading-[1.5] text-[var(--text-primary)]">
+                <p className="rounded-[var(--radius-control)] bg-[var(--status-attention-bg)] p-3 text-[13.5px] leading-[1.5] text-[var(--text-primary)]">
                   {NORTHLINE_CLAIMS[2].text}
                 </p>
                 <div className="mt-3">
@@ -402,7 +409,7 @@ export default function TrustPage() {
                   >
                     <span
                       aria-hidden
-                      className="mt-[9px] h-[7px] w-[7px] shrink-0 rounded-full border border-[rgba(107,140,255,0.5)] bg-[rgba(107,140,255,0.2)]"
+                      className="mt-[9px] h-[7px] w-[7px] shrink-0 rounded-full border border-[var(--border-strong)] bg-[var(--surface-selected)]"
                     />
                     <span>{line}</span>
                   </li>

@@ -129,13 +129,13 @@ export function ImplementationConsultantSandbox({ runtime, debug }: SimulationRe
         <ResizablePanels
           left={
             <div className="flex h-full min-h-0 flex-col">
-              <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-[var(--text-tertiary)]">
+              <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-[12px] font-medium text-[var(--text-tertiary)]">
                 Tasks
               </div>
               <div className="min-h-0 flex-1 overflow-auto">
                 <TaskList tasks={taskRows} onOpen={(id) => runtime.openTask(id)} />
               </div>
-              <div className="border-t border-[var(--border-subtle)] px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-[var(--text-tertiary)]">
+              <div className="border-t border-[var(--border-subtle)] px-3 py-2 text-[12px] font-medium text-[var(--text-tertiary)]">
                 Resources
               </div>
               <div className="min-h-[40%] overflow-hidden">

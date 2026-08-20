@@ -48,40 +48,40 @@ export default async function AdminUserDetailPage({
 
   return (
     <div>
-      <Link href="/admin/users" className="text-[13px] text-[rgba(244,245,247,0.62)]">
+      <Link href="/admin/users" className="text-[13px] text-[var(--text-secondary)]">
         ← Users
       </Link>
       <h1 className="mt-4 text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
         {profile?.full_name || user.user_metadata?.full_name || user.email}
       </h1>
-      <p className="mt-2 text-[14px] text-[rgba(244,245,247,0.62)]">{user.email}</p>
+      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">{user.email}</p>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <section className="rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5 text-[13px]">
-          <h2 className="text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+        <section className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 text-[13px]">
+          <h2 className="text-app-section font-medium text-[var(--text-primary)]">
             Account
           </h2>
           <dl className="mt-4 space-y-2">
             <div className="flex justify-between gap-4">
-              <dt className="text-[rgba(244,245,247,0.4)]">Email verified</dt>
+              <dt className="text-[var(--text-tertiary)]">Email verified</dt>
               <dd>{user.email_confirmed_at ? "Yes" : "No"}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-[rgba(244,245,247,0.4)]">Account status</dt>
+              <dt className="text-[var(--text-tertiary)]">Account status</dt>
               <dd className="capitalize">{profile?.account_status || "active"}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-[rgba(244,245,247,0.4)]">Platform roles</dt>
+              <dt className="text-[var(--text-tertiary)]">Platform roles</dt>
               <dd>{activeRoles.join(", ") || "-"}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-[rgba(244,245,247,0.4)]">Last sign-in</dt>
+              <dt className="text-[var(--text-tertiary)]">Last sign-in</dt>
               <dd className="tabular-nums">
                 {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "-"}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-[rgba(244,245,247,0.4)]">Created</dt>
+              <dt className="text-[var(--text-tertiary)]">Created</dt>
               <dd className="tabular-nums">
                 {user.created_at ? new Date(user.created_at).toLocaleString() : "-"}
               </dd>
@@ -89,8 +89,8 @@ export default async function AdminUserDetailPage({
           </dl>
         </section>
 
-        <section className="rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5">
-          <h2 className="text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+        <section className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+          <h2 className="text-app-section font-medium text-[var(--text-primary)]">
             Actions
           </h2>
           <div className="mt-4">
@@ -104,20 +104,20 @@ export default async function AdminUserDetailPage({
         </section>
       </div>
 
-      <section className="mt-6 rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5">
-        <h2 className="text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+      <section className="mt-6 rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+        <h2 className="text-app-section font-medium text-[var(--text-primary)]">
           Memberships
         </h2>
         <ul className="mt-4 space-y-2 text-[13px]">
           {(memberships || []).length === 0 ? (
-            <li className="text-[rgba(244,245,247,0.5)]">No organization memberships.</li>
+            <li className="text-[var(--text-secondary)]">No organization memberships.</li>
           ) : (
             (memberships || []).map((m) => (
-              <li key={m.id} className="flex justify-between border-b border-white/[0.05] pb-2">
+              <li key={m.id} className="flex justify-between border-b border-[var(--border-subtle)] pb-2">
                 <span>
                   {(m.organizations as { name?: string } | null)?.name || m.organization_id}
                 </span>
-                <span className="capitalize text-[rgba(244,245,247,0.55)]">
+                <span className="capitalize text-[var(--text-secondary)]">
                   {m.role} · {m.status}
                 </span>
               </li>
@@ -126,38 +126,38 @@ export default async function AdminUserDetailPage({
         </ul>
       </section>
 
-      <section className="mt-6 rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5">
-        <h2 className="text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+      <section className="mt-6 rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+        <h2 className="text-app-section font-medium text-[var(--text-primary)]">
           Invitations
         </h2>
         <ul className="mt-4 space-y-2 text-[13px]">
           {(invitations || []).length === 0 ? (
-            <li className="text-[rgba(244,245,247,0.5)]">No invitations.</li>
+            <li className="text-[var(--text-secondary)]">No invitations.</li>
           ) : (
             (invitations || []).map((inv) => (
-              <li key={inv.id} className="flex justify-between border-b border-white/[0.05] pb-2">
+              <li key={inv.id} className="flex justify-between border-b border-[var(--border-subtle)] pb-2">
                 <span>{inv.invitation_type}</span>
-                <span className="capitalize text-[rgba(244,245,247,0.55)]">{inv.status}</span>
+                <span className="capitalize text-[var(--text-secondary)]">{inv.status}</span>
               </li>
             ))
           )}
         </ul>
       </section>
 
-      <section className="mt-6 rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5">
-        <h2 className="text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+      <section className="mt-6 rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+        <h2 className="text-app-section font-medium text-[var(--text-primary)]">
           Related audit
         </h2>
         <ul className="mt-4 space-y-2 text-[13px]">
           {(audits || []).length === 0 ? (
-            <li className="text-[rgba(244,245,247,0.5)]">No audit events.</li>
+            <li className="text-[var(--text-secondary)]">No audit events.</li>
           ) : (
             (audits || []).map((a) => (
-              <li key={a.id} className="flex justify-between border-b border-white/[0.05] pb-2">
+              <li key={a.id} className="flex justify-between border-b border-[var(--border-subtle)] pb-2">
                 <span>
                   {a.action} · {a.entity_type}
                 </span>
-                <span className="tabular-nums text-[rgba(244,245,247,0.45)]">
+                <span className="tabular-nums text-[var(--text-tertiary)]">
                   {new Date(a.created_at).toLocaleString()}
                 </span>
               </li>

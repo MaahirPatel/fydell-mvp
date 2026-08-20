@@ -12,17 +12,6 @@ import { ButtonLink } from "@/components/marketing/ui";
  * editorial, so switching axis is what signals "this is the end" without
  * needing a heavier band, a bigger type size, or decoration.
  */
-function Arrow() {
-  return (
-    <span
-      aria-hidden
-      className="-mr-0.5 transition-transform duration-150 ease-[var(--ease)] group-hover:translate-x-[3px]"
-    >
-      →
-    </span>
-  );
-}
-
 export default function ClosingCTA({
   title,
   body,
@@ -55,19 +44,15 @@ export default function ClosingCTA({
             {body}
           </p>
 
+          {/* A pair, weighted rather than equal: the solid pill carries the
+              action and the soft one stays available without competing. */}
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <ButtonLink href={primary.href} variant="primary" className="group">
+            <ButtonLink href={primary.href} variant="primary">
               {primary.label}
-              <Arrow />
             </ButtonLink>
             {secondary ? (
-              <ButtonLink
-                href={secondary.href}
-                variant="secondary"
-                className="group"
-              >
+              <ButtonLink href={secondary.href} variant="soft">
                 {secondary.label}
-                <Arrow />
               </ButtonLink>
             ) : null}
           </div>

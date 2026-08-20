@@ -75,22 +75,12 @@ export function ReportInspector({
                     type="button"
                     onClick={() => selectClaim(claim.id)}
                     aria-pressed={isOpen}
-                    className={`relative w-full rounded-[var(--radius-control)] py-2 pl-3 pr-2.5 text-left transition-colors ${
+                    className={`w-full rounded-[var(--radius-control)] px-3 py-2 text-left transition-colors ${
                       isOpen
-                        ? "bg-[var(--surface-hover)]"
-                        : "hover:bg-[rgba(255,255,255,0.045)]"
+                        ? "bg-[var(--surface-selected)] ring-1 ring-inset ring-[var(--border-default)]"
+                        : "hover:bg-[var(--surface-hover)]"
                     }`}
                   >
-                    <span
-                      aria-hidden
-                      className={`absolute inset-y-1.5 left-0 w-[2px] rounded-full ${
-                        isOpen
-                          ? claim.tone === "risk"
-                            ? "bg-[var(--fydell-risk)]"
-                            : "bg-[var(--fydell-evidence)]"
-                          : "bg-transparent"
-                      }`}
-                    />
                     <span
                       className={`block text-[12.5px] leading-[1.45] ${
                         isOpen
@@ -149,7 +139,7 @@ export function ReportInspector({
               <p className="mt-4 text-[12px] font-medium text-[var(--text-tertiary)]">
                 Where this claim stops
               </p>
-              <p className="mt-1 border-l-2 border-[var(--fydell-risk)] pl-2 text-[11.5px] leading-[1.5] text-[var(--text-secondary)]">
+              <p className="mt-1 border-t border-[var(--border-subtle)] pt-2 text-[11.5px] leading-[1.5] text-[var(--text-secondary)]">
                 {open.limitation}
               </p>
             </>

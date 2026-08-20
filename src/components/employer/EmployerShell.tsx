@@ -64,6 +64,7 @@ const NAV_GROUPS: {
     label: "Evidence",
     items: [
       { href: "/app/employer/reports", label: "Reports", icon: FileText, exact: false },
+      { href: "/app/employer/proof", label: "Shortlist", icon: FileText, exact: false },
     ],
   },
 ];
@@ -123,12 +124,6 @@ function NavLink({
           : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
       }`}
     >
-      {active ? (
-        <span
-          aria-hidden
-          className="absolute inset-y-1.5 left-0 w-[2px] rounded-full bg-[var(--fydell-evidence)]"
-        />
-      ) : null}
       <Icon className="h-4 w-4 shrink-0" strokeWidth={1.7} aria-hidden />
       {label}
     </Link>
@@ -142,7 +137,7 @@ function SidebarNav() {
       {NAV_GROUPS.map((group, index) => (
         <div key={group.label ?? `group-${index}`} className="flex flex-col gap-0.5">
           {group.label ? (
-            <p className="px-2.5 pb-1 text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--text-tertiary)]">
+            <p className="px-2.5 pb-1 text-[12px] font-medium text-[var(--text-tertiary)]">
               {group.label}
             </p>
           ) : null}

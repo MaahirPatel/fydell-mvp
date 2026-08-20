@@ -1,5 +1,8 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { assertProjectBinding } from "@/lib/supabase/project-guard";
+import {
+  assertProjectBinding,
+  isPlausibleServiceRoleKey,
+} from "@/lib/supabase/project-guard";
 
 // Server-only Supabase client using the service role key. This bypasses RLS,
 // so it must NEVER be imported into client components. All DB access flows
@@ -37,7 +40,7 @@ export function supabaseServiceKey(): string | undefined {
  * `supabaseAdminStatus()`.
  */
 export function isSupabaseConfigured(): boolean {
-  return Boolean(supabaseUrl() && supabaseServiceKey());
+  return Boolean(supabaseUrl() && isPlausibleServiceRoleKey(supabaseServiceKey()));
 }
 
 /**
@@ -72,12 +75,12 @@ export type AdminClientStatus =
 export function supabaseAdminStatus(): AdminClientStatus {
   if (cached) return { status: "ready" };
 
-  if (!supabaseUrl() || !supabaseServiceKey()) {
+  if (!supabaseUrl() || !isPlausibleServiceRoleKey(supabaseServiceKey())) {
     return {
       status: "missing_credentials",
       detail:
-        "Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or the " +
-        "legacy SUPABASE_URL / SUPABASE_SERVICE_KEY).",
+        "Set NEXT_PUBLIC_SUPABASE_URL and a real SUPABASE_SERVICE_ROLE_KEY (or the " +
+        "legacy SUPABASE_URL / SUPABASE_SERVICE_KEY). Placeholder values are not used.",
     };
   }
 
@@ -103,7 +106,7 @@ export function getSupabaseAdmin(): SupabaseClient {
   const url = supabaseUrl();
   const serviceKey = supabaseServiceKey();
 
-  if (!url || !serviceKey) {
+  if (!url || !isPlausibleServiceRoleKey(serviceKey)) {
     // Several route handlers return err.message straight to the browser, so
     // this text reaches end users. The operator detail goes to the server log;
     // the thrown message stays free of variable names and file paths.

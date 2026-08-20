@@ -95,6 +95,14 @@ async function main(): Promise<void> {
       },
       "project_refused",
     ],
+    [
+      "a placeholder service key is missing_credentials",
+      {
+        NEXT_PUBLIC_SUPABASE_URL: staging.NEXT_PUBLIC_SUPABASE_URL,
+        SUPABASE_SERVICE_ROLE_KEY: "paste-your-key-here",
+      },
+      "missing_credentials",
+    ],
   ];
 
   for (const [name, env, expected] of cases) {

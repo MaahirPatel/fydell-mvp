@@ -55,7 +55,7 @@ export const PREVIEW_USER = {
 export const PREVIEW_ORG: OrgContext = {
   userId: PREVIEW_USER.id,
   organizationId: "00000000-0000-4000-8000-0000000000a1",
-  organizationName: "Example Manufacturing",
+  organizationName: "Meridian Industrial Systems",
 };
 
 const EVALUATION = "Operations performance investigation";
@@ -109,7 +109,7 @@ type Seed = {
 const SEEDS: Seed[] = [
   {
     id: "s1",
-    name: "Avery Sample",
+    name: "Candidate 1",
     status: "sent",
     session: null,
     createdHoursAgo: 3,
@@ -117,7 +117,7 @@ const SEEDS: Seed[] = [
   },
   {
     id: "s2",
-    name: "Blair Example",
+    name: "Candidate 2",
     status: "opened",
     session: null,
     createdHoursAgo: 20,
@@ -127,7 +127,7 @@ const SEEDS: Seed[] = [
     // Past the 72h stalled threshold on purpose, so the attention rule that
     // reports it has actually fired rather than being asserted by a fixture.
     id: "s3",
-    name: "Casey Placeholder",
+    name: "Candidate 3",
     status: "accepted",
     session: "accepted",
     createdHoursAgo: 96,
@@ -135,7 +135,7 @@ const SEEDS: Seed[] = [
   },
   {
     id: "s4",
-    name: "Devon Testcase",
+    name: "Candidate 4",
     status: "started",
     session: "active",
     createdHoursAgo: 30,
@@ -143,7 +143,7 @@ const SEEDS: Seed[] = [
   },
   {
     id: "s5",
-    name: "Emerson Fixture",
+    name: "Candidate 5",
     status: "completed",
     session: "submitted",
     createdHoursAgo: 52,
@@ -153,7 +153,7 @@ const SEEDS: Seed[] = [
   },
   {
     id: "s6",
-    name: "Frankie Synthetic",
+    name: "Candidate 6",
     status: "completed",
     session: "report_ready",
     score: 78,
@@ -164,7 +164,7 @@ const SEEDS: Seed[] = [
   },
   {
     id: "s7",
-    name: "Gray Specimen",
+    name: "Candidate 7",
     status: "completed",
     session: "analyzed",
     score: 61,
@@ -176,7 +176,7 @@ const SEEDS: Seed[] = [
   },
   {
     id: "s8",
-    name: "Harper Dummy",
+    name: "Candidate 8",
     status: "expired",
     session: null,
     createdHoursAgo: 400,
@@ -184,7 +184,7 @@ const SEEDS: Seed[] = [
   },
   {
     id: "s9",
-    name: "Indigo Mock",
+    name: "Candidate 9",
     status: "sent",
     session: null,
     createdHoursAgo: 6,
@@ -210,7 +210,7 @@ export function previewInvitations(limit = 200): InvitationRecord[] {
   return SEEDS.slice(0, limit).map((seed) => ({
     invitationId: seed.id,
     name: seed.name,
-    email: `${seed.name.split(" ")[0].toLowerCase()}@example.com`,
+    email: `${seed.name.replaceAll(" ", "").toLowerCase()}@example.com`,
     roleKey: ROLE_KEY,
     roleTitle: ROLE_TITLE,
     simulation: EVALUATION,
@@ -612,14 +612,14 @@ export function previewOperationalSnapshot(): OperationalSnapshot {
   const candidates = (email: string) =>
     `/app/employer/candidates?q=${encodeURIComponent(email)}`;
   const report = (id: string) => `/app/employer/assessments/report/sess-${id}`;
-  const emailFor = (name: string) => `${name.split(" ")[0].toLowerCase()}@example.com`;
+  const emailFor = (name: string) => `${name.replaceAll(" ", "").toLowerCase()}@example.com`;
 
   const attention: AttentionItem[] = [
     {
       key: "s9-email-failed",
       invitationId: "s9",
-      candidate: "Indigo Mock",
-      email: emailFor("Indigo Mock"),
+      candidate: "Candidate 9",
+      email: emailFor("Candidate 9"),
       evaluation: EVALUATION,
       state: "Invited",
       reason: "The invitation email failed to send, so it never arrived.",
@@ -631,8 +631,8 @@ export function previewOperationalSnapshot(): OperationalSnapshot {
     {
       key: "s8-expired",
       invitationId: "s8",
-      candidate: "Harper Dummy",
-      email: emailFor("Harper Dummy"),
+      candidate: "Candidate 8",
+      email: emailFor("Candidate 8"),
       evaluation: EVALUATION,
       state: "Invited",
       reason: "The invitation expired before it was accepted.",
@@ -643,8 +643,8 @@ export function previewOperationalSnapshot(): OperationalSnapshot {
     {
       key: "s6-needs-review",
       invitationId: "s6",
-      candidate: "Frankie Synthetic",
-      email: emailFor("Frankie Synthetic"),
+      candidate: "Candidate 6",
+      email: emailFor("Candidate 6"),
       evaluation: EVALUATION,
       state: "Report ready",
       reason: "The report is ready and no hiring decision has been recorded.",
@@ -655,38 +655,38 @@ export function previewOperationalSnapshot(): OperationalSnapshot {
     {
       key: "s3-stalled",
       invitationId: "s3",
-      candidate: "Casey Placeholder",
-      email: emailFor("Casey Placeholder"),
+      candidate: "Candidate 3",
+      email: emailFor("Candidate 3"),
       evaluation: EVALUATION,
       state: "Accepted",
       reason: "Accepted more than 72 hours ago and never started.",
       since: at(92),
       severity: "action",
-      primary: { label: "Open candidate", href: candidates(emailFor("Casey Placeholder")) },
+      primary: { label: "Open candidate", href: candidates(emailFor("Candidate 3")) },
     },
     {
       key: "s5-analysis-late",
       invitationId: "s5",
-      candidate: "Emerson Fixture",
-      email: emailFor("Emerson Fixture"),
+      candidate: "Candidate 5",
+      email: emailFor("Candidate 5"),
       evaluation: EVALUATION,
       state: "Submitted",
       reason: "Analysis has been running for longer than 2 hours.",
       since: at(3),
       severity: "waiting",
-      primary: { label: "Open candidate", href: candidates(emailFor("Emerson Fixture")) },
+      primary: { label: "Open candidate", href: candidates(emailFor("Candidate 5")) },
     },
   ];
 
   const activity: ActivityEvent[] = [
-    { key: "a1", at: at(3), who: "Emerson Fixture", what: "Final submission received", href: report("s5") },
-    { key: "a2", at: at(3.4), who: "Emerson Fixture", what: "Changed information released", href: null },
-    { key: "a3", at: at(4), who: "Devon Testcase", what: "Simulation started", href: candidates(emailFor("Devon Testcase")) },
-    { key: "a4", at: at(6), who: "Indigo Mock", what: "Invitation email failed", href: candidates(emailFor("Indigo Mock")) },
+    { key: "a1", at: at(3), who: "Candidate 5", what: "Final submission received", href: report("s5") },
+    { key: "a2", at: at(3.4), who: "Candidate 5", what: "Changed information released", href: null },
+    { key: "a3", at: at(4), who: "Candidate 4", what: "Simulation started", href: candidates(emailFor("Candidate 4")) },
+    { key: "a4", at: at(6), who: "Candidate 9", what: "Invitation email failed", href: candidates(emailFor("Candidate 9")) },
     { key: "a5", at: at(20), who: "Gray Specimen", what: "Decision recorded", href: report("s7") },
-    { key: "a6", at: at(25), who: "Frankie Synthetic", what: "Analysis completed", href: report("s6") },
-    { key: "a7", at: at(26), who: "Frankie Synthetic", what: "Final submission received", href: report("s6") },
-    { key: "a8", at: at(92), who: "Casey Placeholder", what: "Invitation accepted", href: candidates(emailFor("Casey Placeholder")) },
+    { key: "a6", at: at(25), who: "Candidate 6", what: "Analysis completed", href: report("s6") },
+    { key: "a7", at: at(26), who: "Candidate 6", what: "Final submission received", href: report("s6") },
+    { key: "a8", at: at(92), who: "Candidate 3", what: "Invitation accepted", href: candidates(emailFor("Candidate 3")) },
   ];
 
   return { attention, activity };

@@ -134,7 +134,6 @@ export default function SignupForm({ path }: { path?: SignupPath }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={() => (fieldErrors.name ? validate() : undefined)}
-          placeholder="Jane Doe"
           autoComplete="name"
           invalid={Boolean(fieldErrors.name)}
           aria-describedby={fieldErrors.name ? "signup-name-error" : undefined}
@@ -153,7 +152,6 @@ export default function SignupForm({ path }: { path?: SignupPath }) {
             name="organization"
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
-            placeholder="Your company"
             autoComplete="organization"
             invalid={Boolean(fieldErrors.companyName)}
             aria-describedby={
@@ -172,7 +170,6 @@ export default function SignupForm({ path }: { path?: SignupPath }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onBlur={() => (fieldErrors.email ? validate() : undefined)}
-          placeholder="you@company.com"
           autoComplete="email"
           invalid={Boolean(fieldErrors.email)}
           aria-describedby={fieldErrors.email ? "signup-email-error" : undefined}

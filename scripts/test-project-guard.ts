@@ -5,6 +5,7 @@
  */
 import {
   assertProjectBinding,
+  isPlausibleServiceRoleKey,
   projectRefFromKey,
   projectRefFromUrl,
   PRODUCTION_PROJECT_REF,
@@ -172,6 +173,50 @@ check("refusals never contain the key material", () => {
 
 check("a missing URL is refused", () => {
   expectRefusal({} as NodeJS.ProcessEnv, "Supabase URL is missing");
+});
+
+check("placeholder service-role keys are not treated as configured", () => {
+  assertTrue(!isPlausibleServiceRoleKey(undefined), "missing key is not plausible");
+  assertTrue(!isPlausibleServiceRoleKey(""), "empty key is not plausible");
+  assertTrue(!isPlausibleServiceRoleKey("paste-your-key-here"), "placeholder is not plausible");
+  assertTrue(
+    isPlausibleServiceRoleKey(fakeKey(STAGING_PROJECT_REF, "service_role")),
+    "legacy service_role JWT is plausible"
+  );
+  assertTrue(
+    isPlausibleServiceRoleKey("sb_secret_abcdefghijklmnopqrstuv"),
+    "modern secret prefix is plausible"
+  );
+  assertTrue(
+    !isPlausibleServiceRoleKey(fakeKey(STAGING_PROJECT_REF, "anon")),
+    "anon JWT is not a service-role key"
+  );
+});
+
+check("a placeholder service-role key is refused when required", () => {
+  let thrown: unknown = null;
+  try {
+    assertProjectBinding(
+      {
+        NEXT_PUBLIC_SUPABASE_URL: stagingUrl,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: fakeKey(STAGING_PROJECT_REF, "anon"),
+        SUPABASE_SERVICE_ROLE_KEY: "paste-your-key-here",
+      } as NodeJS.ProcessEnv,
+      { requireServiceKey: true }
+    );
+  } catch (err) {
+    thrown = err;
+  }
+  assertTrue(thrown !== null, "expected the guard to refuse a placeholder service-role key");
+  assertTrue(
+    thrown instanceof SupabaseProjectMismatchError,
+    `expected SupabaseProjectMismatchError, got ${String(thrown)}`
+  );
+  const message = (thrown as Error).message;
+  assertTrue(
+    message.includes("not a service-role key"),
+    `expected the refusal to mention the key shape, got "${message}"`
+  );
 });
 
 if (failures > 0) {

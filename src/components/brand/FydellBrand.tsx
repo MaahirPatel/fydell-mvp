@@ -25,10 +25,10 @@ export default function FydellBrand({
       <span
         className="leading-none text-white"
         style={{
-          fontFamily: "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif",
+          fontFamily: "var(--font-inter), ui-sans-serif, system-ui, sans-serif",
           fontSize: textSize,
           fontWeight: 600,
-          letterSpacing: "-0.04em",
+          letterSpacing: "-0.026em",
         }}
       >
         fydell

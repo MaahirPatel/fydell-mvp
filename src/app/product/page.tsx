@@ -96,12 +96,7 @@ export default function ProductPage() {
             <ButtonLink href="/request-pilot" variant="primary">
               Request a pilot
             </ButtonLink>
-            <a
-              href="/simulations"
-              className="text-[15px] text-[var(--text-secondary)] underline-offset-4 hover:text-[var(--text-primary)] hover:underline"
-            >
-              See the evaluation
-            </a>
+            <ButtonLink href="/simulations" variant="soft">See the evaluation</ButtonLink>
           </>
         }
       />

@@ -177,7 +177,6 @@ function OnboardingContent() {
             name="organization"
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
-            placeholder="Northline Components"
             autoComplete="organization"
             invalid={Boolean(fieldError)}
             autoFocus
@@ -191,7 +190,6 @@ function OnboardingContent() {
             name="url"
             value={companyWebsite}
             onChange={(e) => setCompanyWebsite(e.target.value)}
-            placeholder="acme.com"
             autoComplete="url"
           />
         </Field>

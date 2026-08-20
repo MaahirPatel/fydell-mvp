@@ -29,13 +29,13 @@ export default async function AdminOrganizationsPage() {
       <h1 className="text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
         Organizations
       </h1>
-      <p className="mt-2 text-[14px] text-[rgba(244,245,247,0.62)]">
+      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
         Workspaces created from approved pilot requests.
       </p>
 
-      <div className="mt-8 overflow-hidden rounded-[14px] border border-[rgba(255,255,255,0.095)]">
+      <div className="mt-8 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
         <table className="min-w-full text-left text-[13px]">
-          <thead className="border-b border-[rgba(255,255,255,0.08)] bg-[#0B0D12] text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+          <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] font-medium text-[var(--text-secondary)]">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Status</th>
@@ -47,21 +47,21 @@ export default async function AdminOrganizationsPage() {
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-[rgba(244,245,247,0.5)]">
+                <td colSpan={5} className="px-4 py-8 text-center text-[var(--text-secondary)]">
                   No organizations yet. Approve a pilot request to create one.
                 </td>
               </tr>
             ) : (
               rows.map((row) => (
-                <tr key={row.id} className="border-b border-white/[0.05]">
+                <tr key={row.id} className="border-b border-[var(--border-subtle)]">
                   <td className="px-4 py-3">
                     <div style={{ fontWeight: 520 }}>{row.name}</div>
-                    <div className="text-[12px] text-[rgba(244,245,247,0.4)]">{row.slug || "-"}</div>
+                    <div className="text-[12px] text-[var(--text-tertiary)]">{row.slug || "-"}</div>
                   </td>
                   <td className="px-4 py-3 capitalize">{row.status || "-"}</td>
                   <td className="px-4 py-3 capitalize">{row.pilot_stage || "-"}</td>
                   <td className="px-4 py-3">{row.owner_email || "-"}</td>
-                  <td className="px-4 py-3 tabular-nums text-[rgba(244,245,247,0.55)]">
+                  <td className="px-4 py-3 tabular-nums text-[var(--text-secondary)]">
                     {new Date(row.created_at).toLocaleString()}
                   </td>
                 </tr>
@@ -71,7 +71,7 @@ export default async function AdminOrganizationsPage() {
         </table>
       </div>
 
-      <p className="mt-4 text-[12px] text-[rgba(244,245,247,0.4)]">
+      <p className="mt-4 text-[12px] text-[var(--text-tertiary)]">
         Tip: open a{" "}
         <Link href="/admin/pilot-requests" className="underline">
           pilot request

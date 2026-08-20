@@ -69,57 +69,57 @@ export default async function AdminPilotRequestDetailPage({
     <div>
       <Link
         href="/admin/pilot-requests"
-        className="text-[13px] text-[rgba(244,245,247,0.62)] hover:text-[#F4F5F7]"
+        className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
       >
         ← All requests
       </Link>
 
       <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[12px] tabular-nums text-[rgba(244,245,247,0.4)]">
+          <p className="text-[12px] tabular-nums text-[var(--text-tertiary)]">
             {String(r.public_reference || "")}
           </p>
           <h1 className="mt-1 text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
             {String(r.company_name || r.company || "")}
           </h1>
-          <p className="mt-2 text-[14px] text-[rgba(244,245,247,0.62)]">
+          <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
             {String(r.full_name || r.name || "")} · {String(r.work_email || r.email || "")}
           </p>
         </div>
-        <div className="rounded-[8px] border border-[rgba(255,255,255,0.1)] px-3 py-2 text-[13px] capitalize">
+        <div className="rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 py-2 text-[13px] capitalize">
           {String(r.status || "new")}
         </div>
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <section className="rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5">
-          <h2 className="text-[13px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+        <section className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+          <h2 className="text-app-section font-medium text-[var(--text-primary)]">
             Hiring request
           </h2>
           <dl className="mt-4 space-y-3 text-[14px]">
-            <div className="flex justify-between gap-4 border-b border-white/[0.05] pb-2">
-              <dt className="text-[rgba(244,245,247,0.4)]">Role</dt>
+            <div className="flex justify-between gap-4 border-b border-[var(--border-subtle)] pb-2">
+              <dt className="text-[var(--text-tertiary)]">Role</dt>
               <dd>{String(r.role_being_hired || r.role_title || "")}</dd>
             </div>
-            <div className="flex justify-between gap-4 border-b border-white/[0.05] pb-2">
-              <dt className="text-[rgba(244,245,247,0.4)]">Candidates</dt>
+            <div className="flex justify-between gap-4 border-b border-[var(--border-subtle)] pb-2">
+              <dt className="text-[var(--text-tertiary)]">Candidates</dt>
               <dd>{String(r.number_of_candidates || r.candidate_volume || "-")}</dd>
             </div>
-            <div className="border-b border-white/[0.05] pb-2">
-              <dt className="text-[rgba(244,245,247,0.4)]">Message</dt>
-              <dd className="mt-1 text-[rgba(244,245,247,0.72)]">
+            <div className="border-b border-[var(--border-subtle)] pb-2">
+              <dt className="text-[var(--text-tertiary)]">Message</dt>
+              <dd className="mt-1 text-[var(--text-secondary)]">
                 {String(r.message || r.note || "-")}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-[rgba(244,245,247,0.4)]">Submitted</dt>
+              <dt className="text-[var(--text-tertiary)]">Submitted</dt>
               <dd className="tabular-nums">{new Date(String(r.created_at)).toLocaleString()}</dd>
             </div>
           </dl>
         </section>
 
-        <section className="rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5">
-          <h2 className="text-[13px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+        <section className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+          <h2 className="text-app-section font-medium text-[var(--text-primary)]">
             Actions
           </h2>
           <div className="mt-4">
@@ -136,48 +136,48 @@ export default async function AdminPilotRequestDetailPage({
         </section>
       </div>
 
-      <section className="mt-6 rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5">
-        <h2 className="text-[13px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+      <section className="mt-6 rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+        <h2 className="text-app-section font-medium text-[var(--text-primary)]">
           Email delivery
         </h2>
         <div className="mt-4 space-y-3">
           {emails.length === 0 ? (
-            <p className="text-[13px] text-[rgba(244,245,247,0.5)]">No email outbox rows yet.</p>
+            <p className="text-[13px] text-[var(--text-secondary)]">No email outbox rows yet.</p>
           ) : (
             emails.map((email) => (
               <div
                 key={email.id}
-                className="flex flex-wrap items-start justify-between gap-2 border-b border-white/[0.05] pb-3 text-[13px]"
+                className="flex flex-wrap items-start justify-between gap-2 border-b border-[var(--border-subtle)] pb-3 text-[13px]"
               >
                 <div>
                   <p style={{ fontWeight: 520 }}>{email.template_key}</p>
-                  <p className="text-[rgba(244,245,247,0.5)]">{email.recipient_email}</p>
+                  <p className="text-[var(--text-secondary)]">{email.recipient_email}</p>
                   {email.last_error ? (
                     <p className="mt-1 text-[#F26B82]">{email.last_error}</p>
                   ) : null}
                 </div>
-                <p className="capitalize text-[rgba(244,245,247,0.62)]">{email.status}</p>
+                <p className="capitalize text-[var(--text-secondary)]">{email.status}</p>
               </div>
             ))
           )}
         </div>
       </section>
 
-      <section className="mt-6 rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5">
-        <h2 className="text-[13px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+      <section className="mt-6 rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+        <h2 className="text-app-section font-medium text-[var(--text-primary)]">
           Timeline
         </h2>
         <ol className="mt-4 space-y-3">
           {events.length === 0 ? (
-            <li className="text-[13px] text-[rgba(244,245,247,0.5)]">No events yet.</li>
+            <li className="text-[13px] text-[var(--text-secondary)]">No events yet.</li>
           ) : (
             events.map((event) => (
-              <li key={event.id} className="border-b border-white/[0.05] pb-3 text-[13px]">
+              <li key={event.id} className="border-b border-[var(--border-subtle)] pb-3 text-[13px]">
                 <p style={{ fontWeight: 520 }}>{event.event_type}</p>
-                <p className="text-[rgba(244,245,247,0.62)]">
+                <p className="text-[var(--text-secondary)]">
                   {event.description || `${event.old_status || ""} → ${event.new_status || ""}`}
                 </p>
-                <p className="mt-1 tabular-nums text-[12px] text-[rgba(244,245,247,0.4)]">
+                <p className="mt-1 tabular-nums text-[12px] text-[var(--text-tertiary)]">
                   {new Date(event.created_at).toLocaleString()}
                 </p>
               </li>
@@ -186,18 +186,18 @@ export default async function AdminPilotRequestDetailPage({
         </ol>
       </section>
 
-      <section className="mt-6 rounded-[14px] border border-[rgba(255,255,255,0.095)] p-5">
-        <h2 className="text-[13px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+      <section className="mt-6 rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+        <h2 className="text-app-section font-medium text-[var(--text-primary)]">
           Internal notes
         </h2>
         <div className="mt-4 space-y-3">
           {notes.length === 0 ? (
-            <p className="text-[13px] text-[rgba(244,245,247,0.5)]">No notes yet.</p>
+            <p className="text-[13px] text-[var(--text-secondary)]">No notes yet.</p>
           ) : (
             notes.map((note) => (
-              <div key={note.id} className="border-b border-white/[0.05] pb-3 text-[13px]">
-                <p className="text-[rgba(244,245,247,0.72)]">{note.body}</p>
-                <p className="mt-1 text-[12px] text-[rgba(244,245,247,0.4)]">
+              <div key={note.id} className="border-b border-[var(--border-subtle)] pb-3 text-[13px]">
+                <p className="text-[var(--text-secondary)]">{note.body}</p>
+                <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
                   {note.author_email || "admin"} · {new Date(note.created_at).toLocaleString()}
                 </p>
               </div>

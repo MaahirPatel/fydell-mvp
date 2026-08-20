@@ -11,7 +11,7 @@ import SiteFooter from "@/components/layout/SiteFooter";
 export default function MarketingShell({ children }: { children: React.ReactNode }) {
   return (
     <LenisProvider>
-      <div className="fydell-page relative min-h-screen overflow-x-clip">
+      <div className="marketing-theme fydell-page relative min-h-screen overflow-x-clip">
         <a href="#main" className="skip-link">
           Skip to content
         </a>

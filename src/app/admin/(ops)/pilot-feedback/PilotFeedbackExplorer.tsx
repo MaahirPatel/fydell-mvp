@@ -140,15 +140,15 @@ function buildCsv(rows: PilotFeedbackRow[]): string {
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-[14px] border border-white/[0.1] bg-gradient-to-b from-[#0E1118] to-[#0A0C11] px-4 py-4">
-      <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/55">{label}</p>
+    <div className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-4">
+      <p className="text-app-meta font-medium text-[var(--text-secondary)]">{label}</p>
       <p
-        className="mt-2.5 text-[26px] leading-none tabular-nums text-white"
+        className="mt-2.5 text-[26px] leading-none tabular-nums text-[var(--text-primary)]"
         style={{ fontWeight: 560, letterSpacing: "-0.03em" }}
       >
         {value}
       </p>
-      {hint ? <p className="mt-2 text-[12px] text-white/40">{hint}</p> : null}
+      {hint ? <p className="mt-2 text-[12px] text-[var(--text-tertiary)]">{hint}</p> : null}
     </div>
   );
 }
@@ -165,12 +165,12 @@ function FilterSelect({
   options: string[];
 }) {
   return (
-    <label className="flex flex-col gap-1.5 text-[11px] font-medium uppercase tracking-[0.05em] text-white/45">
+    <label className="flex flex-col gap-1.5 text-[12px] font-medium text-[var(--text-secondary)]">
       {label}
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-9 rounded-[8px] border border-white/[0.12] bg-[#0B0D12] px-2.5 text-[13px] normal-case tracking-normal text-white outline-none focus:border-white/30"
+        className="h-9 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2.5 text-[13px] normal-case tracking-normal text-[var(--text-primary)] outline-none focus:border-[var(--action-ink)]"
       >
         <option value="">All</option>
         {options.map((opt) => (
@@ -186,8 +186,8 @@ function FilterSelect({
 function QuoteBlock({ label, text }: { label: string; text: string }) {
   return (
     <div>
-      <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-white/40">{label}</p>
-      <p className="mt-1 whitespace-pre-wrap border-l-2 border-white/15 pl-3 text-[13px] leading-relaxed text-white/80">
+      <p className="text-[13px] font-medium text-[var(--text-secondary)]">{label}</p>
+      <p className="mt-1 whitespace-pre-wrap border-t border-[var(--border-subtle)] pt-2 text-[13px] leading-relaxed text-[var(--text-primary)]">
         {text}
       </p>
     </div>
@@ -282,21 +282,21 @@ export default function PilotFeedbackExplorer({ rows }: { rows: PilotFeedbackRow
         />
       </div>
 
-      <div className="rounded-[14px] border border-white/[0.1] bg-[#0A0C11] px-4 py-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/55">
+      <div className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-4">
+        <p className="text-app-section font-medium text-[var(--text-primary)]">
           Would test with five real candidates
         </p>
         {interestCounts.length === 0 ? (
-          <p className="mt-2 text-[13px] text-white/40">No submissions yet.</p>
+          <p className="mt-2 text-[13px] text-[var(--text-secondary)]">No submissions yet.</p>
         ) : (
           <div className="mt-3 flex flex-wrap gap-2">
             {interestCounts.map(([answer, count]) => (
               <span
                 key={answer}
-                className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 text-[12px] text-white/75 ring-1 ring-inset ring-white/10"
+                className="inline-flex items-center gap-2 rounded-[var(--radius-tag)] bg-[var(--surface-selected)] px-3 py-1.5 text-[12px] text-[var(--text-secondary)] ring-1 ring-inset ring-[var(--border-default)]"
               >
                 {answer}
-                <span className="tabular-nums text-white" style={{ fontWeight: 560 }}>
+                <span className="tabular-nums text-[var(--text-primary)]" style={{ fontWeight: 560 }}>
                   {count}
                 </span>
               </span>
@@ -336,16 +336,16 @@ export default function PilotFeedbackExplorer({ rows }: { rows: PilotFeedbackRow
           type="button"
           onClick={exportCsv}
           disabled={rows.length === 0}
-          className="inline-flex h-9 items-center rounded-[8px] bg-[#F1F2F4] px-3.5 text-[13px] font-semibold text-[#08090C] transition-[filter] hover:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-9 items-center rounded-[8px] bg-[var(--control-solid)] px-3.5 text-[13px] font-semibold text-[var(--control-solid-ink)] transition-colors hover:bg-[var(--control-solid-hover)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           Export CSV ({rows.length})
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-[16px] border border-white/[0.1] bg-[#0A0C11]">
+      <div className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-[13px]">
-            <thead className="border-b border-white/[0.08] bg-[#0B0D12] text-[11px] uppercase tracking-[0.05em] text-white/40">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] text-[var(--text-secondary)]">
               <tr>
                 <th className="px-4 py-3.5 font-medium">Date</th>
                 <th className="px-4 py-3.5 font-medium">Tester</th>
@@ -436,41 +436,41 @@ function FragmentRow({
 
   return (
     <>
-      <tr className="border-b border-white/[0.05] transition-colors hover:bg-white/[0.02]">
-        <td className="px-4 py-3.5 tabular-nums text-white/55">
+      <tr className="border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--surface-hover)]">
+        <td className="px-4 py-3.5 tabular-nums text-[var(--text-secondary)]">
           {new Date(row.created_at).toLocaleDateString()}
         </td>
         <td className="px-4 py-3.5">
-          <div className="text-white">{row.tester_name || "Anonymous"}</div>
-          <div className="text-[12px] text-white/40">
+          <div className="text-[var(--text-primary)]">{row.tester_name || "Anonymous"}</div>
+          <div className="text-[12px] text-[var(--text-tertiary)]">
             {row.organization || row.tester_email || ""}
           </div>
         </td>
-        <td className="px-4 py-3.5 text-white/70">
+        <td className="px-4 py-3.5 text-[var(--text-secondary)]">
           <div>{row.tester_perspective || ""}</div>
-          <div className="max-w-[220px] text-[12px] text-white/40">{row.role_familiarity || ""}</div>
+          <div className="max-w-[220px] text-[12px] text-[var(--text-tertiary)]">{row.role_familiarity || ""}</div>
         </td>
-        <td className="px-4 py-3.5 text-white/70">
+        <td className="px-4 py-3.5 text-[var(--text-secondary)]">
           {row.role_key ? ROLE_LABELS[row.role_key] || row.role_key : ""}
           {row.template_slug ? (
-            <div className="text-[12px] text-white/40">{row.template_slug}</div>
+            <div className="text-[12px] text-[var(--text-tertiary)]">{row.template_slug}</div>
           ) : null}
         </td>
         <td
-          className="px-4 py-3.5 tabular-nums text-white/70"
+          className="px-4 py-3.5 tabular-nums text-[var(--text-secondary)]"
           title="C clarity, E ease, R realism, A accuracy, T trust (1 to 5)"
         >
           {ratingSummary || ""}
         </td>
-        <td className="px-4 py-3.5 text-white/70">{row.interview_value || ""}</td>
-        <td className="px-4 py-3.5 text-white/70">{row.candidate_pilot_interest || ""}</td>
+        <td className="px-4 py-3.5 text-[var(--text-secondary)]">{row.interview_value || ""}</td>
+        <td className="px-4 py-3.5 text-[var(--text-secondary)]">{row.candidate_pilot_interest || ""}</td>
         <td className="px-4 py-3.5 text-right">
           {hasDetails ? (
             <button
               type="button"
               onClick={onToggle}
               aria-expanded={isOpen}
-              className="rounded-[6px] border border-white/[0.14] px-2.5 py-1 text-[12px] text-white/65 transition-colors hover:border-white/30 hover:text-white"
+              className="rounded-[6px] border border-[var(--border-default)] px-2.5 py-1 text-[12px] text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
             >
               {isOpen ? "Hide" : "Details"}
             </button>
@@ -478,7 +478,7 @@ function FragmentRow({
         </td>
       </tr>
       {isOpen ? (
-        <tr className="border-b border-white/[0.05] bg-white/[0.015]">
+        <tr className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)]">
           <td colSpan={8} className="px-4 py-5">
             <div className="grid gap-5 lg:grid-cols-2">
               <div className="space-y-4">
@@ -486,8 +486,8 @@ function FragmentRow({
                   <QuoteBlock key={key} label={TEXT_LABELS[key] || key} text={value} />
                 ))}
                 {evidence?.mostUseful || evidence?.leastUseful || evidence?.scorePreference ? (
-                  <div className="text-[13px] text-white/70">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-white/40">
+                  <div className="text-[13px] text-[var(--text-secondary)]">
+                    <p className="text-[13px] font-medium text-[var(--text-primary)]">
                       Evidence preferences
                     </p>
                     <p className="mt-1">
@@ -497,7 +497,7 @@ function FragmentRow({
                     </p>
                   </div>
                 ) : null}
-                <div className="text-[12px] text-white/45">
+                <div className="text-[12px] text-[var(--text-tertiary)]">
                   Completed without help: {row.completed_without_help || "no answer"}. Duration:{" "}
                   {row.duration_opinion || "no answer"}. Trusted score:{" "}
                   {row.trust_score || "no answer"}. Contact ok:{" "}
@@ -510,7 +510,7 @@ function FragmentRow({
                     <QuoteBlock key={qa.question} label={qa.question} text={qa.answer} />
                   ))
                 ) : (
-                  <p className="text-[13px] text-white/40">No role-specific answers.</p>
+                  <p className="text-[13px] text-[var(--text-secondary)]">No role-specific answers.</p>
                 )}
               </div>
             </div>

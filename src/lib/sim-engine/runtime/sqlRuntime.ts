@@ -11,16 +11,212 @@ export interface SqlExecuteResult {
   attempt: SimulationAttempt;
 }
 
+const MAX_RESULT_ROWS = 500;
+
+function errorResult(
+  attempt: SimulationAttempt,
+  message: string,
+  elapsedMs: number,
+  errorCode: string
+): SqlExecuteResult {
+  let world = setWorldFlag(attempt.world, "sql_syntax_error", true, elapsedMs);
+  world = pushScenarioEvent(world, "CUSTOM", `SQL execution error: ${message}`, elapsedMs, {
+    error: errorCode,
+  });
+  return {
+    success: false,
+    error: message,
+    columns: [],
+    rows: [],
+    rowCount: 0,
+    attempt: { ...attempt, world },
+  };
+}
+
+function isJsonValue(value: unknown): value is JsonValue {
+  if (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return true;
+  }
+  if (Array.isArray(value)) return value.every(isJsonValue);
+  if (typeof value !== "object") return false;
+  return Object.values(value).every(isJsonValue);
+}
+
+function normalizeRows(value: unknown): Array<Record<string, JsonValue>> {
+  if (!Array.isArray(value)) {
+    throw new Error("The query did not return a row set.");
+  }
+  return value.map((row) => {
+    if (typeof row !== "object" || row === null || Array.isArray(row)) {
+      throw new Error("The query returned an unsupported row shape.");
+    }
+    const normalized: Record<string, JsonValue> = {};
+    for (const [key, cell] of Object.entries(row)) {
+      if (!isJsonValue(cell)) {
+        throw new Error(`Column "${key}" returned an unsupported value.`);
+      }
+      normalized[key] = cell;
+    }
+    return normalized;
+  });
+}
+
+function readOnlyStatement(sql: string): boolean {
+  const withoutTrailingSemicolon = sql.trim().replace(/;\s*$/, "");
+  if (withoutTrailingSemicolon.includes(";")) return false;
+  return /^(SELECT|WITH)\b/i.test(withoutTrailingSemicolon);
+}
+
 /**
- * Deterministic structural SQL mock, not a real database.
- * Recognizes SELECT/FROM/WHERE/JOIN/GROUP BY patterns via configured matchers.
+ * AlaSQL reserves a small set of words that PostgreSQL permits as ordinary
+ * column names. Rewrite those identifiers for the in-browser engine without
+ * touching quoted strings, quoted identifiers, or comments entered by the
+ * candidate.
  */
-export function executeSqlQuery(
+function adaptPostgresSql(sql: string): string {
+  const reserved = new Set(["plan"]);
+  let output = "";
+  let index = 0;
+  let mode: "code" | "single" | "double" | "backtick" | "bracket" | "line-comment" | "block-comment" =
+    "code";
+
+  while (index < sql.length) {
+    const char = sql[index];
+    const next = sql[index + 1];
+
+    if (mode === "line-comment") {
+      output += char;
+      index += 1;
+      if (char === "\n") mode = "code";
+      continue;
+    }
+    if (mode === "block-comment") {
+      output += char;
+      index += 1;
+      if (char === "*" && next === "/") {
+        output += next;
+        index += 1;
+        mode = "code";
+      }
+      continue;
+    }
+    if (mode !== "code") {
+      output += char;
+      index += 1;
+      const closing =
+        mode === "single"
+          ? "'"
+          : mode === "double"
+            ? '"'
+            : mode === "backtick"
+              ? "`"
+              : "]";
+      if (char === closing) {
+        if ((mode === "single" || mode === "double") && next === closing) {
+          output += next;
+          index += 1;
+        } else {
+          mode = "code";
+        }
+      }
+      continue;
+    }
+
+    if (char === "-" && next === "-") {
+      output += "--";
+      index += 2;
+      mode = "line-comment";
+      continue;
+    }
+    if (char === "/" && next === "*") {
+      output += "/*";
+      index += 2;
+      mode = "block-comment";
+      continue;
+    }
+    if (char === "'" || char === '"' || char === "`" || char === "[") {
+      output += char;
+      index += 1;
+      mode =
+        char === "'"
+          ? "single"
+          : char === '"'
+            ? "double"
+            : char === "`"
+              ? "backtick"
+              : "bracket";
+      continue;
+    }
+    if (/[A-Za-z_]/.test(char)) {
+      let end = index + 1;
+      while (end < sql.length && /[A-Za-z0-9_$]/.test(sql[end])) end += 1;
+      const token = sql.slice(index, end);
+      output += reserved.has(token.toLowerCase()) ? `[${token}]` : token;
+      index = end;
+      continue;
+    }
+
+    output += char;
+    index += 1;
+  }
+
+  return output;
+}
+
+function classifySuccessfulQuery(
+  config: SqlRuntimeConfig,
+  sql: string
+): { patternId: string; flags: Record<string, JsonValue> } {
+  const lower = sql.toLowerCase();
+  const matched = config.patterns.find((pattern) =>
+    pattern.whenSqlIncludes.every((keyword) => lower.includes(keyword.toLowerCase()))
+  );
+  const flags: Record<string, JsonValue> = { sql_executed: true };
+
+  if (matched?.setFlags) Object.assign(flags, matched.setFlags);
+
+  const production = /\bproduction_runs\b/.test(lower);
+  const quality = /\bquality_events\b/.test(lower);
+  const aggregate = /\b(sum|avg|count|min|max)\s*\(/.test(lower);
+  if (
+    production &&
+    aggregate &&
+    /\bperiod\b/.test(lower) &&
+    (/\byield_pct\b/.test(lower) ||
+      (/\bcompleted_good\b/.test(lower) && /\bplanned\b/.test(lower)))
+  ) {
+    flags.ran_yield_query = true;
+  }
+  if (quality && /hold_reclass/i.test(sql)) {
+    flags.ran_reclass_query = true;
+    flags.identified_reporting_change = true;
+  }
+  if (production && aggregate && /\bscrap\b/.test(lower) && /\bline\b/.test(lower)) {
+    flags.ran_residual_query = true;
+    flags.identified_residual_loss = true;
+  }
+
+  return { patternId: matched?.id ?? "freeform_sql", flags };
+}
+
+/**
+ * Executes read-only SQL against fresh in-memory fixture tables with AlaSQL.
+ *
+ * This is genuine query execution, not canned pattern output. The configured
+ * patterns only classify successful queries for task/evidence flags after the
+ * database has produced the result.
+ */
+export async function executeSqlQuery(
   config: SqlRuntimeConfig | undefined,
   attempt: SimulationAttempt,
   sql: string,
   elapsedMs: number
-): SqlExecuteResult {
+): Promise<SqlExecuteResult> {
   const trimmed = sql.trim();
   if (!config) {
     return {
@@ -44,111 +240,58 @@ export function executeSqlQuery(
     };
   }
 
-  const upper = trimmed.toUpperCase();
-  if (!/\bSELECT\b/.test(upper)) {
-    let world = setWorldFlag(attempt.world, "sql_syntax_error", true, elapsedMs);
-    world = pushScenarioEvent(world, "CUSTOM", "SQL syntax error: missing SELECT", elapsedMs, {
-      error: "missing_select",
-    });
-    return {
-      success: false,
-      error: "Syntax error: expected SELECT",
-      columns: [],
-      rows: [],
-      rowCount: 0,
-      attempt: { ...attempt, world },
-    };
+  if (!readOnlyStatement(trimmed)) {
+    return errorResult(
+      attempt,
+      "Only one read-only SELECT or WITH query can run in this workbench.",
+      elapsedMs,
+      "read_only_required"
+    );
   }
 
-  if (!/\bFROM\b/.test(upper)) {
-    let world = setWorldFlag(attempt.world, "sql_syntax_error", true, elapsedMs);
-    world = pushScenarioEvent(world, "CUSTOM", "SQL syntax error: missing FROM", elapsedMs, {
-      error: "missing_from",
-    });
-    return {
-      success: false,
-      error: "Syntax error: expected FROM",
-      columns: [],
-      rows: [],
-      rowCount: 0,
-      attempt: { ...attempt, world },
-    };
-  }
-
-  // Unknown table detection (simple)
-  const fromMatch = trimmed.match(/\bFROM\s+([a-zA-Z_][\w]*)/i);
-  if (fromMatch) {
-    const table = fromMatch[1].toLowerCase();
-    if (!config.knownTables.map((t) => t.toLowerCase()).includes(table)) {
-      let world = setWorldFlag(attempt.world, "sql_unknown_table", true, elapsedMs);
-      world = pushScenarioEvent(world, "CUSTOM", `SQL relation error: ${table}`, elapsedMs, {
-        table,
-      });
-      return {
-        success: false,
-        error: `Relation "${table}" does not exist`,
-        columns: [],
-        rows: [],
-        rowCount: 0,
-        attempt: { ...attempt, world },
-      };
+  try {
+    const { default: alasql } = await import("alasql");
+    const database = new alasql.Database();
+    for (const table of config.tables) {
+      database.exec(`CREATE TABLE [${table.name}]`);
+      database.exec(`INSERT INTO [${table.name}] SELECT * FROM ?`, [[...table.rows]]);
     }
-  }
 
-  const lower = trimmed.toLowerCase();
-  for (const pattern of config.patterns) {
-    if (pattern.whenSqlIncludes.every((k) => lower.includes(k.toLowerCase()))) {
-      let world = attempt.world;
-      world = setWorldFlag(world, "sql_executed", true, elapsedMs);
-      world = setWorldFlag(world, "last_sql_pattern", pattern.id, elapsedMs);
-      if (pattern.setFlags) {
-        for (const [flag, value] of Object.entries(pattern.setFlags)) {
-          world = setWorldFlag(world, flag, value, elapsedMs);
-        }
-      }
-      world = pushScenarioEvent(
-        world,
-        "CUSTOM",
-        `SQL matched pattern: ${pattern.label ?? pattern.id}`,
-        elapsedMs,
-        { patternId: pattern.id, rowCount: pattern.rows.length }
-      );
-      return {
-        success: true,
-        columns: pattern.columns,
-        rows: pattern.rows,
-        patternId: pattern.id,
-        rowCount: pattern.rows.length,
-        attempt: { ...attempt, world },
-      };
+    const allRows = normalizeRows(database.exec<unknown>(adaptPostgresSql(trimmed)));
+    const visibleRows = allRows.slice(0, MAX_RESULT_ROWS);
+    const columns = visibleRows[0] ? Object.keys(visibleRows[0]) : [];
+    const classification = classifySuccessfulQuery(config, trimmed);
+    let world = attempt.world;
+    for (const [flag, value] of Object.entries(classification.flags)) {
+      world = setWorldFlag(world, flag, value, elapsedMs);
     }
-  }
+    world = setWorldFlag(world, "last_sql_pattern", classification.patternId, elapsedMs);
+    world = pushScenarioEvent(world, "CUSTOM", "SQL query executed", elapsedMs, {
+      patternId: classification.patternId,
+      rowCount: allRows.length,
+      resultTruncated: allRows.length > MAX_RESULT_ROWS,
+    });
 
-  // Default: return first table preview if SELECT * FROM known
-  const tableName = fromMatch?.[1];
-  const table = config.tables.find((t) => t.name.toLowerCase() === tableName?.toLowerCase());
-  if (table) {
-    let world = setWorldFlag(attempt.world, "sql_executed", true, elapsedMs);
-    world = setWorldFlag(world, "last_sql_pattern", "table_scan", elapsedMs);
     return {
       success: true,
-      columns: table.columns,
-      rows: table.rows.slice(0, 8),
-      patternId: "table_scan",
-      rowCount: Math.min(8, table.rows.length),
+      columns,
+      rows: visibleRows,
+      patternId: classification.patternId,
+      rowCount: allRows.length,
       attempt: { ...attempt, world },
     };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const unknownTable = /does not exist|Cannot read properties.*undefined|Table does not exist/i.test(
+      message
+    );
+    let nextAttempt = attempt;
+    if (unknownTable) {
+      nextAttempt = {
+        ...attempt,
+        world: setWorldFlag(attempt.world, "sql_unknown_table", true, elapsedMs),
+      };
+    }
+    return errorResult(nextAttempt, `Query could not be executed: ${message}`, elapsedMs, "execution_failed");
   }
-
-  return {
-    success: true,
-    columns: ["note"],
-    rows: [{ note: "Query ran but matched no analytical pattern. Refine filters or joins." }],
-    patternId: "no_pattern",
-    rowCount: 1,
-    attempt: {
-      ...attempt,
-      world: setWorldFlag(attempt.world, "sql_executed", true, elapsedMs),
-    },
-  };
 }

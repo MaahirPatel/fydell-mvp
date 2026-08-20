@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {
   if (!isSupabaseConfigured()) {
-    return <p className="text-[14px] text-[rgba(244,245,247,0.62)]">Supabase is not configured.</p>;
+    return <p className="text-[14px] text-[var(--text-secondary)]">Supabase is not configured.</p>;
   }
 
   const admin = getSupabaseAdmin();
@@ -67,13 +67,13 @@ export default async function AdminUsersPage() {
       <h1 className="text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
         Users
       </h1>
-      <p className="mt-2 text-[14px] text-[rgba(244,245,247,0.62)]">
+      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
         Auth accounts with platform roles and organization membership. Passwords are never visible.
       </p>
 
-      <div className="mt-8 overflow-hidden rounded-[14px] border border-[rgba(255,255,255,0.095)]">
+      <div className="mt-8 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
         <table className="min-w-full text-left text-[13px]">
-          <thead className="border-b border-[rgba(255,255,255,0.08)] bg-[#0B0D12] text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+          <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] font-medium text-[var(--text-secondary)]">
             <tr>
               <th className="px-4 py-3">User</th>
               <th className="px-4 py-3">Status</th>
@@ -85,7 +85,7 @@ export default async function AdminUsersPage() {
           <tbody>
             {users.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-[rgba(244,245,247,0.5)]">
+                <td colSpan={5} className="px-4 py-8 text-center text-[var(--text-secondary)]">
                   No Auth users yet. Run the bootstrap script for admin@fydell.com.
                 </td>
               </tr>
@@ -98,16 +98,16 @@ export default async function AdminUsersPage() {
                   (typeof profile?.username === "string" && profile.username) ||
                   "-";
                 return (
-                  <tr key={user.id} className="border-b border-white/[0.05]">
+                  <tr key={user.id} className="border-b border-[var(--border-subtle)]">
                     <td className="px-4 py-3">
                       <Link
                         href={`/admin/users/${user.id}`}
-                        className="text-[#F4F5F7] hover:underline"
+                        className="text-[var(--text-primary)] hover:underline"
                         style={{ fontWeight: 520 }}
                       >
                         {name}
                       </Link>
-                      <div className="text-[12px] text-[rgba(244,245,247,0.45)]">
+                      <div className="text-[12px] text-[var(--text-tertiary)]">
                         {user.email}
                         {user.email_confirmed_at ? "" : " · unverified"}
                       </div>
@@ -120,10 +120,10 @@ export default async function AdminUsersPage() {
                     <td className="px-4 py-3">
                       {(roleMap.get(user.id) || []).join(", ") || "-"}
                     </td>
-                    <td className="px-4 py-3 text-[rgba(244,245,247,0.62)]">
+                    <td className="px-4 py-3 text-[var(--text-secondary)]">
                       {(memberMap.get(user.id) || []).join(", ") || "-"}
                     </td>
-                    <td className="px-4 py-3 tabular-nums text-[rgba(244,245,247,0.55)]">
+                    <td className="px-4 py-3 tabular-nums text-[var(--text-secondary)]">
                       {user.last_sign_in_at
                         ? new Date(user.last_sign_in_at).toLocaleString()
                         : "-"}

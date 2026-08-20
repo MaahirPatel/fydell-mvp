@@ -3,11 +3,12 @@ import { cn } from "@/lib/cn";
 import FydellMark from "@/components/brand/FydellMark";
 
 /**
- * The graphite desk a product window sits on.
+ * Positioning context for a product scene.
  *
- * Cursor stages software on a painted landscape. Fydell has no truthful
- * equivalent, so the slot is a solid graphite field with a faint grain, * depth without decoration, and nothing that could be mistaken for another
- * company's imagery.
+ * It used to be a bordered graphite tray with brand-tinted gradients and a
+ * grain overlay. A window that already has a frame does not need a second one
+ * around it, and the tray cost the scene the width that made it readable, so
+ * the product now sits directly on the page.
  */
 export function DesktopStage({
   children,
@@ -16,12 +17,7 @@ export function DesktopStage({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <div className={cn("desktop-stage", className)}>
-      <div className="desktop-stage-grain" aria-hidden />
-      <div className="relative z-[1]">{children}</div>
-    </div>
-  );
+  return <div className={cn("desktop-stage", className)}>{children}</div>;
 }
 
 type SessionTone = "evidence" | "verified" | "changed" | "good";

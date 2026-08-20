@@ -1,6 +1,5 @@
 import Link from "next/link";
 import FydellMark from "@/components/brand/FydellMark";
-import { ProductSpotlight } from "@/components/fydell/ProductSpotlight";
 import { DesktopStage } from "@/components/fydell/ProductDesktop";
 
 /**
@@ -55,8 +54,6 @@ export default function AuthShell({
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-[var(--surface-canvas)]">
-      <div className="auth-canvas" aria-hidden />
-
       <header className="relative z-10 flex h-[68px] shrink-0 items-center px-6 sm:px-10">
         <Link
           href="/"
@@ -80,9 +77,7 @@ export default function AuthShell({
               {column}
             </div>
             <div className="min-w-0 lg:col-span-7">
-              <ProductSpotlight>
-                <DesktopStage>{aside}</DesktopStage>
-              </ProductSpotlight>
+              <DesktopStage>{aside}</DesktopStage>
             </div>
           </div>
         </main>

@@ -40,7 +40,7 @@ export default async function AdminSettingsPage() {
       <h1 className="text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
         System settings
       </h1>
-      <p className="mt-2 text-[14px] text-[rgba(244,245,247,0.62)]">
+      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
         Safe configuration presence checks. Secret values are never shown.
       </p>
 
@@ -48,41 +48,47 @@ export default async function AdminSettingsPage() {
         {checks.map((check) => (
           <div
             key={check.label}
-            className="flex items-center justify-between rounded-[12px] border border-[rgba(255,255,255,0.095)] px-4 py-3 text-[13px]"
+            className="flex items-center justify-between rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-3 text-[13px]"
           >
             <div>
               <p style={{ fontWeight: 520 }}>{check.label}</p>
-              <p className="mt-1 text-[rgba(244,245,247,0.5)]">{check.detail}</p>
+              <p className="mt-1 text-[var(--text-secondary)]">{check.detail}</p>
             </div>
-            <span className={check.ok ? "text-[#67D9A0]" : "text-[#E9B949]"}>
+            <span
+              className={
+                check.ok
+                  ? "text-[var(--status-positive-ink)]"
+                  : "text-[var(--status-attention-ink)]"
+              }
+            >
               {check.ok ? "ok" : "attention"}
             </span>
           </div>
         ))}
       </div>
 
-      <div className="mt-8 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-[12px] border border-[rgba(255,255,255,0.095)] px-4 py-4">
-          <p className="text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+      <div className="mt-8 grid divide-y divide-[var(--border-subtle)] overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <div className="px-4 py-4">
+          <p className="text-app-meta font-medium text-[var(--text-secondary)]">
             Outbox backlog
           </p>
           <p className="mt-2 text-[24px] tabular-nums">{metrics.pendingEmails}</p>
         </div>
-        <div className="rounded-[12px] border border-[rgba(255,255,255,0.095)] px-4 py-4">
-          <p className="text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+        <div className="px-4 py-4">
+          <p className="text-app-meta font-medium text-[var(--text-secondary)]">
             Failed emails
           </p>
           <p className="mt-2 text-[24px] tabular-nums">{metrics.failedEmails}</p>
         </div>
-        <div className="rounded-[12px] border border-[rgba(255,255,255,0.095)] px-4 py-4">
-          <p className="text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+        <div className="px-4 py-4">
+          <p className="text-app-meta font-medium text-[var(--text-secondary)]">
             Bounced emails
           </p>
           <p className="mt-2 text-[24px] tabular-nums">{metrics.bouncedEmails}</p>
         </div>
       </div>
 
-      <p className="mt-8 text-[13px] text-[rgba(244,245,247,0.5)]">
+      <p className="mt-8 text-[13px] text-[var(--text-secondary)]">
         MFA enrollment for platform admins is required before enabling high-risk mutations in
         production. See docs/production-setup.md.
       </p>

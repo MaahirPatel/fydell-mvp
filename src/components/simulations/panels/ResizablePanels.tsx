@@ -64,7 +64,7 @@ export function ResizablePanels({
             aria-orientation="vertical"
             aria-label="Resize left panel"
             tabIndex={0}
-            className="w-1 shrink-0 cursor-col-resize bg-[var(--border-subtle)] hover:bg-[var(--fydell-brand-blue)]"
+            className="w-1 shrink-0 cursor-col-resize bg-[var(--border-subtle)] hover:bg-[var(--border-strong)]"
             onMouseDown={(e) => beginDrag("left", e)}
           />
         </>
@@ -77,7 +77,7 @@ export function ResizablePanels({
             aria-orientation="vertical"
             aria-label="Resize right panel"
             tabIndex={0}
-            className="w-1 shrink-0 cursor-col-resize bg-[var(--border-subtle)] hover:bg-[var(--fydell-brand-blue)]"
+            className="w-1 shrink-0 cursor-col-resize bg-[var(--border-subtle)] hover:bg-[var(--border-strong)]"
             onMouseDown={(e) => beginDrag("right", e)}
           />
           <div

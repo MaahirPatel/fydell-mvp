@@ -74,7 +74,7 @@ export function PilotRequestForm() {
     return (
       <div
         role="status"
-        className="rounded-[var(--radius-frame)] border border-[rgba(103,217,160,0.28)] bg-[rgba(103,217,160,0.07)] p-5 sm:p-6"
+        className="rounded-[var(--radius-frame)] border border-[var(--status-positive-line)] bg-[var(--status-positive-bg)] p-5 sm:p-6"
       >
         <p className="text-[15px] font-medium text-[var(--text-primary)]">
           Request received
@@ -132,7 +132,6 @@ export function PilotRequestForm() {
             type="text"
             required
             autoComplete="name"
-            placeholder="Your name"
           />
         </Field>
         <Field label="Work email" htmlFor="email">
@@ -142,7 +141,6 @@ export function PilotRequestForm() {
             type="email"
             required
             autoComplete="email"
-            placeholder="you@company.com"
           />
         </Field>
       </div>
@@ -155,7 +153,6 @@ export function PilotRequestForm() {
             type="text"
             required
             autoComplete="organization"
-            placeholder="Company name"
           />
         </Field>
         <Field label="Role you are hiring for" htmlFor="role">
@@ -164,7 +161,6 @@ export function PilotRequestForm() {
             name="role"
             type="text"
             required
-            placeholder="Role title"
           />
         </Field>
       </div>

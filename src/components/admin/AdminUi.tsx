@@ -73,9 +73,9 @@ export function AdminPanel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 sm:p-6">
+    <section className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-app-meta font-medium uppercase tracking-[0.06em] text-[var(--text-tertiary)]">
+        <h2 className="text-app-section font-medium text-[var(--text-primary)]">
           {title}
         </h2>
         {action}
@@ -147,7 +147,7 @@ export function AdminPrimaryButton({
   return (
     <Link
       href={href}
-      className="inline-flex h-9 items-center rounded-[var(--radius-control)] bg-[var(--surface-paper)] px-3.5 text-app-body font-medium text-[var(--surface-canvas)] transition-opacity duration-[var(--motion-fast)] hover:opacity-90"
+      className="inline-flex h-9 items-center rounded-[8px] bg-[var(--control-solid)] px-3.5 text-app-body font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)]"
     >
       {children}
     </Link>

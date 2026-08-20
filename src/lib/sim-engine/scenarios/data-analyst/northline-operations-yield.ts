@@ -1,6 +1,78 @@
 import type { SimulationScenarioDefinition } from "../../types";
 import { northlinePeople } from "./northline-personas";
 
+type DataRow = Record<string, string | number | boolean | null>;
+
+function buildProductionRuns(): DataRow[] {
+  const rows: DataRow[] = [];
+  const shifts = [
+    { line: "L1", shift: "Day", priorGood: 94, currentGood: 94, hold: 3 },
+    { line: "L1", shift: "Night", priorGood: 95, currentGood: 95, hold: 3 },
+    { line: "L2", shift: "Day", priorGood: 92, currentGood: 90, hold: 4 },
+    { line: "L2", shift: "Night", priorGood: 92, currentGood: 94, hold: 2 },
+  ] as const;
+
+  for (const period of ["prior", "current"] as const) {
+    for (let day = 1; day <= 20; day += 1) {
+      for (const config of shifts) {
+        const holdReclass = period === "current" && day >= 9 ? config.hold : 0;
+        const comparableGood = period === "prior" ? config.priorGood : config.currentGood;
+        rows.push({
+          run_id: `${period === "prior" ? "P" : "C"}-${String(day).padStart(2, "0")}-${config.line}-${config.shift === "Day" ? "D" : "N"}`,
+          period,
+          day,
+          line: config.line,
+          shift: config.shift,
+          planned: 100,
+          completed_good: comparableGood - holdReclass,
+          scrap: 100 - comparableGood,
+          hold_reclass: holdReclass,
+          yield_pct: comparableGood - holdReclass,
+        });
+      }
+    }
+  }
+  return rows;
+}
+
+function buildQualityEvents(): DataRow[] {
+  const rows: DataRow[] = [];
+  let eventNumber = 301;
+  for (let day = 1; day <= 20; day += 1) {
+    rows.push({
+      event_id: `Q-${eventNumber++}`,
+      period: "current",
+      day,
+      line: "L2",
+      shift: "Day",
+      disposition: "SCRAP",
+      units: 10,
+    });
+    if (day >= 9) {
+      for (const entry of [
+        { line: "L1", shift: "Day", units: 3 },
+        { line: "L1", shift: "Night", units: 3 },
+        { line: "L2", shift: "Day", units: 4 },
+        { line: "L2", shift: "Night", units: 2 },
+      ] as const) {
+        rows.push({
+          event_id: `Q-${eventNumber++}`,
+          period: "current",
+          day,
+          line: entry.line,
+          shift: entry.shift,
+          disposition: "HOLD_RECLASS",
+          units: entry.units,
+        });
+      }
+    }
+  }
+  return rows;
+}
+
+const productionRuns = buildProductionRuns();
+const qualityEvents = buildQualityEvents();
+
 /**
  * Northline Components, operations yield investigation (Data Analyst).
  *
@@ -24,8 +96,8 @@ export const northlineOperationsYieldScenario: SimulationScenarioDefinition = {
     description:
       "Reported plant yield fell from 93.2 percent. Determine whether production genuinely got worse or whether a mid-period reporting change moved the number, and write a defensible recommendation for the Operations Manager.",
     roleKey: "data_analyst",
-    estimatedDurationMinutes: 20,
-    timeLimitSeconds: 20 * 60,
+    estimatedDurationMinutes: 25,
+    timeLimitSeconds: 25 * 60,
     difficulty: "intermediate",
     companyName: "Northline Components",
     instructions: `You are the Data Analyst supporting Plant Operations.
@@ -39,19 +111,19 @@ Your job:
 1. Inspect production_runs and quality_events, and read how yield is defined.
 2. Quantify how much of the reported drop is the reporting change versus a real loss.
 3. React to changed information about when the code went live.
-4. Identify any line that still carries a genuine loss.
-5. Write a recommendation for Dana (Operations Manager) with caveats.
+4. Identify any line and shift that still carries a genuine loss.
+5. Save a working recommendation, respond to the corrected code timing, then revise and submit it to the Operations Manager.
 
 Do not claim a cause you cannot support from the data and the people.`,
   },
 
   versions: {
     scenarioId: "northline-operations-yield",
-    scenarioVersion: "1.0.0",
+    scenarioVersion: "2.0.0",
     engineVersion: "0.1.0",
-    competencyModelVersion: "da-northline-1.0.0",
-    evidenceDerivationVersion: "1.0.0",
-    analysisVersion: "1.0.0",
+    competencyModelVersion: "da-northline-2.0.0",
+    evidenceDerivationVersion: "2.0.0",
+    analysisVersion: "2.0.0",
   },
 
   capabilities: [
@@ -153,7 +225,7 @@ Do not claim a cause you cannot support from the data and the people.`,
     {
       id: "task_residual",
       title: "Check for a real residual loss",
-      description: "Back out the reclassified volume and compare residual scrap.",
+      description: "Back out reclassified volume and compare residual scrap by line and shift.",
       initialStatus: "AVAILABLE",
       priority: "normal",
       competencyIds: ["analytical_correctness", "business_judgment"],
@@ -167,8 +239,8 @@ Do not claim a cause you cannot support from the data and the people.`,
     },
     {
       id: "task_memo",
-      title: "Write the recommendation",
-      description: "Answer the question with evidence, caveats, and next check.",
+      title: "Draft, then revise the recommendation",
+      description: "Save a working recommendation. When corrected timing arrives, revise what changed and preserve what still holds.",
       initialStatus: "AVAILABLE",
       priority: "critical",
       competencyIds: ["business_judgment", "changed_information_response"],
@@ -194,7 +266,9 @@ Do not claim a cause you cannot support from the data and the people.`,
 A new disposition code, \`HOLD_RECLASS\`, appears this period. Ops is not sure whether the drop is real scrap or a reporting artifact.
 
 ## Deliverable
-A short recommendation to Dana Whitfield (Operations Manager): is the drop real, how much is the reporting change, what still needs a look, and what you would verify next.`,
+A short recommendation to the Operations Manager: is the drop real, how much is the reporting change, what still needs a look, and what you would verify next.
+
+Save a working draft once you have a view. A stakeholder may correct material information. Revise the same artifact after that correction before submitting.`,
     },
     {
       id: "res_production",
@@ -206,11 +280,11 @@ A short recommendation to Dana Whitfield (Operations Manager): is the drop real,
       onOpenFlags: { opened_production: true },
       content: `# production_runs.csv
 
-Planned, completed_good, scrap, hold_reclass and yield_pct by line, shift, and period.
+160 run-level rows: two periods × 20 days × two lines × two shifts.
 
-Columns: period, line, shift, planned, completed_good, scrap, hold_reclass, yield_pct
+Columns: run_id, period, day, line, shift, planned, completed_good, scrap, hold_reclass, yield_pct
 
-Open the Data tab to sort, filter, and cite specific rows. Prior-period rows were reported before HOLD_RECLASS existed.`,
+Open the Data tab to filter, sort, and cite rows. Prior-period rows were reported before HOLD_RECLASS existed. Do not assume current and prior are comparable until you inspect the metric definition.`,
     },
     {
       id: "res_quality",
@@ -222,15 +296,11 @@ Open the Data tab to sort, filter, and cite specific rows. Prior-period rows wer
       onOpenFlags: { opened_quality_events: true },
       content: `# quality_events.csv
 
-event_id,period,line,disposition,units,day
-Q-301,prior,L1,SCRAP,30,3
-Q-302,prior,L2,SCRAP,26,7
-Q-303,current,L1,HOLD_RECLASS,42,11
-Q-304,current,L2,HOLD_RECLASS,58,12
-Q-305,current,L2,SCRAP,90,14
-Q-306,current,L1,HOLD_RECLASS,40,16
+68 event rows at disposition-event grain. HOLD_RECLASS appears only in the current period. Prior periods were not restated.
 
-HOLD_RECLASS appears only in the current period. Prior periods were not restated.`,
+Columns: event_id, period, day, line, shift, disposition, units
+
+Use the Data tab for the complete extract. The file supports filtering by disposition, day, line, and shift.`,
     },
     {
       id: "res_dictionary",
@@ -250,12 +320,12 @@ Prior periods are **not** restated when a disposition code changes. Two periods 
     },
     {
       id: "res_ops_note",
-      title: "Ops note, L2 Day (revealed)",
+      title: "Quality note, L2 Day (revealed)",
       kind: "log",
       initiallyVisible: false,
       summary: "Revealed after the residual comparison",
       searchableText: "L2 Day residual scrap real loss shift",
-      content: `# Ops note, L2 Day
+      content: `# Quality note, L2 Day
 
 After backing out reclassified volume, L2 Day still shows more scrap than the prior period. The loss looks real, but the data does not establish a cause. Check the line before the next shift.`,
     },
@@ -307,7 +377,7 @@ After backing out reclassified volume, L2 Day still shows more scrap than the pr
       trigger: {
         kind: "ALL",
         triggers: [
-          { kind: "TIME", afterMs: 5 * 60 * 1000 },
+          { kind: "ARTIFACT", artifactKind: "analysis_memo" },
           { kind: "WORLD_STATE", flag: "opened_quality_events", equals: true },
         ],
       },
@@ -315,9 +385,15 @@ After backing out reclassified volume, L2 Day still shows more scrap than the pr
         {
           kind: "SEND_MESSAGE",
           personId: "person_marcus",
-          body: "Correction on the disposition code: HOLD_RECLASS went live on day 9 of this 20-day period, not on day 1. Anything before day 9 was reported the old way, so the reclassification only affects part of the period. Does that change your read?",
+          body: "Correction after checking the release record: HOLD_RECLASS went live on day 9 of this 20-day period, not on day 1. Days 1 through 8 used the old rule. Please revise the draft if you treated the full period as reclassified, and tell me what still holds.",
         },
         { kind: "UPDATE_WORLD_STATE", flag: "changed_info_released", value: true },
+        {
+          kind: "EMIT_SCENARIO_EVENT",
+          scenarioKind: "CUSTOM",
+          label: "HOLD_RECLASS start date corrected to day 9",
+          payload: { factId: "HOLD_RECLASS_DAY_9" },
+        },
         {
           kind: "SHOW_NOTIFICATION",
           message: "Changed information: HOLD_RECLASS start date corrected",
@@ -329,40 +405,18 @@ After backing out reclassified volume, L2 Day still shows more scrap than the pr
   ],
 
   sqlRuntime: {
-    dialectLabel: "PostgreSQL (mock)",
+    dialectLabel: "PostgreSQL analysis sandbox",
     knownTables: ["production_runs", "quality_events"],
     tables: [
       {
         name: "production_runs",
-        columns: ["period", "line", "shift", "planned", "completed_good", "scrap", "hold_reclass", "yield_pct"],
-        rows: [
-          { period: "prior", line: "L1", shift: "Day", planned: 1000, completed_good: 940, scrap: 60, hold_reclass: 0, yield_pct: 94.0 },
-          { period: "prior", line: "L1", shift: "Night", planned: 900, completed_good: 852, scrap: 48, hold_reclass: 0, yield_pct: 94.7 },
-          { period: "prior", line: "L2", shift: "Day", planned: 950, completed_good: 895, scrap: 55, hold_reclass: 0, yield_pct: 94.2 },
-          { period: "prior", line: "L2", shift: "Night", planned: 880, completed_good: 838, scrap: 42, hold_reclass: 0, yield_pct: 95.2 },
-          { period: "current", line: "L1", shift: "Day", planned: 1000, completed_good: 900, scrap: 16, hold_reclass: 42, yield_pct: 90.0 },
-          { period: "current", line: "L1", shift: "Night", planned: 900, completed_good: 820, scrap: 22, hold_reclass: 58, yield_pct: 91.1 },
-          { period: "current", line: "L2", shift: "Day", planned: 950, completed_good: 820, scrap: 90, hold_reclass: 30, yield_pct: 86.3 },
-          { period: "current", line: "L2", shift: "Night", planned: 880, completed_good: 860, scrap: 12, hold_reclass: 8, yield_pct: 97.7 },
-          { period: "current", line: "L1", shift: "Day", planned: 1000, completed_good: 905, scrap: 20, hold_reclass: 40, yield_pct: 90.5 },
-          { period: "current", line: "L1", shift: "Night", planned: 900, completed_good: 845, scrap: 18, hold_reclass: 30, yield_pct: 93.9 },
-          { period: "current", line: "L2", shift: "Day", planned: 950, completed_good: 835, scrap: 78, hold_reclass: 25, yield_pct: 87.9 },
-          { period: "current", line: "L2", shift: "Night", planned: 880, completed_good: 852, scrap: 16, hold_reclass: 10, yield_pct: 96.8 },
-          { period: "current", line: "L2", shift: "Day", planned: 950, completed_good: 828, scrap: 84, hold_reclass: 22, yield_pct: 87.2 },
-          { period: "current", line: "L2", shift: "Night", planned: 880, completed_good: 858, scrap: 10, hold_reclass: 9, yield_pct: 97.5 },
-        ],
+        columns: ["run_id", "period", "day", "line", "shift", "planned", "completed_good", "scrap", "hold_reclass", "yield_pct"],
+        rows: productionRuns,
       },
       {
         name: "quality_events",
-        columns: ["event_id", "period", "line", "disposition", "units", "day"],
-        rows: [
-          { event_id: "Q-301", period: "prior", line: "L1", disposition: "SCRAP", units: 30, day: 3 },
-          { event_id: "Q-302", period: "prior", line: "L2", disposition: "SCRAP", units: 26, day: 7 },
-          { event_id: "Q-303", period: "current", line: "L1", disposition: "HOLD_RECLASS", units: 42, day: 11 },
-          { event_id: "Q-304", period: "current", line: "L2", disposition: "HOLD_RECLASS", units: 58, day: 12 },
-          { event_id: "Q-305", period: "current", line: "L2", disposition: "SCRAP", units: 90, day: 14 },
-          { event_id: "Q-306", period: "current", line: "L1", disposition: "HOLD_RECLASS", units: 40, day: 16 },
-        ],
+        columns: ["event_id", "period", "day", "line", "shift", "disposition", "units"],
+        rows: qualityEvents,
       },
     ],
     patterns: [
@@ -372,8 +426,8 @@ After backing out reclassified volume, L2 Day still shows more scrap than the pr
         whenSqlIncludes: ["production_runs", "yield", "group by", "period"],
         columns: ["period", "avg_yield_pct", "runs"],
         rows: [
-          { period: "prior", avg_yield_pct: 94.5, runs: 4 },
-          { period: "current", avg_yield_pct: 91.3, runs: 10 },
+          { period: "prior", avg_yield_pct: 93.25, runs: 80 },
+          { period: "current", avg_yield_pct: 91.45, runs: 80 },
         ],
         setFlags: { ran_yield_query: true, sql_executed: true },
       },
@@ -383,19 +437,21 @@ After backing out reclassified volume, L2 Day still shows more scrap than the pr
         whenSqlIncludes: ["quality_events", "hold_reclass"],
         columns: ["period", "reclass_units", "scrap_units"],
         rows: [
-          { period: "prior", reclass_units: 0, scrap_units: 56 },
-          { period: "current", reclass_units: 140, scrap_units: 90 },
+          { period: "prior", reclass_units: 0, scrap_units: 540 },
+          { period: "current", reclass_units: 144, scrap_units: 540 },
         ],
         setFlags: { ran_reclass_query: true, identified_reporting_change: true, sql_executed: true },
       },
       {
         id: "residual_scrap",
-        label: "Residual scrap by line (current, ex-reclass)",
-        whenSqlIncludes: ["production_runs", "scrap", "line"],
-        columns: ["line", "scrap_current", "scrap_prior", "delta"],
+        label: "Residual scrap by line and shift",
+        whenSqlIncludes: ["production_runs", "scrap", "line", "shift"],
+        columns: ["line", "shift", "scrap_current", "scrap_prior", "delta"],
         rows: [
-          { line: "L1", scrap_current: 76, scrap_prior: 30, delta: 46 },
-          { line: "L2", scrap_current: 252, scrap_prior: 26, delta: 226 },
+          { line: "L1", shift: "Day", scrap_current: 120, scrap_prior: 120, delta: 0 },
+          { line: "L1", shift: "Night", scrap_current: 100, scrap_prior: 100, delta: 0 },
+          { line: "L2", shift: "Day", scrap_current: 200, scrap_prior: 160, delta: 40 },
+          { line: "L2", shift: "Night", scrap_current: 120, scrap_prior: 160, delta: -40 },
         ],
         setFlags: { ran_residual_query: true, identified_residual_loss: true, sql_executed: true },
       },
@@ -403,7 +459,7 @@ After backing out reclassified volume, L2 Day still shows more scrap than the pr
   },
 
   aiAssistant: {
-    modelLabel: "Fydell Assistant (mock)",
+    modelLabel: "Fydell Assistant (deterministic sandbox)",
     fallbackResponse:
       "Separate the reporting change from a real loss. Quantify HOLD_RECLASS volume this period, compare yield across periods knowing prior was not restated, then check residual scrap by line before naming a cause.",
     responses: [

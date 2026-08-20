@@ -18,9 +18,7 @@ export async function POST() {
   return NextResponse.json({ ok: true });
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   await POST();
-  return NextResponse.redirect(
-    new URL("/login", process.env.NEXT_PUBLIC_APP_URL || "https://www.fydell.com")
-  );
+  return NextResponse.redirect(new URL("/login", req.url));
 }

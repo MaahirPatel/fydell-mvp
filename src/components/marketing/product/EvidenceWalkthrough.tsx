@@ -82,7 +82,7 @@ function Panel({ step }: { step: number }) {
     return (
       <div className="p-4">
         <Label>The claim they wrote</Label>
-        <p className="mt-2 border-l-2 border-[var(--fydell-evidence)] pl-3 text-[14px] leading-[1.5] text-[var(--text-primary)]">
+        <p className="mt-2 border-l border-[var(--fydell-evidence)] bg-[color-mix(in_srgb,var(--fydell-evidence)_4%,transparent)] py-1 pl-3 text-[14px] leading-[1.5] text-[var(--text-primary)]">
           {NORTHLINE_CLAIMS[0].text}
         </p>
         <p className="mt-3.5 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
@@ -117,7 +117,7 @@ function Panel({ step }: { step: number }) {
     return (
       <div className="p-4">
         <Label>Where the evidence runs out</Label>
-        <p className="mt-2 border-l-2 border-[var(--fydell-risk)] pl-3 text-[13.5px] leading-[1.55] text-[var(--text-primary)]">
+        <p className="mt-2 border-l border-[var(--border-strong)] py-1 pl-3 text-[13.5px] leading-[1.55] text-[var(--text-primary)]">
           {claim.limitation}
         </p>
         <div className="mt-3">

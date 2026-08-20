@@ -1,60 +1,42 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { ButtonLink } from "@/components/marketing/ui";
+import HeroShortlistScene from "@/components/marketing/home/HeroShortlistScene";
 import HomeProductStory from "@/components/marketing/home/HomeProductStory";
-import HeroComposition from "@/components/marketing/home/HeroComposition";
-import { ProductSpotlight } from "@/components/fydell/ProductSpotlight";
+import HomeMotionController from "@/components/marketing/home/HomeMotionController";
+import styles from "@/components/marketing/home/homepage.module.css";
 
 export const metadata = {
-  title: "See the work before you make the hire",
+  title: "Find people who can actually do the work",
   description:
-    "Fydell gives one candidate a real problem, then gives your team a conclusion you can open claim by claim. Run the Data Analyst evaluation.",
+    "Fydell finds technical customer-facing talent, puts candidates through realistic changing work, and returns the people worth interviewing.",
 };
-
-function CtaArrow() {
-  return (
-    <span
-      aria-hidden
-      className="-mr-0.5 transition-transform duration-150 ease-[var(--ease)] group-hover:translate-x-[3px]"
-    >
-      →
-    </span>
-  );
-}
 
 export default function HomePage() {
   return (
     <MarketingShell>
-      <section className="pb-8 pt-[120px] sm:pt-[136px]">
-        <div className="mkt-content">
-          {/* The break is authored rather than left to text-wrap, because the
-              two lines are the composition. */}
-          <h1 className="hero-centered">
-            See the work before{" "}
-            <br className="hero-break" />
-            you make the hire.
-          </h1>
-          <p className="hero-centered-lede">
-            Give a candidate a realistic data problem, then review the
-            conclusion, evidence, and reasoning behind it.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
-            <ButtonLink href="/signup" variant="primary" className="group rounded-full">
-              Create your workspace
-              <CtaArrow />
-            </ButtonLink>
-            <ButtonLink href="/simulations" variant="secondary" className="group rounded-full">
-              See the evaluation
-              <CtaArrow />
-            </ButtonLink>
+      <HomeMotionController />
+      <div className={styles.page}>
+        <section className={styles.hero}>
+          <div className={styles.container}>
+            <div className={styles.heroCopy}>
+              <h1 className={styles.heroTitle}>
+                The hiring system for finding people who can actually do the work.
+              </h1>
+              <div className={styles.actions}>
+                <ButtonLink href="/signup" variant="primary">
+                  Get started
+                </ButtonLink>
+                <ButtonLink href="/contact" variant="soft">
+                  Contact sales
+                </ButtonLink>
+              </div>
+            </div>
+            <HeroShortlistScene />
+            <p className={styles.illustrativeNote}>Illustrative product view</p>
           </div>
-
-          <ProductSpotlight brand className="mt-14 lg:mt-[72px]">
-            <HeroComposition />
-          </ProductSpotlight>
-        </div>
-      </section>
-
-      <HomeProductStory />
+        </section>
+        <HomeProductStory />
+      </div>
     </MarketingShell>
   );
 }

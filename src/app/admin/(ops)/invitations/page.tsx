@@ -42,13 +42,13 @@ export default async function AdminInvitationsPage() {
       <h1 className="text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
         Invitations
       </h1>
-      <p className="mt-2 text-[14px] text-[rgba(244,245,247,0.62)]">
+      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
         Application invitation tracking. Auth tokens are never stored or shown.
       </p>
 
-      <div className="mt-8 overflow-hidden rounded-[14px] border border-[rgba(255,255,255,0.095)]">
+      <div className="mt-8 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
         <table className="min-w-full text-left text-[13px]">
-          <thead className="border-b border-[rgba(255,255,255,0.08)] bg-[#0B0D12] text-[11px] uppercase tracking-[0.05em] text-[rgba(244,245,247,0.4)]">
+          <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] font-medium text-[var(--text-secondary)]">
             <tr>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Type</th>
@@ -61,7 +61,7 @@ export default async function AdminInvitationsPage() {
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-[rgba(244,245,247,0.5)]">
+                <td colSpan={6} className="px-4 py-8 text-center text-[var(--text-secondary)]">
                   No invitations yet.
                 </td>
               </tr>
@@ -71,14 +71,14 @@ export default async function AdminInvitationsPage() {
                   row.expires_at && new Date(row.expires_at).getTime() < now
                 );
                 return (
-                  <tr key={row.id} className="border-b border-white/[0.05]">
+                  <tr key={row.id} className="border-b border-[var(--border-subtle)]">
                     <td className="px-4 py-3">{row.email}</td>
                     <td className="px-4 py-3">{row.invitation_type}</td>
                     <td className="px-4 py-3">{row.organization_role || "-"}</td>
                     <td className="px-4 py-3 capitalize">
                       {expired && row.status === "pending" ? "expired" : row.status}
                     </td>
-                    <td className="px-4 py-3 tabular-nums text-[rgba(244,245,247,0.55)]">
+                    <td className="px-4 py-3 tabular-nums text-[var(--text-secondary)]">
                       {row.last_sent_at
                         ? new Date(row.last_sent_at).toLocaleString()
                         : "-"}

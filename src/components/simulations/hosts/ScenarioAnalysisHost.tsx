@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AnalysisEngineView } from "@/components/simulations/analysis/AnalysisEngineView";
+import { NorthlineEvidenceFlow } from "@/components/simulations/analysis/NorthlineEvidenceFlow";
 import { analyzeAttempt } from "@/lib/sim-engine/analysis/analysisEngine";
 import { getScenario } from "@/lib/sim-engine/scenarios/catalog";
 import { LocalStoragePersistenceAdapter } from "@/lib/sim-engine/adapters/persistence";
@@ -68,6 +69,7 @@ export function ScenarioAnalysisHost({
 }) {
   const scenario = useMemo(() => getScenario(scenarioId), [scenarioId]);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [sourceAttempt, setSourceAttempt] = useState<SimulationAttempt | null>(null);
   const [source, setSource] = useState<"fixture" | "attempt" | null>(null);
 
   useEffect(() => {
@@ -97,6 +99,7 @@ export function ScenarioAnalysisHost({
       }
       if (cancelled) return;
       setSource(resolved);
+      setSourceAttempt(attempt);
       setAnalysis(analyzeAttempt(scenario, attempt));
     })();
 
@@ -110,6 +113,13 @@ export function ScenarioAnalysisHost({
   }
   if (!analysis) {
     return <div className="p-8 text-[13px] text-[var(--text-tertiary)]">Loading analysis</div>;
+  }
+  if (
+    scenario.metadata.id === "northline-operations-yield" &&
+    source === "attempt" &&
+    sourceAttempt
+  ) {
+    return <NorthlineEvidenceFlow scenario={scenario} attempt={sourceAttempt} />;
   }
   return (
     <div>

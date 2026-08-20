@@ -10,10 +10,10 @@ import type { SimulationPersonDefinition } from "../../types";
 export const northlinePeople: SimulationPersonDefinition[] = [
   {
     id: "person_dana",
-    name: "Dana Whitfield",
+    name: "Operations Manager",
     title: "Operations Manager",
     channel: "manager",
-    avatarInitials: "DW",
+    avatarInitials: "OM",
     objectives: [
       "Know whether production actually got worse this period",
       "Avoid halting a line on a reporting artifact",
@@ -38,10 +38,10 @@ export const northlinePeople: SimulationPersonDefinition[] = [
   },
   {
     id: "person_marcus",
-    name: "Marcus Reyes",
+    name: "Quality Lead",
     title: "Quality Lead",
     channel: "internal",
-    avatarInitials: "MR",
+    avatarInitials: "QL",
     objectives: ["Explain the new disposition code without downplaying real scrap"],
     constraints: ["Won't restate prior periods; the system does not support it"],
     communicationStyle: "Precise about definitions, careful about causation.",
@@ -61,7 +61,7 @@ export const northlinePeople: SimulationPersonDefinition[] = [
         hidden: true,
         disclosure: {
           whenAskedAbout: ["ask_evidence", "request_clarification"],
-          requiresWorldFlags: ["opened_quality_events"],
+          requiresWorldFlags: ["changed_info_released"],
         },
       },
       {
@@ -78,10 +78,10 @@ export const northlinePeople: SimulationPersonDefinition[] = [
   },
   {
     id: "person_lena",
-    name: "Lena Okafor",
+    name: "Finance Analyst",
     title: "Finance Analyst",
     channel: "internal",
-    avatarInitials: "LO",
+    avatarInitials: "FA",
     objectives: ["Keep the yield metric defined consistently"],
     constraints: ["Definitions are owned by Finance and change slowly"],
     communicationStyle: "Exacting about the metric dictionary.",

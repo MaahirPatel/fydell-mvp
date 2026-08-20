@@ -86,7 +86,7 @@ export function AnalysisEngineView({ analysis }: { analysis: AnalysisResult }) {
                     className={cn(
                       "rounded-[var(--radius-control)] border px-2 py-1 text-[11px]",
                       filter === f
-                        ? "border-[var(--fydell-brand-blue)] text-[var(--text-primary)]"
+                        ? "border-[var(--text-primary)] text-[var(--text-primary)]"
                         : "border-[var(--border-default)] text-[var(--text-tertiary)]"
                     )}
                     onClick={() => setFilter(f)}

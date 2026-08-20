@@ -229,7 +229,7 @@ export function InviteModalProvider({
             </div>
             <div>
               <p className="text-[12.5px] text-[var(--text-tertiary)]">Secure link</p>
-              <p className="mt-1 break-all rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[rgba(255,255,255,0.03)] px-3 py-2 font-mono text-[12.5px] text-[var(--text-secondary)]">
+              <p className="mt-1 break-all rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-band)] px-3 py-2 font-mono text-[12.5px] text-[var(--text-secondary)]">
                 {sent.inviteUrl}
               </p>
               <Button
@@ -252,7 +252,6 @@ export function InviteModalProvider({
                 autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="candidate@example.com"
                 invalid={Boolean(error)}
               />
             </Field>
@@ -263,7 +262,6 @@ export function InviteModalProvider({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="How they should be listed"
               />
             </Field>
 

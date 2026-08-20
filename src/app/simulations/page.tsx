@@ -137,9 +137,7 @@ export default function EvaluationPage() {
             <ButtonLink href="/request-pilot" variant="primary">
               Request a pilot
             </ButtonLink>
-            <ButtonLink href="/product" variant="secondary">
-              How the product works
-            </ButtonLink>
+            <ButtonLink href="/product" variant="soft">How the product works</ButtonLink>
           </>
         }
       />

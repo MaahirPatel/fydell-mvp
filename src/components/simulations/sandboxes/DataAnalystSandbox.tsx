@@ -33,13 +33,20 @@ function useAttempt(runtime: SimulationRuntime) {
   return useSyncExternalStore(subscribe, () => runtime.getAttempt(), () => runtime.getAttempt());
 }
 
+function initialInvestigationQuery(tableName: string | undefined): string {
+  if (!tableName) return "SELECT 1;";
+  return `SELECT *
+FROM ${tableName}
+ORDER BY period, day, line, shift;`;
+}
+
 export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) {
   const attempt = useAttempt(runtime);
   const scenario = runtime.scenario;
   const readOnly = attempt.status === "SUBMITTED";
   const [submitOpen, setSubmitOpen] = useState(false);
 
-  const tables = scenario.sqlRuntime?.tables ?? [];
+  const tables = useMemo(() => scenario.sqlRuntime?.tables ?? [], [scenario.sqlRuntime?.tables]);
   const firstResourceId = scenario.resources[0]?.id;
   const firstPersonId = scenario.people[0]?.id;
 
@@ -51,7 +58,7 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
   const [chatDraft, setChatDraft] = useState("");
   const [aiDraft, setAiDraft] = useState("");
   const [memoDraft, setMemoDraft] = useState(
-    "Answer:\n\nEvidence:\n\nWhat changed:\n\nCaveats / next check:\n"
+    "Recommendation:\n\nEvidence:\n\nWhat changed after the stakeholder correction:\n\nWhat still holds:\n\nLimitation and next check:\n"
   );
   const [execDraft, setExecDraft] = useState("");
 
@@ -140,6 +147,9 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
               variant="primary"
               onClick={() => {
                 runtime.start();
+                runtime.updateWorkbench({
+                  sqlQuery: initialInvestigationQuery(tables[0]?.name),
+                });
                 if (activeResource) runtime.openResource(activeResource);
               }}
             >
@@ -354,7 +364,7 @@ export function DataAnalystSandbox({ runtime, debug }: SimulationRendererProps) 
             className="text-[var(--action-ink)] underline"
             href={`/lab/sim/${scenario.metadata.id}/analysis?attempt=${attempt.id}`}
           >
-            Open employer analysis
+            Continue to defense and evidence review
           </a>
         </div>
       ) : null}

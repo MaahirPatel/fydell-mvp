@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 const ACTIONS = [
   { id: "approve_organization", label: "Approve organization", fields: ["organizationId"] },
@@ -39,7 +40,7 @@ export default function AdminRepairPage() {
       <h1 className="text-[28px]" style={{ fontWeight: 560, letterSpacing: "-0.03em" }}>
         Repair console
       </h1>
-      <p className="mt-2 text-[14px] text-white/55">
+      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
         Audited recovery tools for pilot edge cases. Never assigns passwords.
       </p>
       <div className="mt-8 max-w-xl space-y-3">
@@ -58,24 +59,21 @@ export default function AdminRepairPage() {
           ))}
         </select>
         {meta.fields.map((f) => (
-          <input
-            key={f}
-            className="platform-input"
-            placeholder={f}
-            value={fields[f] || ""}
-            onChange={(e) => setFields((prev) => ({ ...prev, [f]: e.target.value }))}
-          />
+          <label key={f} className="block text-[13px] font-medium text-[var(--text-primary)]">
+            {f.replace(/([A-Z])/g, " $1").replace(/^./, (value) => value.toUpperCase())}
+            <input
+              className="platform-input mt-1.5"
+              value={fields[f] || ""}
+              onChange={(e) => setFields((prev) => ({ ...prev, [f]: e.target.value }))}
+            />
+          </label>
         ))}
-        <button
-          type="button"
-          onClick={run}
-          className="inline-flex h-10 items-center rounded-[9px] bg-[#F1F2F4] px-4 text-[13px] font-semibold text-[#08090C]"
-        >
+        <Button type="button" variant="primary" size="cta" onClick={run}>
           Run repair
-        </button>
-        {error ? <p className="text-[13px] text-[#fda4b0]">{error}</p> : null}
+        </Button>
+        {error ? <p className="text-[13px] text-[var(--fydell-risk)]">{error}</p> : null}
         {result ? (
-          <pre className="overflow-auto rounded-[12px] border border-white/10 bg-black/30 p-3 text-[11px] text-white/70">
+          <pre className="overflow-auto rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-band)] p-3 text-[11px] text-[var(--text-secondary)]">
             {result}
           </pre>
         ) : null}

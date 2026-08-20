@@ -106,12 +106,12 @@ const RECOMMENDATION_COPY: Record<
   },
 };
 
-/** Section label used above each block of the report. */
+/** Section heading used above each block of the report. */
 function SectionLabel({ id, children }: { id: string; children: React.ReactNode }) {
   return (
     <h2
       id={id}
-      className="text-[12px] font-medium uppercase tracking-[0.04em] text-[var(--text-tertiary)]"
+      className="text-app-section font-medium text-[var(--text-primary)]"
     >
       {children}
     </h2>
@@ -232,7 +232,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
         >
           All reports
         </Link>
-        <h1 className="mt-2 text-[22px] font-semibold leading-tight tracking-[-0.028em] text-[var(--text-primary)]">
+        <h1 className="mt-2 text-[22px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
           {candidate?.name || candidate?.email}
         </h1>
         <p className="mt-1.5 text-[13.5px] text-[var(--text-secondary)]">
@@ -445,7 +445,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
                     </p>
                   ) : null}
                   {e.counterevidence ? (
-                    <p className="mt-2 text-[13px] leading-[1.6] text-[#e9c46a]">
+                    <p className="mt-2 text-[13px] leading-[1.6] text-[var(--status-attention-ink)]">
                       Counterevidence: {e.counterevidence}
                     </p>
                   ) : null}
@@ -463,7 +463,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
                     key={f.key}
                     className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4 py-3"
                   >
-                    <p className="text-[12px] uppercase tracking-[0.04em] text-[var(--text-tertiary)]">
+                    <p className="text-[13px] font-medium text-[var(--text-secondary)]">
                       {f.label}
                     </p>
                     <p className="mt-1.5 max-w-[74ch] whitespace-pre-line text-[13.5px] leading-[1.7] text-[var(--text-primary)]">
@@ -477,7 +477,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
                 );
               })}
               <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4 py-3">
-                <p className="text-[12px] uppercase tracking-[0.04em] text-[var(--text-tertiary)]">
+                <p className="text-[13px] font-medium text-[var(--text-secondary)]">
                   AI use during the session
                 </p>
                 <p className="mt-1.5 max-w-[74ch] text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">

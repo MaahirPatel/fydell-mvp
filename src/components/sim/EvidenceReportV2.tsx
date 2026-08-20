@@ -131,14 +131,14 @@ export function EvidenceReportV2({ result }: { result: V2PersistedResult }) {
                   id={anchor}
                   className="scroll-mt-24 px-5 py-3.5"
                 >
-                  <p className="border-l-2 border-[rgba(107,140,255,0.5)] pl-3 text-[14px] font-medium text-[var(--text-primary)]">
+                  <p className="text-[14px] font-medium text-[var(--text-primary)]">
                     {c.claim}
                   </p>
-                  <p className="mt-1 pl-3 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                  <p className="mt-1 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
                     {c.detail}
                   </p>
                   {c.eventOrArtifactId ? (
-                    <p className="mt-1.5 pl-3">
+                    <p className="mt-1.5">
                       <span className="inline-block max-w-full overflow-x-auto whitespace-nowrap rounded-[5px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-2 py-1 font-mono text-[11.5px] text-[var(--text-tertiary)]">
                         {c.eventOrArtifactId}
                       </span>
@@ -222,7 +222,7 @@ export function EvidenceReportV2({ result }: { result: V2PersistedResult }) {
                 {/* One colour. A bar that changes hue by value says "good" and
                     "bad" twice, once in a language nobody was taught. */}
                 <div
-                  className="mt-2 h-[5px] overflow-hidden rounded-full bg-[rgba(255,255,255,0.07)]"
+                  className="mt-2 h-[5px] overflow-hidden rounded-full bg-[var(--viz-track)]"
                   role="img"
                   aria-label={`${c.label}: ${
                     c.performance === null ? "not scored" : `${Math.round(perf)} out of 100`

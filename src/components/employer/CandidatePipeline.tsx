@@ -138,17 +138,7 @@ export default function CandidatePipeline({
                 href={stage.href}
                 className="group block min-w-0 rounded-[var(--radius-control)] py-0.5"
               >
-                <span className="flex items-center gap-1.5">
-                  <span
-                    aria-hidden
-                    className="h-[7px] w-[7px] shrink-0 rounded-full"
-                    style={{
-                      background: empty ? "var(--viz-track)" : FILL[stage.tone],
-                      boxShadow: empty
-                        ? "inset 0 0 0 1px var(--border-default)"
-                        : undefined,
-                    }}
-                  />
+                <span className="flex items-center">
                   <span
                     className={cn(
                       "truncate text-app-meta",

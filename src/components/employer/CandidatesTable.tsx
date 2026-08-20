@@ -36,14 +36,14 @@ export interface CandidateRow {
  * twice and forces the reader to reconcile them. The stage below is the
  * furthest point the candidate has actually reached.
  *
- * Tone is meaning, not decoration: green only where the candidate genuinely
- * finished, amber where the workspace needs to act, red where the invitation
- * is dead. Everything in flight is neutral.
+ * Tone is meaning, not decoration: amber where the workspace needs to act,
+ * red where the invitation is dead, and restrained neutral treatment for
+ * completed and in-flight states.
  */
 function stageOf(r: CandidateRow): { label: string; tone: StatusTone } {
   if (r.status === "revoked") return { label: "Revoked", tone: "risk" };
   if (r.status === "expired") return { label: "Expired", tone: "changed" };
-  if (r.reportReady) return { label: "Report ready", tone: "good" };
+  if (r.reportReady) return { label: "Report ready", tone: "neutral" };
   if (r.progress === "Scoring") return { label: "Scoring", tone: "neutral" };
   if (r.progress === "In progress") return { label: "Working on it", tone: "neutral" };
   if (r.status === "accepted") return { label: "Consented, not started", tone: "neutral" };

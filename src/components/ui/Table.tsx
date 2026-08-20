@@ -41,7 +41,7 @@ export function TH({
     <th
       scope="col"
       className={cn(
-        "px-4 py-2.5 text-app-meta font-medium uppercase tracking-[0.04em] text-[var(--text-tertiary)]",
+        "px-4 py-2.5 text-app-meta font-medium text-[var(--text-secondary)]",
         align === "right" ? "text-right" : "text-left",
         className,
       )}

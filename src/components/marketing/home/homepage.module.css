@@ -1,0 +1,1531 @@
+.page {
+  --home-max: var(--marketing-container);
+}
+
+.container {
+  width: min(100%, var(--home-max));
+  margin-inline: auto;
+  padding-inline: clamp(24px, 3vw, var(--marketing-page-x));
+}
+
+.hero {
+  padding-block: clamp(112px, 10vw, 140px) clamp(64px, 6vw, 88px);
+}
+
+/* Cursor-shaped fold: the statement sits on the page axis, the two pills sit
+   immediately under it, and the product window carries the rest. A left-aligned
+   billboard plus a supporting paragraph between title and buttons is a
+   different composition. */
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.heroTitle {
+  max-width: 16.5ch;
+  margin: 0;
+  font-size: clamp(2.75rem, 5vw, 4.25rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.038em;
+  text-wrap: balance;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.sceneFrame {
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--surface-raised);
+}
+
+.sceneOpen {
+  border-inline: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.sceneBand {
+  border: 0;
+  border-radius: 0;
+  background: var(--surface-band);
+}
+
+.sceneBar {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 18px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.sceneBar strong {
+  color: var(--text-secondary);
+  font-weight: 520;
+}
+
+.heroScene {
+  margin-top: clamp(64px, 6vw, 80px);
+  box-shadow: var(--shadow-card);
+}
+
+.illustrativeNote {
+  margin-top: 10px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  text-align: center;
+}
+
+.shortlist {
+  display: grid;
+  min-height: 610px;
+  grid-template-columns: 190px 320px minmax(0, 1fr);
+}
+
+.roleRail,
+.shortlistRail {
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-deep);
+}
+
+.roleRail {
+  display: flex;
+  flex-direction: column;
+}
+
+.railHeader,
+.briefHeader {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 24px;
+}
+
+.listHeader {
+  min-height: 103px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 24px 20px;
+}
+
+.listHeader strong {
+  display: block;
+  margin-top: 7px;
+  font-size: 15px;
+  font-weight: 540;
+}
+
+.roleNav {
+  display: grid;
+  gap: 3px;
+  padding: 14px 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.roleNav span {
+  border-radius: 7px;
+  padding: 9px 10px;
+}
+
+.roleNavActive {
+  background: var(--surface-selected);
+  color: var(--text-primary);
+}
+
+.roleContext {
+  margin-top: auto;
+  border-top: 1px solid var(--border-subtle);
+  padding: 18px 22px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.roleContext strong {
+  color: var(--text-secondary);
+  font-weight: 520;
+}
+
+.roleLabel {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.roleTitle {
+  margin-top: 7px;
+  font-size: 22px;
+  font-weight: 540;
+  letter-spacing: -0.025em;
+}
+
+.readyLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--status-positive-ink);
+  font-size: 13px;
+}
+
+.readyLine::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--status-positive-line);
+  content: "";
+}
+
+.candidateList {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+}
+
+.candidateRow {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 16px 14px;
+}
+
+.candidateRowActive {
+  border-radius: 10px;
+  border-bottom-color: transparent;
+  background: var(--surface-selected);
+}
+
+.avatar {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.candidateName {
+  display: block;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 520;
+}
+
+.candidateMeta {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.candidateState {
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.candidateRowActive .candidateState {
+  color: var(--status-positive-ink);
+}
+
+.brief {
+  background: var(--surface-raised);
+}
+
+.briefTopline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.briefName {
+  font-size: 25px;
+  font-weight: 540;
+  letter-spacing: -0.025em;
+}
+
+.verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--status-positive-line);
+  background: var(--status-positive-bg);
+  padding: 7px 10px;
+  color: var(--status-positive-ink);
+  font-size: 12px;
+  font-weight: 540;
+}
+
+.verdict::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--status-positive-line);
+  content: "";
+}
+
+.briefBody {
+  padding: 6px 28px 30px;
+}
+
+.briefSection {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-block: 23px;
+}
+
+.briefSection:last-child {
+  border-bottom: 0;
+}
+
+.briefSection h3 {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.briefSection p,
+.briefSection li {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.briefSection ul,
+.briefSection ol {
+  display: grid;
+  gap: 11px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.briefSection strong {
+  color: var(--text-primary);
+  font-weight: 520;
+}
+
+/* The one line in the brief worth landing on. Emphasis is a warm surface tint
+   and full-strength ink, not a coloured rule down the left edge: an accent bar
+   is decoration standing in for hierarchy, and it reads as a template. */
+.highlightLine {
+  position: relative;
+  margin-left: -10px;
+  border-radius: 5px;
+  padding: 7px 10px;
+  background: var(--surface-selected);
+  color: var(--text-primary);
+}
+
+.positioning {
+  padding-block: clamp(88px, 8vw, 112px) clamp(88px, 9vw, 128px);
+}
+
+.positioning p {
+  max-width: 1040px;
+  color: var(--text-tertiary);
+  font-size: clamp(1.8rem, 2.7vw, 2.25rem);
+  font-weight: 510;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.positioning strong {
+  color: var(--text-primary);
+  font-weight: inherit;
+}
+
+.principles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: clamp(120px, 13vw, 184px);
+}
+
+.principle {
+  display: flex;
+  min-height: 480px;
+  flex-direction: column;
+  padding: 0 clamp(24px, 3vw, 42px) 8px;
+}
+
+.principle + .principle {
+  border-left: 1px solid var(--border-subtle);
+}
+
+.principleIndex {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.principleDiagram {
+  display: grid;
+  min-height: 250px;
+  flex: 1;
+  place-items: center;
+}
+
+.principle h3 {
+  margin-top: auto;
+  font-size: 16px;
+  font-weight: 560;
+}
+
+.principle p {
+  max-width: 37ch;
+  margin-top: 9px;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* The figures carry their own per-shape alpha, so the whole set is tuned from
+   this one colour rather than from twenty opacity values in the SVG. */
+.principleDiagram :global(.principle-figure) {
+  width: 100%;
+  max-width: 272px;
+  height: auto;
+  overflow: visible;
+  color: var(--text-primary);
+}
+
+/* Hairlines must stay hairlines when the figure scales down on narrow screens,
+   otherwise the line work goes soft well before the layout does. */
+.principleDiagram :global(.principle-figure) :is(polygon, path, line) {
+  vector-effect: non-scaling-stroke;
+}
+
+.principleDiagram :global(.probe-result strong) {
+  font-weight: 520;
+}
+
+.chapter {
+  overflow: clip;
+  padding-block: clamp(104px, 11vw, 164px);
+}
+
+.chapterHead {
+  display: grid;
+  grid-template-columns: minmax(0, 460px) minmax(0, 440px);
+  justify-content: space-between;
+  gap: 80px;
+}
+
+.chapterHead h2 {
+  max-width: 460px;
+  font-size: clamp(2.15rem, 3.35vw, 3rem);
+  font-weight: 510;
+  line-height: 1.04;
+  letter-spacing: -0.032em;
+}
+
+.chapterSupport p {
+  max-width: 440px;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.chapterSupport span {
+  display: block;
+  margin-top: 28px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.chapterScene {
+  margin-top: clamp(64px, 7vw, 96px);
+}
+
+.bleedRight {
+  width: calc(100% + clamp(80px, 11vw, 168px));
+  margin-right: calc(clamp(80px, 11vw, 168px) * -1);
+}
+
+/* Inset the caption by the bleed distance so its context stays on screen and
+   lines up with the page gutter. */
+.bleedRight .sceneBar {
+  padding-right: calc(18px + clamp(80px, 11vw, 168px));
+}
+
+.workbench {
+  display: grid;
+  min-height: 560px;
+  grid-template-columns: 210px minmax(0, 1fr) 310px;
+}
+
+.workNav,
+.workEvidence {
+  background: var(--surface-deep);
+}
+
+.workNav {
+  border-right: 1px solid var(--border-subtle);
+  padding: 18px 12px;
+}
+
+.workNavTitle {
+  padding: 0 10px 14px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.navItem {
+  border-radius: 7px;
+  padding: 9px 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.navItemActive {
+  background: var(--surface-selected);
+  color: var(--text-primary);
+}
+
+.workMain {
+  min-width: 0;
+  padding: 24px;
+}
+
+.workMain h3 {
+  font-size: 20px;
+}
+
+.workPrompt {
+  max-width: 68ch;
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.workNote {
+  margin-top: 30px;
+  border-block: 1px solid var(--border-subtle);
+  padding-block: 18px;
+}
+
+.workNoteLabel {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.workNote p:last-child {
+  margin-top: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.workTable {
+  width: 100%;
+  margin-top: 26px;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.workTable th {
+  color: var(--text-tertiary);
+  font-weight: 400;
+  text-align: left;
+}
+
+.workTable th,
+.workTable td {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 10px 8px;
+}
+
+.riskRow {
+  background: color-mix(in srgb, var(--fydell-risk) 7%, transparent);
+  color: var(--fydell-risk);
+}
+
+.workEvidence {
+  border-left: 1px solid var(--border-subtle);
+  padding: 22px;
+}
+
+.evidenceLabel {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.evidenceClaim {
+  margin-top: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.evidenceSource {
+  margin-top: 24px;
+  border-radius: 8px;
+  background: var(--surface-panel);
+  padding: 13px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.evidenceSource mark {
+  background: color-mix(in srgb, var(--fydell-evidence) 8%, transparent);
+  color: var(--text-primary);
+}
+
+.calibration {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+}
+
+.calibrationRole {
+  border-right: 1px solid var(--border-subtle);
+  padding: clamp(28px, 4vw, 54px);
+}
+
+.calibrationRole h3 {
+  font-size: 27px;
+}
+
+.calibrationRole p {
+  max-width: 48ch;
+  margin-top: 15px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.calibrationMeta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  margin-top: 38px;
+  background: var(--border-subtle);
+}
+
+.calibrationMeta div {
+  background: var(--surface-raised);
+  padding: 16px;
+}
+
+.calibrationMeta span {
+  display: block;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.calibrationMeta strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 520;
+}
+
+.signals {
+  padding: clamp(28px, 4vw, 54px);
+}
+
+.signal {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 17px 0;
+}
+
+.signalNumber {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.signal strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 520;
+}
+
+.signal p {
+  margin-top: 4px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.signalWeight {
+  color: var(--fydell-evidence);
+  font-size: 12px;
+}
+
+.adaptFlow {
+  display: grid;
+  grid-template-columns: 1fr 64px 1fr 64px 1fr;
+  align-items: stretch;
+  min-height: 350px;
+  padding: 22px;
+}
+
+.adaptTimeline {
+  border-block: 1px solid var(--border-default);
+}
+
+.adaptTimeline figcaption {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.adaptTimeline figcaption strong {
+  color: var(--text-secondary);
+  font-weight: 520;
+}
+
+.adaptEvent {
+  position: relative;
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1.15fr) minmax(240px, 0.85fr);
+  gap: clamp(26px, 5vw, 70px);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 34px 0;
+}
+
+.adaptEvent:last-child {
+  border-bottom: 0;
+}
+
+.adaptEvent::before {
+  position: absolute;
+  top: 42px;
+  left: 86px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface-canvas);
+  content: "";
+}
+
+.adaptEvent:not(:last-child)::after {
+  position: absolute;
+  top: 51px;
+  bottom: -43px;
+  left: 90px;
+  width: 1px;
+  background: var(--border-default);
+  content: "";
+}
+
+.adaptEvent time {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.adaptEvent span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.adaptEvent h3 {
+  margin-top: 7px;
+  font-size: 19px;
+  font-weight: 540;
+}
+
+.adaptEvent p,
+.adaptEvent li {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.adaptEvent div p {
+  margin-top: 8px;
+}
+
+.adaptEvent > p,
+.adaptEvent ul {
+  margin: 0;
+  border-left: 1px solid var(--border-subtle);
+  padding-left: 28px;
+}
+
+.adaptEvent ul {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+}
+
+.adaptEventChanged::before {
+  border-color: var(--status-attention-line);
+  background: var(--status-attention-bg);
+}
+
+.adaptEventChanged span {
+  color: var(--status-attention-ink);
+}
+
+.adaptStep {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 24px;
+  background: var(--surface-deep);
+}
+
+.adaptStepChanged {
+  border-color: var(--status-attention-line);
+  background: var(--status-attention-bg);
+  animation: changedState 4.8s var(--ease) infinite;
+}
+
+.adaptStepAfter {
+  border-color: var(--border-default);
+}
+
+.adaptStep span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.adaptStepChanged span {
+  color: var(--fydell-changed);
+}
+
+.adaptStep h3 {
+  margin-top: 24px;
+  font-size: 19px;
+}
+
+.adaptStep p {
+  margin-top: 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.adaptFooter {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 16px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.flowArrow {
+  display: grid;
+  place-items: center;
+  color: var(--text-tertiary);
+  font-size: 20px;
+}
+
+.defense {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+}
+
+.artifact {
+  border-right: 1px solid var(--border-subtle);
+  padding: clamp(28px, 4vw, 52px);
+  background: var(--surface-deep);
+}
+
+.artifactLine {
+  margin-top: 24px;
+  border-radius: 8px;
+  background: var(--surface-panel);
+  padding: 18px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.artifactLine mark {
+  background: color-mix(in srgb, var(--fydell-risk) 8%, transparent);
+  color: var(--text-primary);
+}
+
+.defenseExchange {
+  padding: clamp(28px, 4vw, 52px);
+}
+
+.question {
+  color: var(--text-primary);
+  font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+}
+
+.answer {
+  margin-top: 30px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 22px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.confidence {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 32px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 20px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.confidence strong {
+  color: var(--status-positive-ink);
+  font-weight: 520;
+}
+
+.evidenceReview {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  min-height: 510px;
+}
+
+.timeline {
+  border-right: 1px solid var(--border-subtle);
+  padding: 26px 20px;
+  background: var(--surface-deep);
+}
+
+.event {
+  position: relative;
+  padding: 0 0 25px 24px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.event::before {
+  position: absolute;
+  top: 3px;
+  left: 2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--text-disabled);
+  content: "";
+}
+
+.event::after {
+  position: absolute;
+  top: 13px;
+  bottom: 0;
+  left: 5px;
+  width: 1px;
+  background: var(--border-default);
+  content: "";
+}
+
+.event:last-child::after { display: none; }
+.eventActive { color: var(--text-primary); }
+.eventActive::before { background: var(--fydell-evidence); }
+
+.claimReview {
+  padding: clamp(28px, 4vw, 50px);
+}
+
+.claimTitle {
+  max-width: 700px;
+  font-size: 21px;
+  line-height: 1.4;
+}
+
+.evidenceMap {
+  position: relative;
+  min-height: 190px;
+  margin-top: 30px;
+  border-block: 1px solid var(--border-subtle);
+}
+
+.evidenceMap svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.evidenceMapNode {
+  position: absolute;
+  z-index: 1;
+  width: min(31%, 190px);
+  background: var(--surface-raised);
+  text-align: center;
+}
+
+.evidenceMapNode span,
+.evidenceMapNode strong {
+  display: block;
+}
+
+.evidenceMapNode span {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.evidenceMapNode strong {
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.evidenceMapClaim {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.evidenceMapClaim strong {
+  color: var(--text-primary);
+}
+
+.evidenceMapSupportOne,
+.evidenceMapSupportTwo,
+.evidenceMapCounter {
+  bottom: 14px;
+}
+
+.evidenceMapSupportOne { left: 0; }
+.evidenceMapSupportTwo {
+  left: 50%;
+  transform: translateX(-50%);
+}
+.evidenceMapCounter { right: 0; }
+
+.evidenceColumns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  margin-top: 32px;
+  background: var(--border-subtle);
+}
+
+.evidenceColumn {
+  background: var(--surface-raised);
+  padding: 22px;
+}
+
+.evidenceColumn h4 {
+  color: var(--fydell-good);
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.evidenceColumn:last-child h4 {
+  color: var(--fydell-risk);
+}
+
+.evidenceColumn p {
+  margin-top: 13px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.approval {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 30px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.approval strong {
+  color: var(--status-positive-ink);
+  font-weight: 520;
+}
+
+.interview {
+  display: grid;
+  grid-template-columns: 0.72fr 1.28fr;
+  min-height: 520px;
+}
+
+.interviewSummary {
+  border-right: 1px solid var(--border-subtle);
+  padding: clamp(28px, 4vw, 50px);
+  background: var(--surface-deep);
+}
+
+.interviewSummary h3 {
+  margin-top: 10px;
+  font-size: 29px;
+}
+
+.interviewSummary p {
+  margin-top: 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.interviewQuestions {
+  padding: clamp(28px, 4vw, 50px);
+}
+
+.interviewQuestion {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 18px 0;
+}
+
+.interviewQuestion span {
+  color: var(--fydell-evidence);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.interviewQuestion p {
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.outcomePath {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: stretch;
+}
+
+.outcomeNode {
+  position: relative;
+  min-height: 210px;
+  padding: 30px;
+}
+
+.outcomeNode + .outcomeNode {
+  border-left: 1px solid var(--border-subtle);
+}
+
+.outcomeNode:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  right: -6px;
+  z-index: 2;
+  width: 11px;
+  height: 11px;
+  transform: translateY(-50%) rotate(45deg);
+  border-top: 1px solid var(--border-strong);
+  border-right: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  content: "";
+}
+
+.outcomeNode span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.outcomeNode h3 {
+  margin-top: 38px;
+  font-size: 17px;
+}
+
+.outcomeNode p {
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.finalCta {
+  border-top: 1px solid var(--border-subtle);
+  padding-block: clamp(100px, 12vw, 168px);
+}
+
+.finalCta h2 {
+  max-width: 850px;
+  font-size: clamp(2.5rem, 5vw, 4.6rem);
+  font-weight: 510;
+  line-height: 1.02;
+  letter-spacing: -0.036em;
+}
+
+.finalCta p {
+  max-width: 620px;
+  margin-top: 22px;
+  color: var(--text-secondary);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+@keyframes changedState {
+  0%, 20%, 100% { border-color: var(--status-attention-line); background: transparent; }
+  40%, 70% { border-color: var(--status-attention-ink); background: var(--status-attention-bg); }
+}
+
+@media (max-width: 960px) {
+  .chapterHead {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+    gap: 48px;
+  }
+
+  .shortlist,
+  .calibration,
+  .defense,
+  .interview {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stacked: the brief no longer overlaps, so the clearance is not needed. */
+  .shortlist .candidateRow {
+    padding-right: 14px;
+  }
+
+  .shortlistRail,
+  .calibrationRole,
+  .artifact,
+  .interviewSummary {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .shortlist {
+    min-height: 0;
+  }
+
+  .candidateList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .workbench {
+    grid-template-columns: 160px minmax(0, 1fr);
+  }
+
+  .workEvidence {
+    display: none;
+  }
+
+  .adaptFlow {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .flowArrow {
+    height: 28px;
+    transform: rotate(90deg);
+  }
+
+  .outcomePath {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .outcomeNode:nth-child(3) {
+    border-top: 1px solid var(--border-subtle);
+    border-left: 0;
+  }
+
+  .outcomeNode:nth-child(4) {
+    border-top: 1px solid var(--border-subtle);
+  }
+}
+
+@media (max-width: 680px) {
+  .hero {
+    padding-block: 112px 80px;
+  }
+
+  .heroTitle {
+    max-width: 12ch;
+    font-size: clamp(2.4rem, 11vw, 3.4rem);
+    line-height: 1.04;
+  }
+
+  .sceneFrame {
+    border-radius: 12px;
+  }
+
+  .sceneBar {
+    min-height: 44px;
+    padding-inline: 14px;
+  }
+
+  .candidateList {
+    grid-template-columns: 1fr;
+  }
+
+  .candidateRow {
+    padding-block: 13px;
+  }
+
+  .briefBody {
+    padding-inline: 20px;
+  }
+
+  .brief {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .briefSection {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .principles {
+    grid-template-columns: 1fr;
+  }
+
+  .principle {
+    min-height: 0;
+    padding-block: 44px;
+  }
+
+  .principle + .principle {
+    border-top: 1px solid var(--border-subtle);
+    border-left: 0;
+  }
+
+  .principle h3 {
+    margin-top: 22px;
+  }
+
+  .principleDiagram {
+    min-height: 220px;
+  }
+
+  .chapterHead {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .chapterSupport span {
+    margin-top: 18px;
+  }
+
+  .bleedRight {
+    width: calc(100% + 24px);
+    margin-right: -24px;
+  }
+
+  .bleedRight .sceneBar {
+    padding-right: calc(14px + 24px);
+  }
+
+  .workbench {
+    grid-template-columns: 1fr;
+  }
+
+  .workNav {
+    display: none;
+  }
+
+  .workMain {
+    overflow: hidden;
+    padding: 20px;
+  }
+
+  .workTable {
+    min-width: 580px;
+  }
+
+  .tableScroller {
+    overflow-x: auto;
+  }
+
+  .calibrationMeta,
+  .evidenceColumns {
+    grid-template-columns: 1fr;
+  }
+
+  .signal {
+    grid-template-columns: 32px 1fr;
+  }
+
+  .signalWeight {
+    grid-column: 2;
+  }
+
+  .evidenceReview {
+    grid-template-columns: 1fr;
+  }
+
+  .evidenceMap {
+    min-height: 210px;
+  }
+
+  .timeline {
+    display: flex;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 18px;
+  }
+
+  .event {
+    min-width: 130px;
+    padding: 18px 10px 0;
+  }
+
+  .event::after {
+    top: 5px;
+    right: 0;
+    bottom: auto;
+    left: 10px;
+    width: 100%;
+    height: 1px;
+  }
+
+  .event::before {
+    top: 2px;
+    left: 7px;
+  }
+
+  .approval {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .outcomePath {
+    grid-template-columns: 1fr;
+  }
+
+  .outcomeNode + .outcomeNode {
+    border-top: 1px solid var(--border-subtle);
+    border-left: 0;
+  }
+
+  .outcomeNode:not(:last-child)::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adaptStepChanged {
+    animation: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .shortlist {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .brief {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .adaptEvent {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .adaptEvent::before {
+    left: 66px;
+  }
+
+  .adaptEvent:not(:last-child)::after {
+    left: 70px;
+  }
+
+  .adaptEvent > p,
+  .adaptEvent ul {
+    grid-column: 2;
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 680px) {
+  .shortlist {
+    grid-template-columns: 1fr;
+  }
+
+  .roleRail {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .roleNav,
+  .roleContext {
+    display: none;
+  }
+
+  .shortlistRail {
+    border-right: 0;
+  }
+
+  .brief {
+    grid-column: auto;
+  }
+
+  .adaptTimeline figcaption {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+    padding-block: 14px;
+  }
+
+  .adaptEvent {
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 18px;
+    padding-block: 28px;
+  }
+
+  .adaptEvent::before {
+    top: 36px;
+    left: 48px;
+  }
+
+  .adaptEvent:not(:last-child)::after {
+    top: 45px;
+    left: 52px;
+  }
+
+  .principleDiagram :global(.principle-probe) {
+    grid-template-columns: 1fr 22px 1.2fr;
+  }
+}

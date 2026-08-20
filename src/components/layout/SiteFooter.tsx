@@ -1,28 +1,16 @@
 import Link from "next/link";
 import FydellMark from "@/components/brand/FydellMark";
-import { CONTACT_MAILTO } from "@/lib/contact";
 
-/**
- * Roles and Pricing were removed: Roles marketed six role families that do not
- * exist as products, and Pricing contradicted the single published evaluation.
- * "Request a pilot" lives here as a quiet secondary path rather than in the
- * primary navigation.
- *
- * Legal sits in the baseline row rather than in a third column. It is the one
- * group a reader looks for by location instead of by name, and moving it down
- * lets the two real navigation columns spread across the width instead of
- * bunching against the right edge.
- */
 const PRODUCT = [
-  { label: "Product", href: "/product" },
-  { label: "Evaluations", href: "/simulations" },
+  { label: "How it works", href: "/how-it-works" },
+  { label: "Pricing", href: "/pricing" },
   { label: "Trust", href: "/trust" },
+  { label: "Contact", href: "/contact" },
 ];
 
-const COMPANY = [
+const ACCESS = [
   { label: "Sign in", href: "/login" },
-  { label: "Request a pilot", href: "/request-pilot" },
-  { label: "Contact", href: CONTACT_MAILTO },
+  { label: "Create account", href: "/signup" },
 ];
 
 const LEGAL = [
@@ -79,24 +67,20 @@ export default function SiteFooter() {
               </span>
             </Link>
             <p className="mt-4 max-w-[34ch] text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
-              Evaluations that show how a candidate works, with evidence your
-              team can open.
+              Find and verify technical customer-facing talent through realistic
+              work and evidence a hiring team can inspect.
             </p>
           </div>
 
-          {/* Two groups cannot fill a twelve-column row by sitting side by
-              side; they bunch and leave a void at the right gutter. Spreading
-              them to the edges of the remaining measure balances the row
-              against the brand block instead. */}
-          <div className="flex flex-wrap gap-x-16 gap-y-10 lg:col-span-7 lg:col-start-6 lg:justify-between">
+          <div className="grid grid-cols-2 gap-x-12 gap-y-10 lg:col-span-5 lg:col-start-8">
             <FooterCol title="Product" links={PRODUCT} />
-            <FooterCol title="Company" links={COMPANY} />
+            <FooterCol title="Access" links={ACCESS} />
           </div>
         </div>
 
         <div className="mt-16 flex flex-col gap-4 border-t border-[var(--border-subtle)] pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[12.5px] text-[var(--text-tertiary)]">
-            © {new Date().getFullYear()} Fydell, Inc.
+            © 2026 Fydell, Inc.
           </p>
           <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
             {LEGAL.map((link) => (

@@ -8,7 +8,8 @@ import {
 import { ensureBootstrapRole } from "@/lib/ops/platform-roles";
 import { resolvePostLoginDestination } from "@/lib/auth/resolve-post-login";
 import { ensureEmployerOnboardingRow } from "@/lib/pilot/lifecycle";
-import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { isSupabaseAuthConfigured } from "@/lib/supabase";
 
 export async function POST(req: Request) {
   try {
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
       });
     }
 
-    if (!isSupabaseConfigured()) {
+    if (!isSupabaseAuthConfigured()) {
       return NextResponse.json(
         { error: "Authentication is not configured." },
         { status: 503 }

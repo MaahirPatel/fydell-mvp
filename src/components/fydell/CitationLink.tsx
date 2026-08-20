@@ -25,14 +25,14 @@ export type Citation = {
 
 const TONE = {
   source: {
-    marker: "border-[rgba(107,140,255,0.45)] bg-[rgba(107,140,255,0.14)] text-[#a9bcff]",
-    rule: "bg-[var(--fydell-evidence)]",
+    marker:
+      "border-[var(--border-default)] bg-[var(--surface-selected)] text-[var(--text-secondary)]",
     /** Named so the meaning survives without colour. */
     role: "Source",
   },
   contradiction: {
-    marker: "border-[rgba(242,107,130,0.45)] bg-[rgba(242,107,130,0.14)] text-[#ffa9b8]",
-    rule: "bg-[var(--fydell-risk)]",
+    marker:
+      "border-[color-mix(in_srgb,var(--fydell-risk)_30%,transparent)] bg-[color-mix(in_srgb,var(--fydell-risk)_8%,transparent)] text-[var(--fydell-risk)]",
     role: "Contradicts",
   },
 } as const;
@@ -96,7 +96,7 @@ export function CitationLink({
       className={`inline-flex w-full items-center gap-1.5 rounded-[var(--radius-control)] px-1.5 py-1 text-left transition-colors ${
         selected
           ? "bg-[var(--surface-hover)]"
-          : "hover:bg-[rgba(255,255,255,0.045)]"
+          : "hover:bg-[var(--surface-hover)]"
       }`}
     >
       <span className="sr-only">
@@ -138,18 +138,10 @@ export function CitationSource({
             key={i}
             className={`flex gap-2 px-2.5 py-1 text-[12px] tabular-nums ${
               line.highlight
-                ? "text-[var(--text-primary)]"
+                ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]"
                 : "text-[var(--text-tertiary)]"
             }`}
           >
-            {line.highlight ? (
-              <span
-                aria-hidden
-                className={`-ml-2.5 w-[2px] shrink-0 rounded-full ${TONE[tone].rule}`}
-              />
-            ) : (
-              <span aria-hidden className="-ml-2.5 w-[2px] shrink-0" />
-            )}
             <span className="truncate">{line.text}</span>
           </div>
         ))}

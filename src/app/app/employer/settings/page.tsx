@@ -2,6 +2,7 @@ import { getAuthenticatedUser } from "@/lib/auth/resolve-post-login";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import SignOutButton from "@/components/employer/SignOutButton";
 import WorkspaceNameForm from "@/components/employer/WorkspaceNameForm";
+import WorkspaceLogoForm from "@/components/employer/WorkspaceLogoForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
 import { ContactLink } from "@/components/ui/ContactLink";
@@ -93,6 +94,9 @@ export default async function EmployerSettingsPage() {
           />
           <Row label="Name">
             <WorkspaceNameForm initialName={workspaceName} canEdit={canEdit} />
+          </Row>
+          <Row label="Logo" help="Shown on the shortlist. Use a hosted image URL.">
+            <WorkspaceLogoForm canEdit={canEdit} />
           </Row>
           <Row label="Your role" help="Roles are managed by the workspace owner.">
             <p className="text-app-body capitalize text-[var(--text-primary)]">

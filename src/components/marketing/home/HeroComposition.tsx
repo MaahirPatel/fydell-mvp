@@ -33,7 +33,7 @@ function WorkbenchTable() {
           {["period", "line", "shift", "completed", "scrap", "yield"].map((h) => (
             <th
               key={h}
-              className="px-2 py-1.5 text-left font-mono text-[10.5px] font-normal text-[var(--text-tertiary)]"
+              className="px-2 py-1.5 text-left font-mono text-[11.5px] font-normal text-[var(--text-tertiary)]"
             >
               {h}
             </th>
@@ -46,11 +46,11 @@ function WorkbenchTable() {
             key={`${r.period}-${r.line}-${r.shift}`}
             style={{
               background: r.risk
-                ? "rgba(242,107,130,0.11)"
+                ? "color-mix(in srgb, var(--fydell-risk) 8%, transparent)"
                 : r.cited
-                  ? "rgba(107,140,255,0.11)"
+                  ? "color-mix(in srgb, var(--fydell-evidence) 6%, transparent)"
                   : i % 2
-                    ? "rgba(255,255,255,0.015)"
+                    ? "var(--surface-hover)"
                     : undefined,
             }}
           >
@@ -58,7 +58,7 @@ function WorkbenchTable() {
               (cell, ci) => (
                 <td
                   key={ci}
-                  className="border-t border-[var(--border-subtle)] px-2 py-1.5 font-mono text-[11px] tabular-nums"
+                  className="border-t border-[var(--border-subtle)] px-2 py-1.5 font-mono text-[11.5px] tabular-nums"
                   style={{
                     color: r.risk
                       ? "var(--fydell-risk)"
@@ -109,26 +109,20 @@ export default function HeroComposition() {
                 {APP_NAV.map((item) => (
                   <li
                     key={item}
-                    className={`relative rounded-[6px] px-2.5 py-1.5 text-[12.5px] ${
+                    className={`rounded-[6px] px-2.5 py-1.5 text-[12.5px] ${
                       item === "Reports"
                         ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]"
                         : "text-[var(--text-secondary)]"
                     }`}
                   >
-                    {item === "Reports" ? (
-                      <span
-                        aria-hidden
-                        className="absolute inset-y-1.5 left-0 w-[2px] rounded-full bg-[var(--fydell-evidence)]"
-                      />
-                    ) : null}
                     {item}
                   </li>
                 ))}
               </ul>
-              <p className="mt-5 px-2.5 text-[11px] font-medium text-[var(--text-tertiary)]">
+              <p className="mt-5 px-2.5 text-[12px] font-medium text-[var(--text-tertiary)]">
                 Open
               </p>
-              <p className="mt-1.5 rounded-[6px] bg-white/[0.04] px-2.5 py-1.5 text-[12px] leading-[1.4] text-[var(--text-secondary)]">
+              <p className="mt-1.5 rounded-[6px] bg-[var(--surface-hover)] px-2.5 py-1.5 text-[12px] leading-[1.4] text-[var(--text-secondary)]">
                 {NORTHLINE_SCENARIO.evaluation}
               </p>
             </aside>
@@ -150,9 +144,12 @@ export default function HeroComposition() {
                   {NORTHLINE_SCENARIO.company} · synthetic
                 </span>
               </div>
-              <h3 className="mt-2 text-[22px] font-medium leading-[1.2] tracking-[-0.028em] text-[var(--text-primary)]">
+              {/* Not a heading element. This is the title bar of a product
+                  scene, and promoting it to h3 put a level-three heading
+                  directly under the page h1 in the document outline. */}
+              <p className="mt-2 text-[22px] font-[560] leading-[1.2] tracking-[-0.02em] text-[var(--text-primary)]">
                 Evidence report
-              </h3>
+              </p>
               <p className="mt-3 max-w-[62ch] text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
                 {NORTHLINE_CONCLUSION}
               </p>
@@ -206,10 +203,10 @@ export default function HeroComposition() {
                 {excerpt.map((line) => (
                   <p
                     key={line.text}
-                    className="truncate px-2 py-1 font-mono text-[10.5px] leading-[1.45]"
+                    className="truncate px-2 py-1 font-mono text-[11.5px] leading-[1.45]"
                     style={{
                       background: line.highlight
-                        ? "rgba(107,140,255,0.13)"
+                        ? "color-mix(in srgb, var(--fydell-evidence) 7%, transparent)"
                         : undefined,
                       color: line.highlight
                         ? "var(--text-primary)"

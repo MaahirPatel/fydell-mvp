@@ -1,18 +1,18 @@
 import { cn } from "@/lib/cn";
 
 /**
- * Graphite light behind a product scene. Brand tint is opt-in and faint.
+ * Neutral light behind a product scene, so the window reads as lit rather than
+ * pasted on. There is no brand-tinted variant: a blue wash behind a screenshot
+ * is decoration, and on this site colour means something.
  */
 export function ProductSpotlight({
   children,
   className,
   intensity = "default",
-  brand = false,
 }: {
   children: React.ReactNode;
   className?: string;
   intensity?: "default" | "soft";
-  brand?: boolean;
 }) {
   return (
     <div className={cn("relative", className)}>
@@ -21,7 +21,6 @@ export function ProductSpotlight({
         className={cn(
           "product-spotlight",
           intensity === "soft" && "product-spotlight-soft",
-          brand && "product-spotlight-brand",
         )}
       />
       <div className="relative z-[1]">{children}</div>

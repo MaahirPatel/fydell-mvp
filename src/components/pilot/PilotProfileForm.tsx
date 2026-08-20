@@ -106,7 +106,6 @@ export default function PilotProfileForm() {
           optional
           value={name}
           onChange={setName}
-          placeholder="Your name"
           autoComplete="name"
         />
         <TextField
@@ -118,7 +117,6 @@ export default function PilotProfileForm() {
             setEmail(v);
             setErrors((prev) => ({ ...prev, email: undefined }));
           }}
-          placeholder="you@company.com"
           autoComplete="email"
           error={errors.email}
         />
@@ -128,7 +126,6 @@ export default function PilotProfileForm() {
         optional
         value={organization}
         onChange={setOrganization}
-        placeholder="Company or team"
         autoComplete="organization"
       />
 

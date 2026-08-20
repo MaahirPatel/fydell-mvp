@@ -136,7 +136,7 @@ function PreviewDialog({
       {sim ? (
         <div className="grid gap-6">
           <section>
-            <h3 className="text-[12px] font-medium uppercase tracking-[0.04em] text-[var(--text-tertiary)]">
+            <h3 className="text-[13px] font-medium text-[var(--text-secondary)]">
               The brief candidates see
             </h3>
             <p className="mt-2 text-[14px] leading-[1.65] text-[var(--text-secondary)]">
@@ -145,7 +145,7 @@ function PreviewDialog({
           </section>
 
           <section>
-            <h3 className="text-[12px] font-medium uppercase tracking-[0.04em] text-[var(--text-tertiary)]">
+            <h3 className="text-[13px] font-medium text-[var(--text-secondary)]">
               Working materials
             </h3>
             <ul className="mt-2 divide-y divide-[var(--border-subtle)] rounded-[var(--radius-panel)] border border-[var(--border-subtle)]">
@@ -172,7 +172,7 @@ function PreviewDialog({
           </section>
 
           <section>
-            <h3 className="text-[12px] font-medium uppercase tracking-[0.04em] text-[var(--text-tertiary)]">
+            <h3 className="text-[13px] font-medium text-[var(--text-secondary)]">
               What the candidate is asked
             </h3>
             <ol className="mt-2 grid gap-2.5">

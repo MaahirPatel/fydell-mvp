@@ -132,7 +132,7 @@ export default function HeroSimPreview() {
                 key={file}
                 className={`rounded-[5px] px-2 py-1.5 text-[12.5px] ${
                   i === 0
-                    ? "bg-white/[0.06] text-[var(--text-primary)]"
+                    ? "bg-[var(--surface-selected)] text-[var(--text-primary)]"
                     : "text-[var(--text-secondary)]"
                 }`}
               >
@@ -159,7 +159,7 @@ export default function HeroSimPreview() {
                 aria-pressed={currentOnly === option.value}
                 className={`rounded-[4px] px-2.5 py-1 text-[12px] transition-colors ${
                   currentOnly === option.value
-                    ? "bg-white/[0.09] text-[var(--text-primary)]"
+                    ? "bg-[var(--surface-selected)] text-[var(--text-primary)]"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
@@ -180,7 +180,7 @@ export default function HeroSimPreview() {
                       <th
                         key={head}
                         scope="col"
-                        className={`py-2 pr-3 text-[11.5px] font-medium uppercase tracking-[0.04em] text-[var(--text-tertiary)] ${
+                        className={`py-2 pr-3 text-[11.5px] font-medium text-[var(--text-tertiary)] ${
                           i > 2 ? "text-right" : ""
                         }`}
                       >
@@ -199,9 +199,9 @@ export default function HeroSimPreview() {
                       key={`${r.period}-${r.line}-${r.shift}`}
                       className={`border-b border-[var(--border-subtle)] last:border-b-0 ${
                         risky
-                          ? "bg-[rgba(242,107,130,0.07)]"
+                          ? "bg-[color-mix(in_srgb,var(--fydell-risk)_7%,transparent)]"
                           : flagged
-                            ? "bg-[rgba(233,185,73,0.07)]"
+                            ? "bg-[var(--status-attention-bg)]"
                             : ""
                       }`}
                     >
@@ -253,16 +253,8 @@ export default function HeroSimPreview() {
                 {evidence.map((item) => (
                   <li
                     key={item.title}
-                    className="relative rounded-[6px] border border-[var(--border-subtle)] py-2 pl-3 pr-2.5"
+                    className="rounded-[6px] border border-[var(--border-subtle)] px-3 py-2"
                   >
-                    <span
-                      aria-hidden
-                      className={`absolute inset-y-1.5 left-0 w-[2px] rounded-full ${
-                        item.tone === "risk"
-                          ? "bg-[var(--fydell-risk)]"
-                          : "bg-[var(--fydell-evidence)]"
-                      }`}
-                    />
                     <p className="text-[12px] font-medium text-[var(--text-primary)]">
                       {item.title}
                     </p>
@@ -301,7 +293,7 @@ export default function HeroSimPreview() {
                 aria-hidden
                 className={`inline-flex h-[17px] w-[17px] items-center justify-center rounded-[4px] border text-[10.5px] tabular-nums ${
                   active
-                    ? "border-[rgba(107,140,255,0.5)] bg-[rgba(107,140,255,0.18)] text-[#a9bcff]"
+                    ? "border-[var(--border-strong)] bg-[var(--surface-selected)] text-[var(--fydell-evidence)]"
                     : "border-[var(--border-default)] text-[var(--text-tertiary)]"
                 }`}
               >

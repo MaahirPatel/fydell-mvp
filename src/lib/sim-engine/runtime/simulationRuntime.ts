@@ -370,9 +370,14 @@ export class SimulationRuntime {
     this.emit();
   }
 
-  executeSql(): void {
+  async executeSql(): Promise<void> {
     const sql = this.attempt.workbench.sqlQuery;
-    const result = executeSqlQuery(this.scenario.sqlRuntime, this.attempt, sql, this.getElapsedMs());
+    const result = await executeSqlQuery(
+      this.scenario.sqlRuntime,
+      this.attempt,
+      sql,
+      this.getElapsedMs()
+    );
     this.attempt = {
       ...result.attempt,
       workbench: {

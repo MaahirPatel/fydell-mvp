@@ -414,7 +414,7 @@ export default function CohortWorkspace({
             </div>
             <div>
               <p className="text-[12.5px] text-[var(--text-tertiary)]">Secure link</p>
-              <p className="mt-1 break-all rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[12.5px] text-[var(--text-secondary)]">
+              <p className="mt-1 break-all rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-band)] px-3 py-2 text-[12.5px] text-[var(--text-secondary)]">
                 {inviteResult.url}
               </p>
               <div className="mt-2 flex items-center gap-2">
@@ -450,7 +450,6 @@ export default function CohortWorkspace({
                 autoComplete="off"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="candidate@example.com"
                 invalid={Boolean(inviteError)}
               />
             </Field>
@@ -459,7 +458,6 @@ export default function CohortWorkspace({
                 id="cohort-invite-name"
                 value={inviteName}
                 onChange={(e) => setInviteName(e.target.value)}
-                placeholder="How they should be listed"
               />
             </Field>
             <FormError>{inviteError}</FormError>

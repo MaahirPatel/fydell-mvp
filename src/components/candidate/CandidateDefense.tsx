@@ -116,7 +116,7 @@ export function CandidateDefense({ sessionId }: { sessionId: string }) {
 
               {existing ? (
                 <div className="mt-3">
-                  <p className="border-l-2 border-[var(--border-strong)] pl-3 text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+                  <p className="border-t border-[var(--border-subtle)] pt-2 text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
                     {existing.response_text}
                   </p>
                   <p className="mt-1.5 pl-3 text-[12px] text-[var(--text-tertiary)]">
