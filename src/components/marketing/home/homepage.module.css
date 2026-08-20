@@ -4121,8 +4121,37 @@
    ========================================================================== */
 
 .heroScene {
-  width: calc(100% + 78px);
+  width: calc(100% + 112px);
+  margin-top: clamp(40px, 3.8vw, 52px);
   border-radius: 15px 0 0 0;
+}
+
+.hero {
+  padding-block: clamp(78px, 6.8vw, 96px) clamp(54px, 5vw, 70px);
+}
+
+.shortlist {
+  min-height: 700px;
+}
+
+.candidateRowActive .candidateSelectedMarker {
+  display: none;
+}
+
+.chapterScene {
+  width: calc(100% + 74px);
+  margin-right: -74px;
+}
+
+[data-product-chapter]:nth-of-type(even) .chapterScene {
+  width: calc(100% + 116px);
+  margin-right: -68px;
+  margin-left: -48px;
+}
+
+.chapterScene > .sceneFrame,
+.chapterScene > .adaptStage {
+  border-radius: 15px 0 0 15px;
 }
 
 .evidenceScene {
@@ -4148,6 +4177,41 @@
     0 0 0 1px rgba(53, 114, 82, 0.08),
     0 14px 30px -12px rgba(45, 38, 32, 0.22),
     0 42px 74px -34px rgba(45, 38, 32, 0.28);
+}
+
+.inspectorDiff {
+  margin-top: 12px;
+  border-block: 1px solid var(--border-subtle);
+  padding-block: 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.inspectorDiff header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  color: var(--text-tertiary);
+}
+
+.inspectorDiff p {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  margin: 0;
+  padding: 4px 7px;
+  line-height: 1.4;
+}
+
+.inspectorDiffRemoved {
+  background: color-mix(in srgb, var(--surface-counter) 70%, transparent);
+  color: var(--evidence-counter);
+}
+
+.inspectorDiffAdded {
+  background: color-mix(in srgb, var(--surface-support) 74%, transparent);
+  color: var(--evidence-support);
 }
 
 .adaptStage {
@@ -4418,6 +4482,18 @@
 }
 
 @media (max-width: 960px) {
+  .chapterScene,
+  [data-product-chapter]:nth-of-type(even) .chapterScene {
+    width: 100%;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .chapterScene > .sceneFrame,
+  .chapterScene > .adaptStage {
+    border-radius: 15px;
+  }
+
   .heroScene {
     width: 100%;
     border-radius: 15px;

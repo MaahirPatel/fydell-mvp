@@ -161,6 +161,21 @@ export default function HeroShortlistScene() {
               ))}
             </ol>
 
+            <div className={styles.inspectorDiff} aria-label="Selected artifact revision">
+              <header>
+                <span>rollout_plan.md · revision 4</span>
+                <time>16:13</time>
+              </header>
+              <p className={styles.inspectorDiffRemoved}>
+                <span>−</span>
+                Production access runs in parallel with security review.
+              </p>
+              <p className={styles.inspectorDiffAdded}>
+                <span>+</span>
+                Sandbox first; production begins after security sign-off.
+              </p>
+            </div>
+
             <div className={styles.causalOutcome}>
               <ArrowRight className={styles.causalOutcomeIcon} size={13} aria-hidden />
               <span className={styles.causalOutcomeLabel}>Advance to interview</span>
