@@ -3,6 +3,7 @@ import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { proofAdmin, audit } from "@/lib/sim-engine/proof/db";
 import { enqueueJob, processQueuedJobs } from "@/lib/sim-engine/proof/jobs";
 import type { AnalysisJobType } from "@/lib/sim-engine/proof/types";
+import { authorizeProofRunAccess } from "@/lib/sim-engine/proof/sandbox/access";
 
 export async function POST(_request: Request, context: { params: Promise<{ runId: string }> }) {
   const user = await requireUser();
@@ -10,6 +11,8 @@ export async function POST(_request: Request, context: { params: Promise<{ runId
   const org = await requireOrgMember(user.id);
   const adminRole = !org;
   const { runId } = await context.params;
+  const access = await authorizeProofRunAccess(runId);
+  if ("response" in access) return access.response;
   const admin = proofAdmin();
   const { data: run } = await admin.from("proof_runs").select("organization_id").eq("id", runId).maybeSingle();
   if (!run) return NextResponse.json({ error: "not found" }, { status: 404 });

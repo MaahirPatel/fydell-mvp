@@ -5,6 +5,7 @@ import { factTriggerSatisfied, FACT_AUTH } from "@/lib/sim-engine/proof/state-ma
 import type { ArtifactContent, EventType, ProofStage } from "@/lib/sim-engine/proof/types";
 import { isEventType } from "@/lib/sim-engine/proof/types";
 import { enqueueJob, processQueuedJobs } from "@/lib/sim-engine/proof/jobs";
+import { authorizeProofRunAccess } from "@/lib/sim-engine/proof/sandbox/access";
 
 async function getRun(runId: string) {
   const admin = proofAdmin();
@@ -14,6 +15,8 @@ async function getRun(runId: string) {
 
 export async function GET(_request: Request, context: { params: Promise<{ runId: string }> }) {
   const { runId } = await context.params;
+  const access = await authorizeProofRunAccess(runId);
+  if ("response" in access) return access.response;
   const run = await getRun(runId);
   if (!run) return NextResponse.json({ error: "not found" }, { status: 404 });
   const snapshot = await loadRunSnapshot(runId);
@@ -24,6 +27,8 @@ export async function GET(_request: Request, context: { params: Promise<{ runId:
 
 export async function POST(request: Request, context: { params: Promise<{ runId: string }> }) {
   const { runId } = await context.params;
+  const access = await authorizeProofRunAccess(runId);
+  if ("response" in access) return access.response;
   const run = await getRun(runId);
   if (!run) return NextResponse.json({ error: "not found" }, { status: 404 });
   const body = (await request.json()) as {

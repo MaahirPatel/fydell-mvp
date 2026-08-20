@@ -1,10 +1,21 @@
 # Solutions Engineer simulation specification
 
+Public sandbox fixture: `acme-rollout-v1` (Northstar / Acme Technical Discovery and Rollout).
+Seeded proof-graph catalog in the database still includes the older CRM-auth scenario until a migration can replace it. The public `/sandbox` walkthrough uses only the Acme fixture manifest.
+
 Version: `se-northstar-v1`  
 Role: Solutions Engineer  
 This document is the hiring instrument. The LLM may phrase messages; it may not invent world facts.
 
-## The job situation
+## Public sandbox — Acme rollout
+
+Northstar is selling into Acme. The candidate is a Solutions Engineer. The sponsor wants a 200-user production cohort based on licensed seats. After the initial recommendation, security confirms the review takes six weeks and **blocks production access**. Sandbox enablement is allowed now. The 200 WAU figure remains unverified.
+
+Pass A runs after the revised submission and generates the oral-defense question. Pass B runs after the defense and must not erase counterevidence. Review in the sandbox is either a scripted demonstration review or a sandbox-visitor decision. It is never presented as human hiring review.
+
+The evidence report answers whether to interview. The work receipt answers what work occurred and what can be verified. The receipt integrity hash is not tamper-proof.
+
+## The job situation (catalog scenario)
 
 Acme Cloud’s customer, Northstar Health, must complete a CRM → accounts API integration before a board demo. Authentication works in Postman. Production requests fail validation. Sales has already implied Friday is possible. Engineering knows the path the candidate is likely to choose does not support the customer’s auth method — that fact is withheld until the candidate commits a preliminary recommendation.
 

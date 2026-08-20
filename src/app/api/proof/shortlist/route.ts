@@ -12,6 +12,7 @@ export async function GET() {
     .from("proof_runs")
     .select("id, status, shortlisted, created_at, proof_invitations(email), proof_decision_briefs(recommendation, why, published, strengths, concerns, probes)")
     .eq("organization_id", org.organizationId)
+    .neq("world_state->>environment", "sandbox")
     .order("created_at", { ascending: false });
   return NextResponse.json({
     organizationId: org.organizationId,

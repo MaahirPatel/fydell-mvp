@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { proofAdmin, audit } from "@/lib/sim-engine/proof/db";
+import { authorizeProofRunAccess } from "@/lib/sim-engine/proof/sandbox/access";
 
 export async function POST(request: Request, context: { params: Promise<{ runId: string }> }) {
   const user = await requireUser();
@@ -8,6 +9,8 @@ export async function POST(request: Request, context: { params: Promise<{ runId:
   const org = await requireOrgMember(user.id);
   if (!org) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const { runId } = await context.params;
+  const access = await authorizeProofRunAccess(runId);
+  if ("response" in access) return access.response;
   const admin = proofAdmin();
   const { data: run } = await admin.from("proof_runs").select("organization_id").eq("id", runId).maybeSingle();
   if (!run || run.organization_id !== org.organizationId) {

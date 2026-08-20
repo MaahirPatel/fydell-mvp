@@ -29,8 +29,90 @@ def _fact_seq(events: list[dict[str, Any]], fact_id: str) -> int | None:
     return None
 
 
+def _acme_analyze(job_type: str, snapshot: dict[str, Any], events: list[dict[str, Any]]) -> dict[str, Any]:
+    artifact = snapshot.get("artifact") or {}
+    rec = str(artifact.get("recommendation") or "").lower()
+    defense = snapshot.get("defense") or []
+    support = _ids(events, lambda e: e.get("event_type") in {"DECISION_COMMITTED", "ARTIFACT_REVISION", "FACT_RELEASED"})
+    defense_ids = _ids(events, lambda e: e.get("event_type") == "DEFENSE_RESPONSE_RECEIVED")
+    adapted = "sandbox" in rec and "defer" in rec
+    claims = [
+        {
+            "claim": "Candidate revised the rollout after production access was blocked."
+            if adapted
+            else "Candidate did not clearly defer production after the security review.",
+            "competency": "Adaptation",
+            "direction": "STRENGTH" if adapted else "CONCERN",
+            "confidence": "HIGH",
+            "supporting_event_ids": support,
+            "counterevidence_event_ids": [],
+            "rubric_version": "se_rollout_v1",
+            "prompt_version": "sandbox_evidence_v1",
+            "model_version": "rules_v1",
+        },
+        {
+            "claim": "The 200-user weekly-active figure remains an unverified sponsor estimate.",
+            "competency": "Discovery judgment",
+            "direction": "CONCERN",
+            "confidence": "HIGH",
+            "supporting_event_ids": support,
+            "counterevidence_event_ids": support,
+            "rubric_version": "se_rollout_v1",
+            "prompt_version": "sandbox_evidence_v1",
+            "model_version": "rules_v1",
+        },
+    ]
+    joined = " ".join(str(d.get("response") or "") for d in defense).lower()
+    tested = "active-user" in joined or "directional" in joined or "smaller" in joined
+    if job_type == "EXTRACT_EVIDENCE_FINAL":
+        claims.append(
+            {
+                "claim": "Oral defense treated the sponsor estimate as something to test."
+                if tested
+                else "Oral defense did not test the sponsor adoption estimate.",
+                "competency": "Commercial judgment",
+                "direction": "STRENGTH" if tested else "CONCERN",
+                "confidence": "MODERATE",
+                "supporting_event_ids": defense_ids or support,
+                "counterevidence_event_ids": support,
+                "rubric_version": "se_rollout_v1",
+                "prompt_version": "sandbox_evidence_v1",
+                "model_version": "rules_v1",
+            }
+        )
+    question = {
+        "prompt": "Your adoption assumption comes from the sponsor. How would you test it before using it to size the first production cohort?",
+        "target": "unverified_wau_assumption",
+    }
+    brief = {
+        "recommendation": "INTERVIEW" if tested else "HOLD",
+        "why": "The candidate either adapted to the six-week production block or left the adoption assumption untested.",
+        "strengths": [c["claim"] for c in claims if c["direction"] == "STRENGTH"][:3],
+        "concerns": [c["claim"] for c in claims if c["direction"] == "CONCERN"][:3],
+        "probes": [question["prompt"]],
+    }
+    if job_type == "GENERATE_DEFENSE":
+        return {"job_type": job_type, "defense_questions": [question], "uncertainties": ["200 WAU is a sponsor estimate."]}
+    if job_type == "GENERATE_DECISION_BRIEF":
+        return {"job_type": job_type, "brief": brief}
+    return {
+        "job_type": job_type,
+        "observations": ["Security review blocks production for six weeks."],
+        "contradictions": [],
+        "uncertainties": ["200 WAU is a sponsor estimate."],
+        "claims": claims,
+        "defense_questions": [question] if job_type == "EXTRACT_EVIDENCE_INITIAL" else [],
+        "brief": brief if job_type == "EXTRACT_EVIDENCE_FINAL" else None,
+    }
+
+
 def analyze(job_type: str, snapshot: dict[str, Any]) -> dict[str, Any]:
     events: list[dict[str, Any]] = list(snapshot.get("events") or [])
+    if _fact_seq(events, "SECURITY_REVIEW_001") is not None or any(
+        (e.get("payload") or {}).get("fact_id") == "SECURITY_REVIEW_001" for e in events
+    ):
+        events.sort(key=lambda e: int(e.get("sequence") or 0))
+        return _acme_analyze(job_type, snapshot, events)
     events.sort(key=lambda e: int(e.get("sequence") or 0))
     artifact = snapshot.get("artifact") or {}
     defense = snapshot.get("defense") or []

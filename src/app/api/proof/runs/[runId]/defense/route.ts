@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { proofAdmin, appendEvent } from "@/lib/sim-engine/proof/db";
 import { enqueueJob, processQueuedJobs } from "@/lib/sim-engine/proof/jobs";
+import { authorizeProofRunAccess } from "@/lib/sim-engine/proof/sandbox/access";
 
 export async function POST(request: Request, context: { params: Promise<{ runId: string }> }) {
   const { runId } = await context.params;
+  const access = await authorizeProofRunAccess(runId);
+  if ("response" in access) return access.response;
   const body = (await request.json()) as { answers?: Array<{ questionId: string; body: string }> };
   const admin = proofAdmin();
   const { data: session } = await admin.from("proof_defense_sessions").select("id").eq("run_id", runId).maybeSingle();
@@ -31,6 +34,8 @@ export async function POST(request: Request, context: { params: Promise<{ runId:
 
 export async function GET(_request: Request, context: { params: Promise<{ runId: string }> }) {
   const { runId } = await context.params;
+  const access = await authorizeProofRunAccess(runId);
+  if ("response" in access) return access.response;
   const admin = proofAdmin();
   const { data: session } = await admin.from("proof_defense_sessions").select("id, status").eq("run_id", runId).maybeSingle();
   if (!session) return NextResponse.json({ questions: [] });

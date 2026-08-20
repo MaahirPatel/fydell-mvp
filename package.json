@@ -17,8 +17,10 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test:proof": "npm run test:proof:contracts && npm run test:proof:database && npm run test:golden-path-persistence",
+    "test:proof": "npm run test:proof:contracts && npm run test:sandbox:contracts && npm run test:proof:database && npm run test:golden-path-persistence",
     "test:proof:contracts": "tsx scripts/test-proof-graph.ts",
+    "test:sandbox:contracts": "tsx scripts/test-sandbox-contracts.ts",
+    "test:proof:live": "tsx scripts/test-sandbox-live.ts && tsx scripts/test-proof-database.ts && tsx --conditions react-server scripts/test-golden-path-persistence.ts",
     "test:proof:database": "tsx scripts/test-proof-database.ts",
     "test:golden-path-persistence": "tsx --conditions react-server scripts/test-golden-path-persistence.ts",
     "test:unit": "tsx scripts/test-pilot-validation.ts && tsx scripts/test-pilot-lifecycle.ts && tsx scripts/test-safe-next.ts && tsx scripts/test-state-machines.ts && tsx scripts/test-disclosure-boundary.ts && tsx scripts/test-wave1-contract.ts && tsx scripts/test-db-security-contract.ts && tsx scripts/test-project-guard.ts && tsx scripts/test-workspace-identity.ts && tsx scripts/test-workspace-availability.ts && npm run test:proof",
@@ -80,7 +82,8 @@
     "recharts": "^3.9.0",
     "resend": "^6.14.0",
     "server-only": "^0.0.1",
-    "stripe": "^17.7.0"
+    "stripe": "^17.7.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
