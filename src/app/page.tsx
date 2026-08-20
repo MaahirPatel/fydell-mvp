@@ -36,7 +36,6 @@ export default function HomePage() {
             <div data-hero-stage>
               <HeroShortlistScene />
             </div>
-            <p className={styles.illustrativeNote}>Illustrative product view</p>
           </div>
         </section>
         <HomeProductStory />

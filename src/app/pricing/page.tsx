@@ -72,30 +72,22 @@ export default function PricingPage() {
     <MarketingShell>
       <main className="pb-24 pt-[132px] sm:pt-[156px]">
         <div className="mkt-content">
-          <header className="mx-auto flex max-w-[980px] flex-col items-center text-center">
-            <h1 className="text-[clamp(3rem,5vw,4.6rem)] font-semibold leading-[0.99] tracking-[-0.04em]">
-              Pay for verified hiring work, not software seats.
-            </h1>
-            <p className="mt-6 max-w-[680px] text-[18px] leading-[1.55] text-[var(--text-secondary)]">
-              Bring candidates to Verify, ask Fydell to Search, or build an
-              ongoing verified pipeline with Partner.
-            </p>
-          </header>
+          <h1 className="page-display">Pricing</h1>
+          <p className="mt-5 max-w-[620px] text-[18px] leading-[1.55] text-[var(--text-secondary)]">
+            Pay for verified hiring work, not software seats. Search is the core
+            offer. Verify is available when you already know who you want to
+            evaluate.
+          </p>
 
-          <section className="mt-20 overflow-hidden rounded-[16px] bg-[var(--surface-raised)] shadow-[0_0_0_1px_var(--border-default),0_12px_36px_rgba(45,38,32,0.08)]">
-            <header className="flex min-h-12 flex-wrap items-center justify-between gap-4 border-b border-[var(--border-default)] bg-[var(--surface-band)] px-5 text-[12px] text-[var(--text-tertiary)]">
-              <span>Ways to work with Fydell</span>
-              <span>Candidates never pay</span>
-            </header>
-            <div className="grid min-[900px]:grid-cols-4">
+          <section className="mt-16 grid border-y border-[var(--border-subtle)] min-[900px]:grid-cols-4">
             {OFFERS.map((offer, index) => (
             <article
               key={offer.name}
-              className={`flex min-h-[560px] flex-col px-6 py-8 ${
+              className={`flex min-h-[560px] flex-col py-8 min-[900px]:px-6 min-[900px]:first:pl-0 min-[900px]:last:pr-0 ${
                 index === 0
                   ? ""
                   : "border-t border-[var(--border-subtle)] min-[900px]:border-l min-[900px]:border-t-0"
-              } ${offer.recommended ? "bg-[var(--surface-selected)]" : ""}`}
+              }`}
             >
               <div className="min-h-6">
                 {offer.recommended ? (
@@ -145,7 +137,6 @@ export default function PricingPage() {
               </div>
             </article>
           ))}
-            </div>
           </section>
 
           <p className="mt-6 max-w-[720px] text-[13px] leading-[1.6] text-[var(--text-tertiary)]">

@@ -27,10 +27,10 @@
 }
 
 .heroTitle {
-  width: min(1120px, 92vw);
-  max-width: none;
+  width: min(960px, 92vw);
+  max-width: 960px;
   margin: 0;
-  font-size: clamp(3rem, 5.25vw, 4.7rem);
+  font-size: clamp(2.85rem, 4.55vw, 4.25rem);
   font-weight: 600;
   line-height: 0.99;
   letter-spacing: -0.04em;
@@ -4127,7 +4127,7 @@
 }
 
 .hero {
-  padding-block: clamp(78px, 6.8vw, 96px) clamp(54px, 5vw, 70px);
+  padding-block: clamp(88px, 7.8vw, 108px) clamp(72px, 6vw, 92px);
 }
 
 .shortlist {
@@ -4600,5 +4600,1053 @@
 
   .reviewPanel {
     margin: 14px;
+  }
+}
+
+/* ==========================================================================
+   Evidence distribution hero
+   The landing page opens on the employer's decision: a human-reviewed brief
+   floating above the distribution and timeline that produced it.
+   ========================================================================== */
+
+.distributionScene {
+  position: relative;
+  width: calc(100% + 96px);
+  min-height: 716px;
+  overflow: hidden;
+  margin-top: clamp(52px, 5vw, 70px);
+  margin-left: -48px;
+  border-radius: 15px;
+  background:
+    linear-gradient(to right, var(--surface-deep) 0 326px, var(--surface-panel) 326px),
+    var(--surface-panel);
+  box-shadow:
+    0 0 0 1px var(--border-default),
+    0 8px 14px rgba(45, 38, 32, 0.07);
+}
+
+.distributionScene::after {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  width: 88px;
+  height: 100%;
+  background: linear-gradient(to right, transparent, var(--surface-canvas));
+  content: "";
+  pointer-events: none;
+}
+
+.distributionBrief {
+  position: absolute;
+  z-index: 4;
+  top: 18px;
+  bottom: 18px;
+  left: 18px;
+  display: flex;
+  width: 306px;
+  overflow: hidden;
+  flex-direction: column;
+  border-radius: 10px;
+  background: var(--surface-raised);
+  box-shadow:
+    0 0 0 1px var(--border-default),
+    0 8px 16px rgba(45, 38, 32, 0.1);
+}
+
+.distributionBriefHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 17px 18px 15px;
+}
+
+.distributionBriefHeader p,
+.distributionBriefHeader span {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.distributionBriefHeader h2 {
+  margin-top: 3px;
+  font-size: 20px;
+  font-weight: 580;
+  letter-spacing: -0.025em;
+}
+
+.distributionBriefHeader span {
+  display: block;
+  margin-top: 3px;
+}
+
+.distributionBriefHeader svg {
+  color: var(--evidence-support);
+}
+
+.distributionBriefSection {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px 17px;
+}
+
+.distributionBriefSection h3,
+.distributionQuestions h3 {
+  color: var(--evidence-support);
+  font-size: 11.5px;
+  font-weight: 580;
+}
+
+.distributionBriefSection ul {
+  display: grid;
+  gap: 13px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.distributionBriefSection li,
+.distributionLimit p {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 9px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.distributionBriefSection li > svg,
+.distributionLimit p > svg {
+  box-sizing: content-box;
+  border-radius: 999px;
+  padding: 4px;
+  background: var(--surface-support);
+  color: var(--evidence-support);
+}
+
+.distributionBriefSection li strong,
+.distributionLimit p strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text-primary);
+  font-weight: 570;
+}
+
+.distributionLimit h3 {
+  color: var(--evidence-counter);
+}
+
+.distributionLimit p {
+  margin-top: 10px;
+}
+
+.distributionLimit p > svg {
+  background: var(--surface-counter);
+  color: var(--evidence-counter);
+}
+
+.distributionQuestions {
+  flex: 1;
+  padding: 14px 17px;
+}
+
+.distributionQuestions h3 {
+  color: var(--evidence-generated);
+}
+
+.distributionQuestions ol {
+  display: grid;
+  gap: 0;
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.distributionQuestions li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 8px 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.distributionQuestions time {
+  align-self: start;
+  border-radius: 4px;
+  padding: 2px 5px;
+  background: var(--surface-intelligence);
+  color: var(--evidence-generated);
+  font-family: var(--font-mono);
+}
+
+.distributionBriefFooter {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  border-top: 1px solid var(--border-subtle);
+  padding: 12px 17px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.distributionBriefFooter strong {
+  display: block;
+  color: var(--text-primary);
+  font-weight: 560;
+}
+
+.distributionBriefFooter > svg {
+  color: var(--evidence-support);
+}
+
+.distributionReviewer {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--surface-deep);
+  color: var(--text-secondary);
+  font-weight: 580;
+}
+
+.distributionWorkspace {
+  position: relative;
+  z-index: 0;
+  min-width: 0;
+  margin-left: 326px;
+  padding: 20px 36px 26px 18px;
+}
+
+.distributionHeader {
+  display: flex;
+  min-height: 58px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 4px 12px;
+}
+
+.distributionHeader h3 {
+  font-size: 16px;
+  font-weight: 580;
+  letter-spacing: -0.018em;
+}
+
+.distributionHeader p,
+.distributionHeader > span {
+  margin-top: 4px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.distributionHeader > span {
+  margin-top: 2px;
+}
+
+.distributionMatrix {
+  display: grid;
+  grid-template-columns: 170px repeat(4, minmax(128px, 1fr));
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.distributionCorner,
+.distributionCandidate {
+  min-height: 48px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.distributionCandidate {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-inline: 10px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+}
+
+.distributionCandidate span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: 5px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.distributionRowGroup {
+  display: contents;
+}
+
+.distributionRowLabel {
+  display: grid;
+  min-height: 91px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 9px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 13px 10px 12px 2px;
+}
+
+.distributionRowIcon {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+
+.distributionRowLabel strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 570;
+}
+
+.distributionRowLabel p {
+  margin-top: 4px;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+.distributionTeal {
+  color: var(--evidence-observed);
+}
+
+.distributionBlue {
+  color: #4869ae;
+}
+
+.distributionGreen {
+  color: var(--evidence-support);
+}
+
+.distributionPurple {
+  color: var(--evidence-generated);
+}
+
+.distributionPlot {
+  position: relative;
+  min-height: 91px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 8px;
+}
+
+.distributionPlotActive {
+  z-index: 1;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-intelligence) 78%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evidence-generated) 40%, transparent);
+}
+
+.distributionMark {
+  position: absolute;
+  z-index: 2;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  translate: -50% -50%;
+}
+
+.distributionMarkSupport {
+  background: var(--evidence-support);
+}
+
+.distributionMarkDefense {
+  background: var(--evidence-generated);
+}
+
+.distributionMarkObservation {
+  border-radius: 1px;
+  background: var(--evidence-observed);
+}
+
+.distributionMarkUncertain {
+  width: 0;
+  height: 0;
+  border-right: 4px solid transparent;
+  border-bottom: 7px solid var(--evidence-uncertain);
+  border-left: 4px solid transparent;
+  border-radius: 0;
+  background: transparent;
+}
+
+.distributionMarkCounter {
+  width: 7px;
+  height: 7px;
+  background:
+    linear-gradient(45deg, transparent 42%, var(--evidence-counter) 42% 58%, transparent 58%),
+    linear-gradient(-45deg, transparent 42%, var(--evidence-counter) 42% 58%, transparent 58%);
+}
+
+.distributionAxis {
+  position: absolute;
+  right: 10px;
+  bottom: 12px;
+  left: 10px;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.distributionAxis::before,
+.distributionAxis::after {
+  position: absolute;
+  top: -2px;
+  width: 1px;
+  height: 5px;
+  background: var(--border-default);
+  content: "";
+}
+
+.distributionAxis::before {
+  left: 0;
+}
+
+.distributionAxis::after {
+  right: 0;
+}
+
+.distributionLegend {
+  display: flex;
+  min-height: 40px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 8px 4px;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+}
+
+.distributionLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.distributionLegend i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.distributionTimeline {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface-raised);
+  box-shadow: 0 0 0 1px var(--border-default);
+}
+
+.distributionTimeline > header {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 14px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.distributionTimeline > header div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.distributionTimeline > header strong {
+  color: var(--text-primary);
+  font-weight: 570;
+}
+
+.distributionTimeline ol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 10px 14px 18px;
+  list-style: none;
+}
+
+.distributionTimeline li {
+  position: relative;
+  display: grid;
+  min-height: 58px;
+  grid-template-columns: 42px 12px minmax(0, 1fr) 16px;
+  align-items: start;
+  gap: 8px;
+  padding: 8px 12px 8px 0;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+}
+
+.distributionTimeline li time {
+  font-family: var(--font-mono);
+}
+
+.distributionTimeline li strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 560;
+}
+
+.distributionTimeline li p {
+  margin-top: 2px;
+  line-height: 1.35;
+}
+
+.distributionTimeline li > svg {
+  color: var(--text-tertiary);
+}
+
+.distributionTimelineDot {
+  position: relative;
+  z-index: 1;
+  width: 7px;
+  height: 7px;
+  margin-top: 3px;
+  border: 2px solid var(--surface-raised);
+  border-radius: 999px;
+  background: var(--evidence-generated);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--evidence-generated) 30%, transparent);
+}
+
+.distributionTimelineLink {
+  position: absolute;
+  right: 14px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  text-decoration: none;
+}
+
+@media (max-width: 1100px) {
+  .distributionScene {
+    width: calc(100% + 48px);
+    min-height: 680px;
+    margin-left: -24px;
+  }
+
+  .distributionBrief {
+    width: 286px;
+  }
+
+  .distributionWorkspace {
+    margin-left: 300px;
+    padding-right: 22px;
+  }
+
+  .distributionMatrix {
+    grid-template-columns: 150px repeat(4, minmax(118px, 1fr));
+  }
+
+  .distributionRowLabel p {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .distributionScene {
+    width: 100%;
+    min-height: 760px;
+    margin-left: 0;
+    border-radius: 12px;
+    background: var(--surface-deep);
+  }
+
+  .distributionScene::after {
+    display: none;
+  }
+
+  .distributionWorkspace {
+    width: 940px;
+    margin-left: -160px;
+    padding: 12px;
+    opacity: 0.48;
+    transform: scale(0.58);
+    transform-origin: top left;
+  }
+
+  .distributionBrief {
+    top: 176px;
+    right: 14px;
+    bottom: 14px;
+    left: 20px;
+    width: auto;
+  }
+
+  .distributionBriefSection li:nth-child(3),
+  .distributionQuestions li:nth-child(3) {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Role calibration map
+   Competency definitions stay open in the guide while their evidence path
+   runs across the real stages of a Solutions Engineer engagement.
+   ========================================================================== */
+
+.roleCalibrationScene {
+  min-height: 636px;
+  overflow: hidden;
+  margin: 0;
+  border-radius: 15px 0 0 15px;
+  background: var(--surface-panel);
+  box-shadow:
+    0 0 0 1px var(--border-default),
+    0 8px 14px rgba(45, 38, 32, 0.06);
+}
+
+.roleCalibrationTitle {
+  min-height: 86px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 18px 28px 14px;
+  background: var(--surface-band);
+}
+
+.roleCalibrationTitle > div {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.roleCalibrationTitle h3 {
+  font-size: 20px;
+  font-weight: 590;
+  letter-spacing: -0.025em;
+}
+
+.roleCalibrationTitle > div > span {
+  color: var(--border-strong);
+  font-size: 24px;
+  font-weight: 300;
+}
+
+.roleCalibrationTitle strong {
+  font-size: 15px;
+  font-weight: 560;
+}
+
+.roleCalibrationTitle p {
+  margin-top: 5px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.roleCalibrationWorkspace {
+  display: grid;
+  min-height: 550px;
+  grid-template-columns: 248px minmax(0, 1fr);
+}
+
+.calibrationGuide {
+  position: relative;
+  z-index: 2;
+  margin: 14px 0 18px 18px;
+  border-radius: 10px;
+  background: var(--surface-raised);
+  box-shadow:
+    0 0 0 1px var(--border-default),
+    0 5px 10px rgba(45, 38, 32, 0.07);
+}
+
+.calibrationGuide > header {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 14px;
+  font-size: 11.5px;
+}
+
+.calibrationGuide > header strong {
+  font-weight: 570;
+}
+
+.calibrationGuide > header span {
+  border-radius: 4px;
+  padding: 2px 6px;
+  background: var(--surface-deep);
+  color: var(--text-tertiary);
+}
+
+.calibrationGuide > p {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 11px 14px 13px;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.calibrationGuide > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calibrationGuideItem {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.calibrationGuideSummary {
+  display: grid;
+  min-height: 52px;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+}
+
+.calibrationGuideSummary > svg {
+  color: var(--evidence-observed);
+}
+
+.calibrationGuideSummary strong {
+  color: var(--text-primary);
+  font-weight: 550;
+}
+
+.calibrationGuideSummary > span {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.calibrationGuideItemActive {
+  background: var(--surface-panel);
+}
+
+.calibrationGuideItemActive .calibrationGuideSummary > svg {
+  color: var(--evidence-generated);
+}
+
+.calibrationGuideDetail {
+  border-top: 1px solid var(--border-subtle);
+  padding: 12px 14px 14px 42px;
+}
+
+.calibrationGuideDetail dl {
+  display: grid;
+  gap: 11px;
+}
+
+.calibrationGuideDetail dt {
+  color: var(--text-primary);
+  font-size: 10.5px;
+  font-weight: 560;
+}
+
+.calibrationGuideDetail dd {
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.calibrationEvidenceSources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 12px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+}
+
+.calibrationEvidenceSources span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.calibrationApproval {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin-top: 13px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 11px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+}
+
+.calibrationApproval > span {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--evidence-generated) 36%, transparent);
+  border-radius: 999px;
+  color: var(--evidence-generated);
+  font-weight: 580;
+}
+
+.calibrationApproval strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 10.5px;
+  font-weight: 560;
+}
+
+.calibrationApproval > svg {
+  color: var(--evidence-support);
+}
+
+.calibrationPathMap {
+  min-width: 0;
+  overflow: hidden;
+  padding: 14px 0 12px 18px;
+}
+
+.calibrationStageHeader {
+  display: grid;
+  min-width: 760px;
+  grid-template-columns: 140px repeat(4, minmax(150px, 1fr));
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.calibrationStageHeader > div {
+  min-height: 74px;
+  border-left: 1px solid var(--border-subtle);
+  padding: 11px 14px;
+}
+
+.calibrationStageHeader > div > svg {
+  float: left;
+  margin: 1px 7px 0 0;
+  color: var(--text-secondary);
+}
+
+.calibrationStageHeader strong {
+  font-size: 11.5px;
+  font-weight: 560;
+}
+
+.calibrationStageHeader p {
+  max-width: 18ch;
+  margin-top: 5px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.calibrationPathRows {
+  min-width: 760px;
+}
+
+.calibrationPathRow {
+  display: grid;
+  grid-template-columns: 140px repeat(4, minmax(150px, 1fr));
+  min-height: 86px;
+  border-bottom: 1px solid var(--border-subtle);
+  --path-tone: var(--evidence-observed);
+}
+
+.calibrationPathRow:nth-child(2) {
+  --path-tone: #4869ae;
+}
+
+.calibrationPathRow:nth-child(3) {
+  --path-tone: var(--evidence-generated);
+}
+
+.calibrationPathRow:nth-child(4) {
+  --path-tone: var(--evidence-counter);
+}
+
+.calibrationPathLabel {
+  padding: 15px 12px 12px 0;
+  color: var(--path-tone);
+}
+
+.calibrationPathLabel strong {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 570;
+}
+
+.calibrationPathLabel span {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+.calibrationPathCell {
+  position: relative;
+  min-width: 0;
+  border-left: 1px solid var(--border-subtle);
+  padding: 20px 14px 10px;
+}
+
+.calibrationPathCell::before {
+  position: absolute;
+  top: 22px;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: color-mix(in srgb, var(--path-tone) 38%, var(--border-subtle));
+  content: "";
+}
+
+.calibrationPathCell:last-child::before {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--path-tone) 38%, var(--border-subtle)),
+    transparent
+  );
+}
+
+.calibrationPathNode {
+  position: absolute;
+  z-index: 1;
+  top: 18px;
+  left: 12px;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--path-tone);
+  background: var(--surface-panel);
+  rotate: 45deg;
+}
+
+.calibrationPathNodeFilled {
+  background: var(--path-tone);
+  box-shadow: inset 0 0 0 2px var(--surface-panel);
+}
+
+.calibrationPathSignal {
+  position: relative;
+  z-index: 1;
+  max-width: 150px;
+  padding-top: 17px;
+}
+
+.calibrationPathSignal strong {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  font-weight: 520;
+  line-height: 1.35;
+}
+
+.calibrationPathSignal > span {
+  display: flex;
+  gap: 6px;
+  margin-top: 5px;
+  color: var(--text-tertiary);
+}
+
+.calibrationPathRowActive {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--surface-intelligence) 64%, transparent),
+    transparent 78%
+  );
+}
+
+.calibrationPathRowActive .calibrationPathCell:first-of-type::after {
+  position: absolute;
+  top: 20px;
+  right: -8px;
+  width: 62px;
+  height: 31px;
+  border-bottom: 1px dashed var(--evidence-generated);
+  border-left: 1px dashed var(--evidence-generated);
+  border-radius: 0 0 0 20px;
+  content: "";
+}
+
+.calibrationSourceLegend {
+  display: flex;
+  min-width: 760px;
+  min-height: 52px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 22px;
+  padding: 10px 4px;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+}
+
+.calibrationSourceLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.calibrationSourceLegend span:first-child {
+  color: var(--text-secondary);
+}
+
+@media (max-width: 960px) {
+  .roleCalibrationScene {
+    min-height: 660px;
+  }
+
+  .roleCalibrationWorkspace {
+    grid-template-columns: 230px minmax(0, 1fr);
+  }
+
+  .calibrationGuide {
+    margin-left: 12px;
+  }
+}
+
+@media (max-width: 680px) {
+  .roleCalibrationScene {
+    position: relative;
+    min-height: 710px;
+    border-radius: 12px;
+  }
+
+  .roleCalibrationTitle {
+    min-height: 92px;
+    padding-inline: 18px;
+  }
+
+  .roleCalibrationWorkspace {
+    display: block;
+  }
+
+  .calibrationPathMap {
+    width: 900px;
+    padding-left: 0;
+    opacity: 0.38;
+    transform: scale(0.55);
+    transform-origin: top left;
+  }
+
+  .calibrationGuide {
+    position: absolute;
+    z-index: 3;
+    top: 116px;
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    overflow: hidden;
+    margin: 0;
+  }
+
+  .calibrationGuideItem:not(.calibrationGuideItemActive):nth-child(n + 4) {
+    display: none;
   }
 }

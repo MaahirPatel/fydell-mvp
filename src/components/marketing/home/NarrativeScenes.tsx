@@ -1,8 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
+  Braces,
   Check,
   CircleCheck,
+  Compass,
   FileDiff,
   FileText,
   Link2,
@@ -13,6 +15,7 @@ import {
   Save,
   Share2,
   TriangleAlert,
+  TrendingUp,
   UserCheck,
 } from "lucide-react";
 import ProductFrame, { CandidateShortlist, WorkspaceRail } from "./ProductFrame";
@@ -449,142 +452,182 @@ const competencies: Competency[] = [
   },
 ];
 
-const adaptationFields = [
-  {
-    label: "Observable behavior",
-    value:
-      "Revises a customer recommendation when a material implementation constraint changes, and states what the revision preserves.",
-  },
-  {
-    label: "Evidence required",
-    value:
-      "A recorded change of constraint, a revised artifact traced to it, and an explanation the customer could act on.",
-  },
-  {
-    label: "Simulation moment",
-    value:
-      "16:08 — Acme confirms the authentication security review itself takes six weeks.",
-  },
-  {
-    label: "Interview follow-up",
-    value: "Which fact in the Acme brief would most likely change your recommendation again?",
-  },
+const calibrationStages = [
+  { name: "Discovery", detail: "Understand the problem and stakeholders", icon: Compass },
+  { name: "Architecture", detail: "Design the right solution and approach", icon: Braces },
+  { name: "Rollout", detail: "Deliver value and ensure adoption", icon: RefreshCw },
+  { name: "Executive handoff", detail: "Transfer ownership and drive outcomes", icon: UserCheck },
 ];
+
+const calibrationPaths: Record<string, string[]> = {
+  "Discovery judgment": [
+    "Stakeholder map complete",
+    "Problem framed and validated",
+    "Risks and assumptions validated",
+    "",
+  ],
+  "Technical translation": [
+    "Requirements clarified",
+    "Solution approach socialized",
+    "Solution proven in relevant context",
+    "",
+  ],
+  Adaptation: [
+    "Change detected",
+    "Plan adapted and tradeoffs updated",
+    "Stakeholders aligned on updated plan",
+    "",
+  ],
+  "Commercial judgment": [
+    "Value and success metrics defined",
+    "Business case and ROI validated",
+    "Adoption and value tracking in place",
+    "",
+  ],
+};
+
+const competencyIcons: Record<string, LucideIcon> = {
+  "Discovery judgment": Compass,
+  "Technical translation": Braces,
+  Adaptation: RefreshCw,
+  "Commercial judgment": TrendingUp,
+};
 
 export function CalibrationScene() {
   return (
-    <ProductFrame
-      title="Role calibration"
-      context="Northstar · Solutions Engineer"
-      variant="open"
-      meta={[{ label: "Draft v3 · shared with hiring team", icon: UserCheck }]}
-    >
-      <div className={styles.calibration}>
-        <section className={styles.calibrationRole}>
-          <p className={styles.roleLabel}>Role definition</p>
-          <h3>Solutions Engineer</h3>
+    <figure className={styles.roleCalibrationScene} aria-label="Role calibration">
+      <figcaption className={styles.roleCalibrationTitle}>
+        <div>
+          <h3>Role calibration</h3>
+          <span aria-hidden>/</span>
+          <strong>Solutions Engineer</strong>
+        </div>
+        <p>Define what great looks like, connect evidence, and align on judgment.</p>
+      </figcaption>
+
+      <div className={styles.roleCalibrationWorkspace}>
+        <aside className={styles.calibrationGuide}>
+          <header>
+            <strong>Calibration guide</strong>
+            <span>Draft</span>
+          </header>
           <p>
-            Mid-market, technical discovery through implementation handoff. The
-            strongest signal is not presentation polish; it is whether the candidate
-            finds and handles a consequential unknown.
+            Competencies, observable behaviors, and evidence that signal readiness at
+            each stage.
           </p>
-          <div className={styles.calibrationMeta}>
-            <div><span>Customer</span><strong>Acme</strong></div>
-            <div><span>Motion</span><strong>New deployment</strong></div>
-            <div><span>Primary buyer</span><strong>VP Operations</strong></div>
-            <div><span>Technical lead</span><strong>Platform manager</strong></div>
-          </div>
-        </section>
+          <ul>
+            {competencies.map((competency) => {
+              const active = competency.name === "Adaptation";
+              const Icon = competencyIcons[competency.name];
+              return (
+                <li
+                  className={cn(
+                    styles.calibrationGuideItem,
+                    active && styles.calibrationGuideItemActive,
+                  )}
+                  key={competency.name}
+                >
+                  <div className={styles.calibrationGuideSummary}>
+                    <Icon size={14} aria-hidden />
+                    <strong>{competency.name}</strong>
+                    <span>{competency.weight}</span>
+                  </div>
+                  {active ? (
+                    <div className={styles.calibrationGuideDetail}>
+                      <dl>
+                        <div>
+                          <dt>Required</dt>
+                          <dd>Adapts approach when new information changes the plan.</dd>
+                        </div>
+                        <div>
+                          <dt>Observable behavior</dt>
+                          <dd>
+                            Reframes the recommendation, updates tradeoffs, and
+                            communicates the change clearly.
+                          </dd>
+                        </div>
+                      </dl>
+                      <div className={styles.calibrationEvidenceSources}>
+                        <span><MessageSquareQuote size={11} /> Stakeholder feedback</span>
+                        <span><FileText size={11} /> Work sample</span>
+                      </div>
+                      <div className={styles.calibrationApproval}>
+                        <span>MK</span>
+                        <p><strong>Reviewer MK</strong>Hiring-team approval</p>
+                        <CircleCheck size={13} aria-label="Approved" />
+                      </div>
+                    </div>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </aside>
 
-        <section className={styles.competencyMatrix} aria-label="Competency matrix">
-          <header className={styles.competencyMatrixHeader}>
-            <p className={styles.roleLabel}>What good looks like</p>
-            <span className={styles.competencyMatrixMeta}>
-              4 competencies · weights total 100%
-            </span>
-          </header>
-          <div className={styles.tableScroller}>
-            <table className={styles.competencyTable}>
-              <thead>
-                <tr>
-                  <th scope="col">competency</th>
-                  <th scope="col">observable behavior</th>
-                  <th scope="col">requirement</th>
-                  <th scope="col">weight</th>
-                  <th scope="col">evidence required</th>
-                  <th scope="col">status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {competencies.map((competency) => {
-                  const open = competency.name === "Adaptation";
-                  return (
-                    <tr
-                      key={competency.name}
-                      aria-current={open ? "true" : undefined}
-                      className={cn(
-                        styles.competencyRow,
-                        open && styles.competencyRowActive,
-                      )}
-                    >
-                      <th scope="row" className={styles.competencyName}>
-                        {competency.name}
-                      </th>
-                      <td className={styles.competencyBehavior}>{competency.behavior}</td>
-                      <td className={styles.competencyRequirement}>
-                        {competency.requirement}
-                      </td>
-                      <td className={styles.competencyWeight}>{competency.weight}</td>
-                      <td className={styles.competencyEvidence}>{competency.evidence}</td>
-                      <td className={styles.competencyStatus}>{competency.status}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <aside
-          className={styles.competencyEditor}
-          aria-label="Adaptation competency"
-          data-focal-layer
-        >
-          <header className={styles.competencyEditorHeader}>
-            <div>
-              <p className={styles.roleLabel}>Editing competency</p>
-              <h3 className={styles.competencyEditorTitle}>Adaptation</h3>
-            </div>
-            <span className={styles.competencyEditorTags}>
-              <span className={cn(styles.competencyTag, styles.competencyTagRequired)}>
-                Required
-              </span>
-              <span className={styles.competencyTag}>Weight 25%</span>
-            </span>
-          </header>
-
-          <dl className={styles.competencyFields}>
-            {adaptationFields.map((field) => (
-              <div className={styles.competencyField} key={field.label}>
-                <dt className={styles.competencyFieldLabel}>{field.label}</dt>
-                <dd className={styles.competencyFieldValue}>{field.value}</dd>
+        <section className={styles.calibrationPathMap}>
+          <header className={styles.calibrationStageHeader}>
+            <span aria-hidden />
+            {calibrationStages.map((stage) => (
+              <div key={stage.name}>
+                <stage.icon size={14} aria-hidden />
+                <strong>{stage.name}</strong>
+                <p>{stage.detail}</p>
               </div>
             ))}
-          </dl>
+          </header>
 
-          <footer className={styles.competencyEditorFooter}>
-            <span className={styles.competencyAgreement}>
-              Reviewer agreement
-              <strong>2 of 2</strong>
-            </span>
-            <span className={styles.competencyApproval}>
-              <CircleCheck size={12} aria-hidden />
-              Approved by MK · 12 Aug
-            </span>
+          <div className={styles.calibrationPathRows}>
+            {competencies.map((competency) => {
+              const active = competency.name === "Adaptation";
+              return (
+                <div
+                  className={cn(
+                    styles.calibrationPathRow,
+                    active && styles.calibrationPathRowActive,
+                  )}
+                  key={competency.name}
+                >
+                  <div className={styles.calibrationPathLabel}>
+                    <strong>{competency.name}</strong>
+                    <span>{competency.weight}</span>
+                  </div>
+                  {calibrationPaths[competency.name].map((signal, stageIndex) => (
+                    <div className={styles.calibrationPathCell} key={stageIndex}>
+                      <span
+                        className={cn(
+                          styles.calibrationPathNode,
+                          stageIndex < 3 && styles.calibrationPathNodeFilled,
+                        )}
+                        aria-hidden
+                      />
+                      {signal ? (
+                        <div className={styles.calibrationPathSignal}>
+                          <strong>{signal}</strong>
+                          {active && stageIndex === 1 ? (
+                            <span>
+                              <FileText size={11} aria-hidden />
+                              <MessageSquareQuote size={11} aria-hidden />
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+
+          <footer className={styles.calibrationSourceLegend}>
+            <span>Evidence sources:</span>
+            <span><MessageSquareQuote size={12} /> Interview</span>
+            <span><FileText size={12} /> Work sample</span>
+            <span><UserCheck size={12} /> Stakeholder feedback</span>
+            <span><Braces size={12} /> Project artifact</span>
           </footer>
-        </aside>
+        </section>
       </div>
-    </ProductFrame>
+    </figure>
   );
 }
 
