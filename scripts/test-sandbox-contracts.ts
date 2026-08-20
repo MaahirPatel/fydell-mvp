@@ -19,6 +19,7 @@ import {
   readSandboxAvailability,
   SANDBOX_STEPS,
 } from "../src/lib/sim-engine/proof/sandbox/index";
+import { sandboxCredentialStatus } from "../src/lib/sim-engine/proof/sandbox/credentials";
 import type { RunSnapshot } from "../src/lib/sim-engine/proof/types";
 
 let failures = 0;
@@ -146,16 +147,63 @@ const { canonical } = canonicalize({ publicId: "p", items: ["a"] });
 ok("canonical JSON is stable", canonicalize({ items: ["a"], publicId: "p" }).canonical === canonical);
 
 console.log("\nKill switch");
+const devUrl = "https://btbmvrvynnrhapjdkunz.supabase.co";
+const prodUrl = "https://qtrhwrcxthtqvkeerptp.supabase.co";
+const devKey = "sb_secret_abcdefghijklmnopqrstuv";
+
 const off = readSandboxAvailability({} as NodeJS.ProcessEnv);
 ok("fails closed when disabled", off.enabled === false && off.reason === "disabled");
-const mismatch = readSandboxAvailability({
+
+// A production deployment must still be able to host the sandbox, provided the
+// sandbox has its own fydell-dev credentials.
+const onProdHost = readSandboxAvailability({
   FYDELL_SANDBOX_ENABLED: "true",
   FYDELL_DEV_PROJECT_REF: "btbmvrvynnrhapjdkunz",
   FYDELL_SANDBOX_FIXTURE_VERSION: "acme-rollout-v1",
-  NEXT_PUBLIC_SUPABASE_URL: "https://qtrhwrcxthtqvkeerptp.supabase.co",
-  SUPABASE_SERVICE_ROLE_KEY: "sb_secret_abcdefghijklmnopqrstuv",
+  NEXT_PUBLIC_SUPABASE_URL: prodUrl,
+  SUPABASE_SERVICE_ROLE_KEY: devKey,
+  FYDELL_SANDBOX_SUPABASE_URL: devUrl,
+  FYDELL_SANDBOX_SUPABASE_SERVICE_ROLE_KEY: devKey,
 } as NodeJS.ProcessEnv);
-ok("refuses production project", mismatch.enabled === false && mismatch.reason === "project_mismatch");
+ok("enabled on a production host with dev sandbox credentials", onProdHost.enabled === true);
+
+// Without dedicated credentials, a production deployment must refuse.
+const noCreds = readSandboxAvailability({
+  FYDELL_SANDBOX_ENABLED: "true",
+  FYDELL_DEV_PROJECT_REF: "btbmvrvynnrhapjdkunz",
+  FYDELL_SANDBOX_FIXTURE_VERSION: "acme-rollout-v1",
+  NEXT_PUBLIC_SUPABASE_URL: prodUrl,
+  SUPABASE_SERVICE_ROLE_KEY: devKey,
+} as NodeJS.ProcessEnv);
+ok("refuses production host without sandbox credentials", noCreds.enabled === false && noCreds.reason === "missing_credentials");
+
+// Sandbox credentials pointed anywhere but fydell-dev must refuse.
+const wrongProject = readSandboxAvailability({
+  FYDELL_SANDBOX_ENABLED: "true",
+  FYDELL_DEV_PROJECT_REF: "btbmvrvynnrhapjdkunz",
+  FYDELL_SANDBOX_FIXTURE_VERSION: "acme-rollout-v1",
+  FYDELL_SANDBOX_SUPABASE_URL: prodUrl,
+  FYDELL_SANDBOX_SUPABASE_SERVICE_ROLE_KEY: devKey,
+} as NodeJS.ProcessEnv);
+ok("refuses sandbox credentials aimed at production", wrongProject.enabled === false && wrongProject.reason === "project_mismatch");
+
+// The app-wide pair is accepted only when it already names fydell-dev.
+const devDeployment = readSandboxAvailability({
+  FYDELL_SANDBOX_ENABLED: "true",
+  FYDELL_DEV_PROJECT_REF: "btbmvrvynnrhapjdkunz",
+  FYDELL_SANDBOX_FIXTURE_VERSION: "acme-rollout-v1",
+  NEXT_PUBLIC_SUPABASE_URL: devUrl,
+  SUPABASE_SERVICE_ROLE_KEY: devKey,
+} as NodeJS.ProcessEnv);
+ok("a fydell-dev deployment needs no extra configuration", devDeployment.enabled === true);
+
+ok(
+  "credential resolver rejects a production URL",
+  sandboxCredentialStatus({
+    FYDELL_SANDBOX_SUPABASE_URL: prodUrl,
+    FYDELL_SANDBOX_SUPABASE_SERVICE_ROLE_KEY: devKey,
+  } as NodeJS.ProcessEnv).status === "sandbox_project_mismatch",
+);
 
 console.log("\nClient must not query proof tables");
 const forbidden = [".from(\"proof_", ".from('proof_", ".from(\"work_receipts", ".from('work_receipts", ".from(\"receipt_versions", ".from('receipt_versions"];

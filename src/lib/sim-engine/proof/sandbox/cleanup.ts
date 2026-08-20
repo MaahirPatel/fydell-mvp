@@ -1,11 +1,11 @@
 import "server-only";
-import { proofAdmin } from "../db";
+import { sandboxAdmin } from "./client";
 import { nextWorldState, parseWorldState } from "./world-state";
 
 const RETENTION_MS = 24 * 60 * 60 * 1000;
 
 export async function deleteSandboxGraph(runId: string, organizationId: string): Promise<void> {
-  const admin = proofAdmin();
+  const admin = sandboxAdmin();
   const { data: claims } = await admin.from("proof_evidence_claims").select("id").eq("run_id", runId);
   const claimIds = (claims ?? []).map((row) => row.id as string);
   if (claimIds.length > 0) {
@@ -41,7 +41,7 @@ export async function deleteSandboxGraph(runId: string, organizationId: string):
 }
 
 export async function markCleanupFailed(runId: string): Promise<void> {
-  const admin = proofAdmin();
+  const admin = sandboxAdmin();
   const { data } = await admin.from("proof_runs").select("world_state").eq("id", runId).maybeSingle();
   if (!data) return;
   try {
@@ -54,7 +54,7 @@ export async function markCleanupFailed(runId: string): Promise<void> {
 }
 
 export async function cleanupExpiredSandboxes(limit = 20): Promise<{ deleted: number; failed: number }> {
-  const admin = proofAdmin();
+  const admin = sandboxAdmin();
   const cutoff = new Date(Date.now() - RETENTION_MS).toISOString();
   const { data: rows } = await admin
     .from("proof_runs")

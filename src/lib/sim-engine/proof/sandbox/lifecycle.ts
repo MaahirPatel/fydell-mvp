@@ -1,7 +1,7 @@
 import "server-only";
 import { randomBytes } from "crypto";
 import { PROOF_ROLE_ID, PROOF_VERSION_ID } from "../types";
-import { proofAdmin } from "../db";
+import { sandboxAdmin } from "./client";
 import { ACME_ROLLOUT_FIXTURE } from "./fixture";
 import { createWorldState, parseWorldState } from "./world-state";
 import { createCapabilitySecret, hashCapabilitySecret, hashIp } from "./capability";
@@ -22,7 +22,7 @@ export async function createSandboxRun(ip: string): Promise<{
 }> {
   await cleanupExpiredSandboxes(10);
   const ipHash = hashIp(ip || "unknown");
-  const admin = proofAdmin();
+  const admin = sandboxAdmin();
   const windowStart = new Date(Date.now() - CREATE_WINDOW_MS).toISOString();
   const { data: recent } = await admin
     .from("proof_product_events")

@@ -2,6 +2,7 @@ import "server-only";
 import type { ArtifactContent } from "../types";
 import { ACME_ROLLOUT_FIXTURE } from "./fixture";
 import { analyzePassA, analyzePassB } from "./analysis";
+import { sandboxAdmin } from "./client";
 import { streamForEventType, type SandboxEventType } from "./events";
 import {
   ArtifactWorkReceiptIssuer,
@@ -185,8 +186,7 @@ export async function applySandboxAction(run: SimulationRunRecord, action: Sandb
       publicId: issued.publicId,
       integrityHash: issued.integrityHash,
     });
-    const { proofAdmin } = await import("../db");
-    await proofAdmin().from("proof_decision_briefs").update({ published: true }).eq("run_id", run.id);
+    await sandboxAdmin().from("proof_decision_briefs").update({ published: true }).eq("run_id", run.id);
     return transition(run, "finalized", {
       ...remember(run.worldState, key),
       reviewKind: record.kind,
@@ -210,8 +210,7 @@ export async function applySandboxAction(run: SimulationRunRecord, action: Sandb
 }
 
 async function persistDefenseAnswer(runId: string, answer: string): Promise<{ questionId: string }> {
-  const { proofAdmin } = await import("../db");
-  const admin = proofAdmin();
+  const admin = sandboxAdmin();
   const { data: session } = await admin.from("proof_defense_sessions").select("id").eq("run_id", runId).maybeSingle();
   if (!session) throw new Error("Defense session missing");
   const { data: question } = await admin
@@ -281,8 +280,7 @@ async function advanceWalkthrough(run: SimulationRunRecord): Promise<SimulationR
 export async function buildSandboxView(run: SimulationRunRecord) {
   const snapshot = await runs.loadSnapshot(run.id);
   const claims = await analysis.loadClaims(run.id);
-  const { proofAdmin } = await import("../db");
-  const admin = proofAdmin();
+  const admin = sandboxAdmin();
   const { data: brief } = await admin.from("proof_decision_briefs").select("*").eq("run_id", run.id).maybeSingle();
   const { data: session } = await admin.from("proof_defense_sessions").select("id, status").eq("run_id", run.id).maybeSingle();
   let question: { id: string; prompt: string; answer: string } | null = null;

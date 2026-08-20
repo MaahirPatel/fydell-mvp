@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash, randomUUID } from "crypto";
-import { proofAdmin } from "../db";
+import { sandboxAdmin } from "./client";
 import type { ArtifactContent, EvidenceClaimDraft, RunSnapshot } from "../types";
 import { buildEventPayload, sourceForStream } from "./events";
 import type {
@@ -33,7 +33,7 @@ export class ProofSimulationRunRepository implements SimulationRunRepository {
     invitationId: string;
     worldState: SandboxWorldStateV1;
   }): Promise<SimulationRunRecord> {
-    const admin = proofAdmin();
+    const admin = sandboxAdmin();
     const { data, error } = await admin
       .from("proof_runs")
       .insert({
@@ -55,13 +55,13 @@ export class ProofSimulationRunRepository implements SimulationRunRepository {
   }
 
   async load(runId: string): Promise<SimulationRunRecord> {
-    const { data, error } = await proofAdmin().from("proof_runs").select("*").eq("id", runId).maybeSingle();
+    const { data, error } = await sandboxAdmin().from("proof_runs").select("*").eq("id", runId).maybeSingle();
     if (error || !data) throw new Error("sandbox run not found");
     return mapRun(data as Record<string, unknown>);
   }
 
   async loadSnapshot(runId: string): Promise<RunSnapshot> {
-    const admin = proofAdmin();
+    const admin = sandboxAdmin();
     const run = await this.load(runId);
     const { data: events } = await admin.from("proof_events").select("*").eq("run_id", runId).order("sequence", { ascending: true });
     const { data: artifact } = await admin.from("proof_artifacts").select("*").eq("run_id", runId).maybeSingle();
@@ -108,7 +108,7 @@ export class ProofSimulationRunRepository implements SimulationRunRepository {
     if (next.revision !== previous.revision + 1) {
       throw new Error("world_state revision must increase by 1");
     }
-    const { data, error } = await proofAdmin()
+    const { data, error } = await sandboxAdmin()
       .from("proof_runs")
       .update({
         world_state: next,
@@ -141,7 +141,7 @@ export class ProofSimulationRunRepository implements SimulationRunRepository {
       payload_version: 1,
       payload: input.payload,
     });
-    const { data, error } = await proofAdmin()
+    const { data, error } = await sandboxAdmin()
       .from("proof_events")
       .insert({
         run_id: input.runId,
@@ -161,7 +161,7 @@ export class ProofSimulationRunRepository implements SimulationRunRepository {
   }
 
   async saveArtifact(runId: string, content: ArtifactContent, stage: string): Promise<void> {
-    const admin = proofAdmin();
+    const admin = sandboxAdmin();
     const { error } = await admin.from("proof_artifacts").update({ ...content, updated_at: new Date().toISOString() }).eq("run_id", runId);
     if (error) throw new Error(error.message);
     await admin.from("proof_artifact_versions").insert({
@@ -172,7 +172,7 @@ export class ProofSimulationRunRepository implements SimulationRunRepository {
   }
 
   async setReleasedFacts(runId: string, facts: string[]): Promise<void> {
-    const { error } = await proofAdmin().from("proof_runs").update({ released_facts: facts }).eq("id", runId);
+    const { error } = await sandboxAdmin().from("proof_runs").update({ released_facts: facts }).eq("id", runId);
     if (error) throw new Error(error.message);
   }
 }
@@ -184,7 +184,7 @@ export class ProofEvidenceAnalysisRepository implements EvidenceAnalysisReposito
     defensePrompt: string,
     defenseTarget: string,
   ): Promise<void> {
-    const admin = proofAdmin();
+    const admin = sandboxAdmin();
     for (const claim of claims) {
       await insertClaim(runId, "A", claim);
     }
@@ -214,7 +214,7 @@ export class ProofEvidenceAnalysisRepository implements EvidenceAnalysisReposito
       probes: string[];
     },
   ): Promise<void> {
-    const admin = proofAdmin();
+    const admin = sandboxAdmin();
     await admin.from("proof_evidence_claims").delete().eq("run_id", runId).eq("pass", "B");
     for (const claim of claims) {
       await insertClaim(runId, "B", claim);
@@ -234,7 +234,7 @@ export class ProofEvidenceAnalysisRepository implements EvidenceAnalysisReposito
   }
 
   async loadClaims(runId: string) {
-    const { data } = await proofAdmin()
+    const { data } = await sandboxAdmin()
       .from("proof_evidence_claims")
       .select("id, pass, claim, competency, direction, confidence, rubric_version, prompt_version, model_version, review_status")
       .eq("run_id", runId)
@@ -257,7 +257,7 @@ export class ProofEvidenceAnalysisRepository implements EvidenceAnalysisReposito
 }
 
 async function insertClaim(runId: string, pass: "A" | "B", claim: EvidenceClaimDraft): Promise<void> {
-  const admin = proofAdmin();
+  const admin = sandboxAdmin();
   const { data: row, error } = await admin
     .from("proof_evidence_claims")
     .insert({
@@ -305,7 +305,7 @@ export class ArtifactWorkReceiptIssuer implements WorkReceiptIssuer {
     });
     const integrityHash = createHash("sha256").update(payload.canonical).digest("hex");
     const stored = { ...payload.object, integrityHash };
-    const { error } = await proofAdmin().from("proof_artifact_versions").insert({
+    const { error } = await sandboxAdmin().from("proof_artifact_versions").insert({
       run_id: input.runId,
       sequence_at: null,
       content: stored,
@@ -315,7 +315,7 @@ export class ArtifactWorkReceiptIssuer implements WorkReceiptIssuer {
   }
 
   async loadPublic(publicId: string): Promise<IssuedReceipt | null> {
-    const { data } = await proofAdmin()
+    const { data } = await sandboxAdmin()
       .from("proof_artifact_versions")
       .select("content, run_id")
       .contains("content", { kind: RECEIPT_KIND, publicId })
