@@ -78,8 +78,6 @@ const nextConfig: NextConfig = {
       { source: "/app/fde/:path*", destination: "/app/candidate", permanent: true },
       { source: "/app/employer/missions/:path*", destination: "/app/employer", permanent: true },
       { source: "/app/employer/attempts/:path*", destination: "/app/employer", permanent: true },
-      { source: "/app/employer/evidence/:path*", destination: "/app/employer", permanent: true },
-      { source: "/app/employer/receipts/:path*", destination: "/app/employer", permanent: true },
       { source: "/app/employer/decisions/:path*", destination: "/app/employer", permanent: true },
       // The retired "create a simulation" surface. Simulations now live at
       // /app/employer/workbench, which is a new path rather than a reuse of

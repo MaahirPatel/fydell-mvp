@@ -3,17 +3,13 @@ import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
-import { ProgressRing } from "@/components/ui/ProgressRing";
 import ActivityFeed from "@/components/employer/ActivityFeed";
 import AttentionQueue from "@/components/employer/AttentionQueue";
 import CandidatePipeline from "@/components/employer/CandidatePipeline";
-import SetupPath, { type SetupStep } from "@/components/employer/SetupPath";
 import { describeElapsed, formatElapsed } from "@/lib/time/elapsed";
-import { getEmployerCatalog } from "./_lib/catalog";
 import {
   getInvitationRecords,
   getOperationalSnapshot,
-  getOverviewMetrics,
   getReportRecords,
   getWorkspaceHealth,
   type WorkspaceHealth,
@@ -30,63 +26,6 @@ function SectionLink({ href, label }: { href: string; label: string }) {
     >
       {label}
     </Link>
-  );
-}
-
-/**
- * An edge-to-edge band of real counts, each one a route to where you act on it.
- *
- * Every tile carries the rule that produced its number. A metric a reader has
- * to guess the definition of cannot be reconciled against the pipeline below
- * it, and an unreconcilable number is the one people stop trusting first.
- *
- * Rendered only once at least one is non-zero: four zeros report the absence of
- * data instead of telling a new workspace what to do.
- */
-function MetricBand({
-  items,
-}: {
-  items: {
-    label: string;
-    value: number;
-    href: string;
-    /** Colour is reserved for the one count that means "act here". */
-    needsAction?: boolean;
-    definition: string;
-  }[];
-}) {
-  return (
-    <dl className="grid grid-cols-2 divide-x divide-y divide-[var(--border-subtle)] sm:grid-cols-4 sm:divide-y-0">
-      {items.map((item) => (
-        <Link
-          key={item.label}
-          href={item.href}
-          className="group px-5 py-4 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] lg:px-6"
-        >
-          <dt className="text-app-meta text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] group-hover:text-[var(--text-secondary)]">
-            {item.label}
-          </dt>
-          <dd>
-            <span
-              className="mt-1.5 block text-[26px] font-medium leading-none tabular-nums tracking-[-0.025em]"
-              style={{
-                color:
-                  item.value === 0
-                    ? "var(--text-tertiary)"
-                    : item.needsAction
-                      ? "var(--color-changed)"
-                      : "var(--text-primary)",
-              }}
-            >
-              {item.value}
-            </span>
-            <span className="mt-2 block text-app-meta leading-[1.45] text-[var(--text-tertiary)]">
-              {item.definition}
-            </span>
-          </dd>
-        </Link>
-      ))}
-    </dl>
   );
 }
 
@@ -174,19 +113,15 @@ export default async function EmployerHomePage() {
   // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
 
-  const [metrics, invitations, reports, catalog, snapshot] = await Promise.all([
-    getOverviewMetrics(org.organizationId),
+  const [invitations, reports, snapshot] = await Promise.all([
     getInvitationRecords(org.organizationId, 200),
     getReportRecords(org.organizationId, 5),
-    getEmployerCatalog(),
     getOperationalSnapshot(org.organizationId, now),
   ]);
   const health = await getWorkspaceHealth(org.organizationId, invitations);
 
-  const activeEvaluation = catalog.flatMap((role) => role.sims)[0] ?? null;
   const hasInvited = invitations.length > 0;
   const hasResults = reports.length > 0;
-  const hasReviewed = reports.some((r) => !r.needsReview);
 
   const attentionRows = snapshot.attention.map((item) => ({
     key: item.key,
@@ -211,114 +146,22 @@ export default async function EmployerHomePage() {
     elapsedTitle: describeElapsed(event.at, now),
   }));
 
-  const steps: SetupStep[] = [
-    {
-      title: "Workspace created",
-      description: org.organizationName,
-      state: "done",
-    },
-    {
-      title: "Evaluation ready",
-      description:
-        activeEvaluation?.title ?? "No published evaluation is available to this workspace.",
-      state: activeEvaluation ? "done" : "current",
-      action: activeEvaluation
-        ? undefined
-        : { label: "View evaluations", href: "/app/employer/assessments" },
-    },
-    {
-      title: "Invite your first candidate",
-      description: hasInvited
-        ? `${invitations.length} ${invitations.length === 1 ? "candidate" : "candidates"} invited.`
-        : "Send the evaluation to someone you are considering.",
-      state: hasInvited ? "done" : activeEvaluation ? "current" : "upcoming",
-      action: { label: "Invite candidate", invite: true },
-    },
-    {
-      title: "Review the first report",
-      description: hasReviewed
-        ? "You have recorded a decision from the evidence."
-        : hasResults
-          ? "A report is ready to read."
-          : "Reports appear once a candidate submits.",
-      state: hasReviewed ? "done" : hasResults ? "current" : "upcoming",
-      action: { label: "Open reports", href: "/app/employer/reports" },
-    },
-  ];
-
-  const completedSteps = steps.filter((s) => s.state === "done").length;
-  const setupComplete = completedSteps === steps.length;
-
-  const metricItems = [
-    {
-      label: "In progress",
-      value: metrics.inProgress,
-      href: "/app/employer/candidates",
-      definition: "Accepted or actively working, not yet submitted.",
-    },
-    {
-      label: "Completed",
-      value: metrics.completed,
-      href: "/app/employer/candidates",
-      definition: "Submitted a final recommendation.",
-    },
-    {
-      label: "Reports ready",
-      value: metrics.reportsReady,
-      href: "/app/employer/reports",
-      definition: "Analysis finished and evidence is inspectable.",
-    },
-    {
-      label: "Needs review",
-      value: metrics.needsReview,
-      href: "/app/employer/reports?review=needs",
-      needsAction: true,
-      definition: "Report ready with no decision recorded.",
-    },
-  ];
-  const showMetrics = metricItems.some((m) => m.value > 0);
-
   return (
     <div>
       <PageHeader
         className="border-b border-[var(--border-subtle)] pb-6"
-        title={
-          hasResults
-            ? "Hiring decisions"
-            : hasInvited
-              ? "Candidate work"
-              : "Start with an open role"
-        }
+        title="Today"
         description={
           hasResults
-            ? "Review completed work, resolve uncertainty, and prepare the next interview."
+            ? "Review the candidate evidence that is ready and prepare the next interview."
             : hasInvited
-              ? "Waiting on the first completed evaluation."
-              : "Choose the work that represents the role, then invite the first candidate."
-        }
-        meta={
-          <>
-            <span className="text-app-meta font-medium text-[var(--text-secondary)]">
-              {org.organizationName}
-            </span>
-            <span className="text-app-meta text-[var(--text-tertiary)]">
-              Fydell pilot
-            </span>
-          </>
+              ? "Candidate work is underway. Fydell will surface the next decision when evidence is ready."
+              : "Start with an open role, or experience the complete workflow in Sandbox."
         }
       />
 
-      {showMetrics ? (
-        <section
-          className="mt-7 overflow-hidden border-y border-[var(--border-subtle)]"
-          aria-label="Workspace summary"
-        >
-          <MetricBand items={metricItems} />
-        </section>
-      ) : null}
-
       {attentionRows.length > 0 ? (
-        <Panel className={showMetrics ? "mt-6" : "mt-7"}>
+        <Panel className="mt-7">
           <PanelSection
             title="Needs attention"
             description="Ordered by whose turn it is and how long the work has been waiting."
@@ -334,58 +177,53 @@ export default async function EmployerHomePage() {
         </Panel>
       ) : null}
 
-      <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
-        {!setupComplete ? (
+      {!hasInvited ? (
+        <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
           <PanelSection
-            title="Workspace setup"
-            action={
-              <div className="flex items-center gap-2.5">
-                <span className="text-app-meta tabular-nums text-[var(--text-tertiary)]">
-                  {completedSteps} of {steps.length} complete
-                </span>
-                <ProgressRing value={completedSteps} total={steps.length} />
-              </div>
-            }
+            title="Start with an open role"
+            description="Tell Fydell who you need. We will define the work and help verify the candidates worth interviewing."
           >
-            <SetupPath steps={steps} />
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/app/employer/roles"
+                className="inline-flex h-9 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-app-body font-medium text-[var(--control-solid-ink)]"
+              >
+                Create role
+              </Link>
+              <Link
+                href="/sandbox"
+                className="inline-flex h-9 items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3.5 text-app-body font-medium text-[var(--text-primary)]"
+              >
+                Explore Sandbox
+              </Link>
+            </div>
           </PanelSection>
-        ) : null}
-
-        {!hasInvited && activeEvaluation ? (
-          <PanelSection title={activeEvaluation.title}>
-            <p className="max-w-[70ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">
-              {activeEvaluation.tagline}
-            </p>
-            <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">
-              No candidate has started this work yet.
-            </p>
-          </PanelSection>
-        ) : null}
-
-        {hasInvited ? (
+        </Panel>
+      ) : (
+        <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
           <PanelSection
-            title="Candidate pipeline"
+            title="Active roles"
             action={
-              <SectionLink href="/app/employer/candidates" label="All candidates" />
+              <SectionLink href="/app/employer/roles" label="All roles" />
             }
           >
             <CandidatePipeline invitations={invitations} />
           </PanelSection>
-        ) : null}
-      </Panel>
+        </Panel>
+      )}
 
       {hasInvited ? (
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <Panel>
             <PanelSection
-              title="Recent reports"
-              action={<SectionLink href="/app/employer/reports" label="All reports" />}
+              title="Ready for review"
+              action={<SectionLink href="/app/employer/evidence" label="All evidence" />}
               bodyClassName="-mx-5 -mb-4 lg:-mx-6 lg:-mb-5"
             >
               {reports.length === 0 ? (
                 <p className="px-5 pb-1 text-app-body text-[var(--text-secondary)] lg:px-6">
-                  No report has been produced yet. One appears here when a
-                  candidate submits and analysis finishes.
+                  No candidate evidence is ready yet. It appears here after
+                  submitted work has been analysed.
                 </p>
               ) : (
                 <ul>
@@ -395,7 +233,7 @@ export default async function EmployerHomePage() {
                       className="border-t border-[var(--border-subtle)]"
                     >
                       <Link
-                        href={`/app/employer/assessments/report/${r.sessionId}`}
+                        href={`/app/employer/candidates/${r.sessionId}`}
                         className="flex items-baseline gap-3 px-5 py-2.5 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] lg:px-6"
                       >
                         <span className="min-w-0 flex-1 truncate text-app-body text-[var(--text-primary)]">

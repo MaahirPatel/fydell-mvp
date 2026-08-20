@@ -18,6 +18,8 @@ import {
   visitorReviewLabel,
   readSandboxAvailability,
   SANDBOX_STEPS,
+  SANDBOX_EVENT_TYPES,
+  streamForEventType,
 } from "../src/lib/sim-engine/proof/sandbox/index";
 import { sandboxCredentialStatus } from "../src/lib/sim-engine/proof/sandbox/credentials";
 import type { RunSnapshot } from "../src/lib/sim-engine/proof/types";
@@ -57,6 +59,7 @@ try {
 const bumped = nextWorldState(base, { currentStep: "active" });
 ok("revision is monotonic", bumped.revision === 1);
 ok("does not silent-default environment", base.environment === "sandbox");
+ok("outcome starts empty", base.interviewFinding === null && base.hiringOutcome === null);
 
 console.log("\nState machine");
 ok("invited to active", canTransition("invited", "active"));
@@ -74,6 +77,11 @@ const payload = {
   payload: {},
 };
 ok("parses event contract", parseEventContract(payload).stream === "candidate_work");
+ok(
+  "outcome stays in review stream",
+  SANDBOX_EVENT_TYPES.includes("OUTCOME_RECORDED") &&
+    streamForEventType("OUTCOME_RECORDED") === "review",
+);
 try {
   parseEventContract({ ...payload, stream: "mystery" });
   ok("rejects unknown stream", false);
@@ -84,6 +92,15 @@ try {
 console.log("\nFixture");
 ok("single fixture version", ACME_ROLLOUT_FIXTURE.fixtureVersion === "acme-rollout-v1");
 ok("defense question is not STAR", !/tell me about a time/i.test(ACME_ROLLOUT_FIXTURE.defenseQuestion.prompt));
+ok(
+  "sandbox uses four stable Candidate IDs",
+  ACME_ROLLOUT_FIXTURE.candidates.map((candidate) => candidate.label).join(",") ===
+    "Candidate 01,Candidate 02,Candidate 03,Candidate 04",
+);
+ok(
+  "sandbox fixture has no synthetic person names",
+  !JSON.stringify(ACME_ROLLOUT_FIXTURE.candidates).includes("displayName"),
+);
 
 console.log("\nAnalysis");
 const snapshot: RunSnapshot = {
@@ -224,6 +241,39 @@ function walk(dir: string) {
 }
 walk(resolve("src"));
 ok("no client proof/receipt table access", clientHits.length === 0, clientHits.join(", "));
+
+console.log("\nSandbox boundary");
+const sandboxSourceRoots = [
+  resolve("src/app/api/sandbox"),
+  resolve("src/lib/sim-engine/proof/sandbox"),
+  resolve("src/components/sandbox"),
+];
+const sandboxSource = sandboxSourceRoots
+  .flatMap((root) => {
+    const files: string[] = [];
+    const collect = (dir: string) => {
+      for (const name of readdirSync(dir)) {
+        const full = join(dir, name);
+        if (statSync(full).isDirectory()) collect(full);
+        else if (/\.(ts|tsx)$/.test(name)) files.push(full);
+      }
+    };
+    collect(root);
+    return files;
+  })
+  .map((file) => readFileSync(file, "utf8"))
+  .join("\n");
+ok("sandbox does not call production sim APIs", !sandboxSource.includes("/api/sim/"));
+ok("sandbox does not import WorkbenchRunner", !sandboxSource.includes("WorkbenchRunner"));
+ok(
+  "sandbox does not send candidate email",
+  !/\b(resend|sendEmail|sendInvitationEmail)\b/.test(sandboxSource),
+);
+ok(
+  "demo receipt remains explicitly labelled",
+  sandboxSource.includes("Demo Work Receipt") &&
+    /not valid for employment verification/i.test(sandboxSource),
+);
 
 if (failures) {
   console.log(`\n${failures} failure(s)`);

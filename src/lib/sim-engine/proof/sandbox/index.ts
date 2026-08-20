@@ -8,7 +8,7 @@ export {
   isSandboxWorldState,
   type SandboxWorldStateV1,
 } from "./world-state";
-export { EVENT_STREAMS, parseEventContract, streamForEventType } from "./events";
+export { EVENT_STREAMS, SANDBOX_EVENT_TYPES, parseEventContract, streamForEventType } from "./events";
 export { analyzePassA, analyzePassB } from "./analysis";
 export { canonicalize, publicReceiptProjection } from "./receipt-hash";
 export { scriptedReviewLabel, visitorReviewLabel } from "./repositories";

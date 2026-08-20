@@ -15,7 +15,12 @@ export interface SandboxFixtureManifest {
   organization: { name: string; customer: string };
   role: { slug: "solutions-engineer"; title: string };
   simulationVersion: { key: string; title: string };
-  candidate: { label: string; displayName: string };
+  candidate: { candidateId: string; label: string };
+  candidates: Array<{
+    candidateId: string;
+    label: string;
+    status: "ready" | "defense_pending" | "in_progress" | "invited";
+  }>;
   resources: Array<{ id: string; title: string; body: string }>;
   rubric: { version: string; competencies: typeof SANDBOX_COMPETENCIES };
   initialFacts: string[];
@@ -44,7 +49,13 @@ export const ACME_ROLLOUT_FIXTURE: SandboxFixtureManifest = Object.freeze({
     key: "se-northstar-v1",
     title: "Acme Technical Discovery and Rollout",
   },
-  candidate: { label: "Candidate 1", displayName: "Alex Rivera" },
+  candidate: { candidateId: "candidate-01", label: "Candidate 01" },
+  candidates: [
+    { candidateId: "candidate-01", label: "Candidate 01", status: "ready" as const },
+    { candidateId: "candidate-02", label: "Candidate 02", status: "defense_pending" as const },
+    { candidateId: "candidate-03", label: "Candidate 03", status: "in_progress" as const },
+    { candidateId: "candidate-04", label: "Candidate 04", status: "invited" as const },
+  ],
   resources: [
     {
       id: "discovery-notes",

@@ -45,12 +45,12 @@ function section(title: string) {
 section("Routes are absolute and owned");
 ok("public home is /", PUBLIC_ROUTES[0] === "/");
 ok(
-  "employer assessments is /app/employer/assessments",
-  EMPLOYER_ROUTES.includes("/app/employer/assessments"),
+  "employer roles is /app/employer/roles",
+  EMPLOYER_ROUTES.includes("/app/employer/roles"),
 );
 ok(
-  "no relative employer /assessments",
-  !EMPLOYER_ROUTES.some((r) => r === "/assessments"),
+  "no relative employer /roles",
+  !EMPLOYER_ROUTES.some((r) => r === "/roles"),
 );
 ok("every public route has ownership", PUBLIC_ROUTES.every((r) => r in WAVE1_ROUTE_OWNERSHIP));
 ok("every employer route has ownership", EMPLOYER_ROUTES.every((r) => r in WAVE1_ROUTE_OWNERSHIP));

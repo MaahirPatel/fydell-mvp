@@ -2,12 +2,12 @@ import { getAuthenticatedUser } from "@/lib/auth/resolve-post-login";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import SignOutButton from "@/components/employer/SignOutButton";
 import WorkspaceNameForm from "@/components/employer/WorkspaceNameForm";
-import WorkspaceLogoForm from "@/components/employer/WorkspaceLogoForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
 import { ContactLink } from "@/components/ui/ContactLink";
 import { memberIdentity, type AuthIdentityMetadata } from "@/lib/workspace/identity";
 import { isPreviewMode, PREVIEW_ORG, PREVIEW_USER } from "@/lib/dev/preview";
+import Image from "next/image";
 
 export const metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
@@ -78,34 +78,49 @@ export default async function EmployerSettingsPage() {
   const canEdit = MANAGER_ROLES.has(memberRole);
 
   return (
-    /* A settings form is read line by line, so it keeps a reading width rather
-       than stretching to the rail. */
-    <div className="max-w-[860px]">
+    <div className="max-w-[1040px]">
       <PageHeader
         title="Settings"
         description="Your workspace, your account, and what happens to the data this workspace holds."
       />
 
-      <div className="mt-7 space-y-5">
+      <div className="mt-7 grid gap-8 lg:grid-cols-[180px_minmax(0,1fr)]">
+        <nav className="flex gap-1 overflow-x-auto lg:sticky lg:top-28 lg:h-fit lg:flex-col" aria-label="Settings sections">
+          {[
+            ["general", "General"],
+            ["data-privacy", "Data & privacy"],
+            ["plan", "Plan"],
+          ].map(([href, label]) => (
+            <a
+              key={href}
+              href={`#${href}`}
+              className="whitespace-nowrap rounded-[var(--radius-control)] px-2.5 py-2 text-app-body text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
         <Panel>
+          <div id="general" className="scroll-mt-28">
           <PanelSection
-            title="Workspace"
-            description="Candidates see this name on the invitation they receive."
+            title="General"
+            description="Workspace and account identity."
           />
           <Row label="Name">
             <WorkspaceNameForm initialName={workspaceName} canEdit={canEdit} />
           </Row>
-          <Row label="Logo" help="Shown on the shortlist. Use a hosted image URL.">
-            <WorkspaceLogoForm canEdit={canEdit} />
+          <Row label="Company logo" help="Shown on candidate invitations and reviewed evidence.">
+            <p className="text-app-body text-[var(--text-secondary)]">
+              Self-serve logo upload is not configured yet. <ContactLink /> to add or replace it.
+            </p>
           </Row>
           <Row label="Your role" help="Roles are managed by the workspace owner.">
             <p className="text-app-body capitalize text-[var(--text-primary)]">
               {memberRole}
             </p>
           </Row>
-        </Panel>
-
-        <Panel>
+          </div>
+          <div className="border-t border-[var(--border-subtle)]">
           <PanelSection
             title="Account"
             description="Taken from what you entered when you created this account."
@@ -113,13 +128,12 @@ export default async function EmployerSettingsPage() {
           <Row label="You">
             <div className="flex items-center gap-3">
               {identity.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element -- avatar
-                // hosts are not known ahead of time.
-                <img
+                <Image
                   src={identity.avatarUrl}
                   alt=""
                   width={36}
                   height={36}
+                  unoptimized
                   referrerPolicy="no-referrer"
                   className="h-9 w-9 shrink-0 rounded-[var(--radius-control)] border border-[var(--border-default)] object-cover"
                 />
@@ -157,11 +171,10 @@ export default async function EmployerSettingsPage() {
           >
             <SignOutButton className="inline-flex h-9 items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3.5 text-app-body font-medium text-[var(--text-primary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] disabled:opacity-50" />
           </Row>
-        </Panel>
-
-        <Panel>
+          </div>
+          <div id="data-privacy" className="scroll-mt-28 border-t border-[var(--border-subtle)]">
           <PanelSection
-            title="Data"
+            title="Data & privacy"
             description="What this workspace holds and how long it holds it."
           />
           <Row
@@ -200,6 +213,13 @@ export default async function EmployerSettingsPage() {
               decisions it makes using these reports.
             </p>
           </Row>
+          </div>
+          <div id="plan" className="scroll-mt-28 border-t border-[var(--border-subtle)]">
+            <PanelSection title="Plan" description="Commercial state for this workspace." />
+            <Row label="Current plan">
+              <p className="text-app-body text-[var(--text-primary)]">Pilot</p>
+            </Row>
+          </div>
         </Panel>
       </div>
     </div>

@@ -262,7 +262,7 @@ export default function ReportsList({
                   </TD>
                   <TD align="right">
                     <Link
-                      href={`/app/employer/assessments/report/${r.sessionId}`}
+                      href={`/app/employer/candidates/${r.sessionId}`}
                       className="inline-flex h-8 items-center rounded-[var(--radius-control)] px-2.5 text-app-body font-medium text-[var(--text-primary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
                     >
                       Open

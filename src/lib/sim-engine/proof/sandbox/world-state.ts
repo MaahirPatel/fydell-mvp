@@ -19,6 +19,8 @@ export const sandboxWorldStateSchema = z
     reviewDecision: z.enum(["approve", "limit", "follow_up", "reject"]).nullable(),
     receiptPublicId: z.string().nullable(),
     receiptIntegrityHash: z.string().nullable(),
+    interviewFinding: z.enum(["confirmed", "contradicted", "still_unclear", "not_asked"]).nullable().default(null),
+    hiringOutcome: z.enum(["advance", "hold", "close", "hired"]).nullable().default(null),
     lastIdempotencyKey: z.string().nullable(),
     seenIdempotencyKeys: z.array(z.string()).max(200),
   })
@@ -67,6 +69,8 @@ export function createWorldState(input: {
     reviewDecision: null,
     receiptPublicId: null,
     receiptIntegrityHash: null,
+    interviewFinding: null,
+    hiringOutcome: null,
     lastIdempotencyKey: null,
     seenIdempotencyKeys: [],
   });

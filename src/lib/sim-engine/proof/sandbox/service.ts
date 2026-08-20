@@ -27,6 +27,12 @@ export type SandboxAction =
   | { type: "begin_defense"; idempotencyKey?: string }
   | { type: "submit_defense"; answer: string; idempotencyKey?: string }
   | { type: "review"; decision?: SandboxReviewRecord["decision"]; scripted?: boolean; idempotencyKey?: string }
+  | {
+      type: "record_outcome";
+      finding: "confirmed" | "contradicted" | "still_unclear" | "not_asked";
+      outcome: "advance" | "hold" | "close" | "hired";
+      idempotencyKey?: string;
+    }
   | { type: "advance"; idempotencyKey?: string }
   | { type: "retry_analysis" };
 
@@ -92,7 +98,11 @@ export async function applySandboxAction(run: SimulationRunRecord, action: Sandb
   if (seen(run.worldState, key) && action.type !== "save_work" && action.type !== "retry_analysis") {
     return run;
   }
-  if (run.worldState.currentStep === "finalized" && action.type !== "advance") {
+  if (
+    run.worldState.currentStep === "finalized" &&
+    action.type !== "advance" &&
+    action.type !== "record_outcome"
+  ) {
     throw new Error("Sandbox is finalized");
   }
 
@@ -194,6 +204,23 @@ export async function applySandboxAction(run: SimulationRunRecord, action: Sandb
       receiptPublicId: issued.publicId,
       receiptIntegrityHash: issued.integrityHash,
     });
+  }
+
+  if (action.type === "record_outcome") {
+    if (run.worldState.currentStep !== "finalized") {
+      throw new Error("Outcome can only be recorded after review");
+    }
+    await append(run.id, "OUTCOME_RECORDED", "reviewer", key, {
+      finding: action.finding,
+      outcome: action.outcome,
+    });
+    const next = nextWorldState(run.worldState, {
+      ...remember(run.worldState, key),
+      interviewFinding: action.finding,
+      hiringOutcome: action.outcome,
+    });
+    await runs.updateWorldState(run.id, run.worldState, next, run.stage, run.status);
+    return runs.load(run.id);
   }
 
   if (action.type === "retry_analysis") {
@@ -308,10 +335,13 @@ export async function buildSandboxView(run: SimulationRunRecord) {
     reviewDecision: run.worldState.reviewDecision,
     receiptPublicId: run.worldState.receiptPublicId,
     receiptIntegrityHash: run.worldState.receiptIntegrityHash,
+    interviewFinding: run.worldState.interviewFinding,
+    hiringOutcome: run.worldState.hiringOutcome,
     fixture: {
       organization: f.organization,
       role: f.role,
       candidate: f.candidate,
+      candidates: f.candidates,
       resources: f.resources,
       changedFact: f.changedFact,
       defenseQuestion: f.defenseQuestion,

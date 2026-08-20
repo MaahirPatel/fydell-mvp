@@ -23,10 +23,21 @@ export async function POST(request: Request) {
     artifact?: ArtifactContent;
     answer?: string;
     decision?: "approve" | "limit" | "follow_up" | "reject";
+    finding?: "confirmed" | "contradicted" | "still_unclear" | "not_asked";
+    outcome?: "advance" | "hold" | "close" | "hired";
     scripted?: boolean;
     idempotencyKey?: string;
   };
   if (!body.type) return NextResponse.json({ error: "type required" }, { status: 400 });
+  if (
+    body.type === "record_outcome" &&
+    (!body.finding ||
+      !["confirmed", "contradicted", "still_unclear", "not_asked"].includes(body.finding) ||
+      !body.outcome ||
+      !["advance", "hold", "close", "hired"].includes(body.outcome))
+  ) {
+    return NextResponse.json({ error: "valid finding and outcome required" }, { status: 400 });
+  }
   try {
     const action = body as SandboxAction;
     const next = await applySandboxAction(run, action);

@@ -96,7 +96,6 @@ export default async function EmployerAppLayout({ children }: { children: React.
         userEmail={PREVIEW_USER.email}
         userName={PREVIEW_USER.fullName}
         userAvatarUrl={PREVIEW_USER.avatarUrl}
-        userRole="owner"
         catalog={await getEmployerCatalog()}
       >
         {children}
@@ -125,7 +124,6 @@ export default async function EmployerAppLayout({ children }: { children: React.
 
   let workspaceName = "Your workspace";
   let identity = memberIdentity(user.email || "", null, user.user_metadata);
-  let userRole = "";
   {
     const admin = createAdminSupabaseClient();
     const { data: membership } = await admin
@@ -135,8 +133,6 @@ export default async function EmployerAppLayout({ children }: { children: React.
       .eq("status", "active")
       .limit(1)
       .maybeSingle();
-
-    userRole = (membership?.role as string | null) || "";
 
     if (!membership?.organization_id) {
       // No org yet. Route by account type; employers (or missing type) get a
@@ -170,7 +166,6 @@ export default async function EmployerAppLayout({ children }: { children: React.
         redirect("/account/setup-required?reason=org_create_failed");
       }
       workspaceName = createdName;
-      userRole = "owner";
     } else {
       const org = membership.organizations as { name?: string } | null;
       workspaceName = org?.name || workspaceName;
@@ -192,7 +187,6 @@ export default async function EmployerAppLayout({ children }: { children: React.
       userEmail={identity.email}
       userName={identity.name}
       userAvatarUrl={identity.avatarUrl}
-      userRole={userRole}
       catalog={catalog}
     >
       {children}

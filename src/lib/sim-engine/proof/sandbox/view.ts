@@ -8,10 +8,17 @@ export type SandboxSessionView = {
   reviewDecision: "approve" | "limit" | "follow_up" | "reject" | null;
   receiptPublicId: string | null;
   receiptIntegrityHash: string | null;
+  interviewFinding: "confirmed" | "contradicted" | "still_unclear" | "not_asked" | null;
+  hiringOutcome: "advance" | "hold" | "close" | "hired" | null;
   fixture: {
     organization: { name: string; customer: string };
     role: { title: string };
-    candidate: { label: string; displayName: string };
+    candidate: { candidateId: string; label: string };
+    candidates: Array<{
+      candidateId: string;
+      label: string;
+      status: "ready" | "defense_pending" | "in_progress" | "invited";
+    }>;
     resources: Array<{ id: string; title: string; body: string }>;
     changedFact: { id: string; title: string; body: string };
     defenseQuestion: { prompt: string };

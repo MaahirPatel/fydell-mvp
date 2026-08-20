@@ -13,6 +13,7 @@ export const SANDBOX_EVENT_TYPES = [
   "ANALYSIS_COMPLETED",
   "REVIEW_RECORDED",
   "RECEIPT_ISSUED",
+  "OUTCOME_RECORDED",
   "AUTOSAVE_FAILED",
   "RUN_RECOVERED",
 ] as const;
@@ -35,7 +36,7 @@ export interface SandboxEventEnvelope {
 export function streamForEventType(type: SandboxEventType): EventStream {
   if (type === "FACT_RELEASED" || type === "WALKTHROUGH_STARTED") return "scenario_delivery";
   if (type === "ANALYSIS_STARTED" || type === "ANALYSIS_COMPLETED" || type === "DEFENSE_QUESTION_ASKED") return "analysis";
-  if (type === "REVIEW_RECORDED" || type === "RECEIPT_ISSUED") return "review";
+  if (type === "REVIEW_RECORDED" || type === "RECEIPT_ISSUED" || type === "OUTCOME_RECORDED") return "review";
   return "candidate_work";
 }
 

@@ -180,10 +180,8 @@ export default function CandidatesTable({
 
                 <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2">
                   <StatusTag tone={stage.tone}>{stage.label}</StatusTag>
-                  {r.result ? (
-                    <span className="text-app-body text-[var(--text-primary)]">
-                      {r.result}
-                    </span>
+                  {r.reportReady ? (
+                    <span className="text-app-body text-[var(--text-primary)]">Evidence ready</span>
                   ) : null}
                   {showEvaluation ? (
                     <span className="text-app-meta text-[var(--text-tertiary)]">
@@ -205,10 +203,10 @@ export default function CandidatesTable({
 
                 {r.reportReady && r.sessionId ? (
                   <Link
-                    href={`/app/employer/assessments/report/${r.sessionId}`}
+                    href={`/app/employer/candidates/${r.sessionId}`}
                     className="mt-2.5 inline-flex h-8 items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] px-2.5 text-app-body font-medium text-[var(--text-primary)]"
                   >
-                    View report
+                    Review candidate
                   </Link>
                 ) : null}
               </li>
@@ -223,7 +221,7 @@ export default function CandidatesTable({
             <TH>Candidate</TH>
             {showEvaluation ? <TH>Evaluation</TH> : null}
             <TH>Stage</TH>
-            <TH>Result</TH>
+            <TH>Evidence</TH>
             <TH align="right">Actions</TH>
           </THead>
           <TBody>
@@ -262,8 +260,8 @@ export default function CandidatesTable({
                     ) : null}
                   </TD>
                   <TD>
-                    {r.result ? (
-                      <span className="text-[var(--text-primary)]">{r.result}</span>
+                    {r.reportReady ? (
+                      <span className="text-[var(--text-primary)]">Available</span>
                     ) : (
                       <span className="text-[var(--text-tertiary)]">Pending</span>
                     )}
@@ -272,10 +270,10 @@ export default function CandidatesTable({
                     <div className="flex items-center justify-end gap-1 whitespace-nowrap">
                       {r.reportReady && r.sessionId ? (
                         <Link
-                          href={`/app/employer/assessments/report/${r.sessionId}`}
+                          href={`/app/employer/candidates/${r.sessionId}`}
                           className="inline-flex h-8 items-center rounded-[var(--radius-control)] px-2.5 text-app-body font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
                         >
-                          View report
+                          Review candidate
                         </Link>
                       ) : null}
                       <RowMenu

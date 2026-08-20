@@ -20,9 +20,12 @@ export const PUBLIC_ROUTES = [
 
 export const EMPLOYER_ROUTES = [
   "/app/employer",
-  "/app/employer/assessments",
+  "/app/employer/roles",
   "/app/employer/candidates",
-  "/app/employer/reports",
+  "/app/employer/work",
+  "/app/employer/evidence",
+  "/app/employer/receipts",
+  "/app/employer/outcomes",
   "/app/employer/settings",
 ] as const;
 
@@ -56,9 +59,12 @@ export const WAVE1_ROUTE_OWNERSHIP = {
   "/terms": { auth: "public", owner: "legal", empty: "n/a", error: "static" },
   "/security": { auth: "public", owner: "legal", empty: "n/a", error: "static" },
   "/app/employer": { auth: "org_member", owner: "employer", empty: "honest workspace", error: "login redirect" },
-  "/app/employer/assessments": { auth: "org_member", owner: "employer", empty: "DA-01 only", error: "login redirect" },
+  "/app/employer/roles": { auth: "org_member", owner: "employer", empty: "create role", error: "login redirect" },
   "/app/employer/candidates": { auth: "org_member", owner: "employer", empty: "no invitations", error: "login redirect" },
-  "/app/employer/reports": { auth: "org_member", owner: "employer", empty: "no reports", error: "login redirect" },
+  "/app/employer/work": { auth: "org_member", owner: "employer", empty: "no work episodes", error: "login redirect" },
+  "/app/employer/evidence": { auth: "org_member", owner: "employer", empty: "no evidence", error: "login redirect" },
+  "/app/employer/receipts": { auth: "org_member", owner: "employer", empty: "no authorized receipts", error: "login redirect" },
+  "/app/employer/outcomes": { auth: "org_member", owner: "employer", empty: "no outcomes", error: "login redirect" },
   "/app/employer/settings": { auth: "org_member", owner: "employer", empty: "workspace name", error: "login redirect" },
   "/invite/[token]": { auth: "candidate", owner: "candidate", empty: "invalid token", error: "expired/revoked/used" },
   "/sim/[sessionId]": { auth: "candidate_owner", owner: "candidate", empty: "forbidden", error: "unauthorized" },

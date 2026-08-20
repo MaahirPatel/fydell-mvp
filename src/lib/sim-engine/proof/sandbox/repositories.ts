@@ -1,7 +1,6 @@
 import type { ArtifactContent, EvidenceClaimDraft, RunSnapshot } from "../types";
 import type { SandboxFixtureManifest } from "./fixture";
 import type { SandboxWorldStateV1 } from "./world-state";
-import type { SandboxStep } from "./steps";
 import type { SandboxEventType, EventStream } from "./events";
 
 export interface SimulationRunRecord {

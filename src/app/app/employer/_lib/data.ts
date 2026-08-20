@@ -446,7 +446,7 @@ function runList(runs: OpsRunEmbed[] | OpsRunEmbed | null | undefined): OpsRunEm
 }
 
 function reportHref(sessionId: string): string {
-  return `/app/employer/assessments/report/${sessionId}`;
+  return `/app/employer/candidates/${sessionId}`;
 }
 
 /** Deep link that lands on the Candidates table already filtered to one person. */
