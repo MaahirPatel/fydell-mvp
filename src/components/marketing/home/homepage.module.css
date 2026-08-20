@@ -4604,1049 +4604,1855 @@
 }
 
 /* ==========================================================================
-   Evidence distribution hero
-   The landing page opens on the employer's decision: a human-reviewed brief
-   floating above the distribution and timeline that produced it.
+   Hero — Review evidence
+   One employer workspace: rail, navigation, candidate column, the evidence
+   trail for the selected candidate, and role context. The revision card sits
+   above all of it because that is the thing a reviewer is actually reading.
    ========================================================================== */
 
-.distributionScene {
+.heroApp {
   position: relative;
-  width: calc(100% + 96px);
-  min-height: 716px;
+  display: grid;
+  width: calc(100% + 112px);
+  min-height: 618px;
   overflow: hidden;
-  margin-top: clamp(52px, 5vw, 70px);
-  margin-left: -48px;
+  margin: clamp(50px, 5vw, 68px) 0 0 -56px;
   border-radius: 15px;
-  background:
-    linear-gradient(to right, var(--surface-deep) 0 326px, var(--surface-panel) 326px),
-    var(--surface-panel);
-  box-shadow:
-    0 0 0 1px var(--border-default),
-    0 8px 14px rgba(45, 38, 32, 0.07);
-}
-
-.distributionScene::after {
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  right: 0;
-  width: 88px;
-  height: 100%;
-  background: linear-gradient(to right, transparent, var(--surface-canvas));
-  content: "";
-  pointer-events: none;
-}
-
-.distributionBrief {
-  position: absolute;
-  z-index: 4;
-  top: 18px;
-  bottom: 18px;
-  left: 18px;
-  display: flex;
-  width: 306px;
-  overflow: hidden;
-  flex-direction: column;
-  border-radius: 10px;
   background: var(--surface-raised);
   box-shadow:
     0 0 0 1px var(--border-default),
-    0 8px 16px rgba(45, 38, 32, 0.1);
+    var(--shadow-card);
+  grid-template-columns: 48px 158px 170px minmax(0, 1fr) 218px;
 }
 
-.distributionBriefHeader {
+.heroIconRail {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 17px 18px 15px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding-top: 20px;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-deep);
+  color: var(--text-tertiary);
 }
 
-.distributionBriefHeader p,
-.distributionBriefHeader span {
+.heroIconRail > span {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-control);
+  place-items: center;
+}
+
+.heroIconRailMark {
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+}
+
+.heroNav {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 12px 18px 14px;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-deep);
+}
+
+.heroNavHeader p {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+}
+
+.heroNavHeader h2 {
+  margin: 5px 0 2px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 590;
+  letter-spacing: -0.01em;
+}
+
+.heroNavHeader span {
   color: var(--text-tertiary);
   font-size: 11.5px;
 }
 
-.distributionBriefHeader h2 {
-  margin-top: 3px;
-  font-size: 20px;
-  font-weight: 580;
-  letter-spacing: -0.025em;
+.heroNavList {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-.distributionBriefHeader span {
-  display: block;
-  margin-top: 3px;
+.heroNavList li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px;
+  border-radius: var(--radius-control);
+  color: var(--text-secondary);
+  font-size: 12.5px;
 }
 
-.distributionBriefHeader svg {
-  color: var(--evidence-support);
+.heroNavItemActive {
+  background: var(--surface-selected);
+  color: var(--text-primary);
+  font-weight: 540;
 }
 
-.distributionBriefSection {
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 14px 17px;
+.heroNavDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--evidence-generated);
 }
 
-.distributionBriefSection h3,
-.distributionQuestions h3 {
-  color: var(--evidence-support);
-  font-size: 11.5px;
-  font-weight: 580;
+.heroCandidates {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 62px 8px 0;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-panel);
+  list-style: none;
 }
 
-.distributionBriefSection ul {
+.heroCandidates li {
   display: grid;
-  gap: 13px;
+  align-items: center;
+  padding: 7px 8px;
+  border-radius: var(--radius-control);
+  gap: 8px;
+  grid-template-columns: 22px minmax(0, 1fr);
+}
+
+.heroCandidateActive {
+  background: var(--surface-raised);
+  box-shadow: 0 0 0 1px var(--border-subtle);
+}
+
+.heroCandidateId {
+  display: grid;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--surface-selected);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  place-items: center;
+}
+
+.heroCandidates li > span:last-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.heroCandidates li strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 540;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.heroMain {
+  padding: 18px 22px 20px;
+}
+
+.heroMainHeader h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15.5px;
+  font-weight: 590;
+  letter-spacing: -0.012em;
+}
+
+.heroMainHeader p {
+  margin: 3px 0 0;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.heroCandidateHeading {
+  margin: 22px 0 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 590;
+}
+
+.heroTimeline {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border-subtle);
+  list-style: none;
+}
+
+.heroTimeline li {
+  position: relative;
+  display: grid;
+  align-items: start;
+  padding: 14px 10px 14px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 10px;
+  grid-template-columns: 8px 158px minmax(0, 1fr) 58px;
+}
+
+.heroTimeline li p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.heroTimeline li time {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  text-align: right;
+}
+
+.heroTimelineSelected {
+  border-radius: var(--radius-control);
+  background: var(--surface-intelligence);
+}
+
+.heroTimelineLabel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.heroTimelineLabel strong {
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 560;
+}
+
+.heroDot {
+  width: 7px;
+  height: 7px;
+  margin-top: 5px;
+  border-radius: 50%;
+}
+
+.heroDotObserved {
+  background: var(--evidence-observed);
+}
+
+.heroDotUncertain {
+  background: var(--evidence-uncertain);
+}
+
+.heroDotGenerated {
+  background: var(--evidence-generated);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--evidence-generated) 22%, transparent);
+}
+
+.heroDotSupport {
+  background: var(--evidence-support);
+}
+
+.heroContext {
+  padding: 18px 16px;
+  border-left: 1px solid var(--border-subtle);
+  background: var(--surface-panel);
+}
+
+.heroContextHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 560;
+}
+
+.heroContextHeader span {
+  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
+}
+
+.heroContextList {
+  margin: 12px 0 0;
+}
+
+.heroContextList > div {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 2px;
+}
+
+.heroContextList dt {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.heroContextList dd {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 12px;
+  gap: 6px;
+}
+
+.heroContextMarker {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--evidence-support);
+}
+
+.heroCard {
+  position: absolute;
+  z-index: 4;
+  right: 20px;
+  bottom: 18px;
+  width: 330px;
+  border-radius: var(--radius-panel);
+  background: var(--surface-raised);
+  box-shadow:
+    0 0 0 1px var(--border-default),
+    var(--shadow-inspector);
+}
+
+.heroCardHeader {
+  display: grid;
+  align-items: center;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.heroCardHeader strong {
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 590;
+}
+
+.heroCardHeader time {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.heroCardHeader svg {
+  color: var(--text-tertiary);
+}
+
+.heroCardBody {
+  padding: 10px 12px;
+}
+
+.heroCardLabel {
+  margin: 0 0 4px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.heroCardLabel:not(:first-child) {
+  margin-top: 8px;
+}
+
+.heroCardText {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.42;
+}
+
+.heroCardSource {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  gap: 6px;
+}
+
+.heroCardDiff {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+}
+
+.heroCardDiff p {
+  display: flex;
+  margin: 0;
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  gap: 7px;
+  line-height: 1.4;
+}
+
+.heroCardDiffRemoved {
+  background: var(--surface-counter);
+  color: var(--evidence-counter);
+}
+
+.heroCardDiffAdded {
+  background: var(--surface-support);
+  color: var(--evidence-support);
+}
+
+.heroCardFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.heroCardButton {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 11px;
+  border-radius: var(--radius-control);
+  background: var(--text-primary);
+  color: var(--surface-raised);
+  font-size: 11.5px;
+  font-weight: 540;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   Role calibration
+   The guide states the standard, the stage map shows where each competency
+   becomes observable, and the candidate workbench floats over both because
+   it is the surface that produces the evidence.
+   ========================================================================== */
+
+.calScene {
+  position: relative;
+  min-height: 626px;
+  margin: 0;
+  border-radius: 15px 0 0 15px;
+  background: var(--surface-raised);
+  box-shadow:
+    0 0 0 1px var(--border-default),
+    var(--shadow-card);
+}
+
+.calTitle {
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.calTitleRow {
+  display: flex;
+  align-items: center;
+  color: var(--text-tertiary);
+  gap: 8px;
+}
+
+.calTitleRow h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 590;
+  letter-spacing: -0.012em;
+}
+
+.calTitleSlash {
+  color: var(--text-disabled);
+}
+
+.calTitleRow strong {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 540;
+}
+
+.calShare {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  margin-left: auto;
+  padding: 0 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-control);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  gap: 6px;
+}
+
+.calMore {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.calTitle p {
+  margin: 6px 0 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.calBody {
+  position: relative;
+  display: grid;
+  padding: 16px 20px 20px;
+  gap: 20px;
+  grid-template-columns: 268px minmax(0, 1fr);
+}
+
+.calGuide {
+  padding: 13px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-panel);
+  background: var(--surface-panel);
+}
+
+.calGuide header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calGuide header strong {
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 590;
+}
+
+.calDraft {
+  padding: 2px 6px;
+  border-radius: var(--radius-tag);
+  background: var(--surface-selected);
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.calGuideIntro {
+  margin: 7px 0 0;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.calGuide ul {
   margin: 12px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.distributionBriefSection li,
-.distributionLimit p {
-  display: grid;
-  grid-template-columns: 22px minmax(0, 1fr);
-  gap: 9px;
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 11.5px;
-  line-height: 1.45;
-}
-
-.distributionBriefSection li > svg,
-.distributionLimit p > svg {
-  box-sizing: content-box;
-  border-radius: 999px;
-  padding: 4px;
-  background: var(--surface-support);
-  color: var(--evidence-support);
-}
-
-.distributionBriefSection li strong,
-.distributionLimit p strong {
-  display: block;
-  margin-bottom: 2px;
-  color: var(--text-primary);
-  font-weight: 570;
-}
-
-.distributionLimit h3 {
-  color: var(--evidence-counter);
-}
-
-.distributionLimit p {
-  margin-top: 10px;
-}
-
-.distributionLimit p > svg {
-  background: var(--surface-counter);
-  color: var(--evidence-counter);
-}
-
-.distributionQuestions {
-  flex: 1;
-  padding: 14px 17px;
-}
-
-.distributionQuestions h3 {
-  color: var(--evidence-generated);
-}
-
-.distributionQuestions ol {
-  display: grid;
-  gap: 0;
-  margin: 9px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.distributionQuestions li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 8px 0;
-  color: var(--text-secondary);
-  font-size: 11.5px;
-  line-height: 1.4;
-}
-
-.distributionQuestions time {
-  align-self: start;
-  border-radius: 4px;
-  padding: 2px 5px;
-  background: var(--surface-intelligence);
-  color: var(--evidence-generated);
-  font-family: var(--font-mono);
-}
-
-.distributionBriefFooter {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 9px;
+.calGuide li {
+  padding: 10px 9px;
   border-top: 1px solid var(--border-subtle);
-  padding: 12px 17px;
-  color: var(--text-tertiary);
-  font-size: 11.5px;
+  border-radius: var(--radius-control);
 }
 
-.distributionBriefFooter strong {
-  display: block;
-  color: var(--text-primary);
-  font-weight: 560;
-}
-
-.distributionBriefFooter > svg {
-  color: var(--evidence-support);
-}
-
-.distributionReviewer {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border-radius: 999px;
-  background: var(--surface-deep);
-  color: var(--text-secondary);
-  font-weight: 580;
-}
-
-.distributionWorkspace {
-  position: relative;
-  z-index: 0;
-  min-width: 0;
-  margin-left: 326px;
-  padding: 20px 36px 26px 18px;
-}
-
-.distributionHeader {
-  display: flex;
-  min-height: 58px;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 0 4px 12px;
-}
-
-.distributionHeader h3 {
-  font-size: 16px;
-  font-weight: 580;
-  letter-spacing: -0.018em;
-}
-
-.distributionHeader p,
-.distributionHeader > span {
-  margin-top: 4px;
-  color: var(--text-tertiary);
-  font-size: 11.5px;
-}
-
-.distributionHeader > span {
-  margin-top: 2px;
-}
-
-.distributionMatrix {
-  display: grid;
-  grid-template-columns: 170px repeat(4, minmax(128px, 1fr));
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.distributionCorner,
-.distributionCandidate {
-  min-height: 48px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.distributionCandidate {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding-inline: 10px;
-  color: var(--text-secondary);
-  font-size: 11.5px;
-}
-
-.distributionCandidate span {
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border: 1px solid var(--border-subtle);
-  border-radius: 5px;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: 10px;
-}
-
-.distributionRowGroup {
-  display: contents;
-}
-
-.distributionRowLabel {
-  display: grid;
-  min-height: 91px;
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 9px;
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 13px 10px 12px 2px;
-}
-
-.distributionRowIcon {
-  display: grid;
-  width: 26px;
-  height: 26px;
-  place-items: center;
-  border: 1px solid currentColor;
-  border-radius: 999px;
-}
-
-.distributionRowLabel strong {
-  display: block;
-  font-size: 12px;
-  font-weight: 570;
-}
-
-.distributionRowLabel p {
-  margin-top: 4px;
-  color: var(--text-tertiary);
-  font-size: 10.5px;
-  line-height: 1.35;
-}
-
-.distributionTeal {
-  color: var(--evidence-observed);
-}
-
-.distributionBlue {
-  color: #4869ae;
-}
-
-.distributionGreen {
-  color: var(--evidence-support);
-}
-
-.distributionPurple {
-  color: var(--evidence-generated);
-}
-
-.distributionPlot {
-  position: relative;
-  min-height: 91px;
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 8px;
-}
-
-.distributionPlotActive {
-  z-index: 1;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--surface-intelligence) 78%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evidence-generated) 40%, transparent);
-}
-
-.distributionMark {
-  position: absolute;
-  z-index: 2;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  translate: -50% -50%;
-}
-
-.distributionMarkSupport {
-  background: var(--evidence-support);
-}
-
-.distributionMarkDefense {
-  background: var(--evidence-generated);
-}
-
-.distributionMarkObservation {
-  border-radius: 1px;
-  background: var(--evidence-observed);
-}
-
-.distributionMarkUncertain {
-  width: 0;
-  height: 0;
-  border-right: 4px solid transparent;
-  border-bottom: 7px solid var(--evidence-uncertain);
-  border-left: 4px solid transparent;
-  border-radius: 0;
-  background: transparent;
-}
-
-.distributionMarkCounter {
-  width: 7px;
-  height: 7px;
-  background:
-    linear-gradient(45deg, transparent 42%, var(--evidence-counter) 42% 58%, transparent 58%),
-    linear-gradient(-45deg, transparent 42%, var(--evidence-counter) 42% 58%, transparent 58%);
-}
-
-.distributionAxis {
-  position: absolute;
-  right: 10px;
-  bottom: 12px;
-  left: 10px;
-  height: 1px;
-  background: var(--border-subtle);
-}
-
-.distributionAxis::before,
-.distributionAxis::after {
-  position: absolute;
-  top: -2px;
-  width: 1px;
-  height: 5px;
-  background: var(--border-default);
-  content: "";
-}
-
-.distributionAxis::before {
-  left: 0;
-}
-
-.distributionAxis::after {
-  right: 0;
-}
-
-.distributionLegend {
-  display: flex;
-  min-height: 40px;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-  padding: 8px 4px;
-  color: var(--text-tertiary);
-  font-size: 10.5px;
-}
-
-.distributionLegend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.distributionLegend i {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-}
-
-.distributionTimeline {
-  position: relative;
-  overflow: hidden;
-  border-radius: 10px;
+.calGuideItemActive {
+  border-color: transparent;
   background: var(--surface-raised);
   box-shadow: 0 0 0 1px var(--border-default);
 }
 
-.distributionTimeline > header {
-  display: flex;
-  min-height: 46px;
+.calGuideRow {
+  display: grid;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 0 14px;
   color: var(--text-tertiary);
-  font-size: 11.5px;
-}
-
-.distributionTimeline > header div {
-  display: flex;
-  align-items: baseline;
   gap: 8px;
+  grid-template-columns: 14px minmax(0, 1fr) auto 13px;
 }
 
-.distributionTimeline > header strong {
+.calGuideRow strong {
   color: var(--text-primary);
-  font-weight: 570;
-}
-
-.distributionTimeline ol {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin: 0;
-  padding: 10px 14px 18px;
-  list-style: none;
-}
-
-.distributionTimeline li {
-  position: relative;
-  display: grid;
-  min-height: 58px;
-  grid-template-columns: 42px 12px minmax(0, 1fr) 16px;
-  align-items: start;
-  gap: 8px;
-  padding: 8px 12px 8px 0;
-  color: var(--text-tertiary);
-  font-size: 10.5px;
-}
-
-.distributionTimeline li time {
-  font-family: var(--font-mono);
-}
-
-.distributionTimeline li strong {
-  display: block;
-  color: var(--text-primary);
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 560;
 }
 
-.distributionTimeline li p {
-  margin-top: 2px;
-  line-height: 1.35;
-}
-
-.distributionTimeline li > svg {
-  color: var(--text-tertiary);
-}
-
-.distributionTimelineDot {
-  position: relative;
-  z-index: 1;
-  width: 7px;
-  height: 7px;
-  margin-top: 3px;
-  border: 2px solid var(--surface-raised);
-  border-radius: 999px;
-  background: var(--evidence-generated);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--evidence-generated) 30%, transparent);
-}
-
-.distributionTimelineLink {
-  position: absolute;
-  right: 14px;
-  bottom: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.calGuideWeight {
   color: var(--text-secondary);
-  font-size: 10.5px;
-  text-decoration: none;
+  font-size: 11.5px;
 }
 
-@media (max-width: 1100px) {
-  .distributionScene {
-    width: calc(100% + 48px);
-    min-height: 680px;
-    margin-left: -24px;
-  }
-
-  .distributionBrief {
-    width: 286px;
-  }
-
-  .distributionWorkspace {
-    margin-left: 300px;
-    padding-right: 22px;
-  }
-
-  .distributionMatrix {
-    grid-template-columns: 150px repeat(4, minmax(118px, 1fr));
-  }
-
-  .distributionRowLabel p {
-    display: none;
-  }
+.calGuideRequirement {
+  margin: 7px 0 0;
+  color: var(--evidence-generated);
+  font-size: 11.5px;
+  font-weight: 540;
 }
 
-@media (max-width: 760px) {
-  .distributionScene {
-    width: 100%;
-    min-height: 760px;
-    margin-left: 0;
-    border-radius: 12px;
-    background: var(--surface-deep);
-  }
-
-  .distributionScene::after {
-    display: none;
-  }
-
-  .distributionWorkspace {
-    width: 940px;
-    margin-left: -160px;
-    padding: 12px;
-    opacity: 0.48;
-    transform: scale(0.58);
-    transform-origin: top left;
-  }
-
-  .distributionBrief {
-    top: 176px;
-    right: 14px;
-    bottom: 14px;
-    left: 20px;
-    width: auto;
-  }
-
-  .distributionBriefSection li:nth-child(3),
-  .distributionQuestions li:nth-child(3) {
-    display: none;
-  }
+.calGuideOptional {
+  color: var(--evidence-uncertain);
 }
 
-/* ==========================================================================
-   Role calibration map
-   Competency definitions stay open in the guide while their evidence path
-   runs across the real stages of a Solutions Engineer engagement.
-   ========================================================================== */
+.calGuideBehavior {
+  margin: 3px 0 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
 
-.roleCalibrationScene {
-  min-height: 636px;
+.calMap {
   overflow: hidden;
-  margin: 0;
-  border-radius: 15px 0 0 15px;
-  background: var(--surface-panel);
-  box-shadow:
-    0 0 0 1px var(--border-default),
-    0 8px 14px rgba(45, 38, 32, 0.06);
+  padding-top: 2px;
 }
 
-.roleCalibrationTitle {
-  min-height: 86px;
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 18px 28px 14px;
-  background: var(--surface-band);
-}
-
-.roleCalibrationTitle > div {
-  display: flex;
-  align-items: baseline;
+.calStageRow,
+.calRow {
+  display: grid;
   gap: 14px;
+  grid-template-columns: 132px repeat(4, minmax(0, 1fr));
 }
 
-.roleCalibrationTitle h3 {
-  font-size: 20px;
-  font-weight: 590;
-  letter-spacing: -0.025em;
+.calStageRow {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.roleCalibrationTitle > div > span {
-  color: var(--border-strong);
-  font-size: 24px;
-  font-weight: 300;
-}
-
-.roleCalibrationTitle strong {
-  font-size: 15px;
-  font-weight: 560;
-}
-
-.roleCalibrationTitle p {
-  margin-top: 5px;
-  color: var(--text-tertiary);
-  font-size: 11.5px;
-}
-
-.roleCalibrationWorkspace {
-  display: grid;
-  min-height: 550px;
-  grid-template-columns: 248px minmax(0, 1fr);
-}
-
-.calibrationGuide {
-  position: relative;
-  z-index: 2;
-  margin: 14px 0 18px 18px;
-  border-radius: 10px;
-  background: var(--surface-raised);
-  box-shadow:
-    0 0 0 1px var(--border-default),
-    0 5px 10px rgba(45, 38, 32, 0.07);
-}
-
-.calibrationGuide > header {
+.calStageRow p {
   display: flex;
-  min-height: 42px;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 0 14px;
-  font-size: 11.5px;
-}
-
-.calibrationGuide > header strong {
-  font-weight: 570;
-}
-
-.calibrationGuide > header span {
-  border-radius: 4px;
-  padding: 2px 6px;
-  background: var(--surface-deep);
-  color: var(--text-tertiary);
-}
-
-.calibrationGuide > p {
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 11px 14px 13px;
-  color: var(--text-tertiary);
-  font-size: 10.5px;
-  line-height: 1.45;
-}
-
-.calibrationGuide > ul {
   margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.calibrationGuideItem {
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.calibrationGuideSummary {
-  display: grid;
-  min-height: 52px;
-  grid-template-columns: 20px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  padding: 0 14px;
-  color: var(--text-secondary);
-  font-size: 11.5px;
-}
-
-.calibrationGuideSummary > svg {
-  color: var(--evidence-observed);
-}
-
-.calibrationGuideSummary strong {
   color: var(--text-primary);
-  font-weight: 550;
-}
-
-.calibrationGuideSummary > span {
-  color: var(--text-tertiary);
-  font-family: var(--font-mono);
-}
-
-.calibrationGuideItemActive {
-  background: var(--surface-panel);
-}
-
-.calibrationGuideItemActive .calibrationGuideSummary > svg {
-  color: var(--evidence-generated);
-}
-
-.calibrationGuideDetail {
-  border-top: 1px solid var(--border-subtle);
-  padding: 12px 14px 14px 42px;
-}
-
-.calibrationGuideDetail dl {
-  display: grid;
-  gap: 11px;
-}
-
-.calibrationGuideDetail dt {
-  color: var(--text-primary);
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 560;
+  gap: 6px;
 }
 
-.calibrationGuideDetail dd {
+.calStageRow span {
+  display: block;
   margin-top: 3px;
-  color: var(--text-secondary);
-  font-size: 10.5px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
   line-height: 1.45;
 }
 
-.calibrationEvidenceSources {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 10px;
-  margin-top: 12px;
-  color: var(--text-tertiary);
-  font-size: 10px;
+.calRows {
+  margin-top: 6px;
 }
 
-.calibrationEvidenceSources span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.calibrationApproval {
-  display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  margin-top: 13px;
-  border-top: 1px solid var(--border-subtle);
-  padding-top: 11px;
-  color: var(--text-tertiary);
-  font-size: 10px;
-}
-
-.calibrationApproval > span {
-  display: grid;
-  width: 26px;
-  height: 26px;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--evidence-generated) 36%, transparent);
-  border-radius: 999px;
-  color: var(--evidence-generated);
-  font-weight: 580;
-}
-
-.calibrationApproval strong {
-  display: block;
-  color: var(--text-primary);
-  font-size: 10.5px;
-  font-weight: 560;
-}
-
-.calibrationApproval > svg {
-  color: var(--evidence-support);
-}
-
-.calibrationPathMap {
-  min-width: 0;
-  overflow: hidden;
-  padding: 14px 0 12px 18px;
-}
-
-.calibrationStageHeader {
-  display: grid;
-  min-width: 760px;
-  grid-template-columns: 140px repeat(4, minmax(150px, 1fr));
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.calibrationStageHeader > div {
-  min-height: 74px;
-  border-left: 1px solid var(--border-subtle);
-  padding: 11px 14px;
-}
-
-.calibrationStageHeader > div > svg {
-  float: left;
-  margin: 1px 7px 0 0;
-  color: var(--text-secondary);
-}
-
-.calibrationStageHeader strong {
-  font-size: 11.5px;
-  font-weight: 560;
-}
-
-.calibrationStageHeader p {
-  max-width: 18ch;
-  margin-top: 5px;
-  color: var(--text-tertiary);
-  font-size: 10px;
-  line-height: 1.35;
-}
-
-.calibrationPathRows {
-  min-width: 760px;
-}
-
-.calibrationPathRow {
-  display: grid;
-  grid-template-columns: 140px repeat(4, minmax(150px, 1fr));
-  min-height: 86px;
-  border-bottom: 1px solid var(--border-subtle);
-  --path-tone: var(--evidence-observed);
-}
-
-.calibrationPathRow:nth-child(2) {
-  --path-tone: #4869ae;
-}
-
-.calibrationPathRow:nth-child(3) {
-  --path-tone: var(--evidence-generated);
-}
-
-.calibrationPathRow:nth-child(4) {
-  --path-tone: var(--evidence-counter);
-}
-
-.calibrationPathLabel {
-  padding: 15px 12px 12px 0;
-  color: var(--path-tone);
-}
-
-.calibrationPathLabel strong {
-  display: block;
-  font-size: 11.5px;
-  font-weight: 570;
-}
-
-.calibrationPathLabel span {
-  display: block;
-  margin-top: 4px;
-  color: var(--text-tertiary);
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-}
-
-.calibrationPathCell {
+.calRow {
   position: relative;
-  min-width: 0;
-  border-left: 1px solid var(--border-subtle);
-  padding: 20px 14px 10px;
+  align-items: start;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.calibrationPathCell::before {
+.calRowLabel {
+  display: flex;
+  flex-direction: column;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  gap: 2px;
+}
+
+.calRowLabel strong {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 540;
+}
+
+.calRowActive .calRowLabel strong {
+  color: var(--evidence-generated);
+}
+
+.calCell {
+  position: relative;
+  padding-top: 16px;
+}
+
+/* The connector runs behind each node back to the previous stage, so the row
+   reads as one path rather than four unrelated markers. */
+.calCell::before {
   position: absolute;
-  top: 22px;
-  right: 0;
-  left: 0;
-  height: 1px;
-  background: color-mix(in srgb, var(--path-tone) 38%, var(--border-subtle));
+  top: 4px;
+  right: 50%;
+  left: -50%;
+  border-top: 1px solid var(--border-default);
   content: "";
 }
 
-.calibrationPathCell:last-child::before {
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--path-tone) 38%, var(--border-subtle)),
-    transparent
-  );
+.calRow > .calCell:last-child::after {
+  position: absolute;
+  top: 4px;
+  right: -14px;
+  left: 50%;
+  border-top: 1px dashed var(--border-subtle);
+  content: "";
 }
 
-.calibrationPathNode {
+.calNode {
   position: absolute;
-  z-index: 1;
-  top: 18px;
-  left: 12px;
-  width: 8px;
-  height: 8px;
-  border: 1px solid var(--path-tone);
-  background: var(--surface-panel);
+  top: 0;
+  left: calc(50% - 4px);
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  background: var(--surface-raised);
   rotate: 45deg;
 }
 
-.calibrationPathNodeFilled {
-  background: var(--path-tone);
-  box-shadow: inset 0 0 0 2px var(--surface-panel);
+.calNodeFilled {
+  border-color: transparent;
+  background: var(--text-tertiary);
 }
 
-.calibrationPathSignal {
-  position: relative;
-  z-index: 1;
-  max-width: 150px;
-  padding-top: 17px;
+.calRowActive .calNodeFilled {
+  background: var(--evidence-generated);
 }
 
-.calibrationPathSignal strong {
-  display: block;
+.calSignal {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.calSignal strong {
   color: var(--text-secondary);
-  font-size: 10.5px;
-  font-weight: 520;
-  line-height: 1.35;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.45;
 }
 
-.calibrationPathSignal > span {
+.calRowActive .calSignal strong {
+  color: var(--text-primary);
+}
+
+.calSignalSources {
   display: flex;
-  gap: 6px;
-  margin-top: 5px;
   color: var(--text-tertiary);
+  gap: 5px;
 }
 
-.calibrationPathRowActive {
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--surface-intelligence) 64%, transparent),
-    transparent 78%
-  );
-}
-
-.calibrationPathRowActive .calibrationPathCell:first-of-type::after {
-  position: absolute;
-  top: 20px;
-  right: -8px;
-  width: 62px;
-  height: 31px;
-  border-bottom: 1px dashed var(--evidence-generated);
-  border-left: 1px dashed var(--evidence-generated);
-  border-radius: 0 0 0 20px;
-  content: "";
-}
-
-.calibrationSourceLegend {
+.calLegend {
   display: flex;
-  min-width: 760px;
-  min-height: 52px;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 22px;
-  padding: 10px 4px;
+  margin-top: 14px;
   color: var(--text-tertiary);
-  font-size: 10.5px;
+  font-size: 11.5px;
+  gap: 6px 16px;
 }
 
-.calibrationSourceLegend span {
+.calLegend span {
   display: inline-flex;
   align-items: center;
   gap: 5px;
 }
 
-.calibrationSourceLegend span:first-child {
+.calLegend span:first-child {
   color: var(--text-secondary);
 }
 
-@media (max-width: 960px) {
-  .roleCalibrationScene {
-    min-height: 660px;
-  }
-
-  .roleCalibrationWorkspace {
-    grid-template-columns: 230px minmax(0, 1fr);
-  }
-
-  .calibrationGuide {
-    margin-left: 12px;
-  }
+.calBench {
+  position: absolute;
+  z-index: 4;
+  top: 132px;
+  right: -14px;
+  width: 574px;
+  border-radius: var(--radius-panel) 0 0 var(--radius-panel);
+  background: var(--surface-raised);
+  box-shadow:
+    0 0 0 1px var(--border-default),
+    var(--shadow-inspector);
 }
 
-@media (max-width: 680px) {
-  .roleCalibrationScene {
-    position: relative;
-    min-height: 710px;
-    border-radius: 12px;
+.calBenchHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.calBenchHeader strong {
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 590;
+}
+
+.calBenchHeader > span {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  gap: 5px;
+}
+
+.calBenchBody {
+  display: grid;
+  grid-template-columns: 158px minmax(0, 1fr);
+}
+
+.calBenchFiles {
+  padding: 11px 10px;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-panel);
+}
+
+.calBenchFilesTitle {
+  display: flex;
+  align-items: center;
+  margin: 0 0 8px;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 560;
+  gap: 5px;
+}
+
+.calBenchFiles ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calBenchFiles li {
+  display: flex;
+  align-items: center;
+  padding: 5px 7px;
+  border-radius: var(--radius-control);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  gap: 6px;
+}
+
+.calBenchFileActive {
+  background: var(--surface-intelligence);
+  color: var(--evidence-generated);
+  font-weight: 540;
+}
+
+.calBenchFileDot {
+  width: 5px;
+  height: 5px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--evidence-generated);
+}
+
+.calBenchFileDotUncertain {
+  background: var(--evidence-uncertain);
+}
+
+.calBenchThread {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.calBenchThreadTitle {
+  margin: 0 0 7px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.calBenchMessageMeta {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  gap: 6px;
+}
+
+.calBenchMessageMeta span {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface-selected);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  place-items: center;
+}
+
+.calBenchMessage {
+  margin: 5px 0 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.calBenchComposer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 9px;
+  padding: 5px 5px 5px 8px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-control);
+  background: var(--surface-raised);
+  color: var(--text-disabled);
+  font-size: 11.5px;
+}
+
+.calBenchSend {
+  padding: 3px 9px;
+  border-radius: 4px;
+  background: var(--text-primary);
+  color: var(--surface-raised);
+  font-size: 11.5px;
+  font-weight: 540;
+}
+
+.calBenchMain {
+  padding: 12px;
+}
+
+.calBenchLabel {
+  margin: 0 0 5px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.calBenchLabelWarn {
+  color: var(--evidence-uncertain);
+}
+
+.calBenchRecommendation {
+  display: flex;
+  margin: 0 0 12px;
+  padding: 6px 9px;
+  border-radius: var(--radius-control);
+  background: var(--surface-support);
+  color: var(--evidence-support);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  gap: 7px;
+}
+
+.calBenchTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.calBenchTable th:nth-child(1) {
+  width: 30%;
+}
+
+.calBenchTable th:nth-child(2) {
+  width: 25%;
+}
+
+.calBenchTable th:nth-child(3) {
+  width: 18%;
+}
+
+.calBenchTable th {
+  padding: 0 8px 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.calBenchTable td {
+  padding: 8px 8px 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.4;
+  vertical-align: top;
+}
+
+.calBenchTable td:first-child {
+  color: var(--text-primary);
+}
+
+.calBenchMono {
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+}
+
+.calBenchFooter {
+  display: grid;
+  margin-top: 12px;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.calBenchChip {
+  display: inline-flex;
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  overflow: hidden;
+  padding: 4px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-tag);
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  gap: 6px;
+}
+
+.calBenchChip em {
+  color: var(--text-tertiary);
+  font-style: normal;
+}
+
+.calBenchChipWarn {
+  border-color: color-mix(in srgb, var(--evidence-uncertain) 30%, transparent);
+  background: var(--surface-uncertain);
+  color: var(--evidence-uncertain);
+}
+
+.calBenchChipWarn em {
+  color: color-mix(in srgb, var(--evidence-uncertain) 80%, var(--text-tertiary));
+}
+
+/* ==========================================================================
+   Evidence insights
+   The claim, its lineage, what supports and contradicts it, and the human who
+   signed it off — with the defense that produced the decisive answer on top.
+   ========================================================================== */
+
+.insScene {
+  position: relative;
+  min-height: 604px;
+  overflow: hidden;
+  margin: 0;
+  border-radius: 15px 0 0 15px;
+  background: var(--surface-raised);
+  box-shadow:
+    0 0 0 1px var(--border-default),
+    var(--shadow-card);
+}
+
+.insTitle {
+  display: flex;
+  align-items: center;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+  gap: 7px;
+}
+
+.insTitle strong {
+  color: var(--text-primary);
+  font-weight: 590;
+}
+
+.insBody {
+  position: relative;
+  display: grid;
+  grid-template-columns: 234px minmax(0, 1fr);
+}
+
+.insTimeline {
+  padding: 14px 14px 16px;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-panel);
+}
+
+.insTimelineTitle {
+  margin: 0 0 10px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.insTimeline ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.insTimeline li {
+  position: relative;
+  display: grid;
+  padding-bottom: 14px;
+  gap: 0 9px;
+  grid-template-columns: 34px 8px minmax(0, 1fr);
+}
+
+.insTimeline li::before {
+  position: absolute;
+  top: 12px;
+  bottom: 0;
+  left: 46px;
+  border-left: 1px solid var(--border-subtle);
+  content: "";
+}
+
+.insTimeline li:last-child::before {
+  display: none;
+}
+
+.insTimeline time {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.insTimeline li strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.insTimeline li p {
+  margin: 2px 0 3px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.insDot {
+  width: 7px;
+  height: 7px;
+  margin-top: 5px;
+  border-radius: 50%;
+}
+
+.insDotObserved {
+  background: var(--evidence-observed);
+}
+
+.insDotUncertain {
+  background: var(--evidence-uncertain);
+}
+
+.insDotSupport {
+  background: var(--evidence-support);
+}
+
+.insDotGenerated {
+  background: var(--evidence-generated);
+}
+
+.insDotCounter {
+  background: var(--evidence-counter);
+}
+
+.insMono {
+  display: block;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+}
+
+.insTimelineLink {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 4px;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  gap: 5px;
+  text-decoration: none;
+}
+
+.insMain {
+  min-width: 0;
+  padding: 14px 18px 18px;
+}
+
+.insMainHeader {
+  display: flex;
+  align-items: center;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 10px;
+}
+
+.insMainHeader > strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 560;
+}
+
+.insCompetency {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--radius-tag);
+  background: var(--surface-selected);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  gap: 5px;
+}
+
+.insConfidence {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.insConfidenceFrom,
+.insConfidenceTo {
+  display: inline-flex;
+  align-items: center;
+  font-style: normal;
+  gap: 5px;
+}
+
+.insConfidenceFrom {
+  color: var(--evidence-uncertain);
+}
+
+.insConfidenceTo {
+  color: var(--evidence-support);
+}
+
+.insConfidenceFrom::before,
+.insConfidenceTo::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentcolor;
+  content: "";
+}
+
+.insLabel {
+  margin: 0 0 6px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.insLabelSupport {
+  color: var(--evidence-support);
+}
+
+.insLabelCounter {
+  color: var(--evidence-counter);
+}
+
+.insClaim {
+  padding: 12px 0;
+}
+
+.insClaim p:last-child {
+  max-width: 620px;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.insLineageWrap {
+  padding: 12px 372px 16px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.insLineage {
+  display: grid;
+  align-items: start;
+  gap: 12px 44px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.insNode {
+  position: relative;
+  padding: 9px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--surface-panel);
+}
+
+.insNode strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.insNode p {
+  margin: 5px 0 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.insNodeTag {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 11.5px;
+  font-weight: 540;
+}
+
+/* Lineage connectors are drawn as borders rather than an SVG so they stay
+   aligned with the boxes at any column width. */
+.insNode::before {
+  position: absolute;
+  top: 22px;
+  left: -44px;
+  width: 44px;
+  border-top: 1px solid var(--border-strong);
+  content: "";
+}
+
+.insNodeInitial {
+  grid-row: 1;
+  align-self: start;
+}
+
+.insNodeInitial::before {
+  display: none;
+}
+
+.insNodeSupport,
+.insNodeDefense {
+  border-color: color-mix(in srgb, var(--evidence-support) 34%, transparent);
+  background: var(--surface-support);
+}
+
+.insNodeSupport .insNodeTag,
+.insNodeDefense .insNodeTag {
+  color: var(--evidence-support);
+}
+
+.insNodeCounter {
+  border-color: color-mix(in srgb, var(--evidence-counter) 32%, transparent);
+  background: var(--surface-counter);
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.insNodeCounter .insNodeTag {
+  color: var(--evidence-counter);
+}
+
+/* Counterevidence hangs off the initial plan, so its connector drops out of
+   the row above and turns in rather than running flat. */
+.insNodeCounter::before {
+  top: -46px;
+  left: -22px;
+  width: 22px;
+  height: 68px;
+  border-top: 0;
+  border-bottom: 1px dashed color-mix(in srgb, var(--evidence-counter) 45%, transparent);
+  border-left: 1px dashed color-mix(in srgb, var(--evidence-counter) 45%, transparent);
+}
+
+.insColumns {
+  display: grid;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  gap: 16px 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.insList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.insList li {
+  display: grid;
+  padding: 7px 0;
+  gap: 8px;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+}
+
+.insList strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 540;
+  line-height: 1.4;
+}
+
+.insList p {
+  margin: 2px 0 3px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.insList time {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.insReview {
+  display: grid;
+  align-items: center;
+  padding: 11px 13px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-panel);
+  background: var(--surface-panel);
+  gap: 4px 20px;
+  grid-column: 1 / -1;
+  grid-template-columns: 244px minmax(0, 1fr) auto;
+}
+
+.insReview > .insLabel {
+  margin: 0;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.insReviewer {
+  display: grid;
+  align-items: center;
+  gap: 8px;
+  grid-column: 1;
+  grid-row: 2;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+}
+
+.insReviewer > span:first-child {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-selected);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  place-items: center;
+}
+
+.insReviewer div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.insReviewer strong {
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.insApproved {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: var(--radius-tag);
+  background: var(--surface-support);
+  color: var(--evidence-support);
+  font-size: 11.5px;
+  gap: 4px;
+}
+
+.insReviewNoteLabel {
+  margin: 0 0 3px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.insReviewNote {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  grid-column: 2;
+  grid-row: 2;
+  line-height: 1.5;
+}
+
+.insReview > .insMono {
+  grid-column: 3;
+  grid-row: 1;
+  text-align: right;
+}
+
+.insReview > .insTimelineLink {
+  margin: 0;
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: end;
+}
+
+.insDefense {
+  position: absolute;
+  z-index: 4;
+  top: 52px;
+  right: 14px;
+  width: 344px;
+  border-radius: var(--radius-panel);
+  background: var(--surface-raised);
+  box-shadow:
+    0 0 0 1px var(--border-default),
+    var(--shadow-inspector);
+}
+
+.insDefenseHeader {
+  display: flex;
+  align-items: center;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  gap: 6px;
+}
+
+.insDefenseHeader strong {
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 590;
+}
+
+.insDefenseHeader svg {
+  margin-left: auto;
+}
+
+.insDefenseBody {
+  padding: 12px;
+}
+
+.insDefenseArtifact {
+  display: flex;
+  align-items: center;
+  margin: 0 0 13px;
+  color: var(--evidence-generated);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  gap: 6px;
+}
+
+.insDefenseArtifact em {
+  color: var(--text-tertiary);
+  font-style: normal;
+}
+
+.insDefenseQuestion {
+  margin: 0 0 12px;
+  color: var(--text-primary);
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  line-height: 1.4;
+}
+
+.insDefenseTranscript {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.insDefenseTranscript li {
+  display: grid;
+  padding: 4px 0;
+  gap: 8px;
+  grid-template-columns: 64px minmax(0, 1fr);
+}
+
+.insDefenseTranscript p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.insSpeaker {
+  display: inline-flex;
+  align-items: center;
+  color: var(--evidence-support);
+  font-size: 11.5px;
+  gap: 5px;
+}
+
+.insSpeaker::before {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentcolor;
+  content: "";
+}
+
+.insSpeakerInterviewer {
+  color: var(--evidence-generated);
+}
+
+.insDefenseMeter {
+  display: grid;
+  align-items: center;
+  padding: 9px 0;
+  border-top: 1px solid var(--border-subtle);
+  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.insDefenseMeter time {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.insDefenseMeter .insMono {
+  grid-column: 1 / -1;
+}
+
+.insWaveform {
+  display: flex;
+  align-items: center;
+  height: 16px;
+  gap: 2px;
+}
+
+.insWaveform i {
+  width: 2px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--evidence-generated) 55%, transparent);
+}
+
+.insDefenseCompetency {
+  padding-top: 9px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.insDefenseCompetency strong {
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.insDefenseFooter {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-panel);
+  border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   Scene responsiveness
+   ========================================================================== */
+
+@media (max-width: 1180px) {
+  .heroApp {
+    width: calc(100% + 48px);
+    margin-left: -24px;
+    grid-template-columns: 44px 138px 112px minmax(0, 1fr);
   }
 
-  .roleCalibrationTitle {
-    min-height: 92px;
-    padding-inline: 18px;
-  }
-
-  .roleCalibrationWorkspace {
-    display: block;
-  }
-
-  .calibrationPathMap {
-    width: 900px;
-    padding-left: 0;
-    opacity: 0.38;
-    transform: scale(0.55);
-    transform-origin: top left;
-  }
-
-  .calibrationGuide {
-    position: absolute;
-    z-index: 3;
-    top: 116px;
-    right: 14px;
-    bottom: 14px;
-    left: 14px;
-    overflow: hidden;
-    margin: 0;
-  }
-
-  .calibrationGuideItem:not(.calibrationGuideItemActive):nth-child(n + 4) {
+  .heroContext {
     display: none;
   }
+
+  .calBench {
+    top: auto;
+    right: 12px;
+    bottom: 14px;
+    width: 400px;
+  }
+
+  .insColumns {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .insReview {
+    grid-column: 1 / -1;
+  }
+
+  .insDefense {
+    width: 320px;
+  }
 }
+
+@media (max-width: 1020px) {
+  .heroApp {
+    min-height: 0;
+    grid-template-columns: 44px 148px minmax(0, 1fr);
+  }
+
+  .heroCandidates {
+    display: none;
+  }
+
+  .heroCard {
+    right: 16px;
+    bottom: 16px;
+    width: 290px;
+  }
+
+  .calScene,
+  .insScene {
+    border-radius: 15px;
+  }
+
+  .calBody {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calStageRow,
+  .calRow {
+    grid-template-columns: 108px repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .calBench {
+    position: static;
+    width: auto;
+    border-radius: var(--radius-panel);
+  }
+
+  .insBody {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .insTimeline {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .insDefense {
+    position: static;
+    width: auto;
+    margin: 0 18px 18px;
+  }
+}
+
+@media (max-width: 760px) {
+  .heroApp {
+    width: 100%;
+    min-height: 0;
+    margin-left: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .heroIconRail,
+  .heroNav {
+    display: none;
+  }
+
+  .heroMain {
+    padding: 16px;
+  }
+
+  .heroTimeline li {
+    gap: 6px 10px;
+    grid-template-columns: 8px minmax(0, 1fr) auto;
+  }
+
+  .heroTimeline li time {
+    white-space: nowrap;
+  }
+
+  .heroTimeline li p {
+    grid-column: 2 / -1;
+  }
+
+  .heroCard {
+    position: static;
+    width: auto;
+    margin: 0 16px 16px;
+  }
+
+  .calScene,
+  .insScene {
+    min-height: 0;
+  }
+
+  .calBody {
+    padding: 14px;
+  }
+
+  .calStageRow {
+    display: none;
+  }
+
+  .calRow {
+    padding: 12px 0;
+    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .calCell {
+    padding-top: 14px;
+  }
+
+  .calCell:empty {
+    display: none;
+  }
+
+  .calCell::before,
+  .calRow > .calCell:last-child::after {
+    display: none;
+  }
+
+  .calNode {
+    left: 0;
+  }
+
+  .calBenchBody {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calBenchFiles {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .calBenchTable th:nth-child(3),
+  .calBenchTable td:nth-child(3) {
+    display: none;
+  }
+
+  .calBenchFooter {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .insMain {
+    padding: 14px;
+  }
+
+  .insMainHeader {
+    flex-wrap: wrap;
+  }
+
+  .insConfidence {
+    margin-left: 0;
+  }
+
+  .insLineage {
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .insNodeInitial,
+  .insNodeCounter {
+    grid-row: auto;
+  }
+
+  .insNodeCounter {
+    grid-column: auto;
+  }
+
+  .insNode::before {
+    display: none;
+  }
+
+  .insColumns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .insDefense {
+    margin: 0 14px 14px;
+  }
+}
+

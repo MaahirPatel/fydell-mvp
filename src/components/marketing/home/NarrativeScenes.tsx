@@ -3,10 +3,13 @@ import {
   ArrowRight,
   Braces,
   Check,
+  ChevronDown,
+  ChevronRight,
   CircleCheck,
   Compass,
   FileDiff,
   FileText,
+  Info,
   Link2,
   Lock,
   MessageSquareQuote,
@@ -17,6 +20,7 @@ import {
   TriangleAlert,
   TrendingUp,
   UserCheck,
+  X,
 } from "lucide-react";
 import ProductFrame, { CandidateShortlist, WorkspaceRail } from "./ProductFrame";
 import { cn } from "@/lib/cn";
@@ -420,7 +424,7 @@ type Competency = {
 const competencies: Competency[] = [
   {
     name: "Discovery judgment",
-    behavior: "Finds the real constraint before proposing",
+    behavior: "Understands the problem and identifies root causes and constraints.",
     requirement: "Required",
     weight: "30%",
     evidence: "Requirements separated from assumptions",
@@ -428,23 +432,24 @@ const competencies: Competency[] = [
   },
   {
     name: "Technical translation",
-    behavior: "Explains architecture to mixed audiences",
+    behavior: "Turns requirements into a feasible, implementable solution.",
     requirement: "Required",
-    weight: "25%",
+    weight: "20%",
     evidence: "Customer-facing explanation of a tradeoff",
     status: "Calibrated",
   },
   {
     name: "Adaptation",
-    behavior: "Revises when customer facts change",
+    behavior:
+      "Adapts approach when new information changes the problem, timeline, or stakeholders.",
     requirement: "Required",
-    weight: "25%",
+    weight: "30%",
     evidence: "Revision traced to a changed constraint",
     status: "Editing",
   },
   {
     name: "Commercial judgment",
-    behavior: "Connects technical choices to adoption risk",
+    behavior: "Balances customer value, effort, and commercial outcome.",
     requirement: "Useful",
     weight: "20%",
     evidence: "Adoption risk named with its limits",
@@ -493,27 +498,66 @@ const competencyIcons: Record<string, LucideIcon> = {
   "Commercial judgment": TrendingUp,
 };
 
+const benchFiles = [
+  { name: "Discovery notes", marker: null },
+  { name: "Architecture brief", marker: null },
+  { name: "Rollout plan", marker: "active" },
+  { name: "Customer email", marker: null },
+  { name: "Assumptions", marker: "uncertain" },
+];
+
+const benchRequirements = [
+  {
+    requirement: "Security review is mandatory before production access.",
+    source: "security_brief.pdf",
+    confidence: "High",
+    impact: "Blocks production for six weeks",
+  },
+  {
+    requirement: "Production access requires customer success approval.",
+    source: "discovery_call.md",
+    confidence: "Medium",
+    impact: "Adds an approval step",
+  },
+  {
+    requirement: "Adoption tracking depends on weekly active users.",
+    source: "sponsor_estimate.xlsx",
+    confidence: "Low",
+    impact: "Affects the timeline estimate",
+  },
+];
+
 export function CalibrationScene() {
   return (
-    <figure className={styles.roleCalibrationScene} aria-label="Role calibration">
-      <figcaption className={styles.roleCalibrationTitle}>
-        <div>
+    <figure className={styles.calScene} aria-label="Role calibration">
+      <figcaption className={styles.calTitle}>
+        <div className={styles.calTitleRow}>
           <h3>Role calibration</h3>
-          <span aria-hidden>/</span>
+          <span className={styles.calTitleSlash} aria-hidden>
+            /
+          </span>
           <strong>Solutions Engineer</strong>
+          <ChevronDown size={14} aria-hidden />
+          <span className={styles.calShare}>
+            <Share2 size={12} aria-hidden />
+            Share
+          </span>
+          <span className={styles.calMore} aria-hidden>
+            ⋮
+          </span>
         </div>
         <p>Define what great looks like, connect evidence, and align on judgment.</p>
       </figcaption>
 
-      <div className={styles.roleCalibrationWorkspace}>
-        <aside className={styles.calibrationGuide}>
+      <div className={styles.calBody}>
+        <aside className={styles.calGuide}>
           <header>
             <strong>Calibration guide</strong>
-            <span>Draft</span>
+            <span className={styles.calDraft}>Draft</span>
           </header>
-          <p>
-            Competencies, observable behaviors, and evidence that signal readiness at
-            each stage.
+          <p className={styles.calGuideIntro}>
+            Competencies, observable behaviors, and the evidence that signals
+            readiness at each stage.
           </p>
           <ul>
             {competencies.map((competency) => {
@@ -521,90 +565,70 @@ export function CalibrationScene() {
               const Icon = competencyIcons[competency.name];
               return (
                 <li
-                  className={cn(
-                    styles.calibrationGuideItem,
-                    active && styles.calibrationGuideItemActive,
-                  )}
                   key={competency.name}
+                  className={cn(active && styles.calGuideItemActive)}
                 >
-                  <div className={styles.calibrationGuideSummary}>
+                  <div className={styles.calGuideRow}>
                     <Icon size={14} aria-hidden />
                     <strong>{competency.name}</strong>
-                    <span>{competency.weight}</span>
+                    <span className={styles.calGuideWeight}>{competency.weight}</span>
+                    <ChevronRight size={13} aria-hidden />
                   </div>
-                  {active ? (
-                    <div className={styles.calibrationGuideDetail}>
-                      <dl>
-                        <div>
-                          <dt>Required</dt>
-                          <dd>Adapts approach when new information changes the plan.</dd>
-                        </div>
-                        <div>
-                          <dt>Observable behavior</dt>
-                          <dd>
-                            Reframes the recommendation, updates tradeoffs, and
-                            communicates the change clearly.
-                          </dd>
-                        </div>
-                      </dl>
-                      <div className={styles.calibrationEvidenceSources}>
-                        <span><MessageSquareQuote size={11} /> Stakeholder feedback</span>
-                        <span><FileText size={11} /> Work sample</span>
-                      </div>
-                      <div className={styles.calibrationApproval}>
-                        <span>MK</span>
-                        <p><strong>Reviewer MK</strong>Hiring-team approval</p>
-                        <CircleCheck size={13} aria-label="Approved" />
-                      </div>
-                    </div>
-                  ) : null}
+                  <p
+                    className={cn(
+                      styles.calGuideRequirement,
+                      competency.requirement === "Useful" && styles.calGuideOptional,
+                    )}
+                  >
+                    {competency.requirement}
+                  </p>
+                  <p className={styles.calGuideBehavior}>{competency.behavior}</p>
                 </li>
               );
             })}
           </ul>
         </aside>
 
-        <section className={styles.calibrationPathMap}>
-          <header className={styles.calibrationStageHeader}>
+        <section className={styles.calMap}>
+          <header className={styles.calStageRow}>
             <span aria-hidden />
             {calibrationStages.map((stage) => (
               <div key={stage.name}>
-                <stage.icon size={14} aria-hidden />
-                <strong>{stage.name}</strong>
-                <p>{stage.detail}</p>
+                <p>
+                  <stage.icon size={13} aria-hidden />
+                  {stage.name}
+                </p>
+                <span>{stage.detail}</span>
               </div>
             ))}
           </header>
 
-          <div className={styles.calibrationPathRows}>
+          <div className={styles.calRows}>
             {competencies.map((competency) => {
               const active = competency.name === "Adaptation";
               return (
                 <div
-                  className={cn(
-                    styles.calibrationPathRow,
-                    active && styles.calibrationPathRowActive,
-                  )}
                   key={competency.name}
+                  className={cn(styles.calRow, active && styles.calRowActive)}
                 >
-                  <div className={styles.calibrationPathLabel}>
+                  <div className={styles.calRowLabel}>
                     <strong>{competency.name}</strong>
                     <span>{competency.weight}</span>
                   </div>
                   {calibrationPaths[competency.name].map((signal, stageIndex) => (
-                    <div className={styles.calibrationPathCell} key={stageIndex}>
+                    <div className={styles.calCell} key={stageIndex}>
                       <span
                         className={cn(
-                          styles.calibrationPathNode,
-                          stageIndex < 3 && styles.calibrationPathNodeFilled,
+                          styles.calNode,
+                          stageIndex < 3 && styles.calNodeFilled,
                         )}
                         aria-hidden
                       />
                       {signal ? (
-                        <div className={styles.calibrationPathSignal}>
+                        <div className={styles.calSignal}>
                           <strong>{signal}</strong>
                           {active && stageIndex === 1 ? (
-                            <span>
+                            <span className={styles.calSignalSources}>
                               <FileText size={11} aria-hidden />
                               <MessageSquareQuote size={11} aria-hidden />
                             </span>
@@ -618,14 +642,127 @@ export function CalibrationScene() {
             })}
           </div>
 
-          <footer className={styles.calibrationSourceLegend}>
-            <span>Evidence sources:</span>
-            <span><MessageSquareQuote size={12} /> Interview</span>
-            <span><FileText size={12} /> Work sample</span>
-            <span><UserCheck size={12} /> Stakeholder feedback</span>
-            <span><Braces size={12} /> Project artifact</span>
+          <footer className={styles.calLegend}>
+            <span>Evidence sources</span>
+            <span>
+              <MessageSquareQuote size={12} aria-hidden /> Interview
+            </span>
+            <span>
+              <FileText size={12} aria-hidden /> Work sample
+            </span>
+            <span>
+              <UserCheck size={12} aria-hidden /> Stakeholder feedback
+            </span>
+            <span>
+              <Braces size={12} aria-hidden /> Project artifact
+            </span>
           </footer>
         </section>
+
+        <article className={styles.calBench} data-focal-layer>
+          <header className={styles.calBenchHeader}>
+            <strong>Candidate workbench</strong>
+            <span>
+              Candidate 1 · Acme rollout
+              <ChevronDown size={12} aria-hidden />
+            </span>
+          </header>
+
+          <div className={styles.calBenchBody}>
+            <div className={styles.calBenchFiles}>
+              <p className={styles.calBenchFilesTitle}>
+                Acme technical discovery
+                <ChevronDown size={11} aria-hidden />
+              </p>
+              <ul>
+                {benchFiles.map((file) => (
+                  <li
+                    key={file.name}
+                    className={cn(file.marker === "active" && styles.calBenchFileActive)}
+                  >
+                    <FileText size={11} aria-hidden />
+                    {file.name}
+                    {file.marker ? (
+                      <span
+                        className={cn(
+                          styles.calBenchFileDot,
+                          file.marker === "uncertain" && styles.calBenchFileDotUncertain,
+                        )}
+                        aria-hidden
+                      />
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+
+              <div className={styles.calBenchThread}>
+                <p className={styles.calBenchThreadTitle}>Customer thread</p>
+                <p className={styles.calBenchMessageMeta}>
+                  <span aria-hidden>SL</span>
+                  Security lead, Acme · 10:44
+                </p>
+                <p className={styles.calBenchMessage}>
+                  Please update the rollout plan to reflect this constraint and the
+                  revised approach.
+                </p>
+                <div className={styles.calBenchComposer}>
+                  <span>Write a reply…</span>
+                  <span className={styles.calBenchSend}>Send</span>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.calBenchMain}>
+              <p className={styles.calBenchLabel}>Current recommendation</p>
+              <p className={styles.calBenchRecommendation}>
+                <span aria-hidden>+</span>
+                Sandbox now, production access after security sign-off
+              </p>
+
+              <table className={styles.calBenchTable}>
+                <thead>
+                  <tr>
+                    <th scope="col">Requirement</th>
+                    <th scope="col">Source</th>
+                    <th scope="col">Confidence</th>
+                    <th scope="col">Decision impact</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {benchRequirements.map((row) => (
+                    <tr key={row.source}>
+                      <td>{row.requirement}</td>
+                      <td className={styles.calBenchMono}>{row.source}</td>
+                      <td>{row.confidence}</td>
+                      <td>{row.impact}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className={styles.calBenchFooter}>
+                <div>
+                  <p className={styles.calBenchLabel}>Evidence</p>
+                  <span className={styles.calBenchChip}>
+                    <FileText size={11} aria-hidden />
+                    security_brief.pdf
+                    <em>page 4</em>
+                  </span>
+                </div>
+                <div>
+                  <p className={cn(styles.calBenchLabel, styles.calBenchLabelWarn)}>
+                    Unverified
+                  </p>
+                  <span className={cn(styles.calBenchChip, styles.calBenchChipWarn)}>
+                    <FileText size={11} aria-hidden />
+                    sponsor_estimate.xlsx
+                    <em>sheet: usage</em>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
       </div>
     </figure>
   );
@@ -849,197 +986,332 @@ export function DefenseScene() {
 /* 5.0 Evidence — an explicit claim graph under human review           */
 /* ================================================================== */
 
-type GraphNode = {
-  id: string;
-  relation: string;
-  sourceType: string;
+type EvidenceEvent = {
   time: string;
-  artifact: string;
   title: string;
+  detail: string;
+  artifact: string;
+  tone: string;
+  icon?: LucideIcon;
 };
 
-const graphNodes: GraphNode[] = [
+const evidenceEvents: EvidenceEvent[] = [
   {
-    id: "support",
-    relation: "Support",
-    sourceType: "World event",
-    time: "16:08",
-    artifact: "acme_security_review.md",
-    title: "Constraint received",
-  },
-  {
-    id: "derived",
-    relation: "Derived from",
-    sourceType: "Artifact revision",
-    time: "16:13",
-    artifact: "rollout_plan.md · r4",
-    title: "Plan revised",
-  },
-  {
-    id: "counter",
-    relation: "Counter",
-    sourceType: "Assumption record",
     time: "14:22",
-    artifact: "assumptions.md",
-    title: "Unverified sizing retained",
+    title: "Assumption recorded",
+    detail: "Initial rollout sizing relied on a sponsor estimate.",
+    artifact: "rollout_plan.md · line 18",
+    tone: styles.insDotUncertain,
   },
   {
-    id: "clarify",
-    relation: "Clarify",
-    sourceType: "Defense answer",
-    time: "16:31",
-    artifact: "defense_transcript.txt",
-    title: "Sponsor number kept directional",
+    time: "14:46",
+    title: "New constraint",
+    detail: "Six-week authentication security review.",
+    artifact: "security_brief.pdf · p.4",
+    tone: styles.insDotObserved,
   },
   {
-    id: "verified",
-    relation: "Verified by",
-    sourceType: "Human review",
-    time: "17:05",
-    artifact: "review_log · MK",
-    title: "Reviewed against the rubric",
+    time: "16:13",
+    title: "Plan revised",
+    detail: "Adjusted rollout to sequence a sandbox-first approach.",
+    artifact: "rollout_plan.md · line 42",
+    tone: styles.insDotSupport,
+  },
+  {
+    time: "17:01",
+    title: "Defense answer",
+    detail: "Explained tradeoffs and how the constraint was retained.",
+    artifact: "oral defense · Q2",
+    tone: styles.insDotGenerated,
+    icon: TriangleAlert,
+  },
+  {
+    time: "17:32",
+    title: "Human review",
+    detail: "Approved with notes; one assumption flagged for interview.",
+    artifact: "K. Patel · review",
+    tone: styles.insDotSupport,
   },
 ];
 
-const reviewDecisions = [
-  { label: "Approve", state: "Available" },
-  { label: "Approve with limitation", state: "Selected" },
-  { label: "Return for more evidence", state: "Available" },
-  { label: "Reject claim", state: "Available" },
+const supportingEvidence = [
+  {
+    title: "Plan revised to sequence a sandbox-first approach.",
+    detail:
+      "Adjusts sequencing so production access follows the security review.",
+    artifact: "rollout_plan.md",
+    time: "16:13",
+  },
+  {
+    title: "Constraint received from the security team.",
+    detail: "Security review is mandatory before production access.",
+    artifact: "security_brief.pdf",
+    time: "14:46",
+  },
 ];
 
-const reviewProvenance = [
-  { label: "Prompt", value: "defense-probe v3.2" },
-  { label: "Model", value: "fydell-eval 2026.02" },
-  { label: "Rubric", value: "SE-1.4" },
+const counterEvidence = [
+  {
+    title: "Sponsor estimate uses a shorter timeline.",
+    detail: "Estimate assumes no extended security review.",
+    artifact: "sponsor_estimate.xlsx",
+    time: "14:10",
+  },
+  {
+    title: "Industry benchmark shows longer cycles.",
+    detail: "Similar companies report six to eight week reviews.",
+    artifact: "benchmark_2026.pdf",
+    time: "14:55",
+  },
 ];
 
-const timelineEvents = [
-  ["14:22", "Assumption recorded"],
-  ["16:08", "New constraint"],
-  ["16:13", "Plan revised"],
-  ["16:31", "Defense answer"],
-  ["17:05", "Human review"],
+const defenseTranscript = [
+  {
+    speaker: "Candidate",
+    text: "I'd look for active-user data from teams similar to the sponsor and compare it to their license assignment.",
+  },
+  {
+    speaker: "Interviewer",
+    text: "And if that data isn't available?",
+  },
+  {
+    speaker: "Candidate",
+    text: "I'd size the first cohort smaller and treat the sponsor's number as directional, then validate with early usage.",
+  },
 ];
 
 export function EvidenceReviewScene() {
   return (
-    <ProductFrame
-      title="Evidence review"
-      context="Candidate 1 · human reviewed"
-      className={styles.evidenceScene}
-      meta={[{ label: "Reviewed 17:05 · MK", icon: UserCheck }]}
-    >
-      <div className={styles.evidenceReview} data-motion-observe="evidence">
-        <aside className={styles.timeline} aria-label="Event trail">
-          {timelineEvents.map(([time, event], index) => (
-            <div
-              className={cn(styles.event, index === 3 && styles.eventActive)}
-              key={time}
-            >
-              <strong>{time}</strong>
-              <br />
-              {event}
-            </div>
-          ))}
-        </aside>
+    <figure className={styles.insScene} aria-label="Evidence insights">
+      <figcaption className={styles.insTitle}>
+        <strong>Evidence insights</strong>
+        <span aria-hidden>·</span>
+        <span>Solutions Engineer</span>
+        <Info size={12} aria-hidden />
+      </figcaption>
 
-        <section className={styles.claimReview}>
-          <p className={styles.roleLabel}>Evidence claim</p>
-          <h3 className={styles.claimTitle}>
-            Candidate 1 adapts a customer recommendation when a material implementation
-            constraint changes.
-          </h3>
-
-          <div className={styles.claimStatus}>
-            <span>Adaptation</span>
-            <strong>Supported with limitation</strong>
-            <span>Confidence: moderate</span>
-          </div>
-
-          <ol
-            className={styles.evidenceLedger}
-            aria-label="Events and artifacts connected to this claim"
-          >
-            {graphNodes.map((node) => (
-              <li key={node.id} data-motion-item="evidence-node">
-                <span className={styles.evidenceLedgerRelation}>{node.relation}</span>
-                <time>{node.time}</time>
-                <span className={styles.evidenceLedgerSource}>{node.sourceType}</span>
-                <strong>{node.title}</strong>
-                <span className={styles.evidenceLedgerArtifact}>
-                  <FileText size={11} aria-hidden />
-                  {node.artifact}
-                </span>
+      <div className={styles.insBody} data-motion-observe="evidence">
+        <aside className={styles.insTimeline} aria-label="Evidence timeline">
+          <p className={styles.insTimelineTitle}>Evidence timeline</p>
+          <ol>
+            {evidenceEvents.map((event) => (
+              <li key={event.time}>
+                <time dateTime={`2026-08-18T${event.time}`}>{event.time}</time>
+                <span className={cn(styles.insDot, event.tone)} aria-hidden />
+                <div>
+                  <strong>{event.title}</strong>
+                  <p>{event.detail}</p>
+                  <span className={styles.insMono}>{event.artifact}</span>
+                </div>
               </li>
             ))}
           </ol>
+          <a className={styles.insTimelineLink} href="/how-it-works">
+            View full timeline
+            <ArrowRight size={12} aria-hidden />
+          </a>
+        </aside>
 
-          <div className={styles.evidenceColumns}>
-            <div className={styles.evidenceColumn}>
-              <h4>Supporting evidence</h4>
-              <p>
-                Revised the sequencing within five minutes, preserved useful
-                enablement work, and explained why production access had to move.
-              </p>
+        <section className={styles.insMain}>
+          <header className={styles.insMainHeader}>
+            <span className={styles.insCompetency}>
+              <RefreshCw size={11} aria-hidden />
+              Adaptation
+            </span>
+            <strong>Adapting the customer recommendation</strong>
+            <span className={styles.insConfidence}>
+              Evidence confidence
+              <em className={styles.insConfidenceFrom}>Uncertain</em>
+              <span aria-hidden>→</span>
+              <em className={styles.insConfidenceTo}>Supported with limits</em>
+            </span>
+          </header>
+
+          <div className={styles.insClaim}>
+            <p className={styles.insLabel}>Claim</p>
+            <p>
+              The rollout plan was adapted to account for a six-week authentication
+              security review, and the tradeoff was defended in the candidate&rsquo;s
+              own words.
+            </p>
+          </div>
+
+          <div className={styles.insLineageWrap}>
+            <p className={styles.insLabel}>Evidence lineage</p>
+            <div className={styles.insLineage}>
+              <article className={cn(styles.insNode, styles.insNodeInitial)}>
+                <strong>Initial plan</strong>
+                <span className={styles.insMono}>rollout_plan.md · line 18</span>
+                <p>Six-week timeline assumes no pre-launch security review.</p>
+              </article>
+
+              <article
+                className={cn(styles.insNode, styles.insNodeSupport)}
+                data-motion-item="evidence-node"
+              >
+                <span className={styles.insNodeTag}>Supporting</span>
+                <strong>Revised plan</strong>
+                <span className={styles.insMono}>rollout_plan.md · line 42</span>
+                <p>Sandbox-first approach accommodates the six-week review.</p>
+              </article>
+
+              <article
+                className={cn(styles.insNode, styles.insNodeDefense)}
+                data-motion-item="evidence-node"
+              >
+                <span className={styles.insNodeTag}>Supporting</span>
+                <strong>Defense answer</strong>
+                <span className={styles.insMono}>oral defense · Q2</span>
+                <p>Explained the tradeoff and why the constraint was retained.</p>
+              </article>
+
+              <article
+                className={cn(styles.insNode, styles.insNodeCounter)}
+                data-motion-item="evidence-node"
+              >
+                <span className={styles.insNodeTag}>Counterevidence</span>
+                <strong>Shorter rollout</strong>
+                <span className={styles.insMono}>sponsor_estimate.xlsx</span>
+                <p>Sponsor estimate assumed no extended review.</p>
+              </article>
             </div>
-            <div className={styles.evidenceColumn}>
-              <h4>Counter evidence</h4>
-              <p>
-                Initial rollout sizing relied on a sponsor estimate Candidate 1 had
-                marked as unverified but still used in the recommendation.
+          </div>
+
+          <div className={styles.insColumns}>
+            <div>
+              <p className={cn(styles.insLabel, styles.insLabelSupport)}>
+                Supporting evidence
               </p>
+              <ul className={styles.insList}>
+                {supportingEvidence.map((item) => (
+                  <li key={item.artifact}>
+                    <span className={cn(styles.insDot, styles.insDotSupport)} aria-hidden />
+                    <div>
+                      <strong>{item.title}</strong>
+                      <p>{item.detail}</p>
+                      <span className={styles.insMono}>{item.artifact}</span>
+                    </div>
+                    <time>{item.time}</time>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <p className={cn(styles.insLabel, styles.insLabelCounter)}>
+                Counterevidence
+              </p>
+              <ul className={styles.insList}>
+                {counterEvidence.map((item) => (
+                  <li key={item.artifact}>
+                    <span className={cn(styles.insDot, styles.insDotCounter)} aria-hidden />
+                    <div>
+                      <strong>{item.title}</strong>
+                      <p>{item.detail}</p>
+                      <span className={styles.insMono}>{item.artifact}</span>
+                    </div>
+                    <time>{item.time}</time>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className={styles.insReview}>
+              <p className={styles.insLabel}>Human review</p>
+              <div className={styles.insReviewer}>
+                <span aria-hidden>KP</span>
+                <div>
+                  <strong>K. Patel</strong>
+                  Solutions Engineering lead
+                </div>
+                <span className={styles.insApproved}>
+                  Approved
+                  <CircleCheck size={11} aria-hidden />
+                </span>
+              </div>
+              <p className={styles.insReviewNoteLabel}>Notes</p>
+              <p className={styles.insReviewNote}>
+                Tradeoffs explained clearly. Constraint retained and plan updated
+                accordingly.
+              </p>
+              <p className={styles.insMono}>Reviewed 17:32</p>
+              <a className={styles.insTimelineLink} href="/how-it-works">
+                Open full evidence
+                <ArrowRight size={12} aria-hidden />
+              </a>
             </div>
           </div>
         </section>
 
-        <aside className={styles.reviewPanel} aria-label="Human review" data-focal-layer>
-          <header className={styles.reviewPanelHeader}>
-            <p className={styles.roleLabel}>Human review</p>
-            <span className={styles.reviewPanelMeta}>MK · 17:05</span>
+        <article className={styles.insDefense} data-focal-layer>
+          <header className={styles.insDefenseHeader}>
+            <strong>Oral defense</strong>
+            <span aria-hidden>·</span>
+            <span>Question 2 of 3</span>
+            <X size={13} aria-hidden />
           </header>
 
-          <ul className={styles.reviewDecisionList}>
-            {reviewDecisions.map((decision) => {
-              const selected = decision.state === "Selected";
-              return (
-                <li
-                  key={decision.label}
-                  aria-current={selected ? "true" : undefined}
-                  className={cn(
-                    styles.reviewDecisionRow,
-                    selected && styles.reviewDecisionRowSelected,
-                  )}
-                >
-                  <span className={styles.reviewDecisionMarker} aria-hidden>
-                    {selected ? <Check size={11} /> : null}
-                  </span>
-                  <span className={styles.reviewDecisionLabel}>{decision.label}</span>
-                  <span className={styles.reviewDecisionState}>{decision.state}</span>
-                </li>
-              );
-            })}
-          </ul>
-
-          <div className={styles.reviewNote}>
-            <p className={styles.reviewNoteLabel}>Reviewer note</p>
-            <p>
-              Claim is supported when the stated limitation remains attached. Do not
-              carry the adoption number into the interview as settled.
+          <div className={styles.insDefenseBody}>
+            <p className={styles.insLabel}>Artifact</p>
+            <p className={styles.insDefenseArtifact}>
+              <FileText size={11} aria-hidden />
+              rollout_plan.md
+              <em>line 14</em>
             </p>
+
+            <p className={styles.insLabel}>Generated question</p>
+            <p className={styles.insDefenseQuestion}>
+              Your adoption assumption comes from the sponsor. How would you test it
+              before using it to size the first production cohort?
+            </p>
+
+            <p className={styles.insLabel}>Live transcript</p>
+            <ul className={styles.insDefenseTranscript}>
+              {defenseTranscript.map((turn, index) => (
+                <li key={index}>
+                  <span
+                    className={cn(
+                      styles.insSpeaker,
+                      turn.speaker === "Interviewer" && styles.insSpeakerInterviewer,
+                    )}
+                  >
+                    {turn.speaker}
+                  </span>
+                  <p>{turn.text}</p>
+                </li>
+              ))}
+            </ul>
+
+            <div className={styles.insDefenseMeter}>
+              <time dateTime="PT1M24S">01:24</time>
+              <span className={styles.insWaveform} aria-hidden>
+                {Array.from({ length: 34 }, (_, index) => (
+                  <i
+                    key={index}
+                    style={{
+                      height: `${4 + ((index * 7) % 5) * 2 + (index % 3) * 2}px`,
+                    }}
+                  />
+                ))}
+              </span>
+              <span className={styles.insMono}>rollout_plan.md · line 14</span>
+            </div>
+
+            <div className={styles.insDefenseCompetency}>
+              <p className={styles.insLabel}>Competency</p>
+              <strong>Commercial judgment</strong>
+            </div>
           </div>
 
-          <dl className={styles.reviewProvenance}>
-            {reviewProvenance.map((item) => (
-              <div className={styles.reviewProvenanceItem} key={item.label}>
-                <dt>{item.label}</dt>
-                <dd>{item.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </aside>
+          <footer className={styles.insDefenseFooter}>
+            Evidence confidence
+            <em className={styles.insConfidenceFrom}>Uncertain</em>
+            <span aria-hidden>→</span>
+            <em className={styles.insConfidenceTo}>Supported with limits</em>
+          </footer>
+        </article>
       </div>
-    </ProductFrame>
+    </figure>
   );
 }
 
