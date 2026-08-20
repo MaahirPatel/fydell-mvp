@@ -610,82 +610,72 @@ export function AdaptScene() {
         <span>Candidate 1 · Acme rollout</span>
       </figcaption>
 
-      <div className={styles.adaptBaseline} data-motion-item="adapt-event">
-        <span className={styles.adaptBaselineLabel}>
-          <time>14:22</time>
-          Initial recommendation
-        </span>
-        <h3 className={styles.adaptBaselineTitle}>Single launch in six weeks</h3>
-        <p className={styles.adaptBaselineBody}>
-          Candidate 1 proposes a broad rollout after identity validation, assuming
-          the authentication security review can run in parallel.
-        </p>
-      </div>
-
-      <div className={styles.adaptConstraint} data-motion-item="adapt-event">
-        <span className={styles.adaptConstraintLabel}>
-          <TriangleAlert size={13} aria-hidden />
-          New information
-          <time>16:08</time>
-        </span>
-        <h3 className={styles.adaptConstraintTitle}>
-          Security review blocks production access
-        </h3>
-        <p className={styles.adaptConstraintBody}>
-          Acme confirms the authentication review itself takes six weeks. Material
-          constraint · production data cannot be connected first.
-        </p>
-      </div>
-
-      <div className={styles.adaptRevision} data-motion-item="adapt-event">
-        <header className={styles.adaptRevisionHeader}>
-          <span className={styles.adaptRevisionLabel}>
-            <time>16:13</time>
-            Recommendation revised
+      <div className={styles.adaptWorkspace}>
+        <header className={styles.adaptFileHeader}>
+          <span>
+            <FileText size={13} aria-hidden />
+            rollout_plan.md
           </span>
-          <h3 className={styles.adaptRevisionTitle}>Sandbox now, production later</h3>
+          <span>Revision 4 · saved 16:13</span>
         </header>
 
-        <div className={styles.adaptDiff} aria-label="Rollout plan before and after">
-          <div className={cn(styles.adaptDiffColumn, styles.adaptDiffBefore)}>
-            <p className={styles.adaptDiffLabel}>Before</p>
-            <p className={styles.adaptDiffLine}>
-              All 1,200 seats in a single production cutover at week six.
-            </p>
-            <p className={styles.adaptDiffLine}>
-              Security review runs in parallel with production access.
-            </p>
-          </div>
-          <ArrowRight className={styles.adaptDiffArrow} size={14} aria-hidden />
-          <div className={cn(styles.adaptDiffColumn, styles.adaptDiffAfter)}>
-            <p className={styles.adaptDiffLabel}>After</p>
-            <p className={styles.adaptDiffLine}>
-              Weeks 1–6 sandbox only, while the review completes.
-            </p>
-            <p className={styles.adaptDiffLine}>
-              Week 7 controlled 200-user cohort, after sign-off.
-            </p>
-          </div>
+        <div className={styles.adaptDocument} aria-label="Revised rollout plan">
+          <p className={styles.adaptDocumentSection}>## Rollout sequence</p>
+          <p className={styles.adaptLineRemoved}>
+            <span>10</span>
+            Launch all 1,200 seats in one production cutover at week six.
+          </p>
+          <p className={styles.adaptLineRemoved}>
+            <span>11</span>
+            Authentication review runs in parallel with production access.
+          </p>
+          <p className={styles.adaptLineAdded}>
+            <span>10</span>
+            Weeks 1–6: sandbox tenant while the security review completes.
+          </p>
+          <p className={styles.adaptLineAdded}>
+            <span>11</span>
+            Week 7: controlled 200-user cohort after security sign-off.
+          </p>
+          <p className={styles.adaptLineAdded}>
+            <span>12</span>
+            Expand by business unit after the first support review.
+          </p>
+          <p className={styles.adaptDocumentSection}>## Open assumption</p>
+          <p className={styles.adaptLineNeutral}>
+            <span>18</span>
+            Cohort size remains provisional until weekly active-user data is verified.
+          </p>
         </div>
 
-        <p className={styles.adaptRevisionBody}>
-          Candidate 1 preserves the enablement work and separates it from the blocked
-          integration, removing the parallel-review assumption.
-        </p>
-      </div>
-
-      <div className={styles.adaptReaction}>
-        <span className={styles.adaptReactionLabel}>Reaction time</span>
-        <strong className={styles.adaptReactionValue}>5m 08s</strong>
-        <span className={styles.adaptReactionDetail}>constraint received → plan revised</span>
-      </div>
-
-      <div className={styles.adaptUnresolved}>
-        <span className={styles.adaptUnresolvedLabel}>Still unresolved</span>
-        <p>
-          The 200-user cohort remains provisional. Rollout sizing still depends on
-          Acme&rsquo;s self-reported weekly active-user count.
-        </p>
+        <aside
+          className={styles.adaptConstraintOverlay}
+          data-motion-item="adapt-event"
+          data-focal-layer
+        >
+          <header>
+            <span>
+              <TriangleAlert size={13} aria-hidden />
+              Incoming constraint
+            </span>
+            <time>16:08</time>
+          </header>
+          <h3>Security review blocks production access</h3>
+          <p>
+            Acme confirms the authentication review takes six weeks and must finish
+            before production data can be connected.
+          </p>
+          <dl>
+            <div>
+              <dt>Source</dt>
+              <dd>Security lead, Acme</dd>
+            </div>
+            <div>
+              <dt>Artifact changed</dt>
+              <dd>rollout_plan.md · r4</dd>
+            </div>
+          </dl>
+        </aside>
       </div>
 
       <ol className={styles.adaptTrace} aria-label="Evidence trace">
@@ -823,8 +813,6 @@ type GraphNode = {
   time: string;
   artifact: string;
   title: string;
-  positionClass: string;
-  edgeClass: string;
 };
 
 const graphNodes: GraphNode[] = [
@@ -835,8 +823,6 @@ const graphNodes: GraphNode[] = [
     time: "16:08",
     artifact: "acme_security_review.md",
     title: "Constraint received",
-    positionClass: styles.graphNodeSupport,
-    edgeClass: styles.graphEdgeLabelSupport,
   },
   {
     id: "derived",
@@ -845,8 +831,6 @@ const graphNodes: GraphNode[] = [
     time: "16:13",
     artifact: "rollout_plan.md · r4",
     title: "Plan revised",
-    positionClass: styles.graphNodeDerived,
-    edgeClass: styles.graphEdgeLabelDerived,
   },
   {
     id: "counter",
@@ -855,8 +839,6 @@ const graphNodes: GraphNode[] = [
     time: "14:22",
     artifact: "assumptions.md",
     title: "Unverified sizing retained",
-    positionClass: styles.graphNodeCounter,
-    edgeClass: styles.graphEdgeLabelCounter,
   },
   {
     id: "clarify",
@@ -865,8 +847,6 @@ const graphNodes: GraphNode[] = [
     time: "16:31",
     artifact: "defense_transcript.txt",
     title: "Sponsor number kept directional",
-    positionClass: styles.graphNodeClarify,
-    edgeClass: styles.graphEdgeLabelClarify,
   },
   {
     id: "verified",
@@ -875,17 +855,7 @@ const graphNodes: GraphNode[] = [
     time: "17:05",
     artifact: "review_log · MK",
     title: "Reviewed against the rubric",
-    positionClass: styles.graphNodeVerified,
-    edgeClass: styles.graphEdgeLabelVerified,
   },
-];
-
-const graphEdgePaths = [
-  "M480 210 C 386 172 262 118 192 86",
-  "M480 210 C 574 172 698 118 768 86",
-  "M480 210 C 386 248 262 302 192 334",
-  "M480 210 C 574 248 698 302 768 334",
-  "M480 210 C 480 276 480 316 480 366",
 ];
 
 const reviewDecisions = [
@@ -914,6 +884,7 @@ export function EvidenceReviewScene() {
     <ProductFrame
       title="Evidence review"
       context="Candidate 1 · human reviewed"
+      className={styles.evidenceScene}
       meta={[{ label: "Reviewed 17:05 · MK", icon: UserCheck }]}
     >
       <div className={styles.evidenceReview} data-motion-observe="evidence">
@@ -937,61 +908,29 @@ export function EvidenceReviewScene() {
             constraint changes.
           </h3>
 
-          <div
-            className={styles.evidenceGraph}
-            aria-label="The claim is connected to a supporting world event, the revision it derives from, one counter assumption, a clarifying defense answer, and a human verification"
+          <div className={styles.claimStatus}>
+            <span>Adaptation</span>
+            <strong>Supported with limitation</strong>
+            <span>Confidence: moderate</span>
+          </div>
+
+          <ol
+            className={styles.evidenceLedger}
+            aria-label="Events and artifacts connected to this claim"
           >
-            <svg
-              className={styles.evidenceGraphCanvas}
-              viewBox="0 0 960 420"
-              preserveAspectRatio="none"
-              aria-hidden
-            >
-              {graphEdgePaths.map((path) => (
-                <path data-motion-line d={path} key={path} />
-              ))}
-            </svg>
-
-            <div
-              className={cn(styles.graphNode, styles.graphNodeClaim)}
-              data-motion-item="evidence-node"
-            >
-              <span className={styles.graphNodeType}>Claim · Adaptation</span>
-              <strong className={styles.graphNodeTitle}>
-                Recommendation adapts to a material constraint
-              </strong>
-              <span className={styles.graphNodeArtifact}>
-                Confidence moderate · limitation attached
-              </span>
-            </div>
-
             {graphNodes.map((node) => (
-              <div
-                key={node.id}
-                className={cn(styles.graphNode, node.positionClass)}
-                data-motion-item="evidence-node"
-              >
-                <span className={styles.graphNodeType}>
-                  {node.sourceType}
-                  <time className={styles.graphNodeTime}>{node.time}</time>
-                </span>
-                <strong className={styles.graphNodeTitle}>{node.title}</strong>
-                <span className={styles.graphNodeArtifact}>
-                  <FileText size={10} aria-hidden />
+              <li key={node.id} data-motion-item="evidence-node">
+                <span className={styles.evidenceLedgerRelation}>{node.relation}</span>
+                <time>{node.time}</time>
+                <span className={styles.evidenceLedgerSource}>{node.sourceType}</span>
+                <strong>{node.title}</strong>
+                <span className={styles.evidenceLedgerArtifact}>
+                  <FileText size={11} aria-hidden />
                   {node.artifact}
                 </span>
-              </div>
+              </li>
             ))}
-
-            {graphNodes.map((node) => (
-              <span
-                key={`${node.id}-edge`}
-                className={cn(styles.graphEdgeLabel, node.edgeClass)}
-              >
-                {node.relation}
-              </span>
-            ))}
-          </div>
+          </ol>
 
           <div className={styles.evidenceColumns}>
             <div className={styles.evidenceColumn}>

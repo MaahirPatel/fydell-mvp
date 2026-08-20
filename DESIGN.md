@@ -4,9 +4,9 @@ One token layer serves four surfaces: the public site, the employer console, the
 
 ## Visual theme
 
-Neutral graphite instrument. Near-black canvas, hairline structure, one action colour, colour reserved for meaning. The interface should read as something that records and reports rather than something that persuades.
+Bright evidence instrument. A warm green-to-ivory atmosphere holds compact stone product surfaces, with pure white reserved for the active or focal plane. The interface should read as a system that records work, preserves provenance, and supports a decision—not as a generic HR dashboard.
 
-Confidence comes from precision: exact alignment, tight tracking, restrained weight, honest empty states. Not from size, glow, or gradient.
+Confidence comes from precise alignment, believable working density, restrained weight, and causal product scenes. Marketing visuals use a contextual plane, an active plane, and one elevated focal object. They do not copy Linear's dark palette; they apply its compositional discipline to Fydell's own bright world.
 
 ## Colour
 
@@ -14,25 +14,25 @@ Surfaces step in small increments so depth reads as structure rather than as str
 
 | Token | Value | Use |
 |---|---|---|
-| `--surface-deep` | `#050607` | Behind the canvas; sidebar and rail wells |
-| `--surface-canvas` | `#08090a` | Page background |
-| `--surface-band` | `#0b0c10` | One step off canvas, to separate chapters on a long page |
-| `--surface-raised` | `#0e1013` | Panels sitting on the canvas |
-| `--surface-panel` | `#13161b` | Panel interiors, inputs, controls |
-| `--surface-hover` | `#181c22` | Hover on a row or control |
-| `--surface-selected` | `#202631` | The selected row |
-| `--surface-paper` | `#f5f7f8` | The one inverted surface; primary buttons |
+| `--surface-canvas` | `#f7f4ed` | Warm page atmosphere |
+| `--surface-deep` | `#f2eee6` | Context plane; rails and scene base |
+| `--surface-band` | `#f7f4ed` | Chapter and frame chrome |
+| `--surface-panel` | `#faf8f3` | Active product plane |
+| `--surface-raised` | `#ffffff` | Focal overlays and primary documents only |
+| `--surface-hover` | `#f6f3ec` | Hover on a row or control |
+| `--surface-selected` | `#f0ece3` | Selected row without a colored stripe |
+| `--surface-paper` | `#ffffff` | Exported evidence and printable surfaces |
 
 Text hierarchy is carried by solid colours, never by opacity, so it survives on every surface. All four clear WCAG 2.2 AA against the canvas.
 
 | Token | Value |
 |---|---|
-| `--text-primary` | `#f5f7f8` |
-| `--text-secondary` | `#b6bbc4` |
-| `--text-tertiary` | `#858b96` |
-| `--text-disabled` | `#5f656f` |
+| `--text-primary` | `#211d19` |
+| `--text-secondary` | `#625a52` |
+| `--text-tertiary` | `#716860` |
+| `--text-disabled` | `#716961` |
 
-Borders are white at low alpha so they hold on any surface step: `--border-subtle` 7.5%, `--border-default` 13%, `--border-strong` 18%.
+Borders use warm ink at low alpha: `--border-subtle` 11%, `--border-default` 18%, `--border-strong` 29%. Luminance separates planes first; hairlines confirm the edge; shadow is reserved for the focal object.
 
 ### Colour carries meaning, not decoration
 
@@ -40,13 +40,12 @@ Each accent has exactly one job. If a colour appears without that meaning, it is
 
 | Token | Value | Means |
 |---|---|---|
-| `--fydell-brand-blue` | `#5662ff` | Brand and primary action |
-| `--action-ink` | `#8f9bff` | Focus rings, links, action text on dark |
-| `--fydell-evidence` | `#6b8cff` | Active investigation, in-flight work |
-| `--fydell-changed` | `#e9b949` | Information changed, or review required |
-| `--fydell-risk` | `#f26b82` | Unsupported claim, destructive action, failure |
-| `--fydell-good` | `#67d9a0` | A genuinely completed state, never optimism |
-| `--fydell-verified` | `#b07fd0` | A claim checked against its evidence. Local accent only |
+| `--evidence-generated` | `#6f55c9` | Fydell-generated claim or prompt |
+| `--evidence-observed` | `#156f82` | Directly observed candidate or world event |
+| `--evidence-support` | `#357252` | Supporting evidence |
+| `--evidence-uncertain` | `#94651d` | Changed information or unresolved uncertainty |
+| `--evidence-counter` | `#b64053` | Counterevidence or contradiction |
+| `--action-ink` | `#695344` | Focus rings, links, and restrained actions |
 
 Visualisation reuses those meanings rather than inventing a palette. `--viz-track` is the empty channel, `--viz-idle` neutral for not-started, and the fills map to evidence, good, and changed. There is no categorical colour ramp, because a pipeline of stages is ordered, not categorical.
 
@@ -91,7 +90,7 @@ Density over decoration. A number does not need a card. A card holding one metri
 
 ## Motion
 
-`--motion-fast` 140ms for hover and focus, `--motion-panel` 190ms for expansion and disclosure, on `--ease` `cubic-bezier(0.16, 1, 0.3, 1)`. Motion confirms a state change; it never announces arrival. Nothing animates on page load in the product. `prefers-reduced-motion` collapses everything to near-zero.
+`--motion-fast` 140ms for hover and focus, `--motion-panel` 190ms for expansion and disclosure, on `--ease` `cubic-bezier(0.16, 1, 0.3, 1)`. Product motion confirms a state change. Marketing product theater may use one entrance and scrubbed plane transitions to explain causality. `prefers-reduced-motion` leaves every layer visible and removes the transitions.
 
 ## Iconography
 

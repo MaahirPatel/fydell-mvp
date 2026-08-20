@@ -833,11 +833,11 @@ textarea.platform-input {
   color-scheme: light;
 
   /* ---- Surfaces ---- */
-  --surface-canvas: #fbf9f5;
-  --surface-deep: #f3efe7;
-  --surface-band: #f7f4ee;
+  --surface-canvas: #f7f4ed;
+  --surface-deep: #f2eee6;
+  --surface-band: #f7f4ed;
   --surface-raised: #ffffff;
-  --surface-panel: #ffffff;
+  --surface-panel: #faf8f3;
   --surface-hover: #f6f3ec;
   --surface-selected: #f0ece3;
   --surface-paper: #ffffff;
@@ -853,7 +853,7 @@ textarea.platform-input {
   --text-primary: #211d19;
   --text-secondary: #625a52;
   --text-tertiary: #716860;
-  --text-disabled: #756d65;
+  --text-disabled: #716961;
 
   /* ---- The one solid control, inverted from the product's near-white. ---- */
   --control-solid: #33291f;
