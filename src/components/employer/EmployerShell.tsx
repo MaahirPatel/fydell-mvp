@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  CircleHelp,
   ChevronDown,
   ClipboardList,
   FileText,
   House,
   Plus,
+  Search,
   Settings,
+  ShieldCheck,
   SquareTerminal,
   Users,
 } from "lucide-react";
@@ -120,7 +124,7 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       className={`relative flex items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 py-[7px] text-[13.5px] transition-colors duration-[var(--motion-fast)] ${
         active
-          ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]"
+          ? "bg-[var(--surface-intelligence)] font-medium text-[var(--evidence-generated)]"
           : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
       }`}
     >
@@ -208,14 +212,12 @@ function Avatar({
 
   if (avatarUrl && !failed) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element -- avatar hosts are
-      // not known ahead of time, so the image optimizer cannot be configured
-      // for them.
-      <img
+      <Image
         src={avatarUrl}
         alt=""
         width={size}
         height={size}
+        unoptimized
         style={box}
         referrerPolicy="no-referrer"
         onError={() => setFailed(true)}
@@ -339,16 +341,18 @@ function AccountMenu({
  * lives in the rail rather than the top bar. It used to render in both the top
  * bar and the page header, which read as two different buttons.
  */
-function SidebarInvite() {
+function SidebarInvite({ compact = false }: { compact?: boolean }) {
   const { open } = useInviteModal();
   return (
     <button
       type="button"
       onClick={() => open()}
-      className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3 text-[13px] font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]"
+      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3 text-[13px] font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)] ${
+        compact ? "w-auto" : "w-full"
+      }`}
     >
       <Plus className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
-      Invite candidate
+      {compact ? "Invite" : "Invite candidate"}
     </button>
   );
 }
@@ -386,10 +390,102 @@ function WorkspaceSummary({ workspaceName }: { workspaceName: string }) {
           {workspaceName}
         </span>
         <span className="mt-0.5 block text-[11px] leading-tight text-[var(--text-tertiary)]">
-          Pilot workspace
+          Pilot plan
         </span>
       </span>
     </div>
+  );
+}
+
+function WorkspaceModeBar() {
+  return (
+    <div className="sticky top-0 z-50 flex h-7 items-center bg-[#263a5b] px-3 text-[11.5px] text-white">
+      <span className="font-medium">Pilot workspace</span>
+      <span className="mx-auto hidden text-white/78 sm:block">
+        Candidate work is recorded, disclosed, and reviewed before publication.
+      </span>
+      <Link
+        href="/trust"
+        className="ml-auto text-white/86 underline-offset-2 hover:text-white hover:underline sm:ml-0"
+      >
+        Data boundaries
+      </Link>
+    </div>
+  );
+}
+
+function WorkspaceSelector({ workspaceName }: { workspaceName: string }) {
+  const mark = workspaceName.trim().charAt(0).toUpperCase() || "F";
+  return (
+    <Link
+      href="/app/employer/settings"
+      className="flex min-h-[52px] items-center gap-2.5 rounded-[var(--radius-control)] px-2 py-1.5 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
+    >
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-panel)] text-[11px] font-semibold text-[var(--text-primary)]">
+        {mark}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[12.5px] font-medium leading-tight text-[var(--text-primary)]">
+          {workspaceName}
+        </span>
+        <span className="mt-0.5 block truncate text-[11px] leading-tight text-[var(--text-tertiary)]">
+          Fydell pilot
+        </span>
+      </span>
+      <ChevronDown
+        className="h-3.5 w-3.5 shrink-0 text-[var(--text-tertiary)]"
+        strokeWidth={1.7}
+        aria-hidden
+      />
+    </Link>
+  );
+}
+
+function WorkspaceToolbar() {
+  return (
+    <header className="sticky top-7 z-30 hidden h-14 shrink-0 items-center gap-4 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-6 md:flex lg:px-10">
+      <form
+        action="/app/employer/candidates"
+        method="get"
+        className="flex h-8 w-full max-w-[360px] items-center gap-2 rounded-[var(--radius-control)] bg-[var(--surface-deep)] px-3 transition-colors duration-[var(--motion-fast)] focus-within:bg-[var(--surface-hover)]"
+      >
+        <Search className="h-3.5 w-3.5" strokeWidth={1.7} aria-hidden />
+        <input
+          type="search"
+          name="q"
+          aria-label="Search candidates"
+          placeholder="Search candidates"
+          className="min-w-0 flex-1 bg-transparent text-[12.5px] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)]"
+        />
+      </form>
+      <div className="ml-auto flex items-center gap-1.5">
+        <Link
+          href="/trust"
+          aria-label="Trust and data handling"
+          className="inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-control)] px-2.5 text-[12.5px] text-[var(--text-secondary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+        >
+          <ShieldCheck className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+          <span className="hidden xl:inline">Data handling</span>
+        </Link>
+        <Link
+          href="/how-it-works"
+          aria-label="Product guide"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-control)] text-[var(--text-secondary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+        >
+          <CircleHelp className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+        </Link>
+        <Link
+          href="/app/employer/settings"
+          aria-label="Workspace settings"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-control)] text-[var(--text-secondary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+        >
+          <Settings className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+        </Link>
+        <div className="ml-1">
+          <SidebarInvite compact />
+        </div>
+      </div>
+    </header>
   );
 }
 
@@ -403,8 +499,8 @@ function MainSurface({ children }: { children: React.ReactNode }) {
     /* The rail governs the width, so 1280 to 1440 is used fully. The cap only
        binds past about 1736px, where a four-item metric row stretched across
        the full canvas stops being scannable. */
-    <main className="min-w-0 flex-1 px-5 py-7 sm:px-8">
-      <div className="mx-auto w-full max-w-[1440px]">{children}</div>
+    <main className="min-w-0 flex-1 bg-[var(--surface-raised)] px-5 py-7 sm:px-8 lg:px-12 lg:py-9">
+      <div className="mx-auto w-full max-w-[1320px]">{children}</div>
     </main>
   );
 }
@@ -429,17 +525,25 @@ export default function EmployerShell({
   return (
     <ToastProvider>
     <InviteModalProvider catalog={catalog}>
-      <div className="min-h-screen bg-[var(--surface-canvas)] text-[var(--text-primary)]">
-        <div className="flex min-h-screen">
-          <aside className="sticky top-0 hidden h-screen w-[216px] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-band)] px-2.5 py-3 md:flex">
-            <div className="flex items-center gap-2.5 rounded-[6px] px-2 py-2">
+      <div className="min-h-screen bg-[var(--surface-raised)] text-[var(--text-primary)] [--radius-frame:9px] [--radius-panel:8px]">
+        <WorkspaceModeBar />
+        <div className="flex min-h-[calc(100vh-28px)]">
+          <aside className="sticky top-7 hidden h-[calc(100vh-28px)] w-[224px] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2.5 py-2.5 md:flex">
+            <Link
+              href="/app/employer"
+              className="flex h-9 items-center gap-2.5 rounded-[6px] px-2 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
+            >
               <FydellMark width={18} />
               <span className="min-w-0 flex-1 truncate text-[14px] font-semibold tracking-[-0.024em] text-[var(--text-primary)]">
                 fydell
               </span>
+            </Link>
+
+            <div className="mt-1 border-b border-[var(--border-subtle)] pb-2">
+              <WorkspaceSelector workspaceName={workspaceName} />
             </div>
 
-            <div className="mt-4 flex-1">
+            <div className="mt-3 flex-1">
               <SidebarNav />
             </div>
 
@@ -464,11 +568,12 @@ export default function EmployerShell({
           </aside>
 
           <div className="flex min-w-0 flex-1 flex-col">
+            <WorkspaceToolbar />
             {/* Below md the rail is gone, so the top bar carries the things it
                 held: which workspace you are in, and the one global action.
                 On desktop both live in the rail and a bar here would be an
                 empty 56px strip above every page. */}
-            <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-5 md:hidden">
+            <header className="sticky top-7 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-5 md:hidden">
               <Link href="/app/employer" className="inline-flex min-w-0 items-center gap-2">
                 <FydellMark width={18} />
                 <span className="min-w-0 truncate text-[13.5px] font-medium text-[var(--text-primary)]">

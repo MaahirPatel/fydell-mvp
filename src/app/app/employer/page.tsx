@@ -281,6 +281,7 @@ export default async function EmployerHomePage() {
   return (
     <div>
       <PageHeader
+        className="border-b border-[var(--border-subtle)] pb-6"
         title={
           hasResults
             ? "Hiring decisions"
@@ -295,10 +296,29 @@ export default async function EmployerHomePage() {
               ? "Waiting on the first completed evaluation."
               : "Choose the work that represents the role, then invite the first candidate."
         }
+        meta={
+          <>
+            <span className="text-app-meta font-medium text-[var(--text-secondary)]">
+              {org.organizationName}
+            </span>
+            <span className="text-app-meta text-[var(--text-tertiary)]">
+              Fydell pilot
+            </span>
+          </>
+        }
       />
 
+      {showMetrics ? (
+        <section
+          className="mt-7 overflow-hidden border-y border-[var(--border-subtle)]"
+          aria-label="Workspace summary"
+        >
+          <MetricBand items={metricItems} />
+        </section>
+      ) : null}
+
       {attentionRows.length > 0 ? (
-        <Panel className="mt-7">
+        <Panel className={showMetrics ? "mt-6" : "mt-7"}>
           <PanelSection
             title="Needs attention"
             description="Ordered by whose turn it is and how long the work has been waiting."
@@ -342,8 +362,6 @@ export default async function EmployerHomePage() {
           </PanelSection>
         ) : null}
 
-        {showMetrics ? <MetricBand items={metricItems} /> : null}
-
         {hasInvited ? (
           <PanelSection
             title="Candidate pipeline"
@@ -357,16 +375,7 @@ export default async function EmployerHomePage() {
       </Panel>
 
       {hasInvited ? (
-        <div className="mt-6 grid gap-6 xl:grid-cols-2">
-          <Panel>
-            <PanelSection
-              title="Recent activity"
-              description="Recorded events only. Unsubmitted candidate work is never shown."
-            >
-              <ActivityFeed rows={activityRows} />
-            </PanelSection>
-          </Panel>
-
+        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <Panel>
             <PanelSection
               title="Recent reports"
@@ -406,6 +415,15 @@ export default async function EmployerHomePage() {
                   ))}
                 </ul>
               )}
+            </PanelSection>
+          </Panel>
+
+          <Panel>
+            <PanelSection
+              title="Recent activity"
+              description="Recorded events only. Unsubmitted candidate work is never shown."
+            >
+              <ActivityFeed rows={activityRows} />
             </PanelSection>
           </Panel>
         </div>
