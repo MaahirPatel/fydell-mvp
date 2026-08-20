@@ -3,19 +3,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  Activity,
-  BriefcaseBusiness,
+  ChevronDown,
+  CircleHelp,
+  CirclePlay,
+  Crosshair,
   FileCheck2,
-  FolderOpen,
   House,
   ReceiptText,
-  RotateCcw,
-  Users,
+  Search,
+  Settings,
 } from "lucide-react";
+import FydellMark from "@/components/brand/FydellMark";
 import type { SandboxSessionView } from "@/lib/sim-engine/proof/sandbox/view";
-import { SandboxWorkbench } from "./SandboxWorkbench";
-import { WorkReceiptView } from "./WorkReceiptView";
-import { SAMPLE_BRIEF, SAMPLE_CLAIMS, SAMPLE_EVENTS, SAMPLE_RECEIPT } from "./sample-artifacts";
+import { DemoGuide, GUIDE_BY_SURFACE } from "./DemoGuide";
+import { SandboxEvidence } from "./SandboxEvidence";
+import { SandboxLiveSimulation } from "./SandboxLiveSimulation";
+import { SandboxWorkReceipt } from "./SandboxWorkReceipt";
+import { FIXTURE_LABEL } from "./sample-artifacts";
 
 type Surface =
   | "home"
@@ -28,19 +32,11 @@ type Surface =
   | "receipt"
   | "outcomes";
 
-export function SandboxApp({
-  surface,
-  runId,
-  publicId,
-}: {
-  surface: Surface;
-  runId?: string;
-  publicId?: string;
-}) {
+export function SandboxApp({ surface }: { surface: Surface; runId?: string; publicId?: string }) {
   const [session, setSession] = useState<SandboxSessionView | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [autoplay, setAutoplay] = useState(false);
+  const [guideDismissed, setGuideDismissed] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [backoff, setBackoff] = useState(2000);
   const failCount = useRef(0);
@@ -115,14 +111,6 @@ export function SandboxApp({
     };
   }, [backoff, hidden, load, session, surface]);
 
-  useEffect(() => {
-    if (!autoplay || busy || hidden || !session || session.step === "finalized") return;
-    const id = window.setTimeout(() => {
-      void act({ type: "advance", idempotencyKey: `auto:${session.step}:${session.revision}` });
-    }, 1600);
-    return () => window.clearTimeout(id);
-  }, [act, autoplay, busy, hidden, session]);
-
   async function ensureSession() {
     if (session) return session;
     const res = await fetch("/api/sandbox", { method: "POST", credentials: "same-origin" });
@@ -163,44 +151,96 @@ export function SandboxApp({
   }
 
   const nav = [
-    { label: "Home", href: "/sandbox", icon: House, active: surface === "home" },
-    { label: "Roles", href: "/sandbox/roles", icon: BriefcaseBusiness, active: surface === "roles" || surface === "overview" },
-    { label: "Candidates", href: "/sandbox/candidates", icon: Users, active: surface === "candidates" },
-    { label: "Work", href: "/sandbox/work", icon: FolderOpen, active: surface === "work" || surface === "simulation" },
-    { label: "Evidence", href: session ? `/sandbox/evidence/${session.runId}` : "/sandbox/evidence", icon: FileCheck2, active: surface === "evidence" },
-    { label: "Work Receipts", href: session?.receiptPublicId ? `/sandbox/receipts/${session.receiptPublicId}` : "/sandbox/receipts", icon: ReceiptText, active: surface === "receipt" },
-    { label: "Outcomes", href: "/sandbox/outcomes", icon: Activity, active: surface === "outcomes" },
+    { label: "Overview", href: "/sandbox", icon: House, active: surface === "home" },
+    {
+      label: "Role calibration",
+      href: "/sandbox/roles",
+      icon: Crosshair,
+      active: surface === "roles" || surface === "overview" || surface === "candidates",
+    },
+    {
+      label: "Live simulation",
+      href: "/sandbox/work",
+      icon: CirclePlay,
+      active: surface === "work" || surface === "simulation",
+    },
+    {
+      label: "Evidence",
+      href: session ? `/sandbox/evidence/${session.runId}` : "/sandbox/evidence",
+      icon: FileCheck2,
+      active: surface === "evidence" || surface === "outcomes",
+    },
+    {
+      label: "Work receipt",
+      href: session?.receiptPublicId ? `/sandbox/receipts/${session.receiptPublicId}` : "/sandbox/receipts",
+      icon: ReceiptText,
+      active: surface === "receipt",
+    },
   ];
+
+  const guideKey =
+    surface === "work" || surface === "simulation"
+      ? "simulation"
+      : surface === "evidence"
+        ? "evidence"
+        : surface === "receipt"
+          ? "receipt"
+          : null;
+  const guide = guideKey ? GUIDE_BY_SURFACE[guideKey] : null;
 
   return (
     <div className="min-h-screen bg-[var(--surface-raised)] text-[var(--text-primary)]">
-      <div className="sticky top-0 z-50 flex h-8 items-center bg-[#263a5b] px-3 text-[11.5px] text-white">
-        <span className="font-medium">Sandbox</span>
-        <span className="mx-auto hidden text-white/80 sm:block">
-          Demo data only · Nothing here affects your live workspace.
+      <div className="sticky top-0 z-50 flex h-[30px] items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-panel)] px-4 text-app-meta">
+        <span className="font-medium text-[var(--text-secondary)]">Sandbox · Fictional data</span>
+        <span className="mx-auto hidden text-[var(--text-secondary)] lg:block">
+          You&rsquo;re exploring a Fydell sandbox. Actions here do not affect live hiring decisions.
         </span>
-        <Link href="/app/employer" className="ml-auto font-medium text-white underline-offset-2 hover:underline sm:ml-0">
-          Switch to live
+        <button
+          type="button"
+          onClick={() => void reset()}
+          disabled={busy}
+          className="text-[var(--text-secondary)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline disabled:opacity-50"
+        >
+          Reset demo
+        </button>
+        <Link
+          href="/app/employer"
+          className="inline-flex h-[22px] items-center rounded-[var(--radius-tag)] bg-[var(--control-solid)] px-2.5 text-[11.5px] font-medium text-[var(--control-solid-ink)]"
+        >
+          Use Fydell with your team
         </Link>
       </div>
-      <div className="flex min-h-[calc(100vh-32px)]">
-        <aside className="sticky top-8 hidden h-[calc(100vh-32px)] w-[224px] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2.5 py-3 md:flex">
-          <Link href="/sandbox" className="flex min-h-[48px] items-center gap-2.5 rounded-[var(--radius-control)] px-2 hover:bg-[var(--surface-hover)]">
-            <span className="flex h-7 w-7 items-center justify-center rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-panel)] text-[11px] font-semibold">
-              D
-            </span>
-            <span className="min-w-0">
-              <span className="block truncate text-[12.5px] font-medium">Demo Sandbox</span>
-              <span className="block text-[11px] text-[var(--text-tertiary)]">Sandbox</span>
-            </span>
-          </Link>
-          <nav className="mt-5 flex flex-1 flex-col gap-0.5" aria-label="Sandbox workspace">
+
+      <div className="sticky top-[30px] z-40 flex h-12 items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4">
+        <Link href="/sandbox" className="inline-flex items-center gap-2" aria-label="Fydell sandbox home">
+          <FydellMark width={22} />
+          <span className="text-[15px] font-semibold tracking-[-0.026em]">fydell</span>
+        </Link>
+        <span className="ml-4 inline-flex items-center gap-1.5 text-app-body text-[var(--text-secondary)]">
+          Northstar sandbox
+          <ChevronDown className="h-3.5 w-3.5" strokeWidth={1.7} aria-hidden />
+        </span>
+        <label className="ml-auto hidden h-8 min-w-[220px] items-center gap-2 rounded-[var(--radius-control)] border border-[var(--border-default)] px-2.5 text-app-meta text-[var(--text-tertiary)] md:flex">
+          <Search className="h-3.5 w-3.5" strokeWidth={1.7} aria-hidden />
+          <input
+            type="search"
+            placeholder="Search"
+            className="w-full bg-transparent text-app-meta text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)]"
+          />
+        </label>
+        <CircleHelp className="h-4 w-4 text-[var(--text-tertiary)]" strokeWidth={1.7} aria-hidden />
+        <Settings className="h-4 w-4 text-[var(--text-tertiary)]" strokeWidth={1.7} aria-hidden />
+      </div>
+
+      <div className="flex min-h-[calc(100vh-78px)]">
+        <aside className="sticky top-[78px] hidden h-[calc(100vh-78px)] w-[196px] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2.5 py-4 md:flex">
+          <nav className="flex flex-1 flex-col gap-0.5" aria-label="Sandbox">
             {nav.map(({ label, href, icon: Icon, active }) => (
               <Link
                 key={label}
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-8 items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 text-[13.5px] ${
+                className={`flex min-h-8 items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 text-app-body ${
                   active
                     ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]"
                     : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
@@ -211,39 +251,12 @@ export function SandboxApp({
               </Link>
             ))}
           </nav>
-          <button
-            type="button"
-            onClick={() => void reset()}
-            disabled={busy}
-            className="flex h-8 items-center gap-2 rounded-[var(--radius-control)] px-2.5 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:opacity-50"
-          >
-            <RotateCcw className="h-4 w-4" strokeWidth={1.7} aria-hidden />
-            Reset demo
-          </button>
+          <p className="px-2.5 text-app-meta text-[var(--text-tertiary)]">{FIXTURE_LABEL}</p>
         </aside>
 
         <div className="min-w-0 flex-1">
-          <header className="sticky top-8 z-30 flex h-14 items-center border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-5 md:px-8 lg:px-12">
-            <p className="text-[12.5px] font-medium text-[var(--text-secondary)]">
-              {nav.find((item) => item.active)?.label ?? "Sandbox"}
-            </p>
-            <div className="ml-auto flex items-center gap-2">
-              <span className="hidden text-app-meta text-[var(--text-tertiary)] sm:block">
-                {session ? `Step: ${session.step.replaceAll("_", " ")}` : "Demo not started"}
-              </span>
-              <button
-                type="button"
-                onClick={() => setAutoplay((value) => !value)}
-                disabled={!session || session.step === "finalized"}
-                className="inline-flex h-8 items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3 text-[12.5px] font-medium disabled:opacity-40"
-              >
-                {autoplay ? "Pause guide" : "Guide me"}
-              </button>
-            </div>
-          </header>
-
           {error ? (
-            <div className="border-b border-[var(--border-subtle)] px-5 py-3 text-app-body text-[var(--color-risk)] md:px-8 lg:px-12">
+            <div className="border-b border-[var(--border-subtle)] px-5 py-3 text-app-body text-[var(--color-risk)] md:px-8">
               {error}{" "}
               <button type="button" className="text-[var(--action-ink)]" onClick={() => void load()}>
                 Retry
@@ -251,16 +264,14 @@ export function SandboxApp({
             </div>
           ) : null}
 
-          <main className="px-5 py-7 md:px-8 lg:px-12 lg:py-9">
-            <div className="mx-auto w-full max-w-[1320px]">
+          <main className="px-5 py-7 md:px-8 lg:py-9">
+            <div className="mx-auto w-full max-w-[1240px]">
               {surface === "home" ? <SandboxHome session={session} onCreate={() => void ensureSession()} /> : null}
               {surface === "roles" || surface === "overview" ? <SandboxRole session={session} /> : null}
               {surface === "candidates" ? <SandboxCandidates session={session} onCreate={() => void ensureSession()} /> : null}
-              {surface === "work" || surface === "simulation" ? (
-                <SandboxWorkbench session={session} busy={busy} onAction={(body) => void act(body)} onEnsure={() => void ensureSession()} />
-              ) : null}
-              {surface === "evidence" ? <EvidenceReport session={session} expectedRunId={runId} onReview={(decision) => void act({ type: "review", decision })} /> : null}
-              {surface === "receipt" ? <ReceiptSurface session={session} publicId={publicId} /> : null}
+              {surface === "work" || surface === "simulation" ? <SandboxLiveSimulation /> : null}
+              {surface === "evidence" ? <SandboxEvidence /> : null}
+              {surface === "receipt" ? <SandboxWorkReceipt /> : null}
               {surface === "outcomes" ? (
                 <SandboxOutcomes session={session} busy={busy} onAction={(body) => void act(body)} />
               ) : null}
@@ -268,6 +279,10 @@ export function SandboxApp({
           </main>
         </div>
       </div>
+
+      {guide && !guideDismissed ? (
+        <DemoGuide guide={guide} onDismiss={() => setGuideDismissed(true)} onRestart={() => void reset()} />
+      ) : null}
     </div>
   );
 }
@@ -430,98 +445,6 @@ function SandboxCandidates({
   );
 }
 
-function EvidenceReport({
-  session,
-  expectedRunId,
-  onReview,
-}: {
-  session: SandboxSessionView | null;
-  expectedRunId?: string;
-  onReview: (decision: "approve" | "limit" | "follow_up" | "reject") => void;
-}) {
-  if (expectedRunId && session && expectedRunId !== session.runId) {
-    return <p className="text-app-body text-[var(--text-secondary)]">This evidence report belongs to another sandbox visitor.</p>;
-  }
-  const isSample = !session || session.claims.length === 0;
-  if (isSample) return <SampleEvidenceReport />;
-  return (
-    <section className="mx-auto max-w-[1040px]">
-      <p className="text-app-meta text-[var(--text-tertiary)]">{session.fixture.candidate.label} · Solutions Engineer</p>
-      <h1 className="mt-2 text-app-page">Decision Brief</h1>
-      <p className="mt-3 text-app-section font-medium text-[var(--text-primary)]">
-        {session.brief?.recommendation ?? "Evidence assembling"}
-      </p>
-      <p className="mt-2 max-w-[75ch] text-app-body text-[var(--text-secondary)]">
-        {session.brief?.why ?? "Evidence is still being assembled from this run. Complete the work and defense before treating this as a decision brief."}
-      </p>
-      {session.labels.review ? (
-        <p className="mt-4 border-y border-[var(--border-subtle)] py-3 text-app-body text-[var(--text-secondary)]">
-          {session.labels.review}
-        </p>
-      ) : null}
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-subtle)]">
-          <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-            <h2 className="text-app-section">Evidence</h2>
-          </div>
-          <ul>
-            {session.claims.length > 0 ? session.claims.map((claim) => (
-              <li key={claim.id} className="border-b border-[var(--border-subtle)] px-5 py-4 last:border-b-0">
-                <p className="text-app-meta text-[var(--text-tertiary)]">
-                  {claim.competency} · {claim.direction === "supports" ? "Supporting evidence" : "Counterevidence"}
-                </p>
-                <p className="mt-1 text-app-body">{claim.claim}</p>
-              </li>
-            )) : (
-              <li className="px-5 py-4 text-app-body text-[var(--text-secondary)]">
-                Complete the candidate work to produce evidence.
-              </li>
-            )}
-          </ul>
-        </div>
-        <div className="space-y-5">
-          <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3">
-            <h2 className="text-app-section">What to ask next</h2>
-            <ul className="mt-3 space-y-2">
-              {(session.brief?.probes ?? [session.fixture.defenseQuestion.prompt]).map((probe) => (
-                <li key={probe} className="text-app-body text-[var(--text-secondary)]">• {probe}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3">
-            <h2 className="text-app-section">Limitation</h2>
-            <p className="mt-2 text-app-body text-[var(--text-secondary)]">
-              This controlled scenario does not establish long-term project execution, production coding, or people management.
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="mt-6 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-subtle)]">
-        <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <h2 className="text-app-section">Observed work timeline</h2>
-        </div>
-        <ol>
-          {session.events.map((event) => (
-            <li key={event.id} className="grid grid-cols-[52px_minmax(0,1fr)] border-b border-[var(--border-subtle)] px-5 py-2.5 text-app-body last:border-b-0">
-              <span className="font-mono text-app-meta tabular-nums text-[var(--text-tertiary)]">{event.sequence}</span>
-              <span className="text-[var(--text-secondary)]">{event.eventType.replaceAll("_", " ").toLowerCase()}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
-      {session.step === "review_pending" ? (
-        <div className="mt-8 flex flex-wrap gap-2" aria-label="Review decision">
-          {(["approve", "limit", "follow_up", "reject"] as const).map((decision) => (
-            <button key={decision} type="button" className="h-9 rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3 text-[13px] capitalize" onClick={() => onReview(decision)}>
-              {decision.replaceAll("_", " ")}
-            </button>
-          ))}
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
 function SandboxOutcomes({
   session,
   busy,
@@ -627,106 +550,3 @@ function SandboxOutcomes({
   );
 }
 
-function ReceiptSurface({ session, publicId }: { session: SandboxSessionView | null; publicId?: string }) {
-  const [receipt, setReceipt] = useState<Record<string, unknown> | null>(null);
-  useEffect(() => {
-    const id = publicId || session?.receiptPublicId;
-    if (!id) return;
-    void fetch(`/api/receipts/${id}`).then(async (res) => {
-      const json = (await res.json()) as { receipt?: Record<string, unknown> };
-      if (json.receipt) setReceipt(json.receipt);
-    });
-  }, [publicId, session?.receiptPublicId]);
-  if (!receipt) {
-    return (
-      <div>
-        <SampleBanner>
-          Sample work receipt. Run the demo to issue one from your own work.
-        </SampleBanner>
-        <WorkReceiptView receipt={SAMPLE_RECEIPT} />
-      </div>
-    );
-  }
-  return <WorkReceiptView receipt={receipt} />;
-}
-
-function SampleBanner({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="mx-auto mb-6 max-w-[1040px] rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-hover)] px-4 py-2.5 text-app-meta text-[var(--text-secondary)]">
-      {children}
-    </p>
-  );
-}
-
-function SampleEvidenceReport() {
-  return (
-    <section className="mx-auto max-w-[1040px]">
-      <SampleBanner>
-        Sample evidence report. Run the demo to generate one from your own work.
-      </SampleBanner>
-      <p className="text-app-meta text-[var(--text-tertiary)]">Candidate 01 · Solutions Engineer</p>
-      <h1 className="mt-2 text-app-page">Decision Brief</h1>
-      <p className="mt-3 text-app-section font-medium text-[var(--text-primary)]">
-        {SAMPLE_BRIEF.recommendation}
-      </p>
-      <p className="mt-2 max-w-[75ch] text-app-body text-[var(--text-secondary)]">{SAMPLE_BRIEF.why}</p>
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-subtle)]">
-          <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-            <h2 className="text-app-section">Evidence</h2>
-          </div>
-          <ul>
-            {SAMPLE_CLAIMS.map((claim) => (
-              <li key={claim.id} className="border-b border-[var(--border-subtle)] px-5 py-4 last:border-b-0">
-                <p className="text-app-meta text-[var(--text-tertiary)]">
-                  {claim.competency} · {claim.direction === "supports" ? "Supporting evidence" : "Counterevidence"}
-                </p>
-                <p className="mt-1 text-app-body">{claim.claim}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="space-y-5">
-          <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3">
-            <h2 className="text-app-section">What to ask next</h2>
-            <ul className="mt-3 space-y-2">
-              {SAMPLE_BRIEF.probes.map((probe) => (
-                <li key={probe} className="text-app-body text-[var(--text-secondary)]">• {probe}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3">
-            <h2 className="text-app-section">Concerns</h2>
-            <ul className="mt-3 space-y-2">
-              {SAMPLE_BRIEF.concerns.map((concern) => (
-                <li key={concern} className="text-app-body text-[var(--text-secondary)]">• {concern}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3">
-            <h2 className="text-app-section">Limitation</h2>
-            <p className="mt-2 text-app-body text-[var(--text-secondary)]">
-              This controlled scenario does not establish long-term project execution, production coding, or people management.
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="mt-6 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-subtle)]">
-        <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <h2 className="text-app-section">Observed work timeline</h2>
-        </div>
-        <ol>
-          {SAMPLE_EVENTS.map((event) => (
-            <li
-              key={event.id}
-              className="grid grid-cols-[52px_minmax(0,1fr)] border-b border-[var(--border-subtle)] px-5 py-2.5 text-app-body last:border-b-0"
-            >
-              <span className="font-mono text-app-meta tabular-nums text-[var(--text-tertiary)]">{event.sequence}</span>
-              <span className="text-[var(--text-secondary)]">{event.eventType.replaceAll("_", " ").toLowerCase()}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
-  );
-}
