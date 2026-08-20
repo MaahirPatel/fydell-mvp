@@ -15,6 +15,7 @@ import {
 import type { SandboxSessionView } from "@/lib/sim-engine/proof/sandbox/view";
 import { SandboxWorkbench } from "./SandboxWorkbench";
 import { WorkReceiptView } from "./WorkReceiptView";
+import { SAMPLE_BRIEF, SAMPLE_CLAIMS, SAMPLE_EVENTS, SAMPLE_RECEIPT } from "./sample-artifacts";
 
 type Surface =
   | "home"
@@ -438,10 +439,11 @@ function EvidenceReport({
   expectedRunId?: string;
   onReview: (decision: "approve" | "limit" | "follow_up" | "reject") => void;
 }) {
-  if (!session) return <p className="text-app-body text-[var(--text-secondary)]">Create a sandbox session first.</p>;
-  if (expectedRunId && expectedRunId !== session.runId) {
+  if (expectedRunId && session && expectedRunId !== session.runId) {
     return <p className="text-app-body text-[var(--text-secondary)]">This evidence report belongs to another sandbox visitor.</p>;
   }
+  const isSample = !session || session.claims.length === 0;
+  if (isSample) return <SampleEvidenceReport />;
   return (
     <section className="mx-auto max-w-[1040px]">
       <p className="text-app-meta text-[var(--text-tertiary)]">{session.fixture.candidate.label} · Solutions Engineer</p>
@@ -636,7 +638,95 @@ function ReceiptSurface({ session, publicId }: { session: SandboxSessionView | n
     });
   }, [publicId, session?.receiptPublicId]);
   if (!receipt) {
-    return <p className="text-app-body text-[var(--text-secondary)]">A work receipt is issued after review. It does not include a hiring recommendation.</p>;
+    return (
+      <div>
+        <SampleBanner>
+          Sample work receipt. Run the demo to issue one from your own work.
+        </SampleBanner>
+        <WorkReceiptView receipt={SAMPLE_RECEIPT} />
+      </div>
+    );
   }
   return <WorkReceiptView receipt={receipt} />;
+}
+
+function SampleBanner({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mx-auto mb-6 max-w-[1040px] rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-hover)] px-4 py-2.5 text-app-meta text-[var(--text-secondary)]">
+      {children}
+    </p>
+  );
+}
+
+function SampleEvidenceReport() {
+  return (
+    <section className="mx-auto max-w-[1040px]">
+      <SampleBanner>
+        Sample evidence report. Run the demo to generate one from your own work.
+      </SampleBanner>
+      <p className="text-app-meta text-[var(--text-tertiary)]">Candidate 01 · Solutions Engineer</p>
+      <h1 className="mt-2 text-app-page">Decision Brief</h1>
+      <p className="mt-3 text-app-section font-medium text-[var(--text-primary)]">
+        {SAMPLE_BRIEF.recommendation}
+      </p>
+      <p className="mt-2 max-w-[75ch] text-app-body text-[var(--text-secondary)]">{SAMPLE_BRIEF.why}</p>
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-subtle)]">
+          <div className="border-b border-[var(--border-subtle)] px-5 py-3">
+            <h2 className="text-app-section">Evidence</h2>
+          </div>
+          <ul>
+            {SAMPLE_CLAIMS.map((claim) => (
+              <li key={claim.id} className="border-b border-[var(--border-subtle)] px-5 py-4 last:border-b-0">
+                <p className="text-app-meta text-[var(--text-tertiary)]">
+                  {claim.competency} · {claim.direction === "supports" ? "Supporting evidence" : "Counterevidence"}
+                </p>
+                <p className="mt-1 text-app-body">{claim.claim}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="space-y-5">
+          <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3">
+            <h2 className="text-app-section">What to ask next</h2>
+            <ul className="mt-3 space-y-2">
+              {SAMPLE_BRIEF.probes.map((probe) => (
+                <li key={probe} className="text-app-body text-[var(--text-secondary)]">• {probe}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3">
+            <h2 className="text-app-section">Concerns</h2>
+            <ul className="mt-3 space-y-2">
+              {SAMPLE_BRIEF.concerns.map((concern) => (
+                <li key={concern} className="text-app-body text-[var(--text-secondary)]">• {concern}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3">
+            <h2 className="text-app-section">Limitation</h2>
+            <p className="mt-2 text-app-body text-[var(--text-secondary)]">
+              This controlled scenario does not establish long-term project execution, production coding, or people management.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="mt-6 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-subtle)]">
+        <div className="border-b border-[var(--border-subtle)] px-5 py-3">
+          <h2 className="text-app-section">Observed work timeline</h2>
+        </div>
+        <ol>
+          {SAMPLE_EVENTS.map((event) => (
+            <li
+              key={event.id}
+              className="grid grid-cols-[52px_minmax(0,1fr)] border-b border-[var(--border-subtle)] px-5 py-2.5 text-app-body last:border-b-0"
+            >
+              <span className="font-mono text-app-meta tabular-nums text-[var(--text-tertiary)]">{event.sequence}</span>
+              <span className="text-[var(--text-secondary)]">{event.eventType.replaceAll("_", " ").toLowerCase()}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
 }
