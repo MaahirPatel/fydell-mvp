@@ -281,13 +281,19 @@ export default async function EmployerHomePage() {
   return (
     <div>
       <PageHeader
-        title={org.organizationName}
+        title={
+          hasResults
+            ? "Hiring decisions"
+            : hasInvited
+              ? "Candidate work"
+              : "Start with an open role"
+        }
         description={
           hasResults
-            ? "Candidates in progress, reports waiting, and invitations that need a follow-up."
+            ? "Review completed work, resolve uncertainty, and prepare the next interview."
             : hasInvited
               ? "Waiting on the first completed evaluation."
-              : "Invite a Data Analyst to the operations performance investigation."
+              : "Choose the work that represents the role, then invite the first candidate."
         }
       />
 
@@ -295,7 +301,7 @@ export default async function EmployerHomePage() {
         <Panel className="mt-7">
           <PanelSection
             title="Needs attention"
-            description="Ordered by whose turn it is. Every row states the rule that put it here."
+            description="Ordered by whose turn it is and how long the work has been waiting."
             action={
               <span className="text-app-meta tabular-nums text-[var(--text-tertiary)]">
                 {attentionRows.length}{" "}
@@ -331,7 +337,7 @@ export default async function EmployerHomePage() {
               {activeEvaluation.tagline}
             </p>
             <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">
-              Nothing is fabricated here because no candidate has started yet.
+              No candidate has started this work yet.
             </p>
           </PanelSection>
         ) : null}

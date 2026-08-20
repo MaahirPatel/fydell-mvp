@@ -219,7 +219,7 @@ function Avatar({
         style={box}
         referrerPolicy="no-referrer"
         onError={() => setFailed(true)}
-        className="shrink-0 rounded-[var(--radius-control)] border border-[var(--border-default)] object-cover"
+        className="shrink-0 rounded-full border border-[var(--border-default)] object-cover"
       />
     );
   }
@@ -228,7 +228,7 @@ function Avatar({
     <span
       aria-hidden
       style={box}
-      className="flex shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] text-[11.5px] font-medium text-[var(--text-primary)]"
+      className="flex shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--surface-panel)] text-[11.5px] font-medium text-[var(--text-primary)]"
     >
       {initials}
     </span>
@@ -366,6 +366,33 @@ function SidebarSettingsLink() {
   );
 }
 
+/**
+ * Company context stays visible at the bottom of the rail, where workspace
+ * switchers live in mature tools. "Pilot workspace" is a product state, not a
+ * fabricated billing tier.
+ */
+function WorkspaceSummary({ workspaceName }: { workspaceName: string }) {
+  const mark = workspaceName.trim().charAt(0).toUpperCase() || "F";
+  return (
+    <div className="flex min-w-0 items-center gap-2.5 rounded-[var(--radius-control)] px-2 py-2">
+      <span
+        aria-hidden
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-raised)] text-[11px] font-semibold text-[var(--text-primary)]"
+      >
+        {mark}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[12.5px] font-medium leading-tight text-[var(--text-primary)]">
+          {workspaceName}
+        </span>
+        <span className="mt-0.5 block text-[11px] leading-tight text-[var(--text-tertiary)]">
+          Pilot workspace
+        </span>
+      </span>
+    </div>
+  );
+}
+
 /** Page padding and reading width, except where the workbench takes over. */
 function MainSurface({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -404,11 +431,11 @@ export default function EmployerShell({
     <InviteModalProvider catalog={catalog}>
       <div className="min-h-screen bg-[var(--surface-canvas)] text-[var(--text-primary)]">
         <div className="flex min-h-screen">
-          <aside className="sticky top-0 hidden h-screen w-[232px] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-raised)] px-3 py-3 md:flex">
+          <aside className="sticky top-0 hidden h-screen w-[216px] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-band)] px-2.5 py-3 md:flex">
             <div className="flex items-center gap-2.5 rounded-[6px] px-2 py-2">
               <FydellMark width={18} />
-              <span className="min-w-0 flex-1 truncate text-[13px] font-medium tracking-[-0.018em] text-[var(--text-primary)]">
-                {workspaceName}
+              <span className="min-w-0 flex-1 truncate text-[14px] font-semibold tracking-[-0.024em] text-[var(--text-primary)]">
+                fydell
               </span>
             </div>
 
@@ -422,6 +449,9 @@ export default function EmployerShell({
                 <SidebarInvite />
               </div>
               <div className="border-t border-[var(--border-subtle)] pt-2">
+                <WorkspaceSummary workspaceName={workspaceName} />
+              </div>
+              <div>
                 <AccountMenu
                   workspaceName={workspaceName}
                   userEmail={userEmail}

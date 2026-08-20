@@ -1,5 +1,14 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import { ButtonLink } from "@/components/marketing/ui";
+import {
+  AdaptScene,
+  EvidenceReviewScene,
+} from "@/components/marketing/home/NarrativeScenes";
+import {
+  BriefDiagram,
+  EvidenceDiagram,
+  WorkSurfaceDiagram,
+} from "@/components/marketing/home/PrincipleDiagrams";
 
 export const metadata = {
   title: "How it works",
@@ -34,11 +43,22 @@ const FLOW = [
   },
 ];
 
-const EVENTS = [
-  ["16:08", "Engineering confirms a six-week production security review."],
-  ["16:09", "Candidate 1 replaces the incompatible endpoint."],
-  ["16:11", "The rollout recommendation is revised."],
-  ["16:18", "Sales receives the changed delivery assumptions."],
+const SYSTEM_VIEWS = [
+  {
+    title: "Work observed",
+    body: "The candidate works in a realistic environment with files, people, assumptions, and an artifact that can change.",
+    Diagram: WorkSurfaceDiagram,
+  },
+  {
+    title: "Evidence assembled",
+    body: "Actions and revisions stay connected to their sources, counterevidence, timestamps, and stated limits.",
+    Diagram: EvidenceDiagram,
+  },
+  {
+    title: "Decision verified",
+    body: "A reviewer checks the claim before the employer receives a brief and evidence-linked interview plan.",
+    Diagram: BriefDiagram,
+  },
 ];
 
 export default function HowItWorksPage() {
@@ -47,8 +67,8 @@ export default function HowItWorksPage() {
       <main>
         <section className="pb-20 pt-[132px] sm:pb-24 sm:pt-[156px]">
           <div className="mkt-content">
-            <div className="mx-auto flex max-w-[780px] flex-col items-center text-center">
-              <h1 className="page-display text-balance">
+            <div className="mx-auto flex max-w-[1040px] flex-col items-center text-center">
+              <h1 className="max-w-[1000px] text-balance text-[clamp(3rem,5vw,4.6rem)] font-semibold leading-[0.99] tracking-[-0.04em]">
                 From real work to a better interview.
               </h1>
               <p className="mt-6 max-w-[660px] text-[18px] leading-[1.55] text-[var(--text-secondary)]">
@@ -68,12 +88,12 @@ export default function HowItWorksPage() {
           </div>
         </section>
 
-        <section className="border-y border-[var(--border-subtle)]">
+        <section className="border-y border-[var(--border-subtle)] bg-[var(--surface-band)]">
           <div className="mkt-content grid md:grid-cols-2 lg:grid-cols-6">
             {FLOW.map((step, index) => (
               <article
                 key={step.name}
-                className={`py-7 md:px-6 lg:min-h-[250px] lg:py-8 ${
+                className={`relative py-7 md:px-6 lg:min-h-[220px] lg:py-8 ${
                   index % 2 === 1
                     ? "md:border-l md:border-[var(--border-subtle)]"
                     : ""
@@ -81,13 +101,13 @@ export default function HowItWorksPage() {
                   index > 0 ? "lg:border-l lg:border-[var(--border-subtle)]" : ""
                 }`}
               >
-                <p className="text-[12px] tabular-nums text-[var(--text-tertiary)]">
+                <p className="font-mono text-[11px] tabular-nums text-[var(--text-tertiary)]">
                   {String(index + 1).padStart(2, "0")}
                 </p>
-                <h2 className="mt-8 text-[18px] font-semibold tracking-[-0.02em]">
+                <h2 className="mt-7 text-[17px] font-semibold tracking-[-0.02em]">
                   {step.name}
                 </h2>
-                <p className="mt-3 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                <p className="mt-3 text-[12.5px] leading-[1.58] text-[var(--text-secondary)]">
                   {step.body}
                 </p>
               </article>
@@ -96,81 +116,65 @@ export default function HowItWorksPage() {
         </section>
 
         <section className="mkt-section-chapter">
-          <div className="mkt-content grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-4">
-              <h2 className="section-heading">The work changes.</h2>
-              <p className="section-desc mt-5">
-                The strongest signal is often not the first recommendation. It
-                is what someone updates and what they deliberately leave alone
-                when new information makes the original plan incomplete.
-              </p>
-            </div>
-            <div className="overflow-hidden border-y border-[var(--border-default)] lg:col-span-7 lg:col-start-6">
-              {EVENTS.map(([time, event]) => (
-                <div
-                  key={time}
-                  className="grid grid-cols-[64px_1fr] gap-5 border-t border-[var(--border-subtle)] py-4 first:border-t-0"
-                >
-                  <span className="font-mono text-[12px] tabular-nums text-[var(--text-tertiary)]">
-                    {time}
-                  </span>
-                  <p className="text-[14px] leading-[1.55] text-[var(--text-secondary)]">
-                    {event}
-                  </p>
+          <div className="mkt-content grid lg:grid-cols-3">
+            {SYSTEM_VIEWS.map(({ title, body, Diagram }, index) => (
+              <article
+                key={title}
+                className={`flex min-h-[430px] flex-col py-8 lg:px-10 ${
+                  index > 0
+                    ? "border-t border-[var(--border-subtle)] lg:border-l lg:border-t-0"
+                    : ""
+                }`}
+              >
+                <div className="grid min-h-[250px] flex-1 place-items-center text-[var(--text-primary)] [&_.principle-figure]:h-auto [&_.principle-figure]:w-full [&_.principle-figure]:max-w-[290px] [&_.principle-figure]:overflow-visible">
+                  <Diagram />
                 </div>
-              ))}
+                <h2 className="text-[16px] font-semibold tracking-[-0.02em]">{title}</h2>
+                <p className="mt-3 max-w-[38ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
+                  {body}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mkt-section-chapter overflow-hidden bg-[var(--surface-band)]">
+          <div className="mkt-content">
+            <header className="grid items-end gap-8 lg:grid-cols-[minmax(0,560px)_minmax(0,470px)] lg:justify-between">
+              <h2 className="section-heading max-w-[560px]">
+                The strongest signal is what changes.
+              </h2>
+              <p className="section-desc max-w-[470px]">
+                New material information forces the recommendation to move. The
+                original assumption, revised artifact, reaction time, and
+                remaining uncertainty stay visible together.
+              </p>
+            </header>
+            <div className="mt-16">
+              <AdaptScene />
             </div>
           </div>
         </section>
 
-        <section className="mkt-section-chapter bg-[var(--surface-band)]">
-          <div className="mkt-content grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-4">
-              <h2 className="section-heading">The brief compresses the work.</h2>
-              <p className="section-desc mt-5">
-                Employers see the decision first. Evidence stays underneath for
-                the moments when a claim needs to be challenged.
+        <section className="mkt-section-chapter overflow-hidden">
+          <div className="mkt-content">
+            <header className="grid items-end gap-8 lg:grid-cols-[minmax(0,560px)_minmax(0,470px)] lg:justify-between">
+              <h2 className="section-heading max-w-[560px]">
+                The brief is only as strong as the evidence beneath it.
+              </h2>
+              <p className="section-desc max-w-[470px]">
+                Supporting events, counterevidence, oral defense, model and
+                rubric versions, and human review travel with the claim.
               </p>
-            </div>
-            <div className="border-y border-[var(--border-default)] lg:col-span-7 lg:col-start-6">
-              <div className="py-5">
-                <p className="text-[12px] text-[var(--text-tertiary)]">
-                  Recommendation
-                </p>
-                <p className="mt-2 text-[24px] font-semibold tracking-[-0.025em]">
-                  Worth interviewing, with a focused probe.
-                </p>
-              </div>
-              {[
-                [
-                  "Why",
-                  "Candidate 1 revised the incompatible authentication path and preserved the unaffected implementation work.",
-                ],
-                [
-                  "Uncertainty",
-                  "The retained rollout size still depends on Acme’s unverified adoption estimate.",
-                ],
-                [
-                  "Ask next",
-                  "What evidence would make you reduce or increase the rollout before production access?",
-                ],
-              ].map(([label, body]) => (
-                <div
-                  key={label}
-                  className="grid gap-2 border-t border-[var(--border-subtle)] py-5 sm:grid-cols-[120px_1fr] sm:gap-6"
-                >
-                  <h3 className="text-[13px] font-medium">{label}</h3>
-                  <p className="text-[14px] leading-[1.6] text-[var(--text-secondary)]">
-                    {body}
-                  </p>
-                </div>
-              ))}
+            </header>
+            <div className="mt-16">
+              <EvidenceReviewScene />
             </div>
           </div>
         </section>
 
-        <section className="mkt-section-chapter">
-          <div className="mkt-content mx-auto max-w-[720px] text-center">
+        <section className="mkt-section-chapter border-t border-[var(--border-subtle)]">
+          <div className="mkt-content mx-auto max-w-[820px] text-center">
             <h2 className="section-heading text-balance">
               Bring one open role. See the whole system work.
             </h2>

@@ -23,9 +23,9 @@ export default function FydellBrand({
         className="shrink-0 transition-transform duration-200 ease-out group-hover:scale-[1.03]"
       />
       <span
-        className="leading-none text-white"
+        className="leading-none text-[var(--text-primary)]"
         style={{
-          fontFamily: "var(--font-inter), ui-sans-serif, system-ui, sans-serif",
+          fontFamily: "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif",
           fontSize: textSize,
           fontWeight: 600,
           letterSpacing: "-0.026em",

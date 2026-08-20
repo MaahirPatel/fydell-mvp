@@ -200,7 +200,7 @@ export default function EvidenceReportPage() {
                     <div className={styles.recommendationTop}>
                       <div>
                         <p className={styles.recommendationLabel}>Recommendation</p>
-                        <h2 id="report-title">Worth interviewing, with a focused probe.</h2>
+                        <h2 id="report-title">Advance to interview.</h2>
                       </div>
                     </div>
                     <p>

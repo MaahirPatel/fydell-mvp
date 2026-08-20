@@ -5,6 +5,8 @@ terminals/
 node_modules/
 .next/
 visual-review/
+.impeccable/review/
+.shots/
 .data/
 .env
 .env.*

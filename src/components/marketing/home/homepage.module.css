@@ -1,15 +1,18 @@
 .page {
-  --home-max: var(--marketing-container);
+  /* Product theater needs to feel larger than the visible frame. The public
+     copy still follows the marketing measure; scenes use the application max. */
+  --home-max: 1320px;
+  overflow: clip;
 }
 
 .container {
   width: min(100%, var(--home-max));
   margin-inline: auto;
-  padding-inline: clamp(24px, 3vw, var(--marketing-page-x));
+  padding-inline: clamp(22px, 3.4vw, 52px);
 }
 
 .hero {
-  padding-block: clamp(112px, 10vw, 140px) clamp(64px, 6vw, 88px);
+  padding-block: clamp(92px, 8vw, 116px) clamp(70px, 6vw, 94px);
 }
 
 /* Cursor-shaped fold: the statement sits on the page axis, the two pills sit
@@ -24,13 +27,18 @@
 }
 
 .heroTitle {
-  max-width: 16.5ch;
+  width: min(1120px, 92vw);
+  max-width: none;
   margin: 0;
-  font-size: clamp(2.75rem, 5vw, 4.25rem);
+  font-size: clamp(3rem, 5.25vw, 4.7rem);
   font-weight: 600;
-  line-height: 1.02;
-  letter-spacing: -0.038em;
+  line-height: 0.99;
+  letter-spacing: -0.04em;
   text-wrap: balance;
+}
+
+.heroTitle span {
+  display: block;
 }
 
 .actions {
@@ -42,22 +50,25 @@
 }
 
 .sceneFrame {
+  position: relative;
   overflow: hidden;
-  border: 1px solid var(--border-default);
-  border-radius: 12px;
+  border: 0;
+  border-radius: 15px;
   background: var(--surface-raised);
+  box-shadow:
+    0 0 0 1px var(--border-default),
+    0 8px 28px rgba(45, 38, 32, 0.08);
 }
 
 .sceneOpen {
-  border-inline: 0;
-  border-radius: 0;
-  background: transparent;
+  border-radius: 15px;
+  background: var(--surface-raised);
 }
 
 .sceneBand {
   border: 0;
-  border-radius: 0;
-  background: var(--surface-band);
+  border-radius: 15px;
+  background: var(--surface-raised);
 }
 
 .sceneBar {
@@ -66,8 +77,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-default);
   padding: 0 18px;
+  background: color-mix(in srgb, var(--surface-band) 80%, var(--surface-raised));
   color: var(--text-tertiary);
   font-size: 12px;
 }
@@ -78,8 +90,10 @@
 }
 
 .heroScene {
-  margin-top: clamp(64px, 6vw, 80px);
-  box-shadow: var(--shadow-card);
+  margin-top: clamp(54px, 5vw, 72px);
+  box-shadow:
+    0 0 0 1px var(--border-default),
+    0 22px 60px rgba(45, 38, 32, 0.13);
 }
 
 .illustrativeNote {
@@ -91,14 +105,14 @@
 
 .shortlist {
   display: grid;
-  min-height: 610px;
-  grid-template-columns: 190px 320px minmax(0, 1fr);
+  min-height: 660px;
+  grid-template-columns: 204px 310px minmax(0, 1fr);
 }
 
 .roleRail,
 .shortlistRail {
   border-right: 1px solid var(--border-subtle);
-  background: var(--surface-deep);
+  background: var(--surface-band);
 }
 
 .roleRail {
@@ -106,16 +120,30 @@
   flex-direction: column;
 }
 
-.railHeader,
 .briefHeader {
   border-bottom: 1px solid var(--border-subtle);
-  padding: 24px;
+  padding: 19px 22px;
+}
+
+.workspaceBrand {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  gap: 9px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 16px;
+}
+
+.workspaceBrand strong {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .listHeader {
-  min-height: 103px;
+  min-height: 88px;
   border-bottom: 1px solid var(--border-subtle);
-  padding: 24px 20px;
+  padding: 20px;
 }
 
 .listHeader strong {
@@ -127,15 +155,15 @@
 
 .roleNav {
   display: grid;
-  gap: 3px;
-  padding: 14px 12px;
+  gap: 2px;
+  padding: 10px;
   color: var(--text-secondary);
   font-size: 13px;
 }
 
 .roleNav span {
-  border-radius: 7px;
-  padding: 9px 10px;
+  border-radius: 6px;
+  padding: 7px 9px;
 }
 
 .roleNavActive {
@@ -143,18 +171,104 @@
   color: var(--text-primary);
 }
 
-.roleContext {
-  margin-top: auto;
+.roleSummary {
   border-top: 1px solid var(--border-subtle);
-  padding: 18px 22px;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.6;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 16px 18px;
 }
 
-.roleContext strong {
+.roleSummary dl {
+  display: grid;
+  gap: 7px;
+  margin-top: 15px;
+}
+
+.roleSummary dl div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.roleSummary dt {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.roleSummary dd {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.workspaceFooter {
+  display: grid;
+  gap: 2px;
+  margin-top: auto;
+  border-top: 1px solid var(--border-subtle);
+  padding: 8px;
+}
+
+.companyIdentity,
+.userIdentity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  border-radius: 7px;
+  padding: 7px 8px;
+}
+
+.companyMark,
+.userAvatar {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--border-default);
+  background: var(--surface-raised);
   color: var(--text-secondary);
-  font-weight: 520;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.companyMark {
+  border-radius: 7px;
+}
+
+.userAvatar {
+  border-radius: 999px;
+}
+
+.companyIdentity > span:last-child,
+.userIdentity > span:last-child {
+  min-width: 0;
+}
+
+.companyIdentity strong,
+.userIdentity strong,
+.companyIdentity small,
+.userIdentity small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.companyIdentity strong,
+.userIdentity strong {
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 540;
+}
+
+.companyIdentity small,
+.userIdentity small {
+  margin-top: 2px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
 }
 
 .roleLabel {
@@ -164,7 +278,7 @@
 
 .roleTitle {
   margin-top: 7px;
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 540;
   letter-spacing: -0.025em;
 }
@@ -198,11 +312,11 @@
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid var(--border-subtle);
-  padding: 16px 14px;
+  padding: 14px 12px;
 }
 
 .candidateRowActive {
-  border-radius: 10px;
+  border-radius: 8px;
   border-bottom-color: transparent;
   background: var(--surface-selected);
 }
@@ -239,10 +353,6 @@
   white-space: nowrap;
 }
 
-.candidateRowActive .candidateState {
-  color: var(--status-positive-ink);
-}
-
 .brief {
   background: var(--surface-raised);
 }
@@ -261,60 +371,64 @@
   letter-spacing: -0.025em;
 }
 
-.verdict {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border-radius: 6px;
-  border: 1px solid var(--status-positive-line);
-  background: var(--status-positive-bg);
-  padding: 7px 10px;
-  color: var(--status-positive-ink);
+.reviewMeta {
+  color: var(--text-tertiary);
   font-size: 12px;
-  font-weight: 540;
-}
-
-.verdict::before {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: var(--status-positive-line);
-  content: "";
 }
 
 .briefBody {
-  padding: 6px 28px 30px;
+  padding: 0 22px 20px;
 }
 
+.decisionRow,
 .briefSection {
   display: grid;
-  grid-template-columns: 132px minmax(0, 1fr);
-  gap: 24px;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 20px;
   border-bottom: 1px solid var(--border-subtle);
-  padding-block: 23px;
+  padding-block: 15px;
 }
 
-.briefSection:last-child {
-  border-bottom: 0;
-}
-
+.decisionRow h3,
 .briefSection h3 {
   color: var(--text-tertiary);
   font-size: 12px;
   font-weight: 500;
 }
 
+.decisionRow strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 560;
+}
+
+.decisionRow p {
+  max-width: 54ch;
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.briefSection {
+  padding-block: 15px;
+}
+
+.briefSection:last-child {
+  border-bottom: 0;
+}
+
 .briefSection p,
 .briefSection li {
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.55;
 }
 
 .briefSection ul,
 .briefSection ol {
   display: grid;
-  gap: 11px;
+  gap: 9px;
   margin: 0;
   padding-left: 18px;
 }
@@ -337,7 +451,7 @@
 }
 
 .positioning {
-  padding-block: clamp(88px, 8vw, 112px) clamp(88px, 9vw, 128px);
+  padding-block: clamp(112px, 10vw, 152px) clamp(96px, 9vw, 132px);
 }
 
 .positioning p {
@@ -357,12 +471,12 @@
 .principles {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  margin-bottom: clamp(120px, 13vw, 184px);
+  margin-bottom: clamp(128px, 12vw, 176px);
 }
 
 .principle {
   display: flex;
-  min-height: 480px;
+  min-height: 430px;
   flex-direction: column;
   padding: 0 clamp(24px, 3vw, 42px) 8px;
 }
@@ -380,7 +494,7 @@
 
 .principleDiagram {
   display: grid;
-  min-height: 250px;
+  min-height: 228px;
   flex: 1;
   place-items: center;
 }
@@ -403,10 +517,10 @@
    this one colour rather than from twenty opacity values in the SVG. */
 .principleDiagram :global(.principle-figure) {
   width: 100%;
-  max-width: 272px;
+  max-width: 302px;
   height: auto;
   overflow: visible;
-  color: var(--text-primary);
+  color: color-mix(in srgb, var(--text-primary) 86%, var(--text-tertiary));
 }
 
 /* Hairlines must stay hairlines when the figure scales down on narrow screens,
@@ -421,29 +535,31 @@
 
 .chapter {
   overflow: clip;
-  padding-block: clamp(104px, 11vw, 164px);
+  padding-block: clamp(108px, 10vw, 152px);
 }
 
 .chapterHead {
   display: grid;
-  grid-template-columns: minmax(0, 460px) minmax(0, 440px);
+  grid-template-columns: minmax(0, 560px) minmax(0, 470px);
   justify-content: space-between;
   gap: 80px;
 }
 
 .chapterHead h2 {
-  max-width: 460px;
-  font-size: clamp(2.15rem, 3.35vw, 3rem);
-  font-weight: 510;
-  line-height: 1.04;
-  letter-spacing: -0.032em;
+  max-width: 560px;
+  font-size: clamp(2.35rem, 3.65vw, 3.4rem);
+  font-weight: 540;
+  line-height: 1.01;
+  letter-spacing: -0.038em;
+  text-wrap: balance;
 }
 
 .chapterSupport p {
-  max-width: 440px;
+  max-width: 470px;
   color: var(--text-secondary);
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 16px;
+  line-height: 1.58;
+  text-wrap: pretty;
 }
 
 .chapterSupport span {
@@ -455,24 +571,86 @@
 }
 
 .chapterScene {
-  margin-top: clamp(64px, 7vw, 96px);
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  margin-top: clamp(66px, 6vw, 86px);
+  padding-block: clamp(34px, 4vw, 58px);
 }
 
 .bleedRight {
-  width: calc(100% + clamp(80px, 11vw, 168px));
-  margin-right: calc(clamp(80px, 11vw, 168px) * -1);
+  width: calc(100% + clamp(68px, 8vw, 132px));
+  margin-right: calc(clamp(68px, 8vw, 132px) * -1);
 }
 
 /* Inset the caption by the bleed distance so its context stays on screen and
    lines up with the page gutter. */
 .bleedRight .sceneBar {
-  padding-right: calc(18px + clamp(80px, 11vw, 168px));
+  padding-right: calc(18px + clamp(68px, 8vw, 132px));
 }
 
+/* Linear's references stage the product inside a larger visual field rather
+   than placing a screenshot on bare page canvas. Fydell's equivalent is a
+   quiet sage/stone well that preserves the bright atmosphere. */
+.chapterScene::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0 -7vw;
+  border-block: 1px solid var(--border-subtle);
+  background:
+    radial-gradient(
+      circle at 18% 18%,
+      color-mix(in srgb, var(--evidence-support) 13%, transparent),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--surface-band) 88%, var(--surface-raised)),
+      var(--surface-canvas) 72%
+    );
+  content: "";
+}
+
+[data-product-chapter]:nth-of-type(even) .chapterScene::before {
+  background:
+    radial-gradient(
+      circle at 82% 28%,
+      color-mix(in srgb, var(--evidence-uncertain) 11%, transparent),
+      transparent 32%
+    ),
+    linear-gradient(
+      215deg,
+      color-mix(in srgb, var(--surface-band) 84%, var(--surface-raised)),
+      var(--surface-canvas) 76%
+    );
+}
+
+/* The workbench is deliberately taller than its frame. Cropping the context
+   rail mid-content is what makes it read as a real environment the candidate
+   is scrolling inside, rather than a diagram sized to fit a marketing slot. */
 .workbench {
+  position: relative;
   display: grid;
-  min-height: 560px;
-  grid-template-columns: 210px minmax(0, 1fr) 310px;
+  max-height: 710px;
+  overflow: hidden;
+  grid-template-columns: 196px minmax(0, 1fr) 318px;
+}
+
+.workbench::after {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 96px;
+  background: linear-gradient(
+    to top,
+    var(--surface-raised) 6%,
+    color-mix(in srgb, var(--surface-raised) 38%, transparent) 58%,
+    transparent 100%
+  );
+  content: "";
+  pointer-events: none;
 }
 
 .workNav,
@@ -504,12 +682,10 @@
 }
 
 .workMain {
+  display: flex;
   min-width: 0;
-  padding: 24px;
-}
-
-.workMain h3 {
-  font-size: 20px;
+  flex-direction: column;
+  padding: 0 0 24px;
 }
 
 .workPrompt {
@@ -521,29 +697,29 @@
 }
 
 .workNote {
-  margin-top: 30px;
-  border-block: 1px solid var(--border-subtle);
-  padding-block: 18px;
+  border-top: 1px solid var(--border-subtle);
+  padding: 14px 18px;
 }
 
 .workNoteLabel {
   color: var(--text-tertiary);
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .workNote p:last-child {
-  margin-top: 8px;
+  max-width: 74ch;
+  margin-top: 6px;
   color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .workTable {
   width: 100%;
-  margin-top: 26px;
+  margin-top: 10px;
   border-collapse: collapse;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11.5px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -556,7 +732,7 @@
 .workTable th,
 .workTable td {
   border-bottom: 1px solid var(--border-subtle);
-  padding: 10px 8px;
+  padding: 6px 6px;
 }
 
 .riskRow {
@@ -597,53 +773,1777 @@
   color: var(--text-primary);
 }
 
-.calibration {
+/* ==========================================================================
+   Candidate workbench
+   Background: stages, files, brief, thread, requirements, assumptions.
+   Active: the rollout plan being revised.
+   Focal: the constraint that arrived and forced the revision.
+   ========================================================================== */
+
+.workStageList {
   display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
+  gap: 1px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.workStage {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+}
+
+.workStageDot {
+  width: 7px;
+  height: 7px;
+  margin-left: 3px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+}
+
+.workStageComplete {
+  color: var(--text-secondary);
+}
+
+.workStageComplete .workStageDot {
+  border-color: var(--evidence-support);
+  background: var(--evidence-support);
+}
+
+.workStageActive {
+  background: var(--surface-selected);
+  color: var(--text-primary);
+  font-weight: 540;
+}
+
+.workStageActive .workStageDot {
+  border-color: var(--evidence-generated);
+  box-shadow: inset 0 0 0 2px var(--surface-selected);
+  background: var(--evidence-generated);
+}
+
+.workFileList {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workFileRow {
+  display: grid;
+  grid-template-columns: 13px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+}
+
+.workFileIcon {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+}
+
+.workFileName {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workFileMeta {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Artifact editor -------------------------------------------------- */
+
+.workFileBar {
+  display: flex;
+  min-height: 42px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 18px;
+}
+
+.workFileTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 560;
+}
+
+.workFileMetaList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.workFileMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The diff is the proof that the work changed, so it gets real gutters,
+   markers, and tinted rows rather than being prose in a monospace font. */
+.workDiff {
+  padding: 10px 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.62;
+}
+
+.workDiffLine {
+  display: grid;
+  grid-template-columns: 40px 14px minmax(0, 1fr);
+  gap: 2px;
+  padding: 1px 18px 1px 0;
+  color: var(--text-secondary);
+}
+
+.workDiffGutter {
+  color: var(--text-disabled);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.workDiffMarker {
+  color: var(--text-disabled);
+  text-align: center;
+}
+
+.workDiffCode {
+  min-width: 0;
+  white-space: pre-wrap;
+}
+
+.workDiffLineRemoved {
+  background: var(--surface-counter);
+  color: color-mix(in srgb, var(--evidence-counter) 78%, var(--text-primary));
+}
+
+.workDiffLineRemoved .workDiffMarker {
+  color: var(--evidence-counter);
+}
+
+.workDiffLineAdded {
+  background: var(--surface-support);
+  color: color-mix(in srgb, var(--evidence-support) 74%, var(--text-primary));
+}
+
+.workDiffLineAdded .workDiffMarker {
+  color: var(--evidence-support);
+}
+
+.workCitations {
+  border-top: 1px solid var(--border-subtle);
+  padding: 13px 18px 18px;
+}
+
+.workCitationsLabel {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.workCitations ul {
+  display: grid;
+  gap: 6px;
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workCitation {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.workCitationIcon {
+  color: var(--text-tertiary);
+}
+
+/* --- Customer context rail -------------------------------------------- */
+
+.workContext {
+  min-width: 0;
+  border-left: 1px solid var(--border-subtle);
+  background: var(--surface-deep);
+}
+
+.workContextSection {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px 16px;
+}
+
+.workContextSection:last-child {
+  border-bottom: 0;
+}
+
+.workContextTitle {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.workContext .workPrompt {
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.workThread {
+  display: grid;
+  gap: 11px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workThreadMessage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+  border-radius: 7px;
+  padding: 7px 9px;
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+
+.workThreadAuthor {
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 540;
+}
+
+.workThreadTime {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.workThreadBody {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+/* The message that changes the work is marked in the thread as well as in the
+   focal panel, so the cause is findable in its original place. */
+.workThreadMessageFlagged {
+  background: var(--surface-uncertain);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--evidence-uncertain) 34%, transparent);
+}
+
+.workThreadMessageFlagged .workThreadBody {
+  color: color-mix(in srgb, var(--evidence-uncertain) 62%, var(--text-primary));
+}
+
+/* A four-column table cannot survive a 264px rail, so requirements are stacked
+   rows: name, where it came from, and how much it can be trusted. */
+.reqList {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reqRow {
+  display: grid;
+  gap: 2px;
+  border-radius: 6px;
+  padding: 6px 8px;
+  background: var(--surface-panel);
+}
+
+.reqName {
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 520;
+}
+
+.reqSource {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.reqTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 3px;
+}
+
+.reqTags em {
+  border-radius: 4px;
+  padding: 1px 5px;
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-style: normal;
+}
+
+.reqRowRisk {
+  background: var(--surface-uncertain);
+}
+
+.reqRowRisk .reqTags em:first-child {
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--evidence-uncertain) 40%, transparent);
+  color: var(--evidence-uncertain);
+}
+
+.workAssumptions {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workAssumption {
+  display: grid;
+  gap: 1px;
+  border-radius: 6px;
+  padding: 6px 8px;
+  background: var(--surface-panel);
+}
+
+.workAssumptionLabel {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.workAssumptionValue {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.workAssumptionRisk {
+  background: var(--surface-uncertain);
+}
+
+.workAssumptionRisk .workAssumptionValue {
+  color: var(--evidence-uncertain);
+}
+
+.workEvidenceNote {
+  background: var(--surface-intelligence);
+}
+
+.workEvidenceNote .evidenceClaim {
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.workEvidenceNote .evidenceSource {
+  margin-top: 11px;
+  padding: 9px 10px;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+/* --- Focal layer: the constraint that arrived ------------------------- */
+
+.workConstraint {
+  position: absolute;
+  z-index: 4;
+  right: 146px;
+  bottom: 26px;
+  width: 430px;
+  border: 1px solid color-mix(in srgb, var(--evidence-uncertain) 32%, transparent);
+  border-radius: 11px;
+  padding: 13px 15px 12px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-inspector);
+}
+
+.workConstraint::before {
+  position: absolute;
+  right: -1px;
+  bottom: 100%;
+  left: -1px;
+  height: 56px;
+  background: linear-gradient(
+    to top,
+    var(--surface-raised) 14%,
+    color-mix(in srgb, var(--surface-raised) 52%, transparent) 64%,
+    transparent 100%
+  );
+  content: "";
+  pointer-events: none;
+}
+
+.workConstraintHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.workConstraintLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--evidence-uncertain);
+  font-size: 11.5px;
+  font-weight: 540;
+}
+
+.workConstraintTime {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.workConstraintTitle {
+  margin-top: 8px;
+  color: var(--text-primary);
+  font-size: 14.5px;
+  font-weight: 560;
+  letter-spacing: -0.012em;
+}
+
+.workConstraintBody {
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.workConstraintMeta {
+  display: grid;
+  margin: 12px 0 0;
+  border-top: 1px solid var(--border-subtle);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 10px;
+}
+
+.workConstraintMeta dt {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.workConstraintMeta dd {
+  margin: 2px 0 0;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 520;
+}
+
+.workConstraintReaction dd {
+  color: var(--evidence-generated);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   Role calibration
+   Background: the role and the full competency model.
+   Focal: the one competency being edited.
+   ========================================================================== */
+
+.calibration {
+  position: relative;
+  display: grid;
+  max-height: 654px;
+  overflow: hidden;
+  grid-template-columns: 310px minmax(0, 1fr);
+}
+
+.calibration::after {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 88px;
+  background: linear-gradient(
+    to top,
+    var(--surface-canvas) 8%,
+    transparent 100%
+  );
+  content: "";
+  pointer-events: none;
+}
+
+.competencyMatrix {
+  min-width: 0;
+  border-left: 1px solid var(--border-subtle);
+  padding: 18px 0 0;
+}
+
+.competencyMatrixHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 20px 12px;
+}
+
+.competencyMatrixMeta {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.competencyTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  text-align: left;
+}
+
+.competencyTable th[scope="col"] {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 7px 10px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.competencyRow th,
+.competencyRow td {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 10px;
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+.competencyName {
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.competencyBehavior,
+.competencyEvidence {
+  min-width: 150px;
+  line-height: 1.42;
+}
+
+.competencyRequirement,
+.competencyStatus {
+  white-space: nowrap;
+}
+
+.competencyWeight {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.competencyRowActive th,
+.competencyRowActive td {
+  background: var(--surface-selected);
+  color: var(--text-primary);
+}
+
+.competencyRowActive .competencyStatus {
+  color: var(--evidence-generated);
+  font-weight: 540;
+}
+
+.competencyEditor {
+  position: absolute;
+  z-index: 3;
+  right: 22px;
+  bottom: 22px;
+  width: 458px;
+  border: 1px solid var(--border-default);
+  border-radius: 11px;
+  padding: 14px 16px 12px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-inspector);
+}
+
+.competencyEditorHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 11px;
+}
+
+.competencyEditorTitle {
+  margin-top: 3px;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 560;
+  letter-spacing: -0.015em;
+}
+
+.competencyEditorTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.competencyTag {
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: var(--surface-panel);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.competencyTagRequired {
+  background: var(--surface-intelligence);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--evidence-generated) 34%, transparent);
+  color: var(--evidence-generated);
+}
+
+.competencyFields {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 0;
+}
+
+.competencyField {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.competencyFieldLabel {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.competencyFieldValue {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.48;
+}
+
+.competencyEditorFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+}
+
+.competencyAgreement {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.competencyAgreement strong {
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 560;
+}
+
+.competencyApproval {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--evidence-support);
+  font-size: 11.5px;
+}
+
+/* ==========================================================================
+   Adapt — the changed-information event as one causal composition
+   ========================================================================== */
+
+.adaptStage {
+  display: grid;
+  margin: 0;
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+  padding: 18px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-card);
+  gap: 12px;
+  grid-template-areas:
+    "caption caption"
+    "baseline constraint"
+    "revision revision"
+    "reaction unresolved"
+    "trace trace";
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.adaptStageCaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  grid-area: caption;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+}
+
+.adaptStageCaption strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 560;
+}
+
+.adaptStageCaption span {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.adaptBaseline,
+.adaptConstraint {
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 13px 14px;
+}
+
+.adaptBaseline {
+  grid-area: baseline;
+  background: var(--surface-panel);
+}
+
+.adaptConstraint {
+  grid-area: constraint;
+  border-color: color-mix(in srgb, var(--evidence-uncertain) 32%, transparent);
+  background: var(--surface-uncertain);
+}
+
+.adaptBaselineLabel,
+.adaptConstraintLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.adaptConstraintLabel {
+  color: var(--evidence-uncertain);
+  font-weight: 540;
+}
+
+.adaptBaselineLabel time,
+.adaptConstraintLabel time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.adaptBaselineTitle,
+.adaptConstraintTitle {
+  margin-top: 7px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 560;
+  letter-spacing: -0.012em;
+}
+
+.adaptBaselineBody,
+.adaptConstraintBody {
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.adaptRevision {
+  grid-area: revision;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  padding: 13px 14px 14px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-card);
+}
+
+.adaptRevisionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+}
+
+.adaptRevisionLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--evidence-generated);
+  font-size: 11.5px;
+  font-weight: 540;
+}
+
+.adaptRevisionLabel time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.adaptRevisionTitle {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 560;
+  letter-spacing: -0.012em;
+}
+
+.adaptDiff {
+  display: grid;
+  align-items: center;
+  gap: 12px;
+  margin-top: 11px;
+  grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
+}
+
+.adaptDiffColumn {
+  border-radius: 8px;
+  padding: 10px 11px;
+}
+
+.adaptDiffBefore {
+  background: var(--surface-counter);
+}
+
+.adaptDiffAfter {
+  background: var(--surface-support);
+}
+
+.adaptDiffLabel {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.adaptDiffBefore .adaptDiffLabel {
+  color: var(--evidence-counter);
+}
+
+.adaptDiffAfter .adaptDiffLabel {
+  color: var(--evidence-support);
+}
+
+.adaptDiffLine {
+  margin-top: 6px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.adaptDiffArrow {
+  color: var(--text-tertiary);
+}
+
+.adaptRevisionBody {
+  margin-top: 11px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.adaptReaction {
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  grid-area: reaction;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: var(--surface-panel);
+}
+
+.adaptReactionLabel {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.adaptReactionValue {
+  color: var(--evidence-generated);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.adaptReactionDetail {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.adaptUnresolved {
+  grid-area: unresolved;
+  border: 1px solid color-mix(in srgb, var(--evidence-uncertain) 26%, transparent);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: var(--surface-uncertain);
+}
+
+.adaptUnresolvedLabel {
+  color: var(--evidence-uncertain);
+  font-size: 11.5px;
+  font-weight: 540;
+}
+
+.adaptUnresolved p {
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.48;
+}
+
+.adaptTrace {
+  display: grid;
+  gap: 0;
+  grid-area: trace;
+  margin: 0;
+  border-top: 1px solid var(--border-subtle);
+  padding: 12px 0 0;
+  list-style: none;
+}
+
+.adaptTraceItem {
+  display: grid;
+  grid-template-columns: 46px 152px minmax(0, 1fr);
+  gap: 12px;
+  padding: 5px 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.adaptTraceTime {
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.adaptTraceLabel {
+  color: var(--evidence-generated);
+}
+
+.adaptTraceDetail {
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Oral defense — live, not editorial
+   ========================================================================== */
+
+.defenseStatusBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  grid-area: status;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 10px 20px;
+}
+
+.defenseRecording {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--evidence-counter);
+  font-size: 11.5px;
+  font-weight: 540;
+}
+
+.defenseRecordingDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--evidence-counter);
+}
+
+.defenseProgress,
+.defenseElapsed {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.defenseSourceLines {
+  margin-top: 10px;
+  border-radius: 8px;
+  padding: 8px 0;
+  background: var(--surface-panel);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.defenseSourceLine {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 8px;
+  padding: 3px 12px 3px 0;
+  color: var(--text-secondary);
+}
+
+.defenseSourceGutter {
+  color: var(--text-disabled);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.defenseSourceLineActive {
+  background: var(--surface-uncertain);
+  color: var(--text-primary);
+}
+
+.defenseTranscript {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.defenseTurn {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  border-radius: 9px;
+  padding: 9px 11px;
+}
+
+.defenseTurnSpeaker {
+  font-size: 11.5px;
+  font-weight: 560;
+}
+
+.defenseTurnTime {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.defenseTurnBody {
+  grid-column: 1 / -1;
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.defenseTurnInterviewer {
+  background: var(--surface-intelligence);
+}
+
+.defenseTurnInterviewer .defenseTurnSpeaker {
+  color: var(--evidence-generated);
+}
+
+.defenseTurnCandidate {
+  background: var(--surface-panel);
+}
+
+.defenseTurnCandidate .defenseTurnSpeaker {
+  color: var(--text-primary);
+}
+
+/* The turn still being spoken: no border, so it reads as unfinished. */
+.defenseTurnLive {
+  background: var(--surface-panel);
+  opacity: 0.86;
+}
+
+.defenseTurnLive .defenseTurnSpeaker {
+  color: var(--text-primary);
+}
+
+.defenseCaret {
+  display: inline-block;
+  width: 2px;
+  height: 12px;
+  margin-left: 3px;
+  border-radius: 1px;
+  background: var(--evidence-observed);
+  translate: 0 2px;
+  animation: defenseCaret 1.05s steps(2, jump-none) infinite;
+}
+
+@keyframes defenseCaret {
+  50% {
+    opacity: 0;
+  }
+}
+
+.defenseTranscribing {
+  margin-top: 9px;
+  color: var(--evidence-observed);
+  font-size: 11.5px;
+}
+
+.defenseLogic {
+  min-width: 0;
+}
+
+.defenseLogicTitle {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.defenseLogicRules {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.defenseLogicRule {
+  display: grid;
+  gap: 3px;
+  border-radius: 8px;
+  padding: 9px 11px;
+  background: var(--surface-panel);
+}
+
+.defenseLogicCondition {
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 540;
+}
+
+.defenseLogicAction {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   Evidence review — a claim graph under human review
+   ========================================================================== */
+
+/* No min-height here: combined with aspect-ratio it grows the box sideways out
+   of its column instead of growing it downwards. */
+.evidenceGraph {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 960 / 470;
+  margin-top: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--surface-panel);
+}
+
+.evidenceGraphCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.evidenceGraphCanvas path {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-dasharray: 3 4;
+  stroke-width: 1.25;
+}
+
+.graphNode {
+  position: absolute;
+  display: grid;
+  width: 150px;
+  gap: 3px;
+  translate: -50% -50%;
+  border: 1px solid var(--border-default);
+  border-radius: 9px;
+  padding: 7px 9px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-card);
+}
+
+.graphNodeType {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.graphNodeTime {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.graphNodeTitle {
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 550;
+  line-height: 1.32;
+}
+
+.graphNodeArtifact {
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.graphNodeArtifact svg {
+  flex: 0 0 auto;
+}
+
+/* The claim is the focal object; every other node is an input to it. */
+.graphNodeClaim {
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: 196px;
+  border-color: color-mix(in srgb, var(--evidence-generated) 40%, transparent);
+  background: var(--surface-intelligence);
+  box-shadow: var(--shadow-inspector);
+}
+
+.graphNodeClaim .graphNodeType {
+  color: var(--evidence-generated);
+}
+
+.graphNodeClaim .graphNodeTitle {
+  font-size: 12.5px;
+}
+
+.graphNodeSupport {
+  top: 20.5%;
+  left: 20%;
+  border-color: color-mix(in srgb, var(--evidence-support) 36%, transparent);
+}
+
+.graphNodeDerived {
+  top: 20.5%;
+  left: 80%;
+  border-color: color-mix(in srgb, var(--evidence-generated) 30%, transparent);
+}
+
+.graphNodeCounter {
+  top: 79.5%;
+  left: 20%;
+  border-color: color-mix(in srgb, var(--evidence-counter) 36%, transparent);
+}
+
+.graphNodeClarify {
+  top: 79.5%;
+  left: 80%;
+  border-color: color-mix(in srgb, var(--evidence-observed) 34%, transparent);
+}
+
+.graphNodeVerified {
+  top: 87%;
+  left: 50%;
+  border-color: color-mix(in srgb, var(--evidence-support) 40%, transparent);
+}
+
+.graphEdgeLabel {
+  position: absolute;
+  translate: -50% -50%;
+  border-radius: 999px;
+  padding: 1px 7px;
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+/* Pulled outward from the midpoint so the labels land on open canvas rather
+   than behind the claim node. */
+.graphEdgeLabelSupport {
+  top: 31%;
+  left: 29%;
+  color: var(--evidence-support);
+}
+
+.graphEdgeLabelDerived {
+  top: 31%;
+  left: 71%;
+  color: var(--evidence-generated);
+}
+
+.graphEdgeLabelCounter {
+  top: 69%;
+  left: 29%;
+  color: var(--evidence-counter);
+}
+
+.graphEdgeLabelClarify {
+  top: 69%;
+  left: 71%;
+  color: var(--evidence-observed);
+}
+
+.graphEdgeLabelVerified {
+  top: 69%;
+  left: 50%;
+  color: var(--evidence-support);
+}
+
+.reviewPanel {
+  min-width: 0;
+  border-left: 1px solid var(--border-subtle);
+  padding: 18px 16px;
+  background: var(--surface-deep);
+}
+
+.reviewPanelHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 11px;
+}
+
+.reviewPanelMeta {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.reviewDecisionList {
+  display: grid;
+  gap: 3px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reviewDecisionRow {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border-radius: 7px;
+  padding: 7px 8px;
+}
+
+.reviewDecisionMarker {
+  display: grid;
+  width: 15px;
+  height: 15px;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  color: transparent;
+}
+
+.reviewDecisionLabel {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.reviewDecisionState {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.reviewDecisionRowSelected {
+  background: var(--surface-support);
+}
+
+.reviewDecisionRowSelected .reviewDecisionMarker {
+  border-color: var(--evidence-support);
+  background: var(--evidence-support);
+  color: var(--surface-raised);
+}
+
+.reviewDecisionRowSelected .reviewDecisionLabel {
+  color: var(--text-primary);
+  font-weight: 540;
+}
+
+.reviewDecisionRowSelected .reviewDecisionState {
+  color: var(--evidence-support);
+}
+
+.reviewNote {
+  margin-top: 14px;
+  border-radius: 8px;
+  padding: 10px 11px;
+  background: var(--surface-panel);
+}
+
+.reviewNoteLabel {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.reviewNote p:last-child {
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.48;
+}
+
+.reviewProvenance {
+  display: grid;
+  gap: 6px;
+  margin: 14px 0 0;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+}
+
+.reviewProvenanceItem {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.reviewProvenanceItem dt {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.reviewProvenanceItem dd {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+/* ==========================================================================
+   Interview brief — the plan lifted off the shortlist it came from
+   ========================================================================== */
+
+.interviewStage {
+  position: relative;
+  padding: 26px 0 30px;
+}
+
+/* The shortlist behind the plan is context only: it is dimmed, cropped, and
+   inert, so the brief in front of it is unambiguously the subject. */
+.interviewBackdrop {
+  position: absolute;
+  z-index: 0;
+  top: 26px;
+  left: 0;
+  display: grid;
+  width: min(610px, 62%);
+  height: 468px;
+  overflow: hidden;
+  grid-template-columns: 168px minmax(0, 1fr);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--surface-raised);
+  opacity: 0.55;
+  mask-image: linear-gradient(to bottom, #000 58%, transparent 100%);
+}
+
+.interviewPlan {
+  position: relative;
+  z-index: 1;
+  margin-left: auto;
+  width: min(800px, 76%);
+  border: 1px solid var(--border-default);
+  border-radius: 13px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-float);
+}
+
+.interviewPlanHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 16px 18px;
+}
+
+.interviewPlanTitle {
+  margin-top: 3px;
+  color: var(--text-primary);
+  font-size: 19px;
+  font-weight: 560;
+  letter-spacing: -0.018em;
+}
+
+.interviewPlanMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 0;
+}
+
+.interviewPlanMetaItem dt {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.interviewPlanMetaItem dd {
+  margin: 2px 0 0;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.interviewPlan .interviewSummary {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px 18px;
+}
+
+.interviewQuestionList {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.interviewQuestionCard {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 2px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 13px 18px;
+}
+
+.interviewQuestionIndex {
+  color: var(--text-disabled);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.interviewQuestionText {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 540;
+  line-height: 1.45;
+}
+
+.interviewEvidenceLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  grid-column: 2;
+  margin-top: 5px;
+  color: var(--evidence-generated);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.interviewQuestionFields {
+  display: grid;
+  gap: 6px;
+  grid-column: 2;
+  margin: 9px 0 0;
+}
+
+.interviewQuestionField {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.interviewQuestionFieldLabel {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.interviewQuestionFieldValue {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.interviewEvaluation {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 13px 18px;
+  background: var(--surface-panel);
+}
+
+.interviewEvaluationLabel {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.interviewEvaluationField {
+  margin-top: 7px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 7px;
+  padding: 9px 10px;
+  color: var(--text-disabled);
+  font-size: 11.5px;
+}
+
+.interviewPlanFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 11px 18px 13px;
+}
+
+.interviewShareMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+/* ==========================================================================
+   Outcomes — the loop, and what each stage actually holds
+   ========================================================================== */
+
+.outcomeLoop {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 22px 0 0;
+  list-style: none;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.outcomeStage {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 11px;
+  padding: 14px;
+  background: var(--surface-raised);
+}
+
+.outcomeStageIndex {
+  color: var(--text-disabled);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.outcomeStageTitle {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 560;
+  letter-spacing: -0.012em;
+}
+
+.outcomeStageBody p {
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.48;
+}
+
+.outcomeStageHolds {
+  display: block;
+  margin-top: 9px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.outcomeStageState {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.outcomeLoopNote {
+  display: grid;
+  align-items: start;
+  gap: 8px;
+  grid-template-columns: 14px minmax(0, 1fr);
+  max-width: 74ch;
+  margin-top: 18px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .calibrationRole {
-  border-right: 1px solid var(--border-subtle);
-  padding: clamp(28px, 4vw, 54px);
+  padding: 18px 20px;
 }
 
 .calibrationRole h3 {
-  font-size: 27px;
+  margin-top: 5px;
+  font-size: 19px;
+  font-weight: 560;
+  letter-spacing: -0.018em;
 }
 
 .calibrationRole p {
-  max-width: 48ch;
-  margin-top: 15px;
+  margin-top: 9px;
   color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 12.5px;
+  line-height: 1.52;
 }
 
 .calibrationMeta {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
-  margin-top: 38px;
+  margin-top: 18px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  overflow: hidden;
   background: var(--border-subtle);
 }
 
 .calibrationMeta div {
   background: var(--surface-raised);
-  padding: 16px;
+  padding: 10px 11px;
 }
 
 .calibrationMeta span {
   display: block;
   color: var(--text-tertiary);
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .calibrationMeta strong {
   display: block;
-  margin-top: 6px;
+  margin-top: 3px;
   color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 520;
+  font-size: 12px;
+  font-weight: 530;
 }
 
 .signals {
@@ -851,24 +2751,32 @@
 
 .defense {
   display: grid;
+  align-items: start;
+  column-gap: 0;
+  grid-template-areas:
+    "status status"
+    "source transcript"
+    "logic transcript";
   grid-template-columns: 0.85fr 1.15fr;
 }
 
 .artifact {
+  grid-area: source;
   border-right: 1px solid var(--border-subtle);
-  padding: clamp(28px, 4vw, 52px);
+  padding: 16px 20px;
+  background: var(--surface-deep);
+}
+
+.defenseLogic {
+  grid-area: logic;
+  border-right: 1px solid var(--border-subtle);
+  padding: 4px 20px 20px;
   background: var(--surface-deep);
 }
 
 .artifactLine {
-  margin-top: 24px;
-  border-radius: 8px;
-  background: var(--surface-panel);
-  padding: 18px;
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.65;
 }
 
 .artifactLine mark {
@@ -877,35 +2785,40 @@
 }
 
 .defenseExchange {
-  padding: clamp(28px, 4vw, 52px);
+  grid-area: transcript;
+  padding: 16px 20px 20px;
 }
 
-.question {
+/* Transcript turns are application text, not marketing text. The generated
+   question is emphasised by weight and surface, never by headline size. */
+.defenseTurnBody.question {
   color: var(--text-primary);
-  font-size: clamp(1.25rem, 2.2vw, 1.8rem);
-  line-height: 1.28;
-  letter-spacing: -0.02em;
+  font-size: 12.5px;
+  font-weight: 540;
+  line-height: 1.5;
+  letter-spacing: 0;
 }
 
-.answer {
-  margin-top: 30px;
-  border-top: 1px solid var(--border-subtle);
-  padding-top: 22px;
+.defenseTurnBody.answer {
+  margin-top: 3px;
+  border-top: 0;
+  padding-top: 0;
   color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.65;
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 
 .confidence {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-top: 32px;
+  gap: 10px;
+  margin-top: 14px;
   border-top: 1px solid var(--border-subtle);
-  padding-top: 20px;
+  padding-top: 12px;
   color: var(--text-tertiary);
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .confidence strong {
@@ -915,21 +2828,21 @@
 
 .evidenceReview {
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
-  min-height: 510px;
+  min-height: 590px;
+  grid-template-columns: 194px minmax(0, 1fr) 286px;
 }
 
 .timeline {
   border-right: 1px solid var(--border-subtle);
-  padding: 26px 20px;
+  padding: 18px 16px;
   background: var(--surface-deep);
 }
 
 .event {
   position: relative;
-  padding: 0 0 25px 24px;
+  padding: 0 0 18px 22px;
   color: var(--text-tertiary);
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .event::before {
@@ -958,13 +2871,17 @@
 .eventActive::before { background: var(--fydell-evidence); }
 
 .claimReview {
-  padding: clamp(28px, 4vw, 50px);
+  min-width: 0;
+  padding: 18px 20px 20px;
 }
 
 .claimTitle {
-  max-width: 700px;
-  font-size: 21px;
-  line-height: 1.4;
+  max-width: 62ch;
+  margin-top: 5px;
+  font-size: 15px;
+  font-weight: 550;
+  line-height: 1.45;
+  letter-spacing: -0.012em;
 }
 
 .evidenceMap {
@@ -1002,7 +2919,7 @@
 .evidenceMapNode span {
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11.5px;
 }
 
 .evidenceMapNode strong {
@@ -1039,13 +2956,16 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1px;
-  margin-top: 32px;
+  margin-top: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
   background: var(--border-subtle);
 }
 
 .evidenceColumn {
   background: var(--surface-raised);
-  padding: 22px;
+  padding: 12px 14px;
 }
 
 .evidenceColumn h4 {
@@ -1089,21 +3009,22 @@
 }
 
 .interviewSummary {
-  border-right: 1px solid var(--border-subtle);
-  padding: clamp(28px, 4vw, 50px);
   background: var(--surface-deep);
 }
 
 .interviewSummary h3 {
-  margin-top: 10px;
-  font-size: 29px;
+  margin-top: 5px;
+  font-size: 15px;
+  font-weight: 560;
+  letter-spacing: -0.012em;
 }
 
 .interviewSummary p {
-  margin-top: 16px;
+  max-width: 78ch;
+  margin-top: 6px;
   color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 
 .interviewQuestions {
@@ -1198,6 +3119,405 @@
   line-height: 1.6;
 }
 
+/* ==========================================================================
+   Shared application chrome
+   Every scene is a slice of one product, so the frame bar, rail, and shortlist
+   are styled once here and reused rather than restyled per section.
+   ========================================================================== */
+
+.sceneBarIdentity {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.sceneBarContext {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sceneBarMeta {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.sceneBarMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sceneBarMetaIcon {
+  color: var(--text-tertiary);
+}
+
+.roleRailCompact .roleSummary {
+  padding-block: 13px;
+}
+
+/* Fills the rail's dead span and, more usefully, dates the run: the same
+   timestamps appear on the candidate rows and in the evidence chain. */
+.railActivity {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px 16px 15px;
+}
+
+.railActivity ol {
+  display: grid;
+  gap: 9px;
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.railActivity li {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 8px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.railActivity time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Behind the interview plan the shortlist is scenery, so its rows shrink and
+   its per-candidate metrics drop away. */
+.shortlistRailCompact .listHeader {
+  min-height: 0;
+  padding: 13px 14px;
+}
+
+.shortlistRailCompact .candidateRow {
+  padding: 8px 10px;
+}
+
+.listHeaderMeta {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+/* The context layer. Rows sit quieter than the focal inspector on purpose:
+   one object is being decided, the rest is the queue behind it. */
+.candidateRow {
+  position: relative;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  padding: 11px 12px;
+}
+
+.candidateSelectedMarker {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 0;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: transparent;
+}
+
+.candidateRowActive .candidateSelectedMarker {
+  background: var(--evidence-generated);
+}
+
+.candidateIdentity {
+  min-width: 0;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  font-size: 11.5px;
+}
+
+.candidateName {
+  font-size: 13px;
+}
+
+.candidateMeta {
+  margin-top: 2px;
+  font-size: 11.5px;
+}
+
+.candidateMetrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 11px;
+  margin-top: 7px;
+}
+
+.candidateMetric {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.candidateMetricIcon {
+  flex: 0 0 auto;
+  opacity: 0.75;
+}
+
+.candidateState {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding-top: 2px;
+  font-size: 11.5px;
+}
+
+.candidateState::before {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+}
+
+.candidateStateReview {
+  color: var(--evidence-support);
+}
+
+.candidateStateAnalysis {
+  color: var(--evidence-observed);
+}
+
+.candidateStateProgress {
+  color: var(--text-tertiary);
+}
+
+/* ==========================================================================
+   Hero: decision brief with an elevated evidence inspector
+   The inspector deliberately crosses the candidate-list boundary. The overlap
+   is the argument: the decision on the right is produced by the trail it sits
+   on top of, not by a separate screen.
+   ========================================================================== */
+
+/* The inspector floats over the lower half of the brief and crosses into the
+   candidate list. The occlusion is the point: the reviewer decision stays
+   visible, and the chain that produced it sits on top of the evidence it came
+   from. Content behind it fades rather than getting cut mid-line. */
+.decisionStack {
+  position: relative;
+  min-width: 0;
+  background: var(--surface-raised);
+}
+
+.evidenceInspector {
+  position: absolute;
+  z-index: 3;
+  right: 20px;
+  bottom: 20px;
+  /* Wide enough that the panel edge lands past the candidate status pills
+     instead of clipping them mid-word. */
+  left: -116px;
+  border: 1px solid var(--border-default);
+  border-radius: 11px;
+  padding: 13px 15px 11px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-inspector);
+}
+
+.evidenceInspector::before {
+  position: absolute;
+  right: -1px;
+  bottom: 100%;
+  left: -1px;
+  height: 64px;
+  background: linear-gradient(
+    to top,
+    var(--surface-raised) 12%,
+    color-mix(in srgb, var(--surface-raised) 55%, transparent) 62%,
+    transparent 100%
+  );
+  content: "";
+  pointer-events: none;
+}
+
+.inspectorHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 11px;
+}
+
+.inspectorTitle {
+  margin-top: 3px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 560;
+  letter-spacing: -0.015em;
+}
+
+.inspectorScope {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.causalChain {
+  display: grid;
+  margin: 0;
+  padding: 4px 0 0;
+  list-style: none;
+}
+
+.causalStep {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px 38px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+  padding: 6px 0;
+}
+
+/* The connector is what makes this a chain rather than four stacked rows. */
+.causalStep:not(:last-child)::after {
+  position: absolute;
+  top: 27px;
+  bottom: -1px;
+  left: 10px;
+  width: 1px;
+  background: var(--border-default);
+  content: "";
+}
+
+.causalStepIcon {
+  display: grid;
+  width: 21px;
+  height: 21px;
+  place-items: center;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background: var(--surface-canvas);
+  color: var(--text-secondary);
+}
+
+.causalStepConstraint .causalStepIcon {
+  border-color: color-mix(in srgb, var(--evidence-uncertain) 38%, transparent);
+  background: var(--surface-uncertain);
+  color: var(--evidence-uncertain);
+}
+
+.causalStepArtifact .causalStepIcon {
+  border-color: color-mix(in srgb, var(--evidence-generated) 32%, transparent);
+  background: var(--surface-intelligence);
+  color: var(--evidence-generated);
+}
+
+.causalStepDefense .causalStepIcon {
+  border-color: color-mix(in srgb, var(--evidence-observed) 32%, transparent);
+  background: var(--surface-observation);
+  color: var(--evidence-observed);
+}
+
+.causalStepReview .causalStepIcon {
+  border-color: color-mix(in srgb, var(--evidence-support) 34%, transparent);
+  background: var(--surface-support);
+  color: var(--evidence-support);
+}
+
+.causalStepTime {
+  padding-top: 3px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.causalStepBody {
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.causalStepLabel {
+  display: block;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 540;
+}
+
+.causalStepDetail {
+  display: block;
+  margin-top: 2px;
+  max-width: 52ch;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.causalOutcome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 11px;
+}
+
+.causalOutcomeIcon {
+  color: var(--evidence-support);
+}
+
+.causalOutcomeLabel {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 580;
+  letter-spacing: -0.01em;
+}
+
+.inspectorFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin-top: 11px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+}
+
+.inspectorConfidence,
+.inspectorReviewer {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.inspectorConfidence strong,
+.inspectorReviewer strong {
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 560;
+}
+
+/* Enough tail so the fade lands on real text rather than on the panel edge. */
+.decisionStack .briefBody {
+  padding-bottom: 96px;
+}
+
 @keyframes changedState {
   0%, 20%, 100% { border-color: var(--status-attention-line); background: transparent; }
   40%, 70% { border-color: var(--status-attention-ink); background: var(--status-attention-bg); }
@@ -1277,9 +3597,10 @@
   }
 
   .heroTitle {
-    max-width: 12ch;
-    font-size: clamp(2.4rem, 11vw, 3.4rem);
-    line-height: 1.04;
+    width: 100%;
+    max-width: none;
+    font-size: clamp(1.95rem, 8.4vw, 2.25rem);
+    line-height: 1.02;
   }
 
   .sceneFrame {
@@ -1310,6 +3631,7 @@
     box-shadow: none;
   }
 
+  .decisionRow,
   .briefSection {
     grid-template-columns: 1fr;
     gap: 10px;
@@ -1444,7 +3766,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .adaptStepChanged {
+  .adaptStepChanged,
+  .defenseCaret {
     animation: none;
   }
 }
@@ -1490,7 +3813,8 @@
   }
 
   .roleNav,
-  .roleContext {
+  .roleSummary,
+  .workspaceFooter {
     display: none;
   }
 
@@ -1527,5 +3851,265 @@
 
   .principleDiagram :global(.principle-probe) {
     grid-template-columns: 1fr 22px 1.2fr;
+  }
+}
+
+/* Below the widest desktop the overlap stops being legible, so the inspector
+   becomes a normal stacked panel rather than a shrunken floating one. */
+@media (max-width: 1180px) {
+  .evidenceInspector {
+    position: static;
+    margin: 0 18px 18px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .evidenceInspector::before {
+    display: none;
+  }
+
+  .decisionStack .briefBody {
+    padding-bottom: 18px;
+  }
+}
+
+/* Below desktop the scenes stop being staged compositions and become a single
+   readable column. Every floating focal panel drops into flow, because a
+   shrunken overlay reads as a rendering bug rather than as depth. */
+@media (max-width: 960px) {
+  .decisionStack {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .candidateMetrics {
+    gap: 4px 9px;
+  }
+
+  .railActivity {
+    display: none;
+  }
+
+  .workbench {
+    max-height: none;
+    grid-template-columns: 160px minmax(0, 1fr);
+  }
+
+  .workbench::after {
+    display: none;
+  }
+
+  .workContext {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border-subtle);
+    border-left: 0;
+  }
+
+  .workConstraint {
+    position: static;
+    width: auto;
+    margin: 0 18px 18px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .workConstraint::before {
+    display: none;
+  }
+
+  .calibration {
+    max-height: none;
+  }
+
+  .calibration::after {
+    display: none;
+  }
+
+  .competencyMatrix {
+    border-top: 1px solid var(--border-subtle);
+    border-left: 0;
+  }
+
+  .competencyEditor {
+    position: static;
+    width: auto;
+    margin: 18px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .defense {
+    grid-template-areas:
+      "status"
+      "source"
+      "transcript"
+      "logic";
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .defenseLogic {
+    border-top: 1px solid var(--border-subtle);
+    border-right: 0;
+  }
+
+  .evidenceReview {
+    min-height: 0;
+    grid-template-columns: 168px minmax(0, 1fr);
+  }
+
+  .reviewPanel {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border-subtle);
+    border-left: 0;
+  }
+
+  .interviewBackdrop {
+    display: none;
+  }
+
+  .interviewPlan {
+    width: 100%;
+  }
+
+  .outcomeLoop {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .decisionStack {
+    grid-column: auto;
+  }
+
+  .sceneBarMeta {
+    display: none;
+  }
+
+  .evidenceInspector {
+    margin: 0 14px 14px;
+    padding: 13px;
+  }
+
+  .causalStep {
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 4px 8px;
+  }
+
+  .causalStepTime,
+  .causalStepBody {
+    grid-column: 2;
+  }
+
+  .causalStepTime {
+    padding-top: 0;
+  }
+
+  .causalStep:not(:last-child)::after {
+    display: none;
+  }
+
+  .workbench,
+  .evidenceReview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workNav,
+  .timeline {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .workStageList {
+    display: flex;
+    overflow-x: auto;
+    margin-bottom: 14px;
+    gap: 4px;
+  }
+
+  .workStage {
+    white-space: nowrap;
+  }
+
+  .workDiffLine {
+    grid-template-columns: 30px 12px minmax(0, 1fr);
+  }
+
+  .adaptStage {
+    grid-template-areas:
+      "caption"
+      "baseline"
+      "constraint"
+      "revision"
+      "reaction"
+      "unresolved"
+      "trace";
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adaptDiff {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adaptDiffArrow {
+    justify-self: center;
+    rotate: 90deg;
+  }
+
+  .adaptTraceItem {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 2px 10px;
+  }
+
+  .adaptTraceDetail {
+    grid-column: 2;
+  }
+
+  /* A six-node graph cannot survive a phone, so it becomes the ordered list it
+     always was underneath. */
+  .evidenceGraph {
+    display: grid;
+    aspect-ratio: auto;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .evidenceGraphCanvas {
+    display: none;
+  }
+
+  .graphNode,
+  .graphNodeClaim {
+    position: static;
+    width: auto;
+    translate: none;
+  }
+
+  .graphEdgeLabel {
+    display: none;
+  }
+
+  .graphNodeClaim {
+    order: -1;
+  }
+
+  .evidenceColumns,
+  .competencyField,
+  .interviewQuestionField,
+  .reviewProvenanceItem {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .interviewQuestionField {
+    gap: 2px;
+  }
+
+  .interviewPlanMeta {
+    gap: 12px;
+  }
+
+  .outcomeLoop {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .competencyEditor,
+  .workConstraint {
+    margin: 14px;
   }
 }

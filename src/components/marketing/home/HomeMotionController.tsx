@@ -1,133 +1,142 @@
 "use client";
 
-import { useEffect } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+const FOCAL_LAYER = "[data-focal-layer]";
 
-function playEntrance(
-  elements: Element[],
-  options: { axis?: "x" | "y"; distance?: number; duration?: number; stagger?: number },
-) {
-  const {
-    axis = "y",
-    distance = 8,
-    duration = 460,
-    stagger = 80,
-  } = options;
-
-  elements.forEach((element, index) => {
-    const transform =
-      axis === "x" ? `translateX(${distance}px)` : `translateY(${distance}px)`;
-    element.animate(
-      [
-        { opacity: 0.56, transform },
-        { opacity: 1, transform: "translate(0, 0)" },
-      ],
-      {
-        duration,
-        delay: index * stagger,
-        easing: EASE,
-        fill: "both",
-      },
-    );
-  });
-}
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export default function HomeMotionController() {
-  useEffect(() => {
+  useGSAP(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) return;
 
-    const hero = document.querySelector('[data-motion-zone="shortlist"]');
-    if (hero) {
-      playEntrance(
-        Array.from(hero.querySelectorAll('[data-motion-item="candidate"]')),
-        { duration: 440, stagger: 65 },
+    const mm = gsap.matchMedia();
+
+    gsap
+      .timeline({ defaults: { ease: "power4.out" } })
+      .from("[data-hero-copy] > *", {
+        y: 18,
+        opacity: 0,
+        duration: 0.75,
+        stagger: 0.1,
+      })
+      .from(
+        "[data-hero-stage]",
+        { y: 32, scale: 0.965, opacity: 0.35, duration: 1.05 },
+        "-=0.38",
+      )
+      .from(
+        '[data-motion-zone="shortlist"] [data-motion-item="candidate"]',
+        { y: 9, opacity: 0.25, duration: 0.46, stagger: 0.055 },
+        "-=0.62",
+      )
+      .from(
+        '[data-motion-zone="shortlist"] [data-motion-item="inspector"]',
+        { x: 28, y: 10, opacity: 0, duration: 0.62 },
+        "-=0.3",
       );
-      const brief = hero.querySelector('[data-motion-item="brief"]');
-      if (brief) {
-        brief.animate(
-          [
-            { opacity: 0.66, transform: "translateX(12px)" },
-            { opacity: 1, transform: "translateX(0)" },
-          ],
-          { duration: 560, delay: 240, easing: EASE, fill: "both" },
+
+    document.querySelectorAll<HTMLElement>("[data-product-chapter]").forEach((chapter) => {
+      const heading = chapter.querySelector("[data-chapter-heading]");
+      const copy = chapter.querySelector("[data-chapter-copy]");
+      const stage = chapter.querySelector("[data-product-stage]");
+      if (!stage) return;
+
+      gsap.from([heading, copy], {
+        y: 24,
+        opacity: 0.18,
+        stagger: 0.08,
+        scrollTrigger: {
+          trigger: chapter,
+          start: "top 82%",
+          end: "top 52%",
+          scrub: 0.7,
+        },
+      });
+
+      gsap.fromTo(
+        stage,
+        { y: 72, scale: 0.935, opacity: 0.38 },
+        {
+          y: 0,
+          scale: 1,
+          opacity: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: stage,
+            start: "top 94%",
+            end: "top 55%",
+            scrub: 0.85,
+          },
+        },
+      );
+
+      const focal = stage.querySelector(FOCAL_LAYER);
+      if (focal) {
+        gsap.fromTo(
+          focal,
+          { x: 34, y: 12, opacity: 0.28 },
+          {
+            x: 0,
+            y: 0,
+            opacity: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: stage,
+              start: "top 70%",
+              end: "top 36%",
+              scrub: 0.65,
+            },
+          },
         );
       }
-    }
+    });
 
-    const zones = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-motion-observe]"),
-    );
-    if (!("IntersectionObserver" in window)) return;
+    document
+      .querySelectorAll<SVGGeometryElement>("[data-motion-line]")
+      .forEach((line) => {
+        const length = line.getTotalLength();
+        gsap.fromTo(
+          line,
+          { strokeDasharray: length, strokeDashoffset: length },
+          {
+            strokeDashoffset: 0,
+            ease: "none",
+            scrollTrigger: {
+              trigger: line.closest("[data-product-stage]"),
+              start: "top 66%",
+              end: "top 34%",
+              scrub: 0.7,
+            },
+          },
+        );
+      });
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          const zone = entry.target as HTMLElement;
-          observer.unobserve(zone);
-
-          if (zone.dataset.motionObserve === "adapt") {
-            playEntrance(
-              Array.from(zone.querySelectorAll('[data-motion-item="adapt-event"]')),
-              { duration: 520, stagger: 520, distance: 9 },
-            );
-          }
-
-          if (zone.dataset.motionObserve === "evidence") {
-            playEntrance(
-              Array.from(zone.querySelectorAll('[data-motion-item="evidence-node"]')),
-              { duration: 420, stagger: 90, distance: 7 },
-            );
-            Array.from(
-              zone.querySelectorAll<SVGGeometryElement>("[data-motion-line]"),
-            ).forEach((line, index) => {
-              const length = line.getTotalLength();
-              line.animate(
-                [
-                  { strokeDasharray: `${length}`, strokeDashoffset: `${length}` },
-                  { strokeDasharray: `${length}`, strokeDashoffset: "0" },
-                ],
-                {
-                  duration: 520,
-                  delay: 140 + index * 110,
-                  easing: EASE,
-                  fill: "both",
-                },
-              );
-            });
-          }
-
-          if (zone.dataset.motionObserve === "principles") {
-            Array.from(
-              zone.querySelectorAll<SVGGeometryElement>(
-                ".principle-figure :is(path, line, polygon)",
-              ),
-            ).forEach((shape, index) => {
-              const length = shape.getTotalLength();
-              shape.animate(
-                [
-                  { strokeDasharray: `${length}`, strokeDashoffset: `${length}` },
-                  { strokeDasharray: `${length}`, strokeDashoffset: "0" },
-                ],
-                {
-                  duration: 620,
-                  delay: Math.min(index * 24, 360),
-                  easing: EASE,
-                  fill: "both",
-                },
-              );
-            });
-          }
+    mm.add("(min-width: 961px)", () => {
+      const chapters = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-product-chapter]"),
+      );
+      [2, 4].forEach((index) => {
+        const chapter = chapters[index];
+        const heading = chapter?.querySelector<HTMLElement>("[data-chapter-head]");
+        const stage = chapter?.querySelector<HTMLElement>("[data-product-stage]");
+        if (!chapter || !heading || !stage) return;
+        ScrollTrigger.create({
+          trigger: heading,
+          start: "top 88px",
+          endTrigger: stage,
+          end: "top 180px",
+          pin: heading,
+          pinSpacing: false,
         });
-      },
-      { threshold: 0.28 },
-    );
+      });
+    });
 
-    zones.forEach((zone) => observer.observe(zone));
-    return () => observer.disconnect();
-  }, []);
+    return () => mm.revert();
+  });
 
   return null;
 }

@@ -18,9 +18,11 @@ export default function HomePage() {
       <div className={styles.page}>
         <section className={styles.hero}>
           <div className={styles.container}>
-            <div className={styles.heroCopy}>
+            <div className={styles.heroCopy} data-hero-copy>
               <h1 className={styles.heroTitle}>
-                The hiring system for finding people who can actually do the work.
+                <span>The hiring system for</span>
+                <span>finding people who can</span>
+                <span>actually do the work.</span>
               </h1>
               <div className={styles.actions}>
                 <ButtonLink href="/signup" variant="primary">
@@ -31,7 +33,9 @@ export default function HomePage() {
                 </ButtonLink>
               </div>
             </div>
-            <HeroShortlistScene />
+            <div data-hero-stage>
+              <HeroShortlistScene />
+            </div>
             <p className={styles.illustrativeNote}>Illustrative product view</p>
           </div>
         </section>

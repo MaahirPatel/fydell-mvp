@@ -1,117 +1,183 @@
-import ProductFrame from "./ProductFrame";
+import type { LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  CircleCheck,
+  FileDiff,
+  MessageSquareQuote,
+  TriangleAlert,
+} from "lucide-react";
+import ProductFrame, { CandidateShortlist, WorkspaceRail } from "./ProductFrame";
+import { cn } from "@/lib/cn";
 import styles from "./homepage.module.css";
-
-const candidates = [
-  { initials: "C1", name: "Candidate 1", detail: "Evidence reviewed", state: "Strong interview" },
-  { initials: "C2", name: "Candidate 2", detail: "Evidence reviewed", state: "Interview" },
-  { initials: "C3", name: "Candidate 3", detail: "Defense complete", state: "Review" },
-  { initials: "C4", name: "Candidate 4", detail: "Evidence reviewed", state: "Interview" },
-];
 
 const questions = [
   "What would you validate before presenting the migration plan to a security lead?",
   "Where does your recommendation depend most on Acme’s stated adoption numbers?",
-  "What would make you reverse your phased-rollout recommendation?",
+];
+
+type CausalStep = {
+  time: string;
+  label: string;
+  detail: string;
+  icon: LucideIcon;
+  tone: string;
+};
+
+/**
+ * The inspector is the argument of the whole page in one column: a decision at
+ * the bottom that you can walk backwards to the moment the facts changed.
+ */
+const causalChain: CausalStep[] = [
+  {
+    time: "16:08",
+    label: "Changed constraint",
+    detail: "Acme confirms the authentication security review itself takes six weeks.",
+    icon: TriangleAlert,
+    tone: styles.causalStepConstraint,
+  },
+  {
+    time: "16:13",
+    label: "rollout_plan.md revised",
+    detail: "Sandbox-first sequencing replaces the single production cutover.",
+    icon: FileDiff,
+    tone: styles.causalStepArtifact,
+  },
+  {
+    time: "16:31",
+    label: "Defense answer",
+    detail: "Sponsor adoption number kept directional until usage data is verified.",
+    icon: MessageSquareQuote,
+    tone: styles.causalStepDefense,
+  },
+  {
+    time: "17:05",
+    label: "Human review",
+    detail: "Approved with limitation. The unresolved assumption stays attached.",
+    icon: CircleCheck,
+    tone: styles.causalStepReview,
+  },
 ];
 
 export default function HeroShortlistScene() {
   return (
     <ProductFrame
-      title="Employer shortlist"
-      context="Northstar · Solutions Engineer"
+      title="Fydell workspace"
+      context="Solutions Engineer · 4 candidates"
       className={styles.heroScene}
     >
       <div className={styles.shortlist} data-motion-zone="shortlist">
-        <aside className={styles.roleRail}>
-          <header className={styles.railHeader}>
-            <p className={styles.roleLabel}>Open role</p>
-            <h2 className={styles.roleTitle}>Solutions Engineer</h2>
-            <p className={styles.readyLine}>4 candidates ready</p>
-          </header>
-          <nav className={styles.roleNav} aria-label="Role workspace">
-            <span className={styles.roleNavActive}>Shortlist</span>
-            <span>Evidence</span>
-            <span>Interview plan</span>
-            <span>Role calibration</span>
-          </nav>
-          <p className={styles.roleContext}>Customer context<br /><strong>Acme</strong></p>
-        </aside>
+        <WorkspaceRail activeItem="Active roles" />
 
-        <section className={styles.shortlistRail} aria-label="Candidates">
-          <header className={styles.listHeader}>
-            <p className={styles.roleLabel}>Shortlist</p>
-            <strong>Review evidence</strong>
-          </header>
-          <ol className={styles.candidateList}>
-            {candidates.map((candidate, index) => (
-              <li
-                key={candidate.name}
-                data-motion-item="candidate"
-                className={`${styles.candidateRow} ${
-                  index === 0 ? styles.candidateRowActive : ""
-                }`}
-              >
-                <span className={styles.avatar} aria-hidden>
-                  {candidate.initials}
-                </span>
-                <span>
-                  <span className={styles.candidateName}>{candidate.name}</span>
-                  <span className={styles.candidateMeta}>{candidate.detail}</span>
-                </span>
-                <span className={styles.candidateState}>{candidate.state}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
+        <CandidateShortlist selectedId="candidate-1" motionItem="candidate" />
 
-        <article className={styles.brief} data-motion-item="brief">
-          <header className={styles.briefHeader}>
-            <div className={styles.briefTopline}>
-              <div>
-                <p className={styles.roleLabel}>Decision brief</p>
-                <h2 className={styles.briefName}>Candidate 1</h2>
+        <div className={styles.decisionStack}>
+          <article className={styles.brief} data-motion-item="brief">
+            <header className={styles.briefHeader}>
+              <div className={styles.briefTopline}>
+                <div>
+                  <p className={styles.roleLabel}>Decision brief</p>
+                  <h2 className={styles.briefName}>Candidate 1</h2>
+                </div>
+                <span className={styles.reviewMeta}>Reviewed 18 Aug</span>
               </div>
-              <span className={styles.verdict}>Strong interview</span>
+            </header>
+
+            <div className={styles.briefBody}>
+              <section className={styles.decisionRow}>
+                <h3>Reviewer decision</h3>
+                <div>
+                  <strong>Advance to interview</strong>
+                  <p>
+                    Evidence supports a focused interview. The adoption assumption
+                    remains unresolved.
+                  </p>
+                </div>
+              </section>
+              <section className={styles.briefSection}>
+                <h3>Evidence</h3>
+                <ul>
+                  <li>
+                    Separated stated requirements from assumptions before
+                    recommending an architecture.
+                  </li>
+                  <li>
+                    Revised the Acme rollout when a six-week authentication security
+                    review became a launch constraint.
+                  </li>
+                  <li>
+                    Explained the sequencing tradeoff in language the customer could
+                    act on.
+                  </li>
+                </ul>
+              </section>
+
+              <section className={styles.briefSection}>
+                <h3>Unresolved</h3>
+                <p>
+                  Rollout sizing still depends on Acme&rsquo;s self-reported weekly
+                  active-user count.
+                </p>
+              </section>
+
+              <section className={styles.briefSection}>
+                <h3>Ask next</h3>
+                <ol>
+                  {questions.map((question) => (
+                    <li key={question}>{question}</li>
+                  ))}
+                </ol>
+              </section>
             </div>
-          </header>
+          </article>
 
-          <div className={styles.briefBody}>
-            <section className={styles.briefSection}>
-              <h3>Why interview</h3>
-              <ul>
-                <li>
-                  <strong>Structured discovery:</strong> separated stated requirements from
-                  assumptions before recommending an architecture.
-                </li>
-                <li className={styles.highlightLine}>
-                  <strong>Adapted under pressure:</strong> revised the Acme rollout when a
-                  six-week authentication security review became a launch constraint.
-                </li>
-                <li>
-                  <strong>Customer judgment:</strong> explained tradeoffs in language an
-                  executive sponsor could use.
-                </li>
-              </ul>
-            </section>
+          <aside
+            className={styles.evidenceInspector}
+            aria-label="Evidence inspector"
+            data-motion-item="inspector"
+            data-focal-layer
+          >
+            <header className={styles.inspectorHeader}>
+              <div>
+                <p className={styles.roleLabel}>Evidence inspector</p>
+                <h3 className={styles.inspectorTitle}>Adaptation</h3>
+              </div>
+              <span className={styles.inspectorScope}>Candidate 1 · 4 linked events</span>
+            </header>
 
-            <section className={styles.briefSection}>
-              <h3>Uncertainty</h3>
-              <p>
-                Candidate 1 identified the adoption risk, but the estimate still depends on
-                Acme&rsquo;s self-reported weekly active-user count.
-              </p>
-            </section>
+            <ol className={styles.causalChain}>
+              {causalChain.map((step) => (
+                <li key={step.time} className={cn(styles.causalStep, step.tone)}>
+                  <span className={styles.causalStepIcon} aria-hidden>
+                    <step.icon size={13} />
+                  </span>
+                  <time className={styles.causalStepTime} dateTime={`2026-08-18T${step.time}`}>
+                    {step.time}
+                  </time>
+                  <span className={styles.causalStepBody}>
+                    <span className={styles.causalStepLabel}>{step.label}</span>
+                    <span className={styles.causalStepDetail}>{step.detail}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
 
-            <section className={styles.briefSection}>
-              <h3>Ask next</h3>
-              <ol>
-                {questions.map((question) => (
-                  <li key={question}>{question}</li>
-                ))}
-              </ol>
-            </section>
-          </div>
-        </article>
+            <div className={styles.causalOutcome}>
+              <ArrowRight className={styles.causalOutcomeIcon} size={13} aria-hidden />
+              <span className={styles.causalOutcomeLabel}>Advance to interview</span>
+            </div>
+
+            <footer className={styles.inspectorFooter}>
+              <span className={styles.inspectorConfidence}>
+                Confidence
+                <strong>Moderate</strong>
+              </span>
+              <span className={styles.inspectorReviewer}>
+                Reviewer
+                <strong>MK</strong>
+              </span>
+            </footer>
+          </aside>
+        </div>
       </div>
     </ProductFrame>
   );

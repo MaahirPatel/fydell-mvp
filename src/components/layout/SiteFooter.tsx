@@ -80,7 +80,7 @@ export default function SiteFooter() {
 
         <div className="mt-16 flex flex-col gap-4 border-t border-[var(--border-subtle)] pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[12.5px] text-[var(--text-tertiary)]">
-            © 2026 Fydell, Inc.
+            © 2026 Fydell
           </p>
           <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
             {LEGAL.map((link) => (
