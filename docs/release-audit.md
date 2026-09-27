@@ -251,3 +251,29 @@ Milestone 1 is one employer-to-report loop: tenant boundary, role and invite, re
 8. **RUN-01, RUN-04, RUN-06, RUN-07.** The sandbox VM and the external grader are real, and the runner tests passed, but they grade one demo Python string. They are not a durable job on an invited archive, and setup failure is not a separate outcome.
 9. **AI-12, REP-01, EMP-08.** Decision rows can be stored without emailing the candidate. There is no human-checked engineering report. A qualified reviewer is founder-owned. Do not automate qualitative grades to skip that person.
 10. **OPS-07.** Milestone 1's deliverable includes refresh and outage recovery. Execution is synchronous, there is no evaluation queue, and no worker-restart rehearsal has been recorded.
+
+## Milestone 1 progress (2026-09-27, second session)
+
+The blockers above now have code, and a live loop ran against staging `fydell-dev`. Production was not contacted. The Milestone 1 deliverable is still open. It needs a real internal candidate attempt, reviewed by a second authorized person on a deployed build, with a hosted isolated executor. That depends on the founder items in `docs/HANDOFF.md`.
+
+What was executed this session:
+
+| Check | Result | Scope |
+|---|---|---|
+| `npm run test:eng` | 78 unit checks passed; validator passed every fixture | Hostile ZIPs, starter hash, setup codes, teammate policy, deadline windows, release gate. Validator runs the reference, alternative, partial, defective and two adversarial fixtures through the real harness. |
+| `npm run test:eng:staging` with `FYDELL_EVAL_EXECUTOR=local-dev` | 17 checks passed (`ENG_STAGING_OK`) | Live service layer on fydell-dev with two disposable workspaces and four disposable accounts. Isolation was checked through anon-key clients signed in as each person. All rows, files and accounts were removed afterwards. |
+| `npm run test:db-security`, `tsc`, ESLint, `next build` | Passed | Static and build checks only. |
+| Supabase security advisor on fydell-dev after migration 028 | No findings on `eng_*` objects | Findings on older tables are unchanged and out of scope. |
+
+| Blocker | Now | Evidence | Still open |
+|---|---|---|---|
+| SCEN-01, SCEN-03 | I (staging-verified) | `scenarios/backend-webhook-retry/` has a starter, incident brief, logs, public tests, a hidden harness, a requirement update and a handoff. Six fixtures are graded as expected by `validate-eng-scenario.mjs`. | Needs sign-off from a qualified reviewer (the review record in `definition.ts` is internal). |
+| EMP-01 | I (staging-verified) | `/app/employer/engineering`: create, edit draft, publish, archive. After publishing, the database trigger refuses edits. | Browser run on a deployed build. |
+| AUTH-04, SEC-06 | I (staging-verified) | `ENG_PERMISSIONS` is enforced on every route. `/app/employer/team` handles members. A live test showed workspace B, an unrelated account and anon see zero rows across 8 `eng_*` tables. Drafts are visible only to the candidate. Direct writes, the release RPC and storage reads are refused. | HTTP-level cross-tenant test against a deployed build. |
+| EMP-05 (internal) | I | Copyable link, resend (rotates the token), withdraw, extend. Delivery shows `not_configured` when Resend is unset. | Resend DNS (founder). Billing gate not added. |
+| SCEN-04, SCEN-05, SCEN-06 | I | Deterministic starter ZIP (sha256 `5a64a07f…2f927`). `preflight.py` prints a per-runtime setup code that the server verifies. | Setup confirmed only on Windows with Python 3.12. Clean macOS and Linux timing not run. |
+| SIM-02, SIM-04, SIM-05 | I (staging-verified) | `/assess/[attemptId]` is the local-task hub. Teammate replies come from authored rules with intent matching, and retries store exactly one message and one reply. The update is released only by the server clock, once. | Browser run. |
+| UP-01 … UP-07 | I (staging-verified) | Signed upload into the private `eng-submissions` bucket. The server re-reads the stored bytes and inspects the ZIP. An interrupted upload ends `failed` and cannot be submitted. Submit is idempotent, and the receipt carries the stored archive's sha256. | Browser run. The hosted executor also inspects the archive in the VM. |
+| RUN-01, RUN-04, RUN-06, RUN-07 | I | Durable queue with leases, bounded retries, requeue and `blocked` states. Without `FYDELL_EXECUTION_SNAPSHOT_ID`, runs are blocked with `executor_not_configured` and never scored. The local-dev executor graded the reference submission 15/15 on staging. | Hosted Vercel Sandbox executor not run live (needs the snapshot ID). No scheduler is configured for `/api/eng/worker`. |
+| AI-12, REP-01, EMP-08 | I (staging-verified) | Reviewer-only editor. Releasing is refused without citations, all rubric dimensions, a limitation and a follow-up. Employers see nothing until release, released versions are frozen, and corrections need a reason. A decision requires a released report and never messages the candidate. | A qualified reviewer with a platform role (founder). |
+| OPS-07 | I (staging-verified) | A dead worker's lease is reclaimed and the stale worker is fenced out. Refresh restores the view from the server (drafts use compare-and-swap, and the thread and receipt reload). | Rehearsal on a deployed build with the hosted executor.

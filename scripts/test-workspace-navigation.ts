@@ -17,6 +17,7 @@ function ok(name: string, condition: boolean) {
 const labels = WORKSPACE_NAV_ITEMS.map((item) => item.label);
 const expected = [
   "Home",
+  "Engineering tasks",
   "Roles",
   "Candidates",
   "Shared passports",
@@ -24,6 +25,7 @@ const expected = [
   "Evidence",
   "Work Receipts",
   "Outcomes",
+  "Team",
   "Settings",
 ];
 

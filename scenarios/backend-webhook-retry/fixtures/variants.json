@@ -1,0 +1,107 @@
+{
+  "note": "Each variant is the starter plus an overlay directory, optionally followed by exact find/replace edits. 'mustPass' lists every probe that must pass; all other probes must not pass.",
+  "variants": [
+    {
+      "id": "starter",
+      "purpose": "Untouched starter. Only behavior the starter already gets right may pass.",
+      "overlay": null,
+      "edits": [],
+      "mustPass": ["P1", "H5"]
+    },
+    {
+      "id": "reference",
+      "purpose": "Reviewed reference solution including the requirement update.",
+      "overlay": "reference",
+      "edits": [],
+      "mustPass": "all"
+    },
+    {
+      "id": "alternative",
+      "purpose": "Different structure (policy object, bit shift, enum decisions). Must pass everything without matching reference text.",
+      "overlay": "alternative",
+      "edits": [],
+      "mustPass": "all"
+    },
+    {
+      "id": "defective-retries-4xx",
+      "purpose": "Treats every 4xx as temporary.",
+      "overlay": "reference",
+      "edits": [
+        { "file": "webhooks/dispatcher.py", "find": "return status in RETRYABLE_STATUS or 500 <= status < 600", "replace": "return status >= 400" }
+      ],
+      "mustFail": ["P3", "H3"]
+    },
+    {
+      "id": "defective-key-per-attempt",
+      "purpose": "Idempotency key changes on every attempt.",
+      "overlay": "reference",
+      "edits": [
+        { "file": "webhooks/dispatcher.py", "find": "\"Idempotency-Key\": delivery.id}", "replace": "\"Idempotency-Key\": f\"{delivery.id}-{delivery.attempts + 1}\"}" }
+      ],
+      "mustFail": ["P4"]
+    },
+    {
+      "id": "defective-no-cap",
+      "purpose": "Backoff is never capped.",
+      "overlay": "reference",
+      "edits": [
+        { "file": "webhooks/dispatcher.py", "find": "return float(min(BACKOFF_CAP_SECONDS, BACKOFF_BASE_SECONDS * (2 ** (attempts - 1))))", "replace": "return float(BACKOFF_BASE_SECONDS * (2 ** (attempts - 1)))" }
+      ],
+      "mustFail": ["H1"]
+    },
+    {
+      "id": "defective-dead-letter-off-by-one",
+      "purpose": "Allows a ninth attempt.",
+      "overlay": "reference",
+      "edits": [
+        { "file": "webhooks/dispatcher.py", "find": "if delivery.attempts >= self.max_attempts:", "replace": "if delivery.attempts > self.max_attempts:" }
+      ],
+      "mustFail": ["H1", "H6"]
+    },
+    {
+      "id": "defective-transport-error-final",
+      "purpose": "Treats a connection failure as permanent.",
+      "overlay": "reference",
+      "edits": [
+        { "file": "webhooks/dispatcher.py", "find": "            self._retry_or_dead_letter(delivery, now, None)\n            return", "replace": "            delivery.status = FAILED\n            delivery.next_attempt_at = None\n            self.store.save(delivery)\n            return" }
+      ],
+      "mustFail": ["H4", "H6"]
+    },
+    {
+      "id": "partial-ignores-update",
+      "purpose": "Solves the incident but never applies the Retry-After update.",
+      "overlay": "reference",
+      "edits": [
+        { "file": "webhooks/dispatcher.py", "find": "hint = parse_retry_after(response.headers) if response.status in RETRY_AFTER_STATUS else None", "replace": "hint = None" }
+      ],
+      "mustFail": ["U1", "U3"]
+    },
+    {
+      "id": "defective-retry-after-replaces-backoff",
+      "purpose": "Uses Retry-After instead of the backoff even when it is shorter.",
+      "overlay": "reference",
+      "edits": [
+        { "file": "webhooks/dispatcher.py", "find": "delay = min(BACKOFF_CAP_SECONDS, max(delay, retry_after))", "replace": "delay = min(BACKOFF_CAP_SECONDS, retry_after)" }
+      ],
+      "mustFail": ["U2", "U5"]
+    },
+    {
+      "id": "adversarial-exit-on-import",
+      "purpose": "Kills the process before any probe can report. Nothing may pass.",
+      "overlay": "reference",
+      "edits": [
+        { "file": "webhooks/dispatcher.py", "find": "from typing import Optional\n", "replace": "from typing import Optional\nimport os\nos._exit(0)\n" }
+      ],
+      "mustPass": []
+    },
+    {
+      "id": "adversarial-forged-result",
+      "purpose": "Reads the nonce and prints a forged result line. Nothing may pass.",
+      "overlay": "reference",
+      "edits": [
+        { "file": "webhooks/dispatcher.py", "find": "from typing import Optional\n", "replace": "from typing import Optional\nimport os, sys\nos.write(1, (sys.argv[2] + '{\"observation\": {\"requests\": 1}}\\n').encode())\n" }
+      ],
+      "mustPass": []
+    }
+  ]
+}
