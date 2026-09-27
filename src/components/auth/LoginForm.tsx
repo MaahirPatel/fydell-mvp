@@ -12,6 +12,7 @@ import {
   PasswordInput,
 } from "@/components/ui/Field";
 import { safeNext, withNext } from "@/lib/auth/safe-next";
+import { isValidDesktopState } from "@/lib/auth/desktop-state";
 
 /**
  * Errors are deliberately non-revealing: an unknown email and a wrong password
@@ -59,6 +60,12 @@ export default function LoginForm() {
   const rawNext = searchParams.get("next");
   const returnPath = safeNext(rawNext);
   const justReset = searchParams.get("reset") === "1";
+  // Desktop sign-in flow (W1): the desktop app opens /login?desktop=1&state=<opaque>.
+  // After a successful sign-in the candidate is sent to the desktop authorize
+  // endpoint, which issues the one-time code for the app. Inactive unless the
+  // desktop opened this page with those exact params.
+  const desktopState =
+    searchParams.get("desktop") === "1" ? searchParams.get("state") : null;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -82,6 +89,10 @@ export default function LoginForm() {
       // An invited candidate returns to their invitation, not a generic
       // dashboard. Operators are always routed by the server.
       const isOperator = data.role === "platform_admin" || data.role === "admin";
+      if (!isOperator && desktopState && isValidDesktopState(desktopState)) {
+        router.push(`/auth/desktop/authorize?state=${encodeURIComponent(desktopState)}`);
+        return;
+      }
       if (returnPath && !isOperator) {
         router.push(returnPath);
         return;

@@ -170,11 +170,19 @@ for a specific URL (suggested shapes in parentheses).
   validates the code/state binding and returns the Supabase session. The
   desktop's `exchange_code` expects exactly this shape; without it, sign-in
   cannot complete (the app surfaces this explicitly).
+  **Implemented on this branch:** `GET /auth/desktop/authorize` mints the
+  code (single-use, 5-min TTL, bound to user+state) and 302s to the deep
+  link; `POST /api/auth/desktop/exchange` redeems it for the session.
+  The login form honors `?desktop=1&state=` after password sign-in.
+  Codes live in an in-process store — multi-instance deployments need sticky
+  routing or a shared store (see `src/lib/auth/desktop-codes.ts`).
 - **W2 — Bearer token acceptance (required for non-browser clients).**
   `requireUser()` (`src/lib/simulations/auth.ts`) should, when no cookie
   session exists and an `Authorization: Bearer <jwt>` header is present, call
   `supabase.auth.getUser(jwt)` to validate it. Until then the desktop's cookie
   (verified format, §3) carries auth.
+  **Implemented on this branch:** Bearer fallback added; cookie behavior
+  unchanged (cookies are still checked first).
 - **W3 — Scenario file package (required for multi-file code simulations).**
   The session API serves task/deliverable content but no versioned file
   package. Needed: per template version, a candidate-safe file map
@@ -214,7 +222,8 @@ We will not claim proctoring we do not perform.
   on system WebKit/GTK build deps in this VM — environmental, not a code
   verdict; TypeScript compiles clean).
 - No packaged installer, signing, notarization, or auto-update (release gates).
-- W1–W4 above are web-side and untouched by this branch.
+- W3–W4 above are web-side and untouched by this branch (W1–W2 are now
+  implemented; see §6).
 - The end-to-end loop (install → sign in → join → work → submit → employer
   report) has never run against a live platform.
 - Multi-device conflict handling, offline behavior, and accessibility of the
