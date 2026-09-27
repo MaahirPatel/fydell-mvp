@@ -602,8 +602,8 @@ function ReceiptPanel({ view }: { view: View }) {
           </div>
         </dl>
         <p className="mt-5 text-app-body leading-[1.6] text-[var(--text-secondary)]">
-          Next, your archive runs against the trusted checks in an isolated environment, and a qualified reviewer checks the results and your handoff before anything reaches the
-          employer. If the checks environment fails, that is a platform problem and is never counted against you. The employer decides what happens next and contacts you directly.
+          Next, your archive runs against the trusted checks in an isolated environment. The hiring team then reviews the results, your code, the thread and your handoff. If
+          the checks environment fails, that is a platform problem and is never counted against you. The employer decides what happens next and contacts you directly.
         </p>
       </PanelSection>
     </Panel>

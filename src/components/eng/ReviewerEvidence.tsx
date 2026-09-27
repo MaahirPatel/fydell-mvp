@@ -7,7 +7,7 @@ import { FileViewer, ProbeTable, type FileTarget, type ThreadMessage } from "./E
 import type { ProbeResult } from "@/lib/eng/types";
 
 export default function ReviewerEvidence({
-  attemptId,
+  apiBase,
   results,
   files,
   messages,
@@ -15,7 +15,7 @@ export default function ReviewerEvidence({
   aiDisclosure,
   teammates,
 }: {
-  attemptId: string;
+  apiBase: string;
   results: ProbeResult[];
   files: { path: string; size: number }[];
   messages: (ThreadMessage & { rule_id?: string | null })[];
@@ -54,7 +54,7 @@ export default function ReviewerEvidence({
         </div>
         <div className="min-w-0">
           {file ? (
-            <FileViewer endpoint={`/api/eng/review/${attemptId}/file`} target={file} onClose={() => setFile(null)} />
+            <FileViewer endpoint={`${apiBase}/file`} target={file} onClose={() => setFile(null)} />
           ) : (
             <p className="text-app-meta text-[var(--text-tertiary)]">Choose a file to read it with line numbers. Line numbers are what file citations refer to.</p>
           )}

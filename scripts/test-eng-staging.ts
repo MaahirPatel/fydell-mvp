@@ -88,6 +88,7 @@ async function main() {
   const queue = await import("../src/lib/eng/evaluation/queue");
   const reports = await import("../src/lib/eng/reports");
   const employer = await import("../src/lib/eng/employer");
+  const { roleCan } = await import("../src/lib/eng/permissions");
   const { CURRENT_SCENARIO, expectedSetupCodes } = await import("../src/lib/eng/scenarios");
   const { buildStarterArchive } = await import("../src/lib/eng/starter");
   type EngMember = import("../src/lib/eng/context").EngMember;
@@ -294,12 +295,14 @@ async function main() {
         followUps: ["Walk through the backoff choice."],
         dimensions: (["correctness", "engineering_judgment", "requirement_response", "work_communication"] as const).map((key) => ({ key, level: "insufficient_evidence" as const, rationale: "Staging test only." })),
       };
-      await reports.saveReportDraft(db, attempt, "staging-reviewer@fydell.local", { brief, findings: [{ ...findings[0], citations: [{ kind: "file", ref: "missing.py", lineStart: 1 }] }], changeReason: null, reviewMinutes: 1 });
-      await assert.rejects(() => reports.releaseReport(db, attempt, "staging-reviewer@fydell.local"), (e: unknown) => e instanceof reports.ReportError && e.problems.length > 0);
-      await reports.saveReportDraft(db, attempt, "staging-reviewer@fydell.local", { brief, findings, changeReason: null, reviewMinutes: 3 });
+      assert.ok(roleCan(memberA.role, "write_reports") && !roleCan("viewer", "write_reports") && !roleCan("viewer", "view_reports"));
+      await reports.saveReportDraft(db, attempt, memberA.email, { brief, findings: [{ ...findings[0], citations: [{ kind: "file", ref: "missing.py", lineStart: 1 }] }], changeReason: null, reviewMinutes: 1 });
+      await assert.rejects(() => reports.releaseReport(db, attempt, memberA.email), (e: unknown) => e instanceof reports.ReportError && e.problems.length > 0);
+      await reports.saveReportDraft(db, attempt, memberA.email, { brief, findings, changeReason: null, reviewMinutes: 3 });
       assert.equal(await visibleCount(employerA, "eng_reports", "attempt_id", attempt.id), 0);
-      const released = await reports.releaseReport(db, attempt, "staging-reviewer@fydell.local");
+      const released = await reports.releaseReport(db, attempt, memberA.email);
       assert.equal(released.status, "released");
+      assert.equal(released.reviewer_email, memberA.email);
       await assert.rejects(async () => {
         const { error } = await db.from("eng_reports").update({ findings: [] }).eq("id", released.id);
         if (error) throw new Error(error.message);
@@ -307,7 +310,7 @@ async function main() {
       assert.equal(await visibleCount(employerA, "eng_reports", "attempt_id", attempt.id), 1);
       assert.equal(await visibleCount(employerB, "eng_reports", "attempt_id", attempt.id), 0);
       assert.equal(await visibleCount(candidateClient, "eng_reports", "attempt_id", attempt.id), 0);
-      pass("release gate rejects an uncited finding; drafts hidden; released report frozen and visible only to the workspace");
+      pass("the employer's own owner writes and releases the report; viewers cannot; uncited findings rejected; drafts hidden; released report frozen and scoped to the workspace");
 
       await employer.recordDecision(db, memberA, attempt, "hold", "Staging test decision.");
       await employer.flagFinding(db, memberA, attempt, "f2", "Staging test flag.");

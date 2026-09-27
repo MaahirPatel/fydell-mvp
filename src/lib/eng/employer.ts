@@ -18,7 +18,7 @@ export async function recordDecision(db: Admin, member: EngMember, attempt: Atte
   if (!DECISIONS.some((d) => d.key === decision)) throw new Error("Choose Advance, Hold or Decline.");
   if (notes.length > 4000) throw new Error("Keep notes under 4,000 characters.");
   const report = await releasedReport(db, attempt.id);
-  if (!report) throw new Error("A decision can be recorded once the human-checked report is released.");
+  if (!report) throw new Error("Release the report first. Decisions are recorded against a released report.");
   const { data, error } = await db
     .from("eng_decisions")
     .insert({

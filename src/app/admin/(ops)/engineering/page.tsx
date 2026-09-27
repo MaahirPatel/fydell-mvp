@@ -33,7 +33,7 @@ export default async function EngineeringReviewQueuePage() {
     <div className="max-w-[1180px]">
       <PageHeader
         title="Engineering review"
-        description="Submitted engineering tasks. Trusted checks run first; a qualified reviewer then writes or confirms every finding before release. Platform failures are retried and never shown to employers as candidate results."
+        description="Submitted engineering tasks. Trusted checks run first; each hiring team reviews and releases its own reports. Fydell staff can also write reports here when a workspace asks for help. Platform failures are retried and never shown to employers as candidate results."
         action={<RunWorkerButton />}
       />
       <p className="mt-3 text-app-meta text-[var(--text-secondary)]">
@@ -83,7 +83,7 @@ export default async function EngineeringReviewQueuePage() {
                     ) : null}
                   </TD>
                   <TD className="capitalize">{row.reportStatus === "none" ? "" : row.reportStatus}</TD>
-                  <TD align="right">{row.status === "blocked" || row.status === "retryable_failure" ? <RequeueButton runId={row.runId} /> : null}</TD>
+                  <TD align="right">{row.status === "blocked" || row.status === "retryable_failure" ? <RequeueButton endpoint={`/api/eng/review/runs/${row.runId}/requeue`} /> : null}</TD>
                 </TR>
               ))}
             </TBody>

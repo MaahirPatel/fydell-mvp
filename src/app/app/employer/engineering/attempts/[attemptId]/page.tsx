@@ -5,6 +5,9 @@ import { Panel, PanelSection } from "@/components/ui/Panel";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { DecisionForm, EmployerReport, NoteForm, When } from "@/components/eng/EmployerAttemptPanels";
+import ReviewWorkspace from "@/components/eng/ReviewWorkspace";
+import { RequeueButton } from "@/components/eng/ReviewerControls";
+import { scheduleIfRunnable } from "@/lib/eng/route-helpers";
 import { getAttemptForOrg } from "@/lib/eng/attempts";
 import { engAdmin } from "@/lib/eng/context";
 import { EVENT_LABELS, orgAttemptView, pageMember } from "@/lib/eng/employer-view";
@@ -24,7 +27,11 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
   const attempt = await getAttemptForOrg(db, attemptId, member.organizationId).catch(() => null);
   if (!attempt) notFound();
   const canSeeEvidence = roleCan(member.role, "view_reports");
+  const canWrite = roleCan(member.role, "write_reports");
+  if (attempt.status === "submitted") await scheduleIfRunnable(db, attempt.id);
   const view = await orgAttemptView(db, member, attempt, canSeeEvidence);
+  const testsFinished = view.run?.status === "human_review" || view.run?.status === "ready";
+  const delayed = view.run?.status === "blocked" || view.run?.status === "retryable_failure";
   const { definition } = await scenarioForVersionId(db, attempt.scenario_version_id);
   const teammates = Object.fromEntries(definition.teammates.map((t) => [t.id, t.name]));
   const state = OPERATIONAL_STATES[view.state];
@@ -54,10 +61,35 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
       />
 
       <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid h-fit min-w-0 gap-6">
+        {!view.report && canWrite && testsFinished && view.run?.results && view.submission ? (
+          <ReviewWorkspace
+            apiBase={`/api/eng/org/attempts/${attempt.id}`}
+            scenario={definition}
+            suiteVersion={view.run.suite_version}
+            results={view.run.results}
+            submission={view.submission}
+            files={view.files}
+            messages={view.messages}
+            draft={view.draft}
+            released={null}
+          />
+        ) : null}
+        {!view.report && canSeeEvidence && delayed ? (
+          <Panel>
+            <PanelSection title="Tests delayed">
+              <EmptyState
+                title="The evaluation environment failed"
+                description={`This is a platform issue, not a candidate result${view.run?.last_error_code ? ` (${view.run.last_error_code})` : ""}. It retries automatically; you can also retry now.`}
+                action={roleCan(member.role, "retry_evaluation") ? <RequeueButton endpoint={`/api/eng/org/attempts/${attempt.id}/requeue`} /> : undefined}
+              />
+            </PanelSection>
+          </Panel>
+        ) : null}
         <Panel>
           {view.report && view.run?.results && view.submission ? (
             <PanelSection
-              title={`Human-checked report, version ${view.report.version}`}
+              title={`Report, version ${view.report.version}`}
               description={`Reviewed by ${view.report.reviewer_email}${view.report.released_at ? ", released " + new Date(view.report.released_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : ""}. Rubric ${view.report.rubric_version}, checks ${view.run.suite_version}, executor ${view.run.executor ?? "unknown"}.`}
             >
               {view.report.change_reason ? (
@@ -80,16 +112,40 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
           ) : (
             <PanelSection title="Report">
               <EmptyState
-                title={canSeeEvidence ? "No released report yet" : "Your role cannot read evidence"}
+                title={!canSeeEvidence ? "Your role cannot read evidence" : testsFinished ? "Not released yet" : "Waiting for the submission and tests"}
                 description={
-                  canSeeEvidence
-                    ? "Evidence appears here after the trusted checks finish and a qualified reviewer releases the report. Nothing is shown before a person has checked it."
-                    : "Viewers can follow progress. Ask an owner or admin for reviewer access to read reports."
+                  !canSeeEvidence
+                    ? "Viewers can follow progress. Ask an owner or admin for reviewer access to read reports."
+                    : testsFinished
+                      ? "Review the evidence above, write the findings with citations, and release the report. Decisions are recorded against a released report."
+                      : "The evidence opens here as soon as the candidate submits and the trusted tests finish."
                 }
               />
             </PanelSection>
           )}
         </Panel>
+        {view.report && canWrite && view.run?.results && view.submission ? (
+          <details className="group">
+            <summary className="cursor-pointer text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+              {view.draft ? `Continue the correction (v${view.draft.version})` : "Correct this report"}
+            </summary>
+            <div className="mt-4">
+              <ReviewWorkspace
+                apiBase={`/api/eng/org/attempts/${attempt.id}`}
+                scenario={definition}
+                suiteVersion={view.run.suite_version}
+                results={view.run.results}
+                submission={view.submission}
+                files={view.files}
+                messages={view.messages}
+                draft={view.draft}
+                released={view.report}
+                showEvidence={false}
+              />
+            </div>
+          </details>
+        ) : null}
+        </div>
 
         <div className="grid h-fit gap-6">
           {view.report && roleCan(member.role, "record_decision") ? (

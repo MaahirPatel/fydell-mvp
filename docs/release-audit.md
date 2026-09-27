@@ -277,3 +277,13 @@ What was executed this session:
 | RUN-01, RUN-04, RUN-06, RUN-07 | I | Durable queue with leases, bounded retries, requeue and `blocked` states. Without `FYDELL_EXECUTION_SNAPSHOT_ID`, runs are blocked with `executor_not_configured` and never scored. The local-dev executor graded the reference submission 15/15 on staging. | Hosted Vercel Sandbox executor not run live (needs the snapshot ID). No scheduler is configured for `/api/eng/worker`. |
 | AI-12, REP-01, EMP-08 | I (staging-verified) | Reviewer-only editor. Releasing is refused without citations, all rubric dimensions, a limitation and a follow-up. Employers see nothing until release, released versions are frozen, and corrections need a reason. A decision requires a released report and never messages the candidate. | A qualified reviewer with a platform role (founder). |
 | OPS-07 | I (staging-verified) | A dead worker's lease is reclaimed and the stale worker is fenced out. Refresh restores the view from the server (drafts use compare-and-swap, and the thread and receipt reload). | Rehearsal on a deployed build with the hosted executor.
+
+### Update (2026-09-27, third session): the employer reviews
+
+Founder decision: the paying employer's team is the reviewer. No Fydell reviewer is required, and the same person can invite, review, release and decide.
+
+- AI-12, REP-01, EMP-08: owners, admins, hiring managers and workspace reviewers now write and release reports from the employer attempt page through `/api/eng/org/attempts/[id]/report`. The release gate is unchanged. Viewers cannot read evidence or write reports. The "qualified reviewer with a platform role" item is closed by this decision.
+- SCEN-01, SCEN-03: sign-off by a separate qualified reviewer is no longer a release condition. The scenario is validated by the fixture suite, and the employer judges the evidence.
+- RUN-01, RUN-07: the hosted Vercel Sandbox executor ran live from the staging script (15/15 on the reference). Delayed runs can be retried by the employer through `/api/eng/org/attempts/[id]/requeue`. A scheduler is no longer required, because `scheduleIfRunnable` restarts due or orphaned runs whenever the candidate or the employer loads a submitted attempt.
+- Checks re-run after the change: `tsc`, ESLint, `next build` and `npm run test:eng` passed. `npm run test:eng:staging` passed 17/17 with the hosted executor, and the report was released by the employer's owner account. Staging was cleaned afterwards.
+- Still open: a browser run on a deployed Preview with two accounts, one employer and one candidate.

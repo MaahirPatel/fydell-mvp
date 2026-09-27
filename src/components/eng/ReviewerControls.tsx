@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { engFetch } from "./api";
 
-export function RequeueButton({ runId }: { runId: string }) {
+export function RequeueButton({ endpoint }: { endpoint: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,11 +17,11 @@ export function RequeueButton({ runId }: { runId: string }) {
         variant="secondary"
         loading={busy}
         onClick={async () => {
-          const reason = window.prompt("Why retry this evaluation? (recorded in the attempt timeline)", "Executor fixed");
+          const reason = window.prompt("Why retry the tests? (recorded in the attempt timeline)", "Retry after a platform error");
           if (!reason) return;
           setBusy(true);
           setError(null);
-          const res = await engFetch(`/api/eng/review/runs/${runId}/requeue`, { body: { reason } });
+          const res = await engFetch(endpoint, { body: { reason } });
           setBusy(false);
           if (res.ok === false) setError(res.error);
           else router.refresh();

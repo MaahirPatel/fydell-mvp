@@ -162,7 +162,7 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
                 ))}
               </ul>
               <p className="mt-5 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
-                Automated checks are observations about the submitted code. Every qualitative finding is written or confirmed by a qualified Fydell reviewer and cites the file, test, message or handoff it is based on. The report is evidence for your decision, not a decision.
+                Automated checks are observations about the submitted code. Your team writes the qualitative findings, and each one must cite the file lines, test, message or handoff it is based on before the report can be released. The report is evidence for your decision, not a decision.
               </p>
             </PanelSection>
           </Panel>

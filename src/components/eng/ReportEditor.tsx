@@ -116,7 +116,7 @@ function CitationEditor({
 }
 
 export default function ReportEditor({
-  attemptId,
+  apiBase,
   rubric,
   evidence,
   initialBrief,
@@ -125,7 +125,8 @@ export default function ReportEditor({
   initialChangeReason,
   hasDraft,
 }: {
-  attemptId: string;
+  /** /api/eng/review/<id> for Fydell reviewers, /api/eng/org/attempts/<id> for the employer's team. */
+  apiBase: string;
   rubric: EditorRubric[];
   evidence: EditorEvidence;
   initialBrief: ReportBrief | null;
@@ -164,7 +165,7 @@ export default function ReportEditor({
     setError(null);
     setProblems([]);
     setNotice(null);
-    const res = await engFetch(`/api/eng/review/${attemptId}/report`, {
+    const res = await engFetch(`${apiBase}/report`, {
       method: "PUT",
       body: {
         brief: { summary, dimensions, strengths: lines(strengths), gaps: lines(gaps), limitations: lines(limitations), followUps: lines(followUps) },
@@ -180,23 +181,23 @@ export default function ReportEditor({
       return false;
     }
     setDraftSaved(true);
-    setNotice("Draft saved. The employer cannot see drafts.");
+    setNotice("Draft saved. Drafts stay private to reviewers until released.");
     return true;
   }
 
   async function release() {
     if (!(await save())) return;
-    if (!window.confirm("Release this report to the employer? Every citation is checked against the submitted evidence first.")) return;
+    if (!window.confirm("Release this report to the hiring team? Every citation is checked against the submitted evidence first, and released versions cannot be edited.")) return;
     setBusy("release");
     setError(null);
-    const res = await engFetch(`/api/eng/review/${attemptId}/report`, { body: {} });
+    const res = await engFetch(`${apiBase}/report`, { body: {} });
     setBusy(null);
     if (res.ok === false) {
       setError(res.error);
       setProblems(res.problems);
       return;
     }
-    setNotice("Released. The employer can now see this report.");
+    setNotice("Released. The hiring team can now see this report.");
     router.refresh();
   }
 
@@ -342,7 +343,7 @@ export default function ReportEditor({
         </div>
         {file ? (
           <div className="mt-3">
-            <FileViewer endpoint={`/api/eng/review/${attemptId}/file`} target={file} onClose={() => setFile(null)} />
+            <FileViewer endpoint={`${apiBase}/file`} target={file} onClose={() => setFile(null)} />
           </div>
         ) : null}
       </div>

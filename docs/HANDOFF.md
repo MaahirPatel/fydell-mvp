@@ -2,62 +2,76 @@
 
 Read this first, then `docs/release-audit.md` (Milestone 0 audit plus "Milestone 1 progress" at the end), `docs/release-checklist.md` (the paid-release tracker, 161 requirements), and `.cursor/rules/simulation-engine.mdc` (isolation rules that must be followed).
 
-## Latest session (2026-09-27, Milestone 1)
+## Latest session (2026-09-27, Milestone 1: the employer reviews)
 
-The Milestone 1 engineering loop is built and was run live against staging. Production Supabase `fydell` (`qtrhwrcxthtqvkeerptp`) was not contacted.
+Product decision from the founder: there is no separate Fydell reviewer. The paying employer's team reads the evidence, writes the cited report and releases it. The same person can invite, review and decide. Fydell staff can still write reports from `/admin/engineering` if a workspace asks for help, but nothing depends on it.
 
-The loop: an employer creates and publishes a role and invites a candidate by link. The candidate consents, runs `preflight.py` locally and enters its setup code, starts, and uses the team thread. The server releases one requirement update on its own clock. The candidate saves handoff drafts, uploads a ZIP and submits, getting a receipt with the archive hash. The durable queue runs the hidden tests. A qualified reviewer writes a cited report and releases it. The employer then reads the report and records a decision, which never messages the candidate.
+What changed:
+- Permissions (`src/lib/eng/permissions.ts`): new `write_reports` and `retry_evaluation` for owner, admin, hiring_manager and reviewer. Viewers still cannot read evidence.
+- New workspace routes:
+  - `PUT/POST /api/eng/org/attempts/[attemptId]/report` saves a draft or releases. The release gate is unchanged: every finding must cite real file lines, tests, messages or handoff fields.
+  - `POST /api/eng/org/attempts/[attemptId]/requeue` retries delayed tests, with a reason.
+- The employer attempt page (`/app/employer/engineering/attempts/[attemptId]`) shows the evidence and the report editor once the tests finish. It also shows a "Tests delayed" panel with a retry button, and a "Correct this report" section after release. Shared UI is in `src/components/eng/ReviewWorkspace.tsx`, and `ReportEditor` and `ReviewerEvidence` take an `apiBase`.
+- No cron is needed anymore. `scheduleIfRunnable` (`src/lib/eng/route-helpers.ts`) restarts pending, retry-due or lease-expired runs with `after()` whenever the candidate's attempt poll or the employer's attempt page loads a submitted attempt. `/api/eng/worker` still exists for manual or external triggering.
+- Copy: the candidate page, employer pages, the scenario's known issues and the state labels no longer promise a Fydell reviewer. `review_required` now reads "Ready for your review".
+- Staging's stored `eng_scenario_versions` row keeps the old known-issues sentence in its `content` snapshot. Candidates see the text from code, and the hashes are unchanged.
 
-- Migration `028_engineering_assessments.sql` is applied to fydell-dev. It covers 14 `eng_*` tables with forced RLS, append-only and transition triggers, the `eng_release_report` RPC and the private `eng-submissions` bucket. Staging history shows it as two entries (`028_engineering_assessments` and `028_engineering_assessments_hardening`, which pinned `search_path` and revoked anon execute). The repo file contains both, so production applies it once.
-- Scenario: `scenarios/backend-webhook-retry/` (reviewed starter, hidden harness, fixtures). `node scripts/build-eng-scenario.mjs` regenerates `src/lib/eng/scenarios/backend-webhook-retry/*.generated.ts`. The starter sha256 is `5a64a07f0511f46a0565e95a6f586d885cb12bafbc55f69bab478d74e1b2f927`, and the ZIP timestamps are timezone-independent.
+Verified this session:
+- `tsc`, eslint and `next build` pass. `npm run test:eng` passes.
+- `npm run test:eng:staging` passes 17/17. The hidden tests ran in the Vercel Sandbox snapshot (15/15 on the reference solution), and the report was written and released by the employer's own owner account. The script also checks that viewers cannot write reports. Staging was cleaned by SQL afterwards (0 leftover orgs, users, attempts, reports or storage objects).
+
+## Milestone 1 loop
+
+An employer creates and publishes a role and invites a candidate by link. The candidate consents, runs `preflight.py` locally, enters its setup code, starts, and uses the team thread. The server releases one requirement update on its own clock. The candidate saves handoff drafts, uploads a ZIP and submits, and gets a receipt with the archive hash. The durable queue runs the hidden tests. The employer's team reviews the evidence, releases a cited report and records a decision, which never messages the candidate.
+
+- Migration `028_engineering_assessments.sql` is applied to fydell-dev. It covers 14 `eng_*` tables with forced RLS, append-only and transition triggers, the `eng_release_report` RPC and the private `eng-submissions` bucket. Staging history shows it as two entries (`028_engineering_assessments` and `028_engineering_assessments_hardening`). The repo file contains both, so production applies it once.
+- Scenario: `scenarios/backend-webhook-retry/`. `node scripts/build-eng-scenario.mjs` regenerates `src/lib/eng/scenarios/backend-webhook-retry/*.generated.ts`. The starter sha256 is `5a64a07f0511f46a0565e95a6f586d885cb12bafbc55f69bab478d74e1b2f927`.
 - Code: `src/lib/eng/**`, `src/components/eng/**`, `src/app/api/eng/**`.
 - Pages:
-  - `/app/employer/engineering`, including roles and attempts
+  - `/app/employer/engineering`, including roles, attempts and review
   - `/app/employer/team`
   - `/assess/invite/[token]`
   - `/assess/[attemptId]`
-  - `/admin/engineering`, the blind reviewer queue and editor
+  - `/admin/engineering`, the optional staff queue
 - Tests:
-  - `npm run test:eng` runs 78 unit checks plus the scenario validator, and is now part of `test:unit`.
-  - `npm run test:eng:staging` runs the live loop on fydell-dev: 17 checks covering tenant isolation, a dead-worker lease reclaim, the release gate and decisions. The script refuses any other project. It needs `FYDELL_EVAL_EXECUTOR=local-dev` to cover grading and reports.
-  - Cleanup caveat: evidence rows are append-only, so the script's cleanup needs `FYDELL_DEV_DB_URL` pointing at fydell-dev. The current value does not name that ref, so this session cleaned up with the Supabase SQL tool using `session_replication_role = replica`.
-- Evaluation executor: runs stay `blocked` with `executor_not_configured` until `FYDELL_EXECUTION_SNAPSHOT_ID` is set. They are never scored. `FYDELL_EVAL_EXECUTOR=local-dev` works only outside production.
-- Evaluation work is triggered by `after()` on submit and requeue, by "Process queue now" in `/admin/engineering`, and by `GET/POST /api/eng/worker` (a bearer `CRON_SECRET` or a reviewer session). No Vercel cron was added, because Hobby-plan cron limits were unverified.
+  - `npm run test:eng` runs the unit checks plus the scenario validator. It is part of `test:unit`.
+  - `npm run test:eng:staging` runs the live loop on fydell-dev (17 checks) and refuses any other project. Set `FYDELL_EVAL_EXECUTOR=local-dev` or `ENG_STAGING_HOSTED=1` to cover grading and reports.
+  - Cleanup: evidence rows are append-only, and `FYDELL_DEV_DB_URL` does not name the fydell-dev ref. Clean up with the Supabase SQL tool under `session_replication_role = replica`; the script prints the org ids.
+- Evaluation executor: without `FYDELL_EXECUTION_SNAPSHOT_ID`, runs stay `blocked` with `executor_not_configured` and are never scored. `FYDELL_EVAL_EXECUTOR=local-dev` works only outside production.
 
 ## Environments
 
-- Staging database: Supabase `fydell-dev` (ref `btbmvrvynnrhapjdkunz`). Local `.env.local` points here. Migrations through 028 are applied.
+- Staging database: Supabase `fydell-dev` (ref `btbmvrvynnrhapjdkunz`). Local `.env.local` points here. Migrations through 028 are applied. There are no platform roles, and none are needed.
 - Production database: Supabase `fydell` (ref `qtrhwrcxthtqvkeerptp`). Do not use it for testing. Migrations 026, 027 and 028 are not applied there yet.
-- Hosting: Vercel project `fydell-mvp`. Preview environment variables are unverified.
+- Hosting: Vercel project `fydell-mvp`. The Preview variables point at fydell-dev (verified): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` (Sensitive). `NEXT_PUBLIC_APP_URL` was removed from Preview, so links use `VERCEL_URL`. `FYDELL_EXECUTION_SNAPSHOT_ID` is set in Preview and Development. Production variables were not touched.
 - Secrets live only in `.env.local` (git-ignored) and Vercel settings. Never print or commit them.
 
 ## Working
 
 - Marketing site (light theme), `/developers`, `/employers`, `/pricing` with estimator, `/demo`. Design rules in `DESIGN.md`.
-- GitHub extractor (`src/lib/passport/github/`, `POST /api/passport/github`): real API reads, commit-pinned, cited findings, role suggestions with gaps. Tests: `npm run test:github`.
+- GitHub extractor (`src/lib/passport/github/`, `POST /api/passport/github`), with tests in `npm run test:github`.
 - Engineering Passports, share links with revoke, employer passport review.
-- Stripe billing in test mode: checkout, customer portal, signed webhook, metered usage per completed simulation (`src/lib/billing/`, `src/app/api/billing/`, migration 027).
-- The Milestone 1 engineering loop described above, verified on staging through the service layer and anon-key RLS clients. It has not been run in a browser on a deployed build yet.
+- Stripe billing in test mode: checkout, portal, signed webhook, metered usage (`src/lib/billing/`, `src/app/api/billing/`, migration 027).
+- The Milestone 1 engineering loop, verified on staging through the service layer and anon-key RLS clients. It has not been run in a browser on a deployed build yet.
 
 ## Not working yet (largest gaps)
 
-- Hosted isolated execution ran live from a local script only. It has not yet run from a deployed Preview function.
-- There is no scheduler for `/api/eng/worker`. If `after()` is cut short, a run waits until someone triggers the worker.
-- Email delivery: Resend is unconfigured, so invitations are shared by copyable link (`email_delivery = not_configured`).
+- There has been no browser run on a deployed Preview yet, and no hosted execution triggered from a deployed function.
+- Email delivery: Resend is unconfigured for staging, so invitations are shared by copyable link (`email_delivery = not_configured`).
 - Invites are not gated on an active billing plan.
 - Setup has been timed only on Windows with Python 3.12, not on clean macOS or Linux.
 - Retention, deletion and export are manual.
 
 ## Founder-owned tasks (agents cannot do these)
 
-1. Done 2026-09-27: snapshot `snap_W9NxQqlStsdpE2UvcObOjLoupCqs` was created and set as `FYDELL_EXECUTION_SNAPSHOT_ID` in Vercel Preview and Development. Running `ENG_STAGING_HOSTED=1 npm run test:eng:staging` executed the hidden tests in that Sandbox (15/15 on the reference). Add it to Production only when migration 028 goes to production. `CRON_SECRET` and `RESEND_API_KEY` already exist in Vercel Preview/Production. The Preview Supabase variables are Sensitive, so it is unverified whether they point at fydell-dev.
-2. Give a qualified reviewer a platform role (`reviewer`, `admin` or `super_admin`) and sign off the scenario review record.
-3. Set `CRON_SECRET` in Vercel and choose a scheduler for `/api/eng/worker`: Vercel cron on a paid plan, or an external pinger.
+1. Done: the execution snapshot is set in Vercel Preview and Development. Add it to Production only when migration 028 goes to production.
+2. Removed: a Fydell reviewer is no longer needed, because the employer reviews.
+3. Supabase Auth, fydell-dev: allow the Preview domains in the redirect URLs (for example `https://*-fydell-mvp.vercel.app/**`) so that sign-in works on a Preview deploy.
 4. Verify Resend DNS and set `RESEND_API_KEY` and `EMAIL_FROM` for real invitation emails.
 5. Approve applying migrations 026–028 to production.
 6. Time setup on clean macOS and Linux machines.
 7. Legal review of the candidate terms shown before start.
-8. Run the Milestone 1 deliverable on a deployed build: one real internal candidate attempt, reviewed by a second authorized account, including a refresh mid-attempt and a worker outage.
+8. Run the Milestone 1 deliverable on a deployed Preview with two accounts. An employer account invites, reviews, releases and decides. A candidate account takes the task, refreshing mid-attempt. For the outage, click "Retry" in the "Tests delayed" panel after a delayed run.
 
 Also still open: Stripe live activation (account holder must be 18+), AI provider account and retention settings, Vercel plan.
 

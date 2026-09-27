@@ -63,7 +63,24 @@ export function scheduleEvaluationWork(): void {
   });
 }
 
-/** Qualified reviewers are Fydell platform staff with the reviewer, admin or super_admin role. */
+/**
+ * Self-healing without a scheduler: whenever someone views an attempt whose
+ * evaluation is runnable (queued, due for retry, or abandoned by a dead
+ * worker), process the queue after the response.
+ */
+export async function scheduleIfRunnable(db: Admin, attemptId: string): Promise<void> {
+  const now = new Date().toISOString();
+  const { data } = await db
+    .from("eng_evaluation_runs")
+    .select("id")
+    .eq("attempt_id", attemptId)
+    .or(`status.eq.queued,and(status.eq.retryable_failure,next_retry_at.lte.${now}),and(status.eq.running,lease_expires_at.lt.${now})`)
+    .limit(1)
+    .maybeSingle();
+  if (data) scheduleEvaluationWork();
+}
+
+/** Optional Fydell staff review path: platform reviewer, admin or super_admin. */
 export async function requireReviewer(): Promise<Gate<PlatformAdminContext>> {
   const ctx = await requirePlatformRoleApi(["super_admin", "admin", "reviewer"]);
   if ("error" in ctx) {

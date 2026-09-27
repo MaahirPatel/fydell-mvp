@@ -34,7 +34,7 @@ export default async function EngineeringRolesPage() {
     <div className="max-w-[1120px]">
       <PageHeader
         title="Engineering tasks"
-        description="Invite backend candidates to one reviewed, practical task. They work locally in their own editor, talk to the team in a thread, handle one requirement change, and upload their project. Trusted checks run in isolation, and a qualified reviewer checks every finding before you see it."
+        description="Invite backend candidates to one reviewed, practical task. They work locally in their own editor, talk to the team in a thread, handle one requirement change, and upload their project. Trusted checks run in isolation, then your team reviews the evidence and releases a report where every finding cites the code, test, message or handoff behind it."
       />
 
       <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">

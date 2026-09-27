@@ -101,8 +101,12 @@ export interface OrgAttemptView {
   timeline: TimelineEvent[];
   canSeeEvidence: boolean;
   report: ReportRow | null;
+  draft: ReportRow | null;
   reportHistory: Pick<ReportRow, "id" | "version" | "status" | "released_at" | "change_reason" | "reviewer_email">[];
-  run: Pick<RunRow, "id" | "status" | "results" | "summary" | "executor" | "environment_version" | "suite_version" | "finished_at"> | null;
+  run: Pick<
+    RunRow,
+    "id" | "status" | "results" | "summary" | "executor" | "environment_version" | "suite_version" | "finished_at" | "last_error_code" | "last_error_detail"
+  > | null;
   submission: SubmissionRow | null;
   files: UploadRow["file_list"];
   messages: MessageRow[];
@@ -121,9 +125,10 @@ async function emailMap(db: Admin, ids: string[]): Promise<Map<string, string>> 
 }
 
 /**
- * Everything an employer page shows for one attempt. Evidence (report, test
- * results, files, thread, handoff) is included only for roles allowed to read
- * reports, and only once a human-checked report has been released.
+ * Everything an employer page shows for one attempt. Evidence (test results,
+ * files, thread, handoff) is included only for roles allowed to read reports,
+ * and only once the trusted tests have finished, because those same people
+ * write and release the report.
  */
 export async function orgAttemptView(db: Admin, member: EngMember, attempt: AttemptRow, canSeeEvidence: boolean): Promise<OrgAttemptView> {
   const [{ data: inv }, { data: role }, { data: events }, reports] = await Promise.all([
@@ -135,14 +140,15 @@ export async function orgAttemptView(db: Admin, member: EngMember, attempt: Atte
   const invitation = inv as InvitationRow;
   const { data: runRow } = await db
     .from("eng_evaluation_runs")
-    .select("id, status, results, summary, executor, environment_version, suite_version, finished_at")
+    .select("id, status, results, summary, executor, environment_version, suite_version, finished_at, last_error_code, last_error_detail")
     .eq("attempt_id", attempt.id)
     .neq("status", "canceled")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   const released = reports.find((r) => r.status === "released") ?? null;
-  const visible = canSeeEvidence && released !== null;
+  const testsFinished = runRow?.status === "human_review" || runRow?.status === "ready";
+  const visible = canSeeEvidence && (released !== null || testsFinished);
   const due = effectiveDueAt(attempt);
 
   let submission: SubmissionRow | null = null;
@@ -186,13 +192,14 @@ export async function orgAttemptView(db: Admin, member: EngMember, attempt: Atte
       at: e.created_at as string,
     })),
     canSeeEvidence,
-    report: visible ? released : null,
+    report: canSeeEvidence ? released : null,
+    draft: canSeeEvidence ? reports.find((r) => r.status === "draft") ?? null : null,
     reportHistory: canSeeEvidence
       ? reports
           .filter((r) => r.status !== "draft")
           .map((r) => ({ id: r.id, version: r.version, status: r.status, released_at: r.released_at, change_reason: r.change_reason, reviewer_email: r.reviewer_email }))
       : [],
-    run: visible ? (runRow as OrgAttemptView["run"]) : null,
+    run: canSeeEvidence ? (runRow as OrgAttemptView["run"]) : null,
     submission,
     files,
     messages,
@@ -232,10 +239,10 @@ export const EVENT_LABELS: Record<string, string> = {
   evaluation_completed: "Trusted checks finished",
   evaluation_retry_scheduled: "Evaluation environment failed; retry scheduled",
   evaluation_lease_reclaimed: "Evaluation worker stopped; another worker took over",
-  evaluation_retries_exhausted: "Evaluation retries used up; Fydell is investigating",
+  evaluation_retries_exhausted: "Evaluation retries used up",
   evaluation_blocked: "Evaluation blocked by a platform issue",
-  evaluation_requeued: "Evaluation retried by Fydell",
-  report_released: "Human-checked report released",
+  evaluation_requeued: "Tests retried",
+  report_released: "Report released",
   report_correction_released: "Corrected report released",
   decision_recorded: "Decision recorded",
   finding_flagged: "Finding flagged for review",

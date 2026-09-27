@@ -269,7 +269,7 @@ export const BACKEND_WEBHOOK_RETRY_V1: ScenarioDefinition = {
   knownIssues: [
     "macOS and Linux setup paths are expected to work but have not been timed on clean machines.",
     "The simulated teammates answer from a fixed rule set. Questions outside it get a standard reply asking the candidate to state their assumption.",
-    "Every report is checked by a qualified Fydell reviewer before release. Automated grading of the qualitative sections is not enabled.",
+    "The hiring team reviews the evidence and writes the report themselves. Automated grading of the qualitative sections is not enabled.",
   ],
   reviewRecord: {
     validatedAt: "2026-09-27",
