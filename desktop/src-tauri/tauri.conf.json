@@ -25,7 +25,14 @@
     "category": "DeveloperTool",
     "longDescription": "Fydell is a proof-of-work hiring network. Candidates complete realistic engineering simulations locally and submit evidence-backed work for employer review.",
     "shortDescription": "Complete Fydell hiring simulations.",
-    "targets": "all"
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
   },
   "identifier": "ai.fydell.desktop",
   "productName": "Fydell",
