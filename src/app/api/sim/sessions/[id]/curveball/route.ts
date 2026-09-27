@@ -4,6 +4,7 @@ import {
   acknowledgeCurveball,
   getSessionForCandidate,
   getVersionContent,
+  insertMessage,
   presentCurveball,
   recordEvent,
 } from "@/lib/simulations/db";
@@ -87,6 +88,32 @@ export async function POST(
         payload: { trigger: body.checkpointSaved ? "checkpoint" : "elapsed" },
         schemaVersion: 1,
       });
+      // Persist the announcement as a chat message from the scenario's
+      // stakeholder so it lands in the conversation the candidate is already
+      // reading (and in the UI poll). Idempotent: clientMsgId dedupes.
+      try {
+        await insertMessage({
+          sessionId: id,
+          thread: "stakeholder",
+          stakeholderId: content.curveball!.stakeholderId,
+          sender: "stakeholder",
+          body: `${content.curveball!.announcement}\n\n${content.curveball!.requiredAdaptation}`,
+          clientMsgId: `curveball_msg_${id}`,
+        });
+        await recordEvent(id, {
+          eventType: "message_received",
+          actor: "stakeholder",
+          payload: {
+            stakeholderId: content.curveball!.stakeholderId,
+            ruleId: null,
+            source: "curveball_announcement",
+          },
+          clientEventId: `curveball_msg_evt_${id}`,
+          schemaVersion: 1,
+        });
+      } catch (err) {
+        console.error(`[sim] curveball chat message failed for session ${id}:`, err);
+      }
     }
 
     return NextResponse.json({

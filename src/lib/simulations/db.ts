@@ -630,11 +630,11 @@ export async function recordEvent(
 
 export async function listEvents(
   sessionId: string
-): Promise<{ id: string; event_type: string; actor: string; resource_id: string | null; payload: Record<string, unknown>; created_at: string }[]> {
+): Promise<{ id: string; event_type: string; actor: string; resource_id: string | null; task_id: string | null; payload: Record<string, unknown>; created_at: string }[]> {
   const db = createAdminSupabaseClient();
   const { data } = await db
     .from("sim_session_events")
-    .select("id, event_type, actor, resource_id, payload, created_at")
+    .select("id, event_type, actor, resource_id, task_id, payload, created_at")
     .eq("session_id", sessionId)
     .order("seq");
   return data || [];

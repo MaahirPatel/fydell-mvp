@@ -5,7 +5,10 @@ import {
   getSessionState,
   getTemplateById,
   getVersionContent,
+  insertMessage,
+  listEvents,
   listMessages,
+  recordEvent,
 } from "@/lib/simulations/db";
 import {
   buildScenarioPackage,
@@ -15,6 +18,8 @@ import {
 import { toMicroCandidateView } from "@/lib/simulations/candidate-view";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 import { microToV2, toV2CandidateView } from "@/lib/simulations/v2";
+import { buildSessionChatContext, toChatEvents } from "@/lib/simulations/chat-context";
+import { deliverDueProactiveMessages } from "@/lib/simulations/proactive";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { CONSENT_POLICY_VERSION } from "@/lib/pilot/consent";
 
@@ -65,6 +70,43 @@ export async function GET(
       workbench.modules = workbench.modules.filter((m) => m.kind !== "curveball");
     }
 
+    // Deliver proactive teammate messages due right now (session welcome,
+    // elapsed-time nudges). Best-effort and idempotent — re-running this
+    // route never duplicates a message.
+    let messagesForView = messages;
+    if (session.status === "active") {
+      try {
+        const events = await listEvents(id);
+        const chatCtx = buildSessionChatContext({
+          startedAt: session.started_at,
+          curveballPresentedAt: session.curveball_presented_at,
+          deliverable: (state.deliverable || {}) as Record<string, unknown>,
+          workspace: (state.workspace || {}) as Record<string, unknown>,
+          completedTaskIds: state.completed_task_ids || [],
+          events: toChatEvents(events),
+        });
+        const delivered = await deliverDueProactiveMessages({
+          sessionId: id,
+          content,
+          ctx: chatCtx,
+          insertMessage: async (input) => {
+            const r = await insertMessage(input);
+            return { duplicate: r.duplicate };
+          },
+          recordEvent: async (input) =>
+            recordEvent(id, {
+              eventType: input.eventType,
+              actor: input.actor,
+              payload: input.payload,
+              clientEventId: input.clientEventId,
+            }),
+        });
+        if (delivered > 0) messagesForView = await listMessages(id);
+      } catch (err) {
+        console.error(`[sim] proactive delivery failed for session ${id}:`, err);
+      }
+    }
+
     // W3: versioned, candidate-safe file package for scenario-backed sessions.
     // Convention: template slug == scenario directory name. Null when the
     // template has no on-disk scenario or the package fails to build — the
@@ -111,7 +153,7 @@ export async function GET(
         workspace: state.workspace,
         completedTaskIds: state.completed_task_ids,
       },
-      messages: messages.map((m) => ({
+      messages: messagesForView.map((m) => ({
         id: m.id,
         thread: m.thread,
         stakeholderId: m.stakeholder_id,

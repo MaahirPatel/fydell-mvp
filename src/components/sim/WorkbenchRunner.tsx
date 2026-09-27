@@ -543,6 +543,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   const [chatBusy, setChatBusy] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const [chatDelivered, setChatDelivered] = useState(false);
+  const [chatUnread, setChatUnread] = useState(0);
 
   const [submitBusy, setSubmitBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -861,6 +862,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   const focusModule = (id: string, modules: CandidateModuleV2[]) => {
     const mod = modules.find((m) => m.id === id);
     if (mod?.kind === "stakeholder") {
+      setChatUnread(0);
       setDrawerOpen(true);
       return;
     }
@@ -916,6 +918,42 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
       drawerInputRef.current?.focus();
     }
   }, [messages, drawerOpen]);
+
+  // Poll for new stakeholder messages (proactive teammate messages, curveball
+  // announcements) while the session is active. Merges by server id so the
+  // optimistic send flow never duplicates.
+  useEffect(() => {
+    if (payload?.session.status !== "active") return;
+    let cancelled = false;
+    const poll = async () => {
+      if (cancelled || document.visibilityState !== "visible") return;
+      try {
+        const res = await fetch(`/api/sim/sessions/${sessionId}/messages`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !Array.isArray(data.messages)) return;
+        const incoming = data.messages as Message[];
+        let addedStakeholder = 0;
+        setMessages((prev) => {
+          const seen = new Set(prev.map((m) => m.id));
+          const fresh = incoming.filter((m) => !seen.has(m.id));
+          if (fresh.length === 0) return prev;
+          addedStakeholder = fresh.filter((m) => m.sender === "stakeholder").length;
+          return [...prev, ...fresh];
+        });
+        if (addedStakeholder > 0 && !drawerOpen) {
+          setChatUnread((n) => n + addedStakeholder);
+        }
+      } catch {
+        // Poll failures are silent; the next tick retries.
+      }
+    };
+    const timer = setInterval(poll, 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [sessionId, payload?.session.status, drawerOpen]);
 
   useEffect(() => {
     if (!drawerOpen && !exitOpen) return;
@@ -1505,10 +1543,24 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
 
             <button
               type="button"
-              onClick={() => setDrawerOpen(true)}
+              onClick={() => {
+                setChatUnread(0);
+                setDrawerOpen(true);
+              }}
               className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-3 text-left hover:border-[var(--fydell-brand-blue)]"
             >
-              <p className="text-[13px] font-semibold text-[var(--text-primary)]">Ask {firstName}</p>
+              <p className="flex items-center gap-2 text-[13px] font-semibold text-[var(--text-primary)]">
+                Ask {firstName}
+                {chatUnread > 0 && (
+                  <span
+                    className="inline-flex min-w-[20px] items-center justify-center rounded-full bg-[var(--fydell-brand-blue)] px-1.5 py-0.5 text-[11px] font-semibold text-white"
+                    role="status"
+                    aria-label={`${chatUnread} new message${chatUnread > 1 ? "s" : ""} from ${stakeholder.name}`}
+                  >
+                    {chatUnread}
+                  </span>
+                )}
+              </p>
               <p className="mt-0.5 text-[12px] text-[var(--text-tertiary)]">{stakeholder.role}</p>
             </button>
           </div>

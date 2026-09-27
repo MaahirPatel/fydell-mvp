@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
-import { getSessionForCandidate, recordEvent } from "@/lib/simulations/db";
+import {
+  getSessionForCandidate,
+  getSessionState,
+  getVersionContent,
+  insertMessage,
+  listEvents,
+  recordEvent,
+} from "@/lib/simulations/db";
+import { buildSessionChatContext, toChatEvents } from "@/lib/simulations/chat-context";
+import { deliverDueProactiveMessages } from "@/lib/simulations/proactive";
 
 export const runtime = "nodejs";
 
@@ -61,6 +70,43 @@ export async function POST(
       payload: body.payload,
       clientEventId: body.clientEventId,
     });
+
+    // Deliver any proactive teammate messages now due (progress reactions,
+    // elapsed-time nudges). Best-effort: never fails the event recording.
+    try {
+      const [content, state, events] = await Promise.all([
+        getVersionContent(session.template_version_id),
+        getSessionState(id),
+        listEvents(id),
+      ]);
+      const chatCtx = buildSessionChatContext({
+        startedAt: session.started_at,
+        curveballPresentedAt: session.curveball_presented_at,
+        deliverable: (state.deliverable || {}) as Record<string, unknown>,
+        workspace: (state.workspace || {}) as Record<string, unknown>,
+        completedTaskIds: state.completed_task_ids || [],
+        events: toChatEvents(events),
+      });
+      await deliverDueProactiveMessages({
+        sessionId: id,
+        content,
+        ctx: chatCtx,
+        insertMessage: async (input) => {
+          const r = await insertMessage(input);
+          return { duplicate: r.duplicate };
+        },
+        recordEvent: async (input) =>
+          recordEvent(id, {
+            eventType: input.eventType,
+            actor: input.actor,
+            payload: input.payload,
+            clientEventId: input.clientEventId,
+          }),
+      });
+    } catch {
+      // Swallow: proactive messages must never break candidate actions.
+    }
+
     return NextResponse.json({ ok: true, id: result.id, duplicate: result.duplicate });
   } catch (err) {
     return NextResponse.json(
