@@ -18,6 +18,7 @@ import type {
   CandidateSimulationViewV2,
   CandidateStakeholderV2,
 } from "@/lib/simulations/v2/candidate-view";
+import { withTeammateDisclosure } from "@/lib/simulations/teammate-disclosure";
 
 const DISCLOSURE_KEY = "__aiDisclosure";
 const REVIEW_ID = "__review";
@@ -361,7 +362,7 @@ function fallbackWorkbench(content: MicroFallback): CandidateSimulationViewV2 {
     version: 1,
     modules,
     competencies: [],
-    stakeholders: [content.stakeholder],
+    stakeholders: withTeammateDisclosure([content.stakeholder]),
     opportunities: [],
   };
 }
@@ -1180,12 +1181,16 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
     );
   }
 
-  const stakeholder = workbench.stakeholders[0] || {
-    id: payload.content.stakeholder.id,
-    name: payload.content.stakeholder.name,
-    role: payload.content.stakeholder.role,
-    blurb: payload.content.stakeholder.blurb,
-  };
+  const stakeholder =
+    workbench.stakeholders[0] ||
+    withTeammateDisclosure([
+      {
+        id: payload.content.stakeholder.id,
+        name: payload.content.stakeholder.name,
+        role: payload.content.stakeholder.role,
+        blurb: payload.content.stakeholder.blurb,
+      },
+    ])[0];
   const roleTitle = ROLE_TITLES[workbench.roleKey] || workbench.roleKey;
   const modules = workbench.modules;
   const navModules = modules.filter((m) => m.kind !== "curveball");
