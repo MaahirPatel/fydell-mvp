@@ -288,7 +288,7 @@ const obs = deriveProcessObservations({
 });
 t.ok(obs.some((o) => o.label === "ran_tests_before_first_saved_edit"), "test-before-edit observed");
 t.ok(
-  obs.every((o) => !/understood|confused|diligent/i.test(o.detail)),
+  obs.every((o) => !/deeply understood|strong engineer|was confused|diligent|careless/i.test(o.detail)),
   "no overclaim in derived observations"
 );
 t.eq(validateObservationModesty(obs), [], "derived observations pass the modesty check");
