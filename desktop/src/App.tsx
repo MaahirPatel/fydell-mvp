@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { api, SessionInfo, SessionSummary, Receipt, isAuthRequired } from "./lib/tauri";
 import Workspace from "./components/Workspace";
+import { ProvenanceTag } from "./components/ui";
 
 type Screen =
   | "loading"
@@ -195,7 +196,7 @@ export default function App() {
           <div className="brand">
             Fydell<span className="dot">.</span>
           </div>
-          <div className="row" style={{ marginBottom: 8 }}>
+          <div className="row mb-2">
             <span className="muted">{auth?.email}</span>
             <div className="spacer" />
             <button className="btn ghost" onClick={signOut}>
@@ -212,7 +213,7 @@ export default function App() {
           <div className="field">
             <label>Invite code</label>
             <input
-              className="input"
+              className="input mono"
               value={inviteToken}
               onChange={(e) => setInviteToken(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && join()}
@@ -292,7 +293,10 @@ export default function App() {
             <>
               <p>Your work and evidence trail were sent for review. Keep this receipt:</p>
               <div className="receipt-box">
-                <div><span className="k">submission </span>{receipt.submission_id}</div>
+                <div className="receipt-head">
+                  <ProvenanceTag kind="observed" />
+                  <span className="muted">This receipt describes your observed work.</span>
+                </div>                <div><span className="k">submission </span>{receipt.submission_id}</div>
                 <div><span className="k">sha256 </span><span className="hash">{receipt.sha256}</span></div>
                 {receipt.title && <div><span className="k">assignment </span>{receipt.title}</div>}
                 <div><span className="k">files </span>{receipt.file_count} <span className="k">events </span>{receipt.event_count}</div>
@@ -305,10 +309,10 @@ export default function App() {
           ) : (
             <p className="muted">This assignment was already submitted. Your receipt is stored with the local workspace.</p>
           )}
-          <p className="muted" style={{ marginTop: 14 }}>
+          <p className="muted mt-4">
             A human reviews every submission — scores are never final without one.
           </p>
-          <div className="row" style={{ marginTop: 14 }}>
+          <div className="row mt-4">
             <button className="btn ghost" onClick={signOut}>
               Sign out
             </button>

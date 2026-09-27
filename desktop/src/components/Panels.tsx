@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, Receipt, SessionEvent, TestRunResult } from "../lib/tauri";
 import { messageOf } from "../App";
+import { Dialog, EmptyState, ProvenanceTag } from "./ui";
 
 export interface Milestone {
   id: string;
@@ -110,14 +111,30 @@ export function TestsPanel({ onTestsRun }: { onTestsRun: () => void }) {
 
   return (
     <>
-      <h3>Public test suite</h3>
+      <h3>
+        Public test suite <ProvenanceTag kind="observed" />
+      </h3>
       <p className="muted">Runs locally on your machine. The hidden evaluation runs on submit.</p>
       <button className="btn" onClick={run} disabled={running}>
         {running ? "Running…" : "Run tests"}
       </button>
-      {error && <div className="error" style={{ marginTop: 12 }}>{error}</div>}
+      {error && <div className="error mt-3">{error}</div>}
+      {!result && !running && !error && (
+        <EmptyState
+          icon="flask"
+          title="No runs yet"
+          body="Run the public test suite to see real results from your workspace. Results are linked to the exact revision you ran."
+          actionLabel="Run tests"
+          onAction={run}
+        />
+      )}
+      {running && (
+        <div className="muted mt-3">
+          Running tests against the current revision…
+        </div>
+      )}
       {result && (
-        <div style={{ marginTop: 12 }}>
+        <div className="mt-3">
           <div className="summary-line">
             {result.passed != null && <span className="pass">{result.passed} passed</span>}
             {result.passed != null && result.failed != null && " · "}
@@ -153,8 +170,10 @@ export function TeamPanel() {
   const [teammates, setTeammates] = useState<Teammate[]>([]);
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [draft, setDraft] = useState("");
+  const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoaded(false);
     api
       .readFile(".fydell/teammates.json")
       .then((f) => {
@@ -162,10 +181,21 @@ export function TeamPanel() {
           const def = JSON.parse(f.content) as { teammates: Teammate[]; thread: ChatMsg[] };
           setTeammates(def.teammates ?? []);
           setMsgs(def.thread ?? []);
-        } catch {}
+        } catch {
+          setTeammates([]);
+        } finally {
+          setLoaded(true);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        setTeammates([]);
+        setLoaded(true);
+      });
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const send = useCallback(async () => {
     const text = draft.trim();
@@ -198,20 +228,33 @@ export function TeamPanel() {
 
   return (
     <>
-      <h3>Team thread</h3>
+      <h3>
+        Team thread <ProvenanceTag kind="generated" />
+      </h3>
       <p className="muted">
-        Teammates here are <span className="sim-badge">simulated</span> — part of the scenario, not real people.
+        Everyone here except you is <strong>simulated</strong> — scripted by the
+        scenario, not a real coworker. Your own messages are observed evidence.
       </p>
-      <div>
-        {msgs.map((m, i) => (
-          <div key={i} className={`msg ${m.mine ? "me" : ""}`}>
-            <div className="who">
-              {m.from} {m.simulated && <span className="sim-badge">simulated</span>}
+      {loaded && teammates.length === 0 && msgs.length === 0 ? (
+        <EmptyState
+          icon="chat"
+          title="No team thread"
+          body="The scenario's team thread couldn't load. Your work is unaffected — try loading it again."
+          actionLabel="Retry"
+          onAction={load}
+        />
+      ) : (
+        <div>
+          {msgs.map((m, i) => (
+            <div key={i} className={`msg ${m.mine ? "me" : ""} ${m.simulated ? "simulated" : ""}`}>
+              <div className="who">
+                {m.from} {m.simulated && <ProvenanceTag kind="generated" />}
+              </div>
+              <div className="bubble">{m.text}</div>
             </div>
-            <div className="bubble">{m.text}</div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
       <div className="composer">
         <input
           className="input"
@@ -219,6 +262,7 @@ export function TeamPanel() {
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
           placeholder="Ask the team…"
+          aria-label="Message the simulated team"
         />
         <button className="btn ghost" onClick={send}>Send</button>
       </div>
@@ -235,6 +279,7 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
   const [aiDisclosed, setAiDisclosed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   const submit = useCallback(async () => {
     setBusy(true);
@@ -243,6 +288,7 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
       const receipt = await api.submit({ summary, approach, tradeoffs }, aiDisclosed);
       onSubmitted(receipt);
     } catch (e) {
+      // Keep the dialog open and show the error inside — never fail silently.
       setError(messageOf(e));
     } finally {
       setBusy(false);
@@ -251,38 +297,64 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
 
   return (
     <>
-      <h3>Submit for review</h3>
+      <h3>
+        Submit for review <ProvenanceTag kind="observed" />
+      </h3>
       <p className="muted">
         Submission is immutable. Your files, test record, and event trail are
         packaged with a SHA-256 receipt. A human reviews every submission.
       </p>
-      {error && <div className="error">{error}</div>}
+      {error && !confirming && <div className="error">{error}</div>}
       <div className="field">
-        <label>What did you change, in one paragraph?</label>
-        <textarea className="textarea" value={summary} onChange={(e) => setSummary(e.target.value)} />
+        <label htmlFor="submit-summary">What did you change, in one paragraph?</label>
+        <textarea id="submit-summary" className="textarea" value={summary} onChange={(e) => setSummary(e.target.value)} />
       </div>
       <div className="field">
-        <label>Approach & key decisions</label>
-        <textarea className="textarea" value={approach} onChange={(e) => setApproach(e.target.value)} />
+        <label htmlFor="submit-approach">Approach & key decisions</label>
+        <textarea id="submit-approach" className="textarea" value={approach} onChange={(e) => setApproach(e.target.value)} />
       </div>
       <div className="field">
-        <label>Tradeoffs / what you'd do with more time</label>
-        <textarea className="textarea" value={tradeoffs} onChange={(e) => setTradeoffs(e.target.value)} />
+        <label htmlFor="submit-tradeoffs">Tradeoffs / what you'd do with more time</label>
+        <textarea id="submit-tradeoffs" className="textarea" value={tradeoffs} onChange={(e) => setTradeoffs(e.target.value)} />
       </div>
       <div className="field">
-        <label>
+        <label className="checkbox-row" htmlFor="submit-ai">
           <input
+            id="submit-ai"
             type="checkbox"
             checked={aiDisclosed}
             onChange={(e) => setAiDisclosed(e.target.checked)}
-          />{" "}
-          I used external AI assistance during this simulation
+          />
+          <span>I used external AI assistance during this simulation</span>
         </label>
         <p className="muted">Disclosed honestly; permitted tool use is never penalized.</p>
       </div>
-      <button className="btn" disabled={busy} onClick={submit}>
-        {busy ? "Submitting…" : "Submit"}
+      <button className="btn" disabled={busy} onClick={() => { setError(null); setConfirming(true); }}>
+        Review & submit
       </button>
+
+      {confirming && (
+        <Dialog
+          title="Submit for review?"
+          onClose={() => { if (!busy) setConfirming(false); }}
+          actions={[
+            { label: "Keep working", kind: "ghost", onClick: () => setConfirming(false), disabled: busy },
+            { label: "Submit work", kind: "primary", onClick: submit, disabled: busy, busyLabel: "Submitting…" },
+          ]}
+        >
+          {error && <div className="error">{error}</div>}
+          <p>
+            This packages <strong>your files</strong>, <strong>your test record</strong>,
+            and <strong>your event trail</strong> into one immutable submission with a
+            SHA-256 receipt. You can't edit after submitting.
+          </p>
+          <p>
+            {aiDisclosed
+              ? "Your AI-assistance disclosure will be attached — permitted tool use is never penalized."
+              : "You haven't disclosed external AI assistance. If you used any, go back and disclose it — honesty here is part of the assessment."}
+          </p>
+        </Dialog>
+      )}
     </>
   );
 }
@@ -296,18 +368,27 @@ export function TimelinePanel() {
   }, []);
   return (
     <>
-      <h3>Your evidence trail</h3>
+      <h3>
+        Your evidence trail <ProvenanceTag kind="observed" />
+      </h3>
       <p className="muted">Everything recorded in this session. This ships with your submission.</p>
-      <div>
-        {events.map((e) => (
-          <div key={e.seq} className="test-row">
-            <span className="muted">#{e.seq}</span>
-            <span>{e.kind}</span>
-            <span className="muted">{new Date(e.ts).toLocaleTimeString()}</span>
-          </div>
-        ))}
-        {!events.length && <div className="muted">No events yet.</div>}
-      </div>
+      {events.length === 0 ? (
+        <EmptyState
+          icon="clock"
+          title="No events yet"
+          body="File saves, test runs, and messages will appear here as observed evidence."
+        />
+      ) : (
+        <div>
+          {events.map((e) => (
+            <div key={e.seq} className="timeline-row">
+              <span className="detail">#{e.seq}</span>
+              <span className="kind">{e.kind}</span>
+              <span className="detail">{new Date(e.ts).toLocaleTimeString()}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

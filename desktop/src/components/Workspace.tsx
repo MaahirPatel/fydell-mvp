@@ -3,6 +3,7 @@ import Editor from "@monaco-editor/react";
 import { api, FileContent, FileEntry, Receipt, SessionInfo } from "../lib/tauri";
 import { messageOf } from "../App";
 import { BriefPanel, TestsPanel, TeamPanel, SubmitPanel, TimelinePanel, Milestone } from "./Panels";
+import { Dialog, EmptyState, ProvenanceTag } from "./ui";
 
 interface Tab {
   path: string;
@@ -208,10 +209,13 @@ export default function Workspace({
       </div>
 
       {milestone?._shown && !milestone._acked && (
-        <div style={{ padding: "10px 14px", background: "rgba(217,161,59,0.1)", borderBottom: "1px solid var(--border)", display: "flex", gap: 12, alignItems: "center" }}>
-          <div style={{ flex: 1 }}>
-            <strong style={{ fontSize: 12.5 }}>Requirement update — {milestone.title}</strong>
-            <div className="muted" style={{ marginTop: 2 }}>{milestone.body}</div>
+        <div className="milestone-banner" role="alert">
+          <div className="milestone-text">
+            <div className="milestone-title">
+              Requirement update — {milestone.title}
+              <ProvenanceTag kind="generated" />
+            </div>
+            <div className="milestone-body">{milestone.body}</div>
           </div>
           <button className="btn" onClick={ackMilestone}>Acknowledge</button>
         </div>
@@ -219,21 +223,31 @@ export default function Workspace({
 
       <div className="main">
         <div className="filetree">
-          {Object.keys(tree).sort().map((dir) => (
-            <div key={dir}>
-              {dir && <div className="dir">{dir}/</div>}
-              {tree[dir].map((f) => (
-                <button
-                  key={f.path}
-                  className={`file ${active === f.path ? "active" : ""}`}
-                  onClick={() => openFile(f.path)}
-                  title={f.path}
-                >
-                  {f.path.split("/").pop()}
-                </button>
-              ))}
-            </div>
-          ))}
+          {files.length === 0 ? (
+            <EmptyState
+              icon="file"
+              title="No files yet"
+              body="The workspace hasn't synced any files. Check your connection and try again."
+              actionLabel="Refresh"
+              onAction={refreshFiles}
+            />
+          ) : (
+            Object.keys(tree).sort().map((dir) => (
+              <div key={dir}>
+                {dir && <div className="dir">{dir}/</div>}
+                {tree[dir].map((f) => (
+                  <button
+                    key={f.path}
+                    className={`file ${active === f.path ? "active" : ""}`}
+                    onClick={() => openFile(f.path)}
+                    title={f.path}
+                  >
+                    {f.path.split("/").pop()}
+                  </button>
+                ))}
+              </div>
+            ))
+          )}
         </div>
 
         <div className="editor-area">
@@ -257,9 +271,13 @@ export default function Workspace({
                 options={{ minimap: { enabled: false }, fontSize: 13, scrollBeyondLastLine: false }}
               />
             ) : (
-              <div style={{ padding: 24 }} className="muted">
-                Open a file from the tree to start. Begin with <code>BRIEF.md</code>.
-              </div>
+              <EmptyState
+                icon="file"
+                title="No file open"
+                body="Open a file from the tree to start working. The brief describes your assignment."
+                actionLabel="Open BRIEF.md"
+                onAction={() => openFile("BRIEF.md")}
+              />
             )}
           </div>
         </div>
@@ -283,11 +301,19 @@ export default function Workspace({
       </div>
 
       {conflict && (
-        <ConflictModal
-          path={conflict.path}
-          onKeepMine={() => resolveConflict(true)}
-          onUseServer={() => resolveConflict(false)}
-        />
+        <Dialog
+          title="Conflicting changes"
+          onClose={() => setConflict(null)}
+          actions={[
+            { label: "Use server version", kind: "ghost", onClick: () => resolveConflict(false) },
+            { label: "Keep mine", kind: "primary", onClick: () => resolveConflict(true) },
+          ]}
+        >
+          <p>
+            <strong>{conflict.path}</strong> changed on disk since you started
+            editing. Your unsaved edits are safe — choose which version to keep.
+          </p>
+        </Dialog>
       )}
     </div>
   );
@@ -299,23 +325,4 @@ function langOf(path: string): string {
   if (path.endsWith(".yaml") || path.endsWith(".yml")) return "yaml";
   if (path.endsWith(".json")) return "json";
   return "plaintext";
-}
-
-function ConflictModal({ path, onKeepMine, onUseServer }: { path: string; onKeepMine: () => void; onUseServer: () => void }) {
-  return (
-    <div className="screen" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 50 }}>
-      <div className="card">
-        <h1>Conflicting changes</h1>
-        <p>
-          <code>{path}</code> changed on disk since you started editing. Your
-          unsaved edits are safe — choose which version to keep.
-        </p>
-        <div className="row">
-          <button className="btn ghost" onClick={onUseServer}>Use server version</button>
-          <div className="spacer" />
-          <button className="btn" onClick={onKeepMine}>Keep mine</button>
-        </div>
-      </div>
-    </div>
-  );
 }
