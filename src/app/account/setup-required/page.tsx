@@ -1,14 +1,16 @@
-import Link from "next/link";
-import FydellBrand from "@/components/brand/FydellBrand";
+import AuthShell from "@/components/auth/AuthShell";
+import { ButtonLink } from "@/components/ui/Button";
 import { CONTACT_EMAIL, CONTACT_MAILTO } from "@/lib/contact";
 
 const REASONS: Record<string, string> = {
   unaffiliated:
-    "Your account is active, but it is not yet connected to a Fydell workspace or mission invitation.",
+    "Your account is active, but you have not chosen how you use Fydell yet. Pick hiring or developer to continue. If you were invited to a task, open the invitation link again.",
   awaiting_org_approval:
     "Your company setup was received and is awaiting Fydell approval before mission invitations are enabled.",
   partner_pending:
     "Your partner application was received. Partner access is approval-gated - we'll follow up once it's reviewed.",
+  no_org: "Your account is not part of a hiring workspace yet. Ask a workspace owner to add you, or choose how you use Fydell.",
+  org_create_failed: "We could not create your workspace. Try again, or contact us and we will set it up.",
   no_user_or_supabase: "We could not resolve your workspace. Sign in again or contact support.",
 };
 
@@ -22,40 +24,20 @@ export default async function SetupRequiredPage({
   const copy = REASONS[reason] || REASONS.unaffiliated;
 
   return (
-    <main className="grid min-h-[100dvh] place-items-center bg-[#050609] px-6 text-[#F4F5F7]">
-      <div className="w-full max-w-lg">
-        <FydellBrand markSize={36} wordmarkSize={22} />
-        <h1 className="mt-10 text-[28px]" style={{ fontWeight: 560, letterSpacing: "-0.03em" }}>
-          Setup required
-        </h1>
-        <p className="mt-3 text-[14px] leading-relaxed text-white/60">{copy}</p>
-        <ul className="mt-6 space-y-2 text-[13px] text-white/70">
-          {reason === "partner_pending" ? null : (
-            <>
-              <li>
-                <Link href="/signup/role" className="underline hover:text-white">
-                  Choose how you use Fydell
-                </Link>
-              </li>
-              <li>
-                <Link href="/request-pilot" className="underline hover:text-white">
-                  Request a pilot
-                </Link>
-              </li>
-            </>
-          )}
-          <li>
-            <a href={CONTACT_MAILTO} className="underline hover:text-white">
-              Contact {CONTACT_EMAIL}
-            </a>
-          </li>
-          <li>
-            <Link href="/api/platform/logout" className="underline hover:text-white">
-              Sign out
-            </Link>
-          </li>
-        </ul>
+    <AuthShell title="One more step" description={copy}>
+      <div className="flex flex-wrap gap-3">
+        {reason === "partner_pending" ? null : (
+          <ButtonLink href="/signup/role" variant="primary" size="lg">
+            Choose how you use Fydell
+          </ButtonLink>
+        )}
+        <ButtonLink href={CONTACT_MAILTO} variant="secondary" size="lg">
+          Contact {CONTACT_EMAIL}
+        </ButtonLink>
+        <ButtonLink href="/api/platform/logout" variant="quiet" size="lg">
+          Sign out
+        </ButtonLink>
       </div>
-    </main>
+    </AuthShell>
   );
 }

@@ -8,9 +8,19 @@ import { CandidateShell } from "@/components/candidate/CandidateShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { Surface } from "@/components/ui/Surface";
 import { StatusTag } from "@/components/ui/StatusTag";
+import type { AttemptRow, AttemptStatus, InvitationRow } from "@/lib/eng/types";
 
 export const metadata = { title: "Your evaluations | Fydell" };
 export const dynamic = "force-dynamic";
+
+const ENG_ATTEMPT_LABEL: Record<AttemptStatus, { text: string; tone: "active" | "changed" | "neutral" }> = {
+  accepted: { text: "Not started", tone: "active" },
+  preflight_passed: { text: "Not started", tone: "active" },
+  in_progress: { text: "Timer running", tone: "changed" },
+  submitted: { text: "Submitted", tone: "neutral" },
+  withdrawn: { text: "Withdrawn", tone: "neutral" },
+  expired: { text: "Expired", tone: "neutral" },
+};
 
 function Section({
   title,
@@ -61,7 +71,7 @@ export default async function CandidateHomePage() {
   if (!user) redirect(`/login?next=${encodeURIComponent("/app/candidate")}`);
 
   const admin = createAdminSupabaseClient();
-  const [{ data: invitations }, { data: sessions }, { data: credentials }] =
+  const [{ data: invitations }, { data: sessions }, { data: credentials }, { data: engInvites }, { data: engAttempts }] =
     await Promise.all([
       admin
         .from("sim_invitations")
@@ -83,7 +93,25 @@ export default async function CandidateHomePage() {
         .select("id, credential_number, status, issued_at, session_id")
         .eq("candidate_user_id", user.id)
         .order("issued_at", { ascending: false }),
+      admin
+        .from("eng_invitations")
+        .select("id, status, expires_at, role_snapshot")
+        .eq("candidate_email", user.email.toLowerCase())
+        .in("status", ["invited", "accepted"])
+        .order("created_at", { ascending: false }),
+      admin
+        .from("eng_attempts")
+        .select("id, invitation_id, status, submitted_at")
+        .eq("candidate_user_id", user.id),
     ]);
+
+  const engAttemptByInvite = new Map(
+    ((engAttempts ?? []) as Pick<AttemptRow, "id" | "invitation_id" | "status" | "submitted_at">[]).map((a) => [a.invitation_id, a])
+  );
+  const engTasks = ((engInvites ?? []) as Pick<InvitationRow, "id" | "status" | "expires_at" | "role_snapshot">[]).map((inv) => ({
+    invitation: inv,
+    attempt: engAttemptByInvite.get(inv.id) ?? null,
+  }));
 
   const pendingInvites = invitations || [];
   const allSessions = sessions || [];
@@ -104,7 +132,7 @@ export default async function CandidateHomePage() {
     (rk && ROLE_BY_KEY[rk as RoleKey]?.title) || rk || "";
 
   const empty =
-    pendingInvites.length === 0 && allSessions.length === 0;
+    pendingInvites.length === 0 && allSessions.length === 0 && engTasks.length === 0;
 
   return (
     <CandidateShell>
@@ -136,6 +164,35 @@ export default async function CandidateHomePage() {
               </Link>
             </p>
           </Surface>
+        ) : null}
+
+        {engTasks.length > 0 ? (
+          <Section title="Engineering tasks">
+            {engTasks.map(({ invitation, attempt }) => {
+              const label = attempt ? ENG_ATTEMPT_LABEL[attempt.status] : null;
+              return (
+                <Row
+                  key={invitation.id}
+                  title={invitation.role_snapshot.title}
+                  tag={label ? <StatusTag tone={label.tone}>{label.text}</StatusTag> : null}
+                  detail={
+                    attempt?.submitted_at
+                      ? `${invitation.role_snapshot.organizationName} · submitted ${new Date(attempt.submitted_at).toLocaleDateString()}`
+                      : `${invitation.role_snapshot.organizationName} · invitation expires ${new Date(invitation.expires_at).toLocaleDateString()}`
+                  }
+                  action={
+                    attempt ? (
+                      <ButtonLink href={`/assess/${attempt.id}`} variant={attempt.status === "submitted" ? "secondary" : "primary"} size="sm">
+                        {attempt.status === "submitted" ? "View receipt" : "Open"}
+                      </ButtonLink>
+                    ) : (
+                      <span className="text-[12.5px] text-[var(--text-tertiary)]">Open the invitation link to accept</span>
+                    )
+                  }
+                />
+              );
+            })}
+          </Section>
         ) : null}
 
         {active.length > 0 ? (
