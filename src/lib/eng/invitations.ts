@@ -48,6 +48,7 @@ async function deliver(invitation: InvitationRow, token: string, organizationNam
        <p style="margin:0;color:#6B7280;font-size:13px">Nothing starts until you finish setup and press Start. This link expires ${new Date(invitation.expires_at).toUTCString()}.</p>`
     ),
   });
+  if (!sent.ok) console.error(`[eng] invitation ${invitation.id} email failed: ${sent.error ?? "unknown error"}`);
   return sent.ok ? "sent" : "failed";
 }
 
