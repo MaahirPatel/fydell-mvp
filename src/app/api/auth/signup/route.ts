@@ -4,8 +4,6 @@ import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/
 import { completeEmployerOnboarding } from "@/lib/pilot/lifecycle";
 import { ensureCandidateProfile, audit } from "@/lib/auth/signup-helpers";
 import { isReservedOrganizationName } from "@/lib/org/reserved";
-import { appUrl } from "@/lib/app-url";
-
 export const dynamic = "force-dynamic";
 
 type SignupPath = "employer" | "fde" | "partner";
@@ -54,18 +52,19 @@ export async function POST(req: Request) {
     }
 
     const supabase = await createServerSupabaseClient();
-    const site = appUrl();
+    const admin = createAdminSupabaseClient();
     const nextPath = redirectForPath(path);
 
-    const { data, error } = await supabase.auth.signUp({
+    // Accounts are confirmed on creation, so no confirmation email is sent.
+    // signUp() would send one, and Supabase's built-in mailer allows only a few
+    // per hour, which fails sign-ups outright once exceeded.
+    const { data, error } = await admin.auth.admin.createUser({
       email,
       password,
-      options: {
-        emailRedirectTo: `${site}/auth/callback?next=${encodeURIComponent(nextPath)}`,
-        data: {
-          full_name: name,
-          account_type: path || "unresolved",
-        },
+      email_confirm: true,
+      user_metadata: {
+        full_name: name,
+        account_type: path || "unresolved",
       },
     });
 
@@ -86,37 +85,21 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    const emailVerifiedAt = data.user.email_confirmed_at || new Date().toISOString();
 
-    const admin = createAdminSupabaseClient();
-    let emailVerifiedAt: string | null = data.user?.email_confirmed_at || null;
-
-    // Never block on email confirmation for now. Confirm immediately, then sign in.
-    if (!data.session) {
-      const { error: confirmError } = await admin.auth.admin.updateUserById(userId, {
-        email_confirm: true,
-      });
-      if (confirmError) {
-        return NextResponse.json(
-          { error: confirmError.message || "Could not activate account." },
-          { status: 400 }
-        );
-      }
-      emailVerifiedAt = new Date().toISOString();
-
-      const { data: signedIn, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (signInError || !signedIn.session) {
-        return NextResponse.json(
-          {
-            error:
-              signInError?.message ||
-              "Account created. Sign in with the same email and password.",
-          },
-          { status: 400 }
-        );
-      }
+    const { data: signedIn, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (signInError || !signedIn.session) {
+      return NextResponse.json(
+        {
+          error:
+            signInError?.message ||
+            "Account created. Sign in with the same email and password.",
+        },
+        { status: 400 }
+      );
     }
 
     await admin.from("profiles").upsert({

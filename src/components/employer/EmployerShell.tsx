@@ -12,10 +12,13 @@ import {
   FileCheck2,
   FolderOpen,
   House,
+  IdCard,
   Plus,
   ReceiptText,
   Settings,
   ShieldCheck,
+  SquareTerminal,
+  UserCog,
   Users,
 } from "lucide-react";
 import FydellMark from "@/components/brand/FydellMark";
@@ -30,6 +33,7 @@ import {
   WORKSPACE_NAV_ITEMS,
   WORKSPACE_SETTINGS_ITEM,
   workspaceSection,
+  type WorkspaceNavLabel,
 } from "@/lib/workspace/navigation";
 
 /**
@@ -41,16 +45,19 @@ import {
  * evaluation and a comparison is something you do to two reports, so both are
  * contextual actions rather than places in the product.
  */
-const NAV_ICONS = {
+const NAV_ICONS: Record<WorkspaceNavLabel, typeof House> = {
   Home: House,
+  "Engineering tasks": SquareTerminal,
   Roles: BriefcaseBusiness,
   Candidates: Users,
+  "Shared passports": IdCard,
   Work: FolderOpen,
   Evidence: FileCheck2,
   "Work Receipts": ReceiptText,
   Outcomes: Activity,
+  Team: UserCog,
   Settings,
-} satisfies Record<string, typeof House>;
+};
 
 /**
  * The workbench is a work environment, not a document. It owns the whole

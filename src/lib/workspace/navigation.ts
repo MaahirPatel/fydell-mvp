@@ -1,6 +1,19 @@
+export type WorkspaceNavLabel =
+  | "Home"
+  | "Engineering tasks"
+  | "Roles"
+  | "Candidates"
+  | "Shared passports"
+  | "Work"
+  | "Evidence"
+  | "Work Receipts"
+  | "Outcomes"
+  | "Team"
+  | "Settings";
+
 export type WorkspaceNavItem = {
   href: string;
-  label: string;
+  label: WorkspaceNavLabel;
   exact?: boolean;
 };
 
