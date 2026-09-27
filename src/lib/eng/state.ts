@@ -30,8 +30,8 @@ export const OPERATIONAL_STATES: Record<OperationalState, { label: string; meani
     meaning: "The evaluation environment failed. This is a platform issue, not a candidate result. It retries automatically, and your team can retry it from the attempt page.",
     tone: "changed",
   },
-  review_required: { label: "Ready for your review", meaning: "Tests finished. Someone on your team reviews the evidence and releases the report.", tone: "changed" },
-  ready: { label: "Report released", meaning: "Your team reviewed the evidence and released the report.", tone: "good" },
+  review_required: { label: "Review required", meaning: "Tests finished. Someone on your team reviews the evidence and releases the report.", tone: "changed" },
+  ready: { label: "Report ready", meaning: "Your team reviewed the evidence and released the report.", tone: "good" },
   expired: { label: "Expired", meaning: "The invitation or attempt window ended without a submission.", tone: "neutral" },
   withdrawn: { label: "Withdrawn", meaning: "Your team withdrew this invitation.", tone: "neutral" },
 };

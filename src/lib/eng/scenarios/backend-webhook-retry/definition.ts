@@ -8,14 +8,27 @@ export const BACKEND_WEBHOOK_RETRY_V1: ScenarioDefinition = {
   suiteVersion: "backend-webhook-retry/suite-v1",
   rubricVersion: "backend-webhook-retry/rubric-v1",
   summary:
-    "Fix a payments webhook dispatcher that caused a retry storm: add backoff, stop retrying permanent failures, dead-letter exhausted deliveries and keep idempotency keys stable. Partway through, a partner asks for Retry-After support.",
+    "A payments webhook dispatcher caused a retry storm. Fix how it retries, gives up and identifies deliveries. One requirement update from the team arrives partway through.",
   candidateBrief: [
     "You are joining Harbor Pay's Payments Platform team for one incident fix. The starter project is a small Python service with an incident write-up, a log excerpt and public tests.",
-    "Work in your own editor (VS Code, Cursor, PyCharm or anything else). Fydell does not watch your screen, editor or files. It only records what you send here: messages, the setup code, your archive and your handoff.",
-    "Two teammates are available in the thread. They are simulated: their answers are written in advance so every candidate gets the same information.",
-    "About 20 minutes after you start, the team posts one requirement update. Read it when it arrives.",
-    "When you are done, upload the project as a ZIP and write a short handoff.",
+    "Work in your own editor. Fydell records only what you send here: team messages, the setup result, your ZIP and your handoff.",
+    "About 20 minutes after you start, the team posts one requirement update. It appears under Updates and in the team thread.",
   ],
+  initialRequirements: [
+    "Retry temporary failures with exponential backoff: the first retry waits 60 seconds, each later retry waits twice as long, never more than 3600 seconds.",
+    "Do not retry permanent failures. They end as failed, with the status code recorded.",
+    "A delivery that has not succeeded after 8 attempts in total ends as dead_lettered and is never sent again.",
+    "Every attempt of the same delivery sends the same Idempotency-Key: the delivery id.",
+    "Which responses count as temporary is a judgment call. Ask the team, or state your assumption in the handoff.",
+  ],
+  resources: [
+    { path: "INCIDENT.md", description: "What happened and what the team needs. Start here." },
+    { path: "logs/dispatcher-2026-09-14.log", description: "Log excerpt from the incident." },
+    { path: "README.md", description: "Setup, tests and the public interface other services depend on." },
+    { path: "tests/test_dispatcher.py", description: "Public tests. Several fail on the starter code; that is the incident." },
+  ],
+  testCommands: { windows: "python -m unittest -v", unix: "python3 -m unittest -v" },
+  setupCommands: { windows: "python preflight.py", unix: "python3 preflight.py" },
   stack: ["Python 3.11 to 3.13", "Standard library only", "unittest"],
   targetMinutes: 50,
   defaultAllowedMinutes: 90,
@@ -27,19 +40,19 @@ export const BACKEND_WEBHOOK_RETRY_V1: ScenarioDefinition = {
   ],
   supportedEnvironments: [
     {
-      label: "Windows 11, Python 3.12",
+      label: "Windows 11 with Python 3.12",
       status: "validated",
-      note: "Starter, preflight, public tests and all fixtures validated on 2026-09-27.",
+      note: "Setup check and public tests confirmed.",
     },
     {
-      label: "macOS 13+ and Ubuntu 22.04+, Python 3.11 to 3.13",
+      label: "macOS or Linux with Python 3.11 to 3.13",
       status: "expected",
-      note: "Same standard-library commands. Not yet timed on a clean machine.",
+      note: "Uses the same commands with python3. Not yet confirmed on a clean machine.",
     },
     {
       label: "Python 3.10 or older, tablets and phones",
       status: "unsupported",
-      note: "The setup check refuses these before the timer starts.",
+      note: "The setup check stops before the timer can start.",
     },
   ],
   aiPolicy: [
@@ -65,8 +78,8 @@ export const BACKEND_WEBHOOK_RETRY_V1: ScenarioDefinition = {
   setupCodePrefix: "HWR",
   supportedRuntimes: ["3.11", "3.12", "3.13"],
   teammates: [
-    { id: "priya", name: "Priya Raman", title: "Engineering lead (simulated teammate)" },
-    { id: "marcus", name: "Marcus Bell", title: "Partner support (simulated teammate)" },
+    { id: "priya", name: "Priya Raman", title: "Engineering lead" },
+    { id: "marcus", name: "Marcus Bell", title: "Partner support" },
   ],
   fallbackRuleId: "fallback",
   clarificationRules: [
@@ -186,7 +199,7 @@ export const BACKEND_WEBHOOK_RETRY_V1: ScenarioDefinition = {
       minGroups: 1,
       availability: "always",
       answer:
-        "Your deadline is shown in the task hub. If something outside your control slows you down, use the support contact there. Setup problems are not held against you.",
+        "Your deadline is shown at the top of the page. If something outside your control slows you down, use the Support link there. Setup problems are not held against you.",
     },
     {
       id: "fallback",
@@ -195,7 +208,7 @@ export const BACKEND_WEBHOOK_RETRY_V1: ScenarioDefinition = {
       minGroups: 0,
       availability: "always",
       answer:
-        "I don't have more detail than the brief on that. Make a reasonable call and write down your assumption in the handoff.",
+        "That isn't covered by what I know for this task, so I can't give you more than the brief. Make a reasonable call and write down your assumption in the handoff.",
     },
   ],
   requirementUpdate: {
@@ -207,10 +220,9 @@ export const BACKEND_WEBHOOK_RETRY_V1: ScenarioDefinition = {
       "Our largest partner rate-limits us. When they return 429 or 503 they include a Retry-After header in whole seconds, and they asked us to respect it. Please wait whichever is longer, their Retry-After or your normal backoff, and still never more than 3600 seconds. Header names arrive in whatever case the partner's server uses. If the value isn't a number, ignore it. These retries still count toward the 8 attempts.",
   },
   handoffPrompts: [
-    { field: "what_changed", label: "What you changed", help: "The behavior you changed and where. A few sentences." },
-    { field: "testing", label: "How you tested it", help: "Tests you ran or added, and what they showed." },
-    { field: "risks", label: "Remaining risks", help: "Anything you are unsure about, did not finish or would want reviewed." },
-    { field: "next_steps", label: "Next steps", help: "What you would do with another hour, or before shipping." },
+    { field: "what_changed", label: "What changed?", help: "The behavior you changed and where. A few sentences." },
+    { field: "testing", label: "What did you test?", help: "Tests you ran or added, and what they showed." },
+    { field: "risks", label: "What remains unresolved?", help: "Risks, anything unfinished, and what you would do next." },
   ],
   rubric: [
     {
@@ -242,13 +254,13 @@ export const BACKEND_WEBHOOK_RETRY_V1: ScenarioDefinition = {
     {
       key: "requirement_response",
       label: "Response to the requirement update",
-      question: "Did the candidate notice and correctly apply the Retry-After update?",
+      question: "Did the candidate correctly apply the Retry-After update they received?",
       evidenceSources: ["tests", "update", "handoff"],
       anchors: [
         { level: "strong", observable: "All update probes pass, and the handoff mentions the update." },
         { level: "adequate", observable: "Partly applied (for example the cap or header case is missed) and the gap is acknowledged or visible." },
         { level: "weak", observable: "Update not applied and not mentioned." },
-        { level: "insufficient_evidence", observable: "Submitted before the update was released, or the attempt ended early for reasons outside the candidate's control." },
+        { level: "insufficient_evidence", observable: "The attempt ended early for reasons outside the candidate's control. (Submitting before the scheduled time posts the update first, so every submission is made with it in hand.)" },
       ],
       limitations: "An acknowledgement click shows the candidate saw the update, not that they understood it.",
     },

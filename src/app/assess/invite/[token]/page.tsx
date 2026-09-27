@@ -8,12 +8,12 @@ import { getInvitationByToken, invitationUsable } from "@/lib/eng/invitations";
 import { scenarioForVersionId } from "@/lib/eng/scenario-versions";
 import { requireUser } from "@/lib/simulations/auth";
 
-export const metadata = { title: "Engineering task invitation | Fydell" };
+export const metadata = { title: "Engineering task invitation" };
 export const dynamic = "force-dynamic";
 
 function Closed({ title, detail }: { title: string; detail: string }) {
   return (
-    <CandidateShell width="narrow">
+    <CandidateShell>
       <h1 className="text-[22px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">{title}</h1>
       <p className="mt-3 text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">{detail}</p>
     </CandidateShell>
@@ -32,7 +32,7 @@ export default async function EngInvitePage({ params }: { params: Promise<{ toke
     const { data: attempt } = await db.from("eng_attempts").select("id").eq("invitation_id", invitation.id).maybeSingle();
     if (attempt) {
       return (
-        <CandidateShell width="narrow">
+        <CandidateShell>
           <h1 className="text-[22px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">You already accepted this invitation</h1>
           <div className="mt-6">
             <ButtonLink href={`/assess/${attempt.id}`} variant="accent" size="lg">
@@ -51,7 +51,7 @@ export default async function EngInvitePage({ params }: { params: Promise<{ toke
   const emailMismatch = user && user.email.toLowerCase() !== invitation.candidate_email;
 
   return (
-    <CandidateShell width="narrow">
+    <CandidateShell>
       <EngInvitationBrief invitation={invitation} definition={definition}>
         {!user ? (
           <div className="flex flex-wrap gap-3">

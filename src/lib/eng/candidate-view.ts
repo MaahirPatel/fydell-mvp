@@ -30,6 +30,11 @@ export interface CandidateView {
     title: string;
     summary: string;
     candidateBrief: string[];
+    initialRequirements: string[];
+    resources: ScenarioDefinition["resources"];
+    testCommands: ScenarioDefinition["testCommands"];
+    setupCommands: ScenarioDefinition["setupCommands"];
+    updateAfterMinutes: number;
     stack: string[];
     targetMinutes: number;
     submissionGraceMinutes: number;
@@ -43,7 +48,7 @@ export interface CandidateView {
     handoffPrompts: ScenarioDefinition["handoffPrompts"];
     starterRoot: string;
   };
-  update: { title: string; body: string } | null;
+  update: { title: string; body: string; from: string } | null;
   messages: Pick<MessageRow, "id" | "seq" | "sender" | "teammate_id" | "body" | "client_msg_id" | "created_at">[];
   drafts: Record<string, { body: string; revision: number }>;
   uploads: Pick<UploadRow, "id" | "status" | "original_filename" | "byte_size" | "sha256" | "file_list" | "rejection_code" | "rejection_detail" | "created_at">[];
@@ -89,6 +94,11 @@ export async function buildCandidateView(db: Admin, attemptRow: AttemptRow): Pro
       title: scenario.title,
       summary: scenario.summary,
       candidateBrief: scenario.candidateBrief,
+      initialRequirements: scenario.initialRequirements,
+      resources: scenario.resources,
+      testCommands: scenario.testCommands,
+      setupCommands: scenario.setupCommands,
+      updateAfterMinutes: scenario.requirementUpdate.releaseAfterMinutes,
       stack: scenario.stack,
       targetMinutes: scenario.targetMinutes,
       submissionGraceMinutes: scenario.submissionGraceMinutes,
@@ -102,7 +112,13 @@ export async function buildCandidateView(db: Admin, attemptRow: AttemptRow): Pro
       handoffPrompts: scenario.handoffPrompts,
       starterRoot: scenario.starterRoot,
     },
-    update: attempt.update_released_at ? { title: scenario.requirementUpdate.title, body: scenario.requirementUpdate.body } : null,
+    update: attempt.update_released_at
+      ? {
+          title: scenario.requirementUpdate.title,
+          body: scenario.requirementUpdate.body,
+          from: scenario.teammates.find((t) => t.id === scenario.requirementUpdate.teammateId)?.name ?? "The team",
+        }
+      : null,
     messages: messages.map((m) => ({
       id: m.id,
       seq: m.seq,

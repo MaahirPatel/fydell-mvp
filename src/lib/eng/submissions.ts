@@ -1,6 +1,6 @@
 import "server-only";
 import type { Admin } from "./context";
-import { AttemptError } from "./attempts";
+import { AttemptError, releaseUpdateBeforeSubmission } from "./attempts";
 import { recordEngEvent } from "./events";
 import type { ScenarioDefinition } from "./scenarios/types";
 import { submissionWindow } from "./state";
@@ -76,6 +76,12 @@ export async function submitAttempt(
   if (attempt.status !== "in_progress") throw new AttemptError("This attempt is not open for submission.", 409);
   const window = submissionWindow(attempt, scenario.submissionGraceMinutes);
   if (window === "closed") throw new AttemptError("The submission window has closed. Contact the employer if you need an extension.", 409);
+  if (await releaseUpdateBeforeSubmission(db, attempt, scenario)) {
+    throw new AttemptError(
+      "The team's requirement update was due later, so it has been posted now. Read it in Updates, make any change you need, then submit again.",
+      409
+    );
+  }
 
   const { data: uploadRow } = await db.from("eng_uploads").select("*").eq("id", input.uploadId).eq("attempt_id", attempt.id).maybeSingle();
   const upload = uploadRow as UploadRow | null;

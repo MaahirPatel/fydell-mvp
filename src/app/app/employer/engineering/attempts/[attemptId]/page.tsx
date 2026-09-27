@@ -112,13 +112,15 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
           ) : (
             <PanelSection title="Report">
               <EmptyState
-                title={!canSeeEvidence ? "Your role cannot read evidence" : testsFinished ? "Not released yet" : "Waiting for the submission and tests"}
+                title={!canSeeEvidence ? "Your role cannot read evidence" : testsFinished ? "Not released yet" : view.submission ? "Waiting for the trusted tests" : "Waiting for the submission"}
                 description={
                   !canSeeEvidence
                     ? "Viewers can follow progress. Ask an owner or admin for reviewer access to read reports."
                     : testsFinished
                       ? "Review the evidence above, write the findings with citations, and release the report. Decisions are recorded against a released report."
-                      : "The evidence opens here as soon as the candidate submits and the trusted tests finish."
+                      : view.submission
+                        ? "The candidate has submitted. The evidence opens here for review as soon as the trusted tests finish."
+                        : "The evidence opens here once the candidate submits and the trusted tests finish."
                 }
               />
             </PanelSection>
@@ -230,6 +232,9 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
                     <span className="text-[var(--text-primary)]">{EVENT_LABELS[e.type] ?? e.type.replace(/_/g, " ")}</span>
                     {e.type === "deadline_extended" && typeof e.payload.minutes === "number" ? (
                       <span className="text-[var(--text-secondary)]"> by {e.payload.minutes} min</span>
+                    ) : null}
+                    {e.type === "requirement_update_released" && e.payload.reason === "early_submission" ? (
+                      <span className="text-[var(--text-secondary)]"> early, when the candidate first tried to submit</span>
                     ) : null}
                     <span className="block text-[var(--text-tertiary)]">
                       <When iso={e.at} />

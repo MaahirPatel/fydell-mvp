@@ -52,6 +52,11 @@ export interface ScenarioDefinition {
   rubricVersion: string;
   summary: string;
   candidateBrief: string[];
+  /** What the task asks for before the requirement update. Mirrors INCIDENT.md. */
+  initialRequirements: string[];
+  resources: { path: string; description: string }[];
+  testCommands: { windows: string; unix: string };
+  setupCommands: { windows: string; unix: string };
   stack: string[];
   targetMinutes: number;
   defaultAllowedMinutes: number;
@@ -68,7 +73,7 @@ export interface ScenarioDefinition {
   fallbackRuleId: string;
   clarificationRules: ClarificationRule[];
   requirementUpdate: RequirementUpdate;
-  handoffPrompts: { field: "what_changed" | "testing" | "risks" | "next_steps"; label: string; help: string }[];
+  handoffPrompts: { field: "what_changed" | "testing" | "risks"; label: string; help: string }[];
   rubric: RubricDimension[];
   knownIssues: string[];
   reviewRecord: {

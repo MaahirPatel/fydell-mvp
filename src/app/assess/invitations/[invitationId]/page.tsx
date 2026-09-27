@@ -9,12 +9,12 @@ import { getInvitationForCandidate, invitationUsable } from "@/lib/eng/invitatio
 import { scenarioForVersionId } from "@/lib/eng/scenario-versions";
 import { requireUser } from "@/lib/simulations/auth";
 
-export const metadata = { title: "Engineering task invitation | Fydell" };
+export const metadata = { title: "Engineering task invitation" };
 export const dynamic = "force-dynamic";
 
 function Closed({ title, detail }: { title: string; detail: string }) {
   return (
-    <CandidateShell width="narrow">
+    <CandidateShell>
       <h1 className="text-[22px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">{title}</h1>
       <p className="mt-3 text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">{detail}</p>
       <div className="mt-6">
@@ -45,7 +45,7 @@ export default async function CandidateInvitationPage({ params }: { params: Prom
 
   const { definition } = await scenarioForVersionId(db, invitation.scenario_version_id);
   return (
-    <CandidateShell width="narrow">
+    <CandidateShell>
       <EngInvitationBrief invitation={invitation} definition={definition}>
         <AcceptEngInvitation invitationId={invitation.id} />
       </EngInvitationBrief>

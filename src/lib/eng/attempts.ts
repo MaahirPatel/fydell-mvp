@@ -32,6 +32,11 @@ function requireOpen(attempt: AttemptRow) {
   if (attempt.status === "expired") throw new AttemptError("This attempt has expired.", 409);
 }
 
+export function updateDueAt(attempt: Pick<AttemptRow, "started_at">, scenario: ScenarioDefinition): Date | null {
+  if (!attempt.started_at) return null;
+  return new Date(new Date(attempt.started_at).getTime() + scenario.requirementUpdate.releaseAfterMinutes * 60000);
+}
+
 /**
  * The requirement update is released by the server once the attempt has been
  * running for the authored number of minutes, exactly once, whichever request
@@ -43,10 +48,31 @@ export async function releaseUpdateIfDue(
   scenario: ScenarioDefinition,
   now = new Date()
 ): Promise<AttemptRow> {
-  if (attempt.status !== "in_progress" || attempt.update_released_at || !attempt.started_at) return attempt;
-  const dueAt = new Date(attempt.started_at).getTime() + scenario.requirementUpdate.releaseAfterMinutes * 60000;
-  if (now.getTime() < dueAt) return attempt;
-  const releasedAt = new Date(dueAt).toISOString();
+  if (attempt.status !== "in_progress" || attempt.update_released_at) return attempt;
+  const dueAt = updateDueAt(attempt, scenario);
+  if (!dueAt || now.getTime() < dueAt.getTime()) return attempt;
+  return releaseUpdate(db, attempt, scenario, dueAt, "schedule");
+}
+
+/**
+ * A candidate who tries to submit before the scheduled update gets it at that
+ * moment instead, so every submission is made with the full requirements in
+ * hand. Returns true when this call released it.
+ */
+export async function releaseUpdateBeforeSubmission(db: Admin, attempt: AttemptRow, scenario: ScenarioDefinition): Promise<boolean> {
+  if (attempt.status !== "in_progress" || attempt.update_released_at) return false;
+  const released = await releaseUpdate(db, attempt, scenario, new Date(), "early_submission");
+  return released.update_released_at !== null;
+}
+
+async function releaseUpdate(
+  db: Admin,
+  attempt: AttemptRow,
+  scenario: ScenarioDefinition,
+  at: Date,
+  reason: "schedule" | "early_submission"
+): Promise<AttemptRow> {
+  const releasedAt = at.toISOString();
   const { data } = await db
     .from("eng_attempts")
     .update({ update_released_at: releasedAt })
@@ -70,7 +96,7 @@ export async function releaseUpdateIfDue(
   await recordEngEvent(db, attempt.id, {
     type: "requirement_update_released",
     actor: "system",
-    payload: { updateId: update.id, releasedAt },
+    payload: { updateId: update.id, releasedAt, reason },
     clientEventId: `update_released_${update.id}`,
   });
   return data as AttemptRow;
@@ -104,7 +130,7 @@ export async function submitSetupCode(
   if (!runtime) {
     await recordEngEvent(db, attempt.id, { type: "preflight_code_rejected", actor: "candidate", actorUserId: userId });
     throw new AttemptError(
-      "That setup code does not match. Run `python preflight.py` from the project folder and paste the line that starts with HWR-. If it reports an unsupported Python version, install 3.11, 3.12 or 3.13.",
+      "That code does not match this task. Run the setup check from inside the harbor-webhooks folder and paste the line that starts with \"Setup code:\". If the check says your Python version is not supported, install Python 3.11, 3.12 or 3.13 and run it again.",
       422
     );
   }

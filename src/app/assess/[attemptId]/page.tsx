@@ -7,7 +7,7 @@ import { buildCandidateView } from "@/lib/eng/candidate-view";
 import { engAdmin } from "@/lib/eng/context";
 import { requireUser } from "@/lib/simulations/auth";
 
-export const metadata = { title: "Engineering task | Fydell" };
+export const metadata = { title: "Engineering task" };
 export const dynamic = "force-dynamic";
 
 export default async function AssessmentPage({ params }: { params: Promise<{ attemptId: string }> }) {
@@ -18,7 +18,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ att
   const attempt = await getAttemptForCandidate(db, attemptId, user.id).catch(() => null);
   if (!attempt) {
     return (
-      <CandidateShell width="narrow">
+      <CandidateShell>
         <h1 className="text-[22px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">Task not found</h1>
         <p className="mt-3 text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">
           This link does not match a task on the account you are signed in with ({user.email}). Open the invitation link from your email to accept it, or sign in with the invited address.
@@ -28,7 +28,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ att
   }
   const view = await buildCandidateView(db, attempt);
   return (
-    <CandidateShell width="wide">
+    <CandidateShell width={view.attempt.status === "in_progress" ? "wide" : "default"}>
       <AssessmentHub initial={view} />
     </CandidateShell>
   );

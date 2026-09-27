@@ -195,13 +195,22 @@ async function main() {
 
     const early = await attempts.releaseUpdateIfDue(db, attempt, scenario, new Date(Date.parse(attempt.started_at!) + 60000));
     assert.equal(early.update_released_at, null);
+    assert.equal(attempts.updateDueAt(attempt, scenario)?.getTime(), Date.parse(attempt.started_at!) + scenario.requirementUpdate.releaseAfterMinutes * 60000);
+    const emptyHandoff = { what_changed: "x", testing: "", risks: "", next_steps: "" };
+    await assert.rejects(() => submissions.submitAttempt(db, attempt, scenario, { uploadId: randomUUID(), handoff: emptyHandoff, aiDisclosure: "" }, ids.candidate), /posted now/);
+    attempt = await attempts.getAttemptForCandidate(db, attempt.id, ids.candidate);
+    assert.ok(attempt.update_released_at, "an early submit releases the update");
+    assert.equal(attempt.status, "in_progress", "an early submit does not submit");
+    const { data: releaseEvents } = await db.from("eng_attempt_events").select("payload").eq("attempt_id", attempt.id).eq("event_type", "requirement_update_released");
+    assert.equal(releaseEvents?.length, 1);
+    assert.equal((releaseEvents?.[0]?.payload as { reason?: string }).reason, "early_submission");
     const later = new Date(Date.parse(attempt.started_at!) + scenario.requirementUpdate.releaseAfterMinutes * 60000 + 1000);
-    attempt = await attempts.releaseUpdateIfDue(db, attempt, scenario, later);
-    assert.ok(attempt.update_released_at);
     const twice = await attempts.releaseUpdateIfDue(db, attempt, scenario, later);
     assert.equal(twice.update_released_at, attempt.update_released_at);
+    const updateMessages = (await attempts.listMessages(db, attempt.id)).filter((m) => m.client_msg_id === `update_${scenario.requirementUpdate.id}`);
+    assert.equal(updateMessages.length, 1);
     attempt = await attempts.acknowledgeUpdate(db, attempt, ids.candidate);
-    pass("requirement update releases once, on the server clock, and is acknowledged");
+    pass("requirement update is withheld early, posted once when the candidate first tries to submit, recorded with its reason, and acknowledged");
 
     const interrupted = await uploads.initiateUpload(db, attempt, scenario, { fileName: "lost.zip", byteSize: 1000 });
     storagePaths.push(interrupted.upload.storage_path);

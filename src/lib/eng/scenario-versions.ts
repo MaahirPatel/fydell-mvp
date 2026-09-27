@@ -15,6 +15,8 @@ function publicContent(s: ScenarioDefinition): Record<string, unknown> {
   return {
     summary: s.summary,
     candidateBrief: s.candidateBrief,
+    initialRequirements: s.initialRequirements,
+    resources: s.resources,
     stack: s.stack,
     targetMinutes: s.targetMinutes,
     defaultAllowedMinutes: s.defaultAllowedMinutes,

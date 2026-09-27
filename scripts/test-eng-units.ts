@@ -4,7 +4,7 @@
  * setup code, the derived employer state, and the report release gate.
  * Pure functions only; no network, no database.
  */
-import { strToU8, zipSync } from "fflate";
+import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 import { inspectArchive, ZIP_LIMITS } from "../src/lib/eng/zip";
 import { buildStarterArchive, starterFileList } from "../src/lib/eng/starter";
 import { selectReply, tokenize } from "../src/lib/eng/teammate";
@@ -129,7 +129,32 @@ console.log("\nSetup code");
   ok("Python 3.12 code matches preflight output", verifySetupCode(CURRENT_SCENARIO, "HWR-C491D692") === "3.12");
   ok("code check is case and whitespace tolerant", verifySetupCode(CURRENT_SCENARIO, "  hwr-c491d692 ") === "3.12");
   ok("unknown code is refused", verifySetupCode(CURRENT_SCENARIO, "HWR-00000000") === null);
+  ok("the whole printed line is accepted", verifySetupCode(CURRENT_SCENARIO, "Setup code: HWR-C491D692") === "3.12");
+  ok("text without a code is refused", verifySetupCode(CURRENT_SCENARIO, "Python 3.12 OK. Public tests ran") === null);
   ok("one code per supported runtime", expectedSetupCodes(CURRENT_SCENARIO).size === CURRENT_SCENARIO.supportedRuntimes.length);
+}
+
+console.log("\nScenario consistency");
+{
+  const s = CURRENT_SCENARIO;
+  const files = unzipSync(buildStarterArchive().bytes);
+  const read = (suffix: string) => {
+    const key = Object.keys(files).find((k) => k.endsWith(suffix));
+    return key ? strFromU8(files[key]) : "";
+  };
+  const incident = read("INCIDENT.md");
+  const preflight = read("preflight.py");
+  const beforeUpdate = [s.summary, ...s.candidateBrief, ...s.initialRequirements, ...s.resources.map((r) => r.description)].join(" ").toLowerCase();
+  ok("nothing shown before the update names Retry-After", !/retry[\s-]*after/.test(beforeUpdate));
+  ok("the brief says one update will arrive", /update/.test(s.summary.toLowerCase()) && s.candidateBrief.some((l) => l.includes(`${s.requirementUpdate.releaseAfterMinutes} minutes`)));
+  ok("the update itself is about Retry-After", /retry-after/i.test(s.requirementUpdate.body));
+  ok("initial requirements match INCIDENT.md numbers", ["60 seconds", "3600 seconds", "8 attempts", "Idempotency-Key"].every((t) => incident.includes(t) && s.initialRequirements.join(" ").includes(t)));
+  ok("every listed resource exists in the starter", s.resources.every((r) => Object.keys(files).some((k) => k.endsWith(r.path))));
+  ok("supported runtimes match preflight.py", s.supportedRuntimes.every((v) => preflight.includes(`(${v.replace(".", ", ")})`)));
+  ok("setup code prefix matches preflight.py", preflight.includes(`Setup code: ${s.setupCodePrefix}-`));
+  ok("update arrives well inside the expected effort", s.requirementUpdate.releaseAfterMinutes < s.targetMinutes && s.targetMinutes < s.defaultAllowedMinutes);
+  ok("handoff asks the three agreed questions", s.handoffPrompts.map((p) => p.field).join(",") === "what_changed,testing,risks");
+  ok("candidate-facing environment notes carry no internal dates", s.supportedEnvironments.every((e) => !/\d{4}-\d{2}-\d{2}/.test(e.note)));
 }
 
 console.log("\nTeammate policy");

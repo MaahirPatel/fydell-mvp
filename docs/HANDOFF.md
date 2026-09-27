@@ -2,7 +2,37 @@
 
 Read this first, then `docs/release-audit.md` (Milestone 0 audit plus "Milestone 1 progress" at the end), `docs/release-checklist.md` (the paid-release tracker, 161 requirements), and `.cursor/rules/simulation-engine.mdc` (isolation rules that must be followed).
 
-## Latest session (2026-09-27, Milestone 1: the employer reviews)
+## Latest session (2026-09-27, evening: candidate workflow corrections)
+
+The agreed workflow, which the code now follows: the browser holds the brief, setup, simulated team, requirement update, submission and handoff. The candidate works locally in their own editor (VS Code, Cursor, PyCharm) and uploads a project ZIP. There is no browser editor, desktop app, extension or GitHub step in Milestone 1. Fydell stores the ZIP with its hash, runs the hidden tests in the isolated Vercel Sandbox, and the employer's team writes a cited report, releases it and records Advance, Hold or Decline. Nothing is claimed about local activity Fydell cannot see.
+
+What changed:
+- Candidate pages rebuilt in `src/components/eng/`:
+  - `AssessmentSetup.tsx`: consent, then setup, then start.
+  - `AssessmentWorkspace.tsx`: a header with the countdown, and a left nav with Brief, Team, Updates and Submit, kept in the URL hash.
+  - `AssessmentHub.tsx`: orchestration and the receipt stepper.
+  - Shared pieces: `CandidateParts.tsx`, `CommandBlock.tsx`, `LocalTime.tsx`, `useDrafts.ts`.
+  - Widths: 860px for the invitation and setup steps, 1160px while working.
+- Setup copy says "Run the setup check locally, then paste its result here". The whole printed line or just the code both work (`verifySetupCode` extracts the code).
+- Internal validation notes are out of candidate copy. Supported setups say what was confirmed (Windows 11 with Python 3.12) and what is not yet confirmed (macOS and Linux).
+- The brief no longer reveals the Retry-After change; it says only that one update arrives partway through.
+- Early submission: if the candidate submits before the update is due, the server posts the update once, refuses that submit with a 409 and an explanation, and records the release with `reason: "early_submission"`. The employer timeline shows it. See `releaseUpdateBeforeSubmission` in `src/lib/eng/attempts.ts`.
+- Handoff: three questions (What changed? What did you test? What remains unresolved?) plus an optional AI statement.
+- Labels: "Review required" and "Report ready" for the employer. The candidate home shows Invited, Accepted, Ready to start, In progress, Submitted, Expired and Withdrawn.
+- Scenario v1 keeps its starter and harness hashes. Only the in-code copy changed, before any external candidate used it. The stored `content` snapshot in `eng_scenario_versions` still holds the older wording; runtime reads the code definition.
+
+Verified:
+- `tsc` and eslint are clean. `npm run test:eng` passes 90 of 90, plus scenario validation.
+- `test:eng:staging` with `FYDELL_EVAL_EXECUTOR=local-dev` passes 17 of 17, including the early-update check. The reference solution passed 15 of 15.
+- Browser pass on `next dev` against fydell-dev with a disposable candidate at each stage:
+  - Invitation, accept, consent and setup (whole-line paste), start.
+  - Brief, Team (message and reply), Updates (Mark as read clears "New"), Submit, receipt with hash, candidate home, employer attempt timeline.
+  - Checked at 1440×900, 1280×800 and 390px mobile, with no horizontal overflow.
+  - Staging rows were deleted afterwards. One uploaded test ZIP per fixture may remain in the private `eng-submissions` bucket on fydell-dev.
+
+Not yet verified: the founder's live production attempt through to a released report and decision; a real invitation email sent through Resend; setup on clean macOS or Linux; a timing trial of the 50-minute estimate. EMP-02 (an example report shown to employers before inviting) is not built.
+
+## Earlier session (2026-09-27, Milestone 1: the employer reviews)
 
 Product decision from the founder: there is no separate Fydell reviewer. The paying employer's team reads the evidence, writes the cited report and releases it. The same person can invite, review and decide. Fydell staff can still write reports from `/admin/engineering` if a workspace asks for help, but nothing depends on it.
 
@@ -49,7 +79,7 @@ An employer creates and publishes a role and invites a candidate by link. The ca
 
 ## Environments
 
-- Staging database: Supabase `fydell-dev` (ref `btbmvrvynnrhapjdkunz`). Local `.env.local` points here. Migrations through 028 are applied. There are no platform roles, and none are needed.
+- Staging database: Supabase `fydell-dev` (ref `btbmvrvynnrhapjdkunz`). Local `.env.local` points here. Migrations through 029 are applied. There are no platform roles, and none are needed.
 - Production database: Supabase `fydell` (ref `qtrhwrcxthtqvkeerptp`). Do not use it for automated tests. Migrations through 029 are applied (2026-09-27), with 025–029 applied under their file names. Production's `profiles` predates 001 and differs from the repo schema. 029 adds the missing `company_name` column. Check column drift before writing new profile fields. The next migration is 030.
 - Hosting: Vercel project `fydell-mvp`. The Preview variables point at fydell-dev (verified): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` (Sensitive). `NEXT_PUBLIC_APP_URL` was removed from Preview, so links use `VERCEL_URL`. `FYDELL_EXECUTION_SNAPSHOT_ID` is set in Preview and Development. Production variables were not touched.
 - Secrets live only in `.env.local` (git-ignored) and Vercel settings. Never print or commit them.
@@ -60,12 +90,13 @@ An employer creates and publishes a role and invites a candidate by link. The ca
 - GitHub extractor (`src/lib/passport/github/`, `POST /api/passport/github`), with tests in `npm run test:github`.
 - Engineering Passports, share links with revoke, employer passport review.
 - Stripe billing in test mode: checkout, portal, signed webhook, metered usage (`src/lib/billing/`, `src/app/api/billing/`, migration 027).
-- The Milestone 1 engineering loop, verified on staging through the service layer and anon-key RLS clients. It has not been run in a browser on a deployed build yet.
+- The Milestone 1 engineering loop, verified on staging through the service layer and anon-key RLS clients, and the candidate screens checked in a browser against staging. A live production attempt by the founder is in progress; Milestone 1 is not complete until it reaches a released report and a recorded decision.
 
 ## Not working yet (largest gaps)
 
-- There has been no browser run on a deployed Preview yet, and no hosted execution triggered from a deployed function.
-- Email delivery: Resend is unconfigured for staging, so invitations are shared by copyable link (`email_delivery = not_configured`).
+- No hosted execution has yet been triggered from a deployed function on a real attempt.
+- Email delivery: production has the verified `fydell.com` domain and `EMAIL_FROM_TRANSACTIONAL`, but a successful real send has not been confirmed yet. Staging has no Resend key, so invitations there are shared by copyable link (`email_delivery = not_configured`).
+- No example report for employers before they invite (EMP-02).
 - Invites are not gated on an active billing plan.
 - Setup has been timed only on Windows with Python 3.12, not on clean macOS or Linux.
 - Retention, deletion and export are manual.

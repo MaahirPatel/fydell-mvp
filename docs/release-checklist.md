@@ -387,6 +387,18 @@ Build authentication/tenant boundaries, role and invite, reviewed starter projec
 
 Deliver: one real internal candidate attempt reviewed by another authorized account, with refresh and outage recovery.
 
+**Status 2026-09-27: NOT COMPLETE.** Product decision: the employer's own team is the reviewer. The candidate works locally in their own editor and uploads a ZIP; the browser holds the brief, setup, team thread, requirement update, submission and handoff.
+
+- Built, with staging evidence (`npm run test:eng` passes 90 of 90; `test:eng:staging` passes 17 of 17 with the reference solution at 15 of 15; browser pass against fydell-dev at 1440×900, 1280×800 and 390px): SIM-01, SIM-02, SIM-03, SIM-05, SIM-06, SIM-08, SIM-09 (three questions plus an AI statement), UP-01 to UP-06, SCEN-06, SCEN-07, EMP-03, EMP-05, EMP-06 and EMP-08. These stay U in the tables until the live attempt below provides production evidence.
+- Early submission: an early submit posts the update once and is refused with an explanation. The release is recorded with its reason and shown on the employer timeline.
+- Remaining before Milestone 1 can be marked complete:
+  - The founder's live attempt on www.fydell.com must go from ZIP upload through hosted tests, report release and a decision.
+  - One real invitation email must be confirmed delivered through Resend.
+- Known gaps:
+  - EMP-02: no example report is shown to employers before they invite.
+  - SCEN-05: setup is confirmed on Windows 11 with Python 3.12 only; macOS and Linux are untested on clean machines.
+  - The 50-minute effort estimate has had no timing trial.
+
 ### Milestone 2 — GitHub and candidate-owned record
 
 Add bounded source extraction, citations, coverage, passport, grounded role suggestions, sharing/preview/revocation and no-GitHub path. Connect employer review only to authorized shared evidence.

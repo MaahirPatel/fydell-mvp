@@ -10,13 +10,13 @@ import { Surface } from "@/components/ui/Surface";
 import { StatusTag } from "@/components/ui/StatusTag";
 import type { AttemptRow, AttemptStatus, InvitationRow } from "@/lib/eng/types";
 
-export const metadata = { title: "Your evaluations | Fydell" };
+export const metadata = { title: "Your evaluations" };
 export const dynamic = "force-dynamic";
 
 const ENG_ATTEMPT_LABEL: Record<AttemptStatus, { text: string; tone: "active" | "changed" | "neutral" }> = {
-  accepted: { text: "Not started", tone: "active" },
-  preflight_passed: { text: "Not started", tone: "active" },
-  in_progress: { text: "Timer running", tone: "changed" },
+  accepted: { text: "Accepted", tone: "active" },
+  preflight_passed: { text: "Ready to start", tone: "active" },
+  in_progress: { text: "In progress", tone: "changed" },
   submitted: { text: "Submitted", tone: "neutral" },
   withdrawn: { text: "Withdrawn", tone: "neutral" },
   expired: { text: "Expired", tone: "neutral" },
@@ -174,7 +174,7 @@ export default async function CandidateHomePage() {
                 <Row
                   key={invitation.id}
                   title={invitation.role_snapshot.title}
-                  tag={label ? <StatusTag tone={label.tone}>{label.text}</StatusTag> : null}
+                  tag={label ? <StatusTag tone={label.tone}>{label.text}</StatusTag> : <StatusTag tone="active">Invited</StatusTag>}
                   detail={
                     attempt?.submitted_at
                       ? `${invitation.role_snapshot.organizationName} · submitted ${new Date(attempt.submitted_at).toLocaleDateString()}`

@@ -26,8 +26,10 @@ export function expectedSetupCodes(scenario: ScenarioDefinition): Map<string, st
   return codes;
 }
 
-export function verifySetupCode(scenario: ScenarioDefinition, code: string): string | null {
-  return expectedSetupCodes(scenario).get(code.trim().toUpperCase()) ?? null;
+/** Accepts the bare code or the whole line preflight.py printed around it. */
+export function verifySetupCode(scenario: ScenarioDefinition, pasted: string): string | null {
+  const match = pasted.toUpperCase().match(new RegExp(`${scenario.setupCodePrefix}-[0-9A-F]{8}`));
+  return match ? (expectedSetupCodes(scenario).get(match[0]) ?? null) : null;
 }
 
 export type { ScenarioDefinition } from "./types";
