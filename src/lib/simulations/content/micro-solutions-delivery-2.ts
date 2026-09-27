@@ -1129,7 +1129,7 @@ export const MICRO_IC_MIGRATION_CUTOVER: MicroSimContent = {
       id: "sofia",
       name: "Sofia Brandt",
       role: "IT Manager, Aldergate Clinics",
-      blurb: "Owns the cutover on the customer side. Confident, but open to reason.",
+      blurb: "Owns the cutover on the customer side. Expects recommendations backed by the migration data; open to reason.",
       knowledge: [
         "Friday gives the weekend as a buffer before staff arrive Monday. The date came from the clinic directors.",
         "The old system can produce a full export, but nobody has run and verified one yet.",

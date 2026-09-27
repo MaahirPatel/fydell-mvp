@@ -31,7 +31,7 @@ export async function POST(
 
   const { invites, audit } = getEmployerStores();
   const result = revokeInvitation(invites, audit, id, user.id, body.reason);
-  if (!result.ok) {
+  if (result.ok === false) {
     const status = result.code === "not_found" ? 404 : 409;
     return NextResponse.json({ error: result.message, code: result.code }, { status });
   }

@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     responsibilities: body.responsibilities ?? [],
     evaluationCriteria: body.evaluationCriteria ?? [],
   });
-  if (!result.ok) {
+  if (result.ok === false) {
     return NextResponse.json({ error: result.message, code: result.code }, { status: 400 });
   }
   return NextResponse.json({

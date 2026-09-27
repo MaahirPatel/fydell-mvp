@@ -30,7 +30,12 @@ deferred. DESK-03/05/07/08/12/13/14/18 belong to other chunks.
 - Rust: `cargo test --offline` — <see final report for count; was still compiling at write time>.
 - Frontend pure logic: `node --test` on compiled src/lib/pure.test.ts — 14/14 pass (sync wording, sync summary, provision steps, version-gate messages, diagnostics formatting).
 - Frontend: desktop `tsc --noEmit` — clean; `vite build` — succeeds (54 modules).
-- Repo root: `npx tsc --noEmit` — <see final report>.
+- Repo root: `npx tsc --noEmit` — FAILS on 9 web-side files
+  (`src/app/api/employer/invitations/**`, `src/app/api/employer/roles/route.ts`,
+  `src/app/api/employer/sessions/[id]/decision/route.ts`,
+  `src/lib/invitations/*`): `InvitationResult` narrowing errors from another
+  chunk's in-flight work. **Zero errors in `desktop/**`.** Desktop scope is
+  clean per its own `tsc --noEmit` above.
 - `cargo fmt --check` — clean.
 
 ## Honest limitations

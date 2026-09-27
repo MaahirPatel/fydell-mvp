@@ -33,7 +33,7 @@ export function applyInvitationEvent(
   const inv = store.invitations.get(invitationId);
   if (!inv) return fail("not_found", "invitation not found");
   const t = transitionInvitation(inv.state, event);
-  if (!t.ok) return fail(t.code === "terminal_state" ? "bad_state" : "illegal_transition", t.message);
+  if (t.ok === false) return fail(t.code === "terminal_state" ? "bad_state" : "illegal_transition", t.message);
   inv.state = t.next;
   if (event === "accept") inv.acceptedAt = new Date().toISOString();
   if (event === "withdraw") inv.withdrawnAt = new Date().toISOString();

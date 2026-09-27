@@ -30,7 +30,7 @@ export async function POST(
 
   const { invites, audit } = getEmployerStores();
   const result = extendInvitation(invites, audit, id, user.id, Number(body.extraDays));
-  if (!result.ok) {
+  if (result.ok === false) {
     const status = result.code === "not_found" ? 404 : 400;
     return NextResponse.json({ error: result.message, code: result.code }, { status });
   }

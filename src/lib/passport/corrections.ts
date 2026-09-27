@@ -23,10 +23,10 @@ export type Correction = {
   resolutionNote: string;
 };
 
-export function validateCorrectionReason(reason: unknown): { ok: true; reason: string } | { ok: false; error: string } {
-  if (typeof reason !== "string" || !reason.trim()) return { ok: false, error: "Describe what is inaccurate about the finding." };
-  if (reason.trim().length > 1000) return { ok: false, error: "Keep the correction under 1000 characters." };
-  return { ok: true, reason: reason.trim() };
+export function validateCorrectionReason(reason: unknown): { ok: boolean; reason: string; error: string } {
+  if (typeof reason !== "string" || !reason.trim()) return { ok: false, reason: "", error: "Describe what is inaccurate about the finding." };
+  if (reason.trim().length > 1000) return { ok: false, reason: "", error: "Keep the correction under 1000 characters." };
+  return { ok: true, reason: reason.trim(), error: "" };
 }
 
 export type FlaggedFinding = { finding: PassportEvidence; corrections: Correction[] };

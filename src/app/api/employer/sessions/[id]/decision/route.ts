@@ -63,7 +63,7 @@ export async function POST(
       rationale: body.rationale ?? null,
     }
   );
-  if (!ruleCheck.ok) {
+  if (ruleCheck.ok === false) {
     return NextResponse.json({ error: ruleCheck.message, code: ruleCheck.code }, { status: 400 });
   }
 

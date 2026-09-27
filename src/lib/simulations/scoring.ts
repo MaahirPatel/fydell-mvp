@@ -103,7 +103,6 @@ export interface WeightedEvidenceItem extends EvidenceItem {
 }
 
 export type Recommendation =
-  | "advance"
   | "review"
   | "further_evidence_required";
 
@@ -210,6 +209,10 @@ export function scoreCompetency(
  * If a role-critical competency falls below 0.40 adjusted score, the
  * employer-facing recommendation is capped at "further evidence required" :
  * strong communication cannot erase a critical technical or safety failure.
+ *
+ * Hard rule: this analysis never emits an automatic hiring decision. Every
+ * completed analysis resolves to "review" (a human reviews the evidence) or
+ * "further_evidence_required" — never "advance" or "decline".
  */
 export function analyze(
   specs: CompetencySpec[],
@@ -231,9 +234,9 @@ export function analyze(
   let recommendation: Recommendation;
   if (failedCritical) {
     recommendation = "further_evidence_required";
-  } else if (overall >= 0.72 && !competencies.some((c) => c.band === "insufficient")) {
-    recommendation = "advance";
   } else {
+    // No automatic hiring decisions: even a strong overall score resolves to
+    // human review, never "advance".
     recommendation = "review";
   }
 

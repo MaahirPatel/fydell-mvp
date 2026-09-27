@@ -99,7 +99,7 @@ export function createCandidateInvitation(
   }
 
   const pinned = pinAssessmentConfig(input.registry, input.templateId);
-  if (!pinned.ok) {
+  if (pinned.ok === false) {
     return fail("not_found", pinned.message);
   }
 

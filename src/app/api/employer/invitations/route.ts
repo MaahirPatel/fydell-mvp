@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     expiresInDays: body.expiresInDays,
     registry,
   });
-  if (!result.ok) {
+  if (result.ok === false) {
     const status =
       result.code === "invalid_email" ? 400 : result.code === "not_found" ? 404 : 409;
     return NextResponse.json(

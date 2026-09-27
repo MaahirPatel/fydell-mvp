@@ -44,7 +44,7 @@ export async function POST(
       inviteUrlForToken: (t) => `${appUrl()}/invite/${t}`,
     }
   );
-  if (!result.ok) {
+  if (result.ok === false) {
     const status =
       result.code === "not_found" ? 404 : result.code === "not_permitted" ? 403 : 409;
     return NextResponse.json({ error: result.message, code: result.code }, { status });
