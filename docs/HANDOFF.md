@@ -50,7 +50,7 @@ An employer creates and publishes a role and invites a candidate by link. The ca
 ## Environments
 
 - Staging database: Supabase `fydell-dev` (ref `btbmvrvynnrhapjdkunz`). Local `.env.local` points here. Migrations through 028 are applied. There are no platform roles, and none are needed.
-- Production database: Supabase `fydell` (ref `qtrhwrcxthtqvkeerptp`). Do not use it for automated tests. Migrations through 028 are applied (2026-09-27), with 025–028 applied under their file names.
+- Production database: Supabase `fydell` (ref `qtrhwrcxthtqvkeerptp`). Do not use it for automated tests. Migrations through 029 are applied (2026-09-27), with 025–029 applied under their file names. Production's `profiles` predates 001 and differs from the repo schema. 029 adds the missing `company_name` column. Check column drift before writing new profile fields. The next migration is 030.
 - Hosting: Vercel project `fydell-mvp`. The Preview variables point at fydell-dev (verified): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` (Sensitive). `NEXT_PUBLIC_APP_URL` was removed from Preview, so links use `VERCEL_URL`. `FYDELL_EXECUTION_SNAPSHOT_ID` is set in Preview and Development. Production variables were not touched.
 - Secrets live only in `.env.local` (git-ignored) and Vercel settings. Never print or commit them.
 
