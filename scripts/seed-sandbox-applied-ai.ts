@@ -5,6 +5,7 @@
  * ALLOW_DEV_SEED=true npx tsx scripts/seed-sandbox-applied-ai.ts
  */
 import { createClient } from "@supabase/supabase-js";
+import { STAGING_PROJECT_REF } from "../src/lib/supabase/project-guard";
 import {
   APPLIED_AI_ROLE_ID,
   APPLIED_AI_ROLE_SLUG,
@@ -22,6 +23,7 @@ async function main() {
   const url = process.env.FYDELL_SANDBOX_SUPABASE_URL;
   const key = process.env.FYDELL_SANDBOX_SUPABASE_SERVICE_ROLE_KEY;
   const expectedRef = process.env.FYDELL_DEV_PROJECT_REF;
+  if (expectedRef !== STAGING_PROJECT_REF) throw new Error("Sandbox seed only permits fydell-dev");
   if (!url || !key || !expectedRef) {
     throw new Error("Dedicated FYDELL_SANDBOX_* credentials and FYDELL_DEV_PROJECT_REF are required");
   }

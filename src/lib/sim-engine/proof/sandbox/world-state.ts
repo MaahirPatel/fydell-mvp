@@ -80,6 +80,8 @@ export const sandboxWorldStateSchema = z
     lastIdempotencyKey: z.string().nullable(),
     seenIdempotencyKeys: z.array(z.string()).max(200),
     workspace: appliedAiWorkspaceSchema,
+    codeRunStartedAt: z.string().datetime().nullable().default(null),
+    codeRunCount: z.number().int().nonnegative().default(0),
     latestEval: z.custom<AppliedAiEvalResult>().nullable(),
     baselineEval: z.custom<AppliedAiEvalResult>().nullable(),
     progress: progressSchema,

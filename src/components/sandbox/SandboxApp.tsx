@@ -59,7 +59,8 @@ export function SandboxApp({ surface, publicId }: { surface: Surface; runId?: st
       setError("Interactive demo temporarily unavailable");
       return;
     }
-    setSession(json.session ?? null);
+    if (!res.ok) throw new Error(json.error ?? "Could not refresh the workspace");
+    setSession(previous => previous && json.session?.runId === previous.runId && json.session.revision < previous.revision ? previous : json.session ?? null);
   }, []);
 
   const act = useCallback(
@@ -76,11 +77,15 @@ export function SandboxApp({ surface, publicId }: { surface: Surface; runId?: st
         const json = (await res.json()) as { session?: SandboxSessionView; error?: string };
         if (!res.ok) {
           setError(json.error ?? "Action failed");
-          return;
+          return false;
         }
-        if (json.session) setSession(json.session);
+        if (json.session) setSession(previous => previous && json.session!.runId === previous.runId && json.session!.revision < previous.revision ? previous : json.session!);
         failCount.current = 0;
         setBackoff(2000);
+        return true;
+      } catch {
+        setError("Connection interrupted. Your draft is still here. Try saving again.");
+        return false;
       } finally {
         setBusy(false);
       }
@@ -89,7 +94,7 @@ export function SandboxApp({ surface, publicId }: { surface: Surface; runId?: st
   );
 
   useEffect(() => {
-    const id = window.setTimeout(() => void load(), 0);
+    const id = window.setTimeout(() => void load().catch(() => setError("Could not load the workspace. Check your connection and refresh.")), 0);
     return () => window.clearTimeout(id);
   }, [load]);
 
@@ -313,7 +318,7 @@ export function SandboxApp({ surface, publicId }: { surface: Surface; runId?: st
               {surface === "roles" ? <SandboxRole /> : null}
               {surface === "candidates" ? <SandboxCandidates session={session} onCreate={() => void ensureSession()} /> : null}
               {surface === "work" ? (
-                <SandboxWorkbench
+                <SandboxWorkbench key={session?.runId ?? "empty"}
                   session={session}
                   busy={busy}
                   onAction={(body) => void act(body)}

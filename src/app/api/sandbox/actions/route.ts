@@ -6,6 +6,8 @@ import { applySandboxAction, buildSandboxView, type SandboxActionInput } from "@
 import type { ArtifactContent } from "@/lib/sim-engine/proof/types";
 import type { AppliedAiConfig, AppliedAiEvalCase } from "@/lib/sim-engine/proof/sandbox/applied-ai-workspace";
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   const health = await checkSandboxHealth();
   if (!health.enabled) {
@@ -19,7 +21,10 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "session invalid" }, { status: 403 });
   }
-  const body = (await request.json()) as {
+  let parsed: unknown;
+  try { parsed = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+  if (!parsed || typeof parsed !== "object") return NextResponse.json({ error: "Action object required" }, { status: 400 });
+  const body = parsed as {
     type?: SandboxActionInput["type"];
     artifact?: ArtifactContent;
     answer?: string;
@@ -32,6 +37,7 @@ export async function POST(request: Request) {
     config?: AppliedAiConfig;
     evalCase?: AppliedAiEvalCase;
     proposalCode?: string;
+    source?: string;
     recommendation?: string;
     architectureDecision?: string;
   };

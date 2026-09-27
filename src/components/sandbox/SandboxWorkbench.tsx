@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { CodeWorkspace } from "./CodeWorkspace";
 import type { SandboxSessionView } from "@/lib/sim-engine/proof/sandbox/view";
 import type {
   AppliedAiConfig,
   AppliedAiEvalCase,
 } from "@/lib/sim-engine/proof/sandbox/applied-ai-workspace";
 
-type Action = (body: Record<string, unknown>) => void;
+type Action = (body: Record<string, unknown>) => Promise<boolean>;
 
 const CHECKS: Array<[keyof SandboxSessionView["progress"], string]> = [
   ["traceOpened", "Inspect failed trace"],
@@ -45,17 +46,9 @@ export function SandboxWorkbench({
   const [recommendation, setRecommendation] = useState(session?.workspace.productionRecommendation ?? "");
   const [proposal, setProposal] = useState(session?.workspace.proposalCode ?? "");
   const [defense, setDefense] = useState(session?.defense?.answer ?? "");
+  const [codeDirty, setCodeDirty] = useState(false);
 
-  useEffect(() => {
-    if (!session) return;
-    const id = window.setTimeout(() => {
-      setConfig(session.workspace.config);
-      setArchitecture(session.workspace.architectureDecision);
-      setRecommendation(session.workspace.productionRecommendation);
-      setProposal(session.workspace.proposalCode);
-    }, 0);
-    return () => window.clearTimeout(id);
-  }, [session]);
+  // The parent keys this workbench by run ID. Polling must never replace drafts.
 
   const resource = useMemo(
     () => session?.fixture.resources.find((item) => item.id === selectedResource) ?? null,
@@ -105,12 +98,14 @@ export function SandboxWorkbench({
           </p>
           <h1 className="mt-1 text-app-page">{session.fixture.simulationTitle}</h1>
         </div>
-        <p className="ml-auto text-app-meta text-[var(--text-secondary)]">Autosaved · workspace v{session.revision}</p>
+        <p className="ml-auto text-app-meta text-[var(--text-secondary)]" role="status">{busy ? "Saving changes…" : `Saved workspace version ${session.revision}`}</p>
       </header>
 
       <div className="mb-4 border border-[var(--border-default)] bg-[var(--surface-panel)] px-3 py-2 text-app-meta text-[var(--text-secondary)]">
-        Honest runtime boundary: supported configuration and eval cases execute against stable synthetic fixtures. Proposal code is saved but never executed. No shell, network, packages, or paid model calls.
+        Configuration experiments use a synthetic model. The Python task below has separate execution results and does not change those modeled metrics.
       </div>
+
+      <CodeWorkspace session={session} busy={busy} onAction={onAction} onDirtyChange={setCodeDirty} />
 
       {session.step === "invited" ? (
         <button type="button" disabled={busy} onClick={() => onAction({ type: "start" })} className="mb-4 h-9 rounded-[var(--radius-control)] bg-[var(--control-solid)] px-4 text-app-body font-medium text-[var(--control-solid-ink)]">
@@ -207,7 +202,7 @@ export function SandboxWorkbench({
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr]">
               <input value={newCase.title} onChange={(event) => setNewCase({ ...newCase, title: event.target.value })} className="h-9 border border-[var(--border-default)] bg-[var(--surface-panel)] px-2.5 text-app-body outline-none" aria-label="Evaluation case title" />
-              <select value={newCase.slice} onChange={(event) => setNewCase({ ...newCase, slice: event.target.value as AppliedAiEvalCase["slice"] })} className="h-9 border border-[var(--border-default)] bg-[var(--surface-panel)] px-2.5 text-app-body">
+              <select aria-label="Evaluation case category" value={newCase.slice} onChange={(event) => setNewCase({ ...newCase, slice: event.target.value as AppliedAiEvalCase["slice"] })} className="h-9 border border-[var(--border-default)] bg-[var(--surface-panel)] px-2.5 text-app-body">
                 <option value="critical_authorization">Critical authorization</option>
                 <option value="malformed_output">Malformed output</option>
                 <option value="duplicate_write">Duplicate write</option>
@@ -219,7 +214,7 @@ export function SandboxWorkbench({
 
           <section className="border-b border-[var(--border-subtle)] px-4 py-4">
             <h2 className="text-app-section">Architecture decision</h2>
-            <textarea rows={3} value={architecture} onChange={(event) => setArchitecture(event.target.value)} className="mt-2 w-full resize-y border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 text-app-body outline-none" />
+            <textarea aria-label="Architecture decision" rows={3} value={architecture} onChange={(event) => setArchitecture(event.target.value)} className="mt-2 w-full resize-y border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 text-app-body outline-none" />
             <button type="button" disabled={busy || !canCommit} onClick={() => onAction({ type: "commit_architecture", architectureDecision: architecture, idempotencyKey: `architecture:${session.revision}` })} className="mt-2 h-8 rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3 text-app-meta font-medium text-[var(--control-solid-ink)] disabled:opacity-40">
               Commit approach & release fact
             </button>
@@ -228,7 +223,7 @@ export function SandboxWorkbench({
           <section className="px-4 py-4">
             <h2 className="text-app-section">Proposal-only code</h2>
             <p className="mt-1 text-app-meta text-[var(--color-changed)]">Saved for review, never executed, and does not affect metrics.</p>
-            <textarea rows={4} value={proposal} onChange={(event) => setProposal(event.target.value)} onBlur={() => onAction({ type: "save_proposal", proposalCode: proposal, idempotencyKey: `proposal:${session.revision}` })} className="mt-2 w-full resize-y border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 font-mono text-[12px] leading-5 outline-none" />
+            <textarea aria-label="Supplementary proposal" rows={4} value={proposal} onChange={(event) => setProposal(event.target.value)} onBlur={() => onAction({ type: "save_proposal", proposalCode: proposal, idempotencyKey: `proposal:${session.revision}` })} className="mt-2 w-full resize-y border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 font-mono text-[12px] leading-5 outline-none" />
           </section>
         </main>
 
@@ -266,15 +261,16 @@ export function SandboxWorkbench({
           {session.progress.postFactEvalRun && !session.progress.submissionCompleted ? (
             <div className="border-t border-[var(--border-subtle)] px-3 py-3">
               <h2 className="text-app-section">Production recommendation</h2>
-              <textarea rows={4} value={recommendation} onChange={(event) => setRecommendation(event.target.value)} className="mt-2 w-full resize-y border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 text-app-body outline-none" />
+              <textarea aria-label="Production recommendation" rows={4} value={recommendation} onChange={(event) => setRecommendation(event.target.value)} className="mt-2 w-full resize-y border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 text-app-body outline-none" />
               <div className="mt-2 flex gap-2">
                 <button type="button" disabled={busy} onClick={() => onAction({ type: "write_recommendation", recommendation, idempotencyKey: `recommendation:${session.revision}` })} className="h-8 border border-[var(--border-strong)] px-3 text-app-meta font-medium">
                   Save recommendation
                 </button>
-                <button type="button" disabled={busy || !session.progress.recommendationWritten} onClick={() => onAction({ type: "submit_episode", idempotencyKey: `submit:${session.revision}` })} className="h-8 bg-[var(--control-solid)] px-3 text-app-meta font-medium text-[var(--control-solid-ink)] disabled:opacity-40">
+                <button type="button" disabled={busy || codeDirty || recommendation.trim() !== session.workspace.productionRecommendation || !session.progress.recommendationWritten} onClick={() => onAction({ type: "submit_episode", idempotencyKey: `submit:${session.revision}` })} className="h-8 bg-[var(--control-solid)] px-3 text-app-meta font-medium text-[var(--control-solid-ink)] disabled:opacity-40">
                   Submit
                 </button>
               </div>
+              {codeDirty ? <p className="mt-2 text-app-meta text-[var(--text-secondary)]">Save your code before submitting.</p> : null}
             </div>
           ) : null}
 
@@ -282,7 +278,7 @@ export function SandboxWorkbench({
             <form className="border-t border-[var(--border-subtle)] px-3 py-3" onSubmit={(event) => { event.preventDefault(); onAction({ type: "submit_defense", answer: defense }); }}>
               <h2 className="text-app-section">Defense</h2>
               <p className="mt-2 text-app-body text-[var(--text-secondary)]">{session.defense.prompt}</p>
-              <textarea rows={3} value={defense} onChange={(event) => setDefense(event.target.value)} className="mt-2 w-full border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 text-app-body" />
+              <textarea aria-label="Written follow-up" rows={3} value={defense} onChange={(event) => setDefense(event.target.value)} className="mt-2 w-full border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 text-app-body" />
               <button type="submit" className="mt-2 h-8 bg-[var(--control-solid)] px-3 text-app-meta font-medium text-[var(--control-solid-ink)]">Submit defense</button>
             </form>
           ) : null}

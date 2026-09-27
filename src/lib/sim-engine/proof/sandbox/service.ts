@@ -1,4 +1,5 @@
 import "server-only";
+import { executeCode, executionConfigured } from "@/lib/code-execution/client";
 import type { ArtifactContent } from "../types";
 import { ACME_ROLLOUT_FIXTURE, APPLIED_AI_WORKFLOW_FIXTURE } from "./fixture";
 import {
@@ -47,6 +48,8 @@ export type SandboxAction =
   | { type: "retry_analysis" };
 
 export type AppliedAiSandboxAction =
+  | { type: "save_code"; source: string; idempotencyKey?: string }
+  | { type: "run_code"; source: string; idempotencyKey?: string }
   | { type: "open_resource"; resourceId: string; idempotencyKey?: string }
   | { type: "open_trace"; resourceId: string; idempotencyKey?: string }
   | { type: "run_eval"; idempotencyKey?: string }
@@ -273,6 +276,35 @@ export async function applySandboxAction(run: SimulationRunRecord, action: Sandb
       },
     });
     await runs.updateWorldState(run.id, run.worldState, next, postFact ? "REASSESSMENT" : "INVESTIGATION", run.status);
+    return runs.load(run.id);
+  }
+
+  if (action.type === "save_code" || action.type === "run_code") {
+    if (run.worldState.currentStep !== "active") throw new Error("Code changes require active work");
+    if (typeof action.source !== "string" || action.source.length > 24000) throw new Error("Code must be at most 24,000 characters");
+    if (action.type === "run_code") {
+      if (!executionConfigured()) throw new Error("Code execution is not configured. Save your code and try later.");
+      if (run.worldState.codeRunCount >= 20) throw new Error("This demonstration has reached its 20-run execution limit.");
+      if (run.worldState.codeRunStartedAt && Date.now() - Date.parse(run.worldState.codeRunStartedAt) < 60000) {
+        throw new Error("An execution was recently started. Wait one minute before running again.");
+      }
+      // Reserve through the existing compare-and-swap revision before spending
+      // compute. Concurrent requests cannot both acquire this run's slot.
+      const reserved = nextWorldState(run.worldState, { codeRunStartedAt: new Date().toISOString(), codeRunCount: run.worldState.codeRunCount + 1 });
+      await runs.updateWorldState(run.id, run.worldState, reserved, run.stage, run.status);
+      run = await runs.load(run.id);
+    }
+    const changed = action.source !== run.worldState.workspace.codeSource;
+    const codeExecution = action.type === "run_code"
+      ? await executeCode(action.source)
+      : changed ? null : run.worldState.workspace.codeExecution;
+    const workspace = parseAppliedAiWorkspace({ ...run.worldState.workspace, codeSource: action.source, codeExecution });
+    await runs.saveWorkspaceVersion(run.id, "workspace_snapshot", workspace, null, run.worldState.episodeStage);
+    await append(run.id, action.type === "run_code" ? "CODE_EXECUTED" : "CODE_SAVED", "candidate", key, {
+      execution: codeExecution, language: "python", source_length: action.source.length,
+    });
+    const next = nextWorldState(run.worldState, { ...remember(run.worldState, key), workspace });
+    await runs.updateWorldState(run.id, run.worldState, next, run.stage, run.status);
     return runs.load(run.id);
   }
 
@@ -694,6 +726,7 @@ export async function buildSandboxView(run: SimulationRunRecord) {
     hiringOutcome: run.worldState.hiringOutcome,
     fixture: fixtureView,
     workspace: run.worldState.workspace,
+    executionAvailable: executionConfigured(),
     latestEval: run.worldState.latestEval,
     baselineEval: run.worldState.baselineEval,
     progress: run.worldState.progress,

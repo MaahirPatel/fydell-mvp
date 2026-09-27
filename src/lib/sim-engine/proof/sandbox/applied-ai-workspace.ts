@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import { z } from "zod";
+import { STARTER_CODE, executionResultSchema } from "@/lib/code-execution/contract";
 
 export const APPLIED_AI_WORKSPACE_VERSION = "aai-workspace-v2" as const;
 export const APPLIED_AI_EVALUATOR_VERSION = "synthetic-evaluator-v2" as const;
@@ -28,6 +29,8 @@ export const appliedAiWorkspaceSchema = z.object({
   config: appliedAiConfigSchema,
   evalCases: z.array(appliedAiEvalCaseSchema).min(1).max(20),
   proposalCode: z.string().max(8000),
+  codeSource: z.string().max(24000).default(STARTER_CODE),
+  codeExecution: executionResultSchema.nullable().default(null),
   architectureDecision: z.string().max(4000),
   productionRecommendation: z.string().max(5000),
 });

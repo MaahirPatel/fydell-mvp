@@ -40,6 +40,7 @@ export type SandboxSessionView = {
     }>;
   };
   workspace: AppliedAiWorkspace;
+  executionAvailable?: boolean;
   latestEval: AppliedAiEvalResult | null;
   baselineEval: AppliedAiEvalResult | null;
   progress: SandboxWorldStateV1["progress"];
