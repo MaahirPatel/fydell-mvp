@@ -9,8 +9,6 @@
    No gradients, no decorative textures, no serif display type.
    ========================================================================== */
 
-@import "../../styles/fydell-tokens.css";
-
 /* Platform binding: this app loads Geist through next/font, so the stacks are
    re-pinned to the generated variables after the token import. The token
    contract still owns the values; this only names the local faces, and it is
