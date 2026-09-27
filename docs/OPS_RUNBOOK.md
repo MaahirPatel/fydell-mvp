@@ -8,7 +8,7 @@ Env-based flags in `src/lib/auth/flags.ts` (Vercel → Environment Variables):
 
 | Variable | Production expectation | Effect |
 |---|---|---|
-| `NEXT_PUBLIC_FDE_MARKETPLACE` | `1` | Marketplace-style post-login routing by `profiles.account_type`. |
+| `NEXT_PUBLIC_FDE_MARKETPLACE` | not needed | Removed 2026-09-27. Post-login routing by `profiles.account_type` is always on. |
 | `NEXT_PUBLIC_PILOT_MODE` | unset / `false` | Only for local demo when auth secrets are missing. Never enable in prod. |
 | `NEXT_PUBLIC_PARTNER_SIGNUP` | unset | Partner signup path; off for pilot. |
 | `EMPLOYER_SELF_SIGNUP_MODE` | `open` | Employers get a usable workspace after onboarding. |

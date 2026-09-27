@@ -24,7 +24,9 @@ Later the same day:
 - A Preview was deployed at `https://fydell-j532mhlk6-maahirpatels-projects.vercel.app`, using fydell-dev. The fydell-dev Auth redirect URLs now allow `https://*-fydell-mvp.vercel.app/**` and `http://localhost:3000/**`. `https://fydell-*-maahirpatels-projects.vercel.app/**` still needs to be added, and matters only for password-reset links.
 - Fixed a crash on every `/app/employer/**` page: `EmployerShell` had no icons for three nav items. `WorkspaceNavLabel` now makes a missing icon a type error.
 - Sign-up (`/api/auth/signup`) now creates accounts already confirmed through the admin API, so no confirmation email is sent. The old `signUp()` call hit Supabase's built-in email rate limit.
-- Founder decision: fydell.com (production) goes live only after the test run on the Preview succeeds. That still needs migrations 026–028 on production, `FYDELL_EXECUTION_SNAPSHOT_ID` in Production, `https://fydell.com/**` in the production Auth redirect URLs, and `vercel deploy --prod`.
+- The founder then approved going live on fydell.com. Production Supabase `fydell` (`qtrhwrcxthtqvkeerptp`) was behind at 024, so 025 (`proof_graph`), 026, 027 and 028 were applied through the Supabase MCP, all additive. Afterwards, the 14 `eng_*` tables had forced RLS, the proof, passport and billing tables had RLS, the `eng-submissions` bucket was private, and the security advisor showed no findings on the new objects. `FYDELL_EXECUTION_SNAPSHOT_ID` was added to Vercel Production. `vercel deploy --prod` is aliased to `https://www.fydell.com`, and the apex redirects there. Production has `RESEND_API_KEY`, so invitations there send real email.
+- Also fixed: post-login routing no longer depends on `NEXT_PUBLIC_FDE_MARKETPLACE`, which was unset on Vercel and sent candidates to "Setup required". The setup page uses `AuthShell`. The candidate home lists engineering tasks, and the employer home's first action opens Engineering tasks.
+- Founder still to do: add `https://www.fydell.com/**` and `https://fydell.com/**` to the production Supabase Auth redirect URLs. Only password-reset links need them.
 
 ## Milestone 1 loop
 
@@ -48,7 +50,7 @@ An employer creates and publishes a role and invites a candidate by link. The ca
 ## Environments
 
 - Staging database: Supabase `fydell-dev` (ref `btbmvrvynnrhapjdkunz`). Local `.env.local` points here. Migrations through 028 are applied. There are no platform roles, and none are needed.
-- Production database: Supabase `fydell` (ref `qtrhwrcxthtqvkeerptp`). Do not use it for testing. Migrations 026, 027 and 028 are not applied there yet.
+- Production database: Supabase `fydell` (ref `qtrhwrcxthtqvkeerptp`). Do not use it for automated tests. Migrations through 028 are applied (2026-09-27), with 025–028 applied under their file names.
 - Hosting: Vercel project `fydell-mvp`. The Preview variables point at fydell-dev (verified): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` (Sensitive). `NEXT_PUBLIC_APP_URL` was removed from Preview, so links use `VERCEL_URL`. `FYDELL_EXECUTION_SNAPSHOT_ID` is set in Preview and Development. Production variables were not touched.
 - Secrets live only in `.env.local` (git-ignored) and Vercel settings. Never print or commit them.
 
