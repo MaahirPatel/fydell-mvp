@@ -149,7 +149,7 @@ const LIFECYCLE: {
   {
     step: "Submission",
     detail:
-      "The answers are written as a snapshot. A database trigger rejects any later update or delete of that snapshot, including by us.",
+      "The answers are written as a snapshot. A database trigger rejects later updates or deletes made through the application. It does not prevent changes by a database administrator.",
     state: "Frozen",
     mutability: "frozen",
     Icon: Lock,

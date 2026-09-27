@@ -1,5 +1,5 @@
 import Link from "next/link";
-import FydellMark from "@/components/brand/FydellMark";
+import FydellLogo from "@/components/brand/FydellLogo";
 import { DesktopStage } from "@/components/fydell/ProductDesktop";
 
 /**
@@ -60,10 +60,7 @@ export default function AuthShell({
           className="inline-flex items-center gap-2.5"
           aria-label="Fydell home"
         >
-          <FydellMark width={22} />
-          <span className="text-[16px] font-medium leading-none tracking-[-0.03em] text-[var(--text-primary)]">
-            fydell
-          </span>
+          <FydellLogo height={24} />
         </Link>
       </header>
 

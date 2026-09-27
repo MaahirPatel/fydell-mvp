@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { checkSandboxHealth } from "@/lib/sim-engine/proof/sandbox/kill-switch";
 import { readCapability } from "@/lib/sim-engine/proof/sandbox/capability";
 import { loadOwnedSandbox } from "@/lib/sim-engine/proof/sandbox/lifecycle";
-import { applySandboxAction, buildSandboxView, type SandboxAction } from "@/lib/sim-engine/proof/sandbox/service";
+import { applySandboxAction, buildSandboxView, type SandboxActionInput } from "@/lib/sim-engine/proof/sandbox/service";
 import type { ArtifactContent } from "@/lib/sim-engine/proof/types";
+import type { AppliedAiConfig, AppliedAiEvalCase } from "@/lib/sim-engine/proof/sandbox/applied-ai-workspace";
 
 export async function POST(request: Request) {
   const health = await checkSandboxHealth();
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "session invalid" }, { status: 403 });
   }
   const body = (await request.json()) as {
-    type?: SandboxAction["type"];
+    type?: SandboxActionInput["type"];
     artifact?: ArtifactContent;
     answer?: string;
     decision?: "approve" | "limit" | "follow_up" | "reject";
@@ -27,6 +28,12 @@ export async function POST(request: Request) {
     outcome?: "advance" | "hold" | "close" | "hired";
     scripted?: boolean;
     idempotencyKey?: string;
+    resourceId?: string;
+    config?: AppliedAiConfig;
+    evalCase?: AppliedAiEvalCase;
+    proposalCode?: string;
+    recommendation?: string;
+    architectureDecision?: string;
   };
   if (!body.type) return NextResponse.json({ error: "type required" }, { status: 400 });
   if (
@@ -39,7 +46,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "valid finding and outcome required" }, { status: 400 });
   }
   try {
-    const action = body as SandboxAction;
+    const action = body as SandboxActionInput;
     const next = await applySandboxAction(run, action);
     return NextResponse.json({ ok: true, session: await buildSandboxView(next) });
   } catch (error) {

@@ -13,8 +13,6 @@ export default function HomeMotionController() {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) return;
 
-    const mm = gsap.matchMedia();
-
     gsap
       .timeline({ defaults: { ease: "power4.out" } })
       .from("[data-hero-copy] > *", {
@@ -27,16 +25,6 @@ export default function HomeMotionController() {
         "[data-hero-stage]",
         { y: 32, scale: 0.965, opacity: 0.35, duration: 1.05 },
         "-=0.38",
-      )
-      .from(
-        '[data-motion-zone="shortlist"] [data-motion-item="candidate"]',
-        { y: 9, opacity: 0.25, duration: 0.46, stagger: 0.055 },
-        "-=0.62",
-      )
-      .from(
-        '[data-motion-zone="shortlist"] [data-motion-item="inspector"]',
-        { x: 28, y: 10, opacity: 0, duration: 0.62 },
-        "-=0.3",
       );
 
     document.querySelectorAll<HTMLElement>("[data-product-chapter]").forEach((chapter) => {
@@ -115,27 +103,16 @@ export default function HomeMotionController() {
         );
       });
 
-    mm.add("(min-width: 961px)", () => {
-      const chapters = Array.from(
-        document.querySelectorAll<HTMLElement>("[data-product-chapter]"),
-      );
-      [2, 4].forEach((index) => {
-        const chapter = chapters[index];
-        const heading = chapter?.querySelector<HTMLElement>("[data-chapter-head]");
-        const stage = chapter?.querySelector<HTMLElement>("[data-product-stage]");
-        if (!chapter || !heading || !stage) return;
-        ScrollTrigger.create({
-          trigger: heading,
-          start: "top 88px",
-          endTrigger: stage,
-          end: "top 180px",
-          pin: heading,
-          pinSpacing: false,
-        });
-      });
+    gsap.from("[aria-label='Recorded episode trail'] > li", {
+      y: 18,
+      opacity: 0.35,
+      stagger: 0.08,
+      ease: "power3.out",
+      scrollTrigger: {
+        trigger: "[aria-label='Recorded episode trail']",
+        start: "top 78%",
+      },
     });
-
-    return () => mm.revert();
   });
 
   return null;

@@ -82,6 +82,9 @@ export type ArtifactKind =
   | "sql_query"
   | "cutover_plan"
   | "escalation_note"
+  | "architecture_decision"
+  | "eval_case_set"
+  | "production_recommendation"
   | "note"
   | "other";
 

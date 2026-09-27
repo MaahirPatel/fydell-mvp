@@ -6,6 +6,7 @@ import { Panel, PanelSection } from "@/components/ui/Panel";
 import ActivityFeed from "@/components/employer/ActivityFeed";
 import AttentionQueue from "@/components/employer/AttentionQueue";
 import CandidatePipeline from "@/components/employer/CandidatePipeline";
+import { AppliedAiDemoModule } from "@/components/employer/AppliedAiDemoModule";
 import { describeElapsed, formatElapsed } from "@/lib/time/elapsed";
 import {
   getInvitationRecords,
@@ -156,7 +157,7 @@ export default async function EmployerHomePage() {
             ? "Review the candidate evidence that is ready and prepare the next interview."
             : hasInvited
               ? "Candidate work is underway. Fydell will surface the next decision when evidence is ready."
-              : "Start with an open role, or experience the complete workflow in Sandbox."
+              : "Start with an open role, or explore the isolated Applied AI proof demo below."
         }
       />
 
@@ -183,20 +184,12 @@ export default async function EmployerHomePage() {
             title="Start with an open role"
             description="Tell Fydell who you need. We will define the work and help verify the candidates worth interviewing."
           >
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/app/employer/roles"
-                className="inline-flex h-9 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-app-body font-medium text-[var(--control-solid-ink)]"
-              >
-                Create role
-              </Link>
-              <Link
-                href="/sandbox"
-                className="inline-flex h-9 items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3.5 text-app-body font-medium text-[var(--text-primary)]"
-              >
-                Explore Sandbox
-              </Link>
-            </div>
+            <Link
+              href="/app/employer/roles"
+              className="inline-flex min-h-9 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-app-body font-medium text-[var(--control-solid-ink)]"
+            >
+              Create role
+            </Link>
           </PanelSection>
         </Panel>
       ) : (
@@ -211,6 +204,8 @@ export default async function EmployerHomePage() {
           </PanelSection>
         </Panel>
       )}
+
+      <AppliedAiDemoModule className="mt-6" />
 
       {hasInvited ? (
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">

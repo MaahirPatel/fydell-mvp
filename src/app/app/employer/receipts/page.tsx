@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
+import { AppliedAiDemoModule } from "@/components/employer/AppliedAiDemoModule";
 
 export const metadata = { title: "Work Receipts" };
 
@@ -18,12 +19,6 @@ export default function EmployerWorkReceiptsPage() {
             description="A receipt belongs to the candidate. It appears here only when the candidate has completed verified work and has authorized this workspace to view it."
           >
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/sandbox"
-                className="inline-flex h-9 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-app-body font-medium text-[var(--control-solid-ink)]"
-              >
-                View Demo Work Receipt
-              </Link>
               <Link
                 href="/trust"
                 className="inline-flex h-9 items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3.5 text-app-body font-medium text-[var(--text-primary)]"
@@ -45,6 +40,7 @@ export default function EmployerWorkReceiptsPage() {
             ))}
           </div>
         </Panel>
+        <AppliedAiDemoModule className="mt-6" href="/sandbox/work" />
       </div>
     </div>
   );

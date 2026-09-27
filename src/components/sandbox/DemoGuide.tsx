@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { ArrowRight, ExternalLink, RotateCcw, X } from "lucide-react";
-import { SAMPLE_GUIDE_TOTAL } from "./sample-artifacts";
+
+/** Steps in the Applied AI proof sequence the guide walks through. */
+const GUIDE_TOTAL = 6;
 
 export type GuideStep = {
   step: number;
@@ -31,7 +33,7 @@ export function DemoGuide({
     >
       <div className="flex items-center gap-2">
         <p className="text-app-meta text-[var(--text-tertiary)]">
-          Demo guide · {guide.step} of {SAMPLE_GUIDE_TOTAL}
+          Demo guide · {guide.step} of {GUIDE_TOTAL}
         </p>
         <button
           type="button"
@@ -44,7 +46,7 @@ export function DemoGuide({
       </div>
 
       <div className="mt-2.5 flex gap-1" aria-hidden>
-        {Array.from({ length: SAMPLE_GUIDE_TOTAL }, (_, index) => (
+        {Array.from({ length: GUIDE_TOTAL }, (_, index) => (
           <span
             key={index}
             className="h-1 flex-1 rounded-full"
@@ -102,26 +104,26 @@ export function DemoGuide({
 }
 
 export const GUIDE_BY_SURFACE: Record<string, GuideStep> = {
-  simulation: {
+  work: {
     step: 4,
-    title: "Review the revised rollout plan",
-    body: "Verify the candidate updated the plan to respect the security constraint while keeping adoption sizing unverified.",
-    nextLabel: "Continue to oral defense",
+    title: "Close the proof gaps",
+    body: "Inspect a failed trace, change the executable config and eval coverage, then measure the result against the released latency constraint.",
+    nextLabel: "Continue to evidence",
     nextHref: "/sandbox/evidence",
-    candidateHref: "/sandbox/work",
+    candidateHref: "/sandbox/roles",
   },
   evidence: {
-    step: 7,
-    title: "Trace the claim to its sources",
-    body: "Explore the evidence lineage to see how each source supports, limits, or counters the claim.",
+    step: 5,
+    title: "Trace each claim to its sources",
+    body: "Every claim keeps its supporting and counterevidence events, so a reader can check what was observed and what was not.",
     nextLabel: "Open work receipt",
     nextHref: "/sandbox/receipts",
     candidateHref: "/sandbox/work",
   },
   receipt: {
-    step: 8,
-    title: "Receipt issued",
-    body: "You followed Candidate 01 from work to evidence to a portable receipt.",
+    step: 6,
+    title: "Portable receipt",
+    body: "Reviewed claims, measured snapshots, and stated limits travel together with an integrity hash.",
     nextLabel: "Restart demo",
     nextHref: "/sandbox",
     restart: true,

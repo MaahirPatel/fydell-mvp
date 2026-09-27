@@ -10,8 +10,11 @@ export interface PilotSim {
   title: string;
 }
 
+/** Roles backed by the protected production pilot content. */
+export type PilotRoleKey = Exclude<RoleKey, "applied_ai_engineer">;
+
 /** Recommended pilot simulation per role. */
-export const PILOT_SIMS: Record<RoleKey, PilotSim> = {
+export const PILOT_SIMS: Record<PilotRoleKey, PilotSim> = {
   data_analyst: { slug: "missing-delays", title: "The Missing Delays" },
   bi_analyst: { slug: "one-renewal-rate", title: "One Renewal Rate" },
   solutions_engineer: { slug: "promise-or-product-fit", title: "Promise or Product Fit" },
@@ -21,7 +24,7 @@ export const PILOT_SIMS: Record<RoleKey, PilotSim> = {
 };
 
 /** Card order on /pilot/roles. Data, BI and Solutions Engineering first. */
-export const PILOT_ROLE_ORDER: RoleKey[] = [
+export const PILOT_ROLE_ORDER: PilotRoleKey[] = [
   "data_analyst",
   "bi_analyst",
   "solutions_engineer",
@@ -29,6 +32,10 @@ export const PILOT_ROLE_ORDER: RoleKey[] = [
   "technical_support_engineer",
   "business_systems_analyst",
 ];
+
+export function isPilotRoleKey(roleKey: RoleKey): roleKey is PilotRoleKey {
+  return roleKey in PILOT_SIMS;
+}
 
 export const PERSPECTIVE_OPTIONS = [
   "Hiring manager",

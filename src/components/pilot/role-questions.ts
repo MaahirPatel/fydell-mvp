@@ -1,11 +1,11 @@
-import type { RoleKey } from "@/lib/simulations/types";
+import type { PilotRoleKey } from "@/components/pilot/pilot-data";
 
 /**
  * Role-specific pilot feedback questions. Eight authored questions per role,
  * shown as optional free-text fields on /pilot/feedback after a tester
  * completes that role's simulation.
  */
-export const ROLE_QUESTIONS: Record<RoleKey, string[]> = {
+export const ROLE_QUESTIONS: Record<PilotRoleKey, string[]> = {
   data_analyst: [
     "Did this resemble a problem a Data Analyst might actually receive?",
     "Was the data too simple, too difficult or appropriate for five minutes?",

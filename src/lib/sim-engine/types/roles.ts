@@ -52,6 +52,12 @@ export const ROLE_DISPLAY: Record<RoleKey, RoleDisplayMetadata> = {
     shortLabel: "BI",
     pathwayLabel: "Data and Analytics",
   },
+  applied_ai_engineer: {
+    roleKey: "applied_ai_engineer",
+    label: "Applied AI Engineer",
+    shortLabel: "AAI",
+    pathwayLabel: "AI Engineering",
+  },
   solutions_engineer: {
     roleKey: "solutions_engineer",
     label: "Solutions Engineer",

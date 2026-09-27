@@ -1,9 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
-import type { RoleKey } from "@/lib/simulations/types";
 import {
   DURATION_OPTIONS,
   EVIDENCE_CHOICES,
@@ -16,6 +15,8 @@ import {
   SCORE_PREFERENCE_OPTIONS,
   TRUST_OPTIONS,
   YES_NO_OPTIONS,
+  isPilotRoleKey,
+  type PilotRoleKey,
 } from "@/components/pilot/pilot-data";
 import { ROLE_QUESTIONS } from "@/components/pilot/role-questions";
 import {
@@ -46,14 +47,14 @@ export default function PilotFeedbackForm() {
   const loaded = useIsHydrated();
 
   // Which simulation was completed (from localStorage, or picked here).
-  const [roleKeyEdit, setRoleKeyEdit] = useState<RoleKey | null | undefined>(undefined);
+  const [roleKeyEdit, setRoleKeyEdit] = useState<PilotRoleKey | null | undefined>(undefined);
   const roleKey =
     roleKeyEdit !== undefined
       ? roleKeyEdit
-      : profile.roleKey && ROLE_BY_KEY[profile.roleKey]
+      : profile.roleKey && ROLE_BY_KEY[profile.roleKey] && isPilotRoleKey(profile.roleKey)
         ? profile.roleKey
         : null;
-  const setRoleKey = (next: RoleKey | null) => setRoleKeyEdit(next);
+  const setRoleKey = (next: PilotRoleKey | null) => setRoleKeyEdit(next);
 
   // Product clarity
   const [clarity, setClarity] = useState<number | null>(null);

@@ -8,6 +8,7 @@ import { northlineOperationsYieldScenario } from "./data-analyst/northline-opera
 import { brightpathLaunchImportScenario } from "./implementation-consultant/brightpath-launch-import";
 import { greenStatusPageScenario } from "./technical-support/green-status-page";
 import { ridgelineExecutiveQueueScenario } from "./business-systems-analyst/ridgeline-executive-queue";
+import { aiWorkflowHardeningScenario } from "./applied-ai-engineer/ai-workflow-hardening";
 
 /**
  * Central scenario catalog for the Simulation Architecture Engine.
@@ -21,6 +22,7 @@ export const SCENARIO_BY_ID: Record<string, SimulationScenarioDefinition> = {
   "brightpath-launch-import": brightpathLaunchImportScenario,
   "green-status-page-incident": greenStatusPageScenario,
   "ridgeline-executive-queue": ridgelineExecutiveQueueScenario,
+  "ai-workflow-hardening": aiWorkflowHardeningScenario,
 };
 
 export function getScenario(id: string): SimulationScenarioDefinition | null {

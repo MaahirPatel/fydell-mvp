@@ -5,30 +5,30 @@ import { ContactLink } from "@/components/ui/ContactLink";
 export const metadata = {
   title: "Contact",
   description:
-    "Tell Fydell about the technical customer-facing role you need to fill.",
+    "Tell Fydell about the engineering role you are hiring for.",
 };
 
 export default function ContactPage() {
   return (
     <MarketingShell>
-      <main className="pb-24 pt-[132px] sm:pt-[156px]">
+      <div className="pb-24 pt-[132px] sm:pt-[156px]">
         <div className="mkt-content grid items-start gap-12 lg:grid-cols-12 lg:gap-20">
           <section className="lg:col-span-5">
-            <h1 className="page-display">Bring us an open role.</h1>
+            <h1 className="page-display">Tell us about the role you are hiring for.</h1>
             <p className="page-lead">
-              Tell us who you need and what the person will actually do. We will
-              reply with the right verification or search scope.
+              Share the stack, the level, and the work the engineer will own. We will
+              reply with a pilot scope: which simulation fits, and how reviews will run.
             </p>
 
             <dl className="mt-10 border-y border-[var(--border-subtle)]">
               {[
                 [
                   "Verify",
-                  "You already have candidates and need evidence before interviewing.",
+                  "You already have engineering candidates and want evidence from their work before interviewing.",
                 ],
                 [
                   "Search",
-                  "You want Fydell to find, verify, and shortlist candidates.",
+                  "You want a managed, founder-selected search and verification process.",
                 ],
                 [
                   "Partner",
@@ -63,7 +63,7 @@ export default function ContactPage() {
             <PilotRequestForm />
           </section>
         </div>
-      </main>
+      </div>
     </MarketingShell>
   );
 }

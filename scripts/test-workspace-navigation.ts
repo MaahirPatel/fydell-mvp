@@ -19,6 +19,7 @@ const expected = [
   "Home",
   "Roles",
   "Candidates",
+  "Shared passports",
   "Work",
   "Evidence",
   "Work Receipts",

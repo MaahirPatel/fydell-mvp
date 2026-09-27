@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
-import { PILOT_ROLE_ORDER, PILOT_SIMS } from "@/components/pilot/pilot-data";
+import {
+  PILOT_ROLE_ORDER,
+  PILOT_SIMS,
+  type PilotRoleKey,
+} from "@/components/pilot/pilot-data";
 import { savePilotProfile } from "@/components/pilot/profile-storage";
-import type { RoleKey } from "@/lib/simulations/types";
 
-function rememberChoice(roleKey: RoleKey) {
+function rememberChoice(roleKey: PilotRoleKey) {
   const sim = PILOT_SIMS[roleKey];
   savePilotProfile({
     roleKey,

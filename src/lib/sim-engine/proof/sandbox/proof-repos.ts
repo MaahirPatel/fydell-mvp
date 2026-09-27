@@ -10,10 +10,21 @@ import type {
   SimulationRunRecord,
   SimulationRunRepository,
   WorkReceiptIssuer,
+  SandboxReviewRecord,
 } from "./repositories";
 import { parseWorldState, type SandboxWorldStateV1 } from "./world-state";
-import { getSandboxFixture } from "./fixture";
+import {
+  APPLIED_AI_VERSION_ID,
+  getAppliedAiSandboxFixture,
+} from "./fixture";
+import type { AppliedAiEvalResult, AppliedAiWorkspace } from "./applied-ai-workspace";
 import { canonicalize, publicReceiptProjection } from "./receipt-hash";
+import {
+  claimReviewAuditDraft,
+  projectClaimEventIds,
+  type ClaimReviewStatus,
+  type InterviewPlan,
+} from "./review-outputs";
 
 function mapRun(row: Record<string, unknown>): SimulationRunRecord {
   return {
@@ -39,9 +50,9 @@ export class ProofSimulationRunRepository implements SimulationRunRepository {
       .insert({
         invitation_id: input.invitationId,
         organization_id: input.organizationId,
-        simulation_version_id: "00000000-0000-4000-a000-000000000010",
-        rubric_version: getSandboxFixture().rubric.version,
-        prompt_version: "sandbox_evidence_v1",
+        simulation_version_id: APPLIED_AI_VERSION_ID,
+        rubric_version: "aai-proof-v1",
+        prompt_version: "aai-structured-analysis-v1",
         stage: "DISCOVERY",
         status: "in_progress",
         world_state: input.worldState,
@@ -171,6 +182,28 @@ export class ProofSimulationRunRepository implements SimulationRunRepository {
     });
   }
 
+  async saveWorkspaceVersion(
+    runId: string,
+    kind: "workspace_snapshot" | "eval_run",
+    workspace: AppliedAiWorkspace,
+    evaluation: AppliedAiEvalResult | null,
+    stage: string,
+  ): Promise<void> {
+    const { error } = await sandboxAdmin().from("proof_artifact_versions").insert({
+      run_id: runId,
+      sequence_at: null,
+      content: {
+        kind,
+        artifactVersion: 1,
+        fixtureVersion: getAppliedAiSandboxFixture().fixtureVersion,
+        stage,
+        workspace,
+        evaluation,
+      },
+    });
+    if (error) throw new Error(error.message);
+  }
+
   async setReleasedFacts(runId: string, facts: string[]): Promise<void> {
     const { error } = await sandboxAdmin().from("proof_runs").update({ released_facts: facts }).eq("id", runId);
     if (error) throw new Error(error.message);
@@ -213,6 +246,7 @@ export class ProofEvidenceAnalysisRepository implements EvidenceAnalysisReposito
       concerns: string[];
       probes: string[];
     },
+    interviewPlan?: InterviewPlan,
   ): Promise<void> {
     const admin = sandboxAdmin();
     await admin.from("proof_evidence_claims").delete().eq("run_id", runId).eq("pass", "B");
@@ -231,28 +265,84 @@ export class ProofEvidenceAnalysisRepository implements EvidenceAnalysisReposito
       },
       { onConflict: "run_id" },
     );
+    if (interviewPlan) {
+      const { error: planError } = await admin.from("proof_interview_plans").upsert(
+        { run_id: runId, ...interviewPlan },
+        { onConflict: "run_id" },
+      );
+      if (planError) throw new Error(planError.message);
+    }
   }
 
   async loadClaims(runId: string) {
     const { data } = await sandboxAdmin()
       .from("proof_evidence_claims")
-      .select("id, pass, claim, competency, direction, confidence, rubric_version, prompt_version, model_version, review_status")
+      .select("id, pass, claim, competency, direction, confidence, rubric_version, prompt_version, model_version, review_status, proof_claim_events(event_id, relation)")
       .eq("run_id", runId)
       .order("pass");
-    return (data ?? []).map((row) => ({
-      id: row.id as string,
-      pass: row.pass as string,
-      claim: row.claim as string,
-      competency: row.competency as string,
-      direction: row.direction as EvidenceClaimDraft["direction"],
-      confidence: row.confidence as EvidenceClaimDraft["confidence"],
-      supporting_event_ids: [],
-      counterevidence_event_ids: [],
-      rubric_version: row.rubric_version as string,
-      prompt_version: row.prompt_version as string,
-      model_version: row.model_version as string,
-      review_status: row.review_status as string,
-    }));
+    return (data ?? []).map((row) => {
+      const lineage = projectClaimEventIds(
+        (row.proof_claim_events ?? []) as Array<{ event_id: string; relation: string }>,
+      );
+      return {
+        id: row.id as string,
+        pass: row.pass as string,
+        claim: row.claim as string,
+        competency: row.competency as string,
+        direction: row.direction as EvidenceClaimDraft["direction"],
+        confidence: row.confidence as EvidenceClaimDraft["confidence"],
+        supporting_event_ids: lineage.supportingEventIds,
+        counterevidence_event_ids: lineage.counterevidenceEventIds,
+        rubric_version: row.rubric_version as string,
+        prompt_version: row.prompt_version as string,
+        model_version: row.model_version as string,
+        review_status: row.review_status as string,
+      };
+    });
+  }
+
+  async loadInterviewPlan(runId: string): Promise<InterviewPlan | null> {
+    const { data } = await sandboxAdmin()
+      .from("proof_interview_plans")
+      .select("confirm, investigate, challenge")
+      .eq("run_id", runId)
+      .maybeSingle();
+    return data
+      ? {
+          confirm: Array.isArray(data.confirm) ? data.confirm.map(String) : [],
+          investigate: Array.isArray(data.investigate) ? data.investigate.map(String) : [],
+          challenge: Array.isArray(data.challenge) ? data.challenge.map(String) : [],
+        }
+      : null;
+  }
+
+  async reviewPassB(runId: string, record: SandboxReviewRecord): Promise<void> {
+    const admin = sandboxAdmin();
+    const { data: claims, error } = await admin
+      .from("proof_evidence_claims")
+      .select("id, review_status")
+      .eq("run_id", runId)
+      .eq("pass", "B");
+    if (error) throw new Error(error.message);
+    for (const claim of claims ?? []) {
+      const audit = claimReviewAuditDraft({
+        claimId: String(claim.id),
+        beforeStatus: String(claim.review_status) as ClaimReviewStatus,
+        record,
+      });
+      const { error: auditError } = await admin.from("proof_claim_reviews").insert(audit);
+      if (auditError) throw new Error(auditError.message);
+      const { error: updateError } = await admin
+        .from("proof_evidence_claims")
+        .update({ review_status: audit.after.review_status })
+        .eq("id", claim.id);
+      if (updateError) throw new Error(updateError.message);
+    }
+    const { error: briefError } = await admin
+      .from("proof_decision_briefs")
+      .update({ published: record.decision === "approve" })
+      .eq("run_id", runId);
+    if (briefError) throw new Error(briefError.message);
   }
 }
 
@@ -288,19 +378,13 @@ async function insertClaim(runId: string, pass: "A" | "B", claim: EvidenceClaimD
 const RECEIPT_KIND = "sandbox_work_receipt";
 
 export class ArtifactWorkReceiptIssuer implements WorkReceiptIssuer {
-  async issue(input: { runId: string; items: string[]; conditions: string[]; eventIds: string[] }): Promise<IssuedReceipt> {
+  async issue(input: { runId: string; payload: Record<string, unknown> }): Promise<IssuedReceipt> {
     const publicId = randomUUID();
     const payload = canonicalize({
+      ...input.payload,
       kind: RECEIPT_KIND,
       publicId,
-      runId: input.runId,
-      fixtureVersion: getSandboxFixture().fixtureVersion,
       label: "Fictional sandbox work receipt. Not valid for employment verification.",
-      integrityNotice:
-        "This SHA-256 value is a receipt integrity hash for payload consistency and version verification. It is not an independent cryptographic credential and is not tamper-proof.",
-      completedWork: input.items,
-      conditions: input.conditions,
-      sourceEventIds: input.eventIds,
       issuedAt: new Date().toISOString(),
     });
     const integrityHash = createHash("sha256").update(payload.canonical).digest("hex");
@@ -325,6 +409,24 @@ export class ArtifactWorkReceiptIssuer implements WorkReceiptIssuer {
     const content = data.content as Record<string, unknown>;
     return {
       publicId,
+      integrityHash: String(content.integrityHash ?? ""),
+      payload: publicReceiptProjection(content),
+    };
+  }
+
+  async loadForRun(runId: string): Promise<IssuedReceipt | null> {
+    const { data } = await sandboxAdmin()
+      .from("proof_artifact_versions")
+      .select("content")
+      .eq("run_id", runId)
+      .contains("content", { kind: RECEIPT_KIND })
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!data?.content) return null;
+    const content = data.content as Record<string, unknown>;
+    return {
+      publicId: String(content.publicId ?? ""),
       integrityHash: String(content.integrityHash ?? ""),
       payload: publicReceiptProjection(content),
     };

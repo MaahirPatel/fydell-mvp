@@ -1,49 +1,51 @@
 import Link from "next/link";
-import FydellMark from "@/components/brand/FydellMark";
+import FydellLogo from "@/components/brand/FydellLogo";
 
 /**
- * Chrome for every candidate page except the workbench itself.
- *
- * Before this, the invitation, the candidate home, the result and the shared
- * receipt each built their own header out of a different grey. A candidate who
- * accepts an invitation, does the work and reads their result should not feel
- * handed between three products, so the graphite canvas that the rest of
- * Fydell uses now runs the length of that path.
- *
- * The workbench uses the same graphite canvas so the attempt does not look
- * like a different product from the invitation and the report.
+ * Chrome for every candidate page except the workbench itself: the passport,
+ * invitations, results, and shared receipts all sit inside the same header.
  */
 export function CandidateShell({
   children,
   width = "default",
   /** Shown at the right of the header. A sign-out control, usually. */
   action,
+  current,
 }: {
   children: React.ReactNode;
   width?: "default" | "narrow" | "wide";
   action?: React.ReactNode;
+  current?: "passport" | "assessments";
 }) {
-  const max =
-    width === "narrow"
-      ? "max-w-[620px]"
-      : width === "wide"
-        ? "max-w-[1100px]"
-        : "max-w-[860px]";
+  const max = width === "narrow" ? "max-w-[620px]" : width === "wide" ? "max-w-[1160px]" : "max-w-[860px]";
+  const links = [
+    { key: "passport", label: "Engineering Passport", href: "/app/candidate/passport" },
+    { key: "assessments", label: "Assessments", href: "/app/candidate" },
+  ] as const;
 
   return (
     <div className="min-h-screen bg-[var(--surface-canvas)] text-[var(--text-primary)]">
-      <header className="border-b border-[var(--border-subtle)]">
-        <div
-          className={`mx-auto flex h-14 items-center justify-between gap-4 px-5 sm:px-6 ${max}`}
-        >
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-[var(--text-primary)]"
-            aria-label="Fydell home"
-          >
-            <FydellMark width={18} />
-            <span className="text-[14px] font-medium tracking-[-0.01em]">Fydell</span>
-          </Link>
+      <header className="border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)]">
+        <div className={`mx-auto flex h-14 items-center justify-between gap-4 px-5 sm:px-6 ${max}`}>
+          <div className="flex items-center gap-6">
+            <Link href="/" aria-label="Fydell home" className="inline-flex items-center">
+              <FydellLogo height={20} />
+            </Link>
+            {current ? (
+              <nav aria-label="Candidate" className="hidden items-center gap-5 sm:flex">
+                {links.map((l) => (
+                  <Link
+                    key={l.key}
+                    href={l.href}
+                    aria-current={current === l.key ? "page" : undefined}
+                    className={`text-[13.5px] font-medium ${current === l.key ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </nav>
+            ) : null}
+          </div>
           {action}
         </div>
       </header>

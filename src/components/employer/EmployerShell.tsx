@@ -19,6 +19,7 @@ import {
   Users,
 } from "lucide-react";
 import FydellMark from "@/components/brand/FydellMark";
+import FydellLogo from "@/components/brand/FydellLogo";
 import { initialsFrom } from "@/lib/workspace/identity";
 import { ToastProvider } from "@/components/ui/Toast";
 import SignOutButton from "./SignOutButton";
@@ -485,10 +486,7 @@ export default function EmployerShell({
               href="/app/employer"
               className="flex h-9 items-center gap-2.5 rounded-[6px] px-2 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
             >
-              <FydellMark width={18} />
-              <span className="min-w-0 flex-1 truncate text-[14px] font-semibold tracking-[-0.024em] text-[var(--text-primary)]">
-                fydell
-              </span>
+              <FydellLogo height={20} />
             </Link>
 
             <div className="mt-1 border-b border-[var(--border-subtle)] pb-2">

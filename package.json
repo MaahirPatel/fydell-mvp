@@ -20,6 +20,7 @@
     "test:proof": "npm run test:proof:contracts && npm run test:sandbox:contracts && npm run test:proof:database && npm run test:golden-path-persistence",
     "test:proof:contracts": "tsx scripts/test-proof-graph.ts",
     "test:sandbox:contracts": "tsx scripts/test-sandbox-contracts.ts",
+    "test:applied-ai-analysis": "tsx scripts/test-applied-ai-analysis-evals.ts",
     "test:proof:live": "tsx scripts/test-sandbox-live.ts && tsx scripts/test-proof-database.ts && tsx --conditions react-server scripts/test-golden-path-persistence.ts",
     "test:proof:database": "tsx scripts/test-proof-database.ts",
     "test:golden-path-persistence": "tsx --conditions react-server scripts/test-golden-path-persistence.ts",
@@ -52,7 +53,11 @@
     "measure:baseline": "tsx scripts/measure-baseline.ts",
     "test:release": "npm run test:sims && npm run test:v2 && npm run test:v3 && npm run test:states && npm run test:disclosure && npm run test:october && npm run test:auth && npm run test:copy && npm run test:db-security && npm run test:project-guard && npm run test:identity && npm run test:availability && npm run typecheck",
     "test:rls-smoke": "tsx scripts/test-rls-smoke.ts",
-    "test:sim-engine": "tsx scripts/test-sim-engine-runtime.ts && tsx scripts/test-sim-engine-analysis.ts && tsx scripts/test-golden-path-skeleton.ts && npm run test:golden-path-persistence",
+    "test:applied-ai-proof": "tsx scripts/test-applied-ai-proof-coverage.ts",
+    "test:homepage": "tsx scripts/test-homepage-positioning.ts",
+    "test:github": "tsx scripts/test-github-extractor.ts",
+    "stripe:setup": "tsx scripts/stripe-setup.ts",
+    "test:sim-engine": "tsx scripts/test-sim-engine-runtime.ts && tsx scripts/test-sim-engine-analysis.ts && tsx scripts/test-golden-path-skeleton.ts && npm run test:golden-path-persistence && npm run test:applied-ai-proof && npm run test:applied-ai-analysis",
     "test:golden-path-skeleton": "tsx scripts/test-golden-path-skeleton.ts",
     "test:pilot-golden-path": "tsx scripts/test-pilot-golden-path.ts",
     "test:e2e": "playwright test",
@@ -60,7 +65,8 @@
     "bootstrap:admin": "tsx scripts/bootstrap-platform-admin.ts",
     "admin:password": "tsx scripts/set-admin-password.ts --write",
     "verify:prod": "tsx scripts/verify-production-readiness.ts",
-    "seed:dev": "ALLOW_DEV_SEED=true tsx scripts/seed-development.ts"
+    "seed:dev": "ALLOW_DEV_SEED=true tsx scripts/seed-development.ts",
+    "seed:sandbox-applied-ai": "tsx scripts/seed-sandbox-applied-ai.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -83,7 +89,7 @@
     "recharts": "^3.9.0",
     "resend": "^6.14.0",
     "server-only": "^0.0.1",
-    "stripe": "^17.7.0",
+    "stripe": "^22.6.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {

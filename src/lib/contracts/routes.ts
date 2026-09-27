@@ -7,6 +7,10 @@
 
 export const PUBLIC_ROUTES = [
   "/",
+  "/developers",
+  "/employers",
+  "/pricing",
+  "/how-it-works",
   "/product",
   "/simulations",
   "/trust",
@@ -49,6 +53,10 @@ export const WAVE1_PRIMARY_CTA = {
 
 export const WAVE1_ROUTE_OWNERSHIP = {
   "/": { auth: "public", owner: "marketing", empty: "n/a", error: "static" },
+  "/developers": { auth: "public", owner: "marketing", empty: "n/a", error: "static" },
+  "/employers": { auth: "public", owner: "marketing", empty: "n/a", error: "static" },
+  "/pricing": { auth: "public", owner: "marketing", empty: "n/a", error: "static" },
+  "/how-it-works": { auth: "public", owner: "marketing", empty: "n/a", error: "static" },
   "/product": { auth: "public", owner: "marketing", empty: "n/a", error: "static" },
   "/simulations": { auth: "public", owner: "marketing", empty: "n/a", error: "static" },
   "/trust": { auth: "public", owner: "marketing", empty: "n/a", error: "static" },

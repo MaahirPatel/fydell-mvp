@@ -1,0 +1,88 @@
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+let failures = 0;
+
+function read(path: string): string {
+  return readFileSync(resolve(path), "utf8");
+}
+
+function ok(name: string, condition: boolean): void {
+  if (condition) {
+    console.log(`  ok   ${name}`);
+    return;
+  }
+  console.log(`  FAIL ${name}`);
+  failures += 1;
+}
+
+const page = read("src/app/page.tsx");
+const home = read("src/components/marketing/home/FydellHome.tsx");
+const workspace = read("src/components/marketing/home/EvidenceWorkspace.tsx");
+const sharing = read("src/components/marketing/home/SharingPreview.tsx");
+const stage = read("src/components/marketing/home/ProductStage.tsx");
+const fixture = read("src/lib/marketing/demo-fixture.ts");
+const nav = read("src/components/layout/SiteNav.tsx");
+const footer = read("src/components/layout/SiteFooter.tsx");
+const pricing = read("src/app/pricing/page.tsx");
+const layout = read("src/app/layout.tsx");
+const getStarted = read("src/app/get-started/page.tsx");
+const signup = read("src/app/signup/page.tsx");
+const active = [page, home, workspace, sharing, stage, fixture, nav, footer, pricing, layout, getStarted, signup].join("\n");
+
+console.log("\nFydell homepage contract");
+
+ok("homepage mounts the Fydell composition", page.includes("FydellHome"));
+ok(
+  "hero headline and supporting copy",
+  home.includes("Hiring infrastructure built on real engineering work") &&
+    /Engineering Passports from real repositories\./.test(home),
+);
+ok(
+  "hero actions route employers to signup and developers to the passport builder",
+  /href="\/signup\?as=employer"[^>]*>Start hiring/.test(home) && /href="\/passport\/new"/.test(home),
+);
+ok(
+  "audience choice offers developer and employer paths into signup",
+  /I'm a developer/.test(getStarted) &&
+    /I'm hiring/.test(getStarted) &&
+    /\/signup\?as=developer/.test(getStarted) &&
+    /\/signup\?as=employer/.test(getStarted) &&
+    /as === "developer"/.test(signup),
+);
+ok(
+  "four product chapters with anchors used by the nav",
+  ["Turn repositories into a record of real work", "See how engineers solve real problems", "Decide on evidence, together", "Engineers stay in control of their record"].every((h) => home.includes(h)) &&
+    /id="developers"/.test(home) &&
+    /id="employers"/.test(home),
+);
+ok("shared evidence interface still backs the demo", /aria-pressed=\{active\}/.test(workspace) && /Evidence limits/.test(workspace));
+ok("sharing preview shows the recipient view", /What Employer A sees/.test(sharing) && /What Employer A sees/.test(home));
+ok("homepage decisions never message candidates", /Nothing is sent to the candidate/.test(home));
+ok("employer decision does not send anything", /nothing is sent to the candidate/.test(workspace));
+ok("demo has four steps with skip and reset", /Skip to the report/.test(stage) && /Reset demo/.test(stage) && /"passport"/.test(stage) && /EvidenceWorkspace/.test(stage));
+ok("official lockup is used in the site header", /FydellLogo/.test(nav) && /FydellLogo/.test(footer));
+ok(
+  "navigation order and labels",
+  /Developers[\s\S]*Employers[\s\S]*Product[\s\S]*Pricing/.test(nav) && /Sign in/.test(nav) && /Get started/.test(nav),
+);
+ok("example data is labelled", /DEMO_LABEL/.test(workspace) && /DEMO_LABEL/.test(sharing) && /DEMO_LABEL/.test(home) && /Example data/.test(fixture));
+ok(
+  "internal rules are not rendered as homepage sections",
+  !/What Fydell will not do|Coverage is stated plainly|never recorded as a candidate result/.test(home),
+);
+ok(
+  "no retired positioning in active public surfaces",
+  !/Solutions Engineer|worth interviewing|worth meeting|Run a pilot|Start a hiring pilot|Request a pilot|placement fee|15%|\$250|\$2,500|Data Analyst|quality_events|Acme|SSO review|oral defense/i.test(active),
+);
+ok("no invented social proof or unsupported claims", !/testimonial|trusted by|SOC 2 certified|predicts? job performance|industry standard/i.test(active));
+ok("pricing states the billing unit without mixing plan types", /completed simulation/i.test(pricing) && !/Annual plan/.test(pricing));
+ok(
+  "site icons are generated from the official Fydell mark",
+  ["src/app/favicon.ico", "src/app/icon.png", "src/app/apple-icon.png"].every((f) => existsSync(resolve(f))) &&
+    !existsSync(resolve("src/app/icon.svg")) &&
+    !/icons:/.test(layout),
+);
+
+if (failures > 0) process.exit(1);
+console.log("\nHomepage contract passed");

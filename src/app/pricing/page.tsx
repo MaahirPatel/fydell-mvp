@@ -1,151 +1,203 @@
+import Link from "next/link";
+import { Check } from "lucide-react";
 import MarketingShell from "@/components/layout/MarketingShell";
-import { ButtonLink } from "@/components/marketing/ui";
+import PricingEstimator from "@/components/marketing/PricingEstimator";
+import s from "@/components/marketing/home/fydell-home.module.css";
+import { PRICING, planSignupHref, usd } from "@/lib/marketing/pricing";
 
 export const metadata = {
   title: "Pricing",
-  description:
-    "Verify candidates you already know, let Fydell search, or build an ongoing verified hiring pipeline.",
+  description: `Free for engineers. Hiring teams pay ${usd(PRICING.starterPerSimulation)} per completed simulation, or ${usd(PRICING.teamMonthly)} a month with ${PRICING.teamIncluded} included.`,
 };
 
-const OFFERS = [
+type Plan = {
+  key: string;
+  name: string;
+  badge?: string;
+  price: string;
+  per?: string;
+  unit: string;
+  includes: readonly string[];
+  action: { label: string; href: string };
+  solid?: boolean;
+  featured?: boolean;
+};
+
+const PLANS: readonly Plan[] = [
   {
-    name: "Verify",
-    price: "$250",
-    cadence: "per completed candidate",
-    description: "Bring the candidates. Fydell verifies the work.",
-    features: [
-      "Role-specific work simulation",
-      "Material information changes mid-run",
-      "Candidate oral defense",
-      "Human-reviewed evidence brief",
-      "Candidate-specific interview probes",
-    ],
-    action: "Start verifying",
-  },
-  {
-    name: "Search",
-    price: "15%",
-    cadence: "of first-year base salary",
-    description: "Fydell finds, verifies, and shortlists the people worth meeting.",
-    features: [
-      "Role calibration with Fydell",
-      "Candidate sourcing",
-      "Full verification workflow",
-      "Curated three-to-five person shortlist",
-      "No hire, no placement fee",
-    ],
-    action: "Start a search",
-    recommended: true,
-  },
-  {
-    name: "Partner",
-    price: "$2,500",
-    cadence: "per month + 10% per hire",
-    description: "An ongoing verified pipeline for teams hiring repeatedly.",
-    features: [
-      "Continuous role calibration",
-      "Priority candidate sourcing",
-      "Verification and human review",
-      "Recurring decision-ready shortlists",
-      "Interview and outcome tracking",
-    ],
-    action: "Discuss a partnership",
-  },
-  {
-    name: "Candidates",
+    key: "engineers",
+    name: "Engineers",
     price: "Free",
-    cadence: "always",
-    description: "Candidates never pay to demonstrate how they work.",
-    features: [
-      "No application fee",
-      "No evaluation fee",
-      "Plain-language recording disclosure",
-      "Candidate-controlled Work Receipts",
-      "No score sold back to candidates",
+    unit: "Always. For anyone building or sharing a passport.",
+    includes: [
+      "Engineering Passport from public repositories",
+      "Source-linked findings with coverage",
+      "Scoped, revocable share links",
+      "JSON export of your record",
+      "Simulations you are invited to",
     ],
-    action: "How candidate work is used",
+    action: { label: "Build your passport", href: "/passport/new" },
+  },
+  {
+    key: "starter",
+    name: "Starter",
+    price: usd(PRICING.starterPerSimulation),
+    per: "/ simulation",
+    unit: "Pay per completed simulation. No monthly fee.",
+    includes: [
+      "Unlimited roles, invitations, and reviewers",
+      "Python backend simulation",
+      "Evidence reports with citations",
+      "Open passports candidates share with you",
+      "Decision log and reviewer notes",
+    ],
+    action: { label: "Start on Starter", href: planSignupHref("starter") },
+  },
+  {
+    key: "team",
+    name: "Team",
+    badge: "Recommended",
+    price: usd(PRICING.teamMonthly),
+    per: "/ month",
+    unit: `${PRICING.teamIncluded} completed simulations included, then ${usd(PRICING.teamOverage)} each.`,
+    includes: [
+      "Everything in Starter",
+      `${PRICING.teamIncluded} completed simulations every month`,
+      `${usd(PRICING.teamOverage)} per extra simulation`,
+      "Priority support from the Fydell team",
+      "Onboarding call for your first role",
+    ],
+    action: { label: "Start on Team", href: planSignupHref("team") },
+    solid: true,
+    featured: true,
+  },
+  {
+    key: "enterprise",
+    name: "Enterprise",
+    price: "Custom",
+    unit: `For ${PRICING.enterpriseFrom}+ completed simulations a month.`,
+    includes: [
+      "Everything in Team",
+      "Volume pricing and contract terms",
+      "Security and data-handling review",
+      "Invoiced billing",
+      "Named contact",
+    ],
+    action: { label: "Talk to us", href: "/contact" },
   },
 ];
+
+const FAQ = [
+  {
+    q: "What exactly is billed?",
+    a: "A completed simulation: a candidate submitted an attempt and it produced a report. Invitations, expired links, abandoned attempts, and runs that fail for infrastructure reasons are never billed.",
+  },
+  {
+    q: "Do reviewers or roles cost extra?",
+    a: "No. Every plan includes unlimited roles, invitations, and reviewers. You pay for completed work, not seats.",
+  },
+  {
+    q: "What happens to unused Team simulations?",
+    a: "Included simulations reset each month and do not roll over. If your volume varies a lot, Starter may cost less; the estimator shows both.",
+  },
+  {
+    q: "Can I switch plans?",
+    a: "Yes. Move between Starter and Team at the start of any billing month. Enterprise terms are set in your agreement.",
+  },
+  {
+    q: "Do engineers ever pay?",
+    a: "Never. Passports, share links, exports, and invited simulations are free for engineers.",
+  },
+  {
+    q: "What is covered today?",
+    a: "Simulations cover Python backend work. Frontend, full-stack, and AI/ML candidates can be reviewed through their Engineering Passport evidence at no charge.",
+  },
+] as const;
 
 export default function PricingPage() {
   return (
     <MarketingShell>
-      <main className="pb-24 pt-[132px] sm:pt-[156px]">
-        <div className="mkt-content">
-          <h1 className="page-display">Pricing</h1>
-          <p className="mt-5 max-w-[620px] text-[18px] leading-[1.55] text-[var(--text-secondary)]">
-            Pay for verified hiring work, not software seats. Search is the core
-            offer. Verify is available when you already know who you want to
-            evaluate.
-          </p>
-
-          <section className="mt-16 grid border-y border-[var(--border-subtle)] min-[900px]:grid-cols-4">
-            {OFFERS.map((offer, index) => (
-            <article
-              key={offer.name}
-              className={`flex min-h-[560px] flex-col py-8 min-[900px]:px-6 min-[900px]:first:pl-0 min-[900px]:last:pr-0 ${
-                index === 0
-                  ? ""
-                  : "border-t border-[var(--border-subtle)] min-[900px]:border-l min-[900px]:border-t-0"
-              }`}
-            >
-              <div className="min-h-6">
-                {offer.recommended ? (
-                  <span className="text-[12px] font-medium text-[var(--text-secondary)]">
-                    Core offer
-                  </span>
-                ) : null}
-              </div>
-              <h2 className="mt-3 text-[18px] font-semibold tracking-[-0.02em]">
-                {offer.name}
-              </h2>
-              <div className="mt-3 min-h-[58px]">
-                <p className="text-[22px] font-medium tracking-[-0.025em] tabular-nums">
-                  {offer.price}
-                </p>
-                <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
-                  {offer.cadence}
-                </p>
-              </div>
-              <p className="mt-6 min-h-[68px] border-t border-[var(--border-subtle)] pt-4 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
-                {offer.description}
+      <div className={s.page}>
+        <section className={s.hero}>
+          <div className={`${s.container} ${s.heroCopyIn}`}>
+            <h1 className={s.title}>Free for engineers. Pay per completed simulation.</h1>
+            <div className={s.heroRow}>
+              <p className={s.lede}>
+                No seats, no platform fee on Starter, and nothing billed until a candidate finishes. Pick a plan
+                or estimate your month below.
               </p>
-              <ul className="mt-5 space-y-3">
-                {offer.features.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex gap-2.5 text-[13px] leading-[1.45] text-[var(--text-secondary)]"
-                  >
-                    <span
-                      aria-hidden
-                      className="mt-[5px] inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-[var(--border-strong)] text-[9px] text-[var(--text-primary)]"
-                    >
-                      ✓
-                    </span>
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-auto pt-10">
-                <ButtonLink
-                  href={offer.name === "Candidates" ? "/trust" : "/contact"}
-                  variant={offer.recommended ? "primary" : "soft"}
-                  className="w-full"
-                >
-                  {offer.action}
-                </ButtonLink>
-              </div>
-            </article>
-          ))}
-          </section>
+            </div>
+          </div>
 
-          <p className="mt-6 max-w-[720px] text-[13px] leading-[1.6] text-[var(--text-tertiary)]">
-            Search placement fees apply only when a candidate is hired. Partner
-            agreements define the active roles, expected hiring volume, and
-            sourcing scope before work begins.
-          </p>
-        </div>
-      </main>
+          <div className={s.container}>
+            <div className={s.plans}>
+              {PLANS.map((plan) => (
+                <div key={plan.key} id={plan.key} className={`${s.plan} ${plan.featured ? s.planFeatured : ""}`}>
+                  <p className={s.planName}>
+                    {plan.name}
+                    {plan.badge ? <span className={s.example}>{plan.badge}</span> : null}
+                  </p>
+                  <p className={s.planPrice}>
+                    {plan.price}
+                    {plan.per ? <small>{plan.per}</small> : null}
+                  </p>
+                  <p className={s.planUnit}>{plan.unit}</p>
+                  <ul className={s.planList}>
+                    {plan.includes.map((item) => (
+                      <li key={item}>
+                        <Check aria-hidden /> {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className={s.planAction}>
+                    <Link href={plan.action.href} className={plan.solid ? s.btnSolid : s.btnGhost}>
+                      {plan.action.label}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="estimate" className={`${s.container} ${s.chapter}`}>
+          <div className={s.chapterHead}>
+            <h2 className={s.chapterTitle}>Estimate your month</h2>
+            <p className={s.chapterCopy}>
+              Drag to your expected volume of completed simulations. The estimator compares Starter and Team at
+              published prices and flags the cheaper one.
+            </p>
+          </div>
+          <PricingEstimator />
+        </section>
+
+        <section className={`${s.container} ${s.chapter}`} aria-labelledby="pricing-faq">
+          <h2 id="pricing-faq" className={s.chapterTitle}>Billing questions</h2>
+          <div className={s.faq}>
+            {FAQ.map((item) => (
+              <details key={item.q}>
+                <summary>{item.q}</summary>
+                <p>{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <section className={`${s.container} ${s.closing}`}>
+          <h2 className={s.closingTitle}>
+            Start with one role.
+            <br />
+            <span>Pay only when candidates finish.</span>
+          </h2>
+          <div className={s.closingRow}>
+            <p className={s.lede}>Prices in US dollars, excluding applicable taxes.</p>
+            <div className={s.heroActions}>
+              <Link href="/signup?as=employer" className={s.btnSolid}>Start hiring</Link>
+              <Link href="/contact" className={s.btnGhost}>Talk to us</Link>
+            </div>
+          </div>
+        </section>
+      </div>
     </MarketingShell>
   );
 }

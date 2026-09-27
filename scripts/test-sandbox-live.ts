@@ -3,6 +3,7 @@
  * Run: npm run test:proof:live
  */
 import { STAGING_PROJECT_REF, projectRefFromUrl } from "../src/lib/supabase/project-guard";
+import { APPLIED_AI_FIXTURE_VERSION } from "../src/lib/sim-engine/proof/sandbox/fixture";
 
 const required = ["FYDELL_DEV_PROJECT_REF", "FYDELL_DEV_DB_URL", "FYDELL_SANDBOX_ENABLED", "FYDELL_SANDBOX_FIXTURE_VERSION"];
 const missing = required.filter((name) => !process.env[name]);
@@ -15,8 +16,8 @@ if (process.env.FYDELL_DEV_PROJECT_REF !== STAGING_PROJECT_REF) {
 if (process.env.FYDELL_SANDBOX_ENABLED !== "true") {
   throw new Error("FYDELL_SANDBOX_ENABLED must be true for live sandbox tests");
 }
-if (process.env.FYDELL_SANDBOX_FIXTURE_VERSION !== "acme-rollout-v1") {
-  throw new Error("FYDELL_SANDBOX_FIXTURE_VERSION must be acme-rollout-v1");
+if (process.env.FYDELL_SANDBOX_FIXTURE_VERSION !== APPLIED_AI_FIXTURE_VERSION) {
+  throw new Error(`FYDELL_SANDBOX_FIXTURE_VERSION must be ${APPLIED_AI_FIXTURE_VERSION}`);
 }
 const dbUrl = process.env.FYDELL_DEV_DB_URL ?? "";
 if (!dbUrl.includes(STAGING_PROJECT_REF)) {

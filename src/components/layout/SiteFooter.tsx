@@ -1,16 +1,18 @@
 import Link from "next/link";
-import FydellMark from "@/components/brand/FydellMark";
+import FydellLogo from "@/components/brand/FydellLogo";
 
 const PRODUCT = [
-  { label: "How it works", href: "/how-it-works" },
+  { label: "Developers", href: "/#developers" },
+  { label: "Employers", href: "/#employers" },
+  { label: "Demo", href: "/demo" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Trust", href: "/trust" },
-  { label: "Contact", href: "/contact" },
 ];
 
-const ACCESS = [
+const COMPANY = [
+  { label: "Trust", href: "/trust" },
+  { label: "Contact sales", href: "/contact" },
   { label: "Sign in", href: "/login" },
-  { label: "Create account", href: "/signup" },
+  { label: "Get started", href: "/get-started" },
 ];
 
 const LEGAL = [
@@ -28,10 +30,7 @@ function FooterCol({
 }) {
   return (
     <div>
-      {/* The title has to outrank the links it heads. It previously used
-          --text-tertiary against --text-secondary links, which read as a dimmer
-          label above brighter items and inverted the hierarchy. */}
-      <p className="text-[13px] font-medium leading-none text-[var(--text-primary)]">
+      <p className="text-[12.5px] font-medium tracking-[-0.01em] text-[var(--text-primary)]">
         {title}
       </p>
       <ul className="mt-4 space-y-2.5">
@@ -39,7 +38,7 @@ function FooterCol({
           <li key={link.label}>
             <Link
               href={link.href}
-              className="text-[13.5px] leading-none text-[var(--text-secondary)] transition-colors duration-150 hover:text-[var(--text-primary)]"
+              className="text-[13.5px] tracking-[-0.01em] text-[var(--text-secondary)] transition-colors duration-150 hover:text-[var(--text-primary)]"
             >
               {link.label}
             </Link>
@@ -50,38 +49,30 @@ function FooterCol({
   );
 }
 
-export default function SiteFooter() {
+export default function SiteFooter({ tone = "light" }: { tone?: "ink" | "light" }) {
   return (
-    <footer className="border-t border-[var(--border-subtle)] pb-12 pt-16 lg:pt-20">
-      <div className="mkt-content">
+    <footer className="border-t border-[var(--border-subtle)] pb-10 pt-14 lg:pt-16">
+      <div className="mx-auto w-full max-w-[1232px] px-5 sm:px-8">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-4">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2"
-              aria-label="Fydell home"
-            >
-              <FydellMark width={20} />
-              <span className="text-[15px] font-medium leading-none tracking-[-0.03em] text-[var(--text-primary)]">
-                fydell
-              </span>
+            <Link href="/" className="inline-flex items-center gap-2" aria-label="Fydell home">
+              <FydellLogo height={20} tone={tone === "ink" ? "dark" : "light"} />
             </Link>
-            <p className="mt-4 max-w-[34ch] text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
-              Find and verify technical customer-facing talent through realistic
-              work and evidence a hiring team can inspect.
+            <p className="mt-5 max-w-[34ch] text-[13.5px] leading-[1.65] tracking-[-0.01em] text-[var(--text-secondary)]">
+              The Proof of Work Network for software engineers. Evidence from
+              real projects and programming simulations, owned by the developer
+              and inspectable by the team hiring them.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-x-12 gap-y-10 lg:col-span-5 lg:col-start-8">
             <FooterCol title="Product" links={PRODUCT} />
-            <FooterCol title="Access" links={ACCESS} />
+            <FooterCol title="Company" links={COMPANY} />
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col gap-4 border-t border-[var(--border-subtle)] pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[12.5px] text-[var(--text-tertiary)]">
-            © 2026 Fydell
-          </p>
+        <div className="mt-12 flex flex-col gap-4 border-t border-[var(--border-subtle)] pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[12.5px] text-[var(--text-tertiary)]">© 2026 Fydell</p>
           <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
             {LEGAL.map((link) => (
               <li key={link.label}>

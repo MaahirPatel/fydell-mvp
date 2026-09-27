@@ -1,8 +1,11 @@
 import "server-only";
 import { randomBytes } from "crypto";
-import { PROOF_ROLE_ID, PROOF_VERSION_ID } from "../types";
 import { sandboxAdmin } from "./client";
-import { ACME_ROLLOUT_FIXTURE } from "./fixture";
+import {
+  APPLIED_AI_ROLE_ID,
+  APPLIED_AI_VERSION_ID,
+  APPLIED_AI_WORKFLOW_FIXTURE,
+} from "./fixture";
 import { createWorldState, parseWorldState } from "./world-state";
 import { createCapabilitySecret, hashCapabilitySecret, hashIp } from "./capability";
 import { ProofSimulationRunRepository } from "./proof-repos";
@@ -23,6 +26,17 @@ export async function createSandboxRun(ip: string): Promise<{
   await cleanupExpiredSandboxes(10);
   const ipHash = hashIp(ip || "unknown");
   const admin = sandboxAdmin();
+  const { data: role } = await admin.from("proof_roles").select("id").eq("id", APPLIED_AI_ROLE_ID).maybeSingle();
+  const { data: version } = await admin
+    .from("proof_simulation_versions")
+    .select("id")
+    .eq("id", APPLIED_AI_VERSION_ID)
+    .maybeSingle();
+  if (!role || !version) {
+    throw new Error(
+      "Applied AI sandbox catalog is not provisioned. An operator must run `npm run seed:sandbox-applied-ai` against the disposable development project.",
+    );
+  }
   const windowStart = new Date(Date.now() - CREATE_WINDOW_MS).toISOString();
   const { data: recent } = await admin
     .from("proof_product_events")
@@ -42,7 +56,7 @@ export async function createSandboxRun(ip: string): Promise<{
   const { data: org, error: orgError } = await admin
     .from("organizations")
     .insert({
-      name: `${ACME_ROLLOUT_FIXTURE.organization.name} sandbox`,
+      name: "Applied AI verification sandbox",
       slug,
       status: "active",
       owner_email: `sandbox+${slug}@fydell.invalid`,
@@ -56,8 +70,8 @@ export async function createSandboxRun(ip: string): Promise<{
     .from("proof_invitations")
     .insert({
       organization_id: org.id,
-      role_id: PROOF_ROLE_ID,
-      simulation_version_id: PROOF_VERSION_ID,
+      role_id: APPLIED_AI_ROLE_ID,
+      simulation_version_id: APPLIED_AI_VERSION_ID,
       email: `candidate+${slug}@fydell.invalid`,
       token,
       status: "in_progress",
@@ -86,7 +100,7 @@ export async function createSandboxRun(ip: string): Promise<{
     actorType: "system",
     correlationId: run.id,
     idempotencyKey: `${run.id}:start`,
-    payload: { fixtureVersion: ACME_ROLLOUT_FIXTURE.fixtureVersion },
+    payload: { fixtureVersion: APPLIED_AI_WORKFLOW_FIXTURE.fixtureVersion },
   });
   await admin.from("proof_product_events").insert({
     organization_id: org.id,

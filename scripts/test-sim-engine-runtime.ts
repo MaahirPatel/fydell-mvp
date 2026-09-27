@@ -6,6 +6,10 @@ import { q3ChurnInvestigationScenario } from "../src/lib/sim-engine/scenarios/da
 import { brightpathLaunchImportScenario } from "../src/lib/sim-engine/scenarios/implementation-consultant/brightpath-launch-import";
 import { greenStatusPageScenario } from "../src/lib/sim-engine/scenarios/technical-support/green-status-page";
 import { ridgelineExecutiveQueueScenario } from "../src/lib/sim-engine/scenarios/business-systems-analyst/ridgeline-executive-queue";
+import {
+  aiWorkflowHardeningScenario,
+  APPLIED_AI_RUNTIME_GAPS,
+} from "../src/lib/sim-engine/scenarios/applied-ai-engineer/ai-workflow-hardening";
 import { getScenario } from "../src/lib/sim-engine/scenarios/catalog";
 import { centerTabsForScenario, rightTabsForScenario } from "../src/lib/sim-engine/registry/workbenchLayout";
 import { validateScenario } from "../src/lib/sim-engine/validation/validateScenario";
@@ -14,6 +18,7 @@ import { getRenderer, registerRenderer } from "../src/lib/sim-engine/registry/re
 import { telemetryToLegacyEvent, attemptToLegacySessionProjection } from "../src/lib/sim-engine/adapters/legacy-compat";
 import { resolveEngineScenarioId } from "../src/lib/sim-engine/adapters/legacy-slug-map";
 import { classifyIntent } from "../src/lib/sim-engine/runtime/personaRuntime";
+import { ROLE_DISPLAY } from "../src/lib/sim-engine/types/roles";
 
 let failures = 0;
 
@@ -295,6 +300,119 @@ ok(
   resolveEngineScenarioId("green-status-page") === "green-status-page-incident"
 );
 ok("unknown legacy slug returns null", resolveEngineScenarioId("not-a-real-slug") === null);
+
+// --- Applied AI Engineer canonical scenario ---
+const aaiValidation = validateScenario(aiWorkflowHardeningScenario);
+ok("AAI scenario validates", aaiValidation.ok, aaiValidation.issues.map((i) => i.message).join("; "));
+ok(
+  "AAI catalog resolves without relabeling SE",
+  getScenario("ai-workflow-hardening")?.metadata.roleKey === "applied_ai_engineer" &&
+    getScenario("northstar-integration") === northstarIntegrationScenario
+);
+ok(
+  "AAI role display metadata",
+  ROLE_DISPLAY.applied_ai_engineer.label === "Applied AI Engineer"
+);
+ok(
+  "AAI canonical versions",
+  aiWorkflowHardeningScenario.versions.scenarioVersion === "aai-workflow-hardening-v1" &&
+    aiWorkflowHardeningScenario.versions.competencyModelVersion === "aai-proof-v1"
+);
+ok(
+  "AAI proof targets use PR-AI ids",
+  aiWorkflowHardeningScenario.competencies.length === 8 &&
+    aiWorkflowHardeningScenario.competencies.every((c) => /^PR-AI-0[1-8]$/.test(c.id))
+);
+const aaiResourceTitles = aiWorkflowHardeningScenario.resources.map((resource) => resource.title);
+ok(
+  "AAI fixture covers canonical material types",
+  [
+    "src/workflow.ts",
+    "config/models.json",
+    "src/schema.ts",
+    "eval/cases.json",
+    "eval/graders.ts",
+    "requirements/product-brief.md",
+    "requirements/security-and-data.md",
+    "traces/trace-017-schema-failure.json",
+    "metrics/baseline.json",
+  ].every((title) => aaiResourceTitles.includes(title))
+);
+ok(
+  "AAI workbench composition is capability driven",
+  centerTabsForScenario(aiWorkflowHardeningScenario).some((tab) => tab.value === "code") &&
+    rightTabsForScenario(aiWorkflowHardeningScenario).some((tab) => tab.value === "artifacts")
+);
+ok(
+  "AAI runtime limitations are explicit",
+  APPLIED_AI_RUNTIME_GAPS.some((gap) => gap.includes("read-only fixtures")) &&
+    APPLIED_AI_RUNTIME_GAPS.some((gap) => gap.includes("does not execute")) &&
+    APPLIED_AI_RUNTIME_GAPS.some((gap) => gap.includes("restore"))
+);
+
+const latencyEvent = aiWorkflowHardeningScenario.events.find(
+  (event) => event.id === "evt_release_latency_001"
+);
+ok(
+  "LATENCY_001 trigger is architecture commitment only",
+  latencyEvent?.once === true &&
+    latencyEvent.trigger.kind === "ARTIFACT" &&
+    latencyEvent.trigger.artifactKind === "architecture_decision"
+);
+
+const aaiRuntime = new SimulationRuntime(
+  aiWorkflowHardeningScenario,
+  createAttempt(aiWorkflowHardeningScenario, "aaitest01")
+);
+aaiRuntime.start();
+ok(
+  "LATENCY_001 hidden initially",
+  aaiRuntime.getAttempt().resources.res_latency_constraint?.visible === false &&
+    aaiRuntime.getAttempt().world.flags.latency_constraint_released === false
+);
+aaiRuntime.saveArtifact("note", "Assumptions", "The aggregate score may hide critical policy failures.");
+ok(
+  "unrelated artifact cannot release LATENCY_001",
+  aaiRuntime.getAttempt().world.flags.latency_constraint_released === false
+);
+aaiRuntime.saveArtifact(
+  "architecture_decision",
+  "Preliminary architecture decision",
+  "Use deterministic account routing and authorization, bounded transient retries, idempotent writes, semantic validation, and critical-slice evals."
+);
+let aaiAttempt = aaiRuntime.getAttempt();
+ok(
+  "architecture commitment releases LATENCY_001",
+  aaiAttempt.resources.res_latency_constraint?.visible === true &&
+    aaiAttempt.world.flags.latency_constraint_released === true &&
+    aaiAttempt.world.flags.latency_fact_id === "LATENCY_001"
+);
+const releasedCount = aaiAttempt.world.scenarioEvents.filter(
+  (event) => event.label === "FACT_RELEASED: LATENCY_001"
+).length;
+aaiRuntime.saveArtifact(
+  "architecture_decision",
+  "Preliminary architecture decision",
+  "Revised commitment retains deterministic authorization and measures critical quality."
+);
+aaiAttempt = aaiRuntime.getAttempt();
+ok(
+  "LATENCY_001 releases exactly once per runtime",
+  releasedCount === 1 &&
+    aaiAttempt.world.scenarioEvents.filter(
+      (event) => event.label === "FACT_RELEASED: LATENCY_001"
+    ).length === 1
+);
+ok(
+  "LATENCY_001 world event includes baseline and threshold",
+  aaiAttempt.world.scenarioEvents.some(
+    (event) =>
+      event.label === "FACT_RELEASED: LATENCY_001" &&
+      event.payload?.baselineP95Seconds === 10.8 &&
+      event.payload?.requiredP95SecondsBelow === 4
+  )
+);
+aaiRuntime.dispose();
 
 runtime.dispose();
 r401.dispose();

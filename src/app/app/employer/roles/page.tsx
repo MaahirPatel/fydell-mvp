@@ -6,6 +6,7 @@ import { getInvitationRecords } from "../_lib/data";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Panel } from "@/components/ui/Panel";
+import { AppliedAiDemoModule } from "@/components/employer/AppliedAiDemoModule";
 
 export const metadata = { title: "Roles" };
 export const dynamic = "force-dynamic";
@@ -73,6 +74,7 @@ export default async function EmployerRolesPage() {
           </Panel>
         )}
       </div>
+      {catalog.length === 0 ? <AppliedAiDemoModule className="mt-6" /> : null}
     </div>
   );
 }

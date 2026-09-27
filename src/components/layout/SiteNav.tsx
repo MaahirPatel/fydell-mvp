@@ -4,20 +4,16 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import FydellMark from "@/components/brand/FydellMark";
+import FydellLogo from "@/components/brand/FydellLogo";
 
-/**
- * Contact is deliberately absent here. It is the commercial action, so it sits
- * in the action group as a button rather than competing with the explanatory
- * pages as a fourth link of equal weight.
- */
 const LINKS = [
-  { label: "How it works", href: "/how-it-works" },
+  { label: "Developers", href: "/developers" },
+  { label: "Employers", href: "/employers" },
+  { label: "Product", href: "/how-it-works" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Trust", href: "/trust" },
 ];
 
-export default function SiteNav() {
+export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) {
   const pathname = usePathname();
   /*
    * The menu is stored as the route it was opened on rather than a boolean, so
@@ -27,14 +23,6 @@ export default function SiteNav() {
   const [openedOn, setOpenedOn] = useState<string | null>(null);
   const open = openedOn === pathname;
   const setOpen = (next: boolean) => setOpenedOn(next ? pathname : null);
-
-  /*
-   * At rest the header is part of the page: no scrim, no rule, so the ambient
-   * wash behind the hero runs uninterrupted to the top edge. A translucent bar
-   * over a gradient reads as a seam no matter how it is tuned. The scrim only
-   * appears once content is actually passing underneath and the bar has to
-   * separate itself to stay legible.
-   */
   const [lifted, setLifted] = useState(false);
 
   useEffect(() => {
@@ -59,66 +47,47 @@ export default function SiteNav() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-200 ${
+      className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-200 ${
         lifted || open
-          ? "border-[var(--border-subtle)] bg-[var(--nav-scrim)] backdrop-blur-[16px]"
+          ? "border-[var(--border-subtle)] bg-[var(--nav-scrim)] backdrop-blur-[20px] backdrop-saturate-150"
           : "border-transparent bg-transparent"
       }`}
     >
-      <div className="mkt-content flex h-[68px] items-center justify-between gap-8">
-        <Link
-          href="/"
-          className="inline-flex shrink-0 items-center gap-2.5"
-          aria-label="Fydell home"
-        >
-          <FydellMark width={24} />
-          <span className="text-[17px] font-semibold leading-none tracking-[-0.026em] text-[var(--text-primary)]">
-            fydell
-          </span>
+      <div className="mx-auto flex h-16 max-w-[1232px] items-center justify-between gap-6 px-5 sm:px-8">
+        <Link href="/" className="inline-flex shrink-0 items-center" aria-label="Fydell home">
+          <FydellLogo height={21} tone={tone === "ink" ? "dark" : "light"} />
         </Link>
 
-        {/* Every destination carries the same weight and full text contrast.
-            Dimming the inactive links made the whole bar read as disabled
-            chrome; the current page is marked by the rule beneath it instead. */}
-        <nav className="hidden items-center gap-8 min-[900px]:flex" aria-label="Primary">
-          {LINKS.map((item) => {
-            const active =
-              pathname === item.href || pathname.startsWith(`${item.href}/`);
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                className="relative text-[14px] font-medium tracking-[-0.011em] text-[var(--text-primary)] transition-opacity duration-150 hover:opacity-65"
-              >
-                {item.label}
-                {active ? (
-                  <span
-                    aria-hidden
-                    className="absolute inset-x-0 -bottom-[23px] h-[1.5px] bg-[var(--text-primary)]"
-                  />
-                ) : null}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="flex items-center gap-1">
+          <nav className="hidden items-center gap-1 min-[900px]:flex" aria-label="Primary">
+            {LINKS.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`rounded-[8px] px-3 py-1.5 text-[14px] tracking-[-0.01em] transition-colors duration-150 ${
+                    active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
 
-        <div className="flex items-center gap-3">
+          <span aria-hidden className="mx-3 hidden h-4 w-px bg-[var(--border-default)] min-[900px]:block" />
+
           <Link
             href="/login"
-            className="hidden text-[14px] font-medium text-[var(--text-primary)] transition-opacity duration-150 hover:opacity-65 sm:inline"
+            className="hidden rounded-[8px] px-3 py-1.5 text-[14px] tracking-[-0.01em] text-[var(--text-secondary)] transition-colors duration-150 hover:text-[var(--text-primary)] sm:inline"
           >
             Sign in
           </Link>
           <Link
-            href="/contact"
-            className="hidden h-9 items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-raised)] px-4 text-[13.5px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] min-[900px]:inline-flex"
-          >
-            Contact sales
-          </Link>
-          <Link
-            href="/signup"
-            className="hidden h-9 items-center rounded-full bg-[var(--control-solid)] px-4 text-[13.5px] font-medium text-[var(--control-solid-ink)] transition-colors hover:bg-[var(--control-solid-hover)] sm:inline-flex"
+            href="/get-started"
+            className="ml-1 hidden h-8 items-center rounded-full bg-[var(--control-solid)] px-3.5 text-[13.5px] font-medium tracking-[-0.01em] text-[var(--control-solid-ink)] transition-colors duration-150 hover:bg-[var(--control-solid-hover)] sm:inline-flex"
           >
             Get started
           </Link>
@@ -127,38 +96,30 @@ export default function SiteNav() {
             onClick={() => setOpen(!open)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-strong)] text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] min-[900px]:hidden"
+            className="ml-2 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-default)] text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] min-[900px]:hidden"
           >
-            {open ? (
-              <X className="h-4 w-4" strokeWidth={1.7} aria-hidden />
-            ) : (
-              <Menu className="h-4 w-4" strokeWidth={1.7} aria-hidden />
-            )}
+            {open ? <X className="h-4 w-4" strokeWidth={1.7} aria-hidden /> : <Menu className="h-4 w-4" strokeWidth={1.7} aria-hidden />}
           </button>
         </div>
       </div>
 
       {open ? (
-        <div className="border-t border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4 py-3 min-[900px]:hidden">
-          <nav className="flex flex-col gap-0.5" aria-label="Mobile">
-            {[...LINKS, { label: "Contact sales", href: "/contact" }].map((item) => (
+        <div className="border-t border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-5 pb-6 pt-3 min-[900px]:hidden">
+          <nav className="flex flex-col" aria-label="Mobile">
+            {[...LINKS, { label: "Sign in", href: "/login" }].map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className="rounded-[8px] px-3 py-2.5 text-[15px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+                onClick={() => setOpenedOn(null)}
+                className="border-b border-[var(--border-subtle)] py-3.5 text-[16px] text-[var(--text-primary)]"
               >
                 {item.label}
               </Link>
             ))}
             <Link
-              href="/login"
-              className="rounded-[8px] px-3 py-2.5 text-[15px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              className="mt-2 inline-flex h-11 items-center justify-center rounded-full bg-[var(--control-solid)] text-[14.5px] font-medium text-[var(--control-solid-ink)]"
+              href="/get-started"
+              onClick={() => setOpenedOn(null)}
+              className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-[var(--control-solid)] text-[15px] font-medium text-[var(--control-solid-ink)]"
             >
               Get started
             </Link>

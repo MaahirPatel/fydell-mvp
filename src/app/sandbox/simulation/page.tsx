@@ -1,11 +1,7 @@
-import { checkSandboxHealth } from "@/lib/sim-engine/proof/sandbox/kill-switch";
-import { SandboxUnavailable } from "@/components/sandbox/SandboxUnavailable";
-import { SandboxApp } from "@/components/sandbox/SandboxApp";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function SandboxSimulationPage() {
-  const health = await checkSandboxHealth();
-  if (!health.enabled) return <SandboxUnavailable />;
-  return <SandboxApp surface="simulation" />;
+export default function SandboxSimulationPage() {
+  redirect("/sandbox/work");
 }

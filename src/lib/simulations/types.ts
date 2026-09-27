@@ -11,6 +11,7 @@
 export type RoleKey =
   | "data_analyst"
   | "bi_analyst"
+  | "applied_ai_engineer"
   | "solutions_engineer"
   | "implementation_consultant"
   | "technical_support_engineer"

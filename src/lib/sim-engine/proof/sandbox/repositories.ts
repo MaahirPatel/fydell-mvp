@@ -2,6 +2,8 @@ import type { ArtifactContent, EvidenceClaimDraft, RunSnapshot } from "../types"
 import type { SandboxFixtureManifest } from "./fixture";
 import type { SandboxWorldStateV1 } from "./world-state";
 import type { SandboxEventType, EventStream } from "./events";
+import type { AppliedAiEvalResult, AppliedAiWorkspace } from "./applied-ai-workspace";
+import type { InterviewPlan } from "./review-outputs";
 
 export interface SimulationRunRecord {
   id: string;
@@ -35,6 +37,13 @@ export interface SimulationRunRepository {
   updateWorldState(runId: string, previous: SandboxWorldStateV1, next: SandboxWorldStateV1, stage: string, status: string): Promise<void>;
   appendEvent(input: AppendEventInput): Promise<{ id: string; sequence: number }>;
   saveArtifact(runId: string, content: ArtifactContent, stage: string): Promise<void>;
+  saveWorkspaceVersion(
+    runId: string,
+    kind: "workspace_snapshot" | "eval_run",
+    workspace: AppliedAiWorkspace,
+    evaluation: AppliedAiEvalResult | null,
+    stage: string,
+  ): Promise<void>;
   setReleasedFacts(runId: string, facts: string[]): Promise<void>;
 }
 
@@ -46,7 +55,7 @@ export interface EvidenceAnalysisRepository {
     strengths: string[];
     concerns: string[];
     probes: string[];
-  }): Promise<void>;
+  }, interviewPlan?: InterviewPlan): Promise<void>;
   loadClaims(runId: string): Promise<Array<EvidenceClaimDraft & { id: string; pass: string; review_status: string }>>;
 }
 
@@ -59,9 +68,7 @@ export interface IssuedReceipt {
 export interface WorkReceiptIssuer {
   issue(input: {
     runId: string;
-    items: string[];
-    conditions: string[];
-    eventIds: string[];
+    payload: Record<string, unknown>;
   }): Promise<IssuedReceipt>;
   loadPublic(publicId: string): Promise<IssuedReceipt | null>;
 }

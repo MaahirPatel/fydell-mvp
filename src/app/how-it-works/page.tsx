@@ -1,195 +1,154 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import MarketingShell from "@/components/layout/MarketingShell";
-import { ButtonLink } from "@/components/marketing/ui";
 import {
-  AdaptScene,
-  EvidenceReviewScene,
-} from "@/components/marketing/home/NarrativeScenes";
-import {
-  BriefDiagram,
-  EvidenceDiagram,
-  WorkSurfaceDiagram,
-} from "@/components/marketing/home/PrincipleDiagrams";
+  ChapterHead,
+  Features,
+  IntakeVisual,
+  ReviewVisual,
+  ShareVisual,
+  SimulationVisual,
+} from "@/components/marketing/home/FydellHome";
+import s from "@/components/marketing/home/fydell-home.module.css";
 
 export const metadata = {
   title: "How it works",
   description:
-    "Role, work, change, defense, evidence, and interview: the complete Fydell verification flow.",
+    "How Fydell turns public repositories and working-codebase simulations into evidence a hiring team can open, check, and decide on.",
 };
 
-const FLOW = [
-  {
-    name: "Role",
-    body: "Fydell and the employer define the work, judgment, communication, and environment the role actually requires.",
-  },
-  {
-    name: "Work",
-    body: "The candidate enters a realistic job situation with resources, stakeholders, and an open work artifact.",
-  },
-  {
-    name: "Change",
-    body: "A deterministic material fact arrives. Fydell records what the candidate changes, preserves, and communicates.",
-  },
-  {
-    name: "Defense",
-    body: "Follow-up questions target the candidate’s actual decisions, contradictions, and remaining uncertainty.",
-  },
-  {
-    name: "Evidence",
-    body: "The work trail becomes claims with support, counterevidence, confidence, and explicit limits.",
-  },
-  {
-    name: "Interview",
-    body: "The employer gets the few candidates worth meeting and exactly what the next conversation should investigate.",
-  },
-];
-
-const SYSTEM_VIEWS = [
-  {
-    title: "Work observed",
-    body: "The candidate works in a realistic environment with files, people, assumptions, and an artifact that can change.",
-    Diagram: WorkSurfaceDiagram,
-  },
-  {
-    title: "Evidence assembled",
-    body: "Actions and revisions stay connected to their sources, counterevidence, timestamps, and stated limits.",
-    Diagram: EvidenceDiagram,
-  },
-  {
-    title: "Decision verified",
-    body: "A reviewer checks the claim before the employer receives a brief and evidence-linked interview plan.",
-    Diagram: BriefDiagram,
-  },
-];
+const STEPS = [
+  { href: "#import", title: "Import", body: "The engineer connects public GitHub repositories. Each is pinned to a commit." },
+  { href: "#passport", title: "Passport", body: "Findings cite files and lines. What could not be assessed is listed, not hidden." },
+  { href: "#simulate", title: "Simulate", body: "Candidates fix a realistic incident in a working codebase with real tests." },
+  { href: "#review", title: "Review", body: "Reviewers open every claim to its source and log a team decision." },
+  { href: "#share", title: "Share", body: "Engineers scope each link to one employer and can revoke it at any time." },
+] as const;
 
 export default function HowItWorksPage() {
   return (
     <MarketingShell>
-      <main>
-        <section className="pb-20 pt-[132px] sm:pb-24 sm:pt-[156px]">
-          <div className="mkt-content">
-            <div className="mx-auto flex max-w-[1040px] flex-col items-center text-center">
-              <h1 className="max-w-[1000px] text-balance text-[clamp(3rem,5vw,4.6rem)] font-semibold leading-[0.99] tracking-[-0.04em]">
-                From real work to a better interview.
-              </h1>
-              <p className="mt-6 max-w-[660px] text-[18px] leading-[1.55] text-[var(--text-secondary)]">
-                Fydell does not grade a first answer. It observes how someone
-                works, what happens when the situation changes, and whether the
-                final decision holds up under questioning.
+      <div className={s.page}>
+        <section className={s.hero}>
+          <div className={`${s.container} ${s.heroCopyIn}`}>
+            <h1 className={s.title}>From a repository to a hiring decision</h1>
+            <div className={s.heroRow}>
+              <p className={s.lede}>
+                Five steps, each one recorded. Every claim Fydell makes about an engineer points back to code, a
+                commit, or a test run that a reviewer can open.
               </p>
-              <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <ButtonLink href="/contact" variant="primary">
-                  Request a pilot
-                </ButtonLink>
-                <ButtonLink href="/pricing" variant="soft">
-                  View pricing
-                </ButtonLink>
+              <div className={s.heroActions}>
+                <Link href="/passport/new" className={s.btnSolid}>Build a passport</Link>
+                <Link href="/demo" className={s.btnGhost}>Open the demo</Link>
               </div>
             </div>
+            <nav aria-label="Steps" className={s.steps}>
+              {STEPS.map((step, i) => (
+                <a key={step.href} href={step.href} className={s.step}>
+                  <span className={s.stepNum}>{String(i + 1).padStart(2, "0")}</span>
+                  <span className={s.stepTitle}>{step.title}</span>
+                  <span className={s.stepBody}>{step.body}</span>
+                </a>
+              ))}
+            </nav>
           </div>
         </section>
 
-        <section className="border-y border-[var(--border-subtle)] bg-[var(--surface-band)]">
-          <div className="mkt-content grid md:grid-cols-2 lg:grid-cols-6">
-            {FLOW.map((step, index) => (
-              <article
-                key={step.name}
-                className={`relative py-7 md:px-6 lg:min-h-[220px] lg:py-8 ${
-                  index % 2 === 1
-                    ? "md:border-l md:border-[var(--border-subtle)]"
-                    : ""
-                } ${index > 1 ? "border-t border-[var(--border-subtle)] lg:border-t-0" : ""} ${
-                  index > 0 ? "lg:border-l lg:border-[var(--border-subtle)]" : ""
-                }`}
-              >
-                <p className="font-mono text-[11px] tabular-nums text-[var(--text-tertiary)]">
-                  {String(index + 1).padStart(2, "0")}
-                </p>
-                <h2 className="mt-7 text-[17px] font-semibold tracking-[-0.02em]">
-                  {step.name}
-                </h2>
-                <p className="mt-3 text-[12.5px] leading-[1.58] text-[var(--text-secondary)]">
-                  {step.body}
-                </p>
-              </article>
-            ))}
-          </div>
+        <section id="import" className={`${s.container} ${s.chapter}`}>
+          <ChapterHead
+            index="01"
+            label="Import"
+            href="/passport/new"
+            title="Start from code the engineer already wrote"
+            copy="Paste a GitHub profile, choose up to three public repositories, and add a short statement about what you built. Fydell fetches the tree at a pinned commit so every later finding refers to the same code."
+          />
+          <IntakeVisual />
+          <Features dot="var(--brand-teal)" items={["Public repositories", "Pinned commits", "File-level coverage", "Contribution statements"]} />
         </section>
 
-        <section className="mkt-section-chapter">
-          <div className="mkt-content grid lg:grid-cols-3">
-            {SYSTEM_VIEWS.map(({ title, body, Diagram }, index) => (
-              <article
-                key={title}
-                className={`flex min-h-[430px] flex-col py-8 lg:px-10 ${
-                  index > 0
-                    ? "border-t border-[var(--border-subtle)] lg:border-l lg:border-t-0"
-                    : ""
-                }`}
-              >
-                <div className="grid min-h-[250px] flex-1 place-items-center text-[var(--text-primary)] [&_.principle-figure]:h-auto [&_.principle-figure]:w-full [&_.principle-figure]:max-w-[290px] [&_.principle-figure]:overflow-visible">
-                  <Diagram />
-                </div>
-                <h2 className="text-[16px] font-semibold tracking-[-0.02em]">{title}</h2>
-                <p className="mt-3 max-w-[38ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
-                  {body}
-                </p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="mkt-section-chapter overflow-hidden bg-[var(--surface-band)]">
-          <div className="mkt-content">
-            <header className="grid items-end gap-8 lg:grid-cols-[minmax(0,560px)_minmax(0,470px)] lg:justify-between">
-              <h2 className="section-heading max-w-[560px]">
-                The strongest signal is what changes.
-              </h2>
-              <p className="section-desc max-w-[470px]">
-                New material information forces the recommendation to move. The
-                original assumption, revised artifact, reaction time, and
-                remaining uncertainty stay visible together.
-              </p>
-            </header>
-            <div className="mt-16">
-              <AdaptScene />
+        <section id="passport" className={`${s.container} ${s.chapter}`}>
+          <ChapterHead
+            index="02"
+            label="Passport"
+            href="/passport/new"
+            title="Findings that show their work"
+            copy="Each finding names what the code demonstrates and links the exact lines. Statements the engineer writes stay separate from what Fydell observed, and authorship stays unverified until confirmed."
+          />
+          <div className={s.ledger} style={{ ["--ledger-dot" as string]: "var(--brand-teal)" }}>
+            <div>
+              <p className={s.ledgerHead}>What a passport records</p>
+              <ul>
+                <li><strong>Source-linked findings</strong> with file, line range, and commit.</li>
+                <li><strong>Coverage</strong>: how many files were read, and which were skipped with a reason.</li>
+                <li><strong>The engineer&apos;s own statement</strong>, labelled as theirs.</li>
+                <li><strong>Role signals</strong> such as testing, API design, or data handling, only when the code shows them.</li>
+              </ul>
+            </div>
+            <div style={{ ["--ledger-dot" as string]: "var(--brand-coral)" }}>
+              <p className={s.ledgerHead}>What Fydell never does</p>
+              <ul>
+                <li><strong>Run imported code.</strong> Repositories are read, never executed.</li>
+                <li><strong>Score the person.</strong> There is no overall rating or ranking.</li>
+                <li><strong>Guess past the evidence.</strong> Unassessed areas are listed as unassessed.</li>
+                <li><strong>Share without consent.</strong> A passport is private until the engineer shares it.</li>
+              </ul>
             </div>
           </div>
         </section>
 
-        <section className="mkt-section-chapter overflow-hidden">
-          <div className="mkt-content">
-            <header className="grid items-end gap-8 lg:grid-cols-[minmax(0,560px)_minmax(0,470px)] lg:justify-between">
-              <h2 className="section-heading max-w-[560px]">
-                The brief is only as strong as the evidence beneath it.
-              </h2>
-              <p className="section-desc max-w-[470px]">
-                Supporting events, counterevidence, oral defense, model and
-                rubric versions, and human review travel with the claim.
-              </p>
-            </header>
-            <div className="mt-16">
-              <EvidenceReviewScene />
-            </div>
-          </div>
+        <section id="simulate" className={`${s.container} ${s.chapter}`}>
+          <ChapterHead
+            index="03"
+            label="Simulate"
+            href="/demo"
+            title="Watch the work happen, not a quiz"
+            copy="Candidates get a brief, a working repository, a failing behaviour, and an AI-written patch that may or may not be right. They investigate, change code, and run tests. What gets recorded is disclosed before they begin."
+          />
+          <SimulationVisual />
+          <Features dot="var(--brand-violet)" items={["Working codebases", "Trusted test harness", "AI patch review", "Disclosed telemetry"]} />
         </section>
 
-        <section className="mkt-section-chapter border-t border-[var(--border-subtle)]">
-          <div className="mkt-content mx-auto max-w-[820px] text-center">
-            <h2 className="section-heading text-balance">
-              Bring one open role. See the whole system work.
-            </h2>
-            <p className="section-desc mx-auto mt-5 text-center">
-              We calibrate the role, run the work, review the evidence, and
-              return the people worth interviewing.
-            </p>
-            <div className="mt-8 flex justify-center">
-              <ButtonLink href="/contact" variant="primary">
-                Request a pilot
-              </ButtonLink>
+        <section id="review" className={`${s.container} ${s.chapter}`}>
+          <ChapterHead
+            index="04"
+            label="Review"
+            href="/signup?as=employer"
+            title="A decision the whole team can check"
+            copy="Reviewers see project findings and simulation results side by side, open each one to its code, and record a decision with notes. The log shows who decided what, and on which evidence."
+          />
+          <ReviewVisual />
+          <Features dot="var(--brand-warm)" items={["Evidence reports", "Reviewer notes", "Decision log", "Interview prompts"]} />
+        </section>
+
+        <section id="share" className={`${s.container} ${s.chapter}`}>
+          <ChapterHead
+            index="05"
+            label="Share"
+            href="/trust"
+            title="The engineer holds the keys"
+            copy="Each share link is scoped to one employer. The engineer previews exactly what that employer will see, chooses which sections to include, and can revoke access in one click."
+          />
+          <ShareVisual />
+          <Features dot="var(--brand-teal)" items={["Scoped links", "Recipient preview", "One-click revoke"]} />
+        </section>
+
+        <section className={`${s.container} ${s.closing}`}>
+          <h2 className={s.closingTitle}>
+            Bring one open engineering role.
+            <br />
+            <span>Review candidates on their work.</span>
+          </h2>
+          <div className={s.closingRow}>
+            <p className={s.lede}>Free for engineers. Hiring teams pay per completed simulation.</p>
+            <div className={s.heroActions}>
+              <Link href="/signup?as=employer" className={s.btnSolid}>Start hiring</Link>
+              <Link href="/pricing" className={s.btnGhost}>
+                View pricing <ArrowRight className="ml-1 inline h-3.5 w-3.5" aria-hidden />
+              </Link>
             </div>
           </div>
         </section>
-      </main>
+      </div>
     </MarketingShell>
   );
 }

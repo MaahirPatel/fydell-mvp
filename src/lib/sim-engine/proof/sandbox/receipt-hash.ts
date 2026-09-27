@@ -13,15 +13,7 @@ function sortValue(value: unknown): unknown {
 }
 
 export function publicReceiptProjection(content: Record<string, unknown>): Record<string, unknown> {
-  return {
-    kind: content.kind,
-    publicId: content.publicId,
-    fixtureVersion: content.fixtureVersion,
-    label: content.label,
-    integrityNotice: content.integrityNotice,
-    integrityHash: content.integrityHash,
-    completedWork: content.completedWork,
-    conditions: content.conditions,
-    issuedAt: content.issuedAt,
-  };
+  const publicContent = { ...content };
+  delete publicContent.runId;
+  return sortValue(publicContent) as Record<string, unknown>;
 }

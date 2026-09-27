@@ -1,103 +1,54 @@
-# Design System — Fydell
+# Fydell design system
 
-One token layer serves four surfaces: the public site, the employer console, the candidate workbench, and the evidence report. They differ in density and pacing, not in vocabulary. The canonical source is the `:root` and `@theme` blocks in `src/app/globals.css`; this document explains the intent behind those values.
+Concept: **work connected to evidence**. Every claim on every surface can be opened to the code, commit, or test behind it. One system serves the marketing site, the public demo, sign-up, the developer Engineering Passport, and the employer workspace; they differ in density, not vocabulary. Canonical values live in `src/app/globals.css`.
 
-## Visual theme
+## Themes
+The whole product is light (paper). `MarketingShell` defaults to `tone="light"`, matching the signed-in app. `.theme-ink` still exists and re-points every shared token for a dark page, but no public page uses it.
 
-Bright evidence instrument. A warm green-to-ivory atmosphere holds compact stone product surfaces, with pure white reserved for the active or focal plane. The interface should read as a system that records work, preserves provenance, and supports a decision—not as a generic HR dashboard.
+## Visual language: evidence sheets
+Product visuals are drawn as **sheets on a drafting table**, not dark app windows with glows:
+- **Sheet:** white (`--sheet`), 1px ink hairline (`--line`), 8px radius, and a hard offset "stacked paper" edge (`--stack`) instead of a blurred shadow.
+- **Table:** the hero sits on a full-bleed graph-paper band (`--graph`, 24px), with crop marks (`.crop`) at the sheet corners.
+- **Title block:** a mono, uppercase footer strip (`.titleBlock`) names the sheet, revision, and `Example data`, and holds the sheet's controls.
+- **Colour:** flat pale fields with an inked 3px leading rule (timeline segments, card top rules). Colour marks provenance: teal is project evidence, violet is simulation, warm is employer judgment, coral is counterevidence.
+- **Code:** light code blocks (`CodeBlock`) with ink syntax colours and pale cited or failed line fields.
+- **Controls:** small mono `.control` buttons (Replay, Play/Pause, presets).
 
-Confidence comes from precise alignment, believable working density, restrained weight, and causal product scenes. Marketing visuals use a contextual plane, an active plane, and one elevated focal object. They do not copy Linear's dark palette; they apply its compositional discipline to Fydell's own bright world.
-
-## Colour
-
-Surfaces step in small increments so depth reads as structure rather than as stripes.
-
-| Token | Value | Use |
-|---|---|---|
-| `--surface-canvas` | `#f7f4ed` | Warm page atmosphere |
-| `--surface-deep` | `#f2eee6` | Context plane; rails and scene base |
-| `--surface-band` | `#f7f4ed` | Chapter and frame chrome |
-| `--surface-panel` | `#faf8f3` | Active product plane |
-| `--surface-raised` | `#ffffff` | Focal overlays and primary documents only |
-| `--surface-hover` | `#f6f3ec` | Hover on a row or control |
-| `--surface-selected` | `#f0ece3` | Selected row without a colored stripe |
-| `--surface-paper` | `#ffffff` | Exported evidence and printable surfaces |
-
-Text hierarchy is carried by solid colours, never by opacity, so it survives on every surface. All four clear WCAG 2.2 AA against the canvas.
-
-| Token | Value |
-|---|---|
-| `--text-primary` | `#211d19` |
-| `--text-secondary` | `#625a52` |
-| `--text-tertiary` | `#716860` |
-| `--text-disabled` | `#716961` |
-
-Borders use warm ink at low alpha: `--border-subtle` 11%, `--border-default` 18%, `--border-strong` 29%. Luminance separates planes first; hairlines confirm the edge; shadow is reserved for the focal object.
-
-### Colour carries meaning, not decoration
-
-Each accent has exactly one job. If a colour appears without that meaning, it is a bug.
-
-| Token | Value | Means |
-|---|---|---|
-| `--evidence-generated` | `#6f55c9` | Fydell-generated claim or prompt |
-| `--evidence-observed` | `#156f82` | Directly observed candidate or world event |
-| `--evidence-support` | `#357252` | Supporting evidence |
-| `--evidence-uncertain` | `#94651d` | Changed information or unresolved uncertainty |
-| `--evidence-counter` | `#b64053` | Counterevidence or contradiction |
-| `--action-ink` | `#695344` | Focus rings, links, and restrained actions |
-
-Visualisation reuses those meanings rather than inventing a palette. `--viz-track` is the empty channel, `--viz-idle` neutral for not-started, and the fills map to evidence, good, and changed. There is no categorical colour ramp, because a pipeline of stages is ordered, not categorical.
+Every visual is playable: the hero replays and its citations open the code; the intake board's cards are clickable; the simulation timeline scrubs; review findings and decisions are selectable; share switches and revoke update a live preview; the pricing estimator recalculates.
 
 ## Typography
-
-Geist Sans and Geist Mono, bundled through the `geist` npm package and loaded in `src/app/layout.tsx`. No webfont requests. Geist Mono is for identifiers, timestamps, and anything the user might copy.
-
-Two scales, because the two contexts have opposite needs.
-
-**Marketing is fluid.** A landing page is read once at whatever width the reader arrives with, so headings scale with the viewport.
-
-| Token | Range |
-|---|---|
-| `--type-display` | 56–84px |
-| `--type-page` | 48–68px |
-| `--type-section` | 38–56px |
-
-**Product is fixed.** A console is read every day and gets learned. Fluid clamps make the same screen a different size on every machine, which is the enemy of earned familiarity, so the app scale is in fixed rem.
-
-| Token | Size | Use |
+| Role | Face | Use |
 |---|---|---|
-| `--type-app-page` | 26px | Page title, once per screen |
-| `--type-app-section` | 17px | Panel and section headings |
-| `--type-app-body` | 14px | Rows, values, body copy |
-| `--type-app-meta` | 12.5px | Labels, timestamps, secondary detail |
+| Marketing display | Geist Sans 540, tracking −0.036em, line-height 1.02 | Hero up to 66px, chapter titles up to 52px, closing up to 64px |
+| Display (app, passports) | Instrument Sans (`--font-display-sans`; `.display`, `.display-sm`) | Passport names and app headlines |
+| Interface | Geist Sans 400–600 | Body, controls, tables, app headings |
+| Code | Geist Mono | Paths, commits, citations, excerpts, chapter indices |
 
-Weights stay between 430 and 560. Tracking tightens as size grows, from `0` at meta to `-0.04em` at display. Every count, score, percentage, duration, and date uses `tabular-nums` so columns of numbers align and do not jitter as they update.
+Marketing body copy is 15–17px in `--text-secondary`; grey continuation text inside a headline uses the module's `--dim`.
+
+## Colour
+Every shade is derived in OKLCH from four hue tokens: `--hue-brand` 285 (violet), `--hue-evidence` 178 (teal), `--hue-signal` 258, `--hue-warm` 52.
+
+| Token | Light value | Meaning |
+|---|---|---|
+| `--surface-canvas` / `--surface-raised` | `oklch(99.3% 0.002 258)` / `#fff` | Page ground / sheets |
+| `--text-primary` / `--text-secondary` | `oklch(17% …)` / `oklch(42% …)` | Ink |
+| `--border-default` | ink at 13% | Hairlines |
+| `--brand-teal` | `oklch(64% 0.12 178)` | Project evidence |
+| `--brand-violet` | `oklch(54% 0.24 285)` | Simulation evidence |
+| `--brand-warm` | warm hue 52 | Employer interpretation |
+| `--brand-coral` / `--evidence-counter` | coral | Counterevidence, failed tests, errors |
+
+Colour marks provenance, never competence. It is always paired with a text label.
 
 ## Layout
+The marketing container is 1232px with 20–32px gutters (`fydell-home.module.css`). Pages follow one rhythm: a left-aligned hero with the lede and actions on one row, then numbered chapters. Each chapter is a two-column head (title left; copy and an index link right), one full-width product visual, and a dotted feature row. Chapters are separated by 120–200px of space, not rules. Secondary pages reuse the same primitives: `.steps` (numbered rail with a hover underline) and `.ledger` (records vs. never-does). App grids declare `grid-cols-1` at the base so long code never widens a mobile column.
 
-- Max width `--page-max-width` 1320px. Gutters 24px, 40px at 768px, 48px at 1024px.
-- Space scale is 4px base on an 8px rhythm, from `--space-1` 4px to `--space-12` 144px.
-- Marketing sections breathe at 96–120px vertical; chapters in a continuous narrative sit one step tighter at 80–96px.
-- The employer console is desktop-first and fills its rail. It does not re-centre inside a narrower column, because unused desktop canvas reads as an unfinished product.
-- Radius: `--radius-tag` 4px, `--radius-control` 6px, `--radius-panel` 10px, `--radius-frame` 14px.
-
-## Structure
-
-The **Panel** is the primary structural device: one bordered container holding several hairline-separated sections. Related modules live inside one frame rather than floating as separate cards, so the eye reads a sequence instead of hunting a grid. A section header is a label on the left with its control on the right.
-
-Density over decoration. A number does not need a card. A card holding one metric is a card too many.
+## Components
+`FydellLogo` (official lockup, 21px in the nav, never retyped). Pricing numbers live only in `src/lib/marketing/pricing.ts`. The homepage visuals are exported from `FydellHome.tsx` and reused on Developers, Employers and How it works: `IntakeVisual` (repository board plus import panel), `SimulationVisual` (timeline with playhead), `ReviewVisual` (interactive findings and decision), and `ShareVisual` (scoped link switches and live preview). `PassportView` renders all real passports; `EvidenceWorkspace` backs `/demo`. All example content carries `DEMO_LABEL`.
 
 ## Motion
+CSS-only and driven by state. The hero window enters with blur, translation, and scale; activity items land on fixed beats; the analysis panel shows a working shimmer, then a typed answer with citations. Chapter visuals start when 25% of them is in view (`useInView`) and loop on a ticker: cards move across the board, segments reveal along the timeline, and a playhead sweeps. Hover and selection transitions take 120–200ms. Everything stops under `prefers-reduced-motion` and shows its final state.
 
-`--motion-fast` 140ms for hover and focus, `--motion-panel` 190ms for expansion and disclosure, on `--ease` `cubic-bezier(0.16, 1, 0.3, 1)`. Product motion confirms a state change. Marketing product theater may use one entrance and scrubbed plane transitions to explain causality. `prefers-reduced-motion` leaves every layer visible and removes the transitions.
-
-## Iconography
-
-Lucide, 16px in the product and 18px in navigation, at 1.5px stroke, always paired with a label except in a control whose meaning is unambiguous. Icons inherit text colour.
-
-## Anti-patterns
-
-Banned outright: purple wash, glass and heavy blur, gradient text, glowing borders, neon, marquees, scroll-jacking, entrance animation on every element, pills around every label, cards nested inside cards inside cards, decorative stock or AI imagery, fake logos and testimonials, emoji as iconography, and any chart without a real underlying series.
-
-Also banned, more quietly: centre-aligning everything, `text-align: center` on a paragraph longer than two lines, five type sizes in one panel, and colour used because a section looked empty.
+## Voice
+Confident and specific. State what the product does; place limits beside the claim they qualify. No placeholder, preview, or roadmap language in shipped surfaces.

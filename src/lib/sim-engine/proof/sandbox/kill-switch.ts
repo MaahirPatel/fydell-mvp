@@ -1,5 +1,9 @@
 import { STAGING_PROJECT_REF } from "@/lib/supabase/project-guard";
-import { ACME_FIXTURE_VERSION } from "./fixture";
+import {
+  APPLIED_AI_FIXTURE_VERSION,
+  APPLIED_AI_ROLE_ID,
+  APPLIED_AI_VERSION_ID,
+} from "./fixture";
 import { resolveSandboxCredentials, sandboxCredentialStatus } from "./credentials";
 
 export const SANDBOX_DEV_PROJECT_REF = STAGING_PROJECT_REF;
@@ -44,7 +48,7 @@ export function readSandboxAvailability(env: NodeJS.ProcessEnv = process.env): S
     return { enabled: false, reason, fixtureVersion, projectRef: null };
   }
 
-  if (fixtureVersion !== ACME_FIXTURE_VERSION) {
+  if (fixtureVersion !== APPLIED_AI_FIXTURE_VERSION) {
     return { enabled: false, reason: "unsupported_fixture", fixtureVersion, projectRef: SANDBOX_DEV_PROJECT_REF };
   }
   return { enabled: true, reason: null, fixtureVersion, projectRef: SANDBOX_DEV_PROJECT_REF };
@@ -55,16 +59,36 @@ export async function checkSandboxHealth(): Promise<SandboxAvailability> {
   if (!base.enabled) return base;
   try {
     const { url, serviceKey } = resolveSandboxCredentials();
-    const response = await fetch(`${url.replace(/\/$/, "")}/rest/v1/proof_roles?select=id&limit=1`, {
+    const response = await fetch(
+      `${url.replace(/\/$/, "")}/rest/v1/proof_roles?id=eq.${APPLIED_AI_ROLE_ID}&select=id`,
+      {
       headers: {
         apikey: serviceKey,
         authorization: `Bearer ${serviceKey}`,
       },
-    });
+      },
+    );
     if (!response.ok) {
       return { ...base, enabled: false, reason: "health_failed" };
     }
-    return base;
+    const rows = (await response.json()) as Array<{ id?: string }>;
+    if (rows[0]?.id !== APPLIED_AI_ROLE_ID) {
+      return { ...base, enabled: false, reason: "health_failed" };
+    }
+    const versionResponse = await fetch(
+      `${url.replace(/\/$/, "")}/rest/v1/proof_simulation_versions?id=eq.${APPLIED_AI_VERSION_ID}&select=id`,
+      {
+        headers: {
+          apikey: serviceKey,
+          authorization: `Bearer ${serviceKey}`,
+        },
+      },
+    );
+    if (!versionResponse.ok) return { ...base, enabled: false, reason: "health_failed" };
+    const versions = (await versionResponse.json()) as Array<{ id?: string }>;
+    return versions[0]?.id === APPLIED_AI_VERSION_ID
+      ? base
+      : { ...base, enabled: false, reason: "health_failed" };
   } catch {
     return { ...base, enabled: false, reason: "health_failed" };
   }

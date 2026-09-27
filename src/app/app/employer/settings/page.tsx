@@ -8,6 +8,9 @@ import { ContactLink } from "@/components/ui/ContactLink";
 import { memberIdentity, type AuthIdentityMetadata } from "@/lib/workspace/identity";
 import { isPreviewMode, PREVIEW_ORG, PREVIEW_USER } from "@/lib/dev/preview";
 import Image from "next/image";
+import PlanControls from "@/components/employer/PlanControls";
+import { billingConfig } from "@/lib/billing/stripe";
+import { getBilling, getMembership, type OrganizationBilling } from "@/lib/billing/db";
 
 export const metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
@@ -39,7 +42,23 @@ function Row({
   );
 }
 
-export default async function EmployerSettingsPage() {
+const STATUS_LABEL: Record<string, string> = {
+  active: "Active",
+  trialing: "Trial",
+  past_due: "Payment overdue",
+  unpaid: "Unpaid",
+  canceled: "Cancelled",
+  incomplete: "Awaiting payment",
+  incomplete_expired: "Checkout expired",
+  paused: "Paused",
+};
+
+export default async function EmployerSettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ billing?: string; plan?: string }>;
+}) {
+  const params = await searchParams;
   const preview = isPreviewMode();
   const user = preview ? PREVIEW_USER : await getAuthenticatedUser();
 
@@ -76,6 +95,26 @@ export default async function EmployerSettingsPage() {
   }
 
   const canEdit = MANAGER_ROLES.has(memberRole);
+
+  const billingReady = billingConfig() !== null && !preview;
+  let billing: OrganizationBilling | null = null;
+  if (billingReady && user && isSupabaseConfigured()) {
+    const membership = await getMembership(user.id);
+    if (membership) billing = await getBilling(membership.organizationId);
+  }
+  const hasSubscription = Boolean(billing?.stripeSubscriptionId && billing.status && billing.status !== "canceled" && billing.status !== "incomplete_expired");
+  const planLabel = hasSubscription && billing
+    ? `${billing.plan === "team" ? "Team" : billing.plan === "starter" ? "Starter" : "Custom"} · ${STATUS_LABEL[billing.status ?? ""] ?? billing.status}`
+    : "No plan yet";
+  const suggestedPlan = params.plan === "starter" || params.plan === "team" ? params.plan : null;
+  const billingNotice =
+    params.billing === "success"
+      ? hasSubscription
+        ? "Payment set up. Your plan is active."
+        : "Payment received. Stripe is confirming it, so refresh in a few seconds."
+      : params.billing === "cancelled"
+        ? "Checkout cancelled. Nothing was charged."
+        : null;
 
   return (
     <div className="max-w-[1040px]">
@@ -215,10 +254,28 @@ export default async function EmployerSettingsPage() {
           </Row>
           </div>
           <div id="plan" className="scroll-mt-28 border-t border-[var(--border-subtle)]">
-            <PanelSection title="Plan" description="Commercial state for this workspace." />
-            <Row label="Current plan">
-              <p className="text-app-body text-[var(--text-primary)]">Pilot</p>
+            <PanelSection title="Plan" description="Billing for completed simulations. Engineers never pay." />
+            {billingNotice ? (
+              <p
+                role="status"
+                className="mx-5 mb-2 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-3 py-2 text-app-body text-[var(--text-primary)] lg:mx-6"
+              >
+                {billingNotice}
+              </p>
+            ) : null}
+            <Row label="Current plan" help={billingReady ? undefined : "Stripe is not configured on this deployment yet."}>
+              <p className="text-app-body text-[var(--text-primary)]">{planLabel}</p>
+              {billing?.currentPeriodEnd && hasSubscription ? (
+                <p className="mt-1 text-app-meta text-[var(--text-secondary)]">
+                  Current period ends {new Date(billing.currentPeriodEnd).toLocaleDateString("en-US", { dateStyle: "medium" })}
+                </p>
+              ) : null}
             </Row>
+            {billingReady ? (
+              <Row label={hasSubscription ? "Billing" : "Choose a plan"} help="Checkout and invoices are handled by Stripe.">
+                <PlanControls hasSubscription={hasSubscription} canManage={canEdit} suggestedPlan={suggestedPlan} />
+              </Row>
+            ) : null}
           </div>
         </Panel>
       </div>

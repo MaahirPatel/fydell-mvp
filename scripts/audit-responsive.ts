@@ -2,8 +2,9 @@
  * Responsive sweep across every route at the four widths in the brief.
  *
  * Reports only defects, so a clean run is a short run: horizontal overflow,
- * large light slabs on the graphite canvas, console errors, non-200 responses,
- * and text small enough to be a readability problem.
+ * console errors, non-200 responses, and text small enough to be a readability
+ * problem. Surface luminance is intentionally not policed here: Fydell's
+ * committed light theme uses large white focal planes on an ivory canvas.
  *
  * Usage: npx tsx scripts/audit-responsive.ts [baseUrl]
  * Authenticated and candidate routes need the preview server.
@@ -15,6 +16,8 @@ const WIDTHS = [390, 768, 1280, 1440];
 
 const ROUTES = [
   "/",
+  "/how-it-works",
+  "/contact",
   "/product",
   "/simulations",
   "/trust",
@@ -25,6 +28,10 @@ const ROUTES = [
   "/security",
   "/login",
   "/signup",
+  "/sandbox/roles",
+  "/sandbox/work",
+  "/sandbox/evidence",
+  "/sandbox/receipts",
   "/app/employer",
   "/app/employer/assessments",
   "/app/employer/candidates",
@@ -40,18 +47,6 @@ const PROBE = `(() => {
   const doc = document.documentElement;
   const overflow = doc.scrollWidth - window.innerWidth;
 
-  const slabs = Array.from(document.querySelectorAll("body *")).filter((el) => {
-    const r = el.getBoundingClientRect();
-    if (r.width < 200 || r.height < 80) return false;
-    const m = getComputedStyle(el).backgroundColor.match(
-      /rgba?\\((?<r>\\d+), (?<g>\\d+), (?<b>\\d+)(?:, (?<a>[\\d.]+))?/
-    );
-    if (!m || !m.groups) return false;
-    const a = m.groups.a === undefined ? 1 : Number(m.groups.a);
-    if (a < 0.5) return false;
-    return Number(m.groups.r) > 180 && Number(m.groups.g) > 180 && Number(m.groups.b) > 180;
-  }).length;
-
   // Anything wider than the viewport is what causes the sideways scroll.
   const wide = Array.from(document.querySelectorAll("body *"))
     .filter((el) => el.getBoundingClientRect().width > window.innerWidth + 1)
@@ -65,7 +60,7 @@ const PROBE = `(() => {
       return parseFloat(getComputedStyle(el).fontSize) < 11.5;
     }).length;
 
-  return { overflow, slabs, wide, tiny };
+  return { overflow, wide, tiny };
 })()`;
 
 async function main() {
@@ -94,7 +89,6 @@ async function main() {
       await page.waitForTimeout(250);
       const probe = (await page.evaluate(PROBE)) as {
         overflow: number;
-        slabs: number;
         wide: string[];
         tiny: number;
       };
@@ -104,7 +98,6 @@ async function main() {
       if (status !== 200) problems.push(`status ${status}`);
       if (probe.overflow > 1)
         problems.push(`overflows by ${probe.overflow}px (${probe.wide.join(", ")})`);
-      if (probe.slabs > 0) problems.push(`${probe.slabs} light slab(s)`);
       if (probe.tiny > 0) problems.push(`${probe.tiny} run(s) of text under 11.5px`);
       if (errors.length > 0) problems.push(`${errors.length} console error(s): ${errors[0]}`);
 

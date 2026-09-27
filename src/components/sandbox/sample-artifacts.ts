@@ -7,7 +7,9 @@ import type { SandboxSessionView } from "@/lib/sim-engine/proof/sandbox/view";
  * and are always labelled as samples.
  */
 
-export const SAMPLE_CLAIMS: SandboxSessionView["claims"] = [
+export const SAMPLE_CLAIMS: Array<
+  Pick<SandboxSessionView["claims"][number], "id" | "pass" | "claim" | "competency" | "direction" | "confidence">
+> = [
   {
     id: "sample-claim-1",
     pass: "pass_b",

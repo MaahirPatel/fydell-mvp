@@ -1,5 +1,11 @@
 export const ACME_FIXTURE_ID = "acme-rollout";
 export const ACME_FIXTURE_VERSION = "acme-rollout-v1";
+export const APPLIED_AI_FIXTURE_ID = "applied-ai-workflow-hardening";
+export const APPLIED_AI_FIXTURE_VERSION = "aai-workflow-hardening-fixture-v2";
+export const APPLIED_AI_ROLE_ID = "10000000-0000-4000-a000-000000000001";
+export const APPLIED_AI_VERSION_ID = "10000000-0000-4000-a000-000000000010";
+export const APPLIED_AI_ROLE_SLUG = "applied-ai-engineer";
+export const APPLIED_AI_VERSION_KEY = "aai-workflow-hardening-v1";
 
 export const SANDBOX_COMPETENCIES = [
   "Discovery judgment",
@@ -131,4 +137,112 @@ export function getSandboxFixture(version: string = ACME_FIXTURE_VERSION): Sandb
     throw new Error(`Unsupported sandbox fixture version: ${version}`);
   }
   return ACME_ROLLOUT_FIXTURE;
+}
+
+export const APPLIED_AI_REQUIREMENTS = [
+  { id: "PR-AI-01", title: "Problem decomposition", coverage: "PROVEN" },
+  { id: "PR-AI-02", title: "AI system architecture", coverage: "PROVEN" },
+  { id: "PR-AI-03", title: "LLM and tool orchestration", coverage: "PROVEN" },
+  { id: "PR-AI-04", title: "Evaluation engineering", coverage: "PARTIALLY_PROVEN" },
+  { id: "PR-AI-05", title: "Reliability and failure recovery", coverage: "PARTIALLY_PROVEN" },
+  { id: "PR-AI-06", title: "Software engineering quality", coverage: "PROVEN" },
+  { id: "PR-AI-07", title: "Cost and latency judgment", coverage: "NOT_PROVEN" },
+  { id: "PR-AI-08", title: "Product and model judgment", coverage: "NOT_PROVEN" },
+] as const;
+
+export interface AppliedAiSandboxFixtureManifest {
+  fixtureId: typeof APPLIED_AI_FIXTURE_ID;
+  fixtureVersion: typeof APPLIED_AI_FIXTURE_VERSION;
+  role: { id: typeof APPLIED_AI_ROLE_ID; slug: typeof APPLIED_AI_ROLE_SLUG; title: "Applied AI Engineer" };
+  simulationVersion: { id: typeof APPLIED_AI_VERSION_ID; key: typeof APPLIED_AI_VERSION_KEY; title: string };
+  organization: { name: string; customer: string };
+  candidate: { candidateId: string; label: string };
+  candidates: SandboxFixtureManifest["candidates"];
+  resources: Array<{ id: string; title: string; body: string; kind: "requirement" | "config" | "trace" | "metric" | "contract" }>;
+  requirements: typeof APPLIED_AI_REQUIREMENTS;
+  changedFact: { id: "LATENCY_001"; title: string; body: string };
+  defenseQuestion: { prompt: string; target: string };
+  fixtureDefenseAnswer: string;
+}
+
+export const APPLIED_AI_WORKFLOW_FIXTURE = Object.freeze({
+  fixtureId: APPLIED_AI_FIXTURE_ID,
+  fixtureVersion: APPLIED_AI_FIXTURE_VERSION,
+  role: {
+    id: APPLIED_AI_ROLE_ID as typeof APPLIED_AI_ROLE_ID,
+    slug: APPLIED_AI_ROLE_SLUG as typeof APPLIED_AI_ROLE_SLUG,
+    title: "Applied AI Engineer" as const,
+  },
+  simulationVersion: {
+    id: APPLIED_AI_VERSION_ID as typeof APPLIED_AI_VERSION_ID,
+    key: APPLIED_AI_VERSION_KEY as typeof APPLIED_AI_VERSION_KEY,
+    title: "Harden an enterprise AI workflow",
+  },
+  organization: { name: "Northstar", customer: "Enterprise workflow team" },
+  candidate: { candidateId: "candidate-01", label: "Candidate 01" },
+  candidates: [
+    { candidateId: "candidate-01", label: "Candidate 01", status: "ready" as const },
+    { candidateId: "candidate-02", label: "Candidate 02", status: "defense_pending" as const },
+    { candidateId: "candidate-03", label: "Candidate 03", status: "in_progress" as const },
+    { candidateId: "candidate-04", label: "Candidate 04", status: "invited" as const },
+  ],
+  resources: [
+    {
+      id: "requirements/product-brief.md",
+      title: "Product brief",
+      kind: "requirement",
+      body: "Produce a typed implementation plan, preserve an auditable trace, tolerate transient failure, and escalate when required information is absent.",
+    },
+    {
+      id: "config/workflow.json",
+      title: "Executable workflow config",
+      kind: "config",
+      body: "Supported structured controls drive the deterministic synthetic evaluator. Proposal code is not executed.",
+    },
+    {
+      id: "traces/trace-024-duplicate-write.json",
+      title: "Trace 024 · duplicate write",
+      kind: "trace",
+      body: "A write succeeded, the provider connection timed out, and the unrestricted retry repeated the side effect without a stable idempotency key.",
+    },
+    {
+      id: "traces/trace-017-schema-failure.json",
+      title: "Trace 017 · semantic policy failure",
+      kind: "trace",
+      body: "The response passed JSON shape validation but selected a region excluded by the account policy.",
+    },
+    {
+      id: "metrics/baseline.json",
+      title: "Baseline metrics",
+      kind: "metric",
+      body: "Synthetic fixture baseline: 78% quality, 6% schema failures, 3% duplicate side effects, 6.2s p50, 10.8s p95, $0.18 per plan.",
+    },
+    {
+      id: "docs/runtime-boundary.md",
+      title: "Runtime boundary",
+      kind: "contract",
+      body: "No arbitrary code, shell, network, packages, or paid model calls. Only supported config and eval-case mutations affect measured output.",
+    },
+  ],
+  requirements: APPLIED_AI_REQUIREMENTS,
+  changedFact: {
+    id: "LATENCY_001",
+    title: "Changed production latency requirement",
+    body: "Enterprise deployment now requires p95 below 4 seconds. Critical-case quality and authorization controls may not regress.",
+  },
+  defenseQuestion: {
+    prompt: "Your measured result reflects a deterministic synthetic fixture. What evidence would you gather before shipping this architecture to production?",
+    target: "runtime_limit_and_release_judgment",
+  },
+  fixtureDefenseAnswer:
+    "I would validate with production-shaped traffic, provider variance, concurrency, calibrated critical cases, and side-effect recovery tests before release.",
+} satisfies AppliedAiSandboxFixtureManifest);
+
+export function getAppliedAiSandboxFixture(
+  version: string = APPLIED_AI_FIXTURE_VERSION,
+): AppliedAiSandboxFixtureManifest {
+  if (version !== APPLIED_AI_FIXTURE_VERSION) {
+    throw new Error(`Unsupported Applied AI sandbox fixture version: ${version}`);
+  }
+  return APPLIED_AI_WORKFLOW_FIXTURE;
 }

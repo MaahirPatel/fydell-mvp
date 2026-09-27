@@ -5,6 +5,7 @@ import { ROLES } from "@/lib/simulations/roles";
 import ReportsList from "@/components/employer/ReportsList";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
+import { AppliedAiDemoModule } from "@/components/employer/AppliedAiDemoModule";
 import { getReportRecords } from "../_lib/data";
 
 export const metadata = { title: "Evidence" };
@@ -35,20 +36,12 @@ export default async function EmployerEvidencePage({
               title="Turn candidate work into hiring evidence"
               description="Evidence appears after a candidate completes enough observable work. Claims remain connected to their source and do not become a score presented as truth."
             >
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/sandbox"
-                  className="inline-flex h-9 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-app-body font-medium text-[var(--control-solid-ink)]"
-                >
-                  View demo evidence
-                </Link>
-                <Link
-                  href="/how-it-works"
-                  className="inline-flex h-9 items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3.5 text-app-body font-medium text-[var(--text-primary)]"
-                >
-                  How evidence works
-                </Link>
-              </div>
+              <Link
+                href="/how-it-works"
+                className="inline-flex min-h-9 items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3.5 text-app-body font-medium text-[var(--text-primary)]"
+              >
+                How evidence works
+              </Link>
             </PanelSection>
           </Panel>
         ) : (
@@ -59,6 +52,7 @@ export default async function EmployerEvidencePage({
           />
         )}
       </div>
+      {records.length === 0 ? <AppliedAiDemoModule className="mt-6" /> : null}
     </div>
   );
 }

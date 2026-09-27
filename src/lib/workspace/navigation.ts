@@ -23,6 +23,7 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
     items: [
       { href: "/app/employer/roles", label: "Roles" },
       { href: "/app/employer/candidates", label: "Candidates" },
+      { href: "/app/employer/passports", label: "Shared passports" },
       { href: "/app/employer/work", label: "Work" },
     ],
   },

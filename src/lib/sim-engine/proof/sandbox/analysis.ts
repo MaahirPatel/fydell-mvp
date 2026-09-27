@@ -1,5 +1,11 @@
 import type { EvidenceClaimDraft, RunSnapshot } from "../types";
+import {
+  analyzeAppliedAiPassA,
+  analyzeAppliedAiPassB,
+  isAppliedAiSnapshot,
+} from "./applied-ai-analysis";
 import { ACME_ROLLOUT_FIXTURE } from "./fixture";
+import type { InterviewPlan } from "./review-outputs";
 
 const MODEL = "sandbox_rules_v1";
 const PROMPT = "sandbox_evidence_v1";
@@ -17,6 +23,7 @@ export function analyzePassA(snapshot: RunSnapshot): {
   observations: string[];
   uncertainties: string[];
 } {
+  if (isAppliedAiSnapshot(snapshot)) return analyzeAppliedAiPassA(snapshot);
   const fixture = ACME_ROLLOUT_FIXTURE;
   const decisionIds = idsFor(snapshot, "DECISION_COMMITTED");
   const revisionIds = idsFor(snapshot, "ARTIFACT_REVISION");
@@ -71,7 +78,9 @@ export function analyzePassB(snapshot: RunSnapshot): {
     concerns: string[];
     probes: string[];
   };
+  interviewPlan?: InterviewPlan;
 } {
+  if (isAppliedAiSnapshot(snapshot)) return analyzeAppliedAiPassB(snapshot);
   const passA = analyzePassA(snapshot);
   const fixture = ACME_ROLLOUT_FIXTURE;
   const defenseIds = idsFor(snapshot, "DEFENSE_RESPONSE_RECEIVED");
