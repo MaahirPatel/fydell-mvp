@@ -157,9 +157,7 @@ fn redact_json_key(s: &str, key: &str) -> String {
             }
             (i + 1).min(b.len())
         } else {
-            while i < b.len()
-                && !matches!(b[i], b',' | b'}' | b']')
-                && !b[i].is_ascii_whitespace()
+            while i < b.len() && !matches!(b[i], b',' | b'}' | b']') && !b[i].is_ascii_whitespace()
             {
                 i += 1;
             }
@@ -214,7 +212,10 @@ fn redact_pair(s: &str, key: &str) -> String {
         for sep in [b'=', b':'] {
             if i + key_b.len() < s.len()
                 && bytes[i + key_b.len()] == sep
-                && bytes[i..i + key_b.len()].iter().zip(key_b.iter()).all(|(a, b)| eq_ci(*a, *b))
+                && bytes[i..i + key_b.len()]
+                    .iter()
+                    .zip(key_b.iter())
+                    .all(|(a, b)| eq_ci(*a, *b))
             {
                 let prev_ok = i == 0 || {
                     let c = bytes[i - 1];
@@ -262,7 +263,10 @@ fn redact_bearer(s: &str) -> String {
     let mut i = 0;
     while i < s.len() {
         let is_bearer = s.len() - i >= 7
-            && bytes[i..i + 6].iter().zip(b"bearer".iter()).all(|(a, b)| eq_ci(*a, *b))
+            && bytes[i..i + 6]
+                .iter()
+                .zip(b"bearer".iter())
+                .all(|(a, b)| eq_ci(*a, *b))
             && bytes[i + 6] == b' ';
         if is_bearer {
             let prev_ok = i == 0 || !bytes[i - 1].is_ascii_alphanumeric();
@@ -324,11 +328,14 @@ pub fn diagnostics() -> AppResult<Diagnostics> {
         .and_then(|u| u.host_str().map(|h| h.to_string()))
         .unwrap_or_else(|| "[unparseable]".to_string());
 
-    let (status, has_platform_session, server_revision) =
-        match crate::session::session_snapshot() {
-            Some(s) => (format!("{:?}", s.status).to_lowercase(), s.platform_session_id.is_some(), s.server_revision),
-            None => ("unknown".to_string(), false, 0),
-        };
+    let (status, has_platform_session, server_revision) = match crate::session::session_snapshot() {
+        Some(s) => (
+            format!("{:?}", s.status).to_lowercase(),
+            s.platform_session_id.is_some(),
+            s.server_revision,
+        ),
+        None => ("unknown".to_string(), false, 0),
+    };
     let sync = crate::sync::current_phase_label();
     let unsynced_files = crate::sync::dirty_count();
 
@@ -396,7 +403,10 @@ mod tests {
         let out = redact(msg);
         assert!(!out.contains("xyz789"), "refresh token leaked: {out}");
         assert!(!out.contains("abc.def.ghi"), "bearer leaked: {out}");
-        assert!(out.contains("Bearer [redacted]"), "bearer marker wrong: {out}");
+        assert!(
+            out.contains("Bearer [redacted]"),
+            "bearer marker wrong: {out}"
+        );
     }
 
     #[test]
@@ -438,7 +448,10 @@ mod tests {
     fn note_error_redacts_before_storing() {
         let ring = errors();
         ring.lock().unwrap().clear();
-        note_error("auth_required", r#"refresh failed: {"refresh_token": "tok123"}"#);
+        note_error(
+            "auth_required",
+            r#"refresh failed: {"refresh_token": "tok123"}"#,
+        );
         let ring = ring.lock().unwrap();
         let last = ring.back().unwrap();
         assert!(!last.message.contains("tok123"), "leaked: {}", last.message);

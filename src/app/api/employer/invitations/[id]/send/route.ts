@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { sendInvitation } from "@/lib/invitations/candidate-invites";
-import { appUrl, getEmployerStores, outboxMailer } from "../../_lib/employer-stores";
+import { appUrl, getEmployerStores, outboxMailer } from "../../../_lib/employer-stores";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

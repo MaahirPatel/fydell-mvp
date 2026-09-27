@@ -28,8 +28,12 @@ from report import build_report, validate_report_schema  # noqa: E402
 INTEGRITY_TOLERANCE = 0.005
 
 
-def run_join_checks(shipments: list[dict], delay_rows: list[dict]) -> tuple[int, int]:
-    """Proves naive_join drops rows and reconciled_join recovers them."""
+def run_join_checks(shipments: list[dict], delay_rows: list[dict]) -> tuple[int, int, list[dict] | None]:
+    """Proves naive_join drops rows and reconciled_join recovers them.
+
+    Returns (total, failures, reconciled_matched) — reconciled_matched is None
+    when the candidate has not implemented reconcile.py yet.
+    """
     failures = 0
     total = 0
 
@@ -42,7 +46,11 @@ def run_join_checks(shipments: list[dict], delay_rows: list[dict]) -> tuple[int,
         print(f"PASS naive_join_drops_rows: dropped {len(naive_dropped)} row(s) with mismatched IDs")
 
     total += 1
-    reconciled_matched, reconciled_unmatched = reconciled_join(shipments, delay_rows)
+    try:
+        reconciled_matched, reconciled_unmatched = reconciled_join(shipments, delay_rows)
+    except NotImplementedError as exc:
+        print(f"FAIL reconcile_recovers_rows: not implemented yet — {exc}")
+        return total, failures + 1, None
     if len(reconciled_unmatched) != 0:
         print(f"FAIL reconcile_recovers_rows: {len(reconciled_unmatched)} row(s) still unmatched after reconciliation")
         failures += 1
@@ -53,7 +61,7 @@ def run_join_checks(shipments: list[dict], delay_rows: list[dict]) -> tuple[int,
         recovered = len(reconciled_matched) - len(naive_matched)
         print(f"PASS reconcile_recovers_rows: recovered {recovered} row(s) naive_join silently dropped")
 
-    return total, failures
+    return total, failures, reconciled_matched
 
 
 def main() -> int:
@@ -61,13 +69,17 @@ def main() -> int:
     carriers = load_carriers()
     delay_rows = load_delay_tracking()
 
-    total, failures = run_join_checks(shipments, delay_rows)
+    total, failures, reconciled_matched = run_join_checks(shipments, delay_rows)
 
     naive_matched, naive_dropped = naive_join(shipments, delay_rows)
-    reconciled_matched, _ = reconciled_join(shipments, delay_rows)
 
     naive_rate = late_rate(len(shipments), len(naive_matched))
-    true_rate = late_rate(len(shipments), len(reconciled_matched))
+    # The true rate is only computable once the candidate implements reconcile.
+    true_rate: float | None = (
+        late_rate(len(shipments), len(reconciled_matched))
+        if reconciled_matched is not None
+        else None
+    )
 
     report = build_report(shipments, carriers, delay_rows)
     schema_valid = validate_report_schema(report)
@@ -82,11 +94,21 @@ def main() -> int:
     # integrity_caught: does the production report (report.build_report, using
     # whatever join_fn the candidate left wired in) reflect the reconciled
     # true late rate, rather than shipping the naive/understated one?
-    integrity_caught = report["rows_dropped"] == 0 and math.isclose(
-        report["late_rate"], true_rate, abs_tol=INTEGRITY_TOLERANCE
+    # Unknowable until reconcile is implemented — then it must match.
+    integrity_caught = (
+        true_rate is not None
+        and report["rows_dropped"] == 0
+        and math.isclose(report["late_rate"], true_rate, abs_tol=INTEGRITY_TOLERANCE)
     )
 
-    if integrity_caught:
+    if true_rate is None:
+        print(
+            "WARN integrity_caught=False: reconcile.py is not implemented yet, "
+            "so the true late rate cannot be computed — implement "
+            "reconcile.reconciled_join, then wire it into report.build_report()'s "
+            "default join_fn"
+        )
+    elif integrity_caught:
         print(f"PASS integrity_caught: report reflects the reconciled true late rate ({true_rate:.4f})")
     else:
         print(
@@ -97,14 +119,15 @@ def main() -> int:
 
     print(
         "RATES "
-        f"naive_late_rate={naive_rate:.4f} true_late_rate={true_rate:.4f} "
+        f"naive_late_rate={naive_rate:.4f} "
+        f"true_late_rate={'n/a' if true_rate is None else f'{true_rate:.4f}'} "
         f"rows_dropped_naive={len(naive_dropped)}"
     )
     print(f"SUMMARY total={total} failures={failures}")
 
     summary = {
         "naive_late_rate": round(naive_rate, 4),
-        "true_late_rate": round(true_rate, 4),
+        "true_late_rate": round(true_rate, 4) if true_rate is not None else None,
         "rows_dropped_naive": len(naive_dropped),
         "integrity_caught": integrity_caught,
         "report_schema_valid": schema_valid,

@@ -67,14 +67,23 @@ t.eq(evaluateMilestoneEligibility(base), eligible, "eligibility is deterministic
 // Never randomized per candidate: no random fields in the result.
 t.ok(!("seed" in eligible) && !("jitter" in eligible), "no randomization in the milestone decision");
 
-// Sims that carry a curveball use a sane mid-session trigger ratio.
+// Sims that carry a curveball either define an authored trigger ratio
+// (long-form shape) or rely on the micro milestone policy.
 for (const s of ALL_SIMULATIONS.slice(0, 10)) {
-  const cb = s.curveball;
+  const cb = s.curveball as { triggerElapsedRatio?: number } | undefined;
   if (!cb) continue;
-  t.ok(
-    cb.triggerElapsedRatio >= 0.3 && cb.triggerElapsedRatio <= 0.8,
-    `curveball trigger mid-session for ${s.slug}`
-  );
+  if (cb.triggerElapsedRatio !== undefined) {
+    t.ok(
+      cb.triggerElapsedRatio >= 0.3 && cb.triggerElapsedRatio <= 0.8,
+      `curveball trigger mid-session for ${s.slug}`
+    );
+  } else {
+    const th = microThresholds(s.durationMinutes);
+    t.ok(
+      th.triggerElapsedRatio > 0 && th.triggerElapsedRatio < 1,
+      `micro milestone policy covers ${s.slug}`
+    );
+  }
 }
 
 // Micro (5-minute) runtime keeps the existing 4-minute cadence.

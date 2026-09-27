@@ -3,7 +3,7 @@
 //! The session record (`.fydell/session.json` in the session dir) plus the
 //! pointer (`sessions/active.json`) let the app rebuild its in-memory session
 //! after a force-close, crash, or restart. The sync journal (sync.rs) tells us
-//! whether acknowledged-but-unsynced work survived.
+//! whether unacknowledged local work survived.
 //!
 //! The lock file (`.fydell/lock`) enforces the single-writer policy on this
 //! machine: a second app instance (or window process) that finds a live lock
@@ -25,11 +25,17 @@ fn pointer_path() -> AppResult<PathBuf> {
 }
 
 fn session_file(session_id: &str) -> AppResult<PathBuf> {
-    Ok(sessions_root()?.join(session_id).join(".fydell").join("session.json"))
+    Ok(sessions_root()?
+        .join(session_id)
+        .join(".fydell")
+        .join("session.json"))
 }
 
 fn lock_path(session_id: &str) -> AppResult<PathBuf> {
-    Ok(sessions_root()?.join(session_id).join(".fydell").join("lock"))
+    Ok(sessions_root()?
+        .join(session_id)
+        .join(".fydell")
+        .join("lock"))
 }
 
 // ---------------------------------------------------------------------------
@@ -108,9 +114,12 @@ fn write_pointer(session_id: &str) -> AppResult<()> {
     if let Some(parent) = p.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    std::fs::write(&p, serde_json::to_string(&ActivePointer {
-        session_id: session_id.to_string(),
-    })?)?;
+    std::fs::write(
+        &p,
+        serde_json::to_string(&ActivePointer {
+            session_id: session_id.to_string(),
+        })?,
+    )?;
     Ok(())
 }
 
@@ -376,7 +385,10 @@ mod tests {
             server_revision: 3,
         };
         let v = serde_json::to_value(&o).unwrap();
-        assert_eq!(v["kind"], serde_json::Value::String("resume_active".to_string()));
+        assert_eq!(
+            v["kind"],
+            serde_json::Value::String("resume_active".to_string())
+        );
         assert_eq!(v["server_revision"], serde_json::Value::from(3));
     }
 
@@ -398,7 +410,10 @@ mod tests {
         )
         .unwrap();
         let lock = read_lock(&p).unwrap();
-        assert_eq!(lock_decision(lock.pid, pid_alive(lock.pid), std::process::id()), LockOutcome::Stale);
+        assert_eq!(
+            lock_decision(lock.pid, pid_alive(lock.pid), std::process::id()),
+            LockOutcome::Stale
+        );
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

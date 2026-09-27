@@ -47,6 +47,19 @@ All tests are in-process via tsx with in-memory fakes (no live Supabase availabl
 Total: 6 suites, all passing; permissions + grants suites report 140 assertions combined
 (the other four use ok/FAIL counters without a final tally).
 
+## TypeScript
+
+`npx tsc --noEmit` on the whole repo: FAIL overall — but **zero errors in this
+chunk's files**. The remaining errors are pre-existing / sibling-chunk files:
+`src/app/api/analysis/validate-review/route.ts`, `src/components/sim/WorkbenchRunner.tsx`,
+`src/lib/passport/store.ts` (all owned by other chunks; not touched here).
+
+Notable project gotcha found while fixing: this repo's tsconfig has
+`"strict": false`, under which `if (!x.ok)` does NOT narrow `{ok:true}|{ok:false}`
+discriminated unions (verified with an isolated repro). All Result-type checks
+in this chunk use explicit `x.ok === false` comparisons, which narrow correctly.
+The sibling chunk's `src/lib/passport/store.ts` has the same latent pattern.
+
 ## Follow-ups for other chunks / parent
 
 1. Invitation token persistence needs a `token_hash` column on `public.invitations`

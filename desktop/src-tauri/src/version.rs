@@ -15,10 +15,11 @@
 //!    Documented in ARCHITECTURE.md; do not claim otherwise.
 //!
 //! Contract (proposed, NOT implemented server-side — the gate returns
-//! `unknown` until it is):
+//! `unknown` until it is). Field naming follows the platform's camelCase
+//! convention:
 //!   GET {platform}/api/desktop/version
-//!   → 200 { min_supported_version: "0.2.0", latest_version?: "0.3.1",
-//!           download_url?: "https://…" }
+//!   → 200 { minSupportedVersion: "0.2.0", latestVersion?: "0.3.1",
+//!           downloadUrl?: "https://…" }
 //!   → 404: the platform does not declare desktop versions.
 
 use crate::error::{AppError, AppResult};
@@ -160,9 +161,9 @@ pub async fn check_gate() -> VersionGate {
 /// Enforce the gate: Err(VersionBlocked) when below the declared minimum.
 pub async fn enforce_gate() -> AppResult<()> {
     match check_gate().await {
-        VersionGate::Blocked { current, minimum, .. } => {
-            Err(AppError::VersionBlocked { current, minimum })
-        }
+        VersionGate::Blocked {
+            current, minimum, ..
+        } => Err(AppError::VersionBlocked { current, minimum }),
         _ => Ok(()),
     }
 }

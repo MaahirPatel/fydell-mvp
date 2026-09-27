@@ -378,10 +378,19 @@ struct ProvisionProgress {
     message: Option<String>,
 }
 
-fn emit_provision(app: &AppHandle, step: &'static str, state: &'static str, message: Option<String>) {
+fn emit_provision(
+    app: &AppHandle,
+    step: &'static str,
+    state: &'static str,
+    message: Option<String>,
+) {
     let _ = app.emit(
         "provision-progress",
-        ProvisionProgress { step, state, message },
+        ProvisionProgress {
+            step,
+            state,
+            message,
+        },
     );
 }
 
@@ -392,11 +401,7 @@ fn emit_provision(app: &AppHandle, step: &'static str, state: &'static str, mess
 /// server-side (`startSession` returns the existing session when
 /// `started_at` is set), fetch is a GET, and materialize rewrites from the
 /// server payload before the session is active (no user edits can exist yet).
-async fn provision_step<T, F, Fut>(
-    app: &AppHandle,
-    step: &'static str,
-    f: F,
-) -> AppResult<T>
+async fn provision_step<T, F, Fut>(app: &AppHandle, step: &'static str, f: F) -> AppResult<T>
 where
     F: FnOnce() -> Fut,
     Fut: std::future::Future<Output = AppResult<T>>,
@@ -833,7 +838,10 @@ mod tests {
         assert!(!program_resolves_in("/nonexistent/xyz", "/usr/bin:/bin"));
         // PATH search.
         assert!(program_resolves_in("sh", "/usr/bin:/bin"));
-        assert!(!program_resolves_in("definitely-not-a-program-xyz", "/usr/bin:/bin"));
+        assert!(!program_resolves_in(
+            "definitely-not-a-program-xyz",
+            "/usr/bin:/bin"
+        ));
         // Empty PATH never resolves.
         assert!(!program_resolves_in("sh", ""));
     }

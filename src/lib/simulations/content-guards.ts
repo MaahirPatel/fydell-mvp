@@ -43,6 +43,9 @@ function scanText(text: string, where: string): string[] {
 }
 
 function stakeholderTexts(s: {
+  name?: string;
+  role?: string;
+  blurb?: string;
   knowledge?: string[];
   withholds?: string[];
   responseRules?: { reply: string }[];
@@ -51,6 +54,7 @@ function stakeholderTexts(s: {
   aiPersona?: string;
 }): string[] {
   return [
+    s.blurb || "",
     ...(s.knowledge || []),
     ...(s.withholds || []),
     ...(s.responseRules || []).map((r) => r.reply),

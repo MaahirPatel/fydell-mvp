@@ -60,8 +60,8 @@ pub enum SyncEvent {
 /// Pure state transition. The one rule that matters: `Conflict` is sticky —
 /// only an explicit `Resolved` leaves it.
 pub fn next_phase(current: SyncPhase, event: SyncEvent) -> SyncPhase {
-    use SyncPhase as P;
     use SyncEvent as E;
+    use SyncPhase as P;
     match (current, event) {
         (_, E::Reset) => P::Synced,
         (P::Conflict, E::Resolved) => P::Synced,
@@ -338,9 +338,9 @@ pub async fn resolve_sync_conflict(app: AppHandle, strategy: String) -> AppResul
             "there is no pending sync conflict to resolve".to_string(),
         ));
     }
-    let conflict_rev = read_journal()
-        .conflict_server_rev
-        .ok_or_else(|| AppError::Execution("conflict state without a server revision".to_string()))?;
+    let conflict_rev = read_journal().conflict_server_rev.ok_or_else(|| {
+        AppError::Execution("conflict state without a server revision".to_string())
+    })?;
 
     match strategy.as_str() {
         "keep_local" => {
@@ -531,8 +531,14 @@ mod tests {
     #[test]
     fn stray_events_are_noops() {
         // A success/failure arriving with no sync in flight changes nothing.
-        assert_eq!(next_phase(SyncPhase::SavedLocal, SyncEvent::SyncSucceeded), SyncPhase::SavedLocal);
-        assert_eq!(next_phase(SyncPhase::Synced, SyncEvent::SyncFailed), SyncPhase::Synced);
+        assert_eq!(
+            next_phase(SyncPhase::SavedLocal, SyncEvent::SyncSucceeded),
+            SyncPhase::SavedLocal
+        );
+        assert_eq!(
+            next_phase(SyncPhase::Synced, SyncEvent::SyncFailed),
+            SyncPhase::Synced
+        );
     }
 
     #[test]
@@ -542,8 +548,14 @@ mod tests {
             ("a.py".to_string(), "print(1)".to_string()),
         ];
         let body = build_sync_body(&files);
-        assert_eq!(body["files"]["a.py"], serde_json::Value::String("print(1)".to_string()));
-        assert_eq!(body["files"]["b.py"], serde_json::Value::String("print(2)".to_string()));
+        assert_eq!(
+            body["files"]["a.py"],
+            serde_json::Value::String("print(1)".to_string())
+        );
+        assert_eq!(
+            body["files"]["b.py"],
+            serde_json::Value::String("print(2)".to_string())
+        );
     }
 
     #[test]

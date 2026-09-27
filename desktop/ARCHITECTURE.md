@@ -138,24 +138,42 @@ desktop/
   ARCHITECTURE.md            # this file
   src-tauri/
     Cargo.toml               # tauri 2, reqwest, keyring, url,
-                             # tauri-plugin-{shell,opener,deep-link}
-    tauri.conf.json          # deep-link scheme: fydell://
+                             # tauri-plugin-{opener,deep-link} (no shell)
+    tauri.conf.json          # deep-link scheme: fydell:// ; CSP
+    capabilities/main.json   # minimal renderer permissions (§10)
     src/main.rs              # app setup, plugin + deep-link registration, commands
     src/auth.rs              # system-browser sign-in, deep-link callback,
                              # keychain session, Supabase refresh, auth headers
     src/platform.rs          # typed client for src/app/api/sim/* (§4)
     src/session.rs           # idle → joined → active → submitted; join/consent/
-                             # preflight/start; workspace materialization; state sync
-    src/workspace.rs         # revision-checked file I/O, scoped to the workspace
+                             # preflight/start; provisioning progress events (§6);
+                             # version gate (§11); workspace materialization;
+                             # recovery persistence; single-writer lock (§9)
+    src/workspace.rs         # revision-checked file I/O, scoped to the workspace;
+                             # marks sync journal dirty after each durable write (§7)
     src/execution.rs         # bounded local test execution (timeouts, output
                              # caps, rlimits, credential scrubbing)
     src/events.rs            # local JSONL log + platform whitelist mapping
     src/submission.rs        # snapshot → PATCH → platform submit → receipt
+    src/sync.rs              # explicit remote-sync state machine + durable
+                             # journal; conflict is sticky until resolved (§7)
+    src/recovery.rs          # durable session record, boot assessment,
+                             # per-session single-writer lock (§8)
+    src/version.rs           # semver parse/compare; minimum-version gate
+                             # contract (§11)
+    src/diagnostics.rs       # scoped, redacted diagnostics + error ring (§12)
+    src/error.rs             # stable error codes FYDELL-E1001…E1012 (§12)
   src/                       # frontend (Vite + React + TypeScript)
-    App.tsx                  # sign-in → invite → consent → workspace → submitted
-    components/Workspace.tsx # editor shell
-    components/Panels.tsx    # brief, tests, team, submit (AI disclosure), timeline
+    App.tsx                  # sign-in → invite → consent → provisioning →
+                             # workspace → submitted; version gate (§11);
+                             # locked screen (§9)
+    components/Workspace.tsx # editor shell; separate local-save / remote-sync
+                             # indicators; conflict banner; exit warning (§7, §8)
+    components/Panels.tsx    # brief, tests, team, submit (AI disclosure, sync
+                             # warning), timeline + diagnostics panel (§12)
     lib/tauri.ts             # typed Tauri command bindings
+    lib/pure.ts              # pure presentation logic (wording, formatting),
+                             # unit-tested with node:test (lib/pure.test.ts)
 ```
 
 ### Local test execution (`execution.rs`)
@@ -167,7 +185,168 @@ via `setrlimit` on Unix, credential-like env vars scrubbed, minimal PATH.
 Raw output is preserved and shown to the candidate. This is hang/crash
 containment on the candidate's own machine — not a sandbox, not isolation.
 
-## 6. Web platform additions required (not built)
+## 6. Provisioning (DESK-06)
+
+`begin_session` is not one opaque call. It walks an explicit step list and
+emits a `provision-progress` event for each step's `started`/`ok`/`failed`
+transition (`session.rs`):
+
+`version → preflight → fetch → runtime → start → materialize`
+
+- `version`: the minimum-version gate (§11) is checked first; a blocked client
+  refuses before any timed work begins.
+- `preflight`: viewport/localStorage sanity (same data as the web preflight).
+- `fetch`: the session payload is downloaded and parsed.
+- `runtime`: the declared test runner is resolved against the fixed
+  `EXEC_PATH` (`/usr/local/bin:/usr/bin:/bin`); an unresolvable runner fails
+  here with a clear message instead of mid-assessment.
+- `start`: the platform start route is called — this is the only step that
+  starts the server clock.
+- `materialize`: the workspace is written to disk (hash-verified, §4).
+
+The frontend (`App.tsx` → `Provisioning`) renders each step with its real
+state and a retry button when one fails; the candidate's timer only starts
+after all steps succeed, so a failed step never costs assessment time. Retry
+re-runs the whole sequence; `start` is idempotent server-side (an existing
+`started_at` returns the same session).
+
+## 7. Save / remote-sync states (DESK-09)
+
+Local persistence and remote acknowledgment are different facts and are never
+conflated in the UI. `sync.rs` owns an explicit state machine:
+
+`saved_local → syncing → synced`, with sticky `sync_failed` and `conflict`.
+
+- Every durable local write (`workspace.rs::write_file`) bumps the per-file
+  revision and calls `sync::mark_dirty`, recording the path in a durable
+  `.fydell/sync-journal.json`. The journal survives restarts — unsynced work
+  is never silently dropped.
+- The frontend shows the local state and the remote phase separately:
+  "Unsaved changes" (edit not yet written) · "Saving on device…" ·
+  "Saved on this device" (durable local write) · "Syncing…" ·
+  "Saved remotely" (server PATCH acknowledged) · "Sync failed — retry".
+- A sync is a server state PATCH fenced by `baseRevision`. The app attempts
+  one optimistic retry on 409; a repeated 409 moves the machine to `conflict`,
+  which is **sticky**: only an explicit `resolve_sync_conflict`
+  (`keep_local` re-fences at the new revision and re-pushes;
+  `take_remote` accepts the server snapshot) leaves it. The conflict banner
+  states plainly that another session changed the assignment and that local
+  work is untouched.
+- An explicit **Sync now** runs after each save (debounced) and from the
+  recovery banner; "Sync failed" is a button that retries.
+- At submit time, if remote state is unsettled (unsynced files, failed sync,
+  unresolved conflict), the submit dialog says so explicitly and submits the
+  local work as-is.
+
+## 8. Interrupted-work recovery (DESK-10)
+
+`recovery.rs` keeps a durable record so a crash, kill, or OS restart never
+loses work silently:
+
+- `.fydell/session.json` (the durable session record) plus
+  `sessions/active.json` (the active-session pointer).
+- On boot the frontend asks `recovery_status`, which assesses the durable
+  state and returns one of: `none`, `resume_active` (with unsynced paths from
+  the journal), `resume_joined`, `workspace_missing` (record points at a
+  workspace that no longer exists — shown truthfully, not hidden),
+  `locked` (another live process holds the session, §9).
+- Resumed work is surfaced with an explicit banner ("Recovered N unsynced
+  files from before the restart"), not silently merged.
+- Closing the window with dirty tabs or unsynced/conflicted sync state shows
+  an explicit dialog: pending autosaves are flushed first, then the dialog
+  distinguishes "unsaved changes (will be lost)" from "saved on this device
+  but not yet acknowledged (survives restart)". The user can keep working,
+  quit anyway, or sync-and-quit.
+
+## 9. Competing sessions (DESK-11)
+
+Two writers must never silently overwrite each other — on this machine or
+across machines:
+
+- **Same machine:** a per-session single-writer lock file (`.fydell/lock`)
+  with the holder's PID. `begin_session` (and boot assessment) refuse with
+  `session_locked` when the lock belongs to a live process; on Linux liveness
+  is verified via `/proc`, so a stale lock after a crash is treated as stale
+  and the session can be re-entered. The frontend shows a dedicated "Already
+  open" screen naming the holding process, with a check-again path.
+- **Across machines:** every server write is fenced by `baseRevision`; a 409
+  is a real signal, not retried away silently. After one optimistic retry, a
+  repeated 409 becomes the sticky `conflict` phase (§7) requiring an explicit
+  human choice. "Keep my version" re-fences at the server revision and
+  re-pushes — it never bypasses fencing; "use server version" adopts the
+  server snapshot.
+
+## 10. Native capability restrictions (DESK-17)
+
+The renderer is deliberately weak; the Rust backend is deliberately narrow:
+
+- The `tauri-plugin-shell` dependency was removed — the app never spawns an
+  arbitrary shell. Test execution (`execution.rs`) spawns only the scenario's
+  declared runner as a child process with a fixed `EXEC_PATH`, wall-time
+  timeout, output caps, and Unix rlimits; this is crash/hang containment on
+  the candidate's own machine, **not a sandbox** (§5).
+- `capabilities/main.json` grants the renderer only
+  `core:event:allow-listen`, `core:event:allow-unlisten`, and
+  `core:window:allow-close`. No shell, fs, dialog, or opener renderer
+  permission exists. File I/O happens exclusively through the narrow
+  `read_file`/`write_file`/`list_files` commands, scoped to the session
+  workspace directory.
+- CSP (`tauri.conf.json`) allows only `connect-src ipc: http://ipc.localhost`
+  — the renderer makes no network calls; all platform traffic originates in
+  Rust with the candidate's own session.
+- The auth callback is restricted to the exact `fydell://auth/callback` URL
+  with a constant-time `state` check (`auth.rs`); the sign-in URL is built by
+  Rust from the configured platform base, never from renderer input.
+- Tokens never cross the IPC boundary (`auth_session` returns only
+  `{ signed_in, email, expires_at }`); diagnostics are scoped and redacted
+  (§12).
+
+## 11. Safe upgrades (DESK-19)
+
+What exists, honestly:
+
+- `version.rs` parses and compares `major.minor.patch` versions.
+- A proposed server contract: `GET /api/desktop/version` returning
+  `{ minimum, latest, download_url }`. **The endpoint does not exist on the
+  platform today**, so the gate fails open to `unknown` (visible, never
+  silently assumed current).
+- A blocked client (below `minimum`) is refused **before** the assessment
+  starts, with an explicit "Update required" screen; nothing timed has begun.
+- An available-but-not-required update is an advisory notice on the consent
+  screen — the candidate may finish the assessment first.
+
+What does **not** exist (and is therefore not claimed): no auto-updater, no
+installer authenticity verification, no rollback mechanism. Updating is a
+manual install; a manual install cannot restart an in-progress assessment
+automatically — the durable session record (§8) is what resumes it. Because
+authenticity/rollback are absent, this requirement is only partially met.
+
+## 12. Diagnostics (DESK-20)
+
+`diagnostics.rs` exposes a `diagnostics` command returning a deliberately
+scoped payload: app version, OS/arch, the **platform host only** (never full
+URLs, query strings, or paths), session status/sync metadata, file and event
+counts, and a capped in-memory ring of recent errors.
+
+- Every error the backend produces carries a stable code (`FYDELL-E1001` …
+  `FYDELL-E1012`) and a stable reference; the frontend appends the reference
+  to every visible error message, so support can identify a failure without
+  any logs.
+- Redaction is unit-tested: JSON secret fields, `key=value` secrets, and
+  bearer tokens are scrubbed before anything enters the diagnostics ring
+  (tokens never cross IPC at all, §10).
+- The UI (Timeline → Diagnostics) shows the scoped fields and a "Copy
+  diagnostics" button producing plain text that states its own guarantee:
+  versions, sync state, counts, error references — never code, tokens, or
+  message bodies.
+
+**Distribution honesty.** Only the Linux distribution path has reported
+built artifacts (`.deb`, `.rpm`, `.AppImage`). macOS and Windows are not
+signed, notarized, or distribution-tested — no claim is made for them, and
+the single-writer liveness check is Linux-only (other platforms treat locks
+as stale by policy).
+
+## 13. Web platform additions required (not built)
 
 The desktop changes nothing outside `desktop/`. These small web-side additions
 are required for the full loop; each is specified as a contract, not a mandate
@@ -221,7 +400,7 @@ Desktop build configuration required: `FYDELL_PLATFORM_URL` (default
 `http://localhost:3000`; production builds must set the real URL),
 `FYDELL_SUPABASE_URL`, `FYDELL_SUPABASE_ANON_KEY` (public values).
 
-## 7. Phased integrity (explicit, not silent)
+## 14. Phased integrity (explicit, not silent)
 
 - **V1 (this build):** honest local app. No lockdown claims. Evidence value
   comes from the realistic task, the test record, the event trail, and human
@@ -233,29 +412,38 @@ Desktop build configuration required: `FYDELL_PLATFORM_URL` (default
 
 We will not claim proctoring we do not perform.
 
-## 8. What remains unbuilt / unverified
+## 15. What remains unbuilt / unverified
 
-- The app has never been compiled to a binary here (Rust `cargo check` blocked
-  on system WebKit/GTK build deps in this VM — environmental, not a code
-  verdict; TypeScript compiles clean).
-- No packaged installer, signing, notarization, or auto-update (release gates).
+- `cargo check --offline` and `cargo test --offline` pass for the Rust backend
+  in this VM; the desktop TypeScript project type-checks and `vite build`
+  succeeds. A full `tauri build` (real binary + system WebKit/GTK linkage)
+  was not run here — Linux installers (`.deb`, `.rpm`, `.AppImage`) were
+  reported built earlier, but that was not re-verified in this session.
+- No signing, notarization, or auto-update; updates are manual installs
+  (§11). macOS and Windows are not built, signed, or distribution-tested.
 - W3–W4 are implemented on this branch but the `submit_session_atomic`
   transaction has not run against a live Postgres (no database in this
   environment); its logic is reviewed but unexecuted. The in-process unit
   tests cover package building, exclusion, manifest validation, receipt
   determinism, and snapshot assembly.
 - The end-to-end loop (install → sign in → join → work → submit → employer
-  report) has never run against a live platform.
+  report) has never run against a live platform. In particular, the sync
+  conflict path (fencing, 409 → sticky conflict → explicit resolution) is
+  unit-tested as a state machine but has not been exercised against the real
+  API, and the `GET /api/desktop/version` contract (§11) does not exist
+  server-side.
 - The file-package builder reads `<repo>/scenarios` from `process.cwd()`:
   serverless deployments must bundle the scenarios directory or `filePackage`
   will be null (logged server-side; the desktop falls back to
   `state.workspace.files`).
-- Multi-device conflict handling, offline behavior, and accessibility of the
-  desktop UI are not implemented.
+- Offline-first is a non-goal (§16): sign-in, session sync, and submission
+  require the network. The sync journal (§7) makes interrupted work
+  resumable, but a long-offline session has not been soak-tested.
+- Accessibility of the desktop UI is not implemented.
 - The cookie format assumption (§3) must be re-verified if `@supabase/ssr` is
   upgraded.
 
-## 9. Non-goals for v1
+## 16. Non-goals for v1
 
 - Employer-side desktop features. Employers stay on the web.
 - Real-time employer observation of sessions.
