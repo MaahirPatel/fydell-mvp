@@ -68,7 +68,8 @@
     "admin:password": "tsx scripts/set-admin-password.ts --write",
     "verify:prod": "tsx scripts/verify-production-readiness.ts",
     "seed:dev": "ALLOW_DEV_SEED=true tsx scripts/seed-development.ts",
-    "seed:sandbox-applied-ai": "tsx scripts/seed-sandbox-applied-ai.ts"
+    "seed:sandbox-applied-ai": "tsx scripts/seed-sandbox-applied-ai.ts",
+    "test:code-analysis": "tsx scripts/test-code-analysis-evals.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
