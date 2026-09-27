@@ -28,7 +28,7 @@ export default async function EmployerPassportsPage() {
         <AddPassportForm />
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-[12px] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+      <div className="mt-6 overflow-hidden rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         {reviews.length === 0 ? (
           <p className="px-5 py-8 text-app-body text-[var(--text-secondary)]">
             No shared passports yet. When a candidate sends you their passport link, paste it above to start a review.

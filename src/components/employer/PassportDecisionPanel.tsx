@@ -39,7 +39,7 @@ export default function PassportDecisionPanel({
   }
 
   return (
-    <section aria-labelledby="decision-heading" className="rounded-[14px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-2)]">
+    <section aria-labelledby="decision-heading" className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-2)]">
       <h2 id="decision-heading" className="text-app-section font-medium">Team decision</h2>
       <p className="mt-1 text-app-meta text-[var(--text-secondary)]">
         Recorded for your workspace only. Nothing is sent to the candidate, and no interview is scheduled.

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Check, GitFork, Loader2, RotateCcw } from "lucide-react";
 import PassportView from "./PassportView";
+import "./passport.css";
 import { ruleSummary, suggestRoles } from "@/lib/passport/rules";
 import type { ExtractionResult } from "@/lib/passport/github/types";
 import type { PassportData, PassportProject } from "@/lib/passport/view";
@@ -151,7 +152,7 @@ export default function PassportBuilder({
   return (
     <div className="space-y-8">
       {phase === "input" || phase === "select" ? (
-        <form onSubmit={findRepositories} className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-2)] sm:p-6">
+        <form onSubmit={findRepositories} className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-2)] sm:p-6">
           <label htmlFor="github-input" className="text-[14px] font-medium">
             GitHub profile or public repository
           </label>
@@ -189,7 +190,7 @@ export default function PassportBuilder({
       ) : null}
 
       {phase === "select" ? (
-        <section aria-labelledby="select-heading" className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
+        <section aria-labelledby="select-heading" className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
           <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--border-subtle)] px-5 py-4 sm:px-6">
             <h2 id="select-heading" className="text-[16px] font-medium">Choose up to {MAX} repositories</h2>
             <p className="text-[12.5px] text-[var(--text-tertiary)]">{repos.length} public repositories for {login}</p>
@@ -255,7 +256,7 @@ export default function PassportBuilder({
       ) : null}
 
       {phase === "run" || phase === "done" ? (
-        <section aria-label="Analysis progress" className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
+        <section aria-label="Analysis progress" className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
           <ul className="divide-y divide-[var(--border-subtle)]">
             {Object.entries(runs).map(([name, run]) => (
               <li key={name} className="flex flex-wrap items-center gap-3 px-5 py-3.5 sm:px-6">

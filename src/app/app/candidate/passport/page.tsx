@@ -20,8 +20,8 @@ export default async function CandidatePassportPage({ searchParams }: { searchPa
   return (
     <CandidateShell width="wide" current="passport">
       <div className="reveal">
-        <p className="text-[13px] font-medium text-[var(--text-secondary)]">Engineering Passport</p>
-        <h1 className="display-serif mt-1 text-[clamp(2rem,3.4vw,2.75rem)] leading-[1.05]">
+        <p className="text-app-meta font-medium text-[var(--text-secondary)]">Engineering Passport</p>
+        <h1 className="text-app-page mt-1 font-semibold">
           {passport ? "Your work, with the evidence behind it." : "Build your passport from GitHub."}
         </h1>
         <p className="mt-2 max-w-[62ch] text-[15px] leading-[1.6] text-[var(--text-secondary)]">
@@ -40,7 +40,7 @@ export default async function CandidatePassportPage({ searchParams }: { searchPa
           {passport && passport.projects.length ? (
             <SharePanel initialShares={shares} />
           ) : (
-            <p className="rounded-[16px] border border-dashed border-[var(--border-default)] p-5 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+            <p className="rounded-[10px] border border-dashed border-[var(--border-default)] p-5 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
               Sharing becomes available once your passport has at least one analyzed project.
             </p>
           )}

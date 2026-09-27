@@ -49,7 +49,7 @@ export default function SharePanel({ initialShares }: { initialShares: Share[] }
   }
 
   return (
-    <section aria-labelledby="sharing-heading" className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
+    <section aria-labelledby="sharing-heading" className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
       <div className="border-b border-[var(--border-subtle)] px-5 py-4 sm:px-6">
         <h2 id="sharing-heading" className="text-[16px] font-medium">Sharing</h2>
         <p className="mt-1 text-[13px] text-[var(--text-secondary)]">

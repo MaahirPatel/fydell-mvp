@@ -28,7 +28,7 @@ export default async function EmployerPassportReviewPage({ params }: { params: P
           {review.passport ? (
             <PassportView passport={review.passport} mode="employer" />
           ) : (
-            <div className="rounded-[14px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
+            <div className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
               <h1 className="text-app-section font-medium">The candidate revoked this link</h1>
               <p className="mt-2 text-app-body text-[var(--text-secondary)]">
                 Their passport is no longer visible to your workspace. Your decision and notes are kept here.
