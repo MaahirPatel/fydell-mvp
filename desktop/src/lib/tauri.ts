@@ -60,6 +60,8 @@ export interface SessionEvent {
 export interface Receipt {
   submission_id: string;
   sha256: string;
+  /** W4: server-computed receipt hash (authoritative tamper-evidence handle). */
+  server_receipt_hash?: string | null;
   title: string | null;
   submitted_at: string;
   file_count: number;

@@ -11,6 +11,8 @@ pub enum AppError {
     AlreadySubmitted,
     #[error("path escapes the workspace")]
     PathEscape,
+    #[error("assignment integrity check failed: {0}")]
+    Integrity(String),
     #[error("file not found: {0}")]
     NotFound(String),
     #[error("revision conflict: expected rev {expected}, server rev {actual}")]
@@ -60,6 +62,7 @@ impl From<AppError> for tauri::ipc::InvokeError {
             AppError::NoSession => ("no_session", None, None),
             AppError::AlreadySubmitted => ("already_submitted", None, None),
             AppError::PathEscape => ("path_escape", None, None),
+            AppError::Integrity(_) => ("integrity_error", None, None),
             AppError::NotFound(_) => ("not_found", None, None),
             AppError::RevisionConflict { expected, actual } => {
                 ("revision_conflict", Some(*expected), Some(*actual))

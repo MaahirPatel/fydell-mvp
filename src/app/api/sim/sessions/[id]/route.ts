@@ -3,9 +3,15 @@ import { requireUser } from "@/lib/simulations/auth";
 import {
   getSessionForCandidate,
   getSessionState,
+  getTemplateById,
   getVersionContent,
   listMessages,
 } from "@/lib/simulations/db";
+import {
+  buildScenarioPackage,
+  scenarioIdForTemplateSlug,
+  type ScenarioPackage,
+} from "@/lib/simulations/scenario-package";
 import { toMicroCandidateView } from "@/lib/simulations/candidate-view";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 import { microToV2, toV2CandidateView } from "@/lib/simulations/v2";
@@ -59,6 +65,21 @@ export async function GET(
       workbench.modules = workbench.modules.filter((m) => m.kind !== "curveball");
     }
 
+    // W3: versioned, candidate-safe file package for scenario-backed sessions.
+    // Convention: template slug == scenario directory name. Null when the
+    // template has no on-disk scenario or the package fails to build — the
+    // failure is logged server-side and the client falls back to
+    // `state.workspace.files`. A broken package must never break this route
+    // for web candidates.
+    let filePackage: ScenarioPackage | null = null;
+    try {
+      const template = await getTemplateById(session.template_id);
+      const scenarioId = scenarioIdForTemplateSlug(template.slug);
+      if (scenarioId) filePackage = buildScenarioPackage(scenarioId);
+    } catch (err) {
+      console.error(`[sim] file package build failed for session ${id}:`, err);
+    }
+
     return NextResponse.json({
       session: {
         id: session.id,
@@ -72,6 +93,7 @@ export async function GET(
       },
       content: toMicroCandidateView(content),
       workbench,
+      filePackage,
       gate: {
         consentPolicyVersion: CONSENT_POLICY_VERSION,
         consentAccepted: Boolean(consent),

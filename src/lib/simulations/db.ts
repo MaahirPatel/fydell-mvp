@@ -3,6 +3,14 @@ import { createHash, randomBytes } from "crypto";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import type { SimulationContent } from "./types";
 import { invitationGate } from "./invitation-gate";
+import { buildScenarioPackage, scenarioIdForTemplateSlug } from "./scenario-package";
+import {
+  buildSubmissionSnapshot,
+  computeReceiptHash,
+  isValidFileSnapshotShape,
+  validateFileSnapshot,
+  type FileSnapshotInput,
+} from "./submission-files";
 
 export { invitationGate } from "./invitation-gate";
 
@@ -814,6 +822,91 @@ export async function submitSession(
   });
 
   return { submissionId: sub.id, alreadySubmitted: false };
+}
+
+export async function getTemplateById(templateId: string): Promise<TemplateRow> {
+  const db = createAdminSupabaseClient();
+  const { data } = await db.from("sim_templates").select("*").eq("id", templateId).maybeSingle();
+  if (!data) throw new Error("Template not found");
+  return data as TemplateRow;
+}
+
+// ---------------------------------------------------------------------------
+// File-snapshot submission (W4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Submit with a full file snapshot (desktop W4 path). The snapshot is
+ * validated (every client-claimed hash recomputed server-side), the receipt
+ * hash is computed by the server, and everything is stored transactionally
+ * via `submit_session_atomic` — all files or none. Idempotent: resubmitting
+ * returns the existing submission id and its stored receipt hash.
+ *
+ * The existing `submitSession()` path is untouched; web candidates never send
+ * a fileSnapshot and never reach this function.
+ */
+export async function submitSessionWithSnapshot(
+  sessionId: string,
+  userId: string,
+  externalAiDisclosed: boolean,
+  fileSnapshot: unknown,
+  answers?: Record<string, unknown>
+): Promise<{ submissionId: string; alreadySubmitted: boolean; receiptHash: string }> {
+  if (!isValidFileSnapshotShape(fileSnapshot)) {
+    throw new Error("Malformed file snapshot");
+  }
+  const session = await getSessionForCandidate(sessionId, userId);
+  const template = await getTemplateById(session.template_id);
+  const scenarioId = scenarioIdForTemplateSlug(template.slug);
+  if (!scenarioId) throw new Error("This session has no scenario file package.");
+  const pkg = buildScenarioPackage(scenarioId);
+
+  const snap = fileSnapshot as FileSnapshotInput;
+  validateFileSnapshot(snap, pkg.scenarioId, pkg.scenarioVersion);
+  const receiptHash = computeReceiptHash(sessionId, pkg.scenarioId, pkg.scenarioVersion, snap.manifest);
+
+  const state = await getSessionState(sessionId);
+  const messages = await listMessages(sessionId);
+  // The client's final answers (handoff text, __aiDisclosure) merge into the
+  // deliverable, mirroring the non-snapshot submit path.
+  const deliverable =
+    answers && typeof answers === "object" && !Array.isArray(answers)
+      ? { ...(state.deliverable as Record<string, unknown>), ...answers }
+      : state.deliverable;
+  const snapshot = buildSubmissionSnapshot({
+    deliverable,
+    notes: state.notes,
+    workspace: state.workspace,
+    completedTaskIds: state.completed_task_ids,
+    messageCount: messages.length,
+    submittedRevision: state.revision,
+    fileSnapshot: {
+      scenarioId: pkg.scenarioId,
+      scenarioVersion: pkg.scenarioVersion,
+      files: snap.files,
+      manifest: snap.manifest,
+    },
+    receiptHash,
+  });
+
+  const db = createAdminSupabaseClient();
+  const { data, error } = await db.rpc("submit_session_atomic", {
+    p_session_id: sessionId,
+    p_snapshot: snapshot,
+    p_disclosed: externalAiDisclosed,
+  });
+  if (error) throw new Error(`Could not submit file snapshot: ${error.message}`);
+  const row = (Array.isArray(data) ? data[0] : data) as {
+    submission_id?: string;
+    already_submitted?: boolean;
+    receipt_hash?: string;
+  } | null;
+  if (!row?.submission_id) throw new Error("Atomic submit returned no submission id");
+  return {
+    submissionId: row.submission_id,
+    alreadySubmitted: Boolean(row.already_submitted),
+    receiptHash: row.receipt_hash || receiptHash,
+  };
 }
 
 // ---------------------------------------------------------------------------

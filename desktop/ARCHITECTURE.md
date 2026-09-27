@@ -86,13 +86,13 @@ route below was added or modified for the desktop.
 |---|---|---|---|
 | Invitation preview | `GET /api/sim/invitations/{token}` | public | `{ ok, reason, invitation: { status, candidateEmail, candidateName, expiresAt, organizationName, simulation: { title, roleTitle, scenarioSummary, durationMinutes, toolsAvailable, skillsEvaluated } } }` |
 | Accept invitation | `POST /api/sim/invitations/{token}` | user | `{ ok, sessionId }` |
-| Fetch session | `GET /api/sim/sessions/{id}` | user | `{ session: { id, status, durationMinutes, startedAt, endsAt, submittedAt, curveballPresentedAt, curveballAcknowledgedAt }, content, workbench, gate: { consentPolicyVersion, consentAccepted, preflightOk, preflightLimitations, desktopRequired }, state: { revision, currentTaskId, notes, deliverable, workspace, completedTaskIds }, messages: [{ id, thread, stakeholderId, sender, body, createdAt }] }`. `content` is the candidate-safe view (`src/lib/simulations/candidate-view.ts`): title, scenarioSummary, mission, tasks, resources, stakeholders, deliverableFields, curveball announcement. `gate.desktopRequired: true` already anticipates this client. |
+| Fetch session | `GET /api/sim/sessions/{id}` | user | `{ session: { id, status, durationMinutes, startedAt, endsAt, submittedAt, curveballPresentedAt, curveballAcknowledgedAt }, content, workbench, filePackage, gate: { consentPolicyVersion, consentAccepted, preflightOk, preflightLimitations, desktopRequired }, state: { revision, currentTaskId, notes, deliverable, workspace, completedTaskIds }, messages: [{ id, thread, stakeholderId, sender, body, createdAt }] }`. `content` is the candidate-safe view (`src/lib/simulations/candidate-view.ts`): title, scenarioSummary, mission, tasks, resources, stakeholders, deliverableFields, curveball announcement. `gate.desktopRequired: true` already anticipates this client. `filePackage` (W3, null when the template has no on-disk scenario): `{ scenarioId, scenarioVersion, label, builtAt, testCommand, files: { path: content }, manifest: { path: sha256 } }` — built server-side from the scenario's `files` allowlist only; `canonical.json` and hidden eval material can never be included because the builder never reads them. |
 | Consent | `POST /api/sim/sessions/{id}/consent` | user | `{ accepted: true, policyVersion }` → `{ ok, consentId, policyVersion }`; 409 on policy mismatch |
 | Preflight | `POST /api/sim/sessions/{id}/preflight` | user | `{ viewportWidth, viewportHeight, userAgent, localStorageOk }` → `{ ok, preflightId, result, canStart }` |
 | Start | `POST /api/sim/sessions/{id}/start` | user | → `{ ok, startedAt, endsAt }` (server clock starts) |
 | State sync | `PATCH /api/sim/sessions/{id}/state` | user | `{ baseRevision, notes?, deliverable?, workspace?, currentTaskId?, completedTaskIds? }` → `{ ok, revision }` or 409 `{ ok: false, conflict: {...} }`; 409 also when not active |
 | Events | `POST /api/sim/sessions/{id}/events` | user | `{ eventType, resourceId?, taskId?, payload?, clientEventId? }` → `{ ok, id, duplicate }`. Whitelist: `resource_opened, resource_downloaded, task_completed, task_reopened, notes_edited, deliverable_field_edited, workspace_action, curveball_acknowledged, table_sorted, table_filtered, row_flagged, ticket_selected, step_toggled, rule_reviewed, decision_selected, evidence_selected, deliverable_revised`. 400 on unknown type, 409 when not active |
-| Submit | `POST /api/sim/sessions/{id}/submit` | user | `{ externalAiDisclosed?, answers? }` → `{ ok, submissionId, alreadySubmitted }` (idempotent; honors the `__aiDisclosure` key in answers) |
+| Submit | `POST /api/sim/sessions/{id}/submit` | user | `{ externalAiDisclosed?, answers?, fileSnapshot? }` → `{ ok, submissionId, alreadySubmitted, receiptHash? }` (idempotent; honors the `__aiDisclosure` key in answers). W4: when `fileSnapshot` (`{ scenarioId, scenarioVersion, files: { path: content }, manifest: { path: sha256 } }`) is present, the server recomputes every hash (mismatch → 400, nothing stored), computes the receipt hash itself, and stores everything transactionally via `submit_session_atomic` — all files or none. |
 
 **Local ↔ platform mapping.** The desktop keeps a local append-only JSONL
 evidence log (candidate-inspectable). Local event kinds map onto the platform
@@ -106,15 +106,28 @@ truth and a failed post never blocks the candidate.
 
 **Submission sequence** (`submission.rs`): snapshot local files (excluding
 `.fydell/` internals and the generated `BRIEF.md`) → compute a local SHA-256
-receipt over files + events → PATCH the snapshot into `state.workspace.files`
-(one conflict retry) → POST submit with `{ answers: { handoff, __aiDisclosure:
-{ used } }, externalAiDisclosed }` → persist `receipt.json` → lock the
-workspace read-only. The local receipt covers the exact bytes; the platform
+receipt over files + events → **W4 primary path** (session materialized from a
+verified package, `.fydell/package.json` pin present): build the file snapshot
+(per-file SHA-256 over current contents) and POST submit with `fileSnapshot`;
+the server validates every hash, computes the receipt itself, stores it all
+transactionally, and returns the server receipt hash → **legacy path** (no
+package pin): PATCH the snapshot into `state.workspace.files` (one conflict
+retry), then POST submit with handoff + AI disclosure in `answers` → persist
+`receipt.json` (now including the server receipt hash when present) → lock the
+workspace read-only. The local receipt covers the exact local bytes; the
+server receipt hash is the authoritative tamper-evidence handle; the platform
 submission id is the durable handle.
 
 **Workspace provisioning** (`session.rs::materialize_workspace`): the session
 payload's candidate-safe `content` is written as a read-only `BRIEF.md`
-(title, summary, mission, tasks, deliverable fields); `state.workspace.files`
+(title, summary, mission, tasks, deliverable fields); **W3**: when the session
+carries `filePackage`, every file is verified against the package manifest
+*before anything is written* — any hash mismatch aborts with a clear integrity
+error and the workspace is left unmaterialized (never silently continued).
+The verified manifest is pinned to `.fydell/package.json`
+(`{ scenarioId, scenarioVersion, manifest }`) so submit can prove which
+scenario version the work started from; the canonical `testCommand` feeds the
+local test runner. Without a package, `state.workspace.files`
 (`{ path: content }`) is materialized as the editable file set when present;
 `state.workspace.testCommand` (argv) is stored for the local test runner.
 
@@ -183,19 +196,23 @@ for a specific URL (suggested shapes in parentheses).
   (verified format, §3) carries auth.
   **Implemented on this branch:** Bearer fallback added; cookie behavior
   unchanged (cookies are still checked first).
-- **W3 — Scenario file package (required for multi-file code simulations).**
-  The session API serves task/deliverable content but no versioned file
-  package. Needed: per template version, a candidate-safe file map
-  (`{ path: content }`, e.g. inside `state.workspace` or a new
-  `/api/sim/...` route) plus an optional `testCommand` argv — excluding hidden
-  evals, canonical answers, and secrets. Until then, code scenarios can only
-  ship files the employer puts in `state.workspace.files`.
-- **W4 — File snapshot on submit (needed for code tasks).** The submit route
-  scores deliverable fields. Needed: accept a snapshot manifest
-  (`{ path: sha256 }` + contents, or a bound upload) in the submit body so the
-  graded artifact is the exact bytes the candidate ran. Interim (implemented):
-  the desktop PATCHes files into `state.workspace` before submitting and
-  keeps a local SHA-256 receipt of the exact bytes.
+- **W3 — Scenario file package (implemented on this branch).**
+  `GET /api/sim/sessions/{id}` serves `filePackage` for scenario-backed
+  sessions (convention: template slug == `scenarios/<slug>/` directory).
+  `src/lib/simulations/scenario-package.ts` builds it from the scenario's
+  `files` allowlist only — pinned version, per-file SHA-256 manifest, canonical
+  `testCommand`; `canonical.json` and hidden eval material are excluded by
+  construction. The desktop verifies every file against the manifest before
+  writing anything and pins the manifest to `.fydell/package.json`.
+- **W4 — File snapshot on submit (implemented on this branch).** The submit
+  route accepts `fileSnapshot` in the body: the server recomputes every hash
+  (mismatch → 400, nothing stored), computes the receipt hash itself, and
+  stores submission + snapshot + status flips transactionally via the new
+  `submit_session_atomic` Postgres function (one additive migration; no RLS or
+  existing-table changes). Idempotency preserved (`alreadySubmitted` returns
+  the existing id and its stored receipt hash). The desktop sends the snapshot
+  when the session was materialized from a verified package; otherwise it
+  keeps the interim PATCH-fold path.
 
 No Supabase dashboard changes are needed (the callback is issued by the web
 app, not by Supabase's hosted authorize endpoint).
@@ -222,10 +239,17 @@ We will not claim proctoring we do not perform.
   on system WebKit/GTK build deps in this VM — environmental, not a code
   verdict; TypeScript compiles clean).
 - No packaged installer, signing, notarization, or auto-update (release gates).
-- W3–W4 above are web-side and untouched by this branch (W1–W2 are now
-  implemented; see §6).
+- W3–W4 are implemented on this branch but the `submit_session_atomic`
+  transaction has not run against a live Postgres (no database in this
+  environment); its logic is reviewed but unexecuted. The in-process unit
+  tests cover package building, exclusion, manifest validation, receipt
+  determinism, and snapshot assembly.
 - The end-to-end loop (install → sign in → join → work → submit → employer
   report) has never run against a live platform.
+- The file-package builder reads `<repo>/scenarios` from `process.cwd()`:
+  serverless deployments must bundle the scenarios directory or `filePackage`
+  will be null (logged server-side; the desktop falls back to
+  `state.workspace.files`).
 - Multi-device conflict handling, offline behavior, and accessibility of the
   desktop UI are not implemented.
 - The cookie format assumption (§3) must be re-verified if `@supabase/ssr` is

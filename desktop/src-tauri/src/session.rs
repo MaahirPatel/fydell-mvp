@@ -299,11 +299,15 @@ pub async fn begin_session() -> AppResult<SessionInfo> {
 
 /// Materialize the local workspace from the session payload.
 ///
-/// The platform serves task/deliverable content, not a multi-file code package
-/// (web addition W3 — see ARCHITECTURE.md). What we can do today:
-/// - write the candidate-safe content (brief, tasks, resources) as read-only docs;
-/// - materialize `state.workspace.files` ({ path: content }) when the scenario
-///   provides it, as the editable file set.
+/// W3: when the session carries a versioned file package (`filePackage`), every
+/// file is verified against the package manifest BEFORE anything is written.
+/// A single hash mismatch aborts materialization with a clear integrity error
+/// — the app never silently continues on tampered content. The verified
+/// manifest is pinned to `.fydell/package.json` so the submit path can prove
+/// which scenario version the work started from.
+///
+/// Without a package (older sessions / non-scenario templates), the legacy
+/// path materializes `state.workspace.files` as before.
 fn materialize_workspace(full: &FullSession) -> AppResult<PathBuf> {
     let app_data = APP_DATA.get().expect("app data dir set in setup");
     let dir = app_data.join("sessions").join(&full.session.id);
@@ -351,34 +355,117 @@ fn materialize_workspace(full: &FullSession) -> AppResult<PathBuf> {
     std::fs::write(dir.join("BRIEF.md"), &brief)?;
     revs.insert("BRIEF.md".to_string(), 0); // read-only: rev 0 pins it
 
-    // Editable files, if the scenario ships them via state.workspace.files.
-    if let Some(files) = full
-        .state
-        .workspace
-        .get("files")
-        .and_then(|f| f.as_object())
-    {
-        for (path, content) in files {
-            if let Some(text) = content.as_str() {
-                write_scoped(&dir, path, text)?;
-                revs.insert(path.clone(), 1);
+    if let Some(pkg) = &full.file_package {
+        materialize_package(&dir, pkg, &full.state.workspace, &mut revs)?;
+    } else {
+        // Editable files, if the scenario ships them via state.workspace.files.
+        if let Some(files) = full
+            .state
+            .workspace
+            .get("files")
+            .and_then(|f| f.as_object())
+        {
+            for (path, content) in files {
+                if let Some(text) = content.as_str() {
+                    write_scoped(&dir, path, text)?;
+                    revs.insert(path.clone(), 1);
+                }
             }
         }
-    }
 
-    // Test command, if the scenario declares one via state.workspace.testCommand
-    // (part of the W3 scenario-package contract — see ARCHITECTURE.md).
-    if let Some(cmd) = full.state.workspace.get("testCommand") {
-        std::fs::write(
-            dir.join(".fydell").join("test-command.json"),
-            serde_json::to_string_pretty(cmd)?,
-        )?;
+        // Test command, if the scenario declares one via state.workspace.testCommand
+        // (part of the W3 scenario-package contract — see ARCHITECTURE.md).
+        if let Some(cmd) = full.state.workspace.get("testCommand") {
+            std::fs::write(
+                dir.join(".fydell").join("test-command.json"),
+                serde_json::to_string_pretty(cmd)?,
+            )?;
+        }
     }
 
     let revs_json = serde_json::to_string_pretty(&revs)?;
     std::fs::write(dir.join(".fydell").join("revs.json"), revs_json)?;
 
     Ok(dir)
+}
+
+/// Verify-then-write materialization of a W3 file package.
+///
+/// Every file's SHA-256 is checked against the manifest before a single byte
+/// is written. Any mismatch — or a manifest entry with no file, or a file
+/// with no manifest entry — aborts with `AppError::Integrity` and the
+/// workspace is left unmaterialized.
+fn materialize_package(
+    dir: &PathBuf,
+    pkg: &crate::platform::FilePackage,
+    state_workspace: &serde_json::Value,
+    revs: &mut HashMap<String, u64>,
+) -> AppResult<()> {
+    use sha2::{Digest, Sha256};
+
+    if pkg.files.is_empty() {
+        return Err(AppError::Integrity(
+            "the assignment package contains no files".to_string(),
+        ));
+    }
+    for (path, content) in &pkg.files {
+        let expected = pkg.manifest.get(path).ok_or_else(|| {
+            AppError::Integrity(format!(
+                "file '{}' is missing from the package manifest",
+                path
+            ))
+        })?;
+        let actual = hex::encode(Sha256::digest(content.as_bytes()));
+        if &actual != expected {
+            return Err(AppError::Integrity(format!(
+                "file '{}' failed integrity verification (hash mismatch): \
+                 the assignment package may be corrupted or tampered with. \
+                 Please re-join the session to download a fresh copy.",
+                path
+            )));
+        }
+    }
+    for path in pkg.manifest.keys() {
+        if !pkg.files.contains_key(path) {
+            return Err(AppError::Integrity(format!(
+                "manifest entry '{}' has no file in the package",
+                path
+            )));
+        }
+    }
+
+    // Pin the verified manifest: the submit path uses it to prove which
+    // scenario version the work started from.
+    let pin = serde_json::json!({
+        "scenarioId": pkg.scenario_id,
+        "scenarioVersion": pkg.scenario_version,
+        "manifest": pkg.manifest,
+    });
+    std::fs::write(
+        dir.join(".fydell").join("package.json"),
+        serde_json::to_string_pretty(&pin)?,
+    )?;
+
+    for (path, content) in &pkg.files {
+        write_scoped(dir, path, content)?;
+        revs.insert(path.clone(), 1);
+    }
+
+    // Canonical test command from the package; fall back to the state value
+    // for sessions whose package declares none.
+    let cmd: Option<serde_json::Value> = if !pkg.test_command.is_empty() {
+        Some(serde_json::to_value(&pkg.test_command)?)
+    } else {
+        state_workspace.get("testCommand").cloned()
+    };
+    if let Some(cmd) = cmd {
+        std::fs::write(
+            dir.join(".fydell").join("test-command.json"),
+            serde_json::to_string_pretty(&cmd)?,
+        )?;
+    }
+
+    Ok(())
 }
 
 fn write_scoped(dir: &PathBuf, path: &str, content: &str) -> AppResult<()> {

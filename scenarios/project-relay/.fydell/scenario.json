@@ -26,5 +26,6 @@
     "data/inbox_thread.json",
     "evals/run_evals.py",
     "tests/test_reconcile.py"
-  ]
+  ],
+  "testCommand": ["pytest", "tests/test_reconcile.py"]
 }

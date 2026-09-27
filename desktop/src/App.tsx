@@ -298,6 +298,9 @@ export default function App() {
                   <span className="muted">This receipt describes your observed work.</span>
                 </div>                <div><span className="k">submission </span>{receipt.submission_id}</div>
                 <div><span className="k">sha256 </span><span className="hash">{receipt.sha256}</span></div>
+                {receipt.server_receipt_hash && (
+                  <div><span className="k">server receipt </span><span className="hash">{receipt.server_receipt_hash}</span></div>
+                )}
                 {receipt.title && <div><span className="k">assignment </span>{receipt.title}</div>}
                 <div><span className="k">files </span>{receipt.file_count} <span className="k">events </span>{receipt.event_count}</div>
                 <div><span className="k">at </span>{receipt.submitted_at}</div>

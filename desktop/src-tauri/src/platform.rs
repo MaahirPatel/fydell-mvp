@@ -130,6 +130,39 @@ pub struct FullSession {
     pub gate: SessionGate,
     pub state: SessionStateView,
     pub messages: Vec<SessionMessage>,
+    /// W3: versioned, candidate-safe file package (null for templates without
+    /// an on-disk scenario). Verified against its manifest on materialize.
+    #[serde(default)]
+    pub file_package: Option<FilePackage>,
+}
+
+/// W3 — versioned candidate-safe file package, served by
+/// `GET /api/sim/sessions/{id}` as `filePackage`.
+/// Built server-side from `scenarios/<id>/.fydell/scenario.json`'s file
+/// allowlist only: `canonical.json` and hidden eval material can never be in
+/// `files` because the builder never reads them.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FilePackage {
+    pub scenario_id: String,
+    pub scenario_version: String,
+    pub label: String,
+    #[serde(default)]
+    pub test_command: Vec<String>,
+    pub files: std::collections::HashMap<String, String>,
+    pub manifest: std::collections::HashMap<String, String>,
+}
+
+/// W4 — full file snapshot sent in the submit body. The server recomputes
+/// every manifest hash, rejects any mismatch, computes the receipt hash
+/// itself, and stores everything transactionally (all files or none).
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FileSnapshot {
+    pub scenario_id: String,
+    pub scenario_version: String,
+    pub files: std::collections::HashMap<String, String>,
+    pub manifest: std::collections::HashMap<String, String>,
 }
 
 // ---------------------------------------------------------------------------
@@ -293,6 +326,9 @@ pub struct SubmissionReview {
 struct SubmitResponse {
     submission_id: String,
     already_submitted: bool,
+    /// W4: server-computed receipt hash over the canonical snapshot encoding.
+    #[serde(default)]
+    receipt_hash: Option<String>,
 }
 
 // ---------------------------------------------------------------------------
@@ -575,17 +611,28 @@ impl Platform {
         session_id: &str,
         answers: &serde_json::Value,
         external_ai_disclosed: bool,
-    ) -> AppResult<(String, bool)> {
+        file_snapshot: Option<&FileSnapshot>,
+    ) -> AppResult<(String, bool, Option<String>)> {
+        let mut body = serde_json::json!({
+            "externalAiDisclosed": external_ai_disclosed,
+            "answers": answers,
+        });
+        // W4: the full file snapshot travels in the submit body when the
+        // session was materialized from a verified file package. The server
+        // validates every hash, computes the receipt itself, and stores the
+        // snapshot transactionally (all files or none).
+        if let Some(snap) = file_snapshot {
+            body["fileSnapshot"] = serde_json::to_value(snap).map_err(|e| {
+                AppError::Platform(format!("could not serialize file snapshot: {e}"))
+            })?;
+        }
         let res = self
             .authed(
                 reqwest::Method::POST,
                 &format!("/api/sim/sessions/{}/submit", session_id),
             )
             .await?
-            .json(&serde_json::json!({
-                "externalAiDisclosed": external_ai_disclosed,
-                "answers": answers,
-            }))
+            .json(&body)
             .send()
             .await
             .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
@@ -594,6 +641,10 @@ impl Platform {
             .json()
             .await
             .map_err(|e| AppError::Platform(format!("bad submit response: {e}")))?;
-        Ok((body.submission_id, body.already_submitted))
+        Ok((
+            body.submission_id,
+            body.already_submitted,
+            body.receipt_hash,
+        ))
     }
 }

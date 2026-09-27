@@ -6,6 +6,7 @@ import {
   getVersionContent,
   saveSessionState,
   submitSession,
+  submitSessionWithSnapshot,
 } from "@/lib/simulations/db";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 
@@ -78,6 +79,14 @@ export async function POST(
     externalAiDisclosed?: boolean;
     /** Final client answers; may include the "__aiDisclosure" key. */
     answers?: Record<string, unknown>;
+    /**
+     * W4: full file snapshot from the desktop client. When present, the
+     * snapshot is validated (every hash recomputed server-side), the receipt
+     * hash is computed by the server, and everything is stored transactionally
+     * via `submit_session_atomic` (all files or none). Web candidates never
+     * send this and take the existing path below, unchanged.
+     */
+    fileSnapshot?: unknown;
   };
   try {
     body = await req.json();
@@ -86,6 +95,27 @@ export async function POST(
   }
 
   try {
+    const disclosure = body.answers?.["__aiDisclosure"] as { used?: boolean } | undefined;
+    const disclosed =
+      typeof disclosure?.used === "boolean" ? disclosure.used : Boolean(body.externalAiDisclosed);
+
+    // W4 file-snapshot path (desktop). The answers-merge preamble below is
+    // skipped: the snapshot carries the complete artifact, and the atomic
+    // function stores it together with the submission in one transaction.
+    if (body.fileSnapshot !== undefined && body.fileSnapshot !== null) {
+      const answers =
+        body.answers && typeof body.answers === "object" && !Array.isArray(body.answers)
+          ? (body.answers as Record<string, unknown>)
+          : undefined;
+      const result = await submitSessionWithSnapshot(id, user.id, disclosed, body.fileSnapshot, answers);
+      return NextResponse.json({
+        ok: true,
+        submissionId: result.submissionId,
+        alreadySubmitted: result.alreadySubmitted,
+        receiptHash: result.receiptHash,
+      });
+    }
+
     // Pass the client's final answers (including "__aiDisclosure") through to
     // the saved state so the submission snapshot carries them for scoring.
     if (body.answers && typeof body.answers === "object" && !Array.isArray(body.answers)) {
@@ -104,9 +134,6 @@ export async function POST(
       }
     }
 
-    const disclosure = body.answers?.["__aiDisclosure"] as { used?: boolean } | undefined;
-    const disclosed =
-      typeof disclosure?.used === "boolean" ? disclosure.used : Boolean(body.externalAiDisclosed);
     const result = await submitSession(id, user.id, disclosed);
     return NextResponse.json({
       ok: true,
