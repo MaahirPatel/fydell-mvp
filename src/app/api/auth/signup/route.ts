@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       );
     }
 
-    await admin.from("profiles").upsert({
+    const { error: profileError } = await admin.from("profiles").upsert({
       id: userId,
       email,
       full_name: name,
@@ -119,6 +119,13 @@ export async function POST(req: Request) {
       email_verified_at: emailVerifiedAt,
       company_name: path === "employer" ? companyName : path === "partner" ? firmName || null : null,
     });
+    if (profileError) {
+      console.error(`[signup] profile write failed for ${userId}: ${profileError.message}`);
+      return NextResponse.json(
+        { error: "Your account was created but its profile could not be saved. Contact support before signing in." },
+        { status: 500 }
+      );
+    }
 
     let redirectTo = nextPath;
 

@@ -26,8 +26,13 @@ export default async function SetupRequiredPage({
   return (
     <AuthShell title="One more step" description={copy}>
       <div className="flex flex-wrap gap-3">
+        {reason === "no_org" ? (
+          <ButtonLink href="/app/employer" variant="primary" size="lg">
+            Open my workspace
+          </ButtonLink>
+        ) : null}
         {reason === "partner_pending" ? null : (
-          <ButtonLink href="/signup/role" variant="primary" size="lg">
+          <ButtonLink href="/signup/role" variant={reason === "no_org" ? "secondary" : "primary"} size="lg">
             Choose how you use Fydell
           </ButtonLink>
         )}
