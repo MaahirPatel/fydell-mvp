@@ -77,21 +77,11 @@ pub async fn run_tests() -> AppResult<TestRunResult> {
             .stderr(Stdio::piped());
         #[cfg(unix)]
         {
-            use std::os::unix::process::CommandExt;
+            // tokio::process::Command has an inherent unsafe pre_exec.
             cmd.pre_exec(|| {
-                // Contain resource abuse: 60s CPU, 512 MiB address space.
-                let _ = rlimit::set_resource_limit(
-                    rlimit::Resource::CPU,
-                    60,
-                    65,
-                    rlimit::Limit::Infinite,
-                );
-                let _ = rlimit::set_resource_limit(
-                    rlimit::Resource::AS,
-                    512 * 1024 * 1024,
-                    536_870_912,
-                    rlimit::Limit::Infinite,
-                );
+                // Contain resource abuse: 60s CPU (soft), 512 MiB address space.
+                let _ = rlimit::setrlimit(rlimit::Resource::CPU, 60, 65);
+                let _ = rlimit::setrlimit(rlimit::Resource::AS, 512 * 1024 * 1024, 536_870_912);
                 Ok(())
             });
         }
@@ -157,7 +147,11 @@ pub async fn run_tests() -> AppResult<TestRunResult> {
             ("timeout".to_string(), None)
         }
     };
-    let final_status = if out_truncated { "output_limit" } else { status_str };
+    let final_status = if out_truncated {
+        "output_limit".to_string()
+    } else {
+        status_str
+    };
     let duration_ms = started.elapsed().as_millis() as u64;
 
     let (passed, failed) = parse_pytest_summary(&out);
@@ -178,9 +172,9 @@ pub async fn run_tests() -> AppResult<TestRunResult> {
         truncated: out_truncated,
     };
 
-    // Record the run in the evidence log (counts only; raw output stays local
-    // until submission, when it ships inside the snapshot).
-    let _ = crate::events::log_system_event(
+    // Record the run in the evidence log (counts only; raw output stays local).
+    // `record` maps "tests_run" onto the platform's `workspace_action` event.
+    let _ = crate::events::record(
         "tests_run",
         serde_json::json!({
             "status": result.status,
@@ -188,7 +182,8 @@ pub async fn run_tests() -> AppResult<TestRunResult> {
             "failed": result.failed,
             "duration_ms": result.duration_ms,
         }),
-    );
+    )
+    .await;
 
     Ok(result)
 }

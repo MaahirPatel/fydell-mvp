@@ -1,45 +1,189 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, SessionInfo, Receipt } from "./lib/tauri";
+import { listen } from "@tauri-apps/api/event";
+import { api, SessionInfo, SessionSummary, Receipt, isAuthRequired } from "./lib/tauri";
 import Workspace from "./components/Workspace";
 
-type Screen = "loading" | "invite" | "consent" | "workspace" | "submitted";
+type Screen =
+  | "loading"
+  | "signin"
+  | "signin-waiting"
+  | "invite"
+  | "consent"
+  | "workspace"
+  | "submitted";
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("loading");
+  const [auth, setAuth] = useState<SessionSummary | null>(null);
   const [session, setSession] = useState<SessionInfo | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
-  const [inviteCode, setInviteCode] = useState("");
+  const [inviteToken, setInviteToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Boot: check sign-in, then session state.
   useEffect(() => {
-    api
-      .sessionStatus()
-      .then((s) => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const a = await api.authSession();
+        if (cancelled) return;
+        setAuth(a);
+        if (!a.signed_in) {
+          setScreen("signin");
+          return;
+        }
+        const s = await api.sessionStatus();
+        if (cancelled) return;
         setSession(s);
-        setScreen(s.status === "active" ? "workspace" : s.status === "submitted" ? "submitted" : "invite");
-      })
-      .catch(() => setScreen("invite"));
+        setScreen(
+          s.status === "active"
+            ? "workspace"
+            : s.status === "submitted"
+              ? "submitted"
+              : s.status === "joined"
+                ? s.consent_accepted
+                  ? "consent" // accepted earlier, still needs begin
+                  : "consent"
+                : "invite"
+        );
+      } catch {
+        if (!cancelled) setScreen("signin");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Auth callback events from the deep-link handler (src-tauri/src/auth.rs).
+  useEffect(() => {
+    const unlistens: Array<() => void> = [];
+    listen<SessionSummary>("auth-changed", (e) => {
+      setAuth(e.payload);
+      if (e.payload.signed_in) {
+        setError(null);
+        setScreen("invite");
+      } else {
+        setSession(null);
+        setScreen("signin");
+      }
+    }).then((u) => unlistens.push(u));
+    listen<{ message: string }>("auth-error", (e) => {
+      setError(e.payload.message);
+      setScreen("signin");
+    }).then((u) => unlistens.push(u));
+    return () => {
+      unlistens.forEach((u) => u());
+    };
+  }, []);
+
+  const signIn = useCallback(async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await api.authSignIn();
+      setScreen("signin-waiting");
+    } catch (e: unknown) {
+      setError(messageOf(e));
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  const signOut = useCallback(async () => {
+    await api.authSignOut().catch(() => {});
+    setAuth({ signed_in: false, email: null, expires_at: null });
+    setSession(null);
+    setScreen("signin");
+  }, []);
+
+  const begin = useCallback(async (s: SessionInfo) => {
+    // Consent already recorded (or just accepted) → start the session.
+    const started = await api.beginSession();
+    setSession(started);
+    setScreen("workspace");
   }, []);
 
   const join = useCallback(async () => {
     setBusy(true);
     setError(null);
     try {
-      const s = await api.joinSession(inviteCode);
+      const s = await api.joinSession(inviteToken);
       setSession(s);
-      setScreen("consent");
+      if (s.consent_accepted) {
+        await begin(s);
+      } else {
+        setScreen("consent");
+      }
+    } catch (e: unknown) {
+      if (isAuthRequired(e)) {
+        setScreen("signin");
+        setError("Your sign-in expired — please sign in again.");
+      } else {
+        setError(messageOf(e));
+      }
+    } finally {
+      setBusy(false);
+    }
+  }, [inviteToken, begin]);
+
+  const acceptAndStart = useCallback(async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const s = await api.acceptConsent();
+      await begin(s);
     } catch (e: unknown) {
       setError(messageOf(e));
     } finally {
       setBusy(false);
     }
-  }, [inviteCode]);
+  }, [begin]);
 
   if (screen === "loading") {
     return (
       <div className="screen">
         <div className="muted">Loading…</div>
+      </div>
+    );
+  }
+
+  if (screen === "signin" || screen === "signin-waiting") {
+    return (
+      <div className="screen">
+        <div className="card">
+          <div className="brand">
+            Fydell<span className="dot">.</span>
+          </div>
+          <h1>Sign in to Fydell</h1>
+          {screen === "signin-waiting" ? (
+            <>
+              <p>
+                A browser window opened for sign-in. Complete it there — this
+                app will continue automatically when you're done.
+              </p>
+              <p className="muted">
+                Your credentials never touch this app; the browser talks to
+                Fydell directly and hands back a session.
+              </p>
+              <button className="btn ghost" onClick={() => setScreen("signin")}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <p>
+                Sign in with your Fydell account in your browser. The app keeps
+                your session in your OS keychain.
+              </p>
+              {error && <div className="error">{error}</div>}
+              <button className="btn" disabled={busy} onClick={signIn}>
+                {busy ? "Opening browser…" : "Sign in with Fydell"}
+              </button>
+            </>
+          )}
+        </div>
       </div>
     );
   }
@@ -51,25 +195,33 @@ export default function App() {
           <div className="brand">
             Fydell<span className="dot">.</span>
           </div>
+          <div className="row" style={{ marginBottom: 8 }}>
+            <span className="muted">{auth?.email}</span>
+            <div className="spacer" />
+            <button className="btn ghost" onClick={signOut}>
+              Sign out
+            </button>
+          </div>
           <h1>Join your simulation</h1>
           <p>
-            Enter the invite code from your hiring task. The scenario downloads
-            to this computer and everything you do stays local until you submit.
+            Enter the invite code from your hiring task. The assignment's brief
+            and workspace sync with the Fydell platform; your work stays on
+            this computer until you submit.
           </p>
           {error && <div className="error">{error}</div>}
           <div className="field">
             <label>Invite code</label>
             <input
               className="input"
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+              value={inviteToken}
+              onChange={(e) => setInviteToken(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && join()}
-              placeholder="FYDELL-…"
+              placeholder="Paste your invite token"
               autoFocus
               spellCheck={false}
             />
           </div>
-          <button className="btn" disabled={busy || !inviteCode.trim()} onClick={join}>
+          <button className="btn" disabled={busy || !inviteToken.trim()} onClick={join}>
             {busy ? "Connecting…" : "Continue"}
           </button>
         </div>
@@ -86,31 +238,41 @@ export default function App() {
           </div>
           <h1>Before you start</h1>
           <p>
-            This is a hiring simulation for{" "}
-            <strong>{session?.scenario_label ?? session?.scenario_id}</strong>.
-            Here's exactly what this app does and doesn't do:
+            This is a hiring simulation:{" "}
+            <strong>{session?.title ?? "your assignment"}</strong>
+            {session?.organization && (
+              <>
+                {" "}from <strong>{session.organization}</strong>
+              </>
+            )}
+            {session?.duration_minutes && (
+              <> · about {session.duration_minutes} minutes</>
+            )}
+            .
           </p>
+          <p>Here's exactly what this app does and doesn't do:</p>
           <ul className="consent-list">
             <li>
               <span className="yes">✓</span>
-              <span>Records your file edits, test runs, and timing <em>inside this simulation only</em>, as an evidence trail you can inspect anytime.</span>
+              <span>Syncs your brief, files, and progress with the Fydell platform so nothing is lost. You can inspect the event trail anytime.</span>
             </li>
             <li>
               <span className="yes">✓</span>
-              <span>Runs the scenario's test suite locally on your machine. Nothing leaves your computer until you choose to submit.</span>
+              <span>Runs the scenario's test suite locally on your machine when the assignment declares one.</span>
             </li>
             <li>
               <span className="no">✕</span>
               <span>No keystroke logging, no screen recording, no monitoring of other apps or files. Teammates in the simulation are scripted and always labeled.</span>
             </li>
           </ul>
+          {error && <div className="error">{error}</div>}
           <div className="row">
             <button className="btn ghost" onClick={() => setScreen("invite")}>
               Back
             </button>
             <div className="spacer" />
-            <button className="btn" onClick={() => setScreen("workspace")}>
-              Start simulation
+            <button className="btn" disabled={busy} onClick={acceptAndStart}>
+              {busy ? "Starting…" : "Accept and start"}
             </button>
           </div>
         </div>
@@ -118,7 +280,7 @@ export default function App() {
     );
   }
 
-  if (screen === "submitted" && receipt) {
+  if (screen === "submitted") {
     return (
       <div className="screen">
         <div className="card wide">
@@ -126,17 +288,31 @@ export default function App() {
             Fydell<span className="dot">.</span>
           </div>
           <h1>Submitted</h1>
-          <p>Your work and evidence trail were sent for review. Keep this receipt:</p>
-          <div className="receipt-box">
-            <div><span className="k">submission </span>{receipt.submission_id}</div>
-            <div><span className="k">sha256 </span><span className="hash">{receipt.sha256}</span></div>
-            <div><span className="k">scenario </span>{receipt.scenario_id} v{receipt.scenario_version}</div>
-            <div><span className="k">files </span>{receipt.file_count} <span className="k">events </span>{receipt.event_count}</div>
-            <div><span className="k">at </span>{receipt.submitted_at}</div>
-          </div>
+          {receipt ? (
+            <>
+              <p>Your work and evidence trail were sent for review. Keep this receipt:</p>
+              <div className="receipt-box">
+                <div><span className="k">submission </span>{receipt.submission_id}</div>
+                <div><span className="k">sha256 </span><span className="hash">{receipt.sha256}</span></div>
+                {receipt.title && <div><span className="k">assignment </span>{receipt.title}</div>}
+                <div><span className="k">files </span>{receipt.file_count} <span className="k">events </span>{receipt.event_count}</div>
+                <div><span className="k">at </span>{receipt.submitted_at}</div>
+                {receipt.already_submitted && (
+                  <div><span className="k">note </span>already submitted — the original submission stands</div>
+                )}
+              </div>
+            </>
+          ) : (
+            <p className="muted">This assignment was already submitted. Your receipt is stored with the local workspace.</p>
+          )}
           <p className="muted" style={{ marginTop: 14 }}>
-            Submitted work is read-only. A human reviews every submission — scores are never final without one.
+            A human reviews every submission — scores are never final without one.
           </p>
+          <div className="row" style={{ marginTop: 14 }}>
+            <button className="btn ghost" onClick={signOut}>
+              Sign out
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -17,6 +17,8 @@ pub enum AppError {
     RevisionConflict { expected: u64, actual: u64 },
     #[error("platform error: {0}")]
     Platform(String),
+    #[error("authentication required: {0}")]
+    Auth(String),
     #[error("execution error: {0}")]
     Execution(String),
     #[error("io error: {0}")]
@@ -63,16 +65,20 @@ impl From<AppError> for tauri::ipc::InvokeError {
                 ("revision_conflict", Some(*expected), Some(*actual))
             }
             AppError::Platform(_) => ("platform_error", None, None),
+            AppError::Auth(_) => ("auth_required", None, None),
             AppError::Execution(_) => ("execution_error", None, None),
             AppError::Io(_) => ("io_error", None, None),
         };
-        tauri::ipc::InvokeError::from_serde(&ErrorBody {
-            code,
-            message: e.to_string(),
-            expected_rev,
-            actual_rev,
-        })
-        .unwrap_or_else(|_| tauri::ipc::InvokeError::from(e.to_string()))
+        // InvokeError is a plain tuple struct over a JSON value.
+        tauri::ipc::InvokeError(
+            serde_json::to_value(&ErrorBody {
+                code,
+                message: e.to_string(),
+                expected_rev,
+                actual_rev,
+            })
+            .unwrap_or(serde_json::Value::Null),
+        )
     }
 }
 

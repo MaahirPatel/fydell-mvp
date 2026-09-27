@@ -232,6 +232,7 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
   const [summary, setSummary] = useState("");
   const [approach, setApproach] = useState("");
   const [tradeoffs, setTradeoffs] = useState("");
+  const [aiDisclosed, setAiDisclosed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -239,14 +240,14 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
     setBusy(true);
     setError(null);
     try {
-      const receipt = await api.submit({ summary, approach, tradeoffs });
+      const receipt = await api.submit({ summary, approach, tradeoffs }, aiDisclosed);
       onSubmitted(receipt);
     } catch (e) {
       setError(messageOf(e));
     } finally {
       setBusy(false);
     }
-  }, [summary, approach, tradeoffs, onSubmitted]);
+  }, [summary, approach, tradeoffs, aiDisclosed, onSubmitted]);
 
   return (
     <>
@@ -267,6 +268,17 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
       <div className="field">
         <label>Tradeoffs / what you'd do with more time</label>
         <textarea className="textarea" value={tradeoffs} onChange={(e) => setTradeoffs(e.target.value)} />
+      </div>
+      <div className="field">
+        <label>
+          <input
+            type="checkbox"
+            checked={aiDisclosed}
+            onChange={(e) => setAiDisclosed(e.target.checked)}
+          />{" "}
+          I used external AI assistance during this simulation
+        </label>
+        <p className="muted">Disclosed honestly; permitted tool use is never penalized.</p>
       </div>
       <button className="btn" disabled={busy} onClick={submit}>
         {busy ? "Submitting…" : "Submit"}

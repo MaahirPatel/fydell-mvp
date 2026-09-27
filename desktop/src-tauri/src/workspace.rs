@@ -71,15 +71,14 @@ fn collect(
             });
         }
     }
-    Ok(out)
+    Ok(())
 }
 
 #[tauri::command]
 pub fn read_file(path: String) -> AppResult<FileContent> {
     session::require_active()?;
     let target = scoped(&path)?;
-    let content =
-        std::fs::read_to_string(&target).map_err(|_| AppError::NotFound(path.clone()))?;
+    let content = std::fs::read_to_string(&target).map_err(|_| AppError::NotFound(path.clone()))?;
     let rev = session::current_rev(&path).unwrap_or(0);
     Ok(FileContent { path, content, rev })
 }

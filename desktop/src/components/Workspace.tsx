@@ -197,7 +197,8 @@ export default function Workspace({
           Fydell<span className="dot">.</span>
         </div>
         <span className="scenario-chip">
-          {session.scenario_id} · v{session.scenario_version}
+          {session.title ?? session.scenario_id}
+          {session.organization ? ` · ${session.organization}` : ""}
         </span>
         <span className="pill">In progress</span>
         <span className={`save-state ${saveState === "synced" ? "ok" : saveState === "dirty" ? "dirty" : saveState === "error" ? "err" : ""}`}>
