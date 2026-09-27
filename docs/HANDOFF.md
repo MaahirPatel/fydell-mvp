@@ -1,6 +1,16 @@
 # Handoff: current state for new agent sessions
 
-Read this first, then `docs/release-checklist.md` (the paid-release tracker, 161 requirements) and `.cursor/rules/simulation-engine.mdc` (isolation rules that must be followed).
+Read this first, then `docs/release-audit.md` (Milestone 0 results), `docs/release-checklist.md` (the paid-release tracker, 161 requirements), and `.cursor/rules/simulation-engine.mdc` (isolation rules that must be followed).
+
+## Latest session (2026-09-27)
+
+Milestone 0 audit only. No product code was changed. Production Supabase `fydell` (`qtrhwrcxthtqvkeerptp`) was not contacted. Staging was not queried.
+
+- Results: `docs/release-audit.md`, against commit `af5c3dc`.
+- Tracker: 5 verified, 105 in progress, 44 missing, 5 blocked, 2 unverified. Verified means a local test covered that row, not that the paid workflow is live.
+- Local checks that passed: `npm run test:github`, `npm run test:execution` (7), `npm run test:db-security` (static SQL only).
+- End-to-end gates E2E-01–E2E-16 were not run. Seven are missing a required piece (role create, ZIP, engineering fixtures, restore). The rest are unverified.
+- Next session should implement Milestone 1, starting at the blockers in `docs/release-audit.md`, in that dependency order. Do not start with billing, demo polish, or more scenarios.
 
 ## Environments
 
