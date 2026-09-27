@@ -20,6 +20,12 @@ Verified this session:
 - `tsc`, eslint and `next build` pass. `npm run test:eng` passes.
 - `npm run test:eng:staging` passes 17/17. The hidden tests ran in the Vercel Sandbox snapshot (15/15 on the reference solution), and the report was written and released by the employer's own owner account. The script also checks that viewers cannot write reports. Staging was cleaned by SQL afterwards (0 leftover orgs, users, attempts, reports or storage objects).
 
+Later the same day:
+- A Preview was deployed at `https://fydell-j532mhlk6-maahirpatels-projects.vercel.app`, using fydell-dev. The fydell-dev Auth redirect URLs now allow `https://*-fydell-mvp.vercel.app/**` and `http://localhost:3000/**`. `https://fydell-*-maahirpatels-projects.vercel.app/**` still needs to be added, and matters only for password-reset links.
+- Fixed a crash on every `/app/employer/**` page: `EmployerShell` had no icons for three nav items. `WorkspaceNavLabel` now makes a missing icon a type error.
+- Sign-up (`/api/auth/signup`) now creates accounts already confirmed through the admin API, so no confirmation email is sent. The old `signUp()` call hit Supabase's built-in email rate limit.
+- Founder decision: fydell.com (production) goes live only after the test run on the Preview succeeds. That still needs migrations 026–028 on production, `FYDELL_EXECUTION_SNAPSHOT_ID` in Production, `https://fydell.com/**` in the production Auth redirect URLs, and `vercel deploy --prod`.
+
 ## Milestone 1 loop
 
 An employer creates and publishes a role and invites a candidate by link. The candidate consents, runs `preflight.py` locally, enters its setup code, starts, and uses the team thread. The server releases one requirement update on its own clock. The candidate saves handoff drafts, uploads a ZIP and submits, and gets a receipt with the archive hash. The durable queue runs the hidden tests. The employer's team reviews the evidence, releases a cited report and records a decision, which never messages the candidate.
