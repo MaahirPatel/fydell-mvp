@@ -31,7 +31,11 @@ export default function HowItWorksPage() {
       <div className={s.page}>
         <section className={s.hero}>
           <div className={`${s.container} ${s.heroCopyIn}`}>
-            <h1 className={s.title}>From a repository to a hiring decision</h1>
+            <p className={s.eyebrow}>
+              <span className={s.eyebrowDot} aria-hidden />
+              How it works
+            </p>
+            <h1 className={s.heroTitle}>From a repository to a hiring decision</h1>
             <div className={s.heroRow}>
               <p className={s.lede}>
                 Five steps, each one recorded. Every claim Fydell makes about an engineer points back to code, a

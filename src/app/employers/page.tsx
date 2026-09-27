@@ -46,7 +46,11 @@ export default function EmployersPage() {
       <div className={s.page}>
         <section className={s.hero}>
           <div className={`${s.container} ${s.heroCopyIn}`}>
-            <h1 className={s.title}>Review engineers on work you can open</h1>
+            <p className={s.eyebrow}>
+              <span className={s.eyebrowDot} aria-hidden />
+              For employers
+            </p>
+            <h1 className={s.heroTitle}>Review engineers on work you can open</h1>
             <div className={s.heroRow}>
               <p className={s.lede}>
                 Source-linked Engineering Passports and simulations in working codebases. Your team decides on
@@ -59,7 +63,7 @@ export default function EmployersPage() {
             </div>
           </div>
           <div className={s.stage}>
-            <div className={s.container}>
+            <div className={s.stageInner}>
               <HeroWindow />
             </div>
           </div>

@@ -55,7 +55,11 @@ export default function DevelopersPage() {
       <div className={s.page}>
         <section className={s.hero}>
           <div className={`${s.container} ${s.heroCopyIn}`}>
-            <h1 className={s.title}>Get hired for the work you have already done</h1>
+            <p className={s.eyebrow}>
+              <span className={s.eyebrowDot} aria-hidden />
+              For developers
+            </p>
+            <h1 className={s.heroTitle}>Get hired for the work you&rsquo;ve already done</h1>
             <div className={s.heroRow}>
               <p className={s.lede}>
                 Turn your public repositories into an Engineering Passport. Every finding cites the exact lines, and

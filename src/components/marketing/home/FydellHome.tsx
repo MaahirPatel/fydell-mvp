@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import FydellMark from "@/components/brand/FydellMark";
 import { CodeBlock } from "./CodeBlock";
+import DesktopWorkspaceMock from "./DesktopWorkspaceMock";
 import { DEMO_LABEL, DEMO_TASK, EVIDENCE_RECORDS, type CodeLine } from "@/lib/marketing/demo-fixture";
 import s from "./fydell-home.module.css";
 
@@ -859,29 +860,88 @@ export function ShareVisual() {
 
 /* ----------------------------------------------------------------- page -- */
 
+const PROBLEMS = [
+  {
+    title: "Résumés are marketing documents.",
+    body: "They describe the work; they never show it. The best résumé in the pile is rarely the best engineer — it's the best-written one.",
+  },
+  {
+    title: "Keyword screens filter out the best people.",
+    body: "Great engineers with unconventional backgrounds die in the ATS. You're selecting for keyword density, not ability.",
+  },
+  {
+    title: "Take-homes take hours and prove nothing.",
+    body: "Candidates burn weekends on toy problems. You can't tell who wrote the code, so you run the whiteboard anyway — and learn even less.",
+  },
+] as const;
+
+const PRINCIPLES = [
+  {
+    index: "P.1",
+    title: "Record the work, not the worker.",
+    body: "Candidates see everything that's captured before they begin — files, tests, timeline. No keystroke logging, no screen recording, no spyware. The simulation is the assessment.",
+  },
+  {
+    index: "P.2",
+    title: "Every claim opens to its source.",
+    body: "A finding without a file, a commit, and a line number is an opinion. Fydell links each one, so your reviewers check instead of trusting.",
+  },
+  {
+    index: "P.3",
+    title: "Decisions stay human.",
+    body: "Fydell assembles the evidence; your team makes the call. No scores, no auto-reject, no black-box ranking.",
+  },
+] as const;
+
 export default function FydellHome() {
   return (
     <div className={s.page}>
       <section className={s.hero}>
         <div className={`${s.container} ${s.heroCopyIn}`}>
-          <h1 className={s.title}>Hiring infrastructure built on real engineering work</h1>
+          <p className={s.eyebrow}>
+            <span className={s.eyebrowDot} aria-hidden />
+            Hiring infrastructure for engineering teams
+          </p>
+          <h1 className={s.heroTitle}>
+            Hire for the work,
+            <br />
+            not the résumé.
+          </h1>
           <div className={s.heroRow}>
             <p className={s.lede}>
-              Engineering Passports from real repositories. Simulations in working codebases. Evidence every
-              reviewer can open, check, and decide on.
+              Fydell runs candidates through realistic engineering simulations — working codebases,
+              real incidents, recorded test runs — and gives your team evidence they can inspect.
+              The code, the commit, the reasoning. No surveillance. No black box.
             </p>
             <div className={s.heroActions}>
-              <Link href="/signup?as=employer" className={s.btnSolid}>Start hiring</Link>
-              <Link href="/passport/new" className={s.newLink}>
-                <strong>New</strong> Engineering Passports <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+              <Link href="/signup?as=employer" className={s.btnSolid}>
+                Start hiring <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+              <Link href="/how-it-works" className={s.btnGhost}>
+                See how it works
               </Link>
             </div>
           </div>
         </div>
         <div className={s.stage}>
-          <div className={s.container}>
+          <div className={s.stageInner}>
             <HeroWindow />
           </div>
+        </div>
+      </section>
+
+      <section className={`${s.container} ${s.problem}`} aria-labelledby="problem-title">
+        <p className={s.eyebrow}>The problem</p>
+        <h2 id="problem-title" className={s.problemTitle}>
+          Hiring runs on signals nobody trusts.
+        </h2>
+        <div className={s.problemGrid}>
+          {PROBLEMS.map((p) => (
+            <div key={p.title} className={s.problemCard}>
+              <p className={s.problemHead}>{p.title}</p>
+              <p className={s.problemBody}>{p.body}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -927,6 +987,9 @@ export default function FydellHome() {
           title="See how engineers solve real problems"
           copy="Candidates work a realistic incident in a working codebase, with tests and an AI-written patch to review. Every action lands on a disclosed timeline."
         />
+        <div className={s.mockStage}>
+          <DesktopWorkspaceMock />
+        </div>
         <SimulationVisual />
         <Features dot="var(--brand-violet)" items={["Working codebases", "Recorded test runs", "AI patch review", "Disclosed telemetry", "Timed scope"]} />
       </section>
@@ -955,6 +1018,22 @@ export default function FydellHome() {
         <Features dot="var(--brand-teal)" items={["Scoped links", "Recipient preview", "One-click revoke", "Export"]} />
       </section>
 
+      <section className={`${s.container} ${s.principles}`} aria-labelledby="principles-title">
+        <p className={s.eyebrow}>How Fydell is different</p>
+        <h2 id="principles-title" className={s.problemTitle}>
+          Evidence you can inspect. Nothing you can&rsquo;t.
+        </h2>
+        <div className={s.problemGrid}>
+          {PRINCIPLES.map((p) => (
+            <div key={p.index} className={s.problemCard}>
+              <p className={s.figLabel}>{p.index}</p>
+              <p className={s.problemHead}>{p.title}</p>
+              <p className={s.problemBody}>{p.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className={`${s.container} ${s.closing}`}>
         <h2 className={s.closingTitle}>
           Hire from the work.
@@ -964,8 +1043,10 @@ export default function FydellHome() {
         <div className={s.closingRow}>
           <p className={s.lede}>Free for engineers. Hiring teams pay per completed simulation.</p>
           <div className={s.heroActions}>
-            <Link href="/signup?as=employer" className={s.btnSolid}>Start hiring</Link>
-            <Link href="/passport/new" className={s.btnGhost}>Build your passport</Link>
+            <Link href="/signup?as=employer" className={s.btnSolid}>
+              Start hiring <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+            <Link href="/pricing" className={s.btnGhost}>See pricing</Link>
           </div>
         </div>
       </section>

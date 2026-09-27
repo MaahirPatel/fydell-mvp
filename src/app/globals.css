@@ -193,10 +193,12 @@
   --status-attention-line: rgba(233, 185, 73, 0.16);
 
   /* ---- Marketing type scale. Fluid, because a landing page is read once at
-     whatever width the reader arrives with. ---- */
-  --type-display: clamp(2.5rem, 5vw, 4rem);
-  --type-page: clamp(2rem, 3.4vw, 2.75rem);
-  --type-section: clamp(1.5rem, 2.1vw, 1.875rem);
+     whatever width the reader arrives with. Display and page titles are
+     Geist at large sizes with tight tracking — the identity's single
+     typeface carries both jobs. ---- */
+  --type-display: clamp(3rem, 2rem + 5vw, 4.5rem);
+  --type-page: clamp(2.75rem, 1.9rem + 4.2vw, 4.5rem);
+  --type-section: clamp(1.75rem, 1.35rem + 1.9vw, 2.5rem);
 
   /* ---- Product type scale. Fixed, because a console is read every day and
      gets learned. A fluid clamp makes the same screen a different size on
@@ -1065,8 +1067,9 @@ textarea.platform-input {
 a, button { -webkit-tap-highlight-color: transparent; }
 
 /* Fluid type scale: sizes interpolate between a 390px and a 1440px viewport.
-   Tuned against Clerk/Linear display sizes: large hero, tight tracking, quiet
-   secondary. Instrument Sans carries display; Geist carries interface. */
+   Tuned against Linear/Stripe display sizes: large hero, tight tracking,
+   quiet secondary. Geist carries both display and interface per the
+   identity — one typeface, two jobs. */
 :root {
   --step--1: clamp(0.8125rem, 0.785rem + 0.12vw, 0.875rem);
   --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
@@ -1077,26 +1080,23 @@ a, button { -webkit-tap-highlight-color: transparent; }
 }
 
 .display {
-  font-family: var(--font-display-sans), var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-weight: 640;
-  font-stretch: 92%;
-  letter-spacing: -0.042em;
+  letter-spacing: -0.045em;
   line-height: 0.98;
   text-wrap: balance;
 }
 .display-sm {
-  font-family: var(--font-display-sans), var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-weight: 600;
-  font-stretch: 94%;
-  letter-spacing: -0.028em;
-  line-height: 1.08;
+  letter-spacing: -0.032em;
+  line-height: 1.06;
   text-wrap: balance;
 }
 .display-serif {
-  font-family: var(--font-display-sans), var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-weight: 620;
-  font-stretch: 94%;
-  letter-spacing: -0.032em;
+  letter-spacing: -0.034em;
 }
 .eyebrow {
   display: inline-flex;

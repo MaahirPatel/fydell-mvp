@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Instrument_Sans } from "next/font/google";
 import StorageMigration from "@/components/layout/StorageMigration";
 import "./globals.css";
 
@@ -23,13 +22,11 @@ export const metadata: Metadata = {
   },
 };
 
-const displaySans = Instrument_Sans({ subsets: ["latin"], axes: ["wdth"], variable: "--font-display-sans", display: "swap" });
-
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${displaySans.variable}`}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className={GeistSans.className}>
         <Script
           id="vtag-ai-js"
