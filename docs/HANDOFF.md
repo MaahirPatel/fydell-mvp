@@ -7,7 +7,7 @@ Read this first, then `docs/release-audit.md` (Milestone 0 results), `docs/relea
 Milestone 0 audit only. No product code was changed. Production Supabase `fydell` (`qtrhwrcxthtqvkeerptp`) was not contacted. Staging was not queried.
 
 - Results: `docs/release-audit.md`, against commit `af5c3dc`.
-- Tracker: 5 verified, 105 in progress, 44 missing, 5 blocked, 2 unverified. Verified means a local test covered that row, not that the paid workflow is live.
+- Tracker: 4 verified, 106 in progress, 44 missing, 5 blocked, 2 unverified. Verified means a local test covered that row, not that the paid workflow is live. GH-07 was withdrawn from verified: secret-like paths are skipped, but file contents are not redacted. Catalog invites do pin `template_version_id`; the role-create gap remains.
 - Local checks that passed: `npm run test:github`, `npm run test:execution` (7), `npm run test:db-security` (static SQL only).
 - End-to-end gates E2E-01–E2E-16 were not run. Seven are missing a required piece (role create, ZIP, engineering fixtures, restore). The rest are unverified.
 - Next session should implement Milestone 1, starting at the blockers in `docs/release-audit.md`, in that dependency order. Do not start with billing, demo polish, or more scenarios.
