@@ -188,7 +188,8 @@ export function applyTransition<S extends string>(
   expectedVersion: number
 ): ApplyResult<S> {
   const tenant = assertSameTenant(record.orgId, actorOrgId);
-  if (tenant) return { ok: false, code: "cross_tenant", message: tenant.message };
+  if (tenant !== null && tenant.ok === false)
+    return { ok: false, code: "cross_tenant", message: tenant.message };
   if (expectedVersion !== record.version) {
     return {
       ok: false,
@@ -197,7 +198,7 @@ export function applyTransition<S extends string>(
     };
   }
   const r = transition(machine, record.state, to, actor);
-  if (!r.ok) return { ok: false, code: r.code, message: r.message };
+  if (r.ok === false) return { ok: false, code: r.code, message: r.message };
   if (r.changed) record.version += 1;
   record.state = r.state;
   return { ok: true, state: r.state, version: record.version, changed: r.changed };
@@ -232,7 +233,8 @@ export function extendAttempt(
   reason: string
 ): ApplyResult<AttemptState> {
   const tenant = assertSameTenant(record.orgId, actorOrgId);
-  if (tenant) return { ok: false, code: "cross_tenant", message: tenant.message };
+  if (tenant !== null && tenant.ok === false)
+    return { ok: false, code: "cross_tenant", message: tenant.message };
   if (!ATTEMPT_EMPLOYER.includes(actor)) {
     return {
       ok: false,
@@ -293,7 +295,7 @@ export function applyDecision(
     return { ok: false, code: "actor_not_permitted", message: "a note is required with every decision" };
   }
   const r = applyTransition(decisionMachine, record, to, actor, actorOrgId, expectedVersion);
-  if (!r.ok) return r;
+  if (r.ok === false) return r;
   if (r.changed) {
     const from = record.history.length > 0 ? record.history[record.history.length - 1].to : "undecided";
     record.history.push({

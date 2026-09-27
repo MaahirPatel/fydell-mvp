@@ -191,7 +191,7 @@ export function acceptInvitation(
     authenticatedUserId,
     candidate.role
   );
-  if (!added.ok) {
+  if (added.ok === false) {
     // addMember enforces owner/admin on the inviter; the inviter may have
     // been removed since sending. Fail closed.
     return fail("not_permitted", `inviter can no longer add members: ${added.code}`);

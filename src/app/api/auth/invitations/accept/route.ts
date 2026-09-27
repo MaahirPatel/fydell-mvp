@@ -61,7 +61,7 @@ export async function POST(req: Request) {
   // authenticated user's email — deliberate acceptance, no org-id spoofing,
   // no domain-based auto-join.
   const result = acceptInvitation(members, invites, user.id, user.email, token);
-  if (!result.ok) {
+  if (result.ok === false) {
     const status =
       result.code === "token_not_found"
         ? 404

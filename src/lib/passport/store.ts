@@ -75,7 +75,7 @@ async function loadPassport(passportId: string): Promise<PassportData | null> {
     .order("analyzed_at", { ascending: false });
   const projectRows = (projects ?? []) as ProjectRow[];
   const summary = row.capability_summary as CapabilitySummary;
-  const projects: PassportProject[] = projectRows.map((p) => ({
+  const projectList: PassportProject[] = projectRows.map((p) => ({
     repoFullName: p.repo_full_name,
     htmlUrl: p.html_url,
     commitSha: p.commit_sha,
@@ -119,7 +119,7 @@ async function loadPassport(passportId: string): Promise<PassportData | null> {
     capabilities: summary && "source" in summary ? summary : { source: "rules", capabilities: [], notShown: [] },
     // Older snapshots of a reimported repository are marked stale so they
     // keep provenance without feeding new summaries or shares (GH-10).
-    projects: markSuperseded(projects),
+    projects: markSuperseded(projectList),
   };
 }
 
@@ -348,6 +348,19 @@ export async function resolveShare(token: string): Promise<{ status: "ok"; passp
   const admin = createAdminSupabaseClient();
   await admin.from("passport_shares").update({ last_accessed_at: new Date().toISOString() }).eq("id", share.id);
   return { status: "ok", passport };
+}
+
+/**
+ * Owner of a share token, for the public profile view.
+ * Returns null when the token is unknown, revoked, or expired.
+ */
+export async function getShareOwnerId(token: string): Promise<string | null> {
+  const share = await shareByToken(token);
+  if (!share) return null;
+  if (shareState({ revokedAt: share.revoked_at, expiresAt: share.expires_at }) !== "active") return null;
+  const admin = createAdminSupabaseClient();
+  const { data } = await admin.from("passports").select("owner_id").eq("id", share.passport_id).maybeSingle();
+  return (data as { owner_id: string } | null)?.owner_id ?? null;
 }
 
 export type ReviewDecision = "none" | "advance" | "hold" | "decline";

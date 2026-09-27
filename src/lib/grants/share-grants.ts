@@ -500,7 +500,7 @@ export function readThroughGrant(
   requestedFields: string[]
 ): GrantResult<{ evidence: EvidenceItem[]; fields: string[] }> {
   const g = liveGrant(store, grantId);
-  if (!g.ok) return g;
+  if (g.ok === false) return { ok: false, code: g.code, message: g.message };
   const grant = g.value;
   if (grant.audienceOrgId !== accessorOrgId) {
     return fail("grant_org_mismatch", "this grant was not issued to your organization");
@@ -574,7 +574,7 @@ export function respondToRoleInvitation(
     orgNameForDisclosure: opts?.orgName,
     retentionPolicy: opts?.retentionPolicy,
   });
-  if (!grantRes.ok) return grantRes;
+  if (grantRes.ok === false) return { ok: false, code: grantRes.code, message: grantRes.message };
   const { grant, disclosure } = grantRes.value;
 
   const snapshot: ApplicationSnapshot = {

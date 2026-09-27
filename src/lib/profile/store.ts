@@ -279,7 +279,7 @@ export type PublicProfile = {
  */
 export async function getPublicProfile(
   token: string,
-): Promise<{ status: "ok"; public: PublicProfile } | { status: "revoked" | "missing" }> {
+): Promise<{ status: "ok"; public: PublicProfile } | { status: "revoked" | "missing" | "expired" }> {
   const shared = await resolveShare(token);
   if (shared.status !== "ok") return shared;
   const ownerId = await getShareOwnerId(token);

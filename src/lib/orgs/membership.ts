@@ -239,7 +239,7 @@ export function addMember(
   role: OrgRole
 ): Result<Membership> {
   const gate = requireManager(store, actingUserId, orgId);
-  if (!gate.ok) return gate;
+  if (gate.ok === false) return gate;
   if (!assertValidRole(role)) return fail("invalid_role", `unknown role ${role}`);
   if (!targetUserId) return fail("member_not_found", "target user is required");
 
@@ -270,7 +270,7 @@ export function setMemberRole(
   role: OrgRole
 ): Result<Membership> {
   const gate = requireManager(store, actingUserId, orgId);
-  if (!gate.ok) return gate;
+  if (gate.ok === false) return gate;
   if (!assertValidRole(role)) return fail("invalid_role", `unknown role ${role}`);
   const key = membershipKey(orgId, targetUserId);
   const m = store.memberships.get(key);
@@ -302,7 +302,7 @@ export function removeMember(
   targetUserId: string
 ): Result<{ revokedSessions: number }> {
   const gate = requireManager(store, actingUserId, orgId);
-  if (!gate.ok) return gate;
+  if (gate.ok === false) return gate;
   const key = membershipKey(orgId, targetUserId);
   const m = store.memberships.get(key);
   if (!m || m.status !== "active") return fail("member_not_found", "active member not found");

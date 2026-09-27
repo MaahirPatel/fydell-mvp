@@ -1,0 +1,20 @@
+# chunk-submit — files created / modified
+# Branch: feature/desktop-sim-client. Migration note: used 030 because
+# 029 was already taken (029_engineering_profiles.sql).
+
+## Created
+src/lib/submissions/errors.ts
+src/lib/submissions/transfer.ts
+src/lib/submissions/finalize.ts
+src/lib/submissions/transfer-store.ts
+src/lib/submissions/real-deps.ts
+src/app/api/sim/sessions/[id]/finalize/route.ts
+supabase/migrations/030_submit_transfer_state.sql
+scripts/test-submit-grind-paths.ts
+scripts/test-submit-grind-state-machine.ts
+scripts/test-submit-grind-finalize.ts
+CHECKLIST_PROGRESS_submit.md
+
+## Modified
+src/lib/simulations/submission-files.ts
+src/app/api/sim/sessions/[id]/submit/route.ts

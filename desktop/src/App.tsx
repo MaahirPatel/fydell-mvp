@@ -263,8 +263,22 @@ export default function App() {
     try {
       const s = await api.joinSession(inviteToken);
       setSession(s);
+      // DESK-19: check the version gate before anything timed starts.
+      try {
+        const gate = await api.checkClientVersion();
+        setVersionGate(gate);
+        if (gate.kind === "blocked") {
+          setScreen("update-required");
+          return;
+        }
+        if (gate.kind === "current" && gate.update_available) {
+          setUpdateNotice(versionGateMessage(gate));
+        }
+      } catch {
+        // Version check is advisory on failure: unknown gate, visible in UI.
+      }
       if (s.consent_accepted) {
-        await begin(s);
+        begin(s);
       } else {
         setScreen("consent");
       }
@@ -418,6 +432,14 @@ export default function App() {
             </li>
           </ul>
           {error && <div className="error">{error}</div>}
+          {updateNotice && (
+            <div className="milestone-banner mt-4" role="status">
+              <div className="milestone-text">
+                <div className="milestone-title">Update available</div>
+                <div className="milestone-body">{updateNotice}</div>
+              </div>
+            </div>
+          )}
           <div className="row">
             <button className="btn ghost" onClick={() => setScreen("invite")}>
               Back
@@ -429,6 +451,79 @@ export default function App() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  /* ---------------- DESK-19: blocked version ---------------- */
+
+  if (screen === "update-required" && versionGate?.kind === "blocked") {
+    return (
+      <div className="screen">
+        <div className="card">
+          <div className="brand">
+            Fydell<span className="dot">.</span>
+          </div>
+          <h1>Update required</h1>
+          <p>{versionGateMessage(versionGate)}</p>
+          {versionGate.download_url && (
+            <p className="muted">
+              Latest release: <span className="mono">{versionGate.download_url}</span>
+            </p>
+          )}
+          {error && <div className="error">{error}</div>}
+          <div className="row mt-4">
+            <div className="spacer" />
+            <button className="btn" onClick={() => void recheckVersion()} disabled={busy}>
+              {busy ? "Checking…" : "I've updated — check again"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ---------------- DESK-11: session already open elsewhere ---------------- */
+
+  if (screen === "locked") {
+    return (
+      <div className="screen">
+        <div className="card">
+          <div className="brand">
+            Fydell<span className="dot">.</span>
+          </div>
+          <h1>Already open</h1>
+          <p>
+            This assignment is already open in another Fydell window on this
+            computer{lockedPid != null && <> (process {lockedPid})</>}. To
+            protect your work, only one window may hold it at a time.
+          </p>
+          <p className="muted">
+            Close it there first, then continue here. If the other window is
+            gone (for example after a crash), its lock goes stale and you'll be
+            let in automatically — your files are preserved.
+          </p>
+          <div className="row mt-4">
+            <div className="spacer" />
+            <button className="btn" onClick={() => void recheckLocked()} disabled={busy}>
+              {busy ? "Checking…" : "Check again"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ---------------- DESK-06: provisioning ---------------- */
+
+  if (screen === "provisioning") {
+    return (
+      <Provisioning
+        onDone={(s) => {
+          setSession(s);
+          setScreen("workspace");
+        }}
+        onCancel={() => setScreen("consent")}
+      />
     );
   }
 
@@ -488,8 +583,12 @@ export default function App() {
 }
 
 export function messageOf(e: unknown): string {
+  // DESK-20: every backend error carries a stable reference (FYDELL-Exxxx);
+  // surface it so support can identify the failure without any logs.
   if (typeof e === "object" && e !== null && "message" in e) {
-    return String((e as { message: unknown }).message);
+    const ref = (e as { ref?: unknown }).ref;
+    const msg = String((e as { message: unknown }).message);
+    return typeof ref === "string" && ref.length > 0 ? `${msg} (${ref})` : msg;
   }
   return String(e);
 }

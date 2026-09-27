@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, Receipt, SessionEvent, TestRunResult } from "../lib/tauri";
+import { api, Diagnostics, Receipt, SessionEvent, SyncPhase, SyncView, TestRunResult } from "../lib/tauri";
+import { formatDiagnostics, syncPhaseLabel } from "../lib/pure";
 import { messageOf } from "../App";
 import { Dialog, EmptyState, ProvenanceTag } from "./ui";
 
@@ -280,6 +281,23 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [syncView, setSyncView] = useState<SyncView | null>(null);
+
+  // DESK-09: warn honestly when remote state is unsettled at submit time.
+  useEffect(() => {
+    api.syncStatus().then(setSyncView).catch(() => {});
+  }, []);
+
+  const syncWarning =
+    syncView == null
+      ? null
+      : syncView.phase === "conflict"
+        ? "A sync conflict is unresolved: another session changed this assignment on the server. Your local work submits as-is; resolve the conflict if the server version matters."
+        : syncView.phase === "sync_failed"
+          ? "Remote sync failed — the server may not have your latest files. They are saved on this device; submitting now packages your local work."
+          : syncView.dirty_paths.length > 0
+            ? `${syncView.dirty_paths.length} file${syncView.dirty_paths.length === 1 ? " is" : "s are"} saved on this device but not yet acknowledged by the server. Submitting now packages your local work.`
+            : null;
 
   const submit = useCallback(async () => {
     setBusy(true);
@@ -348,6 +366,11 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
             and <strong>your event trail</strong> into one immutable submission with a
             SHA-256 receipt. You can't edit after submitting.
           </p>
+          {syncWarning && (
+            <div className="error">
+              {syncWarning}
+            </div>
+          )}
           <p>
             {aiDisclosed
               ? "Your AI-assistance disclosure will be attached — permitted tool use is never penalized."
@@ -389,6 +412,68 @@ export function TimelinePanel() {
           ))}
         </div>
       )}
+      <DiagnosticsPanel />
     </>
+  );
+}
+
+/* ---------------- DESK-20: diagnostics ---------------- */
+
+function DiagnosticsPanel() {
+  const [diag, setDiag] = useState<Diagnostics | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.diagnostics().then(setDiag).catch((e) => setError(messageOf(e)));
+  }, []);
+
+  const copy = useCallback(async () => {
+    if (!diag) return;
+    try {
+      await navigator.clipboard.writeText(formatDiagnostics(diag));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError("Couldn't reach the clipboard.");
+    }
+  }, [diag]);
+
+  return (
+    <div className="mt-4">
+      <h3>
+        Diagnostics <ProvenanceTag kind="observed" />
+      </h3>
+      <p className="muted">
+        Scoped technical details for support. Contains versions, sync state, and
+        error references — never your code, tokens, or message bodies.
+      </p>
+      {error && <div className="error">{error}</div>}
+      {diag ? (
+        <>
+          <div className="receipt-box">
+            <div><span className="k">app </span>{diag.app_version} <span className="k">os </span>{diag.os}/{diag.arch}</div>
+            <div><span className="k">session </span>{diag.session.status} <span className="k">rev </span>{diag.session.server_revision}</div>
+            <div><span className="k">sync </span>{syncPhaseLabel(diag.session.sync_phase as SyncPhase)} <span className="k">unsynced </span>{diag.session.unsynced_files}</div>
+            <div><span className="k">files </span>{diag.file_count} <span className="k">events </span>{diag.event_count}</div>
+            {diag.recent_errors.length > 0 && (
+              <div>
+                <span className="k">recent errors </span>
+                {diag.recent_errors.map((e, i) => (
+                  <div key={i} className="mono">
+                    {e.ref} ({e.code})
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <button className="btn ghost" onClick={() => void copy()}>
+            {copied ? "Copied" : "Copy diagnostics"}
+          </button>
+        </>
+      ) : (
+        !error && <p className="muted">Loading…</p>
+      )}
+    </div>
   );
 }
