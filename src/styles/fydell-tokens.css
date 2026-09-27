@@ -1,0 +1,256 @@
+/* ============================================================================
+   Fydell shared design tokens — canonical contract
+   ============================================================================
+
+   The single source of truth for Fydell's visual identity across the public
+   website, the web application, and the desktop simulation client.
+
+   What this file is:
+   - The PORTABLE core both surfaces consume: surfaces, text, borders,
+     semantic evidence colors, spacing, radii, type, motion, focus.
+   - Plain CSS custom properties, no framework dependency. The Next.js app
+     maps these onto its Tailwind theme; the Tauri desktop app consumes them
+     directly (see desktop/src/tokens.css for the desktop adaptation).
+
+   What this file is NOT:
+   - A replacement for src/app/globals.css today. That file's component
+     classes (.platform-input, .badge, .evidence-row, …) stay where they are.
+     New work should use these token names; existing components migrate to
+     them opportunistically (see desktop/DESIGN_SYSTEM.md for the inventory).
+
+   Decisions (each traces to the release checklist or an approved doc):
+   - One interface typeface (Geist Sans, per FYDELL_VISUAL_SYSTEM.md identity
+     — "untouchable") + one code monospace (Geist Mono). No second family.
+     (checklist VIS-03; resolves the globals.css comment that still says Inter)
+   - Spacing scale 4/8/12/16/24/32/48/64 — nothing else. (VIS-04)
+   - Evidence color semantics: teal = observed/project evidence, violet =
+     generated/simulation evidence, amber = needs attention/changed,
+     green = real completed state, red/coral = unsupported/destructive.
+     These canonize the --evidence-* scale already in use; meaning never
+     relies on color alone — every semantic color ships with an ink variant
+     for text and a field variant for fills. (checklist "Use color with
+     meaning"; VIS-05)
+   - Type scale is FIXED for product surfaces (a console is learned; fluid
+     type makes the same screen a different size on every machine) and the
+     focal level is >=1.7x body. Marketing may use fluid display sizes.
+     (APPROVED_VISUAL_CONTRACT; audit finding #2)
+   - Max containment depth: 2. Borders are hairlines only. (APPROVED_VISUAL_CONTRACT)
+   - Motion: 120-220ms state changes only; prefers-reduced-motion kills it.
+     (FYDELL_VISUAL_SYSTEM.md; VIS-10)
+
+   Themes:
+   - :root is the LIGHT platform default (matches globals.css today).
+   - [data-theme="dark"] re-points the same names for dark contexts
+     (desktop workbench, code surfaces). Semantic hues keep their MEANING
+     across themes; only their luminance moves.
+   ========================================================================== */
+
+:root {
+  /* ---- Typefaces --------------------------------------------------------
+     One family for interface, one for code. Stacks degrade gracefully
+     where Geist is not installed (desktop bundles its own fonts). */
+  --font-sans: "Geist Sans", "Geist", Inter, ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", SFMono-Regular,
+    Menlo, Consolas, monospace;
+
+  /* ---- Product type scale (fixed — see note above) ----------------------
+     Roles, not sizes. Components must use the role, never a raw px value.
+     Focal (26px) is 1.86x body (14px): clears the 1.7x contract rule. */
+  --type-app-page: 1.625rem;      /* 26px — page / mission title */
+  --type-app-page-lh: 1.15;
+  --type-app-page-tracking: -0.02em;
+  --type-app-section: 1.0625rem;  /* 17px — section headings */
+  --type-app-section-lh: 1.3;
+  --type-app-section-tracking: -0.012em;
+  --type-app-body: 0.875rem;      /* 14px — body and controls */
+  --type-app-body-lh: 1.5;
+  --type-app-meta: 0.78125rem;    /* 12.5px — metadata, captions */
+  --type-app-meta-lh: 1.4;
+
+  /* ---- Spacing (4px base; 8px primary rhythm — nothing else) ------------ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* ---- Radii ------------------------------------------------------------ */
+  --radius-tag: 4px;        /* badges, tags */
+  --radius-control: 6px;    /* buttons, inputs, menus */
+  --radius-panel: 10px;     /* cards, dialogs, panels */
+  --radius-frame: 14px;     /* large frames, product windows */
+
+  /* ---- Borders: hairlines only ------------------------------------------ */
+  --border-subtle: rgb(20 20 32 / 0.08);
+  --border-default: rgb(20 20 32 / 0.13);
+  --border-strong: rgb(20 20 32 / 0.22);
+
+  /* ---- Surfaces (light default) ------------------------------------------ */
+  --surface-canvas: #fafafc;     /* app ground */
+  --surface-deep: #f1f1f5;       /* sunken / inset areas */
+  --surface-band: #f4f4f7;       /* chapter separation on long pages */
+  --surface-raised: #ffffff;     /* raised cards */
+  --surface-panel: #f7f7fa;      /* panels, side rails */
+  --surface-hover: #efeff3;      /* hovered rows */
+  --surface-selected: #e9e9f0;   /* selected rows */
+  --surface-code: #14141c;       /* code stays dark on light ground */
+  --surface-code-raised: #1c1c26;
+
+  /* ---- Text (solid colors, never opacity — contrast measured) ------------ */
+  --text-primary: #17171f;
+  --text-secondary: #4a4a58;
+  --text-tertiary: #6e6e7d;
+  --text-disabled: #9a9aa8;
+  --text-on-solid: #ffffff;      /* text on the solid control */
+
+  /* ---- The one inverted control ------------------------------------------
+     Near-black solid; the primary action on light ground. */
+  --control-solid: #17171f;
+  --control-solid-hover: #2a2a36;
+  --control-solid-active: #000000;
+  --control-solid-ink: #ffffff;
+
+  /* ---- Evidence semantics (THE checklist mapping) ------------------------
+     teal    = observed / project evidence   (what the candidate did)
+     violet  = generated / simulation evidence (what the system produced)
+     amber   = needs attention / changed     (review required)
+     green   = real completed state          (verified saves, passes)
+     red     = unsupported / destructive     (failed checks, danger)
+     Each has: base (borders/icons), ink (text at AA), field (quiet fill).
+     Usage rule: a colored surface fill must always pair with its ink text;
+     meaning is carried by label + icon as well as hue. */
+  --ev-observed: #0b6e67;
+  --ev-observed-ink: #0b5e58;
+  --ev-observed-field: #e3f2ef;
+  --ev-generated: #6d28d9;
+  --ev-generated-ink: #5b21b6;
+  --ev-generated-field: #efe7fb;
+  --ev-attention: #a9752a;
+  --ev-attention-ink: #80520c;
+  --ev-attention-field: #fbf3e2;
+  --ev-success: #3f7d5c;
+  --ev-success-ink: #2f6b4a;
+  --ev-success-field: #e9f4ee;
+  --ev-error: #c2405a;
+  --ev-error-ink: #a83248;
+  --ev-error-field: #fbe9ed;
+
+  /* ---- Action (selection, links, focusable affordances) -------------------
+     One saturated accent per viewport. */
+  --action: #4a5bd4;
+  --action-hover: #3d4dc2;
+  --action-ink: #4a5bd4;
+  --action-ink-ring: rgb(74 91 212 / 0.28);
+
+  /* ---- Focus -------------------------------------------------------------
+     2px ring, 2px offset, >=3:1 against every surface. Never remove the
+     focus ring to "clean up" a design; restyle it through these tokens. */
+  --focus-ring: 2px solid var(--action-ink);
+  --focus-ring-offset: 2px;
+
+  /* ---- Shadows (rare; luminance steps carry depth first) ----------------- */
+  --shadow-1: 0 1px 2px rgb(15 17 23 / 0.05), 0 2px 6px rgb(15 17 23 / 0.04);
+  --shadow-2: 0 1px 2px rgb(15 17 23 / 0.05), 0 8px 20px -8px rgb(15 17 23 / 0.12);
+  --shadow-3: 0 2px 4px rgb(15 17 23 / 0.05), 0 20px 44px -16px rgb(15 17 23 / 0.18);
+
+  /* ---- Motion ------------------------------------------------------------ */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-fast: 140ms;   /* hover, press, toggle */
+  --motion-panel: 190ms;  /* panel open/close, tab switch */
+
+  /* ---- Control metrics ---------------------------------------------------- */
+  --control-height: 42px;      /* web form controls */
+  --control-height-sm: 34px;   /* dense web controls */
+  --control-padding-x: 12px;
+
+  /* ---- Layout ------------------------------------------------------------- */
+  --page-max-width: 1320px;
+  --shell-rail-width: 210px;   /* mission rail (contract: 200-220px) */
+  --shell-inspector-width: 280px; /* evidence inspector (contract: 260-300px) */
+  --shell-commandbar-height: 48px;
+}
+
+/* ============================================================================
+   Dark theme — same names, same meanings, moved luminance.
+   Use for the desktop workbench, code surfaces, and any dark product context.
+   The desktop app consumes this as its default (see desktop/src/tokens.css).
+   ========================================================================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface-canvas: #0e0e14;
+  --surface-deep: #0a0a10;
+  --surface-band: #121218;
+  --surface-raised: #16161e;
+  --surface-panel: #14141b;
+  --surface-hover: #1c1c26;
+  --surface-selected: #242433;
+  --surface-code: #0c0c12;
+  --surface-code-raised: #121219;
+
+  --border-subtle: rgb(255 255 255 / 0.07);
+  --border-default: rgb(255 255 255 / 0.11);
+  --border-strong: rgb(255 255 255 / 0.17);
+
+  --text-primary: #f2f2f6;
+  --text-secondary: #b3b3c0;
+  --text-tertiary: #8b8b99;
+  --text-disabled: #5f5f6e;
+
+  --control-solid: #f2f2f6;
+  --control-solid-hover: #ffffff;
+  --control-solid-active: #d9d9e2;
+  --control-solid-ink: #0e0e14;
+
+  --ev-observed: #4cc9b8;
+  --ev-observed-ink: #7fdccf;
+  --ev-observed-field: rgb(76 201 184 / 0.12);
+  --ev-generated: #a78bfa;
+  --ev-generated-ink: #c0a8fc;
+  --ev-generated-field: rgb(167 139 250 / 0.13);
+  --ev-attention: #e3b34e;
+  --ev-attention-ink: #f0c876;
+  --ev-attention-field: rgb(227 179 78 / 0.12);
+  --ev-success: #6fce97;
+  --ev-success-ink: #93dcae;
+  --ev-success-field: rgb(111 206 151 / 0.12);
+  --ev-error: #f07f95;
+  --ev-error-ink: #f5a3b4;
+  --ev-error-field: rgb(240 127 149 / 0.12);
+
+  --action: #8f9bff;
+  --action-hover: #a5adff;
+  --action-ink: #a5adff;
+  --action-ink-ring: rgb(143 155 255 / 0.35);
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.45);
+  --shadow-2: 0 1px 2px rgb(0 0 0 / 0.45), 0 8px 24px -8px rgb(0 0 0 / 0.6);
+  --shadow-3: 0 2px 4px rgb(0 0 0 / 0.4), 0 24px 56px -20px rgb(0 0 0 / 0.75);
+}
+
+/* ============================================================================
+   Base behaviors both surfaces share
+   ========================================================================== */
+
+/* Focus is never optional. */
+.fydell-focusable:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Reduced motion: state changes become instant. No exceptions for
+   decorative animation — if it moves and isn't state, it stops. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

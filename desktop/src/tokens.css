@@ -1,0 +1,224 @@
+/* ============================================================================
+   Fydell desktop design tokens
+   ============================================================================
+
+   The desktop adaptation of the shared Fydell token contract
+   (src/styles/fydell-tokens.css). Same token NAMES, same semantic MEANINGS,
+   tuned for a dense native-feeling workbench:
+
+   - Dark-first. The simulation workspace is a code environment; the dark
+     ground matches Monaco (vs-dark) and keeps long sessions easy on the
+     eyes. The semantic hues are identical to the shared contract's dark
+     theme — teal still means observed evidence, violet still means
+     generated evidence, amber still means needs attention.
+   - Denser type. Desktop body text is 13px (vs 14px web); the focal level
+     (20px) stays >=1.5x body so hierarchy survives the density.
+   - Editor surfaces. Dedicated tokens for the Monaco host, file tree,
+     tabs, and test output so editor chrome never drifts into ad-hoc grays.
+   - Native metrics. 32px controls, 44px topbar, 220px file rail — sized
+     for mouse + keyboard operation in a resizable window.
+
+   Import order in the desktop app (when adopted):
+     1. this file (tokens)
+     2. component styles, referencing only these tokens — no raw hex, no
+        raw px for spacing/type outside the scale.
+
+   Migration note: desktop/src/styles.css currently defines its own ad-hoc
+   set (--bg, --accent: #4f8ff7, --font: Inter, ...). Adopting this file
+   means replacing those one-for-one; the mapping is documented in
+   desktop/DESIGN_SYSTEM.md. Do not run both sets at once.
+   ========================================================================== */
+
+:root {
+  /* ---- Typefaces: shared contract, desktop fallbacks ----------------------
+     The desktop bundles its own fonts; until then the stack degrades to
+     system UI. Inter is a FALLBACK here, never the primary — the product
+     typeface is Geist. */
+  --font-sans: "Geist Sans", "Geist", Inter, ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, "SF Mono",
+    SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ---- Desktop type scale (fixed; denser than web) -------------------------
+     Roles, not sizes. 20px focal / 13px body = 1.54x — hierarchy without
+     the airy marketing scale. */
+  --type-app-page: 1.25rem;       /* 20px — screen / dialog titles */
+  --type-app-page-lh: 1.2;
+  --type-app-page-tracking: -0.018em;
+  --type-app-section: 0.9375rem;  /* 15px — panel section titles */
+  --type-app-section-lh: 1.35;
+  --type-app-section-tracking: -0.01em;
+  --type-app-body: 0.8125rem;     /* 13px — body and controls */
+  --type-app-body-lh: 1.55;
+  --type-app-meta: 0.71875rem;    /* 11.5px — metadata, timestamps */
+  --type-app-meta-lh: 1.45;
+  --type-editor: 0.8125rem;       /* 13px — Monaco editor size */
+  --type-editor-lh: 1.6;
+
+  /* ---- Spacing: shared 4/8/12/16/24/32/48/64 scale ------------------------ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* ---- Radii: shared contract ---------------------------------------------- */
+  --radius-tag: 4px;
+  --radius-control: 6px;
+  --radius-panel: 10px;
+  --radius-frame: 14px;
+
+  /* ---- Borders: hairlines only --------------------------------------------- */
+  --border-subtle: rgb(255 255 255 / 0.07);
+  --border-default: rgb(255 255 255 / 0.11);
+  --border-strong: rgb(255 255 255 / 0.17);
+
+  /* ---- Surfaces -------------------------------------------------------------- */
+  --surface-canvas: #0e0e14;      /* app ground */
+  --surface-deep: #0a0a10;       /* sunken wells: editor host, output */
+  --surface-band: #121218;
+  --surface-raised: #16161e;      /* topbar, rails */
+  --surface-panel: #14141b;      /* side panels */
+  --surface-hover: #1c1c26;      /* hovered rows/files */
+  --surface-selected: #242433;   /* selected file / active tab */
+
+  /* ---- Editor surfaces (Monaco vs-dark family) -------------------------------
+     Kept as tokens so the editor host, file tree, and tab bar read as one
+     surface instead of three ad-hoc grays. */
+  --surface-editor: #1e1e1e;         /* Monaco vs-dark background */
+  --surface-editor-gutter: #1e1e1e;
+  --surface-tabbar: #16161e;
+  --surface-tab-active: #1e1e1e;     /* active tab matches editor */
+  --surface-tab-inactive: #16161e;
+  --surface-filetree: #14141b;
+
+  /* ---- Text (solid colors, never opacity) ------------------------------------ */
+  --text-primary: #f2f2f6;
+  --text-secondary: #b3b3c0;
+  --text-tertiary: #8b8b99;
+  --text-disabled: #5f5f6e;
+  --text-on-solid: #0e0e14;
+
+  /* ---- The one inverted control ---------------------------------------------- */
+  --control-solid: #f2f2f6;
+  --control-solid-hover: #ffffff;
+  --control-solid-active: #d9d9e2;
+  --control-solid-ink: #0e0e14;
+
+  /* ---- Evidence semantics: IDENTICAL meanings to the shared contract ---------
+     teal    = observed / project evidence
+     violet  = generated / simulation evidence
+     amber   = needs attention / changed
+     green   = real completed state
+     red     = unsupported / destructive */
+  --ev-observed: #4cc9b8;
+  --ev-observed-ink: #7fdccf;
+  --ev-observed-field: rgb(76 201 184 / 0.12);
+  --ev-generated: #a78bfa;
+  --ev-generated-ink: #c0a8fc;
+  --ev-generated-field: rgb(167 139 250 / 0.13);
+  --ev-attention: #e3b34e;
+  --ev-attention-ink: #f0c876;
+  --ev-attention-field: rgb(227 179 78 / 0.12);
+  --ev-success: #6fce97;
+  --ev-success-ink: #93dcae;
+  --ev-success-field: rgb(111 206 151 / 0.12);
+  --ev-error: #f07f95;
+  --ev-error-ink: #f5a3b4;
+  --ev-error-field: rgb(240 127 149 / 0.12);
+
+  /* ---- Action: one saturated accent per viewport ------------------------------ */
+  --action: #8f9bff;
+  --action-hover: #a5adff;
+  --action-ink: #a5adff;
+  --action-ink-ring: rgb(143 155 255 / 0.35);
+
+  /* ---- Focus ------------------------------------------------------------------- */
+  --focus-ring: 2px solid var(--action-ink);
+  --focus-ring-offset: 2px;
+
+  /* ---- Shadows (rare; hairlines carry depth first) ------------------------------- */
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.45);
+  --shadow-2: 0 1px 2px rgb(0 0 0 / 0.45), 0 8px 24px -8px rgb(0 0 0 / 0.6);
+  --shadow-3: 0 2px 4px rgb(0 0 0 / 0.4), 0 24px 56px -20px rgb(0 0 0 / 0.75);
+
+  /* ---- Motion -------------------------------------------------------------------- */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-fast: 140ms;
+  --motion-panel: 190ms;
+
+  /* ---- Desktop control metrics ----------------------------------------------------- */
+  --control-height: 32px;         /* desktop form controls (denser than web 42px) */
+  --control-height-sm: 28px;
+  --control-padding-x: 10px;
+
+  /* ---- Desktop layout ---------------------------------------------------------------
+     From the approved contract + the checklist's starting proportions. */
+  --topbar-height: 44px;
+  --filetree-width: 220px;        /* contract: 200-240px */
+  --sidepanel-width: 340px;       /* contract: 300-360px */
+  --min-window-width: 1024px;     /* below this, panels become tabs */
+  --min-window-height: 640px;
+}
+
+/* ---- Base ------------------------------------------------------------------------ */
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--type-app-body);
+  line-height: var(--type-app-body-lh);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+
+/* Focus is never optional. */
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+::selection {
+  background: rgb(167 139 250 / 0.28);
+  color: inherit;
+}
+
+/* Scrollbars: thin, quiet, part of the design. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.16) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.16);
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.28);
+  background-clip: content-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
