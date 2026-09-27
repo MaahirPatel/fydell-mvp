@@ -186,7 +186,9 @@ export default async function CandidateHomePage() {
                         {attempt.status === "submitted" ? "View receipt" : "Open"}
                       </ButtonLink>
                     ) : (
-                      <span className="text-[12.5px] text-[var(--text-tertiary)]">Open the invitation link to accept</span>
+                      <ButtonLink href={`/assess/invitations/${invitation.id}`} variant="primary" size="sm">
+                        Review invitation
+                      </ButtonLink>
                     )
                   }
                 />

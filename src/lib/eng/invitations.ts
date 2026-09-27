@@ -164,6 +164,27 @@ export function invitationUsable(inv: InvitationRow, now = new Date()): { ok: tr
 export async function acceptInvitation(db: Admin, token: string, user: { id: string; email: string }): Promise<AttemptRow> {
   const inv = await getInvitationByToken(db, token);
   if (!inv) throw new Error("Invitation not found. Check the link, or ask the employer to resend it.");
+  return acceptLoaded(db, inv, user);
+}
+
+/**
+ * The signed-in candidate's path from their dashboard, without the emailed
+ * link. Only the addressed email can see or accept it.
+ */
+export async function getInvitationForCandidate(db: Admin, invitationId: string, email: string): Promise<InvitationRow | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(invitationId)) return null;
+  const { data } = await db.from("eng_invitations").select("*").eq("id", invitationId).maybeSingle();
+  const inv = (data as InvitationRow) ?? null;
+  return inv && inv.candidate_email === email.toLowerCase() ? inv : null;
+}
+
+export async function acceptInvitationById(db: Admin, invitationId: string, user: { id: string; email: string }): Promise<AttemptRow> {
+  const inv = await getInvitationForCandidate(db, invitationId, user.email);
+  if (!inv) throw new Error("Invitation not found for this account.");
+  return acceptLoaded(db, inv, user);
+}
+
+async function acceptLoaded(db: Admin, inv: InvitationRow, user: { id: string; email: string }): Promise<AttemptRow> {
   const { data: existing } = await db.from("eng_attempts").select("*").eq("invitation_id", inv.id).maybeSingle();
   if (existing) {
     if (existing.candidate_user_id !== user.id) throw new Error("This invitation was already accepted by another account.");
