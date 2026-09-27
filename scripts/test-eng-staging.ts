@@ -7,7 +7,9 @@
  * deletes only what it created. No email is sent (Resend is unset here).
  *
  * Run: npx tsx --env-file=.env.local --conditions react-server scripts/test-eng-staging.ts
- * Optional: FYDELL_EVAL_EXECUTOR=local-dev also runs the hidden tests locally.
+ * Optional: FYDELL_EVAL_EXECUTOR=local-dev also runs the hidden tests locally;
+ * ENG_STAGING_HOSTED=1 runs them in the Vercel Sandbox snapshot instead
+ * (needs FYDELL_EXECUTION_SNAPSHOT_ID and a current VERCEL_OIDC_TOKEN).
  */
 import assert from "node:assert/strict";
 import { randomBytes, randomUUID } from "node:crypto";
@@ -43,6 +45,7 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = devServiceKey;
 delete process.env.SUPABASE_URL;
 delete process.env.SUPABASE_SERVICE_KEY;
 delete process.env.RESEND_API_KEY;
+const hostedSnapshot = process.env.ENG_STAGING_HOSTED === "1" ? process.env.FYDELL_EXECUTION_SNAPSHOT_ID : undefined;
 const localExecutor = process.env.FYDELL_EVAL_EXECUTOR === "local-dev";
 delete process.env.FYDELL_EVAL_EXECUTOR;
 delete process.env.FYDELL_EXECUTION_SNAPSHOT_ID;
@@ -251,10 +254,11 @@ async function main() {
     assert.equal(view?.processing, "blocked");
     pass("without an isolated executor the run is honestly blocked (executor_not_configured), never scored; the receipt still stands");
 
-    if (!localExecutor) {
-      console.log("NOTE hidden tests not executed: rerun with FYDELL_EVAL_EXECUTOR=local-dev to cover grading, report and decision.");
+    if (!localExecutor && !hostedSnapshot) {
+      console.log("NOTE hidden tests not executed: rerun with FYDELL_EVAL_EXECUTOR=local-dev, or ENG_STAGING_HOSTED=1 with a snapshot, to cover grading, report and decision.");
     } else {
-      process.env.FYDELL_EVAL_EXECUTOR = "local-dev";
+      if (hostedSnapshot) process.env.FYDELL_EXECUTION_SNAPSHOT_ID = hostedSnapshot;
+      else process.env.FYDELL_EVAL_EXECUTOR = "local-dev";
       await queue.requeueRun(db, run!.id, "staging-test@fydell.local", "staging loop");
       const claimed = await queue.claimRun(db, `staging-${tag}`);
       assert.ok(claimed && claimed.id === run!.id);
@@ -263,7 +267,7 @@ async function main() {
       run = await reports.currentRun(db, attempt.id);
       const results = run!.results ?? [];
       assert.ok(results.length > 0);
-      console.log(`INFO local-dev executor results: ${results.map((r) => `${r.id}=${r.outcome}`).join(", ")}`);
+      console.log(`INFO ${run!.executor} (${run!.environment_version}) results: ${results.map((r) => `${r.id}=${r.outcome}`).join(", ")}`);
       pass("hidden tests executed and recorded for human review");
 
       const employerA = await signedIn(emails.employerA, password);

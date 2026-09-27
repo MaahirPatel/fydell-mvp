@@ -41,7 +41,7 @@ The loop: an employer creates and publishes a role and invites a candidate by li
 
 ## Not working yet (largest gaps)
 
-- Hosted isolated execution: the Vercel Sandbox executor has not been run live, because the snapshot ID is not set.
+- Hosted isolated execution ran live from a local script only. It has not yet run from a deployed Preview function.
 - There is no scheduler for `/api/eng/worker`. If `after()` is cut short, a run waits until someone triggers the worker.
 - Email delivery: Resend is unconfigured, so invitations are shared by copyable link (`email_delivery = not_configured`).
 - Invites are not gated on an active billing plan.
@@ -50,7 +50,7 @@ The loop: an employer creates and publishes a role and invites a candidate by li
 
 ## Founder-owned tasks (agents cannot do these)
 
-1. Create the execution snapshot with `node scripts/create-execution-snapshot.mjs` (needs a Vercel login). Then set `FYDELL_EXECUTION_SNAPSHOT_ID` in Vercel preview and production.
+1. Done 2026-09-27: snapshot `snap_W9NxQqlStsdpE2UvcObOjLoupCqs` was created and set as `FYDELL_EXECUTION_SNAPSHOT_ID` in Vercel Preview and Development. Running `ENG_STAGING_HOSTED=1 npm run test:eng:staging` executed the hidden tests in that Sandbox (15/15 on the reference). Add it to Production only when migration 028 goes to production. `CRON_SECRET` and `RESEND_API_KEY` already exist in Vercel Preview/Production. The Preview Supabase variables are Sensitive, so it is unverified whether they point at fydell-dev.
 2. Give a qualified reviewer a platform role (`reviewer`, `admin` or `super_admin`) and sign off the scenario review record.
 3. Set `CRON_SECRET` in Vercel and choose a scheduler for `/api/eng/worker`: Vercel cron on a paid plan, or an external pinger.
 4. Verify Resend DNS and set `RESEND_API_KEY` and `EMAIL_FROM` for real invitation emails.
