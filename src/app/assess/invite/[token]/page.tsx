@@ -86,7 +86,7 @@ export default async function EngInvitePage({ params }: { params: Promise<{ toke
         )}
       </div>
       <p className="mt-6 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
-        Use a desktop or laptop. A qualified person reviews your work before the employer sees any findings.
+        Use a desktop or laptop. People on the hiring team review your work; automated checks never make the decision.
       </p>
     </CandidateShell>
   );
