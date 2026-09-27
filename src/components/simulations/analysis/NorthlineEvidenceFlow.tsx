@@ -325,7 +325,7 @@ export function NorthlineEvidenceFlow({
                   <p className="break-words text-app-meta text-[var(--text-primary)]">
                     {event.eventType.replaceAll("_", " ").toLowerCase()}
                   </p>
-                  <p className="mt-1 font-mono text-[11px] text-[var(--text-tertiary)]">
+                  <p className="mt-1 font-mono text-app-caption text-[var(--text-tertiary)]">
                     {event.id}
                   </p>
                 </div>
@@ -354,7 +354,7 @@ function ClaimList({ claims }: { claims: NorthlineEvidenceClaim[] }) {
           <p className="mt-2 text-app-body leading-6 text-[var(--text-secondary)]">
             {claim.statement}
           </p>
-          <p className="mt-2 font-mono text-[11px] text-[var(--text-tertiary)]">
+          <p className="mt-2 font-mono text-app-caption text-[var(--text-tertiary)]">
             {claim.supportingEventIds.length} supporting · {claim.counterEventIds.length} counter ·{" "}
             {claim.rubricVersion} · {claim.promptVersion} · {claim.modelVersion}
           </p>

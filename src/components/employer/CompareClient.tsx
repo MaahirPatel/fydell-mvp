@@ -98,7 +98,7 @@ export default function CompareClient() {
                   <>
                     {r.performance}
                     {r.band ? (
-                      <span className="mt-0.5 block text-[12px] font-normal text-[var(--text-tertiary)]">
+                      <span className="mt-0.5 block text-app-meta font-normal text-[var(--text-tertiary)]">
                         {r.band}
                       </span>
                     ) : null}
@@ -132,7 +132,7 @@ export default function CompareClient() {
               <TD align="right">
                 <Link
                   href={`/app/employer/assessments/report/${r.sessionId}`}
-                  className="inline-flex h-8 items-center rounded-[var(--radius-control)] px-2.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+                  className="inline-flex h-8 items-center rounded-[var(--radius-control)] px-2.5 text-app-meta font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
                 >
                   Open
                 </Link>

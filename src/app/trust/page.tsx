@@ -58,7 +58,7 @@ const TILE =
   "inline-flex shrink-0 items-center justify-center rounded-[7px] border";
 /* Sentence case, normal tracking. A wide-tracked uppercase micro-label is
    decoration standing in for hierarchy and reads as a template. */
-const MICRO_LABEL = "text-[12px] font-medium";
+const MICRO_LABEL = "text-app-meta font-medium";
 
 /**
  * Written against the implemented system, and audited against it before this
@@ -400,7 +400,7 @@ function StateToken({
   const { Icon, ink, tint } = MUTABILITY[mutability];
   return (
     <span
-      className="inline-flex shrink-0 items-center gap-1.5 rounded-[var(--radius-control)] border px-2 py-[3px] text-[12px]"
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-[var(--radius-control)] border px-2 py-[3px] text-app-meta"
       style={{
         color: ink,
         background: tint,
@@ -475,13 +475,13 @@ function GraphNode({
           <p className={MICRO_LABEL} style={{ color: ink }}>
             {stage}
           </p>
-          <span className="ml-auto shrink-0 text-[12px] tabular-nums text-[var(--text-tertiary)]">
+          <span className="ml-auto shrink-0 text-app-meta tabular-nums text-[var(--text-tertiary)]">
             {time}
           </span>
         </div>
         <div className="mt-2">{children}</div>
         {relation ? (
-          <p className="flex items-center gap-1.5 py-2.5 text-[12px] text-[var(--text-tertiary)]">
+          <p className="flex items-center gap-1.5 py-2.5 text-app-meta text-[var(--text-tertiary)]">
             <ArrowDown size={12} aria-hidden className="shrink-0" />
             {relation}
           </p>
@@ -536,10 +536,10 @@ function GraphKey() {
               className="mt-[5px] h-[9px] w-[9px] shrink-0 rounded-[3px] border"
               style={{ background: tint, borderColor: ink }}
             />
-            <dt className="shrink-0 text-[13px] font-medium text-[var(--text-primary)]">
+            <dt className="shrink-0 text-app-meta font-medium text-[var(--text-primary)]">
               {row.term}
             </dt>
-            <dd className="text-[13px] leading-[1.5] text-[var(--text-tertiary)]">
+            <dd className="text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
               {row.value}
             </dd>
           </div>
@@ -588,15 +588,15 @@ export default function TrustPage() {
                   aria-hidden
                   className="shrink-0 text-[var(--text-tertiary)]"
                 />
-                <span className="text-[13px] font-medium text-[var(--text-primary)]">
+                <span className="text-app-meta font-medium text-[var(--text-primary)]">
                   Run lifecycle
                 </span>
-                <span className="hidden truncate text-[12px] text-[var(--text-tertiary)] sm:inline">
+                <span className="hidden truncate text-app-meta text-[var(--text-tertiary)] sm:inline">
                   {NORTHLINE_SCENARIO.company} · {NORTHLINE_SCENARIO.role} ·
                   synthetic
                 </span>
               </span>
-              <span className="ml-auto shrink-0 text-[12px] tabular-nums text-[var(--text-tertiary)]">
+              <span className="ml-auto shrink-0 text-app-meta tabular-nums text-[var(--text-tertiary)]">
                 Stage 05 of 07
               </span>
             </div>
@@ -628,11 +628,11 @@ export default function TrustPage() {
                         <span className="h-px flex-1 bg-[var(--border-subtle)]" />
                       ) : null}
                     </div>
-                    <p className="mt-2 text-[12px] tabular-nums text-[var(--text-tertiary)]">
+                    <p className="mt-2 text-app-meta tabular-nums text-[var(--text-tertiary)]">
                       {String(i + 1).padStart(2, "0")} · {item.time}
                     </p>
                     <p
-                      className={`mt-0.5 pr-4 text-[13px] leading-[1.35] ${
+                      className={`mt-0.5 pr-4 text-app-meta leading-[1.35] ${
                         isCurrent
                           ? "font-medium text-[var(--text-primary)]"
                           : "text-[var(--text-secondary)]"
@@ -677,18 +677,18 @@ export default function TrustPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-                          <span className="text-[12px] tabular-nums text-[var(--text-tertiary)]">
+                          <span className="text-app-meta tabular-nums text-[var(--text-tertiary)]">
                             {String(i + 1).padStart(2, "0")}
                           </span>
-                          <p className="text-[14px] font-medium text-[var(--text-primary)]">
+                          <p className="text-app-body font-medium text-[var(--text-primary)]">
                             {item.step}
                           </p>
-                          <span className="text-[12px] tabular-nums text-[var(--text-tertiary)]">
+                          <span className="text-app-meta tabular-nums text-[var(--text-tertiary)]">
                             {item.time}
                           </span>
                           {isCurrent ? (
                             <span
-                              className="rounded-[var(--radius-tag)] px-1.5 py-px text-[12px] font-medium"
+                              className="rounded-[var(--radius-tag)] px-1.5 py-px text-app-meta font-medium"
                               style={{
                                 color: "var(--fydell-evidence)",
                                 background: "var(--surface-intelligence)",
@@ -704,7 +704,7 @@ export default function TrustPage() {
                             />
                           </span>
                         </div>
-                        <p className="mt-1.5 max-w-[62ch] text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                        <p className="mt-1.5 max-w-[62ch] text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                           {item.detail}
                         </p>
                       </div>
@@ -730,10 +730,10 @@ export default function TrustPage() {
                   >
                     <active.Icon size={13} aria-hidden />
                   </span>
-                  <p className="text-[14px] font-medium text-[var(--text-primary)]">
+                  <p className="text-app-body font-medium text-[var(--text-primary)]">
                     {active.step}
                   </p>
-                  <span className="ml-auto text-[12px] tabular-nums text-[var(--text-tertiary)]">
+                  <span className="ml-auto text-app-meta tabular-nums text-[var(--text-tertiary)]">
                     {active.time}
                   </span>
                 </div>
@@ -743,10 +743,10 @@ export default function TrustPage() {
                       key={row.term}
                       className="border-t border-[var(--border-subtle)] py-2 first:border-t-0 first:pt-0"
                     >
-                      <dt className="text-[12px] text-[var(--text-tertiary)]">
+                      <dt className="text-app-meta text-[var(--text-tertiary)]">
                         {row.term}
                       </dt>
-                      <dd className="mt-0.5 text-[13px] leading-[1.5] text-[var(--text-secondary)]">
+                      <dd className="mt-0.5 text-app-meta leading-[1.5] text-[var(--text-secondary)]">
                         {row.value}
                       </dd>
                     </div>
@@ -755,7 +755,7 @@ export default function TrustPage() {
               </aside>
             </div>
 
-            <figcaption className="border-t border-[var(--border-subtle)] bg-[var(--surface-deep)] px-4 py-2.5 text-[12px] leading-[1.5] text-[var(--text-tertiary)]">
+            <figcaption className="border-t border-[var(--border-subtle)] bg-[var(--surface-deep)] px-4 py-2.5 text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
               The order and the states are how the system behaves. The clock
               times belong to a synthetic Northline Components run and are
               illustrative.
@@ -784,11 +784,11 @@ export default function TrustPage() {
                   aria-hidden
                   className="shrink-0 text-[var(--text-tertiary)]"
                 />
-                <span className="text-[13px] font-medium text-[var(--text-primary)]">
+                <span className="text-app-meta font-medium text-[var(--text-primary)]">
                   Read access by artifact
                 </span>
               </span>
-              <span className="ml-auto shrink-0 text-[12px] text-[var(--text-tertiary)]">
+              <span className="ml-auto shrink-0 text-app-meta text-[var(--text-tertiary)]">
                 Row-level security, checked again on the server
               </span>
             </div>
@@ -809,7 +809,7 @@ export default function TrustPage() {
                     /* Selection is carried by the surface tint and the
                        "Explained below" tag, not by an accent rule. */
                   >
-                    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] font-medium text-[var(--text-primary)]">
+                    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-app-meta font-medium text-[var(--text-primary)]">
                       {isInspected ? (
                         <span className="sr-only">Explained below: </span>
                       ) : null}
@@ -817,7 +817,7 @@ export default function TrustPage() {
                       {isInspected ? (
                         <span
                           aria-hidden
-                          className="rounded-[var(--radius-tag)] px-1.5 py-px text-[12px] font-medium"
+                          className="rounded-[var(--radius-tag)] px-1.5 py-px text-app-meta font-medium"
                           style={{
                             color: "var(--fydell-evidence)",
                             background: "var(--surface-intelligence)",
@@ -831,7 +831,7 @@ export default function TrustPage() {
                       {row.cells.map((cell, i) => (
                         <div
                           key={PARTIES[i].name}
-                          className="flex items-baseline justify-between gap-4 py-[3px] text-[12.5px]"
+                          className="flex items-baseline justify-between gap-4 py-[3px] text-app-meta"
                         >
                           <dt className="min-w-0">
                             <PartyLabel index={i} />
@@ -872,7 +872,7 @@ export default function TrustPage() {
                         scope="col"
                         className="px-4 py-2.5 align-top font-normal"
                       >
-                        <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-[var(--text-primary)]">
+                        <span className="flex items-center gap-1.5 text-app-meta font-medium text-[var(--text-primary)]">
                           <party.Icon
                             size={13}
                             aria-hidden
@@ -880,7 +880,7 @@ export default function TrustPage() {
                           />
                           {party.name}
                         </span>
-                        <span className="mt-0.5 block text-[12px] text-[var(--text-tertiary)]">
+                        <span className="mt-0.5 block text-app-meta text-[var(--text-tertiary)]">
                           {party.role}
                         </span>
                       </th>
@@ -899,7 +899,7 @@ export default function TrustPage() {
                       >
                         <th
                           scope="row"
-                          className="px-4 py-2.5 text-[13px] font-medium text-[var(--text-primary)]"
+                          className="px-4 py-2.5 text-app-meta font-medium text-[var(--text-primary)]"
                         >
                           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             {isInspected ? (
@@ -909,7 +909,7 @@ export default function TrustPage() {
                             {isInspected ? (
                               <span
                                 aria-hidden
-                                className="rounded-[var(--radius-tag)] px-1.5 py-px text-[12px] font-medium"
+                                className="rounded-[var(--radius-tag)] px-1.5 py-px text-app-meta font-medium"
                                 style={{
                                   color: "var(--fydell-evidence)",
                                   background: "var(--surface-intelligence)",
@@ -923,7 +923,7 @@ export default function TrustPage() {
                         {row.cells.map((cell, i) => (
                           <td
                             key={PARTIES[i].name}
-                            className="px-4 py-2.5 text-[13px]"
+                            className="px-4 py-2.5 text-app-meta"
                           >
                             <AccessValue cell={cell} />
                           </td>
@@ -948,7 +948,7 @@ export default function TrustPage() {
               <div className="mt-3 grid gap-x-12 gap-y-4 md:grid-cols-2">
                 {INSPECTOR.map((item) => (
                   <div key={item.title}>
-                    <p className="flex items-center gap-1.5 text-[13px] font-medium text-[var(--text-primary)]">
+                    <p className="flex items-center gap-1.5 text-app-meta font-medium text-[var(--text-primary)]">
                       <item.Icon
                         size={13}
                         aria-hidden
@@ -956,7 +956,7 @@ export default function TrustPage() {
                       />
                       {item.title}
                     </p>
-                    <p className="mt-1 max-w-[52ch] text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                    <p className="mt-1 max-w-[52ch] text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                       {item.body}
                     </p>
                   </div>
@@ -997,7 +997,7 @@ export default function TrustPage() {
                 }
                 label="An evidence graph for one claim: source files, the candidate action, the claim and its cited lines, its limitation, the revision after a fact changed, and the employer judgment."
                 footer={
-                  <p className="px-1 text-[12px] leading-[1.5] text-[var(--text-tertiary)]">
+                  <p className="px-1 text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
                     Northline Components is a synthetic scenario. The lineage is
                     the one the product records; the clock times are
                     illustrative.
@@ -1018,13 +1018,13 @@ export default function TrustPage() {
                           key={file.name}
                           className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 border-t border-[var(--border-subtle)] px-2.5 py-2 first:border-t-0"
                         >
-                          <span className="font-mono text-[12px] text-[var(--text-primary)]">
+                          <span className="font-mono text-app-meta text-[var(--text-primary)]">
                             {file.name}
                           </span>
-                          <span className="text-[12px] text-[var(--text-tertiary)]">
+                          <span className="text-app-meta text-[var(--text-tertiary)]">
                             {file.detail}
                           </span>
-                          <span className="ml-auto shrink-0 rounded-[var(--radius-tag)] border border-[var(--border-subtle)] px-1.5 py-px text-[12px] tabular-nums text-[var(--text-tertiary)]">
+                          <span className="ml-auto shrink-0 rounded-[var(--radius-tag)] border border-[var(--border-subtle)] px-1.5 py-px text-app-meta tabular-nums text-[var(--text-tertiary)]">
                             {file.locator}
                           </span>
                         </div>
@@ -1039,7 +1039,7 @@ export default function TrustPage() {
                     time="14:31"
                     relation="establishes"
                   >
-                    <p className="text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                    <p className="text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                       {CLAIM.action}
                     </p>
                   </GraphNode>
@@ -1074,25 +1074,25 @@ export default function TrustPage() {
                           style={{ color: "var(--fydell-evidence)" }}
                         />
                         <span
-                          className="text-[12px] font-medium"
+                          className="text-app-meta font-medium"
                           style={{ color: "var(--fydell-evidence)" }}
                         >
                           Selected claim
                         </span>
-                        <span className="ml-auto text-[12px] tabular-nums text-[var(--text-tertiary)]">
+                        <span className="ml-auto text-app-meta tabular-nums text-[var(--text-tertiary)]">
                           {CLAIM.citations.length} citations
                         </span>
                       </div>
                       <div className="px-3 py-3">
-                        <p className="text-[14.5px] font-medium leading-[1.45] text-[var(--text-primary)]">
+                        <p className="text-app-body font-medium leading-[1.45] text-[var(--text-primary)]">
                           {CLAIM.text}
                         </p>
                         <div className="mt-3 overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-canvas)]">
                           <div className="flex items-baseline gap-2 border-b border-[var(--border-subtle)] px-2.5 py-1.5">
-                            <span className="font-mono text-[12px] text-[var(--text-secondary)]">
+                            <span className="font-mono text-app-meta text-[var(--text-secondary)]">
                               {CITATIONS.reclassEvents.source}
                             </span>
-                            <span className="ml-auto shrink-0 text-[12px] tabular-nums text-[var(--text-tertiary)]">
+                            <span className="ml-auto shrink-0 text-app-meta tabular-nums text-[var(--text-tertiary)]">
                               {CITATIONS.reclassEvents.locator}
                             </span>
                           </div>
@@ -1100,7 +1100,7 @@ export default function TrustPage() {
                             {CITATION_SOURCES.reclassEvents.map((line) => (
                               <p
                                 key={line.text}
-                                className="whitespace-pre rounded-[3px] px-1 font-mono text-[11.5px] leading-[1.75]"
+                                className="whitespace-pre rounded-[3px] px-1 font-mono text-app-caption leading-[1.75]"
                                 style={
                                   line.highlight
                                     ? {
@@ -1116,7 +1116,7 @@ export default function TrustPage() {
                             ))}
                           </div>
                         </div>
-                        <p className="mt-2 flex items-center gap-1.5 text-[12px] text-[var(--text-tertiary)]">
+                        <p className="mt-2 flex items-center gap-1.5 text-app-meta text-[var(--text-tertiary)]">
                           <BookText
                             size={12}
                             aria-hidden
@@ -1143,10 +1143,10 @@ export default function TrustPage() {
                         borderColor: "var(--status-attention-line)",
                       }}
                     >
-                      <p className="text-[13px] font-medium leading-[1.45] text-[var(--text-primary)]">
+                      <p className="text-app-meta font-medium leading-[1.45] text-[var(--text-primary)]">
                         The L2 Day loss is not explained by reclassification.
                       </p>
-                      <p className="mt-1 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+                      <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
                         {RESIDUAL.limitation}
                       </p>
                     </div>
@@ -1165,25 +1165,25 @@ export default function TrustPage() {
                         style={{ background: "var(--surface-counter)" }}
                       >
                         <span
-                          className="text-[12px] font-medium"
+                          className="text-app-meta font-medium"
                           style={{ color: "var(--evidence-counter)" }}
                         >
                           {NORTHLINE_CHANGED_FACT.after.label}
                         </span>
-                        <span className="ml-auto shrink-0 text-[12px] tabular-nums text-[var(--text-tertiary)]">
+                        <span className="ml-auto shrink-0 text-app-meta tabular-nums text-[var(--text-tertiary)]">
                           16:08
                         </span>
                       </div>
                       <p
-                        className="px-2.5 py-2 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]"
+                        className="px-2.5 py-2 text-app-meta leading-[1.55] text-[var(--text-secondary)]"
                         style={{ background: "var(--surface-counter)" }}
                       >
                         {NORTHLINE_CHANGED_FACT.after.text}
                       </p>
-                      <p className="border-t border-[var(--border-subtle)] px-2.5 pb-1 pt-2 text-[12px] text-[var(--text-tertiary)]">
+                      <p className="border-t border-[var(--border-subtle)] px-2.5 pb-1 pt-2 text-app-meta text-[var(--text-tertiary)]">
                         Candidate response · revised
                       </p>
-                      <p className="px-2.5 pb-2 text-[13px] leading-[1.6] text-[var(--text-primary)]">
+                      <p className="px-2.5 pb-2 text-app-meta leading-[1.6] text-[var(--text-primary)]">
                         {NORTHLINE_CHANGED_FACT.responseText}
                       </p>
                     </div>
@@ -1202,10 +1202,10 @@ export default function TrustPage() {
                         borderColor: "var(--status-positive-line)",
                       }}
                     >
-                      <p className="text-[13px] font-medium leading-[1.45] text-[var(--text-primary)]">
+                      <p className="text-app-meta font-medium leading-[1.45] text-[var(--text-primary)]">
                         Reviewer confirms the correction holds.
                       </p>
-                      <p className="mt-1 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+                      <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
                         Human review happens before evidence is published to an
                         employer during the pilot. The hire decision stays with
                         the employer.
@@ -1229,14 +1229,14 @@ export default function TrustPage() {
           </p>
           <div className="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-16">
             <div>
-              <h3 className="text-[13px] font-medium text-[var(--text-primary)]">
+              <h3 className="text-app-meta font-medium text-[var(--text-primary)]">
                 In place today
               </h3>
               <ul className="mt-4">
                 {IN_PLACE.map((line) => (
                   <li
                     key={line}
-                    className="flex gap-2.5 border-t border-[var(--border-subtle)] py-3 text-[13.5px] leading-[1.65] text-[var(--text-secondary)] first:border-t-0 first:pt-0"
+                    className="flex gap-2.5 border-t border-[var(--border-subtle)] py-3 text-app-body leading-[1.65] text-[var(--text-secondary)] first:border-t-0 first:pt-0"
                   >
                     <span
                       aria-hidden
@@ -1248,14 +1248,14 @@ export default function TrustPage() {
               </ul>
             </div>
             <div>
-              <h3 className="text-[13px] font-medium text-[var(--text-primary)]">
+              <h3 className="text-app-meta font-medium text-[var(--text-primary)]">
                 Not yet
               </h3>
               <ul className="mt-4">
                 {NOT_YET.map((line) => (
                   <li
                     key={line}
-                    className="flex gap-2.5 border-t border-[var(--border-subtle)] py-3 text-[13.5px] leading-[1.65] text-[var(--text-secondary)] first:border-t-0 first:pt-0"
+                    className="flex gap-2.5 border-t border-[var(--border-subtle)] py-3 text-app-body leading-[1.65] text-[var(--text-secondary)] first:border-t-0 first:pt-0"
                   >
                     <span
                       aria-hidden
@@ -1277,7 +1277,7 @@ export default function TrustPage() {
             {NOT_CLAIMED.map((line) => (
               <li
                 key={line}
-                className="flex gap-2.5 text-[14px] leading-[1.65] text-[var(--text-secondary)]"
+                className="flex gap-2.5 text-app-body leading-[1.65] text-[var(--text-secondary)]"
               >
                 <span
                   aria-hidden

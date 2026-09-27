@@ -107,19 +107,19 @@ export function CandidateDefense({ sessionId }: { sessionId: string }) {
           const existing = responses.find((r) => r.question_id === q.id);
           return (
             <li key={q.id} className="px-5 py-4">
-              <p className="text-[14px] leading-[1.55] text-[var(--text-primary)]">
+              <p className="text-app-body leading-[1.55] text-[var(--text-primary)]">
                 {q.question_text}
               </p>
-              <p className="mt-1 text-[12.5px] leading-[1.55] text-[var(--text-tertiary)]">
+              <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-tertiary)]">
                 {q.purpose}
               </p>
 
               {existing ? (
                 <div className="mt-3">
-                  <p className="border-t border-[var(--border-subtle)] pt-2 text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+                  <p className="border-t border-[var(--border-subtle)] pt-2 text-app-body leading-[1.65] text-[var(--text-secondary)]">
                     {existing.response_text}
                   </p>
-                  <p className="mt-1.5 pl-3 text-[12px] text-[var(--text-tertiary)]">
+                  <p className="mt-1.5 pl-3 text-app-meta text-[var(--text-tertiary)]">
                     {existing.collection_method === "candidate_typed"
                       ? "Your written answer. The company can read this."
                       : "Recorded by the company from a conversation with you."}
@@ -154,12 +154,12 @@ export function CandidateDefense({ sessionId }: { sessionId: string }) {
       {error ? (
         <p
           role="alert"
-          className="border-t border-[var(--border-subtle)] px-5 py-3 text-[13px] text-[var(--fydell-risk)]"
+          className="border-t border-[var(--border-subtle)] px-5 py-3 text-app-meta text-[var(--fydell-risk)]"
         >
           {error}
         </p>
       ) : null}
-      <p className="border-t border-[var(--border-subtle)] px-5 py-3 text-[12.5px] leading-[1.6] text-[var(--text-tertiary)]">
+      <p className="border-t border-[var(--border-subtle)] px-5 py-3 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
         An answer cannot be edited once sent, for the same reason your submission
         cannot. Say so in the answer itself if you want to correct something.
       </p>

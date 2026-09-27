@@ -40,7 +40,7 @@ export default function SharingPreview() {
               type="button"
               aria-pressed={view === key}
               onClick={() => setView(key)}
-              className={`h-8 rounded-full px-3 text-[13px] font-medium transition-colors duration-150 ${
+              className={`h-8 rounded-full px-3 text-app-meta font-medium transition-colors duration-150 ${
                 view === key ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-[var(--shadow-card)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
@@ -48,12 +48,12 @@ export default function SharingPreview() {
             </button>
           ))}
         </div>
-        <span className="text-[12px] text-[var(--text-tertiary)]">{DEMO_LABEL}</span>
+        <span className="text-app-meta text-[var(--text-tertiary)]">{DEMO_LABEL}</span>
       </div>
 
       <div className="px-4 pb-2 pt-4">
-        <p className="text-[15px] font-medium text-[var(--text-primary)]">{DEMO_CANDIDATE.name}</p>
-        <p className="text-[13px] text-[var(--text-secondary)]">
+        <p className="text-app-body font-medium text-[var(--text-primary)]">{DEMO_CANDIDATE.name}</p>
+        <p className="text-app-meta text-[var(--text-secondary)]">
           {view === "owner" ? "Everything in your record. You decide what leaves it." : "Shared by the candidate · revocable at any time"}
         </p>
       </div>
@@ -63,12 +63,12 @@ export default function SharingPreview() {
           <li key={item.label} className="flex items-center gap-3 py-3">
             <span aria-hidden className={`h-2 w-2 shrink-0 rounded-full ${DOT[item.kind]}`} />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[14px] text-[var(--text-primary)]">{item.label}</span>
-              <span className="block truncate text-[12.5px] text-[var(--text-tertiary)]">{item.detail}</span>
+              <span className="block truncate text-app-body text-[var(--text-primary)]">{item.label}</span>
+              <span className="block truncate text-app-meta text-[var(--text-tertiary)]">{item.detail}</span>
             </span>
             {view === "owner" ? (
               <span
-                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] font-medium ${
+                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-app-caption font-medium ${
                   item.shared ? "bg-[var(--field-teal)] text-[var(--ink-teal)]" : "bg-[var(--surface-selected)] text-[var(--text-secondary)]"
                 }`}
               >
@@ -80,7 +80,7 @@ export default function SharingPreview() {
         ))}
       </ul>
 
-      <p className="border-t border-[var(--border-subtle)] px-4 py-3 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+      <p className="border-t border-[var(--border-subtle)] px-4 py-3 text-app-meta leading-[1.5] text-[var(--text-secondary)]">
         {view === "owner"
           ? "Employer notes and hiring decisions never enter your record."
           : "Private projects and contact details are not included in this view."}

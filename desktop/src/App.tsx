@@ -1,6 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
-import { api, SessionInfo, SessionSummary, Receipt, isAuthRequired } from "./lib/tauri";
+import {
+  api,
+  ProvisionProgress,
+  RecoveryOutcome,
+  SessionInfo,
+  SessionSummary,
+  Receipt,
+  VersionGate,
+  isAuthRequired,
+} from "./lib/tauri";
+import {
+  PROVISION_STEPS,
+  provisionStepLabel,
+  versionGateMessage,
+} from "./lib/pure";
 import Workspace from "./components/Workspace";
 import { ProvenanceTag } from "./components/ui";
 
@@ -10,8 +24,107 @@ type Screen =
   | "signin-waiting"
   | "invite"
   | "consent"
+  | "provisioning"
+  | "update-required"
+  | "locked"
   | "workspace"
   | "submitted";
+
+/* ---------------- DESK-06: truthful provisioning progress ---------------- */
+
+type StepState = "pending" | "started" | "ok" | "failed";
+
+function Provisioning({
+  onDone,
+  onCancel,
+}: {
+  onDone: (s: SessionInfo) => void;
+  onCancel: () => void;
+}) {
+  const [steps, setSteps] = useState<Record<string, StepState>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [failedStep, setFailedStep] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
+
+  const run = useCallback(async () => {
+    setRunning(true);
+    setError(null);
+    setFailedStep(null);
+    setSteps(Object.fromEntries(PROVISION_STEPS.map((s) => [s.id, "pending"] as const)));
+    const unlisten = await listen<ProvisionProgress>("provision-progress", (e) => {
+      setSteps((prev) => ({ ...prev, [e.payload.step]: e.payload.state }));
+      if (e.payload.state === "failed") {
+        setFailedStep(e.payload.step);
+        setError(e.payload.message ?? "Provisioning failed.");
+      }
+    });
+    try {
+      const s = await api.beginSession();
+      onDone(s);
+    } catch (e) {
+      // The backend already emitted the failed step with its real message;
+      // only fall back to the thrown error when no step reported failure.
+      setError((prev) => prev ?? messageOf(e));
+    } finally {
+      unlisten();
+      setRunning(false);
+    }
+  }, [onDone]);
+
+  useEffect(() => {
+    void run();
+  }, [run]);
+
+  const glyph = (st: StepState) =>
+    st === "ok" ? "✓" : st === "failed" ? "✗" : st === "started" ? "…" : "○";
+
+  return (
+    <div className="screen">
+      <div className="card">
+        <div className="brand">
+          Fydell<span className="dot">.</span>
+        </div>
+        <h1>Setting up your workspace</h1>
+        <p className="muted">
+          Your timer starts only after setup completes — a failed step never
+          costs you assessment time.
+        </p>
+        <ul className="consent-list">
+          {PROVISION_STEPS.map((s) => {
+            const st = steps[s.id] ?? "pending";
+            return (
+              <li key={s.id}>
+                <span className={st === "failed" ? "no" : st === "ok" ? "yes" : ""}>
+                  {glyph(st)}
+                </span>
+                <span>
+                  {provisionStepLabel(s.id)}
+                  {st === "failed" && failedStep === s.id && error && (
+                    <span className="muted"> — {error}</span>
+                  )}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+        {error && failedStep && (
+          <>
+            <div className="error">{error}</div>
+            <div className="row mt-4">
+              <button className="btn ghost" onClick={onCancel} disabled={running}>
+                Back
+              </button>
+              <div className="spacer" />
+              <button className="btn" onClick={() => void run()} disabled={running}>
+                {running ? "Retrying…" : "Retry"}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("loading");
@@ -21,8 +134,11 @@ export default function App() {
   const [inviteToken, setInviteToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [versionGate, setVersionGate] = useState<VersionGate | null>(null);
+  const [updateNotice, setUpdateNotice] = useState<string | null>(null);
+  const [lockedPid, setLockedPid] = useState<number | null>(null);
 
-  // Boot: check sign-in, then session state.
+  // Boot: check sign-in, then session state, then any recovery outcome.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -34,6 +150,14 @@ export default function App() {
           setScreen("signin");
           return;
         }
+        // DESK-11: refuse to open a session another live window holds.
+        const r: RecoveryOutcome | null = await api.recoveryStatus().catch(() => null);
+        if (cancelled) return;
+        if (r?.kind === "locked") {
+          setLockedPid(r.pid);
+          setScreen("locked");
+          return;
+        }
         const s = await api.sessionStatus();
         if (cancelled) return;
         setSession(s);
@@ -43,9 +167,7 @@ export default function App() {
             : s.status === "submitted"
               ? "submitted"
               : s.status === "joined"
-                ? s.consent_accepted
-                  ? "consent" // accepted earlier, still needs begin
-                  : "consent"
+                ? "consent"
                 : "invite"
         );
       } catch {
@@ -99,11 +221,40 @@ export default function App() {
     setScreen("signin");
   }, []);
 
-  const begin = useCallback(async (s: SessionInfo) => {
-    // Consent already recorded (or just accepted) → start the session.
-    const started = await api.beginSession();
-    setSession(started);
-    setScreen("workspace");
+  const begin = useCallback((_s: SessionInfo) => {
+    // Provisioning (DESK-06) runs on its own screen with per-step progress
+    // and retry; the timer starts only when it completes.
+    setScreen("provisioning");
+  }, []);
+
+  const recheckLocked = useCallback(async () => {
+    setBusy(true);
+    try {
+      const r: RecoveryOutcome = await api.recoveryStatus();
+      if (r.kind === "locked") {
+        setLockedPid(r.pid);
+      } else {
+        // The other window closed; boot normally.
+        window.location.reload();
+      }
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  const recheckVersion = useCallback(async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const gate = await api.checkClientVersion();
+      setVersionGate(gate);
+      if (gate.kind === "blocked") return;
+      setScreen("consent");
+    } catch (e: unknown) {
+      setError(messageOf(e));
+    } finally {
+      setBusy(false);
+    }
   }, []);
 
   const join = useCallback(async () => {

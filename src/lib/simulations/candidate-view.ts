@@ -15,13 +15,12 @@ import type {
   WorkspaceTool,
 } from "./types";
 import type { MicroSimContent } from "./micro-types";
+import {
+  withTeammateDisclosure,
+  type DisclosedStakeholder,
+} from "./teammate-disclosure";
 
-export interface CandidateStakeholder {
-  id: string;
-  name: string;
-  role: string;
-  blurb: string;
-}
+export interface CandidateStakeholder extends DisclosedStakeholder {}
 
 export interface CandidateSimulationView {
   slug: string;
@@ -57,12 +56,14 @@ export function toCandidateView(
     workspaceTools: content.workspaceTools,
     tasks: content.tasks,
     resources: content.resources,
-    stakeholders: content.stakeholders.map((s) => ({
-      id: s.id,
-      name: s.name,
-      role: s.role,
-      blurb: s.blurb,
-    })),
+    stakeholders: withTeammateDisclosure(
+      content.stakeholders.map((s) => ({
+        id: s.id,
+        name: s.name,
+        role: s.role,
+        blurb: s.blurb,
+      }))
+    ),
     deliverableFields: content.deliverableFields,
     curveball: opts.curveballPresented
       ? {
@@ -120,7 +121,9 @@ export function toMicroCandidateView(sim: MicroSimContent): MicroCandidateView {
       kind: r.kind,
       content: r.content,
     })),
-    stakeholder: { id: s.id, name: s.name, role: s.role, blurb: s.blurb },
+    stakeholder: withTeammateDisclosure([
+      { id: s.id, name: s.name, role: s.role, blurb: s.blurb },
+    ])[0],
     questions: sim.questions.map((q) => ({
       id: q.id,
       kind: q.kind,

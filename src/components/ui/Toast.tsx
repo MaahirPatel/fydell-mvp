@@ -48,7 +48,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={cn(
-              "pointer-events-auto max-w-[380px] rounded-[var(--radius-panel)] border bg-[var(--surface-panel)] px-3.5 py-2.5 text-[13px] leading-[1.5] shadow-[var(--shadow-pop)]",
+              "pointer-events-auto max-w-[380px] rounded-[var(--radius-panel)] border bg-[var(--surface-panel)] px-3.5 py-2.5 text-app-meta leading-[1.5] shadow-[var(--shadow-pop)]",
               TONE[t.tone],
             )}
             style={{ animation: "fydell-toast-in 180ms ease-out" }}

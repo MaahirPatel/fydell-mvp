@@ -121,7 +121,7 @@ export function TextLink({
     <Link
       href={href}
       className={[
-        "inline-flex items-center text-[14px] text-[var(--text-secondary)] underline decoration-[var(--border-strong)] underline-offset-[5px] transition-colors duration-150 hover:text-[var(--text-primary)] hover:decoration-[var(--text-primary)]",
+        "inline-flex items-center text-app-body text-[var(--text-secondary)] underline decoration-[var(--border-strong)] underline-offset-[5px] transition-colors duration-150 hover:text-[var(--text-primary)] hover:decoration-[var(--text-primary)]",
         className,
       ]
         .filter(Boolean)

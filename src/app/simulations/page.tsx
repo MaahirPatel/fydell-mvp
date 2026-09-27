@@ -33,8 +33,8 @@ const BAND = "bg-[var(--surface-band)]";
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[12.5px] text-[var(--text-tertiary)]">{label}</dt>
-      <dd className="mt-1 text-[14px] text-[var(--text-primary)]">{value}</dd>
+      <dt className="text-app-meta text-[var(--text-tertiary)]">{label}</dt>
+      <dd className="mt-1 text-app-body text-[var(--text-primary)]">{value}</dd>
     </div>
   );
 }
@@ -127,7 +127,7 @@ export default function EvaluationPage() {
       <PageIntro
         title={NORTHLINE_SCENARIO.evaluation}
         meta={
-          <p className="text-[14px] tabular-nums text-[var(--text-tertiary)]">
+          <p className="text-app-body tabular-nums text-[var(--text-tertiary)]">
             {NORTHLINE_SCENARIO.role} · {NORTHLINE_SCENARIO.duration}
           </p>
         }
@@ -175,10 +175,10 @@ export default function EvaluationPage() {
             <ul className="divide-y divide-[var(--border-subtle)] rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
               {MATERIALS.map((item) => (
                 <li key={item.name} className="px-4 py-3.5">
-                  <p className="text-[14px] font-medium text-[var(--text-primary)]">
+                  <p className="text-app-body font-medium text-[var(--text-primary)]">
                     {item.name}
                   </p>
-                  <p className="mt-1 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+                  <p className="mt-1 text-app-body leading-[1.6] text-[var(--text-secondary)]">
                     {item.detail}
                   </p>
                 </li>
@@ -203,15 +203,15 @@ export default function EvaluationPage() {
                 >
                   <span
                     aria-hidden
-                    className="mt-[2px] inline-flex h-[21px] w-[21px] shrink-0 items-center justify-center rounded-[6px] border border-[var(--border-default)] text-[11.5px] tabular-nums text-[var(--text-tertiary)]"
+                    className="mt-[2px] inline-flex h-[21px] w-[21px] shrink-0 items-center justify-center rounded-[6px] border border-[var(--border-default)] text-app-caption tabular-nums text-[var(--text-tertiary)]"
                   >
                     {i + 1}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-[14.5px] font-medium text-[var(--text-primary)]">
+                    <p className="text-app-body font-medium text-[var(--text-primary)]">
                       {stage.title}
                     </p>
-                    <p className="mt-1 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+                    <p className="mt-1 text-app-body leading-[1.6] text-[var(--text-secondary)]">
                       {stage.detail}
                     </p>
                   </div>
@@ -245,10 +245,10 @@ export default function EvaluationPage() {
                   key={title}
                   className="border-t border-[var(--border-subtle)] py-3.5 first:border-t-0 first:pt-0"
                 >
-                  <p className="text-[14.5px] font-medium text-[var(--text-primary)]">
+                  <p className="text-app-body font-medium text-[var(--text-primary)]">
                     {title}
                   </p>
-                  <p className="mt-1 text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+                  <p className="mt-1 text-app-body leading-[1.65] text-[var(--text-secondary)]">
                     {detail}
                   </p>
                 </li>
@@ -261,7 +261,7 @@ export default function EvaluationPage() {
               {NOT_MEASURED.map((line) => (
                 <li
                   key={line}
-                  className="flex gap-2.5 border-t border-[var(--border-subtle)] py-3.5 text-[13.5px] leading-[1.65] text-[var(--text-secondary)] first:border-t-0 first:pt-0"
+                  className="flex gap-2.5 border-t border-[var(--border-subtle)] py-3.5 text-app-body leading-[1.65] text-[var(--text-secondary)] first:border-t-0 first:pt-0"
                 >
                   <span
                     aria-hidden
@@ -307,20 +307,20 @@ export default function EvaluationPage() {
                   ],
                 ].map(([title, detail]) => (
                   <li key={title} className="px-4 py-3">
-                    <p className="text-[13.5px] text-[var(--text-primary)]">
+                    <p className="text-app-body text-[var(--text-primary)]">
                       {title}
                     </p>
-                    <p className="mt-0.5 text-[12.5px] leading-[1.55] text-[var(--text-tertiary)]">
+                    <p className="mt-0.5 text-app-meta leading-[1.55] text-[var(--text-tertiary)]">
                       {detail}
                     </p>
                   </li>
                 ))}
               </ul>
               <div className="border-t border-[var(--border-subtle)] p-4">
-                <p className="text-[11.5px] font-medium text-[var(--text-tertiary)]">
+                <p className="text-app-caption font-medium text-[var(--text-tertiary)]">
                   A follow-up this evaluation produced
                 </p>
-                <p className="mt-1.5 text-[13px] leading-[1.5] text-[var(--text-primary)]">
+                <p className="mt-1.5 text-app-meta leading-[1.5] text-[var(--text-primary)]">
                   {NORTHLINE_DEFENSE_PROMPT.question}
                 </p>
               </div>
@@ -338,7 +338,7 @@ export default function EvaluationPage() {
                     className="flex items-center justify-between gap-4 px-4 py-2.5"
                   >
                     <span
-                      className={`text-[13px] ${
+                      className={`text-app-meta ${
                         row.included
                           ? "text-[var(--text-secondary)]"
                           : "text-[var(--text-tertiary)]"
@@ -346,14 +346,14 @@ export default function EvaluationPage() {
                     >
                       {row.label}
                     </span>
-                    <span className="shrink-0 text-[11.5px] text-[var(--text-tertiary)]">
+                    <span className="shrink-0 text-app-caption text-[var(--text-tertiary)]">
                       {row.included ? "Included" : "Not included"}
                     </span>
                   </li>
                 ))}
               </ul>
               <div className="border-t border-[var(--border-subtle)] p-4">
-                <p className="text-[12.5px] leading-[1.6] text-[var(--text-secondary)]">
+                <p className="text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                   The receipt is private to the candidate and the company that
                   invited them. It is not a public profile, it is not searchable,
                   and no other employer can open it.
@@ -372,15 +372,15 @@ export default function EvaluationPage() {
               <li key={title} className="flex gap-3.5">
                 <span
                   aria-hidden
-                  className="mt-[2px] inline-flex h-[21px] w-[21px] shrink-0 items-center justify-center rounded-[6px] border border-[var(--border-default)] text-[11.5px] tabular-nums text-[var(--text-tertiary)]"
+                  className="mt-[2px] inline-flex h-[21px] w-[21px] shrink-0 items-center justify-center rounded-[6px] border border-[var(--border-default)] text-app-caption tabular-nums text-[var(--text-tertiary)]"
                 >
                   {i + 1}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[14.5px] font-medium text-[var(--text-primary)]">
+                  <p className="text-app-body font-medium text-[var(--text-primary)]">
                     {title}
                   </p>
-                  <p className="mt-1 max-w-[46ch] text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+                  <p className="mt-1 max-w-[46ch] text-app-body leading-[1.65] text-[var(--text-secondary)]">
                     {detail}
                   </p>
                 </div>

@@ -76,16 +76,16 @@ export function PilotRequestForm() {
         role="status"
         className="rounded-[var(--radius-frame)] border border-[var(--status-positive-line)] bg-[var(--status-positive-bg)] p-5 sm:p-6"
       >
-        <p className="text-[15px] font-medium text-[var(--text-primary)]">
+        <p className="text-app-body font-medium text-[var(--text-primary)]">
           Request received
         </p>
-        <p className="mt-2 text-[13.5px] text-[var(--text-secondary)]">
+        <p className="mt-2 text-app-body text-[var(--text-secondary)]">
           Reference{" "}
           <span className="tabular-nums font-medium text-[var(--text-primary)]">
             {success.publicReference}
           </span>
         </p>
-        <p className="mt-3 max-w-[52ch] text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+        <p className="mt-3 max-w-[52ch] text-app-body leading-[1.65] text-[var(--text-secondary)]">
           A confirmation is on its way to {success.workEmail}. You do not have to
           wait for us to start: you can create a workspace and run the
           evaluation yourself now.
@@ -96,7 +96,7 @@ export function PilotRequestForm() {
           </ButtonLink>
           <Link
             href="/"
-            className="text-[13px] text-[var(--text-secondary)] underline-offset-2 transition-colors hover:text-[var(--text-primary)] hover:underline"
+            className="text-app-meta text-[var(--text-secondary)] underline-offset-2 transition-colors hover:text-[var(--text-primary)] hover:underline"
           >
             Return to homepage
           </Link>
@@ -107,7 +107,7 @@ export function PilotRequestForm() {
             setStatus("idle");
             setSuccess(null);
           }}
-          className="mt-4 text-[13px] text-[var(--text-tertiary)] underline-offset-2 hover:text-[var(--text-secondary)] hover:underline"
+          className="mt-4 text-app-meta text-[var(--text-tertiary)] underline-offset-2 hover:text-[var(--text-secondary)] hover:underline"
         >
           Submit another request
         </button>

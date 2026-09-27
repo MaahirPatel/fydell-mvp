@@ -81,10 +81,38 @@ export function selectAuthoredReply(
 }
 
 /**
+ * Builds the system prompt for the optional LLM redraft.
+ *
+ * Guardrails (WORK-05), enforced structurally:
+ *  - the model receives ONLY the stakeholder persona, the APPROVED authored
+ *    reply, and observed session facts — never answer keys, rubrics,
+ *    withholds, or grading material (none of those are parameters here, so
+ *    they cannot leak by construction)
+ *  - the prompt orders the model to convey EXACTLY the approved reply's
+ *    facts: no new facts, no speculation, nothing beyond it
+ *
+ * Exported for tests: they assert the guardrail wording is present and that
+ * hidden material cannot be smuggled in.
+ */
+export function buildRedraftSystemPrompt(
+  stakeholder: SimulationStakeholder,
+  authoredReply: string,
+  chat: SessionChatContext
+): string {
+  const sessionFacts = describeSessionContext(chat).join("\n- ");
+  return (
+    `You are ${stakeholder.name}, ${stakeholder.role}. Persona: ${stakeholder.aiPersona}\n` +
+    `You must convey EXACTLY the facts in the approved reply below : no new facts, no speculation, no revealing anything beyond it. Rephrase it naturally as a short chat message responding to the candidate. Keep it under 80 words.\n` +
+    `APPROVED REPLY: ${authoredReply}\n` +
+    `OBSERVED SESSION FACTS (you may reference these conversationally; they are not secret):\n- ${sessionFacts}`
+  );
+}
+/**
  * Optionally redraft the authored reply with an LLM for conversational flow.
  * Strict guardrails: 8s timeout, authored reply on any failure, and the
  * prompt contains only the stakeholder persona + authored reply + observed
  * session facts: never the scenario's hidden answers, rubrics, or answer key.
+ * See buildRedraftSystemPrompt for the enforced prompt shape.
  */
 export async function draftReply(
   stakeholder: SimulationStakeholder,
@@ -98,7 +126,6 @@ export async function draftReply(
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8000);
-    const sessionFacts = describeSessionContext(ctx.chat).join("\n- ");
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       signal: controller.signal,
@@ -110,11 +137,7 @@ export async function draftReply(
         messages: [
           {
             role: "system",
-            content:
-              `You are ${stakeholder.name}, ${stakeholder.role}. Persona: ${stakeholder.aiPersona}\n` +
-              `You must convey EXACTLY the facts in the approved reply below : no new facts, no speculation, no revealing anything beyond it. Rephrase it naturally as a short chat message responding to the candidate. Keep it under 80 words.\n` +
-              `APPROVED REPLY: ${authored.reply}\n` +
-              `OBSERVED SESSION FACTS (you may reference these conversationally; they are not secret):\n- ${sessionFacts}`,
+            content: buildRedraftSystemPrompt(stakeholder, authored.reply, ctx.chat),
           },
           { role: "user", content: candidateMessage.slice(0, 1000) },
         ],

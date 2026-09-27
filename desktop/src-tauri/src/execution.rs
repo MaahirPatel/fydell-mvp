@@ -22,6 +22,11 @@ use tokio::process::Command;
 const TIMEOUT: Duration = Duration::from_secs(120);
 const OUTPUT_CAP: usize = 256 * 1024;
 
+/// The minimal PATH candidate code runs under. The provisioning runtime
+/// check (session.rs) verifies the declared test runner against this same
+/// PATH, so the check and the run cannot disagree.
+pub(crate) const EXEC_PATH: &str = "/usr/local/bin:/usr/bin:/bin";
+
 #[derive(Serialize)]
 pub struct TestRunResult {
     pub status: String, // completed | timeout | output_limit | runtime_error
@@ -69,7 +74,7 @@ pub async fn run_tests() -> AppResult<TestRunResult> {
             .env_clear()
             .envs(scrubbed_env())
             // A minimal PATH so `python3` resolves; nothing else inherited.
-            .env("PATH", "/usr/local/bin:/usr/bin:/bin")
+            .env("PATH", crate::execution::EXEC_PATH)
             .env("PYTHONDONTWRITEBYTECODE", "1")
             .env("PYTHONNOUSERSITE", "1")
             .stdin(Stdio::null())

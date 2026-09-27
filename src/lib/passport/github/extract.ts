@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { GithubClient, GithubError } from "./client";
 import { runDetectors, type DraftFinding } from "./detectors";
+import { redactSecrets } from "./redact";
 import { selectFiles } from "./select";
 import { citationIsValid } from "./validate";
 import { suggestRoles } from "../rules";
@@ -23,7 +24,7 @@ function emptyResult(error: ExtractionError | null = null): ExtractionResult {
     status: error ? "failed" : "complete",
     repository: null,
     commitSha: null,
-    coverage: { totalFiles: 0, analyzedFiles: 0, analyzedBytes: 0, treeTruncated: false, skipped: [] },
+    coverage: { totalFiles: 0, analyzedFiles: 0, analyzedBytes: 0, languages: [], treeTruncated: false, skipped: [] },
     findings: [],
     rejectedFindings: 0,
     roleSuggestions: [],
@@ -44,6 +45,25 @@ function toError(err: unknown): ExtractionError {
 
 function findingId(sha: string, draft: DraftFinding): string {
   return `ev_${createHash("sha256").update(`${ANALYSIS_VERSION}|${sha}|${draft.detector}|${draft.path}|${draft.startLine}-${draft.endLine}`).digest("hex").slice(0, 16)}`;
+}
+
+const LANGUAGE_BY_EXT: Record<string, string> = {
+  py: "Python", pyi: "Python", ts: "TypeScript", tsx: "TypeScript", js: "JavaScript", jsx: "JavaScript",
+  mjs: "JavaScript", cjs: "JavaScript", go: "Go", rs: "Rust", java: "Java", kt: "Kotlin",
+  rb: "Ruby", php: "PHP", cs: "C#", swift: "Swift", scala: "Scala", sql: "SQL", sh: "Shell",
+  vue: "Vue", svelte: "Svelte", css: "CSS", scss: "CSS", html: "HTML", r: "R", jl: "Julia",
+  c: "C", cc: "C++", cpp: "C++", h: "C/C++", hpp: "C++",
+};
+
+/** Languages observed in the analyzed files, for the coverage display (GH-09). */
+function languagesIn(paths: string[]): string[] {
+  const seen = new Set<string>();
+  for (const path of paths) {
+    const ext = path.slice(path.lastIndexOf(".") + 1).toLowerCase();
+    const lang = LANGUAGE_BY_EXT[ext];
+    if (lang) seen.add(lang);
+  }
+  return [...seen].sort();
 }
 
 export async function extractRepository(ref: RepoRef, client = new GithubClient()): Promise<ExtractionResult> {
@@ -109,7 +129,10 @@ export async function extractRepository(ref: RepoRef, client = new GithubClient(
       if (text.includes("\u0000")) return void fetchSkipped.push({ path, reason: "binary" });
       if (size > LIMITS.maxBytesPerFile) return void fetchSkipped.push({ path, reason: "too_large" });
       if (bytes + size > LIMITS.maxBytesPerRepository) return void fetchSkipped.push({ path, reason: "byte_limit" });
-      files.set(path, text);
+      // Redact likely secrets at ingestion: detectors, excerpts, citation
+      // validation and the summarisation model all see the same redacted
+      // snapshot, so redacted excerpts still validate byte-identical (GH-07).
+      files.set(path, redactSecrets(text));
       bytes += size;
     });
   }
@@ -132,8 +155,12 @@ export async function extractRepository(ref: RepoRef, client = new GithubClient(
       sourceUrl: `${meta.htmlUrl}/blob/${sha}/${draft.path.split("/").map(encodeURIComponent).join("/")}#L${draft.startLine}-L${endLine}`,
       attribution: "unverified",
     };
-    if (citationIsValid(finding, files)) findings.push(finding);
-    else rejected += 1;
+    // The snapshot text was redacted at ingestion, so the excerpt stored
+    // here is already safe to display and send to the model (GH-07), and
+    // the citation validates byte-identical against the same snapshot.
+    if (citationIsValid(finding, files)) {
+      findings.push(finding);
+    } else rejected += 1;
   }
 
   result.findings = findings;
@@ -143,6 +170,7 @@ export async function extractRepository(ref: RepoRef, client = new GithubClient(
     totalFiles,
     analyzedFiles: files.size,
     analyzedBytes: bytes,
+    languages: languagesIn([...files.keys()]),
     treeTruncated: tree.truncated,
     skipped: [...skipped, ...fetchSkipped],
   };

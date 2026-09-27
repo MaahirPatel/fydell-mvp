@@ -228,7 +228,7 @@ export function SandboxWorkbench({
           <section className="px-4 py-4">
             <h2 className="text-app-section">Proposal-only code</h2>
             <p className="mt-1 text-app-meta text-[var(--color-changed)]">Saved for review, never executed, and does not affect metrics.</p>
-            <textarea rows={4} value={proposal} onChange={(event) => setProposal(event.target.value)} onBlur={() => onAction({ type: "save_proposal", proposalCode: proposal, idempotencyKey: `proposal:${session.revision}` })} className="mt-2 w-full resize-y border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 font-mono text-[12px] leading-5 outline-none" />
+            <textarea rows={4} value={proposal} onChange={(event) => setProposal(event.target.value)} onBlur={() => onAction({ type: "save_proposal", proposalCode: proposal, idempotencyKey: `proposal:${session.revision}` })} className="mt-2 w-full resize-y border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 font-mono text-app-meta leading-5 outline-none" />
           </section>
         </main>
 

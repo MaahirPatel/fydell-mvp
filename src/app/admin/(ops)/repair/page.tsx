@@ -37,10 +37,10 @@ export default function AdminRepairPage() {
 
   return (
     <div>
-      <h1 className="text-[28px]" style={{ fontWeight: 560, letterSpacing: "-0.03em" }}>
+      <h1 className="text-app-page" style={{ fontWeight: 560, letterSpacing: "-0.03em" }}>
         Repair console
       </h1>
-      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
+      <p className="mt-2 text-app-body text-[var(--text-secondary)]">
         Audited recovery tools for pilot edge cases. Never assigns passwords.
       </p>
       <div className="mt-8 max-w-xl space-y-3">
@@ -59,7 +59,7 @@ export default function AdminRepairPage() {
           ))}
         </select>
         {meta.fields.map((f) => (
-          <label key={f} className="block text-[13px] font-medium text-[var(--text-primary)]">
+          <label key={f} className="block text-app-meta font-medium text-[var(--text-primary)]">
             {f.replace(/([A-Z])/g, " $1").replace(/^./, (value) => value.toUpperCase())}
             <input
               className="platform-input mt-1.5"
@@ -71,9 +71,9 @@ export default function AdminRepairPage() {
         <Button type="button" variant="primary" size="cta" onClick={run}>
           Run repair
         </Button>
-        {error ? <p className="text-[13px] text-[var(--fydell-risk)]">{error}</p> : null}
+        {error ? <p className="text-app-meta text-[var(--fydell-risk)]">{error}</p> : null}
         {result ? (
-          <pre className="overflow-auto rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-band)] p-3 text-[11px] text-[var(--text-secondary)]">
+          <pre className="overflow-auto rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-band)] p-3 text-app-caption text-[var(--text-secondary)]">
             {result}
           </pre>
         ) : null}

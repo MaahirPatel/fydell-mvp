@@ -39,15 +39,15 @@ export default function CalibrationPage() {
       }}
     >
       <h1 className="text-app-page">Role calibration</h1>
-      <p className="text-[14px] text-[var(--text-secondary)]">Observable job behavior, not culture scores.</p>
+      <p className="text-app-body text-[var(--text-secondary)]">Observable job behavior, not culture scores.</p>
       {(Object.keys(form) as Array<keyof typeof form>).map((key) => (
         <label key={key} className="block">
-          <span className="text-[13px] font-medium text-[var(--text-secondary)]">{key.replaceAll("_", " ")}</span>
+          <span className="text-app-meta font-medium text-[var(--text-secondary)]">{key.replaceAll("_", " ")}</span>
           <textarea className="mt-1 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2" rows={3} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
         </label>
       ))}
-      <button type="submit" className="rounded-full bg-[var(--surface-paper)] px-4 py-2 text-[13px] text-[#111]">Save</button>
-      {saved ? <p className="text-[13px] text-[var(--text-secondary)]">{saved}</p> : null}
+      <button type="submit" className="rounded-full bg-[var(--surface-paper)] px-4 py-2 text-app-meta text-[#111]">Save</button>
+      {saved ? <p className="text-app-meta text-[var(--text-secondary)]">{saved}</p> : null}
     </form>
   );
 }

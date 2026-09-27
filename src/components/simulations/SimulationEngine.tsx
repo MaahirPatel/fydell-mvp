@@ -71,7 +71,7 @@ export function SimulationEngine({
   const validation = validateScenario(scenario);
   if (!validation.ok) {
     return (
-      <div className="p-6 text-[13px] text-[var(--fydell-risk)]">
+      <div className="p-6 text-app-meta text-[var(--fydell-risk)]">
         Scenario validation failed:
         <ul className="mt-2 list-disc pl-5">
           {validation.issues
@@ -88,7 +88,7 @@ export function SimulationEngine({
   if (result.ok === false) {
     const reason = result.reason;
     return (
-      <div className="p-6 text-[13px] text-[var(--text-secondary)]">
+      <div className="p-6 text-app-meta text-[var(--text-secondary)]">
         No renderer registered for role <code>{scenario.metadata.roleKey}</code> ({reason}).
         All six RoleKeys have experimental renderers registered when allowExperimental is enabled.      </div>
     );

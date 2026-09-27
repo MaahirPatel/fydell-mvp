@@ -12,38 +12,11 @@
    ========================================================================== */
 
 @theme {
-  /* Surfaces */
-  --color-canvas: #08090a;
-  --color-band: #0b0c10;
-  --color-raised: #0e1013;
-  --color-panel: #13161b;
-  --color-panel-hover: #181c22;
-  --color-paper: #f5f7f8;
-
-  /* Text. Contrast ratios are against --color-canvas (#08090a). */
-  --color-ink: #f5f7f8;
-  --color-ink-2: #b6bbc4;
-  --color-ink-3: #858b96;
-
-  /* Lines */
-  --color-line: rgba(255, 255, 255, 0.075);
-  --color-line-2: rgba(255, 255, 255, 0.13);
-  --color-line-3: rgba(255, 255, 255, 0.18);
-
-  /* State. Blue is action and active investigation, amber is changed
-     information or review required, red is unsupported or destructive,
-     green is only ever a real completed state. */
-  --color-action: #5662ff;
-  --color-action-hover: #6872ff;
-  --color-action-ink: #8f9bff;
-  --color-evidence: #6b8cff;
-  --color-changed: #e9b949;
-  --color-risk: #f26b82;
-  --color-good: #67d9a0;
-  --color-verified: #b07fd0;
-
   /* Fixed product type scale, exposed as text-app-* utilities. Deliberately
-     not fluid: see the note on the :root declarations below. */
+     not fluid: a console is learned, and fluid type makes the same screen a
+     different size on every machine. caption < meta < body < section < page. */
+  --text-app-caption: 0.71875rem;
+  --text-app-caption--line-height: 1.4;
   --text-app-page: 1.625rem;
   --text-app-page--line-height: 1.15;
   --text-app-page--letter-spacing: -0.02em;
@@ -516,6 +489,17 @@ textarea.platform-input {
 /* ============================================================================
    Utilities
    ========================================================================== */
+
+/* KPI / stat-card number. One size for data figures across consoles: page
+   title size with tight tracking and tabular numerals. Data, not text. */
+.stat-value {
+  font-size: var(--type-app-page);
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
 
 .tabular,
 .tabular-nums {

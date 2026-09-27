@@ -246,7 +246,7 @@ export default function PilotFeedbackForm() {
       <div
         role="status"
         aria-live="polite"
-        className="rounded-[16px] border border-white/[0.09] bg-white/[0.025] px-5 py-10 text-center text-[15px] text-[rgba(244,245,247,0.55)]"
+        className="rounded-[16px] border border-white/[0.09] bg-white/[0.025] px-5 py-10 text-center text-app-body text-[rgba(244,245,247,0.55)]"
       >
         Loading your details...
       </div>
@@ -457,7 +457,7 @@ export default function PilotFeedbackForm() {
       {validationError ? (
         <p
           role="alert"
-          className="rounded-[10px] border border-[rgba(242,107,130,0.3)] bg-[rgba(242,107,130,0.1)] px-4 py-3 text-[14px] text-[#F6A6B4]"
+          className="rounded-[10px] border border-[rgba(242,107,130,0.3)] bg-[rgba(242,107,130,0.1)] px-4 py-3 text-app-body text-[#F6A6B4]"
         >
           {validationError}
         </p>
@@ -468,8 +468,8 @@ export default function PilotFeedbackForm() {
           role="alert"
           className="rounded-[10px] border border-[rgba(242,107,130,0.3)] bg-[rgba(242,107,130,0.1)] px-4 py-3"
         >
-          <p className="text-[14px] leading-[1.55] text-[#F6A6B4]">{submitError}</p>
-          <p className="mt-1 text-[13px] text-[rgba(244,245,247,0.55)]">
+          <p className="text-app-body leading-[1.55] text-[#F6A6B4]">{submitError}</p>
+          <p className="mt-1 text-app-meta text-[rgba(244,245,247,0.55)]">
             Your answers are still on this page. Use the button below to retry.
           </p>
         </div>

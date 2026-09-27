@@ -15,13 +15,13 @@ export default async function AdminProofList() {
   }
   return (
     <div className="px-6 py-8">
-      <h1 className="text-[20px] font-medium">Proof graph review</h1>
+      <h1 className="text-app-page font-medium">Proof graph review</h1>
       <ul className="mt-6 space-y-3">
         {runs.map((run) => {
           const invite = Array.isArray(run.proof_invitations) ? run.proof_invitations[0] : run.proof_invitations;
           return (
             <li key={run.id}>
-              <Link href={`/admin/proof/${run.id}`} className="text-[14px] text-[var(--action-ink)]">
+              <Link href={`/admin/proof/${run.id}`} className="text-app-body text-[var(--action-ink)]">
                 {invite?.email || run.id} · {run.status}
               </Link>
             </li>

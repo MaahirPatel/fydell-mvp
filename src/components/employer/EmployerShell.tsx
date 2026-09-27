@@ -83,7 +83,7 @@ function NavLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`relative flex items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 py-[7px] text-[13.5px] transition-colors duration-[var(--motion-fast)] ${
+      className={`relative flex items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 py-[7px] text-app-body transition-colors duration-[var(--motion-fast)] ${
         active
           ? "bg-[var(--surface-intelligence)] font-medium text-[var(--evidence-generated)]"
           : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
@@ -102,7 +102,7 @@ function SidebarNav() {
       {WORKSPACE_NAV_GROUPS.map((group, index) => (
         <div key={group.label ?? `group-${index}`} className="flex flex-col gap-0.5">
           {group.label ? (
-            <p className="px-2.5 pb-1 text-[12px] font-medium text-[var(--text-tertiary)]">
+            <p className="px-2.5 pb-1 text-app-meta font-medium text-[var(--text-tertiary)]">
               {group.label}
             </p>
           ) : null}
@@ -138,7 +138,7 @@ function MobileNav() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`flex items-center justify-center rounded-[var(--radius-control)] px-1 py-1.5 text-center text-[11px] leading-tight transition-colors duration-[var(--motion-fast)] ${
+            className={`flex items-center justify-center rounded-[var(--radius-control)] px-1 py-1.5 text-center text-app-caption leading-tight transition-colors duration-[var(--motion-fast)] ${
               active
                 ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -191,7 +191,7 @@ function Avatar({
     <span
       aria-hidden
       style={box}
-      className="flex shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--surface-panel)] text-[11.5px] font-medium text-[var(--text-primary)]"
+      className="flex shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--surface-panel)] text-app-caption font-medium text-[var(--text-primary)]"
     >
       {initials}
     </span>
@@ -241,7 +241,7 @@ function AccountMenu({
       >
         <Avatar name={displayName} email={userEmail} avatarUrl={userAvatarUrl} size={28} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13px] font-medium leading-tight text-[var(--text-primary)]">
+          <span className="block truncate text-app-meta font-medium leading-tight text-[var(--text-primary)]">
             {displayName}
           </span>
         </span>
@@ -264,10 +264,10 @@ function AccountMenu({
               size={32}
             />
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-medium text-[var(--text-primary)]">
+              <p className="truncate text-app-meta font-medium text-[var(--text-primary)]">
                 {displayName}
               </p>
-              <p className="truncate text-[12.5px] text-[var(--text-secondary)]">
+              <p className="truncate text-app-meta text-[var(--text-secondary)]">
                 {userEmail}
               </p>
             </div>
@@ -276,12 +276,12 @@ function AccountMenu({
             href="/app/employer/settings"
             role="menuitem"
             onClick={() => setOpen(false)}
-            className="mt-3 flex h-8 items-center rounded-[var(--radius-control)] border-t border-[var(--border-subtle)] px-2 text-[12.5px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            className="mt-3 flex h-8 items-center rounded-[var(--radius-control)] border-t border-[var(--border-subtle)] px-2 text-app-meta text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
           >
             Account settings
           </Link>
           <div className="mt-1">
-            <SignOutButton className="inline-flex h-8 w-full items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-strong)] text-[13px] font-medium text-[var(--text-primary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] disabled:opacity-50" />
+            <SignOutButton className="inline-flex h-8 w-full items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-strong)] text-app-meta font-medium text-[var(--text-primary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] disabled:opacity-50" />
           </div>
         </div>
       ) : null}
@@ -300,7 +300,7 @@ function SidebarInvite({ compact = false }: { compact?: boolean }) {
     <button
       type="button"
       onClick={() => open()}
-      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3 text-[13px] font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)] ${
+      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3 text-app-meta font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)] ${
         compact ? "w-auto" : "w-full"
       }`}
     >
@@ -325,7 +325,7 @@ function SidebarSettingsLink() {
 
 function WorkspaceModeBar() {
   return (
-    <div className="sticky top-0 z-50 flex h-8 items-center border-b border-[var(--border-subtle)] bg-[var(--surface-deep)] px-3 text-[11.5px] text-[var(--text-secondary)]">
+    <div className="sticky top-0 z-50 flex h-8 items-center border-b border-[var(--border-subtle)] bg-[var(--surface-deep)] px-3 text-app-caption text-[var(--text-secondary)]">
       <span className="font-medium text-[var(--text-primary)]">Live workspace</span>
       <span className="mx-auto hidden sm:block">
         Real roles, candidate work, evidence, and outcomes.
@@ -363,14 +363,14 @@ function WorkspaceSelector({ workspaceName }: { workspaceName: string }) {
         aria-expanded={open}
         className="flex min-h-[52px] w-full items-center gap-2.5 rounded-[var(--radius-control)] px-2 py-1.5 text-left transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
       >
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-panel)] text-[11px] font-semibold text-[var(--text-primary)]">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-panel)] text-app-caption font-semibold text-[var(--text-primary)]">
           {mark}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[12.5px] font-medium leading-tight text-[var(--text-primary)]">
+          <span className="block truncate text-app-meta font-medium leading-tight text-[var(--text-primary)]">
             {workspaceName}
           </span>
-          <span className="mt-0.5 block truncate text-[11px] leading-tight text-[var(--text-tertiary)]">
+          <span className="mt-0.5 block truncate text-app-caption leading-tight text-[var(--text-tertiary)]">
             Pilot · Live
           </span>
         </span>
@@ -388,23 +388,23 @@ function WorkspaceSelector({ workspaceName }: { workspaceName: string }) {
           <Link
             href="/app/employer"
             role="menuitem"
-            className="block rounded-[var(--radius-control)] px-3 py-2 text-[12.5px] hover:bg-[var(--surface-hover)]"
+            className="block rounded-[var(--radius-control)] px-3 py-2 text-app-meta hover:bg-[var(--surface-hover)]"
           >
             <span className="block font-medium text-[var(--text-primary)]">{workspaceName}</span>
-            <span className="mt-0.5 block text-[11.5px] text-[var(--text-tertiary)]">Live workspace</span>
+            <span className="mt-0.5 block text-app-caption text-[var(--text-tertiary)]">Live workspace</span>
           </Link>
           <Link
             href="/sandbox"
             role="menuitem"
-            className="mt-1 block rounded-[var(--radius-control)] px-3 py-2 text-[12.5px] hover:bg-[var(--surface-hover)]"
+            className="mt-1 block rounded-[var(--radius-control)] px-3 py-2 text-app-meta hover:bg-[var(--surface-hover)]"
           >
             <span className="block font-medium text-[var(--text-primary)]">Demo Sandbox</span>
-            <span className="mt-0.5 block text-[11.5px] text-[var(--text-tertiary)]">Isolated demo data</span>
+            <span className="mt-0.5 block text-app-caption text-[var(--text-tertiary)]">Isolated demo data</span>
           </Link>
           <Link
             href="/app/employer/settings"
             role="menuitem"
-            className="mt-1 block border-t border-[var(--border-subtle)] px-3 py-2 text-[12.5px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            className="mt-1 block border-t border-[var(--border-subtle)] px-3 py-2 text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           >
             Workspace settings
           </Link>
@@ -419,12 +419,12 @@ function WorkspaceToolbar() {
   const section = workspaceSection(pathname);
   return (
     <header className="sticky top-8 z-30 hidden h-14 shrink-0 items-center gap-4 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-6 md:flex lg:px-10">
-      <p className="text-[12.5px] font-medium text-[var(--text-secondary)]">{section.label}</p>
+      <p className="text-app-meta font-medium text-[var(--text-secondary)]">{section.label}</p>
       <div className="ml-auto flex items-center gap-1.5">
         <Link
           href="/trust"
           aria-label="Trust and data handling"
-          className="inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-control)] px-2.5 text-[12.5px] text-[var(--text-secondary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+          className="inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-control)] px-2.5 text-app-meta text-[var(--text-secondary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
         >
           <ShieldCheck className="h-4 w-4" strokeWidth={1.6} aria-hidden />
           <span className="hidden xl:inline">Data handling</span>
@@ -518,7 +518,7 @@ export default function EmployerShell({
             <header className="sticky top-8 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-5 md:hidden">
               <Link href="/app/employer" className="inline-flex min-w-0 items-center gap-2">
                 <FydellMark width={18} />
-                <span className="min-w-0 truncate text-[13.5px] font-medium text-[var(--text-primary)]">
+                <span className="min-w-0 truncate text-app-body font-medium text-[var(--text-primary)]">
                   {workspaceName}
                 </span>
               </Link>

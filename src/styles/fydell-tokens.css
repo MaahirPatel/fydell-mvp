@@ -89,11 +89,14 @@
 
   /* ---- Evidence and state ---- */
   --fydell-brand-blue: #5662ff;
+  --fydell-brand-blue-hover: #6872ff;
+  --fydell-brand-blue-active: #4b56f0;
   --fydell-brand-red: #f26b82;
   --fydell-action: #e8eaed;
   --fydell-evidence: #4a5bd4;
   --fydell-evidence-selected: #3547c4;
   --fydell-risk: #c2405a;
+  --fydell-risk-hover: #d85a70;
   --fydell-changed: #a9752a;
   --fydell-good: #3f7d5c;
   --action-ink: oklch(45% 0.2 var(--hue-brand));

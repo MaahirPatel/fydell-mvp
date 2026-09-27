@@ -6,8 +6,10 @@ import {
   getVersionContent,
   saveSessionState,
   submitSession,
-  submitSessionWithSnapshot,
 } from "@/lib/simulations/db";
+import { toSubmitErrorResponse } from "@/lib/submissions/errors";
+import { finalizeSnapshotSubmission } from "@/lib/submissions/finalize";
+import { realFinalizeDeps } from "@/lib/submissions/real-deps";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 
 export const runtime = "nodejs";
@@ -77,6 +79,8 @@ export async function POST(
 
   let body: {
     externalAiDisclosed?: boolean;
+    /** Idempotency key for the submit operation (DESK-15). Generated if absent. */
+    operationId?: string;
     /** Final client answers; may include the "__aiDisclosure" key. */
     answers?: Record<string, unknown>;
     /**
@@ -99,21 +103,41 @@ export async function POST(
     const disclosed =
       typeof disclosure?.used === "boolean" ? disclosure.used : Boolean(body.externalAiDisclosed);
 
-    // W4 file-snapshot path (desktop). The answers-merge preamble below is
-    // skipped: the snapshot carries the complete artifact, and the atomic
-    // function stores it together with the submission in one transaction.
+    // W4 file-snapshot path (desktop). Goes through the idempotent finalize
+    // core (UP-03/UP-06/DESK-15/DESK-16): transfer-state CAS, server-side
+    // validation, atomic store, durable receipt. Rejections are structured
+    // SubmissionErrors with actionable recovery (UP-08).
     if (body.fileSnapshot !== undefined && body.fileSnapshot !== null) {
       const answers =
         body.answers && typeof body.answers === "object" && !Array.isArray(body.answers)
           ? (body.answers as Record<string, unknown>)
           : undefined;
-      const result = await submitSessionWithSnapshot(id, user.id, disclosed, body.fileSnapshot, answers);
-      return NextResponse.json({
-        ok: true,
-        submissionId: result.submissionId,
-        alreadySubmitted: result.alreadySubmitted,
-        receiptHash: result.receiptHash,
-      });
+      try {
+        const result = await finalizeSnapshotSubmission(
+          {
+            sessionId: id,
+            userId: user.id,
+            operationId:
+              typeof body.operationId === "string" && body.operationId.length > 0
+                ? body.operationId
+                : `op_${id}_${Date.now()}`,
+            disclosed,
+            fileSnapshot: body.fileSnapshot,
+            answers,
+          },
+          realFinalizeDeps()
+        );
+        return NextResponse.json({
+          ok: true,
+          submissionId: result.submissionId || undefined,
+          alreadySubmitted: result.alreadySubmitted,
+          receiptHash: result.receiptHash || undefined,
+          transferState: result.state,
+        });
+      } catch (err) {
+        const res = toSubmitErrorResponse(err);
+        return NextResponse.json(res.body, { status: res.status });
+      }
     }
 
     // Pass the client's final answers (including "__aiDisclosure") through to

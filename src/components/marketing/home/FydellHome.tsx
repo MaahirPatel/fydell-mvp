@@ -288,7 +288,7 @@ export function HeroWindow() {
                           )}
                         </div>
                       ) : (
-                        <p className="mt-2 text-[11.5px] text-[var(--text-tertiary)]">Open a citation to see the code it rests on.</p>
+                        <p className="mt-2 text-app-caption text-[var(--text-tertiary)]">Open a citation to see the code it rests on.</p>
                       )}
                     </>
                   ) : null}
@@ -521,11 +521,11 @@ export function IntakeVisual() {
           </button>
         </div>
         <div className="space-y-4 p-4">
-          <p className="rounded-[4px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-3 py-2 font-mono text-[12px] text-[var(--text-primary)]">
+          <p className="rounded-[4px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-3 py-2 font-mono text-app-meta text-[var(--text-primary)]">
             github.com/candidate-01/<Typewriter key={repo.id} text={repo.name} start={seen} speed={50} />
           </p>
           <div aria-live="polite">
-            <p className="flex justify-between text-[12.5px] text-[var(--text-secondary)]">
+            <p className="flex justify-between text-app-meta text-[var(--text-secondary)]">
               <span>{phase < 0 ? "Queued" : unsupported && stage === 3 ? `${repo.lang} analysis not supported yet` : PHASES[phase]}</span>
               <span className="font-mono">{Math.max(0, pct)}%</span>
             </p>
@@ -533,12 +533,12 @@ export function IntakeVisual() {
               <i style={{ width: `${Math.max(0, pct)}%`, background: unsupported && stage === 3 ? "var(--brand-warm)" : "var(--brand-teal)" }} />
             </div>
           </div>
-          <ul className="space-y-2 text-[12.5px] text-[var(--text-secondary)]">
+          <ul className="space-y-2 text-app-meta text-[var(--text-secondary)]">
             <li className="flex justify-between"><span>Source files read</span><span className="font-mono text-[var(--text-primary)]">{stage >= 2 ? repo.src : "–"}</span></li>
             <li className="flex justify-between"><span>Tests found</span><span className="font-mono text-[var(--text-primary)]">{stage >= 2 ? repo.tests : "–"}</span></li>
             <li className="flex justify-between"><span>Skipped, with reasons</span><span className="font-mono text-[var(--text-primary)]">{stage >= 2 ? repo.skipped : "–"}</span></li>
           </ul>
-          <p className="border-t border-[var(--border-subtle)] pt-3 text-[12px] leading-[1.5] text-[var(--text-tertiary)]">
+          <p className="border-t border-[var(--border-subtle)] pt-3 text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
             {DEMO_LABEL}. Pick any repository on the board. Imported code is read, never executed.
           </p>
         </div>
@@ -651,7 +651,7 @@ export function SimulationVisual() {
         </div>
         <div className={s.scrubReadout} aria-live="polite">
           <span className="min-w-0">
-            <span className="mr-2 font-mono text-[12px] text-[var(--text-tertiary)]">{clock(at)}</span>
+            <span className="mr-2 font-mono text-app-meta text-[var(--text-tertiary)]">{clock(at)}</span>
             <b>{current.track}</b> · {current.note}
           </span>
           <button type="button" onClick={() => setPlaying((p) => !p)} className={s.control} aria-pressed={!playing}>
@@ -666,7 +666,7 @@ export function SimulationVisual() {
           <span className={s.example}>{DEMO_LABEL}</span>
         </div>
         <div className="p-4">
-          <p className="text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+          <p className="text-app-meta leading-[1.55] text-[var(--text-secondary)]">
             Customers receive the same receipt twice when a job is retried after a timeout. Make sending safe to retry.
           </p>
           <ul className="mt-4 space-y-2">
@@ -685,7 +685,7 @@ export function SimulationVisual() {
               </li>
             ))}
           </ul>
-          <p className="mt-4 border-t border-[var(--border-subtle)] pt-3 text-[12px] leading-[1.5] text-[var(--text-tertiary)]">
+          <p className="mt-4 border-t border-[var(--border-subtle)] pt-3 text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
             Drag across the timeline to replay the session. Candidates see what is recorded before they start.
           </p>
         </div>
@@ -707,7 +707,7 @@ export function ReviewVisual() {
     <div ref={ref} className={`${s.visual} ${s.visualFit}`}>
       <div className={s.review}>
         <div className={s.reviewCol}>
-          <p className="mb-2 px-3 text-[12px] text-[var(--text-tertiary)]">Findings · {DEMO_LABEL}</p>
+          <p className="mb-2 px-3 text-app-meta text-[var(--text-tertiary)]">Findings · {DEMO_LABEL}</p>
           {EVIDENCE_RECORDS.map((r) => (
             <button
               key={r.id}
@@ -726,17 +726,17 @@ export function ReviewVisual() {
         </div>
 
         <div className={s.reviewCol}>
-          <p className="text-[15px] font-medium tracking-[-0.012em] text-[var(--text-primary)]">{record.title}</p>
-          <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">{record.language} · {record.revision}</p>
+          <p className="text-app-body font-medium tracking-[-0.012em] text-[var(--text-primary)]">{record.title}</p>
+          <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">{record.language} · {record.revision}</p>
           <div className="mt-4">
             <CodeBlock path={record.file} lines={record.lines} compact />
           </div>
-          <p className="mt-4 text-[13px] leading-[1.55] text-[var(--text-secondary)]">{record.shows}</p>
-          <p className="mt-2 text-[12.5px] leading-[1.55] text-[var(--text-tertiary)]">Limits: {record.limits}</p>
+          <p className="mt-4 text-app-meta leading-[1.55] text-[var(--text-secondary)]">{record.shows}</p>
+          <p className="mt-2 text-app-meta leading-[1.55] text-[var(--text-tertiary)]">Limits: {record.limits}</p>
         </div>
 
         <div className={s.reviewCol}>
-          <p className="text-[12px] text-[var(--text-tertiary)]">Recorded test run</p>
+          <p className="text-app-meta text-[var(--text-tertiary)]">Recorded test run</p>
           <ul className="mt-2">
             {DEMO_TASK.tests.map((t, i) => (
               <li key={t.name} className={`${s.test} ${seen ? s.cite : ""}`} style={{ animationDelay: `${i * 160}ms`, border: 0, background: "none", padding: "4px 0" }}>
@@ -749,7 +749,7 @@ export function ReviewVisual() {
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-[12px] text-[var(--text-tertiary)]">Team decision</p>
+          <p className="mt-6 text-app-meta text-[var(--text-tertiary)]">Team decision</p>
           {DECISIONS.map((d) => (
             <button
               key={d}
@@ -761,7 +761,7 @@ export function ReviewVisual() {
               {d}
             </button>
           ))}
-          <p className="mt-3 text-[12px] leading-[1.5] text-[var(--text-tertiary)]">
+          <p className="mt-3 text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
             {decision ? `Logged: ${decision}. Nothing is sent to the candidate.` : "Decisions are logged for the team. Nothing is sent automatically."}
           </p>
         </div>
@@ -789,18 +789,18 @@ export function ShareVisual() {
     <div className={`${s.visual} ${s.visualFit}`}>
       <div className={s.share}>
         <div className={s.passport}>
-          <p className="flex items-center justify-between text-[12px] text-[oklch(80%_0.05_178)]">
+          <p className="flex items-center justify-between text-app-meta text-[oklch(80%_0.05_178)]">
             <span className="flex items-center gap-2"><FydellMark width={18} /> Engineering Passport</span>
             <span>{DEMO_LABEL}</span>
           </p>
           <p className="mt-16 text-[34px] font-[560] leading-none tracking-[-0.03em] text-white">Candidate 01</p>
-          <p className="mt-2 text-[14px] text-[oklch(82%_0.03_178)]">Backend developer · Python</p>
-          <div className="mt-10 grid grid-cols-3 gap-4 border-t border-white/10 pt-5 text-[12.5px] text-[oklch(82%_0.03_178)]">
+          <p className="mt-2 text-app-body text-[oklch(82%_0.03_178)]">Backend developer · Python</p>
+          <div className="mt-10 grid grid-cols-3 gap-4 border-t border-white/10 pt-5 text-app-meta text-[oklch(82%_0.03_178)]">
             <p><span className="block font-mono text-[20px] text-white">2</span>projects</p>
             <p><span className="block font-mono text-[20px] text-white">4</span>findings</p>
             <p><span className="block font-mono text-[20px] text-white">1</span>simulation</p>
           </div>
-          <p className="mt-8 flex items-center gap-2 text-[12.5px] text-[oklch(82%_0.03_178)]">
+          <p className="mt-8 flex items-center gap-2 text-app-meta text-[oklch(82%_0.03_178)]">
             <Lock className="h-3.5 w-3.5" /> Private until shared
           </p>
         </div>
@@ -808,13 +808,13 @@ export function ShareVisual() {
         <div className="flex flex-col gap-4">
           <div className="overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
             <div className="flex items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-3">
-              <span className="flex items-center gap-2 text-[13px] text-[var(--text-primary)]">
+              <span className="flex items-center gap-2 text-app-meta text-[var(--text-primary)]">
                 <Link2 className="h-3.5 w-3.5" /> Link for Employer A
               </span>
               <button
                 type="button"
                 onClick={() => setRevoked(!revoked)}
-                className="rounded-full border border-[var(--border-default)] px-3 py-1 text-[12px] text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                className="rounded-full border border-[var(--border-default)] px-3 py-1 text-app-meta text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
               >
                 {revoked ? "Restore link" : "Revoke"}
               </button>
@@ -835,9 +835,9 @@ export function ShareVisual() {
           </div>
 
           <div className="flex-1 rounded-[8px] border border-dashed border-[var(--border-strong)] bg-[var(--surface-canvas)] p-4">
-            <p className="text-[12px] text-[var(--text-tertiary)]">What Employer A sees</p>
+            <p className="text-app-meta text-[var(--text-tertiary)]">What Employer A sees</p>
             {revoked ? (
-              <p className="mt-3 text-[13.5px] text-[var(--text-secondary)]">This link has been revoked. The employer can no longer open the passport.</p>
+              <p className="mt-3 text-app-body text-[var(--text-secondary)]">This link has been revoked. The employer can no longer open the passport.</p>
             ) : (
               <ul className="mt-3 space-y-2">
                 {visible.length ? (
@@ -847,7 +847,7 @@ export function ShareVisual() {
                     </li>
                   ))
                 ) : (
-                  <li className="text-[13.5px] text-[var(--text-secondary)]">Nothing is shared on this link.</li>
+                  <li className="text-app-body text-[var(--text-secondary)]">Nothing is shared on this link.</li>
                 )}
               </ul>
             )}

@@ -26,7 +26,7 @@ export function PilotSection({
         {title}
       </h2>
       {description ? (
-        <p className="mt-1.5 text-[15px] leading-[1.6] text-[rgba(244,245,247,0.6)]">
+        <p className="mt-1.5 text-app-body leading-[1.6] text-[rgba(244,245,247,0.6)]">
           {description}
         </p>
       ) : null}
@@ -38,7 +38,7 @@ export function PilotSection({
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p role="alert" className="mt-2 text-[13px] text-[#F6A6B4]">
+    <p role="alert" className="mt-2 text-app-meta text-[#F6A6B4]">
       {message}
     </p>
   );
@@ -63,7 +63,7 @@ export function RatingScale({
   const id = useId();
   return (
     <fieldset>
-      <legend className="text-[15px] leading-[1.5] text-[#F4F5F7]" style={{ fontWeight: 540 }}>
+      <legend className="text-app-body leading-[1.5] text-[#F4F5F7]" style={{ fontWeight: 540 }}>
         {label}
       </legend>
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -72,7 +72,7 @@ export function RatingScale({
           return (
             <label
               key={n}
-              className={`relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-[10px] border text-[15px] tabular-nums transition-colors duration-150 ${
+              className={`relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-[10px] border text-app-body tabular-nums transition-colors duration-150 ${
                 active
                   ? "border-[#F1F2F4] bg-[#F1F2F4] text-[#08090C]"
                   : "border-white/[0.14] bg-white/[0.02] text-[rgba(244,245,247,0.72)] hover:border-white/30"
@@ -93,7 +93,7 @@ export function RatingScale({
         })}
       </div>
       {(lowLabel || highLabel) && (
-        <div className="mt-1.5 flex max-w-[268px] justify-between text-[12px] text-[rgba(244,245,247,0.42)]">
+        <div className="mt-1.5 flex max-w-[268px] justify-between text-app-meta text-[rgba(244,245,247,0.42)]">
           <span>{lowLabel}</span>
           <span>{highLabel}</span>
         </div>
@@ -124,11 +124,11 @@ export function ChoiceGroup({
   const id = useId();
   return (
     <fieldset>
-      <legend className="text-[15px] leading-[1.5] text-[#F4F5F7]" style={{ fontWeight: 540 }}>
+      <legend className="text-app-body leading-[1.5] text-[#F4F5F7]" style={{ fontWeight: 540 }}>
         {label}
       </legend>
       {hint ? (
-        <p className="mt-1 text-[13px] text-[rgba(244,245,247,0.48)]">{hint}</p>
+        <p className="mt-1 text-app-meta text-[rgba(244,245,247,0.48)]">{hint}</p>
       ) : null}
       <div className={`mt-3 ${stacked ? "flex flex-col gap-2" : "flex flex-wrap gap-2"}`}>
         {options.map((opt) => {
@@ -136,7 +136,7 @@ export function ChoiceGroup({
           return (
             <label
               key={opt}
-              className={`relative flex cursor-pointer items-center rounded-[10px] border px-3.5 py-2.5 text-[14px] leading-[1.45] transition-colors duration-150 ${
+              className={`relative flex cursor-pointer items-center rounded-[10px] border px-3.5 py-2.5 text-app-body leading-[1.45] transition-colors duration-150 ${
                 active
                   ? "border-[rgba(140,150,255,0.6)] bg-[rgba(86,98,255,0.14)] text-[#F4F5F7]"
                   : "border-white/[0.14] bg-white/[0.02] text-[rgba(244,245,247,0.72)] hover:border-white/30"
@@ -162,7 +162,7 @@ export function ChoiceGroup({
 }
 
 const inputClass =
-  "w-full rounded-[10px] border border-white/[0.14] bg-white/[0.02] px-3.5 text-[15px] text-[#F4F5F7] placeholder:text-[rgba(244,245,247,0.28)] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[rgba(140,150,255,0.7)] focus:shadow-[0_0_0_2px_rgba(86,98,255,0.22)]";
+  "w-full rounded-[10px] border border-white/[0.14] bg-white/[0.02] px-3.5 text-app-body text-[#F4F5F7] placeholder:text-[rgba(244,245,247,0.28)] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[rgba(140,150,255,0.7)] focus:shadow-[0_0_0_2px_rgba(86,98,255,0.22)]";
 
 export function TextField({
   label,
@@ -188,12 +188,12 @@ export function TextField({
     <div>
       <label
         htmlFor={id}
-        className="block text-[15px] leading-[1.5] text-[#F4F5F7]"
+        className="block text-app-body leading-[1.5] text-[#F4F5F7]"
         style={{ fontWeight: 540 }}
       >
         {label}
         {optional ? (
-          <span className="ml-1.5 text-[13px] text-[rgba(244,245,247,0.42)]" style={{ fontWeight: 400 }}>
+          <span className="ml-1.5 text-app-meta text-[rgba(244,245,247,0.42)]" style={{ fontWeight: 400 }}>
             (optional)
           </span>
         ) : null}
@@ -232,12 +232,12 @@ export function TextAreaField({
     <div>
       <label
         htmlFor={id}
-        className="block text-[15px] leading-[1.5] text-[#F4F5F7]"
+        className="block text-app-body leading-[1.5] text-[#F4F5F7]"
         style={{ fontWeight: 540 }}
       >
         {label}
         {optional ? (
-          <span className="ml-1.5 text-[13px] text-[rgba(244,245,247,0.42)]" style={{ fontWeight: 400 }}>
+          <span className="ml-1.5 text-app-meta text-[rgba(244,245,247,0.42)]" style={{ fontWeight: 400 }}>
             (optional)
           </span>
         ) : null}
@@ -270,7 +270,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#F2F3F5] px-7 text-[15px] text-[#090A0D] transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#F2F3F5] px-7 text-app-body text-[#090A0D] transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
       style={{ fontWeight: 580 }}
     >
       {children}

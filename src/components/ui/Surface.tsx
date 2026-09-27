@@ -55,11 +55,11 @@ export function SurfaceHeader({
       )}
     >
       <div className="min-w-0">
-        <h2 className="text-[14px] font-medium leading-tight tracking-[-0.01em] text-[var(--text-primary)]">
+        <h2 className="text-app-body font-medium leading-tight tracking-[-0.01em] text-[var(--text-primary)]">
           {title}
         </h2>
         {description ? (
-          <p className="mt-1 text-[13px] leading-[1.5] text-[var(--text-secondary)]">
+          <p className="mt-1 text-app-meta leading-[1.5] text-[var(--text-secondary)]">
             {description}
           </p>
         ) : null}

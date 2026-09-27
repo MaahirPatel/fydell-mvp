@@ -26,10 +26,10 @@ export function ChangedFactsDiff({ className = "" }: { className?: string }) {
     <div className={className}>
       <div className="grid gap-px overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--border-subtle)] sm:grid-cols-2">
         <div className="bg-[var(--surface-raised)] p-3.5">
-          <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+          <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
             {fact.before.label}
           </p>
-          <p className="mt-1.5 text-[12.5px] leading-[1.5] text-[var(--text-tertiary)] line-through decoration-[rgba(242,107,130,0.6)] decoration-1">
+          <p className="mt-1.5 text-app-meta leading-[1.5] text-[var(--text-tertiary)] line-through decoration-[rgba(242,107,130,0.6)] decoration-1">
             {fact.before.text}
           </p>
         </div>
@@ -38,25 +38,25 @@ export function ChangedFactsDiff({ className = "" }: { className?: string }) {
             aria-hidden
             className="absolute inset-y-3 left-0 w-[2px] rounded-full bg-[var(--fydell-changed)]"
           />
-          <p className="text-[12px] font-medium text-[var(--fydell-changed)]">
+          <p className="text-app-meta font-medium text-[var(--fydell-changed)]">
             {fact.after.label}
           </p>
-          <p className="mt-1.5 text-[12.5px] leading-[1.5] text-[var(--text-primary)]">
+          <p className="mt-1.5 text-app-meta leading-[1.5] text-[var(--text-primary)]">
             {fact.after.text}
           </p>
         </div>
       </div>
 
       <div className="mt-3 rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-3.5">
-        <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+        <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
           Claim affected
         </p>
-        <p className="mt-1 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+        <p className="mt-1 text-app-meta leading-[1.5] text-[var(--text-secondary)]">
           {fact.affects}
         </p>
 
         <div className="mt-3 flex items-center gap-2 border-t border-[var(--border-subtle)] pt-3">
-          <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text-primary)]">
+          <span className="inline-flex items-center gap-1.5 text-app-meta font-medium text-[var(--text-primary)]">
             <span
               aria-hidden
               className="h-[7px] w-[7px] rounded-full border border-[rgba(176,127,208,0.55)] bg-[rgba(176,127,208,0.22)]"
@@ -64,7 +64,7 @@ export function ChangedFactsDiff({ className = "" }: { className?: string }) {
             {RESPONSE_LABEL[fact.response]}
           </span>
         </div>
-        <p className="mt-1.5 text-[12px] leading-[1.5] text-[var(--text-secondary)]">
+        <p className="mt-1.5 text-app-meta leading-[1.5] text-[var(--text-secondary)]">
           {fact.responseText}
         </p>
         <div className="mt-2">

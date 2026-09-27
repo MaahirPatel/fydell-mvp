@@ -81,7 +81,7 @@ export function MicroResultClient({ sessionId }: { sessionId: string }) {
     return (
       <CandidateShell width="narrow">
         <Surface tone="panel" className="px-5 py-6">
-          <p className="text-[14px] leading-[1.65] text-[var(--text-secondary)]">
+          <p className="text-app-body leading-[1.65] text-[var(--text-secondary)]">
             {error}
           </p>
           <div className="mt-4">
@@ -108,10 +108,10 @@ export function MicroResultClient({ sessionId }: { sessionId: string }) {
             className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-[var(--border-default)] border-t-[var(--fydell-evidence)]"
             aria-hidden
           />
-          <p className="mt-4 text-[14.5px] font-medium text-[var(--text-primary)]">
+          <p className="mt-4 text-app-body font-medium text-[var(--text-primary)]">
             Working through your submission
           </p>
-          <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+          <p className="mt-1.5 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
             Your work is saved. This usually takes a few seconds.
           </p>
         </Surface>
@@ -155,7 +155,7 @@ export function MicroResultClient({ sessionId }: { sessionId: string }) {
           Give feedback
         </Button>
         {payload.credential ? (
-          <span className="ml-auto text-[12px] text-[var(--text-tertiary)]">
+          <span className="ml-auto text-app-meta text-[var(--text-tertiary)]">
             Receipt {payload.credential.credential_number}
           </span>
         ) : null}

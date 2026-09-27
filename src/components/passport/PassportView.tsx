@@ -88,7 +88,7 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
             <h3 id="capabilities-heading" className="passport-section-title">
               Demonstrated in code
             </h3>
-            <p className="text-[12.5px] text-[var(--text-tertiary)]">
+            <p className="text-app-meta text-[var(--text-tertiary)]">
               {passport.capabilities.source === "model"
                 ? `AI interpretation (${passport.capabilities.model}) of cited findings`
                 : "Rule-based summary of cited findings"}
@@ -97,7 +97,7 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
           <ul className="passport-rows mt-4">
             {passport.capabilities.capabilities.map((cap) => (
               <li key={cap.statement} className="p-4">
-                <p className="text-[14.5px] leading-[1.5] text-[var(--text-primary)]">{cap.statement}</p>
+                <p className="text-app-body leading-[1.5] text-[var(--text-primary)]">{cap.statement}</p>
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
                   {cap.evidenceIds.map((id, i) => {
                     const e = evidence.find((x) => x.id === id);
@@ -119,7 +119,7 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
               </li>
             ))}
           </ul>
-          {passport.capabilities.note ? <p className="mt-3 text-[12.5px] text-[var(--text-tertiary)]">{passport.capabilities.note}</p> : null}
+          {passport.capabilities.note ? <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">{passport.capabilities.note}</p> : null}
         </section>
       ) : null}
 
@@ -129,14 +129,14 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
             {passport.projects.map((project) => (
               <div key={project.repoFullName} className="mb-5 last:mb-0">
                 <div className="px-2">
-                  <p className="font-mono text-[13px] font-medium text-[var(--text-primary)]">{project.repoFullName}</p>
-                  <p className="mt-0.5 text-[12px] text-[var(--text-tertiary)]">
+                  <p className="font-mono text-app-meta font-medium text-[var(--text-primary)]">{project.repoFullName}</p>
+                  <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">
                     {project.primaryLanguage ?? "Language unknown"} · commit {project.commitSha.slice(0, 7)} · {project.coverage.analyzedFiles} of{" "}
                     {project.coverage.totalFiles} files analyzed
                     {project.status === "partial" ? " · partial" : ""}
                   </p>
                   {project.notices.map((n) => (
-                    <p key={n} className="mt-1 text-[12px] text-[var(--status-attention-ink)]">{n}</p>
+                    <p key={n} className="mt-1 text-app-meta text-[var(--status-attention-ink)]">{n}</p>
                   ))}
                 </div>
                 <ul className="mt-2 space-y-0.5">
@@ -150,8 +150,8 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
                           onClick={() => setSelectedId(e.id)}
                           className={`evidence-row ${active ? "is-active" : ""} ${e.basis === "dependency_declaration" ? "is-declaration" : ""}`}
                         >
-                          <span className="block text-[13.5px] leading-[1.35] text-[var(--text-primary)]">{e.finding}</span>
-                          <span className="mt-0.5 block truncate font-mono text-[11.5px] text-[var(--text-tertiary)]">
+                          <span className="block text-app-body leading-[1.35] text-[var(--text-primary)]">{e.finding}</span>
+                          <span className="mt-0.5 block truncate font-mono text-app-caption text-[var(--text-tertiary)]">
                             {e.path} · L{e.startLine}
                             {e.endLine > e.startLine ? `–${e.endLine}` : ""}
                           </span>
@@ -171,7 +171,7 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
               </span>
               <span className="badge badge-neutral">Authorship unverified</span>
             </div>
-            <h4 className="mt-3 text-[17px] font-semibold leading-snug tracking-[-0.012em]">{selected.finding}</h4>
+            <h4 className="mt-3 text-app-section font-semibold leading-snug tracking-[-0.012em]">{selected.finding}</h4>
             <div className="mt-4">
               <CodeBlock
                 path={`${selected.repo} · ${selected.path}`}
@@ -183,14 +183,14 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
               href={selected.sourceUrl}
               target="_blank"
               rel="noreferrer noopener"
-              className="mt-3 inline-flex items-center gap-1 text-[13px] font-medium text-[var(--ink-teal)] hover:underline hover:underline-offset-4"
+              className="mt-3 inline-flex items-center gap-1 text-app-meta font-medium text-[var(--ink-teal)] hover:underline hover:underline-offset-4"
             >
               View these lines on GitHub at this commit <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
             </a>
             <dl className="mt-5 space-y-3 border-t border-[var(--border-subtle)] pt-4">
               <div>
-                <dt className="text-[12.5px] font-medium">Evidence limits</dt>
-                <dd className="mt-1 space-y-1 text-[13px] leading-[1.55] text-[var(--text-secondary)]">
+                <dt className="text-app-meta font-medium">Evidence limits</dt>
+                <dd className="mt-1 space-y-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
                   {selected.limitations.map((l) => (
                     <p key={l}>{l}</p>
                   ))}
@@ -199,15 +199,15 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
               </div>
               {selectedProject?.contributionStatement ? (
                 <div>
-                  <dt className="text-[12.5px] font-medium">Candidate statement</dt>
-                  <dd className="mt-1 text-[13px] leading-[1.55] text-[var(--text-secondary)]">“{selectedProject.contributionStatement}”</dd>
+                  <dt className="text-app-meta font-medium">Candidate statement</dt>
+                  <dd className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">“{selectedProject.contributionStatement}”</dd>
                 </div>
               ) : null}
             </dl>
           </div>
         </section>
       ) : (
-        <p className="border-b border-[var(--border-subtle)] px-5 py-8 text-[14px] text-[var(--text-secondary)] sm:px-6">
+        <p className="border-b border-[var(--border-subtle)] px-5 py-8 text-app-body text-[var(--text-secondary)] sm:px-6">
           No cited findings yet. Findings appear when analyzed files contain patterns Fydell can cite.
         </p>
       )}
@@ -221,17 +221,17 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
             {passport.roleSuggestions.map((role) => (
               <li key={role.family} className="p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-[14.5px] font-semibold">{ROLE_LABEL[role.family] ?? role.family}</p>
+                  <p className="text-app-body font-semibold">{ROLE_LABEL[role.family] ?? role.family}</p>
                   <span className={`badge ${role.status === "supported" ? "badge-teal" : "badge-attention"}`}>
                     {role.status === "supported" ? "Supported" : "Partly supported"}
                   </span>
                 </div>
-                <p className="mt-1.5 text-[13px] leading-[1.5] text-[var(--text-secondary)]">{role.requirement}</p>
-                <p className="mt-2 text-[12.5px] text-[var(--text-tertiary)]">{role.evidenceIds.length} supporting findings</p>
+                <p className="mt-1.5 text-app-meta leading-[1.5] text-[var(--text-secondary)]">{role.requirement}</p>
+                <p className="mt-2 text-app-meta text-[var(--text-tertiary)]">{role.evidenceIds.length} supporting findings</p>
                 {role.gaps.length > 0 ? (
                   <ul className="mt-2 space-y-1 border-t border-[var(--border-subtle)] pt-2">
                     {role.gaps.map((g) => (
-                      <li key={g} className="text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">Not shown: {g}</li>
+                      <li key={g} className="text-app-meta leading-[1.5] text-[var(--text-secondary)]">Not shown: {g}</li>
                     ))}
                   </ul>
                 ) : null}

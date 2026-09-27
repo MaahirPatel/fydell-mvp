@@ -108,10 +108,10 @@ export default async function WorkReceiptPage({
           : "The link may be incomplete, or the receipt it pointed to no longer exists. Ask whoever sent it to you to check.";
     return (
       <CandidateShell width="narrow">
-        <h1 className="text-[20px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+        <h1 className="text-app-page font-medium tracking-[-0.02em] text-[var(--text-primary)]">
           {title}
         </h1>
-        <p className="mt-3 max-w-[54ch] text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">
+        <p className="mt-3 max-w-[54ch] text-app-body leading-[1.65] text-[var(--text-secondary)]">
           {body}
         </p>
       </CandidateShell>
@@ -127,19 +127,19 @@ export default async function WorkReceiptPage({
   return (
     <CandidateShell width="wide">
       <Surface tone="panel" className="mb-5 px-5 py-4">
-        <p className="text-[12.5px] font-medium text-[var(--text-tertiary)]">
+        <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
           Work Receipt, shared with you
         </p>
         {fieldAllowed(allowed, "evaluation_title") ? (
-          <h1 className="mt-1.5 text-[19px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+          <h1 className="mt-1.5 text-app-section font-medium tracking-[-0.02em] text-[var(--text-primary)]">
             {result.simulationTitle}
           </h1>
         ) : null}
-        <p className="mt-1 text-[13.5px] text-[var(--text-secondary)]">
+        <p className="mt-1 text-app-body text-[var(--text-secondary)]">
           {fieldAllowed(allowed, "role_title") ? `${roleTitle} · ` : ""}
           {credentialNumber ? `Receipt ${credentialNumber}` : "Private receipt"}
         </p>
-        <p className="mt-3 max-w-[74ch] text-[13px] leading-[1.65] text-[var(--text-tertiary)]">
+        <p className="mt-3 max-w-[74ch] text-app-meta leading-[1.65] text-[var(--text-tertiary)]">
           The person who did this work chose what this link contains and when it
           stops working, and can withdraw it at any time. It does not include the
           hiring company&apos;s notes or their decision. This page is not a public
@@ -167,7 +167,7 @@ export default async function WorkReceiptPage({
         />
       ) : (
         <Surface tone="panel" className="px-5 py-4">
-          <p className="text-[14px] leading-[1.65] text-[var(--text-secondary)]">
+          <p className="text-app-body leading-[1.65] text-[var(--text-secondary)]">
             This link was scoped to confirm the evaluation only. It does not
             include the work itself or any assessment of it.
           </p>

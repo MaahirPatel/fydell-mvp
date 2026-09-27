@@ -48,16 +48,16 @@ export default async function AdminUserDetailPage({
 
   return (
     <div>
-      <Link href="/admin/users" className="text-[13px] text-[var(--text-secondary)]">
+      <Link href="/admin/users" className="text-app-meta text-[var(--text-secondary)]">
         ← Users
       </Link>
-      <h1 className="mt-4 text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+      <h1 className="mt-4 text-app-page" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
         {profile?.full_name || user.user_metadata?.full_name || user.email}
       </h1>
-      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">{user.email}</p>
+      <p className="mt-2 text-app-body text-[var(--text-secondary)]">{user.email}</p>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <section className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 text-[13px]">
+        <section className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 text-app-meta">
           <h2 className="text-app-section font-medium text-[var(--text-primary)]">
             Account
           </h2>
@@ -108,7 +108,7 @@ export default async function AdminUserDetailPage({
         <h2 className="text-app-section font-medium text-[var(--text-primary)]">
           Memberships
         </h2>
-        <ul className="mt-4 space-y-2 text-[13px]">
+        <ul className="mt-4 space-y-2 text-app-meta">
           {(memberships || []).length === 0 ? (
             <li className="text-[var(--text-secondary)]">No organization memberships.</li>
           ) : (
@@ -130,7 +130,7 @@ export default async function AdminUserDetailPage({
         <h2 className="text-app-section font-medium text-[var(--text-primary)]">
           Invitations
         </h2>
-        <ul className="mt-4 space-y-2 text-[13px]">
+        <ul className="mt-4 space-y-2 text-app-meta">
           {(invitations || []).length === 0 ? (
             <li className="text-[var(--text-secondary)]">No invitations.</li>
           ) : (
@@ -148,7 +148,7 @@ export default async function AdminUserDetailPage({
         <h2 className="text-app-section font-medium text-[var(--text-primary)]">
           Related audit
         </h2>
-        <ul className="mt-4 space-y-2 text-[13px]">
+        <ul className="mt-4 space-y-2 text-app-meta">
           {(audits || []).length === 0 ? (
             <li className="text-[var(--text-secondary)]">No audit events.</li>
           ) : (

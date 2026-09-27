@@ -107,6 +107,10 @@ pub fn write_file(req: WriteRequest) -> AppResult<FileContent> {
     std::fs::write(&target, &req.content)?;
     let new_rev = session::bump_rev(&req.path)?;
 
+    // DESK-09: the bytes are durably on disk ("saved on this device"); the
+    // remote sync state machine now knows this file is ahead of the server.
+    crate::sync::mark_dirty(&req.path);
+
     crate::events::log_system_event(
         "file_saved",
         serde_json::json!({

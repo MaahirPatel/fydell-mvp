@@ -33,7 +33,7 @@ export default async function AdminPilotFeedbackPage() {
       />
 
       {loadError ? (
-        <p className="mt-8 rounded-[12px] border border-[#F43F5E]/25 bg-[#F43F5E]/10 px-4 py-3 text-[13px] text-[#FDA4AF]">
+        <p className="mt-8 rounded-[12px] border border-[#F43F5E]/25 bg-[#F43F5E]/10 px-4 py-3 text-app-meta text-[#FDA4AF]">
           {loadError}
         </p>
       ) : (

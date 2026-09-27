@@ -62,7 +62,7 @@ function RowMenu({
   }, [open]);
 
   const itemClass =
-    "block w-full rounded-[5px] px-2.5 py-1.5 text-left text-[13px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:pointer-events-none disabled:opacity-45";
+    "block w-full rounded-[5px] px-2.5 py-1.5 text-left text-app-meta text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:pointer-events-none disabled:opacity-45";
 
   return (
     <div className="relative" ref={ref}>
@@ -136,35 +136,35 @@ function PreviewDialog({
       {sim ? (
         <div className="grid gap-6">
           <section>
-            <h3 className="text-[13px] font-medium text-[var(--text-secondary)]">
+            <h3 className="text-app-meta font-medium text-[var(--text-secondary)]">
               The brief candidates see
             </h3>
-            <p className="mt-2 text-[14px] leading-[1.65] text-[var(--text-secondary)]">
+            <p className="mt-2 text-app-body leading-[1.65] text-[var(--text-secondary)]">
               {sim.preview.brief}
             </p>
           </section>
 
           <section>
-            <h3 className="text-[13px] font-medium text-[var(--text-secondary)]">
+            <h3 className="text-app-meta font-medium text-[var(--text-secondary)]">
               Working materials
             </h3>
             <ul className="mt-2 divide-y divide-[var(--border-subtle)] rounded-[var(--radius-panel)] border border-[var(--border-subtle)]">
               {sim.preview.resources.map((r) => (
                 <li
                   key={r.title}
-                  className="flex items-center justify-between gap-3 px-3 py-2 text-[13.5px]"
+                  className="flex items-center justify-between gap-3 px-3 py-2 text-app-body"
                 >
                   <span className="text-[var(--text-primary)]">{r.title}</span>
-                  <span className="text-[12.5px] text-[var(--text-tertiary)]">
+                  <span className="text-app-meta text-[var(--text-tertiary)]">
                     {RESOURCE_KIND_LABEL[r.kind] || "Document"}
                   </span>
                 </li>
               ))}
-              <li className="flex items-center justify-between gap-3 px-3 py-2 text-[13.5px]">
+              <li className="flex items-center justify-between gap-3 px-3 py-2 text-app-body">
                 <span className="text-[var(--text-primary)]">
                   Conversation with {sim.preview.stakeholder.name}
                 </span>
-                <span className="text-[12.5px] text-[var(--text-tertiary)]">
+                <span className="text-app-meta text-[var(--text-tertiary)]">
                   {sim.preview.stakeholder.role}
                 </span>
               </li>
@@ -172,26 +172,26 @@ function PreviewDialog({
           </section>
 
           <section>
-            <h3 className="text-[13px] font-medium text-[var(--text-secondary)]">
+            <h3 className="text-app-meta font-medium text-[var(--text-secondary)]">
               What the candidate is asked
             </h3>
             <ol className="mt-2 grid gap-2.5">
               {sim.preview.questions.map((q, i) => (
                 <li
                   key={i}
-                  className="text-[13.5px] leading-[1.6] text-[var(--text-secondary)]"
+                  className="text-app-body leading-[1.6] text-[var(--text-secondary)]"
                 >
                   <span className="tabular-nums text-[var(--text-tertiary)]">
                     {i + 1}.
                   </span>{" "}
                   {q.prompt}
-                  <span className="ml-1.5 text-[12.5px] text-[var(--text-tertiary)]">
+                  <span className="ml-1.5 text-app-meta text-[var(--text-tertiary)]">
                     {QUESTION_KIND_LABEL[q.kind] || q.kind}
                   </span>
                 </li>
               ))}
             </ol>
-            <p className="mt-3 text-[12.5px] leading-[1.6] text-[var(--text-tertiary)]">
+            <p className="mt-3 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
               Answer keys and scoring internals are hidden from candidates and
               from this preview.
             </p>
@@ -232,7 +232,7 @@ export default function EvaluationList({ roles }: { roles: CatalogRole[] }) {
                 <button
                   type="button"
                   onClick={() => setPreview(sim)}
-                  className="truncate text-[14px] font-medium text-[var(--text-primary)] underline-offset-2 hover:underline"
+                  className="truncate text-app-body font-medium text-[var(--text-primary)] underline-offset-2 hover:underline"
                 >
                   {sim.title}
                 </button>
@@ -240,12 +240,12 @@ export default function EvaluationList({ roles }: { roles: CatalogRole[] }) {
                     actually finished, not for a template being available. */}
                 {sim.templateId ? null : <StatusTag>Prototype</StatusTag>}
               </div>
-              <p className="mt-0.5 truncate text-[13px] text-[var(--text-secondary)]">
+              <p className="mt-0.5 truncate text-app-meta text-[var(--text-secondary)]">
                 {sim.tagline}
               </p>
             </div>
 
-            <span className="hidden shrink-0 text-[13px] tabular-nums text-[var(--text-tertiary)] sm:block">
+            <span className="hidden shrink-0 text-app-meta tabular-nums text-[var(--text-tertiary)] sm:block">
               {sim.durationMinutes} min
             </span>
 

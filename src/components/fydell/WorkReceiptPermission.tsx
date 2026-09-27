@@ -202,10 +202,10 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
 
       <div className="space-y-5 px-5 py-4">
         <fieldset>
-          <legend className="text-[13px] font-medium text-[var(--text-primary)]">
+          <legend className="text-app-meta font-medium text-[var(--text-primary)]">
             What to include
           </legend>
-          <p className="mt-1 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+          <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
             Anything you leave unchecked is not in the link at all. It is not
             hidden behind a control the viewer can open.
           </p>
@@ -223,11 +223,11 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
                       className="mt-[3px] h-[15px] w-[15px] shrink-0 accent-[var(--fydell-evidence)]"
                     />
                     <span className="min-w-0">
-                      <span className="block text-[13px] text-[var(--text-primary)]">
+                      <span className="block text-app-meta text-[var(--text-primary)]">
                         {meta.label}
                       </span>
                       {meta.detail ? (
-                        <span className="block text-[12px] leading-[1.5] text-[var(--text-tertiary)]">
+                        <span className="block text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
                           {meta.detail}
                         </span>
                       ) : null}
@@ -278,7 +278,7 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
             Create a link
           </Button>
           {selected.length === 0 ? (
-            <p className="text-[12.5px] text-[var(--text-tertiary)]">
+            <p className="text-app-meta text-[var(--text-tertiary)]">
               Choose at least one thing to include.
             </p>
           ) : null}
@@ -289,15 +289,15 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
             role="status"
             className="rounded-[var(--radius-panel)] border border-[rgba(107,140,255,0.35)] bg-[rgba(107,140,255,0.08)] px-4 py-3"
           >
-            <p className="text-[13px] font-medium text-[var(--text-primary)]">
+            <p className="text-app-meta font-medium text-[var(--text-primary)]">
               Your link is ready. Copy it now.
             </p>
-            <p className="mt-1 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+            <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
               Fydell stores only a hash of it, so this is the one time it can be
               shown. If you lose it, revoke it and make another.
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-2.5 py-1.5 text-[12.5px] text-[var(--text-primary)]">
+              <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-2.5 py-1.5 text-app-meta text-[var(--text-primary)]">
                 {issued.url}
               </code>
               <Button variant="secondary" size="sm" onClick={() => void copy()}>
@@ -308,7 +308,7 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
         ) : null}
 
         {error ? (
-          <p role="alert" className="text-[13px] text-[var(--fydell-risk)]">
+          <p role="alert" className="text-app-meta text-[var(--fydell-risk)]">
             {error}
           </p>
         ) : null}
@@ -316,10 +316,10 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
 
       <div className="border-t border-[var(--border-subtle)]">
         <div className="flex items-baseline justify-between gap-4 px-5 py-3">
-          <h3 className="text-[13px] font-medium text-[var(--text-primary)]">
+          <h3 className="text-app-meta font-medium text-[var(--text-primary)]">
             Links you have created
           </h3>
-          <span className="text-[12px] text-[var(--text-tertiary)]">
+          <span className="text-app-meta text-[var(--text-tertiary)]">
             {live.length === 0
               ? "None active"
               : `${live.length} active`}
@@ -327,9 +327,9 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
         </div>
 
         {!loaded ? (
-          <p className="px-5 pb-4 text-[13px] text-[var(--text-tertiary)]">Loading.</p>
+          <p className="px-5 pb-4 text-app-meta text-[var(--text-tertiary)]">Loading.</p>
         ) : shares.length === 0 ? (
-          <p className="px-5 pb-4 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+          <p className="px-5 pb-4 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
             You have not shared this receipt with anyone. The company that
             invited you can already see your result; a link is only for someone
             else.
@@ -345,7 +345,7 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-[13.5px] text-[var(--text-primary)]">
+                      <p className="text-app-body text-[var(--text-primary)]">
                         {share.audienceLabel}
                       </p>
                       <StatusTag tone={dead ? "neutral" : "active"}>
@@ -356,7 +356,7 @@ export function WorkReceiptPermission({ sessionId }: { sessionId: string }) {
                             : "Active"}
                       </StatusTag>
                     </div>
-                    <p className="mt-1 text-[12.5px] leading-[1.55] text-[var(--text-tertiary)]">
+                    <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-tertiary)]">
                       {share.allowedFields.length} of {fields.length} fields
                       {dead
                         ? ` · ${share.revoked ? "revoked" : "expired"}`

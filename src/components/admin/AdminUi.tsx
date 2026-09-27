@@ -49,7 +49,7 @@ export function AdminMetricCard({
         {label}
       </p>
       <p
-        className="mt-2.5 text-[34px] leading-none tabular-nums text-[var(--text-primary)]"
+        className="mt-2.5 stat-value"
         style={{ fontWeight: 560, letterSpacing: "-0.04em" }}
       >
         {value}

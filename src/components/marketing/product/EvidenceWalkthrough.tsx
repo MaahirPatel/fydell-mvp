@@ -26,7 +26,7 @@ import {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11.5px] font-medium text-[var(--text-tertiary)]">
+    <p className="text-app-caption font-medium text-[var(--text-tertiary)]">
       {children}
     </p>
   );
@@ -42,14 +42,14 @@ function Panel({ step }: { step: number }) {
         <ul className="mt-2.5 divide-y divide-[var(--border-subtle)]">
           {NORTHLINE_RESOURCES.map((r) => (
             <li key={r.name} className="py-2 first:pt-0">
-              <p className="text-[13px] text-[var(--text-primary)]">{r.name}</p>
-              <p className="mt-0.5 text-[12px] text-[var(--text-tertiary)]">
+              <p className="text-app-meta text-[var(--text-primary)]">{r.name}</p>
+              <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">
                 {r.detail}
               </p>
             </li>
           ))}
         </ul>
-        <p className="mt-3 border-t border-[var(--border-subtle)] pt-3 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+        <p className="mt-3 border-t border-[var(--border-subtle)] pt-3 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
           Nothing is labelled as important. Deciding which of these answers the
           question is part of the task.
         </p>
@@ -61,7 +61,7 @@ function Panel({ step }: { step: number }) {
     return (
       <div className="p-4">
         <Label>What the candidate did</Label>
-        <p className="mt-2 text-[13.5px] leading-[1.55] text-[var(--text-primary)]">
+        <p className="mt-2 text-app-body leading-[1.55] text-[var(--text-primary)]">
           {NORTHLINE_CLAIMS[0].action}
         </p>
         <div className="mt-3.5">
@@ -70,7 +70,7 @@ function Panel({ step }: { step: number }) {
             lines={CITATION_SOURCES.reclassEvents}
           />
         </div>
-        <p className="mt-3 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+        <p className="mt-3 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
           The rows they opened are recorded as they work, so the report can point
           back at them later.
         </p>
@@ -82,10 +82,10 @@ function Panel({ step }: { step: number }) {
     return (
       <div className="p-4">
         <Label>The claim they wrote</Label>
-        <p className="mt-2 border-l border-[var(--fydell-evidence)] bg-[color-mix(in_srgb,var(--fydell-evidence)_4%,transparent)] py-1 pl-3 text-[14px] leading-[1.5] text-[var(--text-primary)]">
+        <p className="mt-2 border-l border-[var(--fydell-evidence)] bg-[color-mix(in_srgb,var(--fydell-evidence)_4%,transparent)] py-1 pl-3 text-app-body leading-[1.5] text-[var(--text-primary)]">
           {NORTHLINE_CLAIMS[0].text}
         </p>
-        <p className="mt-3.5 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+        <p className="mt-3.5 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
           A claim is a separate object from the conclusion. That is what makes it
           possible to disagree with one part of a report without discarding all
           of it.
@@ -117,7 +117,7 @@ function Panel({ step }: { step: number }) {
     return (
       <div className="p-4">
         <Label>Where the evidence runs out</Label>
-        <p className="mt-2 border-l border-[var(--border-strong)] py-1 pl-3 text-[13.5px] leading-[1.55] text-[var(--text-primary)]">
+        <p className="mt-2 border-l border-[var(--border-strong)] py-1 pl-3 text-app-body leading-[1.55] text-[var(--text-primary)]">
           {claim.limitation}
         </p>
         <div className="mt-3">
@@ -126,7 +126,7 @@ function Panel({ step }: { step: number }) {
             lines={CITATION_SOURCES.residualScrap}
           />
         </div>
-        <p className="mt-3 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+        <p className="mt-3 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
           Candidates write their own limitations. A report that only showed
           strengths would not be evidence.
         </p>
@@ -138,13 +138,13 @@ function Panel({ step }: { step: number }) {
     return (
       <div className="p-4">
         <Label>{NORTHLINE_CHANGED_FACT.after.label}</Label>
-        <p className="mt-2 text-[13.5px] leading-[1.55] text-[var(--text-primary)]">
+        <p className="mt-2 text-app-body leading-[1.55] text-[var(--text-primary)]">
           {NORTHLINE_CHANGED_FACT.after.text}
         </p>
-        <p className="mt-3.5 text-[11.5px] font-medium text-[var(--text-tertiary)]">
+        <p className="mt-3.5 text-app-caption font-medium text-[var(--text-tertiary)]">
           What they did about it
         </p>
-        <p className="mt-1.5 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+        <p className="mt-1.5 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
           {NORTHLINE_CHANGED_FACT.responseText}
         </p>
       </div>
@@ -154,11 +154,11 @@ function Panel({ step }: { step: number }) {
   return (
     <div className="p-4">
       <Label>What the reviewer decides</Label>
-      <p className="mt-2 text-[13.5px] leading-[1.55] text-[var(--text-primary)]">
+      <p className="mt-2 text-app-body leading-[1.55] text-[var(--text-primary)]">
         The hiring team reads the conclusion, opens the claims they care about,
         and records a decision.
       </p>
-      <p className="mt-3 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+      <p className="mt-3 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
         Fydell does not make the decision or recommend one. It shows the work and
         who reviewed it.
       </p>

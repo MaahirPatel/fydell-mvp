@@ -30,26 +30,26 @@ export function Field({
       <div className="flex items-baseline justify-between gap-3">
         <label
           htmlFor={htmlFor}
-          className="text-[13px] font-medium text-[var(--text-primary)]"
+          className="text-app-meta font-medium text-[var(--text-primary)]"
         >
           {label}
         </label>
         {optional ? (
-          <span className="text-[12px] text-[var(--text-tertiary)]">Optional</span>
+          <span className="text-app-meta text-[var(--text-tertiary)]">Optional</span>
         ) : null}
       </div>
       <div className="mt-1.5">{children}</div>
       {error ? (
         <p
           id={`${htmlFor}-error`}
-          className="mt-1.5 text-[12.5px] leading-[1.5] text-[var(--fydell-risk)]"
+          className="mt-1.5 text-app-meta leading-[1.5] text-[var(--fydell-risk)]"
         >
           {error}
         </p>
       ) : help ? (
         <p
           id={`${htmlFor}-help`}
-          className="mt-1.5 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]"
+          className="mt-1.5 text-app-meta leading-[1.5] text-[var(--text-secondary)]"
         >
           {help}
         </p>
@@ -136,7 +136,7 @@ export function FormError({ children }: { children: React.ReactNode }) {
   return (
     <div
       role="alert"
-      className="rounded-[var(--radius-panel)] border border-[color-mix(in_srgb,var(--fydell-risk)_28%,transparent)] bg-[color-mix(in_srgb,var(--fydell-risk)_7%,transparent)] px-3.5 py-2.5 text-[13px] leading-[1.5] text-[var(--fydell-risk)]"
+      className="rounded-[var(--radius-panel)] border border-[color-mix(in_srgb,var(--fydell-risk)_28%,transparent)] bg-[color-mix(in_srgb,var(--fydell-risk)_7%,transparent)] px-3.5 py-2.5 text-app-meta leading-[1.5] text-[var(--fydell-risk)]"
     >
       {children}
     </div>
@@ -148,7 +148,7 @@ export function FormSuccess({ children }: { children: React.ReactNode }) {
   return (
     <div
       role="status"
-      className="rounded-[var(--radius-panel)] border border-[var(--status-positive-line)] bg-[var(--status-positive-bg)] px-3.5 py-2.5 text-[13px] leading-[1.5] text-[var(--status-positive-ink)]"
+      className="rounded-[var(--radius-panel)] border border-[var(--status-positive-line)] bg-[var(--status-positive-bg)] px-3.5 py-2.5 text-app-meta leading-[1.5] text-[var(--status-positive-ink)]"
     >
       {children}
     </div>

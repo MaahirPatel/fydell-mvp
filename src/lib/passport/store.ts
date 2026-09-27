@@ -2,7 +2,11 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { assemblePassport } from "./assemble";
+import { validateCorrectionReason, type Correction, type CorrectionStatus } from "./corrections";
 import { ANALYSIS_VERSION, type ExtractionResult } from "./github/types";
+import { githubDisconnectExplanation } from "./removal";
+import { shareState, validateExpiryInput } from "./sharing";
+import { markSuperseded } from "./snapshots";
 import {
   SHAREABLE_FIELDS,
   projectForShare,
@@ -15,6 +19,12 @@ import {
 import type { RoleSuggestion } from "./github/types";
 
 const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
+
+function skipReasonCounts(skipped: Array<{ reason: string }>): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const s of skipped) counts[s.reason] = (counts[s.reason] ?? 0) + 1;
+  return counts;
+}
 
 type PassportRow = {
   id: string;
@@ -35,7 +45,7 @@ type ProjectRow = {
   is_fork: boolean;
   contribution_statement: string;
   status: PassportProject["status"];
-  coverage: PassportProject["coverage"];
+  coverage: Partial<PassportProject["coverage"]>;
   notices: string[];
   analyzed_at: string;
   passport_evidence: Array<{
@@ -65,6 +75,41 @@ async function loadPassport(passportId: string): Promise<PassportData | null> {
     .order("analyzed_at", { ascending: false });
   const projectRows = (projects ?? []) as ProjectRow[];
   const summary = row.capability_summary as CapabilitySummary;
+  const projects: PassportProject[] = projectRows.map((p) => ({
+    repoFullName: p.repo_full_name,
+    htmlUrl: p.html_url,
+    commitSha: p.commit_sha,
+    primaryLanguage: p.primary_language,
+    isFork: p.is_fork,
+    contributionStatement: p.contribution_statement,
+    status: p.status,
+    coverage: {
+      totalFiles: p.coverage.totalFiles ?? 0,
+      analyzedFiles: p.coverage.analyzedFiles ?? 0,
+      skippedFiles: p.coverage.skippedFiles ?? 0,
+      languages: p.coverage.languages ?? [],
+      skipReasons: p.coverage.skipReasons ?? {},
+      treeTruncated: p.coverage.treeTruncated ?? false,
+    },
+    analyzedAt: p.analyzed_at,
+    notices: p.notices ?? [],
+    evidence: (p.passport_evidence ?? [])
+      .sort((a, b) => a.path.localeCompare(b.path) || a.start_line - b.start_line)
+      .map((e) => ({
+        id: e.id,
+        repo: p.repo_full_name,
+        detector: e.detector,
+        category: e.category,
+        finding: e.finding,
+        basis: e.basis,
+        path: e.path,
+        startLine: e.start_line,
+        endLine: e.end_line,
+        excerpt: e.excerpt,
+        sourceUrl: e.source_url,
+        limitations: e.limitations ?? [],
+      })),
+  }));
   return {
     displayName: row.display_name,
     headline: row.headline,
@@ -72,33 +117,9 @@ async function loadPassport(passportId: string): Promise<PassportData | null> {
     updatedAt: row.updated_at,
     roleSuggestions: row.role_suggestions ?? [],
     capabilities: summary && "source" in summary ? summary : { source: "rules", capabilities: [], notShown: [] },
-    projects: projectRows.map((p) => ({
-      repoFullName: p.repo_full_name,
-      htmlUrl: p.html_url,
-      commitSha: p.commit_sha,
-      primaryLanguage: p.primary_language,
-      isFork: p.is_fork,
-      contributionStatement: p.contribution_statement,
-      status: p.status,
-      coverage: p.coverage,
-      notices: p.notices ?? [],
-      evidence: (p.passport_evidence ?? [])
-        .sort((a, b) => a.path.localeCompare(b.path) || a.start_line - b.start_line)
-        .map((e) => ({
-          id: e.id,
-          repo: p.repo_full_name,
-          detector: e.detector,
-          category: e.category,
-          finding: e.finding,
-          basis: e.basis,
-          path: e.path,
-          startLine: e.start_line,
-          endLine: e.end_line,
-          excerpt: e.excerpt,
-          sourceUrl: e.source_url,
-          limitations: e.limitations ?? [],
-        })),
-    })),
+    // Older snapshots of a reimported repository are marked stale so they
+    // keep provenance without feeding new summaries or shares (GH-10).
+    projects: markSuperseded(projects),
   };
 }
 
@@ -176,6 +197,8 @@ export async function saveProject(
           totalFiles: result.coverage.totalFiles,
           analyzedFiles: result.coverage.analyzedFiles,
           skippedFiles: result.coverage.skipped.length,
+          languages: result.coverage.languages,
+          skipReasons: skipReasonCounts(result.coverage.skipped),
           treeTruncated: result.coverage.treeTruncated,
         },
         notices: result.notices,
@@ -189,7 +212,12 @@ export async function saveProject(
   if (projectError || !project) throw new Error("Could not save the project.");
   const projectId = (project as { id: string }).id;
 
-  await admin.from("passport_projects").delete().eq("passport_id", passportId).eq("repo_id", result.repository.id).neq("id", projectId);
+  // GH-10: older snapshots of the same repository are kept, not deleted.
+  // loadPassport marks them stale so provenance survives and previously
+  // shared records keep resolving to the evidence they cited. Evidence is
+  // replaced only for this exact snapshot; the upsert above means a retry of
+  // the same commit reuses the same project row and deterministic finding
+  // ids, so retries cannot duplicate findings.
   await admin.from("passport_evidence").delete().eq("project_id", projectId);
   if (result.findings.length) {
     const { error } = await admin.from("passport_evidence").insert(
@@ -224,7 +252,7 @@ export async function removeProject(ownerId: string, repoFullName: string): Prom
   return refreshSummary(passportId);
 }
 
-export type ShareSummary = { id: string; label: string; fields: ShareField[]; createdAt: string; revokedAt: string | null; lastAccessedAt: string | null };
+export type ShareSummary = { id: string; label: string; fields: ShareField[]; createdAt: string; expiresAt: string | null; revokedAt: string | null; lastAccessedAt: string | null };
 
 export async function listShares(ownerId: string): Promise<ShareSummary[]> {
   const passportId = await passportIdFor(ownerId);
@@ -232,29 +260,49 @@ export async function listShares(ownerId: string): Promise<ShareSummary[]> {
   const admin = createAdminSupabaseClient();
   const { data } = await admin
     .from("passport_shares")
-    .select("id,label,allowed_fields,created_at,revoked_at,last_accessed_at")
+    .select("id,label,allowed_fields,created_at,expires_at,revoked_at,last_accessed_at")
     .eq("passport_id", passportId)
     .order("created_at", { ascending: false });
-  return ((data ?? []) as Array<{ id: string; label: string; allowed_fields: ShareField[]; created_at: string; revoked_at: string | null; last_accessed_at: string | null }>).map((s) => ({
+  return ((data ?? []) as Array<{ id: string; label: string; allowed_fields: ShareField[]; created_at: string; expires_at: string | null; revoked_at: string | null; last_accessed_at: string | null }>).map((s) => ({
     id: s.id,
     label: s.label,
     fields: s.allowed_fields,
     createdAt: s.created_at,
+    expiresAt: s.expires_at,
     revokedAt: s.revoked_at,
     lastAccessedAt: s.last_accessed_at,
   }));
 }
 
-export async function createShare(ownerId: string, label: string, fields: string[]): Promise<{ token: string } | null> {
+/**
+ * Creates a scoped share link (PASS-06): the candidate names the audience
+ * (label), the included fields, and an optional expiry. Employer-private
+ * notes and hidden tests are excluded by construction — they live in other
+ * tables and projectForShare never copies them.
+ */
+export async function createShare(
+  ownerId: string,
+  label: string,
+  fields: string[],
+  opts: { expiresAt?: unknown } = {},
+): Promise<{ token: string } | { error: string }> {
   const passportId = await passportIdFor(ownerId);
-  if (!passportId) return null;
+  if (!passportId) return { error: "Add a project to your passport before sharing it." };
+  const expiry = validateExpiryInput(opts.expiresAt);
+  if (!expiry.ok) return { error: expiry.error };
   const allowed = SHAREABLE_FIELDS.filter((f) => fields.includes(f));
   const token = randomBytes(24).toString("base64url");
   const admin = createAdminSupabaseClient();
   const { error } = await admin
     .from("passport_shares")
-    .insert({ passport_id: passportId, token_hash: hashToken(token), label: label.slice(0, 80), allowed_fields: allowed });
-  return error ? null : { token };
+    .insert({
+      passport_id: passportId,
+      token_hash: hashToken(token),
+      label: label.slice(0, 80),
+      allowed_fields: allowed,
+      expires_at: expiry.expiresAt || null,
+    });
+  return error ? { error: "Could not create the share link." } : { token };
 }
 
 export async function revokeShare(ownerId: string, shareId: string): Promise<boolean> {
@@ -271,29 +319,30 @@ export async function revokeShare(ownerId: string, shareId: string): Promise<boo
   return (data ?? []).length > 0;
 }
 
-type ShareRow = { id: string; passport_id: string; allowed_fields: ShareField[]; revoked_at: string | null };
+type ShareRow = { id: string; passport_id: string; allowed_fields: ShareField[]; revoked_at: string | null; expires_at: string | null };
 
 async function shareByToken(token: string): Promise<ShareRow | null> {
   if (!/^[A-Za-z0-9_-]{20,64}$/.test(token)) return null;
   const admin = createAdminSupabaseClient();
   const { data } = await admin
     .from("passport_shares")
-    .select("id,passport_id,allowed_fields,revoked_at")
+    .select("id,passport_id,allowed_fields,revoked_at,expires_at")
     .eq("token_hash", hashToken(token))
     .maybeSingle();
   return (data as ShareRow | null) ?? null;
 }
 
 async function projectedShare(share: ShareRow): Promise<PassportData | null> {
-  if (share.revoked_at) return null;
+  if (shareState({ revokedAt: share.revoked_at, expiresAt: share.expires_at }) !== "active") return null;
   const passport = await loadPassport(share.passport_id);
   return passport ? projectForShare(passport, share.allowed_fields) : null;
 }
 
-export async function resolveShare(token: string): Promise<{ status: "ok"; passport: PassportData } | { status: "revoked" | "missing" }> {
+export async function resolveShare(token: string): Promise<{ status: "ok"; passport: PassportData } | { status: "revoked" | "missing" | "expired" }> {
   const share = await shareByToken(token);
   if (!share) return { status: "missing" };
-  if (share.revoked_at) return { status: "revoked" };
+  const state = shareState({ revokedAt: share.revoked_at, expiresAt: share.expires_at });
+  if (state !== "active") return { status: state };
   const passport = await projectedShare(share);
   if (!passport) return { status: "missing" };
   const admin = createAdminSupabaseClient();
@@ -347,7 +396,7 @@ export async function listReviews(organizationId: string): Promise<ReviewSummary
   const admin = createAdminSupabaseClient();
   const { data } = await admin
     .from("employer_passport_reviews")
-    .select("id,share_id,role_title,decision,decided_at,private_note,created_at,passport_shares(id,passport_id,allowed_fields,revoked_at)")
+    .select("id,share_id,role_title,decision,decided_at,private_note,created_at,passport_shares(id,passport_id,allowed_fields,revoked_at,expires_at)")
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false });
   const rows = (data ?? []) as unknown as ReviewRow[];
@@ -373,7 +422,7 @@ export async function getReview(organizationId: string, reviewId: string) {
   const admin = createAdminSupabaseClient();
   const { data } = await admin
     .from("employer_passport_reviews")
-    .select("id,share_id,role_title,decision,decided_at,private_note,created_at,passport_shares(id,passport_id,allowed_fields,revoked_at)")
+    .select("id,share_id,role_title,decision,decided_at,private_note,created_at,passport_shares(id,passport_id,allowed_fields,revoked_at,expires_at)")
     .eq("organization_id", organizationId)
     .eq("id", reviewId)
     .maybeSingle();
@@ -405,4 +454,118 @@ export async function recordDecision(organizationId: string, reviewId: string, u
     .eq("id", reviewId)
     .select("id");
   return (data ?? []).length > 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Corrections (PASS-08)                                               */
+/* ------------------------------------------------------------------ */
+
+type CorrectionRow = {
+  id: string;
+  finding_id: string;
+  project_id: string | null;
+  reason: string;
+  status: CorrectionStatus;
+  created_at: string;
+  resolved_at: string | null;
+  resolution_note: string;
+};
+
+const toCorrection = (r: CorrectionRow): Correction => ({
+  id: r.id,
+  findingId: r.finding_id,
+  projectId: r.project_id,
+  reason: r.reason,
+  status: r.status,
+  createdAt: r.created_at,
+  resolvedAt: r.resolved_at,
+  resolutionNote: r.resolution_note,
+});
+
+/**
+ * Flags a finding as inaccurate. The finding row is never mutated — the
+ * correction is a separate record — so employer audit history is preserved
+ * (PASS-08).
+ */
+export async function flagFinding(
+  ownerId: string,
+  repoFullName: string,
+  findingId: string,
+  reason: string,
+): Promise<{ correction: Correction } | { error: string }> {
+  const checked = validateCorrectionReason(reason);
+  if (!checked.ok) return { error: checked.error };
+  const passportId = await passportIdFor(ownerId);
+  if (!passportId) return { error: "No passport to correct yet." };
+  const admin = createAdminSupabaseClient();
+  const { data: project } = await admin
+    .from("passport_projects")
+    .select("id")
+    .eq("passport_id", passportId)
+    .eq("repo_full_name", repoFullName)
+    .order("analyzed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!project) return { error: "Unknown project." };
+  const projectId = (project as { id: string }).id;
+  const { data: evidence } = await admin
+    .from("passport_evidence")
+    .select("id")
+    .eq("project_id", projectId)
+    .eq("id", findingId)
+    .maybeSingle();
+  if (!evidence) return { error: "Unknown finding." };
+  const { data, error } = await admin
+    .from("passport_corrections")
+    .insert({ passport_id: passportId, project_id: projectId, finding_id: findingId, reason: checked.reason })
+    .select("id,finding_id,project_id,reason,status,created_at,resolved_at,resolution_note")
+    .single();
+  if (error || !data) return { error: "Could not file the correction." };
+  return { correction: toCorrection(data as CorrectionRow) };
+}
+
+export async function listCorrections(ownerId: string): Promise<Correction[]> {
+  const passportId = await passportIdFor(ownerId);
+  if (!passportId) return [];
+  const admin = createAdminSupabaseClient();
+  const { data } = await admin
+    .from("passport_corrections")
+    .select("id,finding_id,project_id,reason,status,created_at,resolved_at,resolution_note")
+    .eq("passport_id", passportId)
+    .order("created_at", { ascending: false });
+  return ((data ?? []) as CorrectionRow[]).map(toCorrection);
+}
+
+/** Resolves a correction with a note. History is appended, never rewritten. */
+export async function resolveCorrection(ownerId: string, correctionId: string, note: string): Promise<boolean> {
+  const passportId = await passportIdFor(ownerId);
+  if (!passportId) return false;
+  if (!/^[0-9a-f-]{36}$/.test(correctionId)) return false;
+  const admin = createAdminSupabaseClient();
+  const { data } = await admin
+    .from("passport_corrections")
+    .update({ status: "resolved", resolution_note: note.slice(0, 1000), resolved_at: new Date().toISOString() })
+    .eq("id", correctionId)
+    .eq("passport_id", passportId)
+    .eq("status", "open")
+    .select("id");
+  return (data ?? []).length > 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* GitHub disconnect (GH-11)                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Disconnects GitHub from the passport. Passport imports use the public API
+ * (no stored OAuth credential), so disconnecting removes the linked login
+ * and stops future imports from associating with it. Already-imported
+ * projects are kept until removed individually.
+ */
+export async function disconnectGithub(ownerId: string): Promise<{ disconnected: boolean; explanation: string }> {
+  const passportId = await passportIdFor(ownerId);
+  if (!passportId) return { disconnected: false, explanation: githubDisconnectExplanation() };
+  const admin = createAdminSupabaseClient();
+  await admin.from("passports").update({ github_login: null }).eq("id", passportId);
+  return { disconnected: true, explanation: githubDisconnectExplanation() };
 }

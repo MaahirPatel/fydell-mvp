@@ -37,7 +37,7 @@ export default function AuthShell({
     >
       <h1 className="auth-display">{title}</h1>
       {description ? (
-        <p className="mt-3 max-w-[42ch] text-[15px] font-[430] leading-[1.6] tracking-[-0.006em] text-[var(--text-secondary)]">
+        <p className="mt-3 max-w-[42ch] text-app-body font-[430] leading-[1.6] tracking-[-0.006em] text-[var(--text-secondary)]">
           {description}
         </p>
       ) : null}
@@ -45,7 +45,7 @@ export default function AuthShell({
       <div className="mt-8">{children}</div>
 
       {footer ? (
-        <div className="mt-8 border-t border-[var(--border-subtle)] pt-5 text-[13.5px] text-[var(--text-secondary)]">
+        <div className="mt-8 border-t border-[var(--border-subtle)] pt-5 text-app-body text-[var(--text-secondary)]">
           {footer}
         </div>
       ) : null}

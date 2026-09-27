@@ -33,33 +33,33 @@ export default function PilotRoleCards() {
             <h2 className="text-[18px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
               {role.title}
             </h2>
-            <p className="mt-2 text-[15px] leading-[1.6] text-[rgba(244,245,247,0.66)]">
+            <p className="mt-2 text-app-body leading-[1.6] text-[rgba(244,245,247,0.66)]">
               {role.shortDescription}
             </p>
 
             <div className="mt-5 border-t border-white/[0.07] pt-4">
-              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+              <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
                 Recommended simulation
               </p>
               <p className="mt-1.5 flex items-baseline gap-2.5">
-                <span className="text-[15px] text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+                <span className="text-app-body text-[#F4F5F7]" style={{ fontWeight: 560 }}>
                   {sim.title}
                 </span>
-                <span className="text-[13px] tabular-nums text-[rgba(244,245,247,0.5)]">
+                <span className="text-app-meta tabular-nums text-[rgba(244,245,247,0.5)]">
                   5 minutes
                 </span>
               </p>
             </div>
 
             <div className="mt-4">
-              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+              <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
                 Skills observed
               </p>
               <ul className="mt-2 space-y-1.5">
                 {skills.map((skill) => (
                   <li
                     key={skill}
-                    className="flex gap-2.5 text-[14px] leading-[1.5] text-[rgba(244,245,247,0.72)]"
+                    className="flex gap-2.5 text-app-body leading-[1.5] text-[rgba(244,245,247,0.72)]"
                   >
                     <span aria-hidden="true" className="mt-[8px] h-[4px] w-[4px] shrink-0 rounded-full bg-[rgba(140,150,255,0.85)]" />
                     {skill}
@@ -72,7 +72,7 @@ export default function PilotRoleCards() {
             <Link
               href={`/simulations/start/${sim.slug}?pilot=1`}
               onClick={() => rememberChoice(roleKey)}
-              className="inline-flex h-11 items-center justify-center rounded-[9px] bg-[#F2F3F5] px-5 text-[14px] text-[#090A0D] transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[0.97]"
+              className="inline-flex h-11 items-center justify-center rounded-[9px] bg-[#F2F3F5] px-5 text-app-body text-[#090A0D] transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[0.97]"
               style={{ fontWeight: 570 }}
             >
               Start {sim.title}

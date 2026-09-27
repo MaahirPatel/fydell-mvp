@@ -33,17 +33,17 @@ export function ProductStage({
       <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-2.5">
           {chrome === "plain" ? <FydellMark width={14} /> : null}
-          <span className="truncate text-[13px] font-medium tracking-[-0.018em] text-[var(--text-primary)]">
+          <span className="truncate text-app-meta font-medium tracking-[-0.018em] text-[var(--text-primary)]">
             {title}
           </span>
           {source ? (
-            <span className="hidden shrink-0 text-[12.5px] text-[var(--text-tertiary)] sm:inline">
+            <span className="hidden shrink-0 text-app-meta text-[var(--text-tertiary)] sm:inline">
               {source}
             </span>
           ) : null}
         </div>
         {meta ? (
-          <div className="flex shrink-0 items-center gap-3 text-[12.5px] text-[var(--text-tertiary)]">
+          <div className="flex shrink-0 items-center gap-3 text-app-meta text-[var(--text-tertiary)]">
             {meta}
           </div>
         ) : null}
@@ -68,7 +68,7 @@ export function ProductStage({
           >
             <div className="mb-5 flex items-center gap-2 px-1.5">
               <FydellMark width={16} />
-              <span className="text-[13px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+              <span className="text-app-meta font-medium tracking-[-0.02em] text-[var(--text-primary)]">
                 fydell
               </span>
             </div>
@@ -76,7 +76,7 @@ export function ProductStage({
               {APP_NAV.map((item) => (
                 <li
                   key={item}
-                  className={`rounded-[6px] px-2 py-1.5 text-[12.5px] ${
+                  className={`rounded-[6px] px-2 py-1.5 text-app-meta ${
                     item === "Reports"
                       ? "bg-white/[0.06] text-[var(--text-primary)]"
                       : "text-[var(--text-secondary)]"

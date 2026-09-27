@@ -20,8 +20,8 @@ export default async function AdminPilotRequestsPage() {
 
       <div className="mt-8 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-[13px]">
-            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] text-[var(--text-secondary)]">
+          <table className="min-w-full text-left text-app-meta">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-app-meta text-[var(--text-secondary)]">
               <tr>
                 <th className="px-4 py-3.5 font-medium">Reference</th>
                 <th className="px-4 py-3.5 font-medium">Submitted</th>
@@ -65,14 +65,14 @@ export default async function AdminPilotRequestsPage() {
                     </td>
                     <td className="px-4 py-3.5">
                       <div className="text-[var(--text-primary)]">{row.full_name}</div>
-                      <div className="text-[12px] text-[var(--text-tertiary)]">{row.work_email}</div>
+                      <div className="text-app-meta text-[var(--text-tertiary)]">{row.work_email}</div>
                     </td>
                     <td className="px-4 py-3.5 text-[var(--text-primary)]">{row.company_name}</td>
                     <td className="px-4 py-3.5 text-[var(--text-secondary)]">{row.role_being_hired}</td>
                     <td className="px-4 py-3.5">
                       <AdminStatusBadge status={row.status} />
                     </td>
-                    <td className="px-4 py-3.5 text-[12px] text-[var(--text-tertiary)]">
+                    <td className="px-4 py-3.5 text-app-meta text-[var(--text-tertiary)]">
                       ack {row.acknowledgment_email_status || "-"}
                       <br />
                       admin {row.admin_notification_status || "-"}

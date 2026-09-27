@@ -20,14 +20,14 @@ export const dynamic = "force-dynamic";
 function Dead({ title, detail, hint }: { title: string; detail: string; hint?: string }) {
   return (
     <CandidateShell width="narrow">
-      <h1 className="text-[22px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+      <h1 className="text-app-page font-medium tracking-[-0.02em] text-[var(--text-primary)]">
         {title}
       </h1>
-      <p className="mt-3 text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">
+      <p className="mt-3 text-app-body leading-[1.65] text-[var(--text-secondary)]">
         {detail}
       </p>
       {hint ? (
-        <p className="mt-3 text-[13.5px] leading-[1.65] text-[var(--text-tertiary)]">
+        <p className="mt-3 text-app-body leading-[1.65] text-[var(--text-tertiary)]">
           {hint}
         </p>
       ) : null}
@@ -121,13 +121,13 @@ export default async function InvitePage({
 
   return (
     <CandidateShell>
-      <p className="text-[13px] font-medium text-[var(--text-tertiary)]">
+      <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
         Invitation from {orgName}
       </p>
       <h1 className="mt-2 text-[clamp(1.5rem,3vw,1.9rem)] font-medium leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)]">
         {orgName} would like to see how you work.
       </h1>
-      <p className="mt-3.5 max-w-[58ch] text-[15.5px] leading-[1.65] text-[var(--text-secondary)]">
+      <p className="mt-3.5 max-w-[58ch] text-app-body leading-[1.65] text-[var(--text-secondary)]">
         This is a piece of real {role?.title || content.roleKey} work rather than a
         quiz. You get the materials someone in the job would have, you can ask a
         colleague questions, and you produce one piece of work at the end. There
@@ -137,8 +137,8 @@ export default async function InvitePage({
       <dl className="mt-8 grid gap-px overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--border-subtle)] sm:grid-cols-3">
         {facts.map(([label, value]) => (
           <div key={label} className="bg-[var(--surface-raised)] px-4 py-3">
-            <dt className="text-[12px] text-[var(--text-tertiary)]">{label}</dt>
-            <dd className="mt-1 text-[13.5px] font-medium text-[var(--text-primary)]">
+            <dt className="text-app-meta text-[var(--text-tertiary)]">{label}</dt>
+            <dd className="mt-1 text-app-body font-medium text-[var(--text-primary)]">
               {value}
             </dd>
           </div>
@@ -170,7 +170,7 @@ export default async function InvitePage({
             </ButtonLink>
           </div>
         )}
-        <p className="mt-3 text-[13px] text-[var(--text-tertiary)]">
+        <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">
           Sent to {invitation.candidate_email}. Sign in with that address to accept.
           The timer does not start on this page, or when you sign in.
         </p>
@@ -179,25 +179,25 @@ export default async function InvitePage({
       <div className="mt-10 grid gap-5 lg:grid-cols-2">
         <Surface tone="panel">
           <div className="border-b border-[var(--border-subtle)] px-4 py-3">
-            <h2 className="text-[13.5px] font-medium text-[var(--text-primary)]">
+            <h2 className="text-app-body font-medium text-[var(--text-primary)]">
               Before you start
             </h2>
           </div>
           <ul className="divide-y divide-[var(--border-subtle)]">
-            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+            <li className="px-4 py-3 text-app-body leading-[1.6] text-[var(--text-secondary)]">
               Set aside {content.durationMinutes} uninterrupted minutes. Once you
               start, the clock runs.
             </li>
-            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+            <li className="px-4 py-3 text-app-body leading-[1.6] text-[var(--text-secondary)]">
               Use a laptop or desktop at least 1024px wide. There is a lot to read
               side by side.
             </li>
-            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+            <li className="px-4 py-3 text-app-body leading-[1.6] text-[var(--text-secondary)]">
               You will be asked to agree to what is recorded, and to run a quick
               system check, before the timer begins.
             </li>
             {skills ? (
-              <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+              <li className="px-4 py-3 text-app-body leading-[1.6] text-[var(--text-secondary)]">
                 What this looks at: {skills}.
               </li>
             ) : null}
@@ -206,17 +206,17 @@ export default async function InvitePage({
 
         <Surface tone="panel">
           <div className="border-b border-[var(--border-subtle)] px-4 py-3">
-            <h2 className="text-[13.5px] font-medium text-[var(--text-primary)]">
+            <h2 className="text-app-body font-medium text-[var(--text-primary)]">
               What is recorded
             </h2>
           </div>
           <dl className="divide-y divide-[var(--border-subtle)]">
             {recorded.map(([label, detail]) => (
               <div key={label} className="px-4 py-3">
-                <dt className="text-[13px] font-medium text-[var(--text-primary)]">
+                <dt className="text-app-meta font-medium text-[var(--text-primary)]">
                   {label}
                 </dt>
-                <dd className="mt-1 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                <dd className="mt-1 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                   {detail}
                 </dd>
               </div>
@@ -226,13 +226,13 @@ export default async function InvitePage({
       </div>
 
       <div className="mt-8 border-t border-[var(--border-subtle)] pt-5">
-        <p className="max-w-[70ch] text-[13.5px] leading-[1.7] text-[var(--text-secondary)]">
+        <p className="max-w-[70ch] text-app-body leading-[1.7] text-[var(--text-secondary)]">
           {orgName} receives a report of what you did and the evidence behind it.
           You keep your own copy, called a Work Receipt, and you decide whether
           anyone else ever sees it. Your result is not published, not listed, and
           not visible to any other company.
         </p>
-        <p className="mt-3 text-[13.5px] leading-[1.7] text-[var(--text-tertiary)]">
+        <p className="mt-3 text-app-body leading-[1.7] text-[var(--text-tertiary)]">
           If you need an adjustment to take part, or something goes wrong during
           the evaluation, write to <ContactLink /> or reply to the invitation from{" "}
           {orgName}.{" "}

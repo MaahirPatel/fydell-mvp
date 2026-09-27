@@ -21,7 +21,7 @@ function Section({
 }) {
   return (
     <section>
-      <h2 className="text-[13px] font-medium text-[var(--text-tertiary)]">{title}</h2>
+      <h2 className="text-app-meta font-medium text-[var(--text-tertiary)]">{title}</h2>
       <Surface tone="panel" className="mt-2.5 overflow-hidden">
         <ul className="divide-y divide-[var(--border-subtle)]">{children}</ul>
       </Surface>
@@ -44,10 +44,10 @@ function Row({
     <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 px-4 py-3.5">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="text-[14px] font-medium text-[var(--text-primary)]">{title}</p>
+          <p className="text-app-body font-medium text-[var(--text-primary)]">{title}</p>
           {tag}
         </div>
-        <p className="mt-1 text-[12.5px] leading-[1.5] text-[var(--text-tertiary)]">
+        <p className="mt-1 text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
           {detail}
         </p>
       </div>
@@ -108,10 +108,10 @@ export default async function CandidateHomePage() {
 
   return (
     <CandidateShell>
-      <h1 className="text-[22px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+      <h1 className="text-app-page font-medium tracking-[-0.02em] text-[var(--text-primary)]">
         Your evaluations
       </h1>
-      <p className="mt-2 max-w-[62ch] text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">
+      <p className="mt-2 max-w-[62ch] text-app-body leading-[1.65] text-[var(--text-secondary)]">
         Everything a company has invited you to, and the work you have already
         submitted. Your results stay here and stay yours.
       </p>
@@ -119,15 +119,15 @@ export default async function CandidateHomePage() {
       <div className="mt-8 space-y-7">
         {empty ? (
           <Surface tone="panel" className="px-5 py-7">
-            <p className="text-[14.5px] font-medium text-[var(--text-primary)]">
+            <p className="text-app-body font-medium text-[var(--text-primary)]">
               Nothing here yet
             </p>
-            <p className="mt-2 max-w-[58ch] text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+            <p className="mt-2 max-w-[58ch] text-app-body leading-[1.65] text-[var(--text-secondary)]">
               When a company invites you to an evaluation, it appears here. You
               cannot start one on your own from this page; an invitation always
               comes from the company that wants to see your work.
             </p>
-            <p className="mt-4 text-[13.5px]">
+            <p className="mt-4 text-app-body">
               <Link
                 href="/simulations"
                 className="text-[var(--text-primary)] underline underline-offset-2"
@@ -178,7 +178,7 @@ export default async function CandidateHomePage() {
                     inv.expires_at
                   ).toLocaleDateString()}`}
                   action={
-                    <span className="text-[12.5px] text-[var(--text-tertiary)]">
+                    <span className="text-app-meta text-[var(--text-tertiary)]">
                       Open the link in your email to accept
                     </span>
                   }

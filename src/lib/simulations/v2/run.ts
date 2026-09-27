@@ -70,12 +70,18 @@ export function buildV2AttemptInput(
     })
     .filter(Boolean);
 
+  // SIM-07: a recorded teammate-service outage must not reduce the
+  // candidate's evaluation. Only the stakeholder opportunity is affected;
+  // all other opportunities score normally.
+  const teammateOutage = events.some((e) => e.event_type === "teammate_service_outage");
+
   return {
     events,
     decisions,
     written,
     evidenceIds,
     stakeholderRuleIds,
+    teammateOutage,
   };
 }
 

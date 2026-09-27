@@ -1,6 +1,16 @@
 import type { RepoRef, RepositoryMeta, TreeEntry } from "./types";
+import { DEFAULT_RETRY_POLICY, shouldRetry, sleep, type RetryPolicy } from "./retry";
 
 export type Fetcher = (url: string, init?: RequestInit) => Promise<Response>;
+
+export type PublicRepo = {
+  name: string;
+  fullName: string;
+  language: string | null;
+  fork: boolean;
+  archived: boolean;
+  pushedAt: string | null;
+};
 
 const API = "https://api.github.com";
 const RAW = "https://raw.githubusercontent.com";
@@ -8,7 +18,7 @@ const TIMEOUT_MS = 10_000;
 
 export class GithubError extends Error {
   constructor(
-    public readonly code: "not_found" | "rate_limited" | "unavailable",
+    public readonly code: "not_found" | "rate_limited" | "unauthorized" | "unavailable",
     message: string,
     public readonly retryAfterSeconds?: number,
   ) {
@@ -47,9 +57,17 @@ function rateLimitError(res: Response): GithubError | null {
 }
 
 export class GithubClient {
-  constructor(private readonly fetcher: Fetcher = fetch) {}
+  private readonly policy: RetryPolicy;
 
-  private async request(url: string, accept?: string): Promise<Response> {
+  constructor(
+    private readonly fetcher: Fetcher = fetch,
+    policy: Partial<RetryPolicy> = {},
+  ) {
+    this.policy = { ...DEFAULT_RETRY_POLICY, ...policy };
+  }
+
+  /** Single attempt. Retries are applied by request, never here. */
+  private async attempt(url: string, accept?: string): Promise<Response> {
     const origin = new URL(url).origin;
     if (origin !== API && origin !== RAW) throw new GithubError("unavailable", "Refused request to a non-GitHub host.");
     let res: Response;
@@ -65,8 +83,30 @@ export class GithubClient {
     const limited = rateLimitError(res);
     if (limited) throw limited;
     if (res.status === 404) throw new GithubError("not_found", "Repository or file not found.");
+    // A rejected credential never heals on retry: terminal, accurate failure (GH-05).
+    if (res.status === 401)
+      throw new GithubError("unauthorized", "GitHub rejected the access token. It may have expired or been revoked.");
     if (!res.ok) throw new GithubError("unavailable", `GitHub returned ${res.status}.`);
     return res;
+  }
+
+  /**
+   * Bounded retries (GH-05): transient failures are retried with exponential
+   * backoff, short rate-limit waits are honoured, and `not_found` /
+   * `unauthorized` are never retried.
+   */
+  private async request(url: string, accept?: string): Promise<Response> {
+    let attempt = 0;
+    for (;;) {
+      try {
+        return await this.attempt(url, accept);
+      } catch (err) {
+        const decision = shouldRetry(err, attempt, this.policy);
+        if (!decision.retry) throw err;
+        attempt += 1;
+        await sleep(decision.delayMs);
+      }
+    }
   }
 
   async getRepository({ owner, repo }: RepoRef): Promise<RepositoryMeta & { private: boolean }> {
@@ -115,20 +155,61 @@ export class GithubClient {
     return res.text();
   }
 
-  async listPublicRepositories(user: string): Promise<
-    Array<{ name: string; fullName: string; language: string | null; fork: boolean; archived: boolean; pushedAt: string | null }>
-  > {
-    const res = await this.request(`${API}/users/${seg(user)}/repos?type=owner&sort=pushed&per_page=30`);
-    const body = (await res.json()) as Array<Record<string, unknown>>;
-    return body
-      .filter((r) => r.private !== true)
-      .map((r) => ({
-        name: String(r.name),
-        fullName: String(r.full_name),
-        language: typeof r.language === "string" ? r.language : null,
-        fork: r.fork === true,
-        archived: r.archived === true,
-        pushedAt: typeof r.pushed_at === "string" ? r.pushed_at : null,
-      }));
+  /**
+   * Lists public repositories, following API pagination up to `maxPages`.
+   * Stops early — and reports `truncated` — when pagination would leave the
+   * API host or exceed the page cap, so partial listings are explicit (GH-05,
+   * GH-07).
+   */
+  async listPublicRepositories(
+    user: string,
+    opts: { perPage?: number; maxPages?: number } = {},
+  ): Promise<{ repositories: PublicRepo[]; truncated: boolean }> {
+    const perPage = opts.perPage ?? 30;
+    const maxPages = opts.maxPages ?? 5;
+    const repositories: PublicRepo[] = [];
+    let url: string | null = `${API}/users/${seg(user)}/repos?type=owner&sort=pushed&per_page=${perPage}`;
+    let truncated = false;
+    for (let page = 0; page < maxPages && url; page++) {
+      const res = await this.request(url);
+      const body = (await res.json()) as Array<Record<string, unknown>>;
+      for (const r of body) {
+        if (r.private === true) continue;
+        repositories.push({
+          name: String(r.name),
+          fullName: String(r.full_name),
+          language: typeof r.language === "string" ? r.language : null,
+          fork: r.fork === true,
+          archived: r.archived === true,
+          pushedAt: typeof r.pushed_at === "string" ? r.pushed_at : null,
+        });
+      }
+      const next = nextPageUrl(res.headers.get("link"));
+      if (next === "refused") {
+        truncated = true;
+        url = null;
+      } else {
+        url = next;
+      }
+    }
+    if (url) truncated = true;
+    return { repositories, truncated };
   }
+}
+
+/**
+ * Follows RFC 5988 `Link` pagination. Returns the `rel="next"` URL, null
+ * when there is no next page, or "refused" when the next link points off
+ * api.github.com — which is never followed (GH-07).
+ */
+function nextPageUrl(linkHeader: string | null): string | "refused" | null {
+  if (!linkHeader) return null;
+  for (const part of linkHeader.split(",")) {
+    const m = part.match(/<([^>]+)>\s*;\s*rel="next"/);
+    if (m) {
+      const url = new URL(m[1], API);
+      return url.origin === API ? url.toString() : "refused";
+    }
+  }
+  return null;
 }

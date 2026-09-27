@@ -45,7 +45,7 @@ export default function UserAdminActions({
   }
 
   return (
-    <div className="space-y-3 text-[13px]">
+    <div className="space-y-3 text-app-meta">
       <button
         type="button"
         disabled={busy}
@@ -75,14 +75,14 @@ export default function UserAdminActions({
             if (!window.confirm("Suspend application access for this user?")) return;
             void run("suspend");
           }}
-          className="h-9 w-full rounded-[8px] border border-[rgba(242,107,130,0.35)] px-3 text-left text-[#F26B82]"
+          className="h-9 w-full rounded-[8px] border border-[rgba(242,107,130,0.35)] px-3 text-left text-[var(--fydell-risk)]"
         >
           Suspend access
         </button>
       )}
 
       <div className="rounded-[8px] border border-[rgba(255,255,255,0.1)] p-3">
-        <p className="mb-2 text-[12px] text-[rgba(244,245,247,0.5)]">Grant platform role</p>
+        <p className="mb-2 text-app-meta text-[rgba(244,245,247,0.5)]">Grant platform role</p>
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
@@ -127,7 +127,7 @@ export default function UserAdminActions({
         </div>
       ) : null}
 
-      {message ? <p className="text-[12px] text-[rgba(244,245,247,0.62)]">{message}</p> : null}
+      {message ? <p className="text-app-meta text-[rgba(244,245,247,0.62)]">{message}</p> : null}
     </div>
   );
 }

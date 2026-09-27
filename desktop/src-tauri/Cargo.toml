@@ -23,7 +23,6 @@ zip = "2"
 rlimit = "0.10"
 url = "2"
 keyring = "3"
-tauri-plugin-shell = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-deep-link = "2"
 

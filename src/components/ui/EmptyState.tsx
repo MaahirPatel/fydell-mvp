@@ -27,9 +27,9 @@ export function EmptyState({
         className,
       )}
     >
-      <p className="text-[14px] font-medium text-[var(--text-primary)]">{title}</p>
+      <p className="text-app-body font-medium text-[var(--text-primary)]">{title}</p>
       {description ? (
-        <p className="mt-1.5 max-w-[62ch] text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+        <p className="mt-1.5 max-w-[62ch] text-app-meta leading-[1.6] text-[var(--text-secondary)]">
           {description}
         </p>
       ) : null}

@@ -71,7 +71,8 @@
     "seed:sandbox-applied-ai": "tsx scripts/seed-sandbox-applied-ai.ts",
     "test:code-analysis": "tsx scripts/test-code-analysis-evals.ts",
     "test:sim-chat": "tsx --conditions react-server scripts/test-sim-chat.ts",
-    "test:sim-chat-api": "tsx --conditions react-server scripts/test-sim-chat-api.ts"
+    "test:sim-chat-api": "tsx --conditions react-server scripts/test-sim-chat-api.ts",
+    "test:profile": "tsx --conditions react-server scripts/test-engineering-profile.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

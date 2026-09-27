@@ -3,8 +3,9 @@ import { requireUser } from "@/lib/simulations/auth";
 import { GithubClient, GithubError } from "@/lib/passport/github/client";
 import { extractRepository } from "@/lib/passport/github/extract";
 import { parseGithubInput } from "@/lib/passport/github/parse";
-import { LIMITS } from "@/lib/passport/github/types";
+import { INTAKE_SCOPE, LIMITS } from "@/lib/passport/github/types";
 import { projectFromResult } from "@/lib/passport/assemble";
+import { disconnectGithub } from "@/lib/passport/store";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -60,8 +61,15 @@ export async function POST(req: Request) {
 
   if (parsed.kind === "profile") {
     try {
-      const repositoriesList = await new GithubClient().listPublicRepositories(parsed.user);
-      return NextResponse.json({ kind: "profile", user: parsed.user, repositories: repositoriesList });
+      const { repositories, truncated } = await new GithubClient().listPublicRepositories(parsed.user);
+      // GH-01: every intake response states the supported scope.
+      return NextResponse.json({
+        kind: "profile",
+        user: parsed.user,
+        repositories,
+        truncated,
+        intake: INTAKE_SCOPE,
+      });
     } catch (err) {
       if (err instanceof GithubError && err.code === "not_found") {
         return NextResponse.json({ error: "No GitHub account with that name." }, { status: 404 });
@@ -74,5 +82,12 @@ export async function POST(req: Request) {
   }
 
   const result = await extractRepository(parsed.ref);
-  return NextResponse.json({ kind: "repository", result, project: projectFromResult(result, "") });
+  return NextResponse.json({ kind: "repository", result, project: projectFromResult(result, ""), intake: INTAKE_SCOPE });
+}
+
+/** Disconnect GitHub from the passport (GH-11): removes the linked login and stops future association. */
+export async function DELETE() {
+  const user = await requireUser();
+  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  return NextResponse.json(await disconnectGithub(user.id));
 }

@@ -58,7 +58,7 @@ export default function ClosingCTA({
           </div>
 
           {note ? (
-            <p className="mt-8 max-w-[54ch] text-[13px] leading-[1.6] text-[var(--text-tertiary)]">
+            <p className="mt-8 max-w-[54ch] text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
               {note}
             </p>
           ) : null}

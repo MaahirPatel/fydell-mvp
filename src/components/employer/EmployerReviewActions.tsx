@@ -164,14 +164,14 @@ export default function EmployerReviewActions({ sessionId }: { sessionId: string
                     key={q.id}
                     className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-4 py-3"
                   >
-                    <p className="text-[13.5px] font-medium text-[var(--text-primary)]">
+                    <p className="text-app-body font-medium text-[var(--text-primary)]">
                       {q.question_text}
                     </p>
-                    <p className="mt-1 text-[12.5px] leading-[1.55] text-[var(--text-tertiary)]">
+                    <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-tertiary)]">
                       {q.purpose}
                     </p>
                     {existing ? (
-                      <p className="mt-2.5 border-l border-[var(--border-default)] pl-3 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                      <p className="mt-2.5 border-l border-[var(--border-default)] pl-3 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                         {existing.response_text}
                       </p>
                     ) : (
@@ -203,7 +203,7 @@ export default function EmployerReviewActions({ sessionId }: { sessionId: string
       ) : null}
 
       {msg ? (
-        <p role="status" className="text-[13px] text-[var(--text-secondary)]">
+        <p role="status" className="text-app-meta text-[var(--text-secondary)]">
           {msg}
         </p>
       ) : null}

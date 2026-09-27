@@ -14,7 +14,7 @@ export default function LogoutButton() {
     <button
       type="button"
       onClick={logout}
-      className="inline-flex h-9 w-full items-center justify-center rounded-[8px] border border-white/20 bg-[#12151C] px-3 text-[12.5px] font-semibold text-white transition-colors hover:bg-[#1A1E28]"
+      className="inline-flex h-9 w-full items-center justify-center rounded-[8px] border border-white/20 bg-[#12151C] px-3 text-app-meta font-semibold text-white transition-colors hover:bg-[#1A1E28]"
     >
       Sign out
     </button>

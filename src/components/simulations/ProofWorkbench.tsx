@@ -122,29 +122,29 @@ export default function ProofWorkbench({ runId, token }: { runId: string; token:
   return (
     <div className="flex min-h-screen flex-col bg-[var(--surface-canvas)] text-[var(--text-primary)]">
       <header className="flex items-center justify-between border-b border-[var(--border-subtle)] px-4 py-3">
-        <p className="text-[15px] font-medium tracking-[-0.02em]">Fydell · Northstar integration</p>
-        <p className="text-[13px] text-[var(--text-secondary)]">
+        <p className="text-app-body font-medium tracking-[-0.02em]">Fydell · Northstar integration</p>
+        <p className="text-app-meta text-[var(--text-secondary)]">
           {stage} · {saveState} · {remaining}
         </p>
       </header>
       <div className="grid flex-1 grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_320px]">
         <aside className="border-r border-[var(--border-subtle)] p-4">
-          <p className="text-[12px] text-[var(--text-tertiary)]">Objective</p>
-          <p className="mt-2 text-[14px] leading-5 text-[var(--text-secondary)]">
+          <p className="text-app-meta text-[var(--text-tertiary)]">Objective</p>
+          <p className="mt-2 text-app-body leading-5 text-[var(--text-secondary)]">
             Diagnose the CRM sync failure. Propose a plan. When information changes, update what must change and preserve what still holds.
           </p>
-          <button type="button" className="mt-4 text-left text-[13px] text-[var(--action-ink)]" onClick={() => void post("open_resource", { resourceId: "api-docs" })}>
+          <button type="button" className="mt-4 text-left text-app-meta text-[var(--action-ink)]" onClick={() => void post("open_resource", { resourceId: "api-docs" })}>
             Open API docs
           </button>
-          <p className="mt-6 text-[12px] text-[var(--text-tertiary)]">Resources</p>
-          <p className="mt-2 text-[13px] text-[var(--text-secondary)]">Accounts API · Auth notes · Error sample</p>
+          <p className="mt-6 text-app-meta text-[var(--text-tertiary)]">Resources</p>
+          <p className="mt-2 text-app-meta text-[var(--text-secondary)]">Accounts API · Auth notes · Error sample</p>
         </aside>
         <main className="p-4">
           {(Object.keys(empty) as Array<keyof ArtifactContent>).map((field) => (
             <label key={field} className="mb-3 block">
-              <span className="text-[12px] text-[var(--text-tertiary)]">{field.replace("_", " ")}</span>
+              <span className="text-app-meta text-[var(--text-tertiary)]">{field.replace("_", " ")}</span>
               <textarea
-                className="mt-1 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-[14px]"
+                className="mt-1 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-app-body"
                 rows={field === "recommendation" ? 4 : 2}
                 value={artifact[field]}
                 onChange={(e) => {
@@ -156,13 +156,13 @@ export default function ProofWorkbench({ runId, token }: { runId: string; token:
             </label>
           ))}
           <div className="mt-4 flex flex-wrap gap-2">
-            <button type="button" className="rounded-full bg-[var(--surface-paper)] px-4 py-2 text-[13px] text-[#111]" onClick={() => void post("commit_preliminary")}>
+            <button type="button" className="rounded-full bg-[var(--surface-paper)] px-4 py-2 text-app-meta text-[#111]" onClick={() => void post("commit_preliminary")}>
               Commit recommendation
             </button>
-            <button type="button" className="rounded-full border border-[var(--border-default)] px-4 py-2 text-[13px]" onClick={() => void post("acknowledge_auth")}>
+            <button type="button" className="rounded-full border border-[var(--border-default)] px-4 py-2 text-app-meta" onClick={() => void post("acknowledge_auth")}>
               Acknowledge engineering note
             </button>
-            <button type="button" className="rounded-full border border-[var(--border-default)] px-4 py-2 text-[13px]" onClick={() => void post("submit_final", { artifact })}>
+            <button type="button" className="rounded-full border border-[var(--border-default)] px-4 py-2 text-app-meta" onClick={() => void post("submit_final", { artifact })}>
               Submit work
             </button>
           </div>
@@ -178,31 +178,31 @@ export default function ProofWorkbench({ runId, token }: { runId: string; token:
                 }).then(() => refresh());
               }}
             >
-              <h2 className="text-[16px] font-medium">Defend your decisions</h2>
+              <h2 className="text-app-body font-medium">Defend your decisions</h2>
               {defense.map((q, i) => (
                 <label key={q.id} className="block">
-                  <span className="text-[14px] text-[var(--text-secondary)]">{q.prompt}</span>
+                  <span className="text-app-body text-[var(--text-secondary)]">{q.prompt}</span>
                   <textarea className="mt-1 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2" rows={3} value={q.body} onChange={(e) => setDefense((prev) => prev.map((p, idx) => (idx === i ? { ...p, body: e.target.value } : p)))} />
                 </label>
               ))}
-              <button type="submit" className="rounded-full bg-[var(--surface-paper)] px-4 py-2 text-[13px] text-[#111]">
+              <button type="submit" className="rounded-full bg-[var(--surface-paper)] px-4 py-2 text-app-meta text-[#111]">
                 Submit defense
               </button>
             </form>
           ) : null}
-          {done ? <p className="mt-6 text-[14px] text-[var(--text-secondary)]">Submitted. Fydell is reviewing evidence.</p> : null}
+          {done ? <p className="mt-6 text-app-body text-[var(--text-secondary)]">Submitted. Fydell is reviewing evidence.</p> : null}
         </main>
         <aside className="border-l border-[var(--border-subtle)] p-4">
           <div className="flex gap-2">
             {(["customer", "engineering", "sales"] as const).map((id) => (
-              <button key={id} type="button" className={`rounded-full px-3 py-1 text-[12px] ${agent === id ? "bg-[var(--surface-selected)]" : "text-[var(--text-tertiary)]"}`} onClick={() => setAgent(id)}>
+              <button key={id} type="button" className={`rounded-full px-3 py-1 text-app-meta ${agent === id ? "bg-[var(--surface-selected)]" : "text-[var(--text-tertiary)]"}`} onClick={() => setAgent(id)}>
                 {id}
               </button>
             ))}
           </div>
           <div className="mt-3 space-y-3">
             {messages.filter((m) => m.agent_id === agent).map((m) => (
-              <p key={m.id} className="text-[13px] leading-5 text-[var(--text-secondary)]">
+              <p key={m.id} className="text-app-meta leading-5 text-[var(--text-secondary)]">
                 <span className="text-[var(--text-tertiary)]">{m.direction === "inbound" ? m.agent_id : "you"} · </span>
                 {m.body}
               </p>
@@ -216,8 +216,8 @@ export default function ProofWorkbench({ runId, token }: { runId: string; token:
               setDraft("");
             }}
           >
-            <textarea className="w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-[13px]" rows={3} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Message" />
-            <button type="submit" className="mt-2 text-[13px] text-[var(--action-ink)]">
+            <textarea className="w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-app-meta" rows={3} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Message" />
+            <button type="submit" className="mt-2 text-app-meta text-[var(--action-ink)]">
               Send
             </button>
           </form>

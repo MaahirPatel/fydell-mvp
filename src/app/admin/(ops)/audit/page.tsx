@@ -24,16 +24,16 @@ export default async function AdminAuditPage() {
 
   return (
     <div>
-      <h1 className="text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+      <h1 className="text-app-page" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
         Audit log
       </h1>
-      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
+      <p className="mt-2 text-app-body text-[var(--text-secondary)]">
         Append-only operational history. Secrets are never stored.
       </p>
 
       <div className="mt-8 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
-        <table className="min-w-full text-left text-[13px]">
-          <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] font-medium text-[var(--text-secondary)]">
+        <table className="min-w-full text-left text-app-meta">
+          <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-app-meta font-medium text-[var(--text-secondary)]">
             <tr>
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3">Actor</th>

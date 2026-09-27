@@ -39,17 +39,17 @@ export default function ContactPage() {
                   key={term}
                   className="grid gap-2 border-t border-[var(--border-subtle)] py-4 first:border-t-0 sm:grid-cols-[90px_1fr]"
                 >
-                  <dt className="text-[13px] font-medium text-[var(--text-primary)]">
+                  <dt className="text-app-meta font-medium text-[var(--text-primary)]">
                     {term}
                   </dt>
-                  <dd className="text-[13px] leading-[1.55] text-[var(--text-secondary)]">
+                  <dd className="text-app-meta leading-[1.55] text-[var(--text-secondary)]">
                     {detail}
                   </dd>
                 </div>
               ))}
             </dl>
 
-            <p className="mt-6 text-[13px] leading-[1.6] text-[var(--text-tertiary)]">
+            <p className="mt-6 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
               Prefer email? Write to{" "}
               <ContactLink className="text-[var(--text-secondary)] underline underline-offset-4 hover:text-[var(--text-primary)]" />
               .

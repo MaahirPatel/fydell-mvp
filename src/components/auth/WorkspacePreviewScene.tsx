@@ -39,20 +39,20 @@ export default function WorkspacePreviewScene({
         <ol className="grid gap-3 sm:grid-cols-3">
           {STEPS.map((step) => (
             <li key={step.n} className="min-w-0">
-              <p className="text-[11.5px] tabular-nums text-[var(--text-tertiary)]">
+              <p className="text-app-caption tabular-nums text-[var(--text-tertiary)]">
                 {step.n}
               </p>
-              <p className="mt-1.5 text-[13.5px] font-medium text-[var(--text-primary)]">
+              <p className="mt-1.5 text-app-body font-medium text-[var(--text-primary)]">
                 {step.title}
               </p>
-              <p className="mt-1 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+              <p className="mt-1 text-app-meta leading-[1.5] text-[var(--text-secondary)]">
                 {step.detail}
               </p>
             </li>
           ))}
         </ol>
       ) : (
-        <p className="text-[12.5px] text-[var(--text-tertiary)]">
+        <p className="text-app-meta text-[var(--text-tertiary)]">
           The report a completed evaluation produces.
         </p>
       )}
@@ -60,7 +60,7 @@ export default function WorkspacePreviewScene({
       <HeroEvidenceScene />
 
       {variant === "signup" ? (
-        <p className="text-[12.5px] leading-[1.6] text-[var(--text-tertiary)]">
+        <p className="text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
           No candidate data exists until you invite someone.
         </p>
       ) : null}

@@ -2,7 +2,7 @@ import Link from "next/link";
 import FydellLogo from "@/components/brand/FydellLogo";
 
 /**
- * Chrome for every candidate page except the workbench itself: the passport,
+ * Chrome for every candidate page except the workbench itself: the profile,
  * invitations, results, and shared receipts all sit inside the same header.
  */
 export function CandidateShell({
@@ -15,11 +15,11 @@ export function CandidateShell({
   children: React.ReactNode;
   width?: "default" | "narrow" | "wide";
   action?: React.ReactNode;
-  current?: "passport" | "assessments";
+  current?: "profile" | "assessments";
 }) {
   const max = width === "narrow" ? "max-w-[620px]" : width === "wide" ? "max-w-[1160px]" : "max-w-[860px]";
   const links = [
-    { key: "passport", label: "Engineering Passport", href: "/app/candidate/passport" },
+    { key: "profile", label: "Profile", href: "/app/candidate/profile" },
     { key: "assessments", label: "Assessments", href: "/app/candidate" },
   ] as const;
 
@@ -38,7 +38,7 @@ export function CandidateShell({
                     key={l.key}
                     href={l.href}
                     aria-current={current === l.key ? "page" : undefined}
-                    className={`text-[13.5px] font-medium ${current === l.key ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
+                    className={`text-app-body font-medium ${current === l.key ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
                   >
                     {l.label}
                   </Link>

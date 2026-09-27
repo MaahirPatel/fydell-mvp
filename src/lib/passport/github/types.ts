@@ -1,5 +1,19 @@
 export const ANALYSIS_VERSION = "github-extract-v1";
 
+/**
+ * Supported intake (GH-01). Passport import starts with explicitly selected
+ * public repositories. Private repositories remain unavailable until scoped
+ * authorization, privacy and provider controls are verified. This constant
+ * is returned by the intake endpoint and referenced in docs so the supported
+ * scope is stated in code, not just in prose.
+ */
+export const INTAKE_SCOPE = {
+  scope: "public",
+  repositories: "public-only",
+  privateRepositories: "unavailable",
+  note: "Import starts with explicitly selected public repositories. Private repositories remain unavailable until scoped authorization, privacy and provider controls are verified.",
+} as const;
+
 export const LIMITS = {
   maxFilesPerRepository: 80,
   maxBytesPerFile: 128 * 1024,
@@ -97,6 +111,8 @@ export type ExtractionResult = {
     totalFiles: number;
     analyzedFiles: number;
     analyzedBytes: number;
+    /** Languages observed in the analyzed files, for the coverage display (GH-09). */
+    languages: string[];
     treeTruncated: boolean;
     skipped: SkippedFile[];
   };

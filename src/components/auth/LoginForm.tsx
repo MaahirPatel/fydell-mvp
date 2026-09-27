@@ -131,13 +131,13 @@ export default function LoginForm() {
         <div className="flex items-baseline justify-between gap-3">
           <label
             htmlFor="login-password"
-            className="text-[13px] font-medium text-[var(--text-primary)]"
+            className="text-app-meta font-medium text-[var(--text-primary)]"
           >
             Password
           </label>
           <Link
             href={withNext("/forgot-password", rawNext)}
-            className="text-[12.5px] text-[var(--text-secondary)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline"
+            className="text-app-meta text-[var(--text-secondary)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline"
           >
             Forgot password?
           </Link>

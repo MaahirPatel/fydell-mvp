@@ -28,7 +28,7 @@ export default function WorkbenchClient({
 
   if (!scenario || !runtime) {
     return (
-      <div className="p-8 text-[13px] text-[var(--text-secondary)]">
+      <div className="p-8 text-app-meta text-[var(--text-secondary)]">
         Unknown scenario: {scenarioId}
       </div>
     );

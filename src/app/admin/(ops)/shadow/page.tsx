@@ -95,7 +95,7 @@ export default async function AdminShadowAuditPage() {
                 ? null
                 : new Date(lock.locked_at) <= new Date(firstReveal.revealed_at);
               return (
-                <li key={lock.id} className="py-3 text-[13px]">
+                <li key={lock.id} className="py-3 text-app-meta">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-[var(--text-primary)]">
                       {missionTitles[lock.mission_id] || "Mission"} ·{" "}
@@ -103,13 +103,13 @@ export default async function AdminShadowAuditPage() {
                     </span>
                     <span className="font-medium capitalize text-[var(--text-primary)]">{lock.decision}</span>
                   </div>
-                  <p className="mt-1 text-[12px] text-[var(--text-secondary)]">
+                  <p className="mt-1 text-app-meta text-[var(--text-secondary)]">
                     Locked {new Date(lock.locked_at).toLocaleString()} · confidence{" "}
                     {lock.confidence} · by {lock.locked_by.slice(0, 8)}…
                   </p>
-                  <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">{lock.reasons}</p>
+                  <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">{lock.reasons}</p>
                   {firstReveal ? (
-                    <p className="mt-1 text-[12px]">
+                    <p className="mt-1 text-app-meta">
                       <span
                         className={
                           orderOk
@@ -125,7 +125,7 @@ export default async function AdminShadowAuditPage() {
                       </span>
                     </p>
                   ) : (
-                    <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">Report not yet revealed.</p>
+                    <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">Report not yet revealed.</p>
                   )}
                 </li>
               );

@@ -13,7 +13,7 @@ export default async function LabAnalysisPage({
 
   if (!isSimEngineEnabled()) {
     return (
-      <div className="p-8 text-[13px] text-[var(--text-secondary)]">
+      <div className="p-8 text-app-meta text-[var(--text-secondary)]">
         Simulation engine lab is disabled. Set SIM_ENGINE_ENABLED=1.
       </div>
     );

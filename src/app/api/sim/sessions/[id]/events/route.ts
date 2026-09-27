@@ -10,29 +10,9 @@ import {
 } from "@/lib/simulations/db";
 import { buildSessionChatContext, toChatEvents } from "@/lib/simulations/chat-context";
 import { deliverDueProactiveMessages } from "@/lib/simulations/proactive";
+import { ALLOWED_CANDIDATE_EVENTS } from "@/lib/simulations/observed-events";
 
 export const runtime = "nodejs";
-
-const ALLOWED_CANDIDATE_EVENTS = new Set([
-  "resource_opened",
-  "resource_downloaded",
-  "task_completed",
-  "task_reopened",
-  "notes_edited",
-  "deliverable_field_edited",
-  "workspace_action",
-  "curveball_acknowledged",
-  // v2 workbench semantic events
-  "table_sorted",
-  "table_filtered",
-  "row_flagged",
-  "ticket_selected",
-  "step_toggled",
-  "rule_reviewed",
-  "decision_selected",
-  "evidence_selected",
-  "deliverable_revised",
-]);
 
 export async function POST(
   req: NextRequest,

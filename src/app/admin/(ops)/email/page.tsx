@@ -69,10 +69,10 @@ export default async function AdminEmailCenterPage({
     <div>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+          <h1 className="text-app-page" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
             Email Center
           </h1>
-          <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
+          <p className="mt-2 text-app-body text-[var(--text-secondary)]">
             Outbox survives provider failures. Retry without losing customer records.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default async function AdminEmailCenterPage({
         >
           <button
             type="submit"
-            className="h-9 rounded-[8px] bg-[var(--control-solid)] px-3 text-[12.5px] text-[var(--control-solid-ink)]"
+            className="h-9 rounded-[8px] bg-[var(--control-solid)] px-3 text-app-meta text-[var(--control-solid-ink)]"
             style={{ fontWeight: 560 }}
           >
             Process queue now
@@ -97,7 +97,7 @@ export default async function AdminEmailCenterPage({
           <a
             key={key}
             href={`/admin/email?tab=${key}`}
-            className={`rounded-[8px] px-3 py-1.5 text-[12.5px] ${
+            className={`rounded-[8px] px-3 py-1.5 text-app-meta ${
               tab === key
                 ? "bg-[var(--surface-selected)] text-[var(--text-primary)]"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -111,8 +111,8 @@ export default async function AdminEmailCenterPage({
       <div className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
         <div className="overflow-x-auto">
           {tab === "suppressions" ? (
-            <table className="min-w-full text-left text-[13px]">
-              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] font-medium text-[var(--text-secondary)]">
+            <table className="min-w-full text-left text-app-meta">
+              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-app-meta font-medium text-[var(--text-secondary)]">
                 <tr>
                   <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Reason</th>
@@ -140,8 +140,8 @@ export default async function AdminEmailCenterPage({
               </tbody>
             </table>
           ) : (
-            <table className="min-w-full text-left text-[13px]">
-              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] font-medium text-[var(--text-secondary)]">
+            <table className="min-w-full text-left text-app-meta">
+              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-app-meta font-medium text-[var(--text-secondary)]">
                 <tr>
                   <th className="px-4 py-3">Recipient</th>
                   <th className="px-4 py-3">Template</th>
@@ -165,10 +165,10 @@ export default async function AdminEmailCenterPage({
                       <td className="px-4 py-3">{row.template_key}</td>
                       <td className="px-4 py-3 capitalize">{row.status}</td>
                       <td className="px-4 py-3 tabular-nums">{row.attempt_count}</td>
-                      <td className="px-4 py-3 text-[12px] text-[var(--text-secondary)]">
+                      <td className="px-4 py-3 text-app-meta text-[var(--text-secondary)]">
                         {row.provider_message_id || "-"}
                       </td>
-                      <td className="px-4 py-3 text-[12px] text-[#F26B82]">
+                      <td className="px-4 py-3 text-app-meta text-[var(--fydell-risk)]">
                         {row.last_error || "-"}
                       </td>
                     </tr>

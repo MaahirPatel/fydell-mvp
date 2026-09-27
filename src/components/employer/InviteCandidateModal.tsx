@@ -219,7 +219,7 @@ export function InviteModalProvider({
         {sent ? (
           <div className="space-y-4">
             <div className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3.5 py-3">
-              <p className="text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+              <p className="text-app-body leading-[1.6] text-[var(--text-secondary)]">
                 {sent.emailDelivery === "sent" || sent.emailDelivery === "delivered"
                   ? `Email ${sent.emailDelivery === "delivered" ? "delivered to" : "sent to"} ${sent.email}. The invitation record is created.`
                   : sent.emailDelivery === "failed"
@@ -228,8 +228,8 @@ export function InviteModalProvider({
               </p>
             </div>
             <div>
-              <p className="text-[12.5px] text-[var(--text-tertiary)]">Secure link</p>
-              <p className="mt-1 break-all rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-band)] px-3 py-2 font-mono text-[12.5px] text-[var(--text-secondary)]">
+              <p className="text-app-meta text-[var(--text-tertiary)]">Secure link</p>
+              <p className="mt-1 break-all rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-band)] px-3 py-2 font-mono text-app-meta text-[var(--text-secondary)]">
                 {sent.inviteUrl}
               </p>
               <Button
@@ -310,11 +310,11 @@ export function InviteModalProvider({
               </Field>
             ) : selectedSim ? (
               <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-3.5 py-3">
-                <p className="text-[12.5px] text-[var(--text-tertiary)]">Evaluation</p>
-                <p className="mt-0.5 text-[13.5px] font-medium text-[var(--text-primary)]">
+                <p className="text-app-meta text-[var(--text-tertiary)]">Evaluation</p>
+                <p className="mt-0.5 text-app-body font-medium text-[var(--text-primary)]">
                   {selectedSim.title}
                 </p>
-                <p className="mt-1 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+                <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
                   {selectedSim.tagline}
                 </p>
               </div>

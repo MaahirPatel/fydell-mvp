@@ -74,6 +74,8 @@ export interface Receipt {
 
 export interface InvokeErrorBody {
   code: string;
+  /** Stable support reference, e.g. "FYDELL-E1007" (DESK-20). */
+  ref?: string;
   message: string;
   expected_rev?: number;
   actual_rev?: number;
@@ -95,6 +97,114 @@ export function isAuthRequired(e: unknown): boolean {
   );
 }
 
+export function isSessionLocked(e: unknown): e is { message: string } {
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    (e as InvokeErrorBody).code === "session_locked"
+  );
+}
+
+export function isVersionBlocked(
+  e: unknown
+): e is { message: string } {
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    (e as InvokeErrorBody).code === "version_blocked"
+  );
+}
+
+/* ---------------- DESK-09: save/sync ---------------- */
+
+export type SyncPhase =
+  | "saved_local"
+  | "syncing"
+  | "synced"
+  | "sync_failed"
+  | "conflict";
+
+export interface SyncView {
+  phase: SyncPhase;
+  dirty_paths: string[];
+  last_error: string | null;
+  server_revision: number;
+  conflict_server_rev: number | null;
+  last_synced_at: string | null;
+}
+
+/* ---------------- DESK-10: recovery ---------------- */
+
+export type RecoveryOutcome =
+  | { kind: "none" }
+  | {
+      kind: "resume_active";
+      unsynced_paths: string[];
+      server_revision: number;
+    }
+  | { kind: "resume_joined" }
+  | { kind: "workspace_missing"; session_id: string }
+  | { kind: "locked"; pid: number };
+
+/* ---------------- DESK-06: provisioning ---------------- */
+
+export type ProvisionStepId =
+  | "version"
+  | "preflight"
+  | "fetch"
+  | "runtime"
+  | "start"
+  | "materialize";
+
+export interface ProvisionProgress {
+  step: ProvisionStepId;
+  state: "started" | "ok" | "failed";
+  message?: string | null;
+}
+
+/* ---------------- DESK-19: version gate ---------------- */
+
+export type VersionGate =
+  | {
+      kind: "current";
+      update_available: boolean;
+      latest: string | null;
+      download_url: string | null;
+    }
+  | {
+      kind: "blocked";
+      current: string;
+      minimum: string;
+      download_url: string | null;
+    }
+  | { kind: "unknown" };
+
+/* ---------------- DESK-20: diagnostics ---------------- */
+
+export interface ErrorNote {
+  ts: string;
+  code: string;
+  ref: string;
+  message: string;
+}
+
+export interface Diagnostics {
+  app_version: string;
+  os: string;
+  arch: string;
+  platform_host: string;
+  session: {
+    status: string;
+    has_platform_session: boolean;
+    server_revision: number;
+    sync_phase: string;
+    unsynced_files: number;
+  };
+  file_count: number;
+  event_count: number;
+  recent_errors: ErrorNote[];
+}
+
 export const api = {
   // Auth (src-tauri/src/auth.rs)
   authSignIn: () => invoke<void>("auth_sign_in"),
@@ -108,6 +218,17 @@ export const api = {
   sessionStatus: () => invoke<SessionInfo>("session_status"),
   syncState: (notes: string | null, workspace_snapshot: Record<string, unknown> | null) =>
     invoke<number>("sync_state", { notes, workspaceSnapshot: workspace_snapshot }),
+  // Recovery (src-tauri/src/recovery.rs) — DESK-10
+  recoveryStatus: () => invoke<RecoveryOutcome>("recovery_status"),
+  // Sync (src-tauri/src/sync.rs) — DESK-09 / DESK-11
+  syncStatus: () => invoke<SyncView>("sync_status"),
+  syncNow: () => invoke<SyncView>("sync_now"),
+  resolveSyncConflict: (strategy: "keep_local" | "take_remote") =>
+    invoke<SyncView>("resolve_sync_conflict", { strategy }),
+  // Version gate (src-tauri/src/version.rs) — DESK-19
+  checkClientVersion: () => invoke<VersionGate>("check_client_version"),
+  // Diagnostics (src-tauri/src/diagnostics.rs) — DESK-20
+  diagnostics: () => invoke<Diagnostics>("diagnostics"),
   // Workspace (src-tauri/src/workspace.rs)
   listFiles: () => invoke<FileEntry[]>("list_files"),
   readFile: (path: string) => invoke<FileContent>("read_file", { path }),

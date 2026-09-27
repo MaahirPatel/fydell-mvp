@@ -35,7 +35,7 @@ export function Stepper({
             <div className="flex min-w-0 flex-col items-center gap-2">
               <span
                 aria-hidden
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[11px] font-medium"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-app-caption font-medium"
                 style={
                   done
                     ? { background: "var(--color-good)", borderColor: "var(--color-good)", color: "#08090a" }

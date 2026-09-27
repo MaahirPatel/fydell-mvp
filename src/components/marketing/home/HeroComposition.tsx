@@ -33,7 +33,7 @@ function WorkbenchTable() {
           {["period", "line", "shift", "completed", "scrap", "yield"].map((h) => (
             <th
               key={h}
-              className="px-2 py-1.5 text-left font-mono text-[11.5px] font-normal text-[var(--text-tertiary)]"
+              className="px-2 py-1.5 text-left font-mono text-app-caption font-normal text-[var(--text-tertiary)]"
             >
               {h}
             </th>
@@ -58,7 +58,7 @@ function WorkbenchTable() {
               (cell, ci) => (
                 <td
                   key={ci}
-                  className="border-t border-[var(--border-subtle)] px-2 py-1.5 font-mono text-[11.5px] tabular-nums"
+                  className="border-t border-[var(--border-subtle)] px-2 py-1.5 font-mono text-app-caption tabular-nums"
                   style={{
                     color: r.risk
                       ? "var(--fydell-risk)"
@@ -81,8 +81,8 @@ function WorkbenchTable() {
 function MetaRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-3 py-2">
-      <span className="shrink-0 text-[12px] text-[var(--text-tertiary)]">{label}</span>
-      <span className="min-w-0 text-right text-[12.5px] leading-[1.4] text-[var(--text-primary)]">
+      <span className="shrink-0 text-app-meta text-[var(--text-tertiary)]">{label}</span>
+      <span className="min-w-0 text-right text-app-meta leading-[1.4] text-[var(--text-primary)]">
         {children}
       </span>
     </div>
@@ -109,7 +109,7 @@ export default function HeroComposition() {
                 {APP_NAV.map((item) => (
                   <li
                     key={item}
-                    className={`rounded-[6px] px-2.5 py-1.5 text-[12.5px] ${
+                    className={`rounded-[6px] px-2.5 py-1.5 text-app-meta ${
                       item === "Reports"
                         ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]"
                         : "text-[var(--text-secondary)]"
@@ -119,10 +119,10 @@ export default function HeroComposition() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-5 px-2.5 text-[12px] font-medium text-[var(--text-tertiary)]">
+              <p className="mt-5 px-2.5 text-app-meta font-medium text-[var(--text-tertiary)]">
                 Open
               </p>
-              <p className="mt-1.5 rounded-[6px] bg-[var(--surface-hover)] px-2.5 py-1.5 text-[12px] leading-[1.4] text-[var(--text-secondary)]">
+              <p className="mt-1.5 rounded-[6px] bg-[var(--surface-hover)] px-2.5 py-1.5 text-app-meta leading-[1.4] text-[var(--text-secondary)]">
                 {NORTHLINE_SCENARIO.evaluation}
               </p>
             </aside>
@@ -130,7 +130,7 @@ export default function HeroComposition() {
             <div className="min-w-0 px-5 py-4 sm:px-6 sm:py-5">
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className="inline-flex items-center gap-1.5 text-[12px] font-medium"
+                  className="inline-flex items-center gap-1.5 text-app-meta font-medium"
                   style={{ color: "var(--fydell-verified)" }}
                 >
                   <span
@@ -140,7 +140,7 @@ export default function HeroComposition() {
                   />
                   In review
                 </span>
-                <span className="text-[12px] text-[var(--text-tertiary)]">
+                <span className="text-app-meta text-[var(--text-tertiary)]">
                   {NORTHLINE_SCENARIO.company} · synthetic
                 </span>
               </div>
@@ -150,11 +150,11 @@ export default function HeroComposition() {
               <p className="mt-2 text-[22px] font-[560] leading-[1.2] tracking-[-0.02em] text-[var(--text-primary)]">
                 Evidence report
               </p>
-              <p className="mt-3 max-w-[62ch] text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
+              <p className="mt-3 max-w-[62ch] text-app-body leading-[1.55] text-[var(--text-secondary)]">
                 {NORTHLINE_CONCLUSION}
               </p>
 
-              <p className="mt-6 text-[12px] font-medium text-[var(--text-tertiary)]">
+              <p className="mt-6 text-app-meta font-medium text-[var(--text-tertiary)]">
                 Claims
               </p>
               <ol className="mt-2 space-y-0">
@@ -175,10 +175,10 @@ export default function HeroComposition() {
                         className="absolute left-0 top-3.5 h-1.5 w-1.5 rounded-full"
                         style={{ background: color }}
                       />
-                      <p className="pl-4 text-[13px] leading-[1.45] text-[var(--text-primary)]">
+                      <p className="pl-4 text-app-meta leading-[1.45] text-[var(--text-primary)]">
                         {claim.text}
                       </p>
-                      <p className="mt-1 pl-4 text-[11.5px] text-[var(--text-tertiary)]">
+                      <p className="mt-1 pl-4 text-app-caption text-[var(--text-tertiary)]">
                         {claim.citations.length} cited
                         {claim.limitation ? " · limitation recorded" : ""}
                       </p>
@@ -196,14 +196,14 @@ export default function HeroComposition() {
               <MetaRow label="Duration">{NORTHLINE_SCENARIO.duration}</MetaRow>
               <MetaRow label="Source">quality_events.csv</MetaRow>
 
-              <p className="mt-4 text-[12px] font-medium text-[var(--text-tertiary)]">
+              <p className="mt-4 text-app-meta font-medium text-[var(--text-tertiary)]">
                 Cited rows
               </p>
               <div className="mt-2 overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-deep)]">
                 {excerpt.map((line) => (
                   <p
                     key={line.text}
-                    className="truncate px-2 py-1 font-mono text-[11.5px] leading-[1.45]"
+                    className="truncate px-2 py-1 font-mono text-app-caption leading-[1.45]"
                     style={{
                       background: line.highlight
                         ? "color-mix(in srgb, var(--fydell-evidence) 7%, transparent)"

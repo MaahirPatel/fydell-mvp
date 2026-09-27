@@ -23,7 +23,7 @@ function WorkbenchLoading() {
       role="status"
       aria-live="polite"
     >
-      <p className="text-[13px] text-[var(--text-tertiary)]">Preparing the workbench</p>
+      <p className="text-app-meta text-[var(--text-tertiary)]">Preparing the workbench</p>
     </div>
   );
 }

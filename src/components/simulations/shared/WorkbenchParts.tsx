@@ -29,12 +29,12 @@ export function CodeEditorSurface({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] px-3 py-2">
-        <label className="text-[11px] text-[var(--text-tertiary)]" htmlFor="lang">
+        <label className="text-app-caption text-[var(--text-tertiary)]" htmlFor="lang">
           Language
         </label>
         <select
           id="lang"
-          className="platform-select h-7 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-[12px] text-[var(--text-primary)]"
+          className="platform-select h-7 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-app-meta text-[var(--text-primary)]"
           value={language}
           disabled={readOnly}
           onChange={(e) => onLanguageChange?.(e.target.value as "javascript" | "typescript" | "python")}
@@ -50,7 +50,7 @@ export function CodeEditorSurface({
       </div>
       <textarea
         className={cn(
-          "min-h-0 flex-1 resize-none bg-[var(--surface-canvas)] p-3 font-mono text-[12px] leading-relaxed text-[var(--text-primary)] outline-none",
+          "min-h-0 flex-1 resize-none bg-[var(--surface-canvas)] p-3 font-mono text-app-meta leading-relaxed text-[var(--text-primary)] outline-none",
           "focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--action-ink)]"
         )}
         spellCheck={false}
@@ -60,7 +60,7 @@ export function CodeEditorSurface({
         aria-label="Integration script editor"
       />
       {output ? (
-        <pre className="max-h-28 overflow-auto border-t border-[var(--border-default)] bg-[var(--surface-raised)] p-3 font-mono text-[11px] text-[var(--text-secondary)]">
+        <pre className="max-h-28 overflow-auto border-t border-[var(--border-default)] bg-[var(--surface-raised)] p-3 font-mono text-app-caption text-[var(--text-secondary)]">
           {output}
         </pre>
       ) : null}
@@ -91,7 +91,7 @@ export function ApiConsole({
     <div className="flex h-full min-h-0 flex-col gap-2 p-3">
       <div className="flex gap-2">
         <select
-          className="platform-select h-8 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-[12px]"
+          className="platform-select h-8 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-app-meta"
           value={method}
           disabled={readOnly}
           onChange={(e) => onChange({ method: e.target.value })}
@@ -104,7 +104,7 @@ export function ApiConsole({
           ))}
         </select>
         <input
-          className="platform-input h-8 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 font-mono text-[12px]"
+          className="platform-input h-8 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 font-mono text-app-meta"
           value={path}
           disabled={readOnly}
           onChange={(e) => onChange({ path: e.target.value })}
@@ -114,16 +114,16 @@ export function ApiConsole({
           Send
         </Button>
       </div>
-      <label className="text-[11px] text-[var(--text-tertiary)]">Headers</label>
+      <label className="text-app-caption text-[var(--text-tertiary)]">Headers</label>
       <textarea
-        className="platform-input min-h-[72px] rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 font-mono text-[11px]"
+        className="platform-input min-h-[72px] rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 font-mono text-app-caption"
         value={headers}
         readOnly={readOnly}
         onChange={(e) => onChange({ headers: e.target.value })}
       />
-      <label className="text-[11px] text-[var(--text-tertiary)]">Body</label>
+      <label className="text-app-caption text-[var(--text-tertiary)]">Body</label>
       <textarea
-        className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 font-mono text-[11px]"
+        className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 font-mono text-app-caption"
         value={body}
         readOnly={readOnly}
         onChange={(e) => onChange({ body: e.target.value })}
@@ -131,13 +131,13 @@ export function ApiConsole({
       {result ? (
         <div
           className={cn(
-            "rounded-[var(--radius-control)] border p-2 font-mono text-[11px]",
+            "rounded-[var(--radius-control)] border p-2 font-mono text-app-caption",
             result.success
               ? "border-[var(--fydell-good)] text-[var(--text-primary)]"
               : "border-[var(--fydell-risk)] text-[var(--text-primary)]"
           )}
         >
-          <div className="mb-1 text-[12px] font-medium">
+          <div className="mb-1 text-app-meta font-medium">
             {result.status}
             {result.requestId ? ` · ${result.requestId}` : ""}
           </div>
@@ -166,7 +166,7 @@ export function ResourceBrowser({
     <div className="flex h-full min-h-0 flex-col">
       <div className="border-b border-[var(--border-subtle)] p-2">
         <input
-          className="platform-input h-8 w-full rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-[12px]"
+          className="platform-input h-8 w-full rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-app-meta"
           placeholder="Search resources"
           value={query}
           onChange={(e) => onSearch(e.target.value)}
@@ -184,9 +184,9 @@ export function ResourceBrowser({
               )}
               onClick={() => onOpen(item.id)}
             >
-              <div className="text-[12px] font-medium text-[var(--text-primary)]">{item.title}</div>
+              <div className="text-app-meta font-medium text-[var(--text-primary)]">{item.title}</div>
               {item.summary ? (
-                <div className="text-[11px] text-[var(--text-tertiary)]">{item.summary}</div>
+                <div className="text-app-caption text-[var(--text-tertiary)]">{item.summary}</div>
               ) : null}
             </button>
           </li>
@@ -199,8 +199,8 @@ export function ResourceBrowser({
 export function DocumentationViewer({ title, content }: { title: string; content: string }) {
   return (
     <div className="h-full overflow-auto p-4">
-      <h2 className="mb-3 text-[14px] font-semibold text-[var(--text-primary)]">{title}</h2>
-      <pre className="whitespace-pre-wrap font-sans text-[12px] leading-relaxed text-[var(--text-secondary)]">
+      <h2 className="mb-3 text-app-body font-semibold text-[var(--text-primary)]">{title}</h2>
+      <pre className="whitespace-pre-wrap font-sans text-app-meta leading-relaxed text-[var(--text-secondary)]">
         {content}
       </pre>
     </div>
@@ -244,12 +244,12 @@ export function TaskList({
             onClick={() => onOpen(t.id)}
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[12px] font-medium text-[var(--text-primary)]">{t.title}</span>
-              <span className="shrink-0 text-[12px] text-[var(--text-tertiary)]">
+              <span className="text-app-meta font-medium text-[var(--text-primary)]">{t.title}</span>
+              <span className="shrink-0 text-app-meta text-[var(--text-tertiary)]">
                 {taskStateLabel(t.status)}
               </span>
             </div>
-            <div className="mt-1 text-[12px] leading-[1.45] text-[var(--text-tertiary)]">
+            <div className="mt-1 text-app-meta leading-[1.45] text-[var(--text-tertiary)]">
               {t.description}
             </div>
           </button>
@@ -286,7 +286,7 @@ export function InternalChat({
             key={p.id}
             type="button"
             className={cn(
-              "shrink-0 rounded-[var(--radius-control)] border px-2 py-1 text-left text-[11px]",
+              "shrink-0 rounded-[var(--radius-control)] border px-2 py-1 text-left text-app-caption",
               activePersonId === p.id
                 ? "border-[var(--text-primary)] bg-[var(--surface-selected)]"
                 : "border-[var(--border-default)]"
@@ -303,7 +303,7 @@ export function InternalChat({
           <div
             key={m.id}
             className={cn(
-              "max-w-[90%] rounded-[var(--radius-control)] px-2 py-1.5 text-[12px]",
+              "max-w-[90%] rounded-[var(--radius-control)] px-2 py-1.5 text-app-meta",
               m.direction === "outbound"
                 ? "ml-auto bg-[var(--surface-selected)] text-[var(--text-primary)]"
                 : "bg-[var(--surface-panel)] text-[var(--text-secondary)]"
@@ -315,7 +315,7 @@ export function InternalChat({
       </div>
       <div className="flex gap-2 border-t border-[var(--border-default)] p-2">
         <textarea
-          className="platform-input min-h-[64px] flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-[12px]"
+          className="platform-input min-h-[64px] flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-app-meta"
           value={draft}
           disabled={readOnly || !activePersonId}
           onChange={(e) => onDraftChange(e.target.value)}
@@ -343,11 +343,11 @@ export function CustomerComposer({
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-2 p-3">
-      <p className="text-[11px] text-[var(--text-tertiary)]">
+      <p className="text-app-caption text-[var(--text-tertiary)]">
         Customer-safe update. Avoid unsupported promises. Saved as a customer_message artifact.
       </p>
       <textarea
-        className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-[12px]"
+        className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
         value={value}
         readOnly={readOnly}
         onChange={(e) => onChange(e.target.value)}
@@ -375,12 +375,12 @@ export function AiAssistant({
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-[11px] text-[var(--text-tertiary)]">
+      <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-app-caption text-[var(--text-tertiary)]">
         AI Assistant (tool), distinct from coworker chat
       </div>
       <div className="min-h-0 flex-1 space-y-3 overflow-auto p-3">
         {history.map((h) => (
-          <div key={h.id} className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] p-2 text-[12px]">
+          <div key={h.id} className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] p-2 text-app-meta">
             <div className="text-[var(--text-tertiary)]">You</div>
             <div className="text-[var(--text-primary)]">{h.prompt}</div>
             <div className="mt-2 text-[var(--text-tertiary)]">Assistant</div>
@@ -390,7 +390,7 @@ export function AiAssistant({
       </div>
       <div className="flex gap-2 border-t border-[var(--border-default)] p-2">
         <textarea
-          className="platform-input min-h-[64px] flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-[12px]"
+          className="platform-input min-h-[64px] flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-app-meta"
           value={draft}
           disabled={readOnly}
           onChange={(e) => onDraftChange(e.target.value)}
@@ -436,7 +436,7 @@ export function ArtifactComposer({
       {tab === "reco" ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-[12px]"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={technicalRecommendation}
             readOnly={readOnly}
             onChange={(e) => onChangeReco(e.target.value)}
@@ -449,7 +449,7 @@ export function ArtifactComposer({
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-[12px]"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={executiveSummary}
             readOnly={readOnly}
             onChange={(e) => onChangeExec(e.target.value)}
@@ -491,7 +491,7 @@ export function SqlWorkbench({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] px-3 py-2">
-        <div className="text-[11px] text-[var(--text-tertiary)]">
+        <div className="text-app-caption text-[var(--text-tertiary)]">
           {dialectLabel ?? "SQL"}
           {knownTables?.length ? ` · ${knownTables.join(", ")}` : ""}
         </div>
@@ -502,7 +502,7 @@ export function SqlWorkbench({
       </div>
       <textarea
         className={cn(
-          "min-h-[36%] resize-none bg-[var(--surface-canvas)] p-3 font-mono text-[12px] leading-relaxed text-[var(--text-primary)] outline-none",
+          "min-h-[36%] resize-none bg-[var(--surface-canvas)] p-3 font-mono text-app-meta leading-relaxed text-[var(--text-primary)] outline-none",
           "focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--action-ink)]"
         )}
         spellCheck={false}
@@ -513,16 +513,16 @@ export function SqlWorkbench({
       />
       <div className="min-h-0 flex-1 overflow-auto border-t border-[var(--border-default)] bg-[var(--surface-raised)]">
         {!result ? (
-          <div className="p-3 text-[12px] text-[var(--text-tertiary)]">Run a query to see results.</div>
+          <div className="p-3 text-app-meta text-[var(--text-tertiary)]">Run a query to see results.</div>
         ) : !result.success ? (
-          <div className="p-3 font-mono text-[12px] text-[var(--fydell-risk)]">{result.error ?? "Query failed"}</div>
+          <div className="p-3 font-mono text-app-meta text-[var(--fydell-risk)]">{result.error ?? "Query failed"}</div>
         ) : (
           <div className="p-2">
-            <div className="mb-2 px-1 text-[11px] text-[var(--text-tertiary)]">
+            <div className="mb-2 px-1 text-app-caption text-[var(--text-tertiary)]">
               {result.rowCount} row{result.rowCount === 1 ? "" : "s"}
               {result.patternId ? ` · ${result.patternId}` : ""}
             </div>
-            <table className="w-full border-collapse text-left text-[11px]">
+            <table className="w-full border-collapse text-left text-app-caption">
               <thead>
                 <tr>
                   {result.columns.map((col) => (
@@ -593,11 +593,11 @@ export function AnalysisMemoComposer({
       </div>
       {tab === "memo" ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
-          <p className="text-[11px] text-[var(--text-tertiary)]">
+          <p className="text-app-caption text-[var(--text-tertiary)]">
             Primary driver, evidence, what you ruled out, caveats, next verification.
           </p>
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-[12px]"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={memo}
             readOnly={readOnly}
             onChange={(e) => onChangeMemo(e.target.value)}
@@ -610,7 +610,7 @@ export function AnalysisMemoComposer({
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-[12px]"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={execSummary}
             readOnly={readOnly}
             onChange={(e) => onChangeExec(e.target.value)}
@@ -641,7 +641,7 @@ export function CutoverChecklist({
   const done = items.filter((i) => completed[i.id]).length;
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-[12px] text-[var(--text-secondary)]">
+      <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-app-meta text-[var(--text-secondary)]">
         {title ?? "Launch checklist"} · {done}/{items.length} confirmed
       </div>
       <ul className="min-h-0 flex-1 overflow-auto p-2">
@@ -661,9 +661,9 @@ export function CutoverChecklist({
                 onChange={() => onToggle(item.id)}
               />
               <span>
-                <span className="block text-[12px] font-medium text-[var(--text-primary)]">{item.label}</span>
+                <span className="block text-app-meta font-medium text-[var(--text-primary)]">{item.label}</span>
                 {item.description ? (
-                  <span className="block text-[11px] text-[var(--text-tertiary)]">{item.description}</span>
+                  <span className="block text-app-caption text-[var(--text-tertiary)]">{item.description}</span>
                 ) : null}
               </span>
             </label>
@@ -692,7 +692,7 @@ export function FieldMappingPanel({
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col overflow-auto p-3">
-      <p className="mb-3 text-[11px] text-[var(--text-tertiary)]">
+      <p className="mb-3 text-app-caption text-[var(--text-tertiary)]">
         Map customer columns to system fields before import.
       </p>
       <div className="flex flex-col gap-3">
@@ -701,12 +701,12 @@ export function FieldMappingPanel({
             key={m.id}
             className="rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3"
           >
-            <div className="mb-1 font-mono text-[12px] text-[var(--text-primary)]">{m.sourceField}</div>
+            <div className="mb-1 font-mono text-app-meta text-[var(--text-primary)]">{m.sourceField}</div>
             {m.sampleValue ? (
-              <div className="mb-2 text-[11px] text-[var(--text-tertiary)]">sample: {m.sampleValue}</div>
+              <div className="mb-2 text-app-caption text-[var(--text-tertiary)]">sample: {m.sampleValue}</div>
             ) : null}
             <select
-              className="platform-select h-8 w-full rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-2 text-[12px]"
+              className="platform-select h-8 w-full rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-2 text-app-meta"
               value={values[m.id] ?? ""}
               disabled={readOnly}
               onChange={(e) => onChange(m.id, e.target.value)}
@@ -753,7 +753,7 @@ export function TicketQueue({
   return (
     <div className="flex h-full min-h-0">
       <div className="flex w-[42%] min-w-0 flex-col border-r border-[var(--border-default)]">
-        <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-[12px] font-medium text-[var(--text-tertiary)]">
+        <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-app-meta font-medium text-[var(--text-tertiary)]">
           {title ?? "Tickets"}
         </div>
         <ul className="min-h-0 flex-1 overflow-auto p-1">
@@ -768,11 +768,11 @@ export function TicketQueue({
                 onClick={() => onSelect(t.id)}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-[11px] text-[var(--text-primary)]">{t.id}</span>
-                  <span className="text-[12px] text-[var(--text-tertiary)]">{t.severity}</span>
+                  <span className="font-mono text-app-caption text-[var(--text-primary)]">{t.id}</span>
+                  <span className="text-app-meta text-[var(--text-tertiary)]">{t.severity}</span>
                 </div>
-                <div className="text-[11px] text-[var(--text-secondary)]">{t.customer}</div>
-                <div className="text-[10px] text-[var(--text-tertiary)]">
+                <div className="text-app-caption text-[var(--text-secondary)]">{t.customer}</div>
+                <div className="text-app-caption text-[var(--text-tertiary)]">
                   {triage[t.id] === "unknown" ? "untriaged" : triage[t.id]}
                 </div>
               </button>
@@ -783,10 +783,10 @@ export function TicketQueue({
       <div className="flex min-w-0 flex-1 flex-col p-3">
         {active ? (
           <>
-            <div className="mb-1 font-mono text-[12px] text-[var(--text-primary)]">{active.id}</div>
-            <div className="mb-1 text-[13px] font-medium text-[var(--text-primary)]">{active.customer}</div>
-            <div className="mb-2 text-[11px] text-[var(--text-tertiary)]">{active.reportedAt}</div>
-            <p className="mb-4 text-[12px] leading-relaxed text-[var(--text-secondary)]">{active.summary}</p>
+            <div className="mb-1 font-mono text-app-meta text-[var(--text-primary)]">{active.id}</div>
+            <div className="mb-1 text-app-meta font-medium text-[var(--text-primary)]">{active.customer}</div>
+            <div className="mb-2 text-app-caption text-[var(--text-tertiary)]">{active.reportedAt}</div>
+            <p className="mb-4 text-app-meta leading-relaxed text-[var(--text-secondary)]">{active.summary}</p>
             <div className="mt-auto flex flex-wrap gap-2">
               <Button
                 size="sm"
@@ -807,7 +807,7 @@ export function TicketQueue({
             </div>
           </>
         ) : (
-          <div className="text-[12px] text-[var(--text-tertiary)]">No tickets</div>
+          <div className="text-app-meta text-[var(--text-tertiary)]">No tickets</div>
         )}
       </div>
     </div>
@@ -845,7 +845,7 @@ export function CutoverPlanComposer({
       {tab === "plan" ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-[12px]"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={plan}
             readOnly={readOnly}
             onChange={(e) => onChangePlan(e.target.value)}
@@ -858,7 +858,7 @@ export function CutoverPlanComposer({
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-[12px]"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={customerMessage}
             readOnly={readOnly}
             onChange={(e) => onChangeCustomer(e.target.value)}
@@ -912,11 +912,11 @@ export function EscalationComposer({
       </div>
       {tab === "escalation" ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
-          <p className="text-[11px] text-[var(--text-tertiary)]">
+          <p className="text-app-caption text-[var(--text-tertiary)]">
             Cite log evidence, release, and requested action (e.g. skew revert).
           </p>
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-[12px]"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={escalation}
             readOnly={readOnly}
             onChange={(e) => onChangeEscalation(e.target.value)}
@@ -934,7 +934,7 @@ export function EscalationComposer({
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-[12px]"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={customerMessage}
             readOnly={readOnly}
             onChange={(e) => onChangeCustomer(e.target.value)}
@@ -991,7 +991,7 @@ export function RulesWorkbenchPanel({
   const active = sorted.find((r) => r.id === selectedRuleId) ?? sorted[0];
   return (
     <div className="flex h-full min-h-0 flex-col overflow-auto">
-      <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-[12px] text-[var(--text-secondary)]">
+      <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-app-meta text-[var(--text-secondary)]">
         {title ?? "Workflow rules"} · evaluated top-down
       </div>
       <div className="grid min-h-0 flex-1 gap-0 lg:grid-cols-2">
@@ -1006,9 +1006,9 @@ export function RulesWorkbenchPanel({
                 )}
                 onClick={() => onSelectRule(rule.id)}
               >
-                <div className="font-mono text-[12px] text-[var(--text-primary)]">{rule.label}</div>
-                <div className="text-[11px] text-[var(--text-tertiary)]">{rule.condition}</div>
-                <div className="text-[11px] text-[var(--text-secondary)]">→ {rule.routesTo}</div>
+                <div className="font-mono text-app-meta text-[var(--text-primary)]">{rule.label}</div>
+                <div className="text-app-caption text-[var(--text-tertiary)]">{rule.condition}</div>
+                <div className="text-app-caption text-[var(--text-secondary)]">→ {rule.routesTo}</div>
               </button>
             </li>
           ))}
@@ -1016,12 +1016,12 @@ export function RulesWorkbenchPanel({
         <div className="flex flex-col gap-4 p-3">
           {active ? (
             <div>
-              <div className="mb-1 font-mono text-[13px] text-[var(--text-primary)]">{active.label}</div>
-              <p className="text-[12px] text-[var(--text-secondary)]">
+              <div className="mb-1 font-mono text-app-meta text-[var(--text-primary)]">{active.label}</div>
+              <p className="text-app-meta text-[var(--text-secondary)]">
                 If <span className="font-mono">{active.condition}</span>, route to{" "}
                 <strong>{active.routesTo}</strong>.
               </p>
-              <p className="mt-2 text-[11px] text-[var(--text-tertiary)]">
+              <p className="mt-2 text-app-caption text-[var(--text-tertiary)]">
                 Select the rule that best explains the defect, then quantify impact and choose a fix.
               </p>
             </div>
@@ -1029,7 +1029,7 @@ export function RulesWorkbenchPanel({
 
           {impactPrompt && impactOptions?.length ? (
             <div>
-              <div className="mb-2 text-[11px] font-medium text-[var(--text-secondary)]">{impactPrompt}</div>
+              <div className="mb-2 text-app-caption font-medium text-[var(--text-secondary)]">{impactPrompt}</div>
               <div className="flex flex-wrap gap-2">
                 {impactOptions.map((n) => (
                   <Button
@@ -1047,7 +1047,7 @@ export function RulesWorkbenchPanel({
           ) : null}
 
           <div>
-            <div className="mb-2 text-[11px] font-medium text-[var(--text-secondary)]">Recommended fix</div>
+            <div className="mb-2 text-app-caption font-medium text-[var(--text-secondary)]">Recommended fix</div>
             <div className="flex flex-col gap-2">
               {fixOptions.map((fix) => (
                 <button
@@ -1055,7 +1055,7 @@ export function RulesWorkbenchPanel({
                   type="button"
                   disabled={readOnly}
                   className={cn(
-                    "rounded-[var(--radius-control)] border px-3 py-2 text-left text-[12px]",
+                    "rounded-[var(--radius-control)] border px-3 py-2 text-left text-app-meta",
                     selectedFixId === fix.id
                       ? "border-[var(--action-ink)] bg-[var(--surface-selected)] text-[var(--text-primary)]"
                       : "border-[var(--border-default)] bg-[var(--surface-panel)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
@@ -1084,7 +1084,7 @@ export function NotificationToasts({
       {items.slice(-3).map((n) => (
         <div
           key={n.id}
-          className="pointer-events-auto rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-3 py-2 text-[12px] text-[var(--text-primary)] shadow-[var(--shadow-pop)]"
+          className="pointer-events-auto rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-3 py-2 text-app-meta text-[var(--text-primary)] shadow-[var(--shadow-pop)]"
         >
           {n.message}
         </div>
@@ -1099,8 +1099,8 @@ export function DevInspector({
   attempt: import("@/lib/sim-engine/types").SimulationAttempt;
 }) {
   return (
-    <aside className="max-h-64 overflow-auto border-t border-[var(--border-strong)] bg-[var(--surface-deep)] p-2 font-mono text-[10px] text-[var(--text-tertiary)]">
-      <div className="mb-1 text-[11px] font-semibold text-[var(--text-secondary)]">DEV INSPECTOR</div>
+    <aside className="max-h-64 overflow-auto border-t border-[var(--border-strong)] bg-[var(--surface-deep)] p-2 font-mono text-app-caption text-[var(--text-tertiary)]">
+      <div className="mb-1 text-app-caption font-semibold text-[var(--text-secondary)]">DEV INSPECTOR</div>
       <div>status={attempt.status} seed={attempt.metadata.seed}</div>
       <div>telemetry={attempt.telemetry.length} scenarioEvents={attempt.world.scenarioEvents.length}</div>
       <div>flags={JSON.stringify(attempt.world.flags)}</div>

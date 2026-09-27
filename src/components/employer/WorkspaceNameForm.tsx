@@ -27,9 +27,9 @@ export default function WorkspaceNameForm({
 
   if (!canEdit) {
     return (
-      <p className="text-[13.5px] text-[var(--text-primary)]">
+      <p className="text-app-body text-[var(--text-primary)]">
         {initialName}
-        <span className="mt-1 block text-[12.5px] text-[var(--text-tertiary)]">
+        <span className="mt-1 block text-app-meta text-[var(--text-tertiary)]">
           Only an owner or admin can change this.
         </span>
       </p>
@@ -78,7 +78,7 @@ export default function WorkspaceNameForm({
           <p
             id="workspace-name-error"
             role="alert"
-            className="mt-1.5 text-[12.5px] text-[var(--fydell-risk)]"
+            className="mt-1.5 text-app-meta text-[var(--fydell-risk)]"
           >
             {error}
           </p>

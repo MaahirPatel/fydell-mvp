@@ -15,13 +15,16 @@
 
 use crate::error::{AppError, AppResult};
 use crate::platform::{FullSession, Platform, StatePatch};
+use crate::recovery::RecoveryOutcome;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock};
+use tauri::{AppHandle, Emitter};
 
 static APP_DATA: OnceLock<PathBuf> = OnceLock::new();
 static SESSION: OnceLock<Mutex<SessionState>> = OnceLock::new();
+static RECOVERY: OnceLock<Mutex<RecoveryOutcome>> = OnceLock::new();
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -101,6 +104,114 @@ impl SessionState {
 pub fn init(app_data: PathBuf) {
     let _ = APP_DATA.set(app_data);
     let _ = SESSION.set(Mutex::new(SessionState::idle()));
+    let _ = RECOVERY.set(Mutex::new(RecoveryOutcome::None));
+
+    // Boot recovery (DESK-10): rebuild the in-memory session from the
+    // persisted record, if any. Never crashes boot — a corrupt record simply
+    // yields no recovery.
+    let (mut outcome, record) = crate::recovery::assess();
+    match (&outcome, record) {
+        (RecoveryOutcome::ResumeActive { .. }, Some(r)) => {
+            // The previous holder is gone (assess already refused a live
+            // lock); take the lock before restoring anything writable.
+            match crate::recovery::acquire_lock(&r.platform_session_id) {
+                Ok(()) => {
+                    restore_record(&r);
+                    crate::sync::restore_from_journal();
+                }
+                Err(AppError::SessionLocked(pid)) => {
+                    outcome = RecoveryOutcome::Locked { pid };
+                }
+                Err(_) => {
+                    outcome = RecoveryOutcome::None;
+                }
+            }
+        }
+        (RecoveryOutcome::ResumeJoined, Some(r)) => {
+            restore_record(&r);
+        }
+        _ => {}
+    }
+    *RECOVERY.get().unwrap().lock().unwrap() = outcome;
+}
+
+/// The recovery decision made at boot, for the UI (DESK-10).
+pub fn recovery_outcome() -> RecoveryOutcome {
+    RECOVERY
+        .get()
+        .map(|m| m.lock().unwrap().clone())
+        .unwrap_or(RecoveryOutcome::None)
+}
+
+/// Read-only snapshot of the in-memory session, for recovery persistence
+/// and diagnostics. No locks are held on return.
+#[derive(Debug, Clone)]
+pub struct SessionSnapshot {
+    pub status: SessionStatus,
+    pub platform_session_id: Option<String>,
+    pub title: Option<String>,
+    pub organization: Option<String>,
+    pub duration_minutes: Option<u32>,
+    pub started_at: Option<String>,
+    pub ends_at: Option<String>,
+    pub consent_accepted: bool,
+    pub consent_policy_version: Option<String>,
+    pub server_revision: u64,
+}
+
+pub fn session_snapshot() -> Option<SessionSnapshot> {
+    let s = SESSION.get()?.lock().unwrap();
+    Some(SessionSnapshot {
+        status: s.status,
+        platform_session_id: s.platform_session_id.clone(),
+        title: s.title.clone(),
+        organization: s.organization.clone(),
+        duration_minutes: s.duration_minutes,
+        started_at: s.started_at.clone(),
+        ends_at: s.ends_at.clone(),
+        consent_accepted: s.consent_accepted,
+        consent_policy_version: s.consent_policy_version.clone(),
+        server_revision: s.server_revision,
+    })
+}
+
+/// Restore in-memory state from a persisted record (DESK-10).
+fn restore_record(r: &crate::recovery::SessionRecord) -> bool {
+    let status = match r.status.as_str() {
+        "joined" => SessionStatus::Joined,
+        "active" => SessionStatus::Active,
+        _ => return false,
+    };
+    let workspace_dir = sessions_root_dir().map(|root| root.join(&r.platform_session_id));
+    let revs = workspace_dir
+        .as_ref()
+        .map(|d| d.join(".fydell").join("revs.json"))
+        .and_then(|p| std::fs::read_to_string(p).ok())
+        .and_then(|s| serde_json::from_str::<HashMap<String, u64>>(&s).ok())
+        .unwrap_or_default();
+    let mut s = session().lock().unwrap();
+    s.status = status;
+    s.platform_session_id = Some(r.platform_session_id.clone());
+    s.title = r.title.clone();
+    s.organization = r.organization.clone();
+    s.duration_minutes = r.duration_minutes;
+    s.ends_at = r.ends_at.clone();
+    s.started_at = r.started_at.clone();
+    s.consent_accepted = r.consent_accepted;
+    s.consent_policy_version = r.consent_policy_version.clone();
+    s.workspace_dir = workspace_dir;
+    s.server_revision = r.server_revision;
+    s.revs = revs;
+    true
+}
+
+fn sessions_root_dir() -> Option<PathBuf> {
+    APP_DATA.get().map(|d| d.join("sessions"))
+}
+
+/// Internal: the app data dir (for recovery/diagnostics).
+pub fn app_data_dir() -> AppResult<PathBuf> {
+    APP_DATA.get().cloned().ok_or(AppError::NoSession)
 }
 
 fn session() -> &'static Mutex<SessionState> {
@@ -222,6 +333,9 @@ pub async fn join_session(invite_token: String) -> AppResult<SessionInfo> {
         serde_json::json!({ "title": detail.simulation.title }),
     )?;
 
+    // Durable record for interrupted-work recovery (DESK-10).
+    crate::recovery::persist();
+
     Ok(session().lock().unwrap().info())
 }
 
@@ -248,14 +362,73 @@ pub async fn accept_consent() -> AppResult<SessionInfo> {
             .accept_consent(&session_id, &policy_version)
             .await?;
         session().lock().unwrap().consent_accepted = true;
+        crate::recovery::persist();
     }
     Ok(session().lock().unwrap().info())
 }
 
-/// Tauri command: preflight → start (server timing begins) → materialize the
-/// local workspace. After this the session is active.
+/// Provisioning progress event (DESK-06): the UI renders one row per step with
+/// truthful per-step state, and offers Retry when a step fails.
+#[derive(Serialize, Clone)]
+struct ProvisionProgress {
+    step: &'static str,
+    /// started | ok | failed
+    state: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    message: Option<String>,
+}
+
+fn emit_provision(app: &AppHandle, step: &'static str, state: &'static str, message: Option<String>) {
+    let _ = app.emit(
+        "provision-progress",
+        ProvisionProgress { step, state, message },
+    );
+}
+
+/// Run one provisioning step with progress events. On failure the step is
+/// reported as failed (with the real message) and the error propagates —
+/// the UI offers Retry, which re-runs the whole provisioning. Every step is
+/// safe to retry: preflight appends a record, start is idempotent
+/// server-side (`startSession` returns the existing session when
+/// `started_at` is set), fetch is a GET, and materialize rewrites from the
+/// server payload before the session is active (no user edits can exist yet).
+async fn provision_step<T, F, Fut>(
+    app: &AppHandle,
+    step: &'static str,
+    f: F,
+) -> AppResult<T>
+where
+    F: FnOnce() -> Fut,
+    Fut: std::future::Future<Output = AppResult<T>>,
+{
+    emit_provision(app, step, "started", None);
+    match f().await {
+        Ok(v) => {
+            emit_provision(app, step, "ok", None);
+            Ok(v)
+        }
+        Err(e) => {
+            emit_provision(app, step, "failed", Some(e.to_string()));
+            Err(e)
+        }
+    }
+}
+
+/// Does the scenario's test runner resolve under the same minimal PATH the
+/// test runner itself uses (execution.rs)? Pure over its inputs; unit-tested.
+pub fn program_resolves_in(program: &str, path_var: &str) -> bool {
+    if program.contains('/') || program.contains('\\') {
+        return std::path::Path::new(program).exists();
+    }
+    std::env::split_paths(path_var).any(|d| d.join(program).exists())
+}
+
+/// Tauri command: preflight → fetch → runtime check → start (server timing
+/// begins) → materialize the local workspace. After this the session is
+/// active. Emits `provision-progress` per step (DESK-06) and enforces the
+/// client version gate before the server clock starts (DESK-19).
 #[tauri::command]
-pub async fn begin_session() -> AppResult<SessionInfo> {
+pub async fn begin_session(app: AppHandle) -> AppResult<SessionInfo> {
     require_joined()?;
     {
         let s = session().lock().unwrap();
@@ -268,20 +441,82 @@ pub async fn begin_session() -> AppResult<SessionInfo> {
     let session_id = platform_session_id()?;
     let platform = Platform::new();
 
+    // 0. Version gate first: fail before any server mutation or clock start.
+    provision_step(&app, "version", || async {
+        crate::version::enforce_gate().await
+    })
+    .await?;
+
     // 1. Desktop preflight (truthful: this device, this app).
-    let can_start = platform.record_preflight(&session_id).await?;
+    let can_start = provision_step(&app, "preflight", || async {
+        platform.record_preflight(&session_id).await
+    })
+    .await?;
     if !can_start {
+        emit_provision(
+            &app,
+            "preflight",
+            "failed",
+            Some("preflight did not pass; check your connection and try again".to_string()),
+        );
         return Err(AppError::Execution(
             "preflight did not pass; check your connection and try again".to_string(),
         ));
     }
 
-    // 2. Start: the server clock starts here.
-    let (started_at, ends_at) = platform.start_session(&session_id).await?;
+    // 2. Fetch the session payload (GET — safe to retry, before the clock).
+    let full = provision_step(&app, "fetch", || async {
+        platform.fetch_session(&session_id).await
+    })
+    .await?;
 
-    // 3. Re-fetch for the latest content/state, then materialize the workspace.
-    let full = platform.fetch_session(&session_id).await?;
-    let dir = materialize_workspace(&full)?;
+    // 3. Runtime check: the declared test runner must resolve under the
+    // minimal PATH the runner uses. Failing here — before the server clock
+    // starts — is honest: the candidate cannot run tests without it.
+    provision_step(&app, "runtime", || async {
+        let argv: Vec<String> = full
+            .file_package
+            .as_ref()
+            .map(|p| p.test_command.clone())
+            .filter(|c| !c.is_empty())
+            .or_else(|| {
+                full.state
+                    .workspace
+                    .get("testCommand")
+                    .and_then(|v| serde_json::from_value(v.clone()).ok())
+            })
+            .unwrap_or_default();
+        match argv.first() {
+            None => Ok(()), // No declared runner: nothing to check.
+            Some(program) => {
+                if program_resolves_in(program, crate::execution::EXEC_PATH) {
+                    Ok(())
+                } else {
+                    Err(AppError::Execution(format!(
+                        "the scenario's test runner '{program}' was not found on this \
+                         computer (looked in /usr/local/bin, /usr/bin, /bin). \
+                         Install it to run tests locally, or contact support — \
+                         your timer has not started."
+                    )))
+                }
+            }
+        }
+    })
+    .await?;
+
+    // 4. Start: the server clock starts here. Idempotent server-side.
+    let (started_at, ends_at) = provision_step(&app, "start", || async {
+        platform.start_session(&session_id).await
+    })
+    .await?;
+
+    // 5. Materialize the local workspace (DESK-11: take the single-writer lock
+    // first; refuse rather than compete with another live window).
+    let dir = provision_step(&app, "materialize", || async {
+        crate::recovery::acquire_lock(&session_id)?;
+        materialize_workspace(&full)
+    })
+    .await?;
 
     {
         let mut s = session().lock().unwrap();
@@ -291,8 +526,10 @@ pub async fn begin_session() -> AppResult<SessionInfo> {
         s.ends_at = Some(ends_at.clone());
         s.server_revision = full.state.revision;
     }
+    crate::sync::reset_for_new_workspace();
 
     crate::events::log_system_event("session_started", serde_json::json!({}))?;
+    crate::recovery::persist();
 
     Ok(session().lock().unwrap().info())
 }
@@ -531,6 +768,17 @@ pub fn bump_rev(path: &str) -> AppResult<u64> {
     Ok(new_rev)
 }
 
+/// Internal: set a file's revision outright (take-remote conflict resolution).
+pub fn set_rev(path: &str, rev: u64) -> AppResult<()> {
+    let mut s = session().lock().unwrap();
+    s.revs.insert(path.to_string(), rev);
+    if let Some(dir) = s.workspace_dir.clone() {
+        let revs_json = serde_json::to_string_pretty(&s.revs)?;
+        std::fs::write(dir.join(".fydell").join("revs.json"), revs_json)?;
+    }
+    Ok(())
+}
+
 /// Internal: current revision of a file.
 pub fn current_rev(path: &str) -> AppResult<u64> {
     let s = session().lock().unwrap();
@@ -557,7 +805,36 @@ pub fn test_command() -> AppResult<Vec<String>> {
 
 /// Internal: mark the session submitted (called by submission.rs on success).
 pub fn mark_submitted() -> AppResult<()> {
-    let mut s = session().lock().unwrap();
-    s.status = SessionStatus::Submitted;
+    let session_id = {
+        let mut s = session().lock().unwrap();
+        s.status = SessionStatus::Submitted;
+        s.platform_session_id.clone()
+    };
+    // The submission snapshot supersedes the sync journal; release the
+    // single-writer lock and clear the active pointer (the record stays for
+    // receipt viewing).
+    crate::sync::mark_clean_after_submit();
+    if let Some(id) = session_id {
+        crate::recovery::release_lock(&id);
+    }
+    crate::recovery::clear_pointer();
+    crate::recovery::persist();
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn program_resolution() {
+        // Absolute paths: existence check.
+        assert!(program_resolves_in("/bin/sh", "/usr/bin:/bin"));
+        assert!(!program_resolves_in("/nonexistent/xyz", "/usr/bin:/bin"));
+        // PATH search.
+        assert!(program_resolves_in("sh", "/usr/bin:/bin"));
+        assert!(!program_resolves_in("definitely-not-a-program-xyz", "/usr/bin:/bin"));
+        // Empty PATH never resolves.
+        assert!(!program_resolves_in("sh", ""));
+    }
 }

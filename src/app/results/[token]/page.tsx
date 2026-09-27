@@ -24,10 +24,10 @@ export const metadata = { title: "This link has been retired | Fydell" };
 export default function RetiredResultLinkPage() {
   return (
     <CandidateShell width="narrow">
-      <h1 className="text-[20px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+      <h1 className="text-app-page font-medium tracking-[-0.02em] text-[var(--text-primary)]">
         This link has been retired
       </h1>
-      <p className="mt-3 text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">
+      <p className="mt-3 text-app-body leading-[1.65] text-[var(--text-secondary)]">
         It was an older kind of share link. It showed a complete result, it never
         expired, and the person who did the work had no way to turn it off. We
         stopped honouring links of this shape rather than leave someone&rsquo;s
@@ -35,10 +35,10 @@ export default function RetiredResultLinkPage() {
       </p>
 
       <Surface tone="panel" className="mt-6 px-5 py-4">
-        <h2 className="text-[13px] font-medium text-[var(--text-primary)]">
+        <h2 className="text-app-meta font-medium text-[var(--text-primary)]">
           If you were sent this to review someone
         </h2>
-        <p className="mt-2 text-[13px] leading-[1.65] text-[var(--text-secondary)]">
+        <p className="mt-2 text-app-meta leading-[1.65] text-[var(--text-secondary)]">
           Ask them for a Work Receipt. They choose which parts of their result it
           includes and how long it stays open, and they can close it afterwards.
           It will open straight away, with no account needed.
@@ -46,17 +46,17 @@ export default function RetiredResultLinkPage() {
       </Surface>
 
       <Surface tone="panel" className="mt-3 px-5 py-4">
-        <h2 className="text-[13px] font-medium text-[var(--text-primary)]">
+        <h2 className="text-app-meta font-medium text-[var(--text-primary)]">
           If this was your work
         </h2>
-        <p className="mt-2 text-[13px] leading-[1.65] text-[var(--text-secondary)]">
+        <p className="mt-2 text-app-meta leading-[1.65] text-[var(--text-secondary)]">
           Nothing has been lost. Your result and the evidence behind it are still
           on your dashboard, and you can issue a Work Receipt from there whenever
           you want to share it.
         </p>
         <Link
           href="/app/candidate"
-          className="mt-3 inline-flex text-[13px] font-medium text-[var(--text-primary)] underline underline-offset-4 hover:text-[var(--text-secondary)]"
+          className="mt-3 inline-flex text-app-meta font-medium text-[var(--text-primary)] underline underline-offset-4 hover:text-[var(--text-secondary)]"
         >
           Go to your dashboard
         </Link>

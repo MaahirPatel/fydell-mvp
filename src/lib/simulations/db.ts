@@ -752,6 +752,41 @@ export async function acknowledgeCurveball(sessionId: string): Promise<void> {
     .is("curveball_acknowledged_at", null);
 }
 
+/**
+ * Extend a session's deadline by extraMs (SIM-05 fair response window,
+ * SIM-07 outage pause, SCEN-08 accommodations). The reason is recorded as a
+ * system event so the extension is auditable. Returns the new ends_at.
+ */
+export async function extendSessionEndsAt(
+  sessionId: string,
+  extraMs: number,
+  reason: string
+): Promise<string> {
+  if (!Number.isFinite(extraMs) || extraMs <= 0)
+    throw new Error("extraMs must be positive");
+  const db = createAdminSupabaseClient();
+  const { data: session } = await db
+    .from("sim_sessions")
+    .select("ends_at, status")
+    .eq("id", sessionId)
+    .maybeSingle();
+  if (!session?.ends_at) throw new Error("Session has no deadline to extend");
+  if (session.status !== "active") throw new Error("Only active sessions can be extended");
+  const newEndsAt = new Date(new Date(session.ends_at).getTime() + extraMs).toISOString();
+  const { error } = await db
+    .from("sim_sessions")
+    .update({ ends_at: newEndsAt })
+    .eq("id", sessionId);
+  if (error) throw new Error(`Could not extend deadline: ${error.message}`);
+  await recordEvent(sessionId, {
+    eventType: "deadline_extended",
+    actor: "system",
+    payload: { extraMs, reason, newEndsAt },
+    clientEventId: `deadline_ext_${sessionId}_${Date.now()}`,
+  });
+  return newEndsAt;
+}
+
 // ---------------------------------------------------------------------------
 // Submission (idempotent; snapshot is immutable at the database level)
 // ---------------------------------------------------------------------------

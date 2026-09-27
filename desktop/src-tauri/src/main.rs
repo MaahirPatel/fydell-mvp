@@ -10,14 +10,26 @@
 //!
 //! Privacy: nothing is recorded outside an active simulation session. No
 //! keystroke logging, no screen capture, no process monitoring.
+//!
+//! Native boundary (DESK-17): the renderer gets exactly three plugin
+//! surfaces — deep-link (auth callback only), opener (used from Rust, never
+//! exposed to the renderer with renderer-chosen URLs), and the core
+//! event/window permissions declared in `capabilities/main.json`. There is
+//! deliberately no shell/fs/dialog plugin: the renderer cannot execute local
+//! commands or read arbitrary files; every file operation goes through the
+//! validated workspace bridge (workspace.rs).
 
 mod auth;
+mod diagnostics;
 mod error;
 mod events;
 mod execution;
 mod platform;
+mod recovery;
 mod session;
 mod submission;
+mod sync;
+mod version;
 mod workspace;
 
 use tauri::Manager;
@@ -25,7 +37,6 @@ use tauri_plugin_deep_link::DeepLinkExt;
 
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
@@ -56,6 +67,12 @@ fn main() {
             session::begin_session,
             session::session_status,
             session::sync_state,
+            recovery::recovery_status,
+            sync::sync_status,
+            sync::sync_now,
+            sync::resolve_sync_conflict,
+            version::check_client_version,
+            diagnostics::diagnostics,
             workspace::list_files,
             workspace::read_file,
             workspace::write_file,

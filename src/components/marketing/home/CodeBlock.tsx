@@ -52,11 +52,11 @@ export function CodeBlock({
 }) {
   return (
     <figure className="overflow-hidden rounded-[6px] border border-[oklch(22%_0.02_258/0.12)] bg-[oklch(98.6%_0.003_258)] text-[oklch(24%_0.02_258)]">
-      <figcaption className="flex items-center justify-between gap-3 border-b border-[oklch(22%_0.02_258/0.1)] px-4 py-2.5 font-mono text-[12px] text-[oklch(48%_0.016_258)]">
+      <figcaption className="flex items-center justify-between gap-3 border-b border-[oklch(22%_0.02_258/0.1)] px-4 py-2.5 font-mono text-app-meta text-[oklch(48%_0.016_258)]">
         <span className="truncate">{path}</span>
         {meta ? <span className="shrink-0">{meta}</span> : null}
       </figcaption>
-      <pre className={`overflow-x-auto py-2 font-mono leading-[1.75] ${compact ? "text-[11.5px]" : "text-[12.5px]"}`}>
+      <pre className={`overflow-x-auto py-2 font-mono leading-[1.75] ${compact ? "text-app-caption" : "text-app-meta"}`}>
         <code>
           {lines.map((line) => (
             <span

@@ -169,7 +169,7 @@ export function SandboxLiveSimulation() {
                   ) : null}
                   <span>{entry.title}</span>
                   {entry.badge ? (
-                    <span className="rounded-[var(--radius-tag)] border border-[var(--border-subtle)] px-1.5 py-0.5 text-[11px] text-[var(--text-tertiary)]">
+                    <span className="rounded-[var(--radius-tag)] border border-[var(--border-subtle)] px-1.5 py-0.5 text-app-caption text-[var(--text-tertiary)]">
                       {entry.badge}
                     </span>
                   ) : null}

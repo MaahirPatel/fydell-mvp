@@ -237,7 +237,9 @@ fn build_file_snapshot(
     }
 }
 
-fn collect_files(
+/// Shared with sync.rs: snapshot every candidate file under the workspace
+/// (excluding .fydell internals and the generated BRIEF.md).
+pub(crate) fn collect_files(
     dir: &std::path::Path,
     root: &std::path::Path,
     out: &mut Vec<(String, String)>,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import {
+  extendSessionEndsAt,
   getSessionForCandidate,
   getSessionState,
   getVersionContent,
@@ -12,6 +13,11 @@ import {
 import { draftReply, findStakeholder } from "@/lib/simulations/stakeholder";
 import { buildSessionChatContext, toChatEvents } from "@/lib/simulations/chat-context";
 import { deliverDueProactiveMessages } from "@/lib/simulations/proactive";
+import {
+  countConsecutiveDegraded,
+  evaluateOutage,
+  outageIsOpen,
+} from "@/lib/simulations/outage-policy";
 
 export const runtime = "nodejs";
 
@@ -150,6 +156,62 @@ export async function POST(
       clientEventId: body.clientMsgId ? `recv_${body.clientMsgId}` : undefined,
     });
 
+    // SIM-07: teammate-service outage handling. When an LLM redraft is
+    // configured and it failed (authored fallback served instead), record the
+    // degradation. Sustained failure declares an outage and pauses/extends
+    // the attempt per policy — the candidate never loses time to our outage.
+    // Best-effort: never fails the reply.
+    let outageDeclared = false;
+    try {
+      const aiConfigured = Boolean(process.env.OPENAI_API_KEY && stakeholder.aiPersona);
+      const degraded = aiConfigured && drafted.source === "authored";
+      const outageEvents = (await listEvents(id)).map((e) => ({
+        event_type: e.event_type,
+        created_at: e.created_at,
+      }));
+      if (!degraded && aiConfigured) {
+        // Healthy redraft after degradation: close the loop for the audit trail.
+        const wasDegraded = outageEvents.some((e) => e.event_type === "teammate_service_degraded");
+        const wasOutage = outageIsOpen(outageEvents);
+        if (wasDegraded || wasOutage) {
+          await recordEvent(id, {
+            eventType: "teammate_service_recovered",
+            actor: "system",
+            payload: {},
+            clientEventId: `tm_recovered_${id}_${Date.now()}`,
+          });
+        }
+      } else if (degraded) {
+        await recordEvent(id, {
+          eventType: "teammate_service_degraded",
+          actor: "system",
+          payload: { stakeholderId: stakeholder.id },
+          clientEventId: `tm_degraded_${id}_${Date.now()}`,
+        });
+        const decision = evaluateOutage({
+          degraded: true,
+          consecutiveDegraded: countConsecutiveDegraded(outageEvents),
+          outageAlreadyOpen: outageIsOpen(outageEvents),
+        });
+        if (decision.action === "declare_outage") {
+          await recordEvent(id, {
+            eventType: "teammate_service_outage",
+            actor: "system",
+            payload: { consecutiveDegraded: decision.consecutiveDegraded },
+            clientEventId: `tm_outage_${id}_${Date.now()}`,
+          });
+          try {
+            await extendSessionEndsAt(id, decision.extensionMs, "teammate_service_outage");
+            outageDeclared = true;
+          } catch (err) {
+            console.error(`[sim] outage extension failed for session ${id}:`, err);
+          }
+        }
+      }
+    } catch (err) {
+      console.error(`[sim] outage bookkeeping failed for session ${id}:`, err);
+    }
+
     // Deliver any proactive teammate messages now due (e.g. message-count
     // triggers). Best-effort: never fails the reply.
     // Rebuild context to include the message just sent.
@@ -183,6 +245,7 @@ export async function POST(
       ok: true,
       candidateMessage: message,
       reply: replyMessage,
+      teammateOutageDeclared: outageDeclared,
     });
   } catch (err) {
     return NextResponse.json(

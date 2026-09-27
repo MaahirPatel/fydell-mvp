@@ -58,7 +58,7 @@ const BASIS_STYLE: Record<EvidenceBasis, string> = {
 
 function Basis({ basis }: { basis: EvidenceBasis }) {
   return (
-    <span className={`inline-flex rounded-[4px] px-1.5 py-0.5 text-[11.5px] font-medium ${BASIS_STYLE[basis]}`}>
+    <span className={`inline-flex rounded-[4px] px-1.5 py-0.5 text-app-caption font-medium ${BASIS_STYLE[basis]}`}>
       {basis}
     </span>
   );
@@ -66,7 +66,7 @@ function Basis({ basis }: { basis: EvidenceBasis }) {
 
 function RailHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-tertiary)]">
+    <h3 className="text-app-meta font-medium uppercase tracking-[0.06em] text-[var(--text-tertiary)]">
       {children}
     </h3>
   );
@@ -75,8 +75,8 @@ function RailHeading({ children }: { children: React.ReactNode }) {
 function WindowBar({ title, meta }: { title: string; meta: string }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-[var(--border-subtle)] px-4 py-3 sm:px-5">
-      <p className="min-w-0 truncate text-[13.5px] font-medium text-[var(--text-primary)]">{title}</p>
-      <p className="text-[12.5px] text-[var(--text-tertiary)]">{meta}</p>
+      <p className="min-w-0 truncate text-app-body font-medium text-[var(--text-primary)]">{title}</p>
+      <p className="text-app-meta text-[var(--text-tertiary)]">{meta}</p>
     </div>
   );
 }
@@ -93,18 +93,18 @@ function EvidencePanel() {
           <CodeBlock path={DEMO_SOURCE_FILE.path} meta="Python" lines={DEMO_SOURCE_FILE.lines} />
           <div className="mt-4 rounded-[10px] border border-[var(--border-subtle)]">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] px-4 py-2.5">
-              <p className="text-[13px] font-medium text-[var(--text-primary)]">Analysis coverage</p>
-              <p className="text-[12px] text-[var(--text-tertiary)]">Read only · imported code is never executed</p>
+              <p className="text-app-meta font-medium text-[var(--text-primary)]">Analysis coverage</p>
+              <p className="text-app-meta text-[var(--text-tertiary)]">Read only · imported code is never executed</p>
             </div>
             <dl className="grid grid-cols-2 sm:grid-cols-4">
               {DEMO_COVERAGE.map((c) => (
                 <div key={c.kind} className="border-[var(--border-subtle)] px-4 py-3 sm:[&:not(:first-child)]:border-l">
-                  <dt className="text-[12px] text-[var(--text-tertiary)]">{c.kind}</dt>
+                  <dt className="text-app-meta text-[var(--text-tertiary)]">{c.kind}</dt>
                   <dd className="mt-0.5 text-[18px] font-medium tabular-nums text-[var(--text-primary)]">{c.count}</dd>
                 </div>
               ))}
             </dl>
-            <p className="border-t border-[var(--border-subtle)] px-4 py-2.5 text-[12.5px] text-[var(--text-secondary)]">
+            <p className="border-t border-[var(--border-subtle)] px-4 py-2.5 text-app-meta text-[var(--text-secondary)]">
               Skipped: {DEMO_REPOSITORY.skipped}. The other 166 files are listed with the reason they were not analyzed.
             </p>
           </div>
@@ -115,10 +115,10 @@ function EvidencePanel() {
             <ul className="mt-3 space-y-3">
               {DEMO_PROJECT_FINDINGS.map((f) => (
                 <li key={f.id} className="rounded-[8px] border border-[var(--border-subtle)] p-3">
-                  <p className="text-[13.5px] leading-[1.5] text-[var(--text-primary)]">{f.finding}</p>
+                  <p className="text-app-body leading-[1.5] text-[var(--text-primary)]">{f.finding}</p>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <Basis basis={f.basis} />
-                    <span className="font-mono text-[11.5px] text-[var(--text-tertiary)]">{f.citation}</span>
+                    <span className="font-mono text-app-caption text-[var(--text-tertiary)]">{f.citation}</span>
                   </div>
                 </li>
               ))}
@@ -126,7 +126,7 @@ function EvidencePanel() {
           </div>
           <div>
             <RailHeading>Attribution</RailHeading>
-            <p className="mt-2 text-[13px] leading-[1.55] text-[var(--text-secondary)]">
+            <p className="mt-2 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
               {DEMO_REPOSITORY.attribution}
             </p>
           </div>
@@ -134,7 +134,7 @@ function EvidencePanel() {
             <RailHeading>Not shown by this work</RailHeading>
             <ul className="mt-2 space-y-1.5">
               {DEMO_PROJECT_LIMITS.map((l) => (
-                <li key={l} className="text-[13px] leading-[1.55] text-[var(--text-secondary)]">
+                <li key={l} className="text-app-meta leading-[1.55] text-[var(--text-secondary)]">
                   {l}
                 </li>
               ))}
@@ -156,21 +156,21 @@ function SimulationPanel() {
           <CodeBlock path={DEMO_TASK.filePath} meta="Candidate change" lines={DEMO_TASK.diff} />
           <div className="rounded-[10px] border border-[var(--border-subtle)]">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] px-4 py-2.5">
-              <p className="text-[13px] font-medium text-[var(--text-primary)]">
+              <p className="text-app-meta font-medium text-[var(--text-primary)]">
                 Tests · {passed} passed, {DEMO_TASK.tests.length - passed} failed
               </p>
-              <p className="text-[12px] text-[var(--text-tertiary)]">Recorded example output</p>
+              <p className="text-app-meta text-[var(--text-tertiary)]">Recorded example output</p>
             </div>
             <ul className="divide-y divide-[var(--border-subtle)]">
               {DEMO_TASK.tests.map((t) => (
-                <li key={t.name} className="flex items-center gap-2.5 px-4 py-2 font-mono text-[12.5px]">
+                <li key={t.name} className="flex items-center gap-2.5 px-4 py-2 font-mono text-app-meta">
                   {t.passed ? (
                     <Check className="h-3.5 w-3.5 shrink-0 text-[var(--evidence-support)]" aria-hidden />
                   ) : (
                     <X className="h-3.5 w-3.5 shrink-0 text-[var(--evidence-counter)]" aria-hidden />
                   )}
                   <span className="truncate text-[var(--text-primary)]">{t.name}</span>
-                  <span className={`ml-auto shrink-0 text-[11.5px] ${t.passed ? "text-[var(--evidence-support)]" : "text-[var(--evidence-counter)]"}`}>
+                  <span className={`ml-auto shrink-0 text-app-caption ${t.passed ? "text-[var(--evidence-support)]" : "text-[var(--evidence-counter)]"}`}>
                     {t.passed ? "passed" : "failed"}
                   </span>
                 </li>
@@ -181,16 +181,16 @@ function SimulationPanel() {
         <aside className="space-y-5 border-t border-[var(--border-subtle)] p-4 sm:p-5 lg:border-l lg:border-t-0">
           <div>
             <RailHeading>Task</RailHeading>
-            <p className="mt-2 text-[13px] leading-[1.6] text-[var(--text-secondary)]">{DEMO_TASK.brief}</p>
+            <p className="mt-2 text-app-meta leading-[1.6] text-[var(--text-secondary)]">{DEMO_TASK.brief}</p>
           </div>
           <div>
             <RailHeading>AI patch review</RailHeading>
             <div className="mt-2 rounded-[8px] border border-[var(--border-subtle)] p-3">
-              <p className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">{DEMO_TASK.aiPatch.summary}</p>
-              <p className="mt-2.5 inline-flex rounded-[4px] bg-[var(--field-coral)] px-1.5 py-0.5 text-[11.5px] font-medium text-[var(--ink-coral)]">
+              <p className="text-app-meta leading-[1.5] text-[var(--text-secondary)]">{DEMO_TASK.aiPatch.summary}</p>
+              <p className="mt-2.5 inline-flex rounded-[4px] bg-[var(--field-coral)] px-1.5 py-0.5 text-app-caption font-medium text-[var(--ink-coral)]">
                 Candidate decision: {DEMO_TASK.aiPatch.decision}
               </p>
-              <p className="mt-2 text-[13px] leading-[1.55] text-[var(--text-primary)]">
+              <p className="mt-2 text-app-meta leading-[1.55] text-[var(--text-primary)]">
                 “{DEMO_TASK.aiPatch.reason}”
               </p>
             </div>
@@ -249,7 +249,7 @@ export default function ProductStage() {
                 aria-controls={`${baseId}-panel`}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setActive(t.key)}
-                className={`h-9 whitespace-nowrap rounded-full px-3.5 text-[13.5px] font-medium transition-colors duration-150 sm:px-4 ${
+                className={`h-9 whitespace-nowrap rounded-full px-3.5 text-app-body font-medium transition-colors duration-150 sm:px-4 ${
                   selected
                     ? "bg-[var(--control-solid)] text-[var(--control-solid-ink)]"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -261,13 +261,13 @@ export default function ProductStage() {
             );
           })}
         </div>
-        <p className="inline-flex items-center gap-2 text-[12.5px] text-[var(--text-tertiary)]">
+        <p className="inline-flex items-center gap-2 text-app-meta text-[var(--text-tertiary)]">
           <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[var(--brand-coral)]" />
           {DEMO_LABEL} · {DEMO_CANDIDATE.name} and this repository are fictional
         </p>
       </div>
 
-      <p className="mt-4 max-w-[72ch] text-[15.5px] leading-[1.6] text-[var(--text-secondary)]">{current.detail}</p>
+      <p className="mt-4 max-w-[72ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">{current.detail}</p>
 
       <div
         className="mt-4 rounded-[20px] border border-[var(--border-default)] p-3 sm:p-6 lg:p-8"
@@ -307,7 +307,7 @@ export default function ProductStage() {
             type="button"
             onClick={() => go(index - 1)}
             disabled={index === 0}
-            className="h-10 rounded-full border border-[var(--border-strong)] px-4 text-[14px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)] disabled:cursor-not-allowed disabled:opacity-40"
+            className="h-10 rounded-full border border-[var(--border-strong)] px-4 text-app-body font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Back
           </button>
@@ -315,7 +315,7 @@ export default function ProductStage() {
             <button
               type="button"
               onClick={() => go(index + 1)}
-              className="h-10 rounded-full bg-[var(--control-solid)] px-4 text-[14px] font-medium text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)]"
+              className="h-10 rounded-full bg-[var(--control-solid)] px-4 text-app-body font-medium text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)]"
             >
               Next: {TABS[index + 1].label.replace(/^\d · /, "")}
             </button>
@@ -324,7 +324,7 @@ export default function ProductStage() {
             <button
               type="button"
               onClick={() => setActive("report")}
-              className="h-10 px-2 text-[14px] font-medium text-[var(--text-secondary)] underline underline-offset-4 hover:text-[var(--text-primary)]"
+              className="h-10 px-2 text-app-body font-medium text-[var(--text-secondary)] underline underline-offset-4 hover:text-[var(--text-primary)]"
             >
               Skip to the report
             </button>
@@ -336,7 +336,7 @@ export default function ProductStage() {
             setActive("evidence");
             setResets((n) => n + 1);
           }}
-          className="h-10 px-2 text-[13.5px] text-[var(--text-tertiary)] underline underline-offset-4 hover:text-[var(--text-primary)]"
+          className="h-10 px-2 text-app-body text-[var(--text-tertiary)] underline underline-offset-4 hover:text-[var(--text-primary)]"
         >
           Reset demo
         </button>

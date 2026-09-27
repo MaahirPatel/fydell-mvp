@@ -92,10 +92,10 @@ function OnboardingContent() {
         <div className="rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h2 className="text-[15px] font-medium text-[var(--text-primary)]">
+              <h2 className="text-app-body font-medium text-[var(--text-primary)]">
                 Operations performance investigation
               </h2>
-              <p className="mt-1.5 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+              <p className="mt-1.5 text-app-body leading-[1.6] text-[var(--text-secondary)]">
                 Reported yield fell last period. The candidate separates a
                 measurement change from real production risk and defends the
                 conclusion with evidence you can open.
@@ -106,20 +106,20 @@ function OnboardingContent() {
 
           <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-t border-[var(--border-subtle)] pt-4">
             <div>
-              <dt className="text-[12px] text-[var(--text-tertiary)]">Duration</dt>
-              <dd className="mt-0.5 text-[13.5px] tabular-nums text-[var(--text-primary)]">
+              <dt className="text-app-meta text-[var(--text-tertiary)]">Duration</dt>
+              <dd className="mt-0.5 text-app-body tabular-nums text-[var(--text-primary)]">
                 20 minutes
               </dd>
             </div>
             <div>
-              <dt className="text-[12px] text-[var(--text-tertiary)]">Discipline</dt>
-              <dd className="mt-0.5 text-[13.5px] text-[var(--text-primary)]">
+              <dt className="text-app-meta text-[var(--text-tertiary)]">Discipline</dt>
+              <dd className="mt-0.5 text-app-body text-[var(--text-primary)]">
                 Data analysis
               </dd>
             </div>
             <div>
-              <dt className="text-[12px] text-[var(--text-tertiary)]">Produces</dt>
-              <dd className="mt-0.5 text-[13.5px] text-[var(--text-primary)]">
+              <dt className="text-app-meta text-[var(--text-tertiary)]">Produces</dt>
+              <dd className="mt-0.5 text-app-body text-[var(--text-primary)]">
                 Evidence report
               </dd>
             </div>
@@ -134,7 +134,7 @@ function OnboardingContent() {
           ].map((line) => (
             <li
               key={line}
-              className="flex items-start gap-2.5 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]"
+              className="flex items-start gap-2.5 text-app-body leading-[1.6] text-[var(--text-secondary)]"
             >
               <Check
                 className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[var(--fydell-good)]"
@@ -209,7 +209,7 @@ function OnboardingContent() {
         <button
           type="button"
           onClick={() => router.push("/app/employer")}
-          className="mt-1 justify-self-center text-[13px] text-[var(--text-secondary)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline"
+          className="mt-1 justify-self-center text-app-meta text-[var(--text-secondary)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline"
         >
           Skip for now
         </button>

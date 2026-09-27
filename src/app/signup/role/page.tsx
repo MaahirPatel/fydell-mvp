@@ -59,7 +59,7 @@ function SignupRoleContent() {
   if (invitedCandidate) {
     return (
       <AuthShell title="Opening your evaluation">
-        <p role="status" className="text-[14px] text-[var(--text-secondary)]">
+        <p role="status" className="text-app-body text-[var(--text-secondary)]">
           One moment while we take you to your invitation.
         </p>
         {error ? (
@@ -136,10 +136,10 @@ function SignupRoleContent() {
                 />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[14.5px] font-medium text-[var(--text-primary)]">
+                <span className="block text-app-body font-medium text-[var(--text-primary)]">
                   {title}
                 </span>
-                <span className="mt-1 block text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                <span className="mt-1 block text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                   {body}
                 </span>
               </span>
