@@ -11,6 +11,8 @@ import {
   validateFileSnapshot,
   type FileSnapshotInput,
 } from "./submission-files";
+import { enqueueEmail } from "@/lib/ops/email-outbox";
+import { appUrl } from "@/lib/app-url";
 
 export { invitationGate } from "./invitation-gate";
 
@@ -753,6 +755,91 @@ export async function acknowledgeCurveball(sessionId: string): Promise<void> {
 // ---------------------------------------------------------------------------
 // Submission (idempotent; snapshot is immutable at the database level)
 // ---------------------------------------------------------------------------
+
+/**
+ * Best-effort submission notifications. Enqueues the employer "candidate
+ * submitted" email for every active org member and the candidate's own
+ * "submission received" confirmation. Never throws: a notification failure
+ * must not break or delay the submission itself. Idempotent via the outbox's
+ * idempotency-key upsert, so duplicate submissions never double-notify.
+ */
+async function notifySubmissionReceived(args: {
+  sessionId: string;
+  submissionId: string;
+  invitationId: string;
+  organizationId: string;
+}): Promise<void> {
+  try {
+    const db = createAdminSupabaseClient();
+    const { data: inv } = await db
+      .from("sim_invitations")
+      .select("candidate_email, candidate_name")
+      .eq("id", args.invitationId)
+      .maybeSingle();
+    if (!inv?.candidate_email) return;
+
+    const { data: org } = await db
+      .from("organizations")
+      .select("name")
+      .eq("id", args.organizationId)
+      .maybeSingle();
+
+    const { data: members } = await db
+      .from("organization_members")
+      .select("user_id")
+      .eq("organization_id", args.organizationId)
+      .eq("status", "active");
+    const userIds = [...new Set((members ?? []).map((m) => m.user_id).filter(Boolean))];
+    let employerRecipients: { email: string; name: string | null }[] = [];
+    if (userIds.length > 0) {
+      const { data: profiles } = await db
+        .from("profiles")
+        .select("id, email, full_name")
+        .in("id", userIds);
+      employerRecipients = (profiles ?? [])
+        .filter((p) => typeof p.email === "string" && p.email.length > 0)
+        .map((p) => ({ email: p.email as string, name: (p.full_name as string | null) ?? null }));
+    }
+
+    const siteUrl = appUrl();
+    const candidateName = inv.candidate_name || inv.candidate_email;
+    const companyName = (org?.name as string | undefined) || "";
+
+    for (const recipient of employerRecipients) {
+      await enqueueEmail({
+        eventType: "employer_session_submitted",
+        templateKey: "employer_session_submitted",
+        recipientEmail: recipient.email,
+        recipientName: recipient.name,
+        payload: {
+          fullName: candidateName,
+          companyName,
+          actionUrl: `${siteUrl}/app/employer`,
+          siteUrl,
+        },
+        relatedEntityType: "sim_submission",
+        relatedEntityId: args.submissionId,
+        idempotencyKey: `submission-employer-notify:${args.submissionId}:${recipient.email.toLowerCase()}`,
+        priority: 10,
+      });
+    }
+
+    await enqueueEmail({
+      eventType: "candidate_submission_received",
+      templateKey: "candidate_submission_received",
+      recipientEmail: inv.candidate_email,
+      recipientName: inv.candidate_name,
+      payload: { fullName: candidateName, siteUrl },
+      relatedEntityType: "sim_submission",
+      relatedEntityId: args.submissionId,
+      idempotencyKey: `submission-candidate-notify:${args.submissionId}`,
+      priority: 10,
+    });
+  } catch {
+    // Notifications are best-effort; the submission already succeeded.
+  }
+}
+
 export async function submitSession(
   sessionId: string,
   userId: string,
@@ -819,6 +906,15 @@ export async function submitSession(
     eventType: "submission_confirmed",
     actor: "system",
     clientEventId: `submit_${sessionId}`,
+  });
+
+  // Fresh submission only: notify the employer and confirm to the candidate.
+  // Best-effort; never blocks the submission response.
+  await notifySubmissionReceived({
+    sessionId,
+    submissionId: sub.id,
+    invitationId: session.invitation_id,
+    organizationId: session.organization_id,
   });
 
   return { submissionId: sub.id, alreadySubmitted: false };
@@ -902,9 +998,20 @@ export async function submitSessionWithSnapshot(
     receipt_hash?: string;
   } | null;
   if (!row?.submission_id) throw new Error("Atomic submit returned no submission id");
+  const alreadySubmitted = Boolean(row.already_submitted);
+  if (!alreadySubmitted) {
+    // Fresh submission only: notify the employer and confirm to the candidate.
+    // Best-effort; never blocks the submission response.
+    await notifySubmissionReceived({
+      sessionId,
+      submissionId: row.submission_id,
+      invitationId: session.invitation_id,
+      organizationId: session.organization_id,
+    });
+  }
   return {
     submissionId: row.submission_id,
-    alreadySubmitted: Boolean(row.already_submitted),
+    alreadySubmitted,
     receiptHash: row.receipt_hash || receiptHash,
   };
 }
