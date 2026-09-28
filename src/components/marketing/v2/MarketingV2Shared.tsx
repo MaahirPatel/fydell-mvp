@@ -79,7 +79,7 @@ export function Footer({ ctaTitle, ctaPrimary, ctaPrimaryHref, ctaSecondary, cta
           <div className="mk-footer-col">
             <h4>Developers</h4>
             <Link href="/developers">Simulations</Link>
-            <Link href="/passport">Passport</Link>
+            <Link href="/passport/new">Passport</Link>
             <Link href="/download">Desktop app</Link>
           </div>
           <div className="mk-footer-col">

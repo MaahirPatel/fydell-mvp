@@ -584,7 +584,7 @@ export default function DevelopersPageV2() {
             <p className="mk-desc">
               Every finished simulation becomes a verified passport entry. You own it. You share it.
             </p>
-            <Link href="/passport" className="mk-learn-more">Learn more →</Link>
+            <Link href="/passport/new" className="mk-learn-more">Learn more →</Link>
           </div>
         </div>
         <PassportShareVisual />

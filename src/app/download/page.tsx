@@ -347,7 +347,7 @@ export default function DownloadPage() {
             <p>
               Your verified record lives on the web. Share it from any device. No app needed.
             </p>
-            <Link href="/passport" className="mk-btn-light">
+            <Link href="/passport/new" className="mk-btn-light">
               View passports →
             </Link>
           </div>
