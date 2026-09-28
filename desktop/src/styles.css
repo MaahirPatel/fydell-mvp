@@ -55,7 +55,7 @@
   font-weight: 650;
 }
 .card p {
-  color: var(--text-secondary);
+  color: var(--text-body);
   line-height: var(--type-app-body-lh);
   margin: 0 0 var(--space-4);
 }
@@ -239,7 +239,7 @@
 }
 .empty-state .empty-body {
   font-size: var(--type-app-body);
-  color: var(--text-secondary);
+  color: var(--text-body);
   line-height: var(--type-app-body-lh);
   max-width: 280px;
 }
@@ -275,7 +275,7 @@
   margin: 0 0 var(--space-3);
 }
 .dialog-body {
-  color: var(--text-secondary);
+  color: var(--text-body);
   font-size: var(--type-app-body);
   line-height: var(--type-app-body-lh);
 }
@@ -536,7 +536,7 @@ button.save-state:disabled { cursor: default; }
   align-items: center;
   gap: var(--space-2);
 }
-.prose { line-height: 1.65; color: var(--text-secondary); font-size: var(--type-app-body); }
+.prose { line-height: 1.65; color: var(--text-body); font-size: var(--type-app-body); }
 .prose h1, .prose h2 { color: var(--text-primary); font-size: var(--type-app-section); }
 .prose code {
   font-family: var(--font-mono);

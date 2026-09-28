@@ -1,8 +1,8 @@
 import { cn } from "@/lib/cn";
 
 /**
- * Every application page opens the same way: one readable title in near-white,
- * optional context, and at most one primary action.
+ * Every application page opens the same way: one readable title, optional
+ * context, and at most one primary action.
  */
 export function PageHeader({
   title,
@@ -25,14 +25,9 @@ export function PageHeader({
       )}
     >
       <div className="min-w-0">
-        <h1
-          className="text-app-page text-[var(--text-primary)]"
-          style={{ fontWeight: 510 }}
-        >
-          {title}
-        </h1>
+        <h1 className="text-app-page text-[var(--text-primary)]">{title}</h1>
         {description ? (
-          <p className="mt-2 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">
+          <p className="mt-2 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-body)]">
             {description}
           </p>
         ) : null}

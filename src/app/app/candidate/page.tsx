@@ -108,10 +108,10 @@ export default async function CandidateHomePage() {
 
   return (
     <CandidateShell>
-      <h1 className="text-app-page font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+      <h1 className="text-app-page text-[var(--text-primary)]">
         Your evaluations
       </h1>
-      <p className="mt-2 max-w-[62ch] text-app-body leading-[1.65] text-[var(--text-secondary)]">
+      <p className="mt-2 max-w-[62ch] text-app-body leading-[1.65] text-[var(--text-body)]">
         Everything a company has invited you to, and the work you have already
         submitted. Your results stay here and stay yours.
       </p>

@@ -59,10 +59,10 @@
      the airy marketing scale. */
   --type-app-page: 1.25rem;       /* 20px — screen / dialog titles */
   --type-app-page-lh: 1.2;
-  --type-app-page-tracking: -0.018em;
+  --type-app-page-tracking: -0.028em;
   --type-app-section: 0.9375rem;  /* 15px — panel section titles */
   --type-app-section-lh: 1.35;
-  --type-app-section-tracking: -0.01em;
+  --type-app-section-tracking: -0.02em;
   --type-app-body: 0.8125rem;     /* 13px — body and controls */
   --type-app-body-lh: 1.55;
   --type-app-meta: 0.71875rem;    /* 11.5px — metadata, timestamps */
@@ -117,6 +117,7 @@
 
   /* ---- Text (solid colors, never opacity) ------------------------------------ */
   --text-primary: #17212b;
+  --text-body: #2c3642;
   --text-secondary: #4b5563;
   --text-tertiary: #6b7480;
   --text-disabled: #8e959e;
