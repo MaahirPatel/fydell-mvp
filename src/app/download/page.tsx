@@ -8,6 +8,14 @@ export const metadata = {
 };
 
 const RELEASES_URL = "https://github.com/MaahirPatel/fydell-mvp/releases";
+const V010 = "https://github.com/MaahirPatel/fydell-mvp/releases/download/v0.1.0";
+const DOWNLOADS = {
+  windowsExe: `${V010}/Fydell_0.1.0_x64-setup.exe`,
+  windowsMsi: `${V010}/Fydell_0.1.0_x64_en-US.msi`,
+  macDmg: `${V010}/Fydell_0.1.0_aarch64.dmg`,
+  linuxAppImage: `${V010}/Fydell_0.1.0_amd64.AppImage`,
+  linuxDeb: `${V010}/Fydell_0.1.0_amd64.deb`,
+};
 
 /* Visual: desktop app window */
 function DesktopVisual() {
@@ -139,9 +147,20 @@ export default function DownloadPage() {
             <p>
               The simulation client. A real editor, recorded test runs, and one-click submit. Works offline.
             </p>
-            <a href={RELEASES_URL} className="mk-btn-dark" target="_blank" rel="noopener noreferrer">
-              Coming soon — v0.1.0 ↓
-            </a>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
+              <a href={DOWNLOADS.windowsExe} className="mk-btn-dark">
+                Download for Windows ↓
+              </a>
+              <a href={DOWNLOADS.macDmg} className="mk-btn-light">
+                Download for macOS ↓
+              </a>
+              <a href={DOWNLOADS.linuxAppImage} className="mk-btn-light">
+                Download for Linux ↓
+              </a>
+            </div>
+            <p style={{ fontSize: 12, color: "var(--mk-text-tertiary)", marginTop: 12 }}>
+              v0.1.0 · Unsigned test build. <a href={RELEASES_URL} target="_blank" rel="noopener noreferrer" style={{ color: "inherit" }}>All releases →</a>
+            </p>
           </div>
         </div>
 
@@ -177,7 +196,7 @@ export default function DownloadPage() {
       </div>
 
       <div style={{ textAlign: "center", padding: "0 24px 96px", fontSize: 18, color: "var(--mk-text)" }}>
-        The Fydell desktop app will be available for macOS, Windows, and Linux.
+        The Fydell desktop app is available for macOS, Windows, and Linux.
       </div>
 
       <FooterCTA heading="Get the client." />
