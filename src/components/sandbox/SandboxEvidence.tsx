@@ -96,7 +96,7 @@ export function SandboxEvidence({
                     style={{
                       color:
                         claim.direction === "STRENGTH"
-                          ? "var(--color-good)"
+                          ? "var(--fydell-good)"
                           : claim.direction === "CONCERN"
                             ? "var(--fydell-risk)"
                             : "var(--fydell-changed)",
@@ -142,7 +142,7 @@ export function SandboxEvidence({
               </p>
               <p className="mt-2 text-app-body text-[var(--text-secondary)]">{claim.claim}</p>
               <div className="mt-4 grid gap-5 md:grid-cols-2">
-                <EventList label="Supporting events" events={claim.supportingEvents} tone="var(--color-good)" />
+                <EventList label="Supporting events" events={claim.supportingEvents} tone="var(--fydell-good)" />
                 <EventList label="Counterevidence events" events={claim.counterevidenceEvents} tone="var(--fydell-risk)" />
               </div>
             </article>
@@ -193,7 +193,7 @@ export function SandboxEvidence({
         </div>
       ) : (
         <p className="mt-7 flex items-center gap-2 border-t border-[var(--border-subtle)] pt-5 text-app-body text-[var(--text-secondary)]">
-          <Check className="h-4 w-4 text-[var(--color-good)]" strokeWidth={2} aria-hidden />
+          <Check className="h-4 w-4 text-[var(--fydell-good)]" strokeWidth={2} aria-hidden />
           {session.labels.review ?? "Review has not started."}
         </p>
       )}

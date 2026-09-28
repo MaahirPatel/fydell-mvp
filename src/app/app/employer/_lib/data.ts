@@ -707,3 +707,62 @@ export async function getOperationalSnapshot(
 
   return { attention, activity };
 }
+/**
+ * Decisions the workspace has recorded against candidate sessions.
+ *
+ * Append-only: every row here is a real decision row in
+ * `sim_employer_decisions`, joined to the session it was made about. When the
+ * workspace has not recorded any decision yet, this returns [] and the page
+ * says exactly that — Fydell will not invent a chart before that data exists.
+ */
+export interface OutcomeRecord {
+  id: string;
+  decision: string;
+  evidenceInfluence: string | null;
+  notes: string;
+  decidedAt: string;
+  sessionId: string;
+  candidate: string;
+  simulation: string;
+}
+
+export async function getOutcomeRecords(
+  organizationId: string,
+  limit = 100,
+): Promise<OutcomeRecord[]> {
+  // The design preview never invents outcomes; the empty state covers it.
+  if (isPreviewMode()) return [];
+  const admin = createAdminSupabaseClient();
+  const { data } = await admin
+    .from("sim_employer_decisions")
+    .select(
+      "id, decision, evidence_influence, notes, created_at, session_id, sim_sessions(sim_templates(title), sim_invitations(candidate_email, candidate_name))",
+    )
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  return (data || []).map((row) => {
+    const session = first(
+      row.sim_sessions as
+        | {
+            sim_templates?: { title?: string } | { title?: string }[];
+            sim_invitations?: { candidate_email?: string; candidate_name?: string } | { candidate_email?: string; candidate_name?: string }[];
+          }[]
+        | null,
+    );
+    const template = first(session?.sim_templates ?? null);
+    const invitation = first(session?.sim_invitations ?? null);
+    return {
+      id: row.id as string,
+      decision: row.decision as string,
+      evidenceInfluence: (row.evidence_influence as string) || null,
+      notes: (row.notes as string) || "",
+      decidedAt: row.created_at as string,
+      sessionId: row.session_id as string,
+      candidate:
+        invitation?.candidate_name || invitation?.candidate_email || "Candidate",
+      simulation: template?.title || "",
+    };
+  });
+}

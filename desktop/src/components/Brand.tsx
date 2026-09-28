@@ -2,8 +2,9 @@ import markUrl from "../assets/fydell-chain-mark.svg";
 
 /* ============================================================================
    Fydell brand mark — the real chain-link mark from public/brand, rendered
-   in the sign-in screen, sidebar, and inbox. The dark lockup variant is the
-   SVG (crisp at any size); it carries its own artwork.
+   in the sign-in screen, sidebar, and inbox. The SVG carries its own
+   colorful ring artwork (teal→blue, violet→pink→red) on transparency, so it
+   sits natively on the light surfaces.
    ========================================================================== */
 
 export function BrandMark({ size = 28 }: { size?: number }) {

@@ -190,7 +190,7 @@ function Vertical({
                   className={`-mx-2 w-[calc(100%+1rem)] rounded-[var(--radius-control)] px-2 py-1 text-left transition-colors ${
                     isSelected
                       ? "bg-[var(--surface-hover)]"
-                      : "hover:bg-[rgba(255,255,255,0.045)]"
+                      : "hover:bg-[var(--surface-hover)]"
                   }`}
                 >
                   {body}

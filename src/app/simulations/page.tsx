@@ -1,5 +1,6 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import HeroSimPreview from "@/components/marketing/home/HeroSimPreview";
+import SimulationLibrary from "@/components/marketing/SimulationLibrary";
 import { PageIntro } from "@/components/marketing/PageIntro";
 import { ButtonLink } from "@/components/marketing/ui";
 import { DesktopStage } from "@/components/fydell/ProductDesktop";
@@ -387,6 +388,18 @@ export default function EvaluationPage() {
               </li>
             ))}
           </ol>
+        </div>
+      </section>
+
+      <section className={`${SECTION} ${BAND}`}>
+        <div className="mkt-content">
+          <h2 className="section-heading">The scenario library</h2>
+          <p className="section-desc mt-4 max-w-[62ch]">
+            The released evaluation above is one of eight authored scenarios in
+            the engine catalog. Each is a fictional setting with a real working
+            task, written once and versioned like code.
+          </p>
+          <SimulationLibrary />
         </div>
       </section>
 

@@ -8,13 +8,13 @@ export type StatusTone = "neutral" | "active" | "changed" | "risk" | "good";
 
 const TONE: Record<StatusTone, string> = {
   neutral:
-    "border-[var(--border-default)] bg-[rgba(255,255,255,0.04)] text-[var(--text-secondary)]",
+    "border-[var(--border-default)] bg-[var(--surface-selected)] text-[var(--text-secondary)]",
   active:
-    "border-[rgba(107,140,255,0.32)] bg-[rgba(107,140,255,0.1)] text-[#9db1ff]",
+    "border-[var(--border-default)] bg-[var(--field-blue)] text-[var(--ink-blue)]",
   changed:
-    "border-[rgba(233,185,73,0.3)] bg-[rgba(233,185,73,0.1)] text-[var(--fydell-changed)]",
-  risk: "border-[rgba(242,107,130,0.32)] bg-[rgba(242,107,130,0.1)] text-[var(--fydell-risk)]",
-  good: "border-[rgba(103,217,160,0.3)] bg-[rgba(103,217,160,0.1)] text-[var(--fydell-good)]",
+    "border-[var(--border-default)] bg-[var(--status-attention-bg)] text-[var(--fydell-changed)]",
+  risk: "border-[var(--border-default)] bg-[var(--surface-counter)] text-[var(--fydell-risk)]",
+  good: "border-[var(--border-default)] bg-[var(--status-positive-bg)] text-[var(--fydell-good)]",
 };
 
 export function StatusTag({

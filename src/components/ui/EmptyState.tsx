@@ -23,7 +23,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-frame)] border border-dashed border-[var(--border-default)] bg-[rgba(255,255,255,0.014)] px-5 py-6",
+        "rounded-[var(--radius-frame)] border border-dashed border-[var(--border-default)] bg-[var(--surface-panel)] px-5 py-6",
         className,
       )}
     >

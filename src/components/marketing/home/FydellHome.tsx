@@ -22,8 +22,11 @@ import {
   X,
 } from "lucide-react";
 import FydellMark from "@/components/brand/FydellMark";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
 import { CodeBlock } from "./CodeBlock";
 import DesktopWorkspaceMock from "./DesktopWorkspaceMock";
+import { DesktopShowcase } from "./DesktopShowcase";
+import ProofStrip from "@/components/marketing/ProofStrip";
 import { DEMO_LABEL, DEMO_TASK, EVIDENCE_RECORDS, type CodeLine } from "@/lib/marketing/demo-fixture";
 import s from "./fydell-home.module.css";
 
@@ -424,15 +427,17 @@ export function ChapterHead({
   copy: string;
 }) {
   return (
-    <div className={s.chapterHead}>
-      <h2 className={s.chapterTitle}>{title}</h2>
-      <div>
-        <p className={s.chapterCopy}>{copy}</p>
-        <Link href={href} className={s.chapterIndex}>
-          <span>{index}</span> {label} <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-        </Link>
+    <Reveal>
+      <div className={s.chapterHead}>
+        <h2 className={s.chapterTitle}>{title}</h2>
+        <div>
+          <p className={s.chapterCopy}>{copy}</p>
+          <Link href={href} className={s.chapterIndex}>
+            <span>{index}</span> {label} <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+          </Link>
+        </div>
       </div>
-    </div>
+    </Reveal>
   );
 }
 
@@ -893,6 +898,37 @@ const PRINCIPLES = [
   },
 ] as const;
 
+const HOME_FAQ = [
+  {
+    q: "Are the examples on this page real?",
+    a: "The walkthroughs use fictional example data and are labeled as such — there is no real candidate behind them. The scenarios, prices, and controls described are real product capabilities; the demo data is illustration, not evidence.",
+  },
+  {
+    q: "What does Fydell cost?",
+    a: "Engineers pay nothing, ever. Hiring teams pay $49 per completed simulation on Starter, or $399 a month with 10 simulations included on Team. Invitations, expired links, and abandoned attempts are never billed.",
+  },
+  {
+    q: "Does Fydell replace interviews?",
+    a: "No. Fydell gives your reviewers evidence to read before the interview: cited findings, recorded test runs, and questions drawn from the candidate's own work. There is no score, no ranking, and no auto-reject — your team makes the call.",
+  },
+  {
+    q: "Is this surveillance software?",
+    a: "No. There is no keystroke logging, screen recording, or webcam. Candidates see exactly what is recorded before they start, and the simulation itself — the work, not the worker — is what gets assessed.",
+  },
+  {
+    q: "Which roles and languages are covered?",
+    a: "One evaluation is released today: the 20-minute Operations performance investigation for data analysts. The engine catalog holds 8 authored scenarios across 6 role families, and repository analysis is deepest in Python.",
+  },
+  {
+    q: "When can I download the desktop app?",
+    a: "Desktop installers publish with v0.1.0 and are not available yet. The download page tracks the status honestly and points at the GitHub releases where installers will appear.",
+  },
+  {
+    q: "Who owns the evidence?",
+    a: "The engineer. A passport is private until shared, each share link is scoped to one employer and previewable before it is sent, and access can be revoked in one click.",
+  },
+] as const;
+
 export default function FydellHome() {
   return (
     <div className={s.page}>
@@ -930,19 +966,25 @@ export default function FydellHome() {
         </div>
       </section>
 
+      <section className={`${s.container} ${s.proof}`} aria-label="Fydell in numbers">
+        <Reveal>
+          <ProofStrip />
+        </Reveal>
+      </section>
+
       <section className={`${s.container} ${s.problem}`} aria-labelledby="problem-title">
         <p className={s.eyebrow}>The problem</p>
         <h2 id="problem-title" className={s.problemTitle}>
           Hiring runs on signals nobody trusts.
         </h2>
-        <div className={s.problemGrid}>
+        <Stagger className={s.problemGrid}>
           {PROBLEMS.map((p) => (
-            <div key={p.title} className={s.problemCard}>
+            <StaggerItem key={p.title} className={s.problemCard}>
               <p className={s.problemHead}>{p.title}</p>
               <p className={s.problemBody}>{p.body}</p>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       <section className={`${s.container} ${s.manifesto}`} aria-labelledby="manifesto">
@@ -975,7 +1017,9 @@ export default function FydellHome() {
           title="Turn repositories into a record of real work"
           copy="Import public GitHub projects. Fydell reads them at a pinned commit, cites every finding, and states plainly what it could not assess."
         />
-        <IntakeVisual />
+        <Reveal delay={0.08}>
+          <IntakeVisual />
+        </Reveal>
         <Features dot="var(--brand-teal)" items={["GitHub import", "Commit pinning", "Coverage report", "Contribution statements", "Role signals"]} />
       </section>
 
@@ -990,7 +1034,9 @@ export default function FydellHome() {
         <div className={s.mockStage}>
           <DesktopWorkspaceMock />
         </div>
-        <SimulationVisual />
+        <Reveal delay={0.08}>
+          <SimulationVisual />
+        </Reveal>
         <Features dot="var(--brand-violet)" items={["Working codebases", "Recorded test runs", "AI patch review", "Disclosed telemetry", "Timed scope"]} />
       </section>
 
@@ -1002,7 +1048,9 @@ export default function FydellHome() {
           title="Decide on evidence, together"
           copy="Reviewers open each finding to the code behind it, see what the tests observed, and record a decision the whole team can audit."
         />
-        <ReviewVisual />
+        <Reveal delay={0.08}>
+          <ReviewVisual />
+        </Reveal>
         <Features dot="var(--brand-warm)" items={["Evidence reports", "Reviewer notes", "Decision log", "Interview prompts", "Team workspaces"]} />
       </section>
 
@@ -1014,8 +1062,23 @@ export default function FydellHome() {
           title="Engineers stay in control of their record"
           copy="A passport is private until shared. Each link is scoped to one employer, previewable before it is sent, and revocable in one click."
         />
-        <ShareVisual />
+        <Reveal delay={0.08}>
+          <ShareVisual />
+        </Reveal>
         <Features dot="var(--brand-teal)" items={["Scoped links", "Recipient preview", "One-click revoke", "Export"]} />
+      </section>
+
+      <section id="desktop" className={`${s.container} ${s.chapter}`}>
+        <ChapterHead
+          index="5.0"
+          label="Desktop app"
+          href="/download"
+          title="The simulation, in a real editor on your machine"
+          copy="The Fydell desktop client runs the whole simulation locally: a Monaco workspace with brief, tests, timeline, and submit panels. Installers publish with v0.1.0."
+        />
+        <Reveal delay={0.08}>
+          <DesktopShowcase />
+        </Reveal>
       </section>
 
       <section className={`${s.container} ${s.principles}`} aria-labelledby="principles-title">
@@ -1023,15 +1086,31 @@ export default function FydellHome() {
         <h2 id="principles-title" className={s.problemTitle}>
           Evidence you can inspect. Nothing you can&rsquo;t.
         </h2>
-        <div className={s.problemGrid}>
+        <Stagger className={s.problemGrid}>
           {PRINCIPLES.map((p) => (
-            <div key={p.index} className={s.problemCard}>
+            <StaggerItem key={p.index} className={s.problemCard}>
               <p className={s.figLabel}>{p.index}</p>
               <p className={s.problemHead}>{p.title}</p>
               <p className={s.problemBody}>{p.body}</p>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
+      </section>
+
+      <section className={`${s.container} ${s.chapter}`} aria-labelledby="home-faq">
+        <Reveal>
+          <h2 id="home-faq" className={s.chapterTitle}>Honest answers</h2>
+        </Reveal>
+        <Reveal delay={0.06}>
+          <div className={s.faq}>
+            {HOME_FAQ.map((item) => (
+              <details key={item.q}>
+                <summary>{item.q}</summary>
+                <p>{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </Reveal>
       </section>
 
       <section className={`${s.container} ${s.closing}`}>

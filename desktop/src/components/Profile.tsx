@@ -6,7 +6,7 @@ import {
 } from "../lib/tauri";
 import { profileCompleteness } from "../lib/pure";
 import { messageOf } from "../App";
-import { Dialog, EmptyState, ProvenanceTag } from "./ui";
+import { Dialog, EmptyState, ProvenanceTag, Skeleton } from "./ui";
 
 /* ============================================================================
    Profile — the candidate's evidence passport, built in-app. Flagship
@@ -269,7 +269,26 @@ export default function Profile() {
       {error && <div className="error mb-3">{error}</div>}
 
       {!loaded ? (
-        <p className="muted">Loading profile…</p>
+        <section className="profile-hero" aria-busy="true" aria-label="Loading profile">
+          <div className="profile-identity">
+            <div className="skeleton skeleton-avatar" aria-hidden="true" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Skeleton width="55%" height={16} />
+              <div className="mt-2">
+                <Skeleton width="80%" height={12} />
+              </div>
+            </div>
+          </div>
+          <div className="completeness-block">
+            <Skeleton height={8} />
+            <div className="mt-3">
+              <Skeleton height={12} />
+            </div>
+            <div className="mt-2">
+              <Skeleton height={12} width="75%" />
+            </div>
+          </div>
+        </section>
       ) : (
         <>
           {/* Identity + completeness */}

@@ -2,10 +2,10 @@ import { Check } from "lucide-react";
 import type { SampleStepState } from "./sample-artifacts";
 
 const TONE_COLOR = {
-  good: "var(--color-good)",
+  good: "var(--fydell-good)",
   changed: "var(--fydell-changed)",
   risk: "var(--fydell-risk)",
-  evidence: "var(--color-evidence)",
+  evidence: "var(--fydell-evidence)",
 } as const;
 
 export function StatusDot({ tone, label }: { tone: keyof typeof TONE_COLOR; label: string }) {
@@ -38,9 +38,9 @@ export function Stepper({
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-app-caption font-medium"
                 style={
                   done
-                    ? { background: "var(--color-good)", borderColor: "var(--color-good)", color: "#08090a" }
+                    ? { background: "var(--fydell-good)", borderColor: "var(--fydell-good)", color: "var(--control-solid-ink)" }
                     : current
-                      ? { background: "var(--color-good)", borderColor: "var(--color-good)", color: "#08090a" }
+                      ? { background: "var(--fydell-good)", borderColor: "var(--fydell-good)", color: "var(--control-solid-ink)" }
                       : { borderColor: "var(--border-strong)", color: "var(--text-tertiary)" }
                 }
               >
@@ -58,7 +58,7 @@ export function Stepper({
               <span
                 aria-hidden
                 className="mt-3 h-px min-w-4 flex-1"
-                style={{ background: done ? "var(--color-good)" : "var(--border-default)" }}
+                style={{ background: done ? "var(--fydell-good)" : "var(--border-default)" }}
               />
             ) : null}
           </li>
@@ -76,16 +76,16 @@ export function TimelineMarker({ state, last }: { state: SampleStepState; last: 
         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border"
         style={
           state === "done"
-            ? { background: "var(--color-good)", borderColor: "var(--color-good)", color: "#08090a" }
+            ? { background: "var(--fydell-good)", borderColor: "var(--fydell-good)", color: "var(--control-solid-ink)" }
             : state === "current"
-              ? { borderColor: "var(--color-evidence)", color: "var(--color-evidence)" }
+              ? { borderColor: "var(--fydell-evidence)", color: "var(--fydell-evidence)" }
               : { borderColor: "var(--border-strong)", color: "var(--text-tertiary)" }
         }
       >
         {state === "done" ? (
           <Check className="h-3 w-3" strokeWidth={2.4} />
         ) : state === "current" ? (
-          <span className="h-2 w-2 rounded-full" style={{ background: "var(--color-evidence)" }} />
+          <span className="h-2 w-2 rounded-full" style={{ background: "var(--fydell-evidence)" }} />
         ) : (
           <span className="h-px w-2" style={{ background: "var(--text-tertiary)" }} />
         )}

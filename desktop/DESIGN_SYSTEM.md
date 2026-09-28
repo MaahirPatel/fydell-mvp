@@ -1,6 +1,11 @@
 # Fydell design system — component inventory and adoption plan
 
-**Status:** foundation (tokens) landed; component migration not started.
+**Status (updated 2026-09-28):** desktop light retheme LANDED. `desktop/src/tokens.css`
+is now light-first (warm ivory canvas `#FAFAF8`, web-contract evidence semantics,
+brand-blue action), `styles.css` selectors unchanged, Monaco on light `vs` theme.
+The dark-first values described in §1/§3 below are HISTORICAL — they describe the
+pre-retheme system, kept for reference. Component inventory (§4), gaps (§7), and
+the states matrix (§6) remain current.
 **Applies to:** web app (`src/`) and desktop app (`desktop/`).
 **Checklist gates:** VIS-02 (shared tokens), VIS-06 (component inventory), VIS-08
 (component states), VIS-14 (one product identity).
@@ -10,7 +15,7 @@
 | File | Role |
 |---|---|
 | `src/styles/fydell-tokens.css` | Canonical shared contract: typefaces, type scale, spacing (4/8/12/16/24/32/48/64), radii, hairline borders, surfaces, text, evidence semantics (teal/violet/amber/green/red), action, focus ring, shadows, motion. Light default + `[data-theme="dark"]` variant. |
-| `desktop/src/tokens.css` | Desktop adaptation: same token names and semantic meanings, dark-first, denser type (13px body), editor surfaces (Monaco vs-dark family), desktop control metrics (32px), window layout tokens. |
+| `desktop/src/tokens.css` | Desktop adaptation: same token names and semantic meanings, **light-first since 2026-09-28** (was dark-first; see status note above), denser type (13px body), editor surfaces (Monaco `vs` light family), desktop control metrics (32px), window layout tokens. |
 
 Neither file is imported anywhere yet — adoption is deliberate, per component
 (see §5). `desktop/src/styles.css` (ad-hoc tokens: `--bg`, `--accent: #4f8ff7`,
@@ -42,7 +47,11 @@ visual audit. They are rules, not suggestions.
 8. **Motion is state only, 120–220ms.** Nothing decorative moves; reduced-motion
    users get instant state changes.
 
-## 3. Token adoption map (desktop)
+## 3. Token adoption map (desktop) — HISTORICAL (pre-retheme, kept for reference)
+
+> Completed 2026-09-28: `desktop/src/styles.css` → `desktop/src/tokens.css` migration
+> done; desktop is light-first. The old→new map below described the dark-era
+> migration and is no longer actionable.
 
 `desktop/src/styles.css` → `desktop/src/tokens.css`. Migrate component by
 component; do not run both token sets in one component.
@@ -240,18 +249,19 @@ between groups, checkmark or dot for selected item, danger items in
 | Toast | `Toast` | — | **Gap:** desktop has no transient feedback; sync states ("Saved remotely") need it |
 | Progress (determinate) | `ProgressRing` | — | Only for measurable progress (uploads); never decorative |
 
-## 5. Adoption order (desktop)
+## 5. Adoption order (desktop) — status 2026-09-28
 
-1. **Tokens first:** new screens import `tokens.css`; migrate `styles.css`
-   component-by-component per the §3 map. Delete the old token block only when
-   no component references it.
-2. **Focus rings:** add `:focus-visible` everywhere (currently missing — an
-   accessibility defect, checklist VIS-10).
-3. **Evidence colors:** introduce teal/violet/amber into the workspace (test
-   runs, timeline, submission review) so provenance has a visual language.
-4. **Type roles:** replace hardcoded `13px`/`12px` with `--type-app-*` roles.
+1. ~~**Tokens first**~~ — DONE. Light-first tokens landed; `styles.css` component
+   styles consume them; old dark token block removed.
+2. **Focus rings** — `:focus-visible` with 2px brand-blue ring landed with the
+   retheme; audit remaining gaps.
+3. ~~**Evidence colors**~~ — DONE. Teal/violet/amber/red semantics from the web
+   contract now live on desktop (tags, pills, provenance rails, error blocks).
+4. ~~**Type roles**~~ — DONE. 13px dense desktop type scale retained deliberately
+   (desktop-only), mapped to token roles.
 5. **New components as needed:** Dialog (submit flow), EmptyState (panels),
-   Select (scenario/assignment switching), Menu (tab overflow).
+   Select (scenario/assignment switching), Menu (tab overflow) — still open;
+   prioritize Dialog and EmptyState.
 
 ## 6. Component states matrix (VIS-08)
 
@@ -299,12 +309,11 @@ network says so plainly — no silent spinners, no fake "Saved".
 
 ## 8. What this change deliberately does NOT do
 
-- Restyle any existing screen. Tokens are additive; migration is per-component.
 - Unify the web's three theme layers (light default, ink theme, marketing
   washes) — that sprawl is documented in globals.css and needs its own
   consolidation pass.
-- Supply the rings logo asset (checklist VIS-01 remains blocked on the real
-  asset; wordmark only until it arrives).
+- Supply a NEW logo asset: the chain-mark (`public/brand/`, `desktop/src/assets/`)
+  is the approved brand mark, in use on web and desktop.
 - Copy Figma/Stripe/Linear/Cursor layouts or assets. Principles only:
   Linear's density and type discipline, Stripe's work-object organization,
   Cursor's editor focus.

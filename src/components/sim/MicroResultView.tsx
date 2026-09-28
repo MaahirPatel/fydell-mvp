@@ -213,7 +213,7 @@ export function MicroResultView({
                       className={`${t.tableRow} ${c.applicable ? "" : "opacity-50"}`}
                     >
                       <td className={`py-2 pr-3 ${t.tableCell}`}>
-                        {c.label} <span className="opacity-50">({k})</span>
+                        {c.label} <span className="text-[var(--text-tertiary)]">({k})</span>
                       </td>
                       <td className="py-2 pr-3 tabular-nums">
                         {c.applicable ? fmt2(c.usedWeight) : "0.00"}
@@ -240,7 +240,7 @@ export function MicroResultView({
             <p>{rawFormula}</p>
             <p>
               Coverage = {fmt2(analysis.coverage)}{" "}
-              <span className="font-sans opacity-60">
+              <span className="font-sans text-[var(--text-tertiary)]">
                 (
                 {analysis.coverageSignals
                   .filter((s) => s.applicable)
@@ -271,11 +271,11 @@ export function MicroResultView({
               <li key={i} className={`flex gap-3 ${t.body}`}>
                 <span
                   aria-hidden
-                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400"
+                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--fydell-evidence)]"
                 />
                 <span>
                   <span className={t.tableCell}>{item.label}</span>
-                  <span className="opacity-60"> · {item.detail}</span>
+                  <span className="text-[var(--text-tertiary)]"> · {item.detail}</span>
                 </span>
               </li>
             ))}

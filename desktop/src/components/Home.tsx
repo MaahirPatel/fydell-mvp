@@ -12,7 +12,7 @@ import {
   profileCompleteness,
 } from "../lib/pure";
 import { messageOf } from "../App";
-import { EmptyState, ProvenanceTag } from "./ui";
+import { EmptyState, ProvenanceTag, Skeleton } from "./ui";
 
 /* ============================================================================
    Home — the candidate dashboard. Dense, confident hierarchy:
@@ -45,6 +45,7 @@ export default function Home({
 }) {
   const [invitations, setInvitations] = useState<InboxInvitation[] | null>(null);
   const [passport, setPassport] = useState<PassportView | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [inboxError, setInboxError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,6 +64,7 @@ export default function Home({
       // A passport failure is non-fatal: the profile card falls back to the
       // build prompt, which is the honest state for a missing passport.
       if (ppResult.status === "fulfilled") setPassport(ppResult.value);
+      setProfileLoaded(true);
     })();
     return () => {
       cancelled = true;
@@ -150,7 +152,14 @@ export default function Home({
             inboxError ? (
               <p className="muted">Couldn't load invitations — {inboxError}</p>
             ) : (
-              <p className="muted">Loading…</p>
+              <div aria-busy="true" aria-label="Loading invitations">
+                <div className="skeleton-row">
+                  <Skeleton height={12} />
+                </div>
+                <div className="skeleton-row">
+                  <Skeleton height={12} width="65%" />
+                </div>
+              </div>
             )
           ) : invitations.length === 0 ? (
             <EmptyState
@@ -192,31 +201,44 @@ export default function Home({
         <section className="dash-card" aria-label="Candidate profile">
           <div className="dash-card-head">
             <div className="section-label">Candidate profile</div>
-            <span className="count-pill">{completeness.percent}%</span>
+            {profileLoaded && (
+              <span className="count-pill">{completeness.percent}%</span>
+            )}
           </div>
-          <div className="completeness-bar" role="progressbar" aria-valuenow={completeness.percent} aria-valuemin={0} aria-valuemax={100}>
-            <div className="completeness-fill" style={{ width: `${completeness.percent}%` }} />
-          </div>
-          {passport == null ? (
-            <p className="muted mt-3">
-              No profile yet. Add a GitHub repository and Fydell builds your
-              evidence-backed profile from real work.
-            </p>
-          ) : nextStep ? (
-            <p className="muted mt-3">
-              Next: <span className="strong">{nextStep.label}</span> — {nextStep.hint}.
-            </p>
+          {!profileLoaded ? (
+            <div aria-busy="true" aria-label="Loading profile">
+              <Skeleton height={6} />
+              <div className="mt-3">
+                <Skeleton width="70%" />
+              </div>
+            </div>
           ) : (
-            <p className="muted mt-3">
-              Profile complete — {passport.projects.length} project
-              {passport.projects.length === 1 ? "" : "s"},{" "}
-              {passport.capabilities.length} capabilit
-              {passport.capabilities.length === 1 ? "y" : "ies"} evidenced.
-            </p>
+            <>
+              <div className="completeness-bar" role="progressbar" aria-valuenow={completeness.percent} aria-valuemin={0} aria-valuemax={100}>
+                <div className="completeness-fill" style={{ width: `${completeness.percent}%` }} />
+              </div>
+              {passport == null ? (
+                <p className="muted mt-3">
+                  No profile yet. Add a GitHub repository and Fydell builds your
+                  evidence-backed profile from real work.
+                </p>
+              ) : nextStep ? (
+                <p className="muted mt-3">
+                  Next: <span className="strong">{nextStep.label}</span> — {nextStep.hint}.
+                </p>
+              ) : (
+                <p className="muted mt-3">
+                  Profile complete — {passport.projects.length} project
+                  {passport.projects.length === 1 ? "" : "s"},{" "}
+                  {passport.capabilities.length} capabilit
+                  {passport.capabilities.length === 1 ? "y" : "ies"} evidenced.
+                </p>
+              )}
+              <button className="btn ghost mt-3" onClick={onOpenProfile}>
+                {passport == null ? "Build profile" : "Open profile"}
+              </button>
+            </>
           )}
-          <button className="btn ghost mt-3" onClick={onOpenProfile}>
-            {passport == null ? "Build profile" : "Open profile"}
-          </button>
         </section>
       </div>
     </div>

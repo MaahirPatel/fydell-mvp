@@ -144,7 +144,7 @@ export function SandboxWorkbench({
             <ol className="mt-2 space-y-1.5">
               {CHECKS.map(([key, label]) => (
                 <li key={key} className="flex gap-2 text-app-meta text-[var(--text-secondary)]">
-                  <span className={session.progress[key] ? "text-[var(--color-good)]" : "text-[var(--text-tertiary)]"}>
+                  <span className={session.progress[key] ? "text-[var(--fydell-good)]" : "text-[var(--text-tertiary)]"}>
                     {session.progress[key] ? "●" : "○"}
                   </span>
                   {label}

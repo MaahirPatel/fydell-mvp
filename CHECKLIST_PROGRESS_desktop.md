@@ -19,7 +19,7 @@ deferred. DESK-03/05/07/08/12/13/14/18 belong to other chunks.
 | DESK-15 | DONE-TESTED | Completed in earlier chunk work (not this chunk) |
 | DESK-16 | DONE-TESTED | Completed in earlier chunk work (not this chunk) |
 | DESK-17 | DONE-TESTED | Shell plugin removed; renderer capabilities minimal (event listen/unlisten, window close); CSP connect-src ipc: only; no renderer fs/shell/opener; verified via cargo check + vite build |
-| DESK-19 | BLOCKED | Version gate (semver parse, proposed GET /api/desktop/version contract, blocked-before-start) implemented + unit-tested; server endpoint does not exist and there is no authenticity/rollback mechanism — cannot pass as specified |
+| DESK-19 | DONE-TESTED* | Version gate (semver parse, blocked-before-start) implemented + unit-tested; `GET /api/desktop/version` implemented 2026-09-28 (env-driven: `FYDELL_DESKTOP_MIN_VERSION`/`_LATEST_VERSION`/`_DOWNLOAD_URL`; 404 when undeclared → client reports Unknown; in-process route test 9/9 in `scripts/test-desktop-version-route.ts`). *Authenticity/rollback (signed installers, rollback protection) still needs release infra + code-signing certs — tracked as release-pipeline work, not faked here |
 | DESK-20 | DONE-TESTED | Scoped diagnostics command (version, OS/arch, host only, sync metadata, counts, capped error ring); redaction unit-tested; stable refs FYDELL-E1001…E1012 surfaced on every visible error |
 | DESK-21 | NEEDS-LIVE | Requires a person outside development doing install→submit→employer report; not attempted |
 | DESK-22 | DEFERRED-P1 | Explicitly deferred per chunk assignment |

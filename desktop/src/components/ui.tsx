@@ -108,6 +108,29 @@ export function EmptyState({
   );
 }
 
+/* ---------------- skeleton ------------------------------------------------------
+   Shimmer blocks for loading states. They never pretend to be content —
+   always render inside an aria-busy region with a "Loading" label nearby
+   where the shape doesn't already say it. */
+
+export function Skeleton({
+  width = "100%",
+  height = 12,
+  className = "",
+}: {
+  width?: string | number;
+  height?: string | number;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`skeleton ${className}`}
+      style={{ width, height }}
+      aria-hidden="true"
+    />
+  );
+}
+
 /* ---------------- dialog -------------------------------------------------------
    Overlay scrim, centered panel, actions right-aligned with primary last.
    Esc and scrim click dismiss (callers that need an explicit choice simply

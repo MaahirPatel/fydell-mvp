@@ -1,5 +1,13 @@
 import Link from "next/link";
 import FydellLogo from "@/components/brand/FydellLogo";
+import SignOutButton from "@/components/employer/SignOutButton";
+
+/** The header-right sign-out. Quiet, text-only: leaving is a utility, not a CTA. */
+function CandidateSignOut() {
+  return (
+    <SignOutButton className="inline-flex h-8 shrink-0 items-center rounded-[var(--radius-control)] px-2.5 text-app-meta font-medium text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:opacity-50" />
+  );
+}
 
 /**
  * Chrome for every candidate page except the workbench itself: the profile,
@@ -46,7 +54,7 @@ export function CandidateShell({
               </nav>
             ) : null}
           </div>
-          {action}
+          {action ?? <CandidateSignOut />}
         </div>
       </header>
       <main className={`mx-auto px-5 py-9 sm:px-6 ${max}`}>{children}</main>

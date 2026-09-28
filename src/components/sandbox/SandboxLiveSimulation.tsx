@@ -17,7 +17,7 @@ import {
 import { StatusDot, Stepper, TimelineMarker } from "./sandbox-ui";
 
 const STATUS_COLOR: Record<EvidenceStatus, string> = {
-  confirmed: "var(--color-good)",
+  confirmed: "var(--fydell-good)",
   unverified: "var(--fydell-changed)",
   blocking: "var(--fydell-risk)",
 };
@@ -73,7 +73,7 @@ export function SandboxLiveSimulation() {
                       <span
                         aria-hidden
                         className="h-1.5 w-1.5 rounded-full"
-                        style={{ background: "var(--color-evidence)" }}
+                        style={{ background: "var(--fydell-evidence)" }}
                       />
                     ) : null}
                   </button>
