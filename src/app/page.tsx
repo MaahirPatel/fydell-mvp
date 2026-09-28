@@ -1,16 +1,11 @@
-import MarketingShell from "@/components/layout/MarketingShell";
-import FydellHome from "@/components/marketing/home/FydellHome";
+import HomePageV2 from "@/components/marketing/home/HomePageV2";
 
 export const metadata = {
-  title: { absolute: "Fydell: Hiring infrastructure built on real engineering work" },
+  title: { absolute: "Fydell: Hire engineers for the work they've done" },
   description:
-    "Engineering Passports from real repositories, simulations in working codebases, and evidence every reviewer can open, check, and decide on.",
+    "Fydell runs real engineering simulations. Review the code, not the résumé.",
 };
 
 export default function HomePage() {
-  return (
-    <MarketingShell>
-      <FydellHome />
-    </MarketingShell>
-  );
+  return <HomePageV2 />;
 }
