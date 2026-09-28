@@ -26,6 +26,7 @@ import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
 import { CodeBlock } from "./CodeBlock";
 import DesktopWorkspaceMock from "./DesktopWorkspaceMock";
 import { DesktopShowcase } from "./DesktopShowcase";
+import HeroSimWorkspace from "./HeroSimWorkspace";
 import ProofStrip from "@/components/marketing/ProofStrip";
 import { Kicker } from "@/components/marketing/ui";
 import { DEMO_LABEL, DEMO_TASK, EVIDENCE_RECORDS, type CodeLine } from "@/lib/marketing/demo-fixture";
@@ -934,30 +935,28 @@ export default function FydellHome() {
   return (
     <div className={s.page}>
       <section className={s.hero}>
-        <div className={`${s.container} ${s.heroCopyIn}`}>
+        <div className={`${s.container} ${s.heroCopyIn} ${s.heroCenter}`}>
           <Kicker>Hiring infrastructure</Kicker>
           <h1 className={s.heroTitle}>
             A new way to hire.
             <br />
             A better way to <span className="t-project">get&nbsp;hired.</span>
           </h1>
-          <div className={s.heroRow}>
-            <p className={s.lede}>
-              Fydell evaluates engineers on real work. Project evidence from their code. Realistic simulations. Your team reviews evidence, not résumés.
-            </p>
-            <div className={s.heroActions}>
-              <Link href="/signup" className={s.btnSolid}>
-                Get started <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-              <Link href="/demo" className={s.btnGhost}>
-                Explore demo
-              </Link>
-            </div>
+          <p className={s.lede}>
+            Fydell evaluates engineers on real work. Project evidence from their code. Realistic simulations. Your team reviews evidence, not résumés.
+          </p>
+          <div className={s.heroActions}>
+            <Link href="/signup" className={s.btnSolid}>
+              Get started <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+            <Link href="/demo" className={s.btnGhost}>
+              Explore demo
+            </Link>
           </div>
         </div>
         <div className={s.stage}>
           <div className={s.stageInner}>
-            <HeroWindow />
+            <HeroSimWorkspace />
           </div>
         </div>
       </section>
