@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import FydellLogo from "@/components/brand/FydellLogo";
 import "@/styles/marketing-v2.css";
 
 /* ============================================================================
@@ -10,14 +11,8 @@ import "@/styles/marketing-v2.css";
 
 export function Logo() {
   return (
-    <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden>
-        <circle cx="11" cy="14" r="7" stroke="#0B6E67" strokeWidth="2.5" />
-        <circle cx="17" cy="14" r="7" stroke="#6D28D9" strokeWidth="2.5" />
-      </svg>
-      <span style={{ fontSize: 20, fontWeight: 600, color: "var(--mk-text)", letterSpacing: "-0.02em" }}>
-        fydell
-      </span>
+    <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }} aria-label="Fydell home">
+      <FydellLogo height={26} tone="light" />
     </Link>
   );
 }
