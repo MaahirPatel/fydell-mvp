@@ -7,6 +7,7 @@
 import { loadTrustedMaterial } from "../src/lib/engineering/descriptor";
 import { ABANDON_GRACE_MS, RATE_LIMIT, RunRefused, runEvaluation, runPractice } from "../src/lib/engineering/run";
 import { createMemoryTestRunStore } from "../src/lib/engineering/store";
+import { engineeringBillingState } from "../src/lib/engineering/billing";
 import { buildScenarioPackage } from "../src/lib/simulations/scenario-package";
 import type { ExecutionProvider, ProviderRequest, ProviderResult } from "../src/lib/engineering/types";
 
@@ -173,6 +174,13 @@ async function main() {
     const b = await runEvaluation({ store, provider: null, material }, args);
     check("not_configured evaluation is recorded once per snapshot", a.result?.status === "not_configured" && b.reused && store.rows.length === 1);
   }
+
+  // ------------------------------------------------------------ billing gate
+  check("no evaluation yet -> usage held", engineeringBillingState([]) === "hold");
+  check("only infra failures / not configured -> usage held", engineeringBillingState(["infrastructure_error", "not_configured"]) === "hold");
+  check("a completed evaluation -> billable", engineeringBillingState(["infrastructure_error", "completed"]) === "billable");
+  check("indeterminate (tests ran, needs review) -> billable", engineeringBillingState(["indeterminate"]) === "billable");
+  check("still running -> held", engineeringBillingState(["running"]) === "hold");
 
   console.log(`\n${passed} passed, ${failed} failed`);
   if (failed > 0) process.exit(1);
