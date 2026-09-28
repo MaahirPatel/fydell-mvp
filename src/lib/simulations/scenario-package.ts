@@ -30,6 +30,12 @@ export interface ScenarioPackage {
   builtAt: string;
   /** Canonical argv for the local test runner, e.g. ["pytest", "tests/test_reconcile.py"]. */
   testCommand: string[];
+  /**
+   * Where tests run. "remote": on Fydell's isolated runner via
+   * POST /api/sim/sessions/{id}/runs, so the candidate installs nothing.
+   * "local": the legacy desktop child-process runner (older scenarios).
+   */
+  execution: "remote" | "local";
   /** Candidate-safe file contents, keyed by repo-relative path. */
   files: Record<string, string>;
   /** SHA-256 hex of each file's UTF-8 bytes, keyed by path. */
@@ -42,6 +48,7 @@ interface ScenarioJson {
   label?: string;
   files: string[];
   testCommand?: string[];
+  execution?: "remote" | "local";
 }
 
 export function scenariosRoot(baseDir: string = process.cwd()): string {
@@ -150,6 +157,7 @@ export function buildScenarioPackage(
     label: meta.label || scenarioId,
     builtAt: new Date().toISOString(),
     testCommand,
+    execution: meta.execution === "remote" ? "remote" : "local",
     files,
     manifest,
   };

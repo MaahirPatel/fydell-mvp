@@ -87,6 +87,7 @@ fn main() {
             workspace::read_file,
             workspace::write_file,
             execution::run_tests,
+            execution::workspace_fingerprint,
             events::append_event,
             events::get_events,
             submission::submit,

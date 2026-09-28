@@ -14,6 +14,10 @@ import {
   syncPhaseLabel,
   syncSummary,
   versionGateMessage,
+  testRunIntro,
+  testRunHeadline,
+  isStaleResult,
+  STALE_RESULTS_LABEL,
 } from "./pure.js";
 import type {
   ChatMessage,
@@ -329,5 +333,33 @@ describe("formatChatTime", () => {
   it("returns empty for unparsable input, never throws", () => {
     assert.equal(formatChatTime("not-a-date"), "");
     assert.ok(formatChatTime("2026-09-28T12:00:00Z").length > 0);
+  });
+});
+
+describe("test run wording (DESK-12/13)", () => {
+  it("says remote runs execute nothing on this computer", () => {
+    assert.match(testRunIntro("remote"), /Nothing runs on this computer/);
+    assert.match(testRunIntro("local"), /this computer/);
+  });
+  it("never words an infrastructure failure as a code result", () => {
+    const h = testRunHeadline({ mode: "remote", status: "infrastructure_error", passed: 0, failed: 0, errors: 0, status_reason: null });
+    assert.equal(h.tone, "neutral");
+    assert.match(h.text, /not a result about your code/);
+  });
+  it("summarizes passes and failures", () => {
+    assert.deepEqual(
+      testRunHeadline({ mode: "remote", status: "completed", passed: 10, failed: 2, errors: 0, status_reason: null }),
+      { tone: "fail", text: "2 failing, 10 passed" }
+    );
+    assert.deepEqual(
+      testRunHeadline({ mode: "remote", status: "completed", passed: 12, failed: 0, errors: 0, status_reason: null }),
+      { tone: "ok", text: "All 12 passed" }
+    );
+  });
+  it("labels results stale only when the saved files changed", () => {
+    assert.equal(isStaleResult("a", "a"), false);
+    assert.equal(isStaleResult("a", "b"), true);
+    assert.equal(isStaleResult(null, "b"), false);
+    assert.match(STALE_RESULTS_LABEL, /earlier version/);
   });
 });

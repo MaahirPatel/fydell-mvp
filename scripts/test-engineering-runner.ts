@@ -53,6 +53,8 @@ check(
   Object.values(pkg.files).every((c) => !c.includes("test_harness_canary_must_fail") && !c.includes("Retry-After"))
 );
 check("descriptor version matches the package", material.descriptor.scenarioVersion === pkg.scenarioVersion);
+check("package tells the desktop that tests run remotely", pkg.execution === "remote");
+check("legacy scenarios keep the local runner", buildScenarioPackage("project-relay").execution === "local");
 
 // ------------------------------------------------------------ workspace assembly
 const candidate: Record<string, string> = { ...pkg.files };

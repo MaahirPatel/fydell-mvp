@@ -5,9 +5,13 @@ for candidates. No workplace surveillance — the app runs hiring simulations,
 nothing else.
 
 > **What this build does NOT claim.** It does not prevent AI use, prove
-> authorship, proctor the candidate, or sandbox untrusted code. Candidate code
-> runs as a local child process with bounded resources (timeouts, output caps,
-> rlimits) — that is crash/hang containment, not a security boundary. The
+> authorship, or proctor the candidate. For engineering scenarios
+> (`execution: "remote"` in the file package) candidate code never runs on
+> this machine: Run tests sends the saved files to the platform, which runs
+> the scenario's pinned tests on its isolated runner (`src/lib/engineering`,
+> `POST /api/sim/sessions/{id}/runs`). Legacy scenarios without that
+> declaration still use a bounded local child process, which is crash/hang
+> containment, not a security boundary, and is outside the paid path. The
 > evidence value comes from the realistic task, the test record, and the
 > inspectable event trail, plus human review of every submission.
 
@@ -23,7 +27,8 @@ Employer creates hiring task (web) → candidate gets invite token
   → app previews invitation → accepts → fetches session
   → candidate accepts platform consent → preflight → start (server clock starts)
   → app materializes the local workspace from the session payload
-  → candidate works locally (editor, files, local test runs)
+  → candidate edits locally; Run tests executes on the platform's isolated
+    runner against the saved files (remote-execution scenarios)
   → app mirrors whitelisted events to the platform + keeps a local evidence log
   → candidate submits → app PATCHes the file snapshot into session state,
     then POSTs to the platform submit route (idempotent)
@@ -32,11 +37,11 @@ Employer creates hiring task (web) → candidate gets invite token
 
 ## 2. Why desktop (and why Tauri)
 
-- **Local execution without local setup.** The candidate runs the scenario's
-  tests on their own machine; the app provisions the workspace from the
-  session payload. Threat model is inverted vs server execution: the candidate
-  already controls the host, so we need *bounded* execution (timeouts, output
-  caps, CPU/memory limits, credential scrubbing), not tenant isolation.
+- **No local setup.** The app provisions the workspace from the session
+  payload, and for remote-execution scenarios tests run on the platform's
+  isolated runner, so the candidate installs no language runtime (DESK-06)
+  and candidate code never runs in a privileged local process (DESK-17).
+  Results are bound to a hash of the exact files sent (DESK-12).
 - **Tauri v2** because it is light (system webview), its Rust core is good at
   process control, and it hosts the same web UI we ship on the web.
 
@@ -176,14 +181,24 @@ desktop/
                              # unit-tested with node:test (lib/pure.test.ts)
 ```
 
-### Local test execution (`execution.rs`)
+### Test execution (`execution.rs`)
 
-Spawns the scenario's declared runner (from `state.workspace.testCommand`)
-as a child process in the workspace dir. Bounds: 120s wall-time timeout then
-kill, 256 KiB stdout/stderr caps, CPU (60s) / address-space (512 MiB) limits
-via `setrlimit` on Unix, credential-like env vars scrubbed, minimal PATH.
-Raw output is preserved and shown to the candidate. This is hang/crash
-containment on the candidate's own machine — not a sandbox, not isolation.
+**Remote (package `execution: "remote"`, pinned in `.fydell/package.json`).**
+`run_tests` collects the workspace files exactly as submission would, sends
+them with a fresh client run id to `POST /api/sim/sessions/{id}/runs` (200s
+request timeout), and returns the platform's result: status and reason,
+per-test outcomes split into provided tests and the candidate's own, the
+server snapshot hash, suite version, restored/ignored files and bounded
+output. A local fingerprint of the files sent lets the UI show "Results from
+an earlier version" after further edits (`workspace_fingerprint`). The run
+is recorded server-side (`test_run_completed`); the desktop only writes its
+local log. Nothing executes on this machine.
+
+**Local (legacy packages).** Spawns the scenario's declared runner as a child
+process in the workspace dir. Bounds: 120s wall-time timeout then kill,
+256 KiB stdout/stderr caps, CPU (60s) / address-space (512 MiB) limits via
+`setrlimit` on Unix, credential-like env vars scrubbed, minimal PATH. This is
+hang/crash containment on the candidate's own machine, not isolation.
 
 ## 6. Provisioning (DESK-06)
 
@@ -197,9 +212,10 @@ transition (`session.rs`):
   refuses before any timed work begins.
 - `preflight`: viewport/localStorage sanity (same data as the web preflight).
 - `fetch`: the session payload is downloaded and parsed.
-- `runtime`: the declared test runner is resolved against the fixed
-  `EXEC_PATH` (`/usr/local/bin:/usr/bin:/bin`); an unresolvable runner fails
-  here with a clear message instead of mid-assessment.
+- `runtime`: remote-execution packages need nothing on this computer and
+  pass immediately. Legacy packages resolve the declared test runner against
+  the fixed `EXEC_PATH` (`/usr/local/bin:/usr/bin:/bin`); an unresolvable
+  runner fails here with a clear message instead of mid-assessment.
 - `start`: the platform start route is called — this is the only step that
   starts the server clock.
 - `materialize`: the workspace is written to disk (hash-verified, §4).
@@ -341,10 +357,12 @@ counts, and a capped in-memory ring of recent errors.
   message bodies.
 
 **Distribution honesty.** Only the Linux distribution path has reported
-built artifacts (`.deb`, `.rpm`, `.AppImage`). macOS and Windows are not
-signed, notarized, or distribution-tested — no claim is made for them, and
-the single-writer liveness check is Linux-only (other platforms treat locks
-as stale by policy).
+built artifacts (`.deb`, `.rpm`, `.AppImage`). On Windows the Rust backend
+compiles (`cargo check`) and its unit tests pass (`cargo test`, 29 tests,
+x86_64-pc-windows-gnu, 2026-09-28), but no Windows installer has been built,
+signed or tested on a clean machine. macOS is not built. No distribution
+claim is made beyond Linux, and the single-writer liveness check is
+Linux-only (other platforms treat locks as stale by policy).
 
 ## 13. Web platform additions required (not built)
 
