@@ -8,6 +8,7 @@ import {
   SimulationVisual,
 } from "@/components/marketing/home/FydellHome";
 import s from "@/components/marketing/home/fydell-home.module.css";
+import { DesktopShowcase } from "@/components/marketing/home/DesktopShowcase";
 
 export const metadata = {
   title: "For developers",
@@ -146,6 +147,17 @@ export default function DevelopersPage() {
           />
           <SimulationVisual />
           <Features dot="var(--brand-violet)" items={["Disclosed recording", "Real tests", "Timed scope", "Yours to share"]} />
+        </section>
+
+        <section id="desktop" className={`${s.container} ${s.chapter}`}>
+          <ChapterHead
+            index="05"
+            label="Desktop app"
+            href="/contact"
+            title="Do the simulation in a real editor, on your machine"
+            copy="The Fydell desktop client runs the whole simulation locally: your files, a real editor, recorded test runs, and one atomic submit. Nothing leaves your machine until you decide it does."
+          />
+          <DesktopShowcase />
         </section>
 
         <section className={`${s.container} ${s.chapter}`} aria-labelledby="dev-faq">

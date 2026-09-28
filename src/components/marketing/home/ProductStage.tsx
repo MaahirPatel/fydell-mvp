@@ -100,7 +100,7 @@ function EvidencePanel() {
               {DEMO_COVERAGE.map((c) => (
                 <div key={c.kind} className="border-[var(--border-subtle)] px-4 py-3 sm:[&:not(:first-child)]:border-l">
                   <dt className="text-app-meta text-[var(--text-tertiary)]">{c.kind}</dt>
-                  <dd className="mt-0.5 text-[18px] font-medium tabular-nums text-[var(--text-primary)]">{c.count}</dd>
+                  <dd className="mt-0.5 text-[var(--step-0)] font-medium tabular-nums text-[var(--text-primary)]">{c.count}</dd>
                 </div>
               ))}
             </dl>

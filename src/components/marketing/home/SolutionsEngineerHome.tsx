@@ -323,7 +323,7 @@ function DecisionBrief() {
               and the questions most likely to change your hiring decision.
             </p>
             <ButtonLink href="/request-pilot" variant="primary">
-              Run a pilot
+              Request a pilot
             </ButtonLink>
           </header>
 
@@ -414,7 +414,7 @@ export default function SolutionsEngineerHome() {
                 interview should investigate.
               </p>
               <div className={styles.heroActions}>
-                <ButtonLink href="/request-pilot" variant="primary">Run a pilot</ButtonLink>
+                <ButtonLink href="/request-pilot" variant="primary">Request a pilot</ButtonLink>
                 <ButtonLink href="#sample-brief" variant="soft">See a sample brief</ButtonLink>
               </div>
             </div>
@@ -514,7 +514,7 @@ export default function SolutionsEngineerHome() {
             </p>
           </div>
           <div className={styles.finalActions}>
-            <ButtonLink href="/request-pilot" variant="primary">Run a pilot</ButtonLink>
+            <ButtonLink href="/request-pilot" variant="primary">Request a pilot</ButtonLink>
             <ButtonLink href="/contact" variant="soft">Contact Fydell</ButtonLink>
           </div>
         </div>

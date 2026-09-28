@@ -793,12 +793,12 @@ export function ShareVisual() {
             <span className="flex items-center gap-2"><FydellMark width={18} /> Engineering Passport</span>
             <span>{DEMO_LABEL}</span>
           </p>
-          <p className="mt-16 text-[34px] font-[560] leading-none tracking-[-0.03em] text-white">Candidate 01</p>
+          <p className="mt-16 text-[var(--step-2)] font-[560] leading-none tracking-[-0.03em] text-white">Candidate 01</p>
           <p className="mt-2 text-app-body text-[oklch(82%_0.03_178)]">Backend developer · Python</p>
           <div className="mt-10 grid grid-cols-3 gap-4 border-t border-white/10 pt-5 text-app-meta text-[oklch(82%_0.03_178)]">
-            <p><span className="block font-mono text-[20px] text-white">2</span>projects</p>
-            <p><span className="block font-mono text-[20px] text-white">4</span>findings</p>
-            <p><span className="block font-mono text-[20px] text-white">1</span>simulation</p>
+            <p><span className="block font-mono text-[var(--step-1)] text-white">2</span>projects</p>
+            <p><span className="block font-mono text-[var(--step-1)] text-white">4</span>findings</p>
+            <p><span className="block font-mono text-[var(--step-1)] text-white">1</span>simulation</p>
           </div>
           <p className="mt-8 flex items-center gap-2 text-app-meta text-[oklch(82%_0.03_178)]">
             <Lock className="h-3.5 w-3.5" /> Private until shared

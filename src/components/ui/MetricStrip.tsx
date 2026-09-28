@@ -22,7 +22,6 @@ export function MetricStrip({
         className,
       )}
     >
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[rgba(255,255,255,0.04)] to-transparent" />
       {items.map((item) => (
         <div key={item.label} className="min-w-[132px] flex-1 px-5 py-4 relative group hover:bg-white/[0.02] transition-colors">
           <dt className="text-app-meta font-medium text-[var(--text-tertiary)] uppercase tracking-wider">{item.label}</dt>

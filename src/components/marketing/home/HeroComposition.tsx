@@ -147,7 +147,7 @@ export default function HeroComposition() {
               {/* Not a heading element. This is the title bar of a product
                   scene, and promoting it to h3 put a level-three heading
                   directly under the page h1 in the document outline. */}
-              <p className="mt-2 text-[22px] font-[560] leading-[1.2] tracking-[-0.02em] text-[var(--text-primary)]">
+              <p className="mt-2 text-[var(--step-1)] font-[560] leading-[1.2] tracking-[-0.02em] text-[var(--text-primary)]">
                 Evidence report
               </p>
               <p className="mt-3 max-w-[62ch] text-app-body leading-[1.55] text-[var(--text-secondary)]">

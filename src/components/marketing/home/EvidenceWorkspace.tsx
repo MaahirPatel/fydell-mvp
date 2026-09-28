@@ -264,7 +264,7 @@ export default function EvidenceWorkspace({ variant = "passport" }: { variant?: 
         <div className="min-w-0 flex-1">
           {variant === "passport" ? (
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-3.5 sm:px-5">
-              <h3 className="text-[19px] font-[560] tracking-[-0.015em] text-[var(--text-primary)]">The work behind the profile</h3>
+              <h3 className="text-[var(--step-1)] font-[560] tracking-[-0.015em] text-[var(--text-primary)]">The work behind the profile</h3>
               <span className="inline-flex items-center gap-1.5 text-app-meta text-[var(--text-secondary)]">
                 <Lock className="h-3.5 w-3.5" aria-hidden /> Private until shared
               </span>
@@ -274,7 +274,7 @@ export default function EvidenceWorkspace({ variant = "passport" }: { variant?: 
               <p className="text-app-meta text-[var(--text-tertiary)]">Roles / Backend Engineer</p>
               <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-[22px] font-[560] tracking-[-0.02em] text-[var(--text-primary)]">Candidate 01</h3>
+                  <h3 className="text-[var(--step-1)] font-[560] tracking-[-0.02em] text-[var(--text-primary)]">Candidate 01</h3>
                   <p className="text-app-meta text-[var(--text-secondary)]">Python · Backend Engineer</p>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
