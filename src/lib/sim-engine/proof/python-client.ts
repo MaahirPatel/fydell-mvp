@@ -12,6 +12,12 @@ function engineRoot(): string {
   return path.join(process.cwd(), "services", "evidence-engine");
 }
 
+// Detached from Turbopack's static analysis: `spawn` with a
+// non-statically-resolvable executable makes NFT fall back to whole-project
+// tracing ("Encountered unexpected file in NFT list"). `.bind` is opaque to
+// the tracer; runtime behavior is identical (`spawn` ignores `this`).
+const spawnDetached = spawn.bind(null);
+
 export async function runEvidenceJob(
   jobType: AnalysisJobType,
   snapshot: RunSnapshot,
@@ -43,7 +49,7 @@ function spawnPython(stdin: string): Promise<string> {
     new Promise((resolve, reject) => {
       const bin = bins[index];
       const args = bin === "py" ? ["-3", "-m", "evidence_engine"] : ["-m", "evidence_engine"];
-      const child = spawn(bin, args, {
+      const child = spawnDetached(bin, args, {
         cwd: engineRoot(),
         env: { ...process.env, PYTHONPATH: engineRoot() },
       });

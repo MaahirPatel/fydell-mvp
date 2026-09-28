@@ -412,6 +412,9 @@ impl Platform {
     }
 
     /// Accept (auth required) → platform session id.
+    ///
+    /// Token-based: for emailed / pasted invite links.
+    /// POST /api/sim/invitations/{token} → { ok, sessionId }.
     pub async fn accept_invitation(&self, token: &str) -> AppResult<String> {
         let res = self
             .authed(
@@ -419,6 +422,28 @@ impl Platform {
                 &format!("/api/sim/invitations/{}", token),
             )
             .await?
+            .send()
+            .await
+            .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
+        let res = self.check(res, "accept invitation").await?;
+        let body: AcceptInvitationResponse = res
+            .json()
+            .await
+            .map_err(|e| AppError::Platform(format!("bad accept response: {e}")))?;
+        Ok(body.session_id)
+    }
+
+    /// Accept by invitation id (auth required) → platform session id.
+    ///
+    /// POST /api/sim/invitations/accept { invitationId } → { ok, sessionId }.
+    /// The inbox uses this path: the listing is read-only (it carries no
+    /// token), so the server verifies the session email owns the invitation.
+    /// Idempotent: re-accepting returns the existing session.
+    pub async fn accept_invitation_by_id(&self, invitation_id: &str) -> AppResult<String> {
+        let res = self
+            .authed(reqwest::Method::POST, "/api/sim/invitations/accept")
+            .await?
+            .json(&serde_json::json!({ "invitationId": invitation_id }))
             .send()
             .await
             .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
@@ -650,8 +675,9 @@ impl Platform {
 
     // -- invitation inbox ---------------------------------------------------
     // src/app/api/sim/invitations/mine/route.ts
-    // Candidate-scoped listing. Each listing re-issues tokens (same semantics
-    // as resend); callers fetch on explicit user action, not on a timer.
+    // Candidate-scoped, read-only listing. Listing never mints tokens and
+    // never invalidates emailed links; clients accept by invitation id via
+    // POST /api/sim/invitations/accept.
 
     /// GET /api/sim/invitations/mine → { ok, invitations }
     pub async fn list_invitations(&self) -> AppResult<Vec<InboxInvitation>> {
@@ -846,9 +872,11 @@ impl Platform {
 // Invitation inbox — src/app/api/sim/invitations/mine/route.ts
 // ---------------------------------------------------------------------------
 
-/// One pending invitation, candidate-scoped. The token is freshly minted on
-/// each listing (see the route's docstring); it feeds the existing
-/// token-based accept flow.
+/// One pending invitation, candidate-scoped. The server no longer sends a
+/// token with the listing (tokens were re-minted on every listing, which
+/// invalidated emailed links); the desktop accepts by invitation id instead.
+/// `token` stays as an Option for forward/backward compatibility with
+/// pasted out-of-band tokens.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InboxInvitation {
@@ -859,7 +887,8 @@ pub struct InboxInvitation {
     pub candidate_name: Option<String>,
     pub status: String,
     pub expires_at: String,
-    pub token: String,
+    #[serde(default)]
+    pub token: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

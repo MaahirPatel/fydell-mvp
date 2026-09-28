@@ -246,6 +246,17 @@ export async function getInvitationByToken(token: string): Promise<InvitationRow
   return (data as InvitationRow) || null;
 }
 
+export async function getInvitationById(id: string): Promise<InvitationRow | null> {
+  if (!isSupabaseConfigured()) return null;
+  const db = createAdminSupabaseClient();
+  const { data } = await db
+    .from("sim_invitations")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  return (data as InvitationRow) || null;
+}
+
 /** Mark opened (first view) : non-fatal if racing. */
 export async function markInvitationOpened(id: string): Promise<void> {
   const db = createAdminSupabaseClient();
@@ -261,9 +272,33 @@ export async function acceptInvitation(
   userId: string,
   userEmail: string
 ): Promise<{ session: SessionRow; invitation: InvitationRow }> {
-  const db = createAdminSupabaseClient();
   const inv = await getInvitationByToken(token);
   if (!inv) throw new Error("Invitation not found");
+  return acceptInvitationRow(inv, userId, userEmail);
+}
+
+/**
+ * Accept by invitation id: same gate, same email-ownership check, same
+ * idempotency as the token-based accept. Used by candidate clients (e.g.
+ * the desktop inbox) that already have a server-scoped listing, so no token
+ * needs to round-trip through the client.
+ */
+export async function acceptInvitationById(
+  invitationId: string,
+  userId: string,
+  userEmail: string
+): Promise<{ session: SessionRow; invitation: InvitationRow }> {
+  const inv = await getInvitationById(invitationId);
+  if (!inv) throw new Error("Invitation not found");
+  return acceptInvitationRow(inv, userId, userEmail);
+}
+
+async function acceptInvitationRow(
+  inv: InvitationRow,
+  userId: string,
+  userEmail: string
+): Promise<{ session: SessionRow; invitation: InvitationRow }> {
+  const db = createAdminSupabaseClient();
   const gate = invitationGate(inv);
   if (!gate.ok) throw new Error(gate.reason);
 

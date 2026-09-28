@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
-import {
-  getVersionContent,
-  hashToken,
-  mintToken,
-} from "@/lib/simulations/db";
+import { getVersionContent } from "@/lib/simulations/db";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
 import type { RoleKey } from "@/lib/simulations/types";
@@ -16,14 +12,12 @@ export const runtime = "nodejs";
  * any other candidate client). Candidate-scoped: matches
  * `sim_invitations.candidate_email` to the signed-in user's email.
  *
- * Token re-issue: invite tokens are stored as hashes, so the raw token cannot
- * be recovered. Listing mints a FRESH token per pending invitation (same
- * mechanism as resend) and returns it, so the caller can drive the existing
- * accept flow (`POST /api/sim/invitations/{token}`). Tradeoff, stated
- * plainly: each listing supersedes previously issued links for that
- * invitation (emailed links stop working), exactly like an employer resend.
- * Callers should fetch on explicit user action (opening the inbox), not on
- * a timer.
+ * Listing is read-only: it never mints tokens and never touches
+ * `token_hash`, so previously emailed invitation links keep working.
+ * Clients accept via `POST /api/sim/invitations/accept` with the
+ * invitation `id` (the server verifies the session email owns it).
+ * The token-based accept (`POST /api/sim/invitations/{token}`) remains
+ * for emailed-link flows.
  */
 export async function GET() {
   const user = await requireUser();
@@ -51,21 +45,9 @@ export async function GET() {
     candidateName: string | null;
     status: string;
     expiresAt: string;
-    token: string;
-    tokenReissued: true;
   }> = [];
 
   for (const row of rows || []) {
-    // Re-issue: mint a fresh token so the client can accept via the
-    // token-based accept route. Old links are superseded (see docstring).
-    const token = mintToken();
-    const { error: updateError } = await admin
-      .from("sim_invitations")
-      .update({ token_hash: hashToken(token) })
-      .eq("id", row.id)
-      .in("status", ["sent", "opened"]);
-    if (updateError) continue;
-
     let organizationName = "An employer";
     const { data: org } = await admin
       .from("organizations")
@@ -93,8 +75,6 @@ export async function GET() {
       candidateName: row.candidate_name,
       status: row.status,
       expiresAt: row.expires_at,
-      token,
-      tokenReissued: true,
     });
   }
 

@@ -45,6 +45,7 @@ export const __store = {
   events: [] as Array<Record<string, unknown>>,
   messages: [] as Array<Record<string, unknown>>,
   submissions: new Map<string, Record<string, unknown>>(),
+  invitations: new Map<string, Record<string, unknown>>(),
   seq: 0,
 };
 
@@ -54,6 +55,7 @@ export function __reset() {
   __store.events = [];
   __store.messages = [];
   __store.submissions.clear();
+  __store.invitations.clear();
   __store.seq = 0;
 }
 
@@ -248,6 +250,152 @@ export async function acknowledgeCurveball(sessionId: string) {
   const s = __store.sessions.get(sessionId);
   if (!s) throw new Error("Session not found");
   s.curveball_acknowledged_at = new Date().toISOString();
+}
+
+// ---------------------------------------------------------------------------
+// invitations
+// (2026-09-27) Added for the invitation accept-by-id hardening: mirrors the
+// real db.ts invitation layer — invitationGate logic copied verbatim from
+// src/lib/simulations/invitation-gate.ts, and acceptInvitation* follows the
+// same steps (gate, idempotent same-candidate return, cross-candidate
+// rejection, email-ownership check, session creation) with the same error
+// messages. NOT a canned-response stub: it enforces the same contracts.
+import { createHash } from "node:crypto";
+
+export function hashToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+function invitationGate(inv: { status: string; expires_at: string }): {
+  ok: boolean;
+  reason?: string;
+} {
+  if (inv.status === "revoked")
+    return { ok: false, reason: "This invitation has been revoked by the employer." };
+  if (inv.status === "completed")
+    return {
+      ok: false,
+      reason: "This invitation was already used and the simulation has been submitted.",
+    };
+  if (inv.status === "expired" || new Date(inv.expires_at) < new Date())
+    return { ok: false, reason: "This invitation has expired. Ask the employer to resend it." };
+  return { ok: true };
+}
+
+export interface InvitationSeed {
+  id: string;
+  candidateEmail?: string;
+  candidateName?: string | null;
+  status?: string;
+  expiresAt?: string;
+  rawToken?: string; // raw token; stored as hashToken(rawToken)
+  organizationId?: string;
+}
+
+export function __seedInvitation(seed: InvitationSeed) {
+  __store.invitations.set(seed.id, {
+    id: seed.id,
+    organization_id: seed.organizationId || "org-1",
+    template_id: "tpl-1",
+    template_version_id: "ver-1",
+    cohort_id: null,
+    candidate_email: (seed.candidateEmail || "candidate@test.local").toLowerCase(),
+    candidate_name: seed.candidateName ?? null,
+    status: seed.status || "sent",
+    expires_at: seed.expiresAt || new Date(Date.now() + 7 * 86400000).toISOString(),
+    created_at: new Date().toISOString(),
+    token_hash: seed.rawToken ? hashToken(seed.rawToken) : null,
+    accepted_by: null,
+    accepted_at: null,
+  });
+}
+
+export async function getInvitationByToken(token: string) {
+  const h = hashToken(token);
+  for (const inv of __store.invitations.values()) {
+    if (inv.token_hash === h) return inv;
+  }
+  return null;
+}
+
+export async function getInvitationById(id: string) {
+  return __store.invitations.get(id) || null;
+}
+
+async function acceptInvitationRow(
+  inv: Record<string, unknown>,
+  userId: string,
+  userEmail: string
+) {
+  const gate = invitationGate(inv as { status: string; expires_at: string });
+  if (!gate.ok) throw new Error(gate.reason);
+
+  const existing = [...__store.sessions.values()].find(
+    (s) => s.invitation_id === inv.id
+  );
+  if (existing) {
+    if (existing.candidate_user_id !== userId)
+      throw new Error("This invitation was already accepted by another account.");
+    return { session: existing, invitation: inv };
+  }
+
+  if (inv.accepted_by && inv.accepted_by !== userId)
+    throw new Error("This invitation was already accepted by another account.");
+
+  if (inv.candidate_email && userEmail.toLowerCase() !== inv.candidate_email)
+    throw new Error(
+      `This invitation was sent to ${inv.candidate_email}. Sign in with that email to accept it.`
+    );
+
+  const session = {
+    id: nextId("ses"),
+    invitation_id: inv.id,
+    organization_id: inv.organization_id,
+    template_id: inv.template_id,
+    template_version_id: inv.template_version_id,
+    candidate_user_id: userId,
+    status: "accepted",
+    duration_minutes: 20,
+    started_at: null,
+    ends_at: null,
+    submitted_at: null,
+    created_at: new Date().toISOString(),
+  };
+  __store.sessions.set(session.id, session);
+  __store.states.set(session.id, {
+    session_id: session.id,
+    revision: 0,
+    current_task_id: null,
+    open_resource_id: null,
+    notes: "",
+    deliverable: {},
+    workspace: {},
+    completed_task_ids: [],
+  });
+  inv.status = "accepted";
+  inv.accepted_by = userId;
+  inv.accepted_at = new Date().toISOString();
+  return { session, invitation: inv };
+}
+
+export async function acceptInvitation(
+  token: string,
+  userId: string,
+  userEmail: string
+) {
+  const inv = await getInvitationByToken(token);
+  if (!inv) throw new Error("Invitation not found");
+  return acceptInvitationRow(inv, userId, userEmail);
+}
+
+export async function acceptInvitationById(
+  invitationId: string,
+  userId: string,
+  userEmail: string
+) {
+  const inv = await getInvitationById(invitationId);
+  if (!inv) throw new Error("Invitation not found");
+  return acceptInvitationRow(inv, userId, userEmail);
 }
 
 // ---------------------------------------------------------------------------

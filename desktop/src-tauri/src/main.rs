@@ -42,6 +42,12 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_deep_link::init())
+        // Updater: wired so the release pipeline can ship signed update
+        // artifacts. No automatic check is performed — the app team decides
+        // when/how to trigger checks (see docs/desktop-release.md). The
+        // public key lands in `plugins.updater.pubkey` in tauri.conf.json
+        // once the founder generates the signing keypair.
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let app_data = app
                 .path()
@@ -66,6 +72,7 @@ fn main() {
             auth::auth_sign_out,
             auth::auth_session,
             inbox::list_invitations,
+            inbox::accept_invitation_by_id,
             chat::list_messages,
             chat::list_stakeholders,
             chat::send_message,
