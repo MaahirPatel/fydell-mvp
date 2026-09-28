@@ -203,7 +203,7 @@ export default function SignupForm({ path }: { path?: SignupPath }) {
           type="checkbox"
           checked={acceptedTerms}
           onChange={(e) => setAcceptedTerms(e.target.checked)}
-          className="mt-0.5 h-4 w-4 accent-[var(--fydell-brand-blue)]"
+          className="auth-check"
           required
         />
         <span>

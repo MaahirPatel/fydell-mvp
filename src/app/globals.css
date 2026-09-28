@@ -355,10 +355,10 @@ nextjs-portal,
 .auth-display {
   margin: 0;
   color: var(--text-primary);
-  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
-  font-weight: 560;
-  line-height: 1.1;
-  letter-spacing: -0.022em;
+  font-size: clamp(1.625rem, 2.4vw, 1.9375rem);
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: -0.028em;
   text-wrap: balance;
 }
 
@@ -469,11 +469,18 @@ textarea.platform-input {
   color: var(--text-tertiary);
 }
 
+.platform-input:hover:not(:disabled):not(:focus-visible),
+.platform-select:hover:not(:disabled):not(:focus-visible) {
+  border-color: var(--border-strong);
+}
+
 .platform-input:focus-visible,
 .platform-select:focus-visible {
   outline: none;
-  border-color: var(--action-ink);
-  box-shadow: 0 0 0 3px var(--action-ink-ring);
+  border-color: var(--fydell-brand-blue);
+  box-shadow:
+    0 0 0 3px rgba(86, 98, 255, 0.16),
+    0 1px 2px rgba(18, 18, 60, 0.06);
 }
 
 .platform-input:disabled {
@@ -484,6 +491,58 @@ textarea.platform-input {
 
 .platform-input[aria-invalid="true"] {
   border-color: var(--fydell-risk);
+}
+
+/* Refined checkbox for auth and consent surfaces: hairline box at rest,
+   brand fill with a drawn check when on, crisp focus ring. */
+.auth-check {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  margin: 1px 0 0;
+  height: 18px;
+  width: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--surface-raised);
+  transition:
+    background-color 120ms var(--ease),
+    border-color 120ms var(--ease),
+    box-shadow 120ms var(--ease);
+}
+
+.auth-check:hover:not(:disabled) {
+  border-color: var(--fydell-brand-blue);
+}
+
+.auth-check:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(86, 98, 255, 0.2);
+}
+
+.auth-check:checked {
+  background: var(--fydell-brand-blue);
+  border-color: var(--fydell-brand-blue);
+}
+
+.auth-check:checked::after {
+  content: "";
+  position: absolute;
+  left: 5.4px;
+  top: 2.2px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+
+.auth-check:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 /* ============================================================================

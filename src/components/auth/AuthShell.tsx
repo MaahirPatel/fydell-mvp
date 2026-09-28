@@ -1,18 +1,14 @@
 import Link from "next/link";
 import FydellLogo from "@/components/brand/FydellLogo";
-import { DesktopStage } from "@/components/fydell/ProductDesktop";
 
 /**
- * One calm frame for every authentication screen.
+ * The single frame for every authentication screen.
  *
- * Screens that create something (signup, login) pass an `aside` scene showing
- * what the company is about to get. Screens that only recover access (password
- * reset, link expired) stay single-column, because a product pitch beside a
- * reset form is noise.
- *
- * The form keeps its 400px measure in both cases. The empty half is filled by
- * a real product scene, vertically centered, so the page does not read as a
- * form floating in unused black.
+ * One centered column on a quiet canvas: wordmark, heading, form, footer.
+ * Signup and login are trust surfaces — a product scene beside credential
+ * fields reads as a pitch, not reassurance, so the shell takes no aside.
+ * Screens that need more room (role select, onboarding) use the wide
+ * measure; the composition stays the same.
  */
 export default function AuthShell({
   title,
@@ -20,72 +16,56 @@ export default function AuthShell({
   children,
   footer,
   width = "narrow",
-  aside,
 }: {
   title: string;
   description?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   width?: "narrow" | "wide";
-  aside?: React.ReactNode;
 }) {
-  const column = (
-    <div
-      className={
-        width === "wide" ? "w-full max-w-[520px]" : "w-full max-w-[400px]"
-      }
-    >
-      <h1 className="auth-display">{title}</h1>
-      {description ? (
-        <p className="mt-3 max-w-[42ch] text-app-body font-[430] leading-[1.6] tracking-[-0.006em] text-[var(--text-secondary)]">
-          {description}
-        </p>
-      ) : null}
-
-      <div className="mt-8">{children}</div>
-
-      {footer ? (
-        <div className="mt-8 border-t border-[var(--border-subtle)] pt-5 text-app-body text-[var(--text-secondary)]">
-          {footer}
-        </div>
-      ) : null}
-    </div>
-  );
-
   return (
-    <div className="relative flex min-h-[100dvh] flex-col bg-[var(--surface-canvas)]">
-      <header className="relative z-10 flex h-[68px] shrink-0 items-center px-6 sm:px-10">
+    <div className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-[var(--surface-canvas)]">
+      {/* Ambient brand wash: a whisper of violet-blue along the top edge,
+          dissolving into the warm canvas. Present, not noticeable. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-[-340px] h-[600px] w-[min(920px,120vw)] -translate-x-1/2 rounded-[100%] bg-[radial-gradient(closest-side,rgba(86,98,255,0.10),rgba(122,79,160,0.05),transparent)]" />
+      </div>
+
+      <header className="relative z-10 flex h-16 shrink-0 items-center px-6 sm:px-10">
         <Link
           href="/"
-          className="inline-flex items-center gap-2.5"
+          className="inline-flex items-center gap-2.5 rounded-[6px]"
           aria-label="Fydell home"
         >
-          <FydellLogo height={24} />
+          <FydellLogo height={22} />
         </Link>
       </header>
 
-      {aside ? (
-        <main
-          id="main"
-          className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-1 items-center px-6 py-10 sm:px-10 lg:py-14"
+      <main
+        id="main"
+        className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-1 items-center justify-center px-6 py-12 sm:py-16"
+      >
+        <div
+          className={
+            width === "wide" ? "w-full max-w-[520px]" : "w-full max-w-[400px]"
+          }
         >
-          <div className="grid w-full items-center gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="flex justify-center lg:col-span-5 lg:block">
-              {column}
+          <h1 className="auth-display text-center">{title}</h1>
+          {description ? (
+            <p className="mt-3 text-balance text-center text-app-body font-[430] leading-[1.6] tracking-[-0.006em] text-[var(--text-secondary)]">
+              {description}
+            </p>
+          ) : null}
+
+          <div className="mt-8">{children}</div>
+
+          {footer ? (
+            <div className="mt-8 border-t border-[var(--border-subtle)] pt-6 text-center text-app-body text-[var(--text-secondary)]">
+              {footer}
             </div>
-            <div className="min-w-0 lg:col-span-7">
-              <DesktopStage>{aside}</DesktopStage>
-            </div>
-          </div>
-        </main>
-      ) : (
-        <main
-          id="main"
-          className="relative z-10 flex flex-1 items-center justify-center px-6 py-12"
-        >
-          {column}
-        </main>
-      )}
+          ) : null}
+        </div>
+      </main>
     </div>
   );
 }
