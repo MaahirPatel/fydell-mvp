@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
-import { createInvitation, validateInviteRows } from "@/lib/simulations/db";
+import { createInvitation, getVersionContent, validateInviteRows } from "@/lib/simulations/db";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { fydellEmailShell, isResendConfigured, sendResendHtml } from "@/lib/email";
 import { appUrl } from "@/lib/app-url";
 import { ensureOrgPilotCohort } from "@/lib/pilot/cohort";
-import { PILOT_EVALUATION_SLUG } from "@/lib/simulations/content/micro-ops-yield";
+import { ROLE_BY_KEY } from "@/lib/simulations/roles";
+import { invitationEmailCopy } from "@/lib/simulations/invitation-copy";
+import { isMicroContent } from "@/lib/simulations/micro-types";
+import type { RoleKey } from "@/lib/simulations/types";
 import { invitationTruth } from "@/lib/contracts/lifecycle";
 
 export const runtime = "nodejs";
@@ -94,6 +97,23 @@ export async function POST(req: NextRequest) {
     expiresInDays = Math.min(60, Math.max(1, Math.round(body.expiresInDays)));
   }
 
+  // Describe the assessment the candidate is actually invited to.
+  const { data: template } = await admin
+    .from("sim_templates")
+    .select("title, role_key, current_version_id")
+    .eq("id", templateId)
+    .maybeSingle();
+  if (!template) return NextResponse.json({ error: "Simulation not found" }, { status: 404 });
+  const versionContent = await getVersionContent(
+    (templateVersionId || template.current_version_id) as string
+  ).catch(() => null);
+  const emailFacts = {
+    simulationTitle: (template.title as string) || "Work simulation",
+    roleTitle: ROLE_BY_KEY[template.role_key as RoleKey]?.title ?? "technical",
+    durationMinutes: versionContent?.durationMinutes ?? 30,
+    requiresDesktop: Boolean(isMicroContent(versionContent) && versionContent.engineering),
+  };
+
   const emailReady = isResendConfigured();
   const created: {
     id: string;
@@ -135,15 +155,17 @@ export async function POST(req: NextRequest) {
 
       let delivery = "not_configured";
       if (emailReady) {
+        const copy = invitationEmailCopy({
+          organizationName: org.organizationName,
+          candidateName: candidate.name,
+          ...emailFacts,
+          inviteUrl,
+          expiresAt: invitation.expires_at,
+        });
         const sent = await sendResendHtml({
           to: candidate.email,
-          subject: `${org.organizationName} invited you to a Fydell work simulation`,
-          html: fydellEmailShell(
-            `<p style="margin:0 0 12px">Hi${candidate.name ? ` ${candidate.name}` : ""},</p>
-             <p style="margin:0 0 12px"><strong>${org.organizationName}</strong> invited you to complete a Data Analyst work simulation on Fydell (${PILOT_EVALUATION_SLUG}). Expect about 20 minutes of focused desktop work, then a short follow-up.</p>
-             <p style="margin:0 0 20px"><a href="${inviteUrl}" style="background:#111827;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Review the invitation</a></p>
-             <p style="margin:0;color:#6B7280;font-size:13px">Nothing starts until you consent and press Start. This link expires ${new Date(invitation.expires_at).toLocaleDateString()}.</p>`
-          ),
+          subject: copy.subject,
+          html: fydellEmailShell(copy.html),
         });
         delivery = sent.ok ? "sent" : "failed";
       }

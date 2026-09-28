@@ -4,6 +4,7 @@ import { resendInvitation, revokeInvitation } from "@/lib/simulations/db";
 import { fydellEmailShell, isResendConfigured, sendResendHtml } from "@/lib/email";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { appUrl } from "@/lib/app-url";
+import { escapeHtml } from "@/lib/simulations/submission-files";
 
 export const runtime = "nodejs";
 
@@ -39,8 +40,8 @@ export async function POST(
           to: invitation.candidate_email,
           subject: `Reminder: ${org.organizationName} invited you to a Fydell work simulation`,
           html: fydellEmailShell(
-            `<p style="margin:0 0 12px">This is a fresh link for your Fydell work simulation from <strong>${org.organizationName}</strong>. Any earlier link no longer works.</p>
-             <p style="margin:0 0 20px"><a href="${inviteUrl}" style="background:#111827;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Review the invitation</a></p>`
+            `<p style="margin:0 0 12px">This is a fresh link for your Fydell work simulation from <strong>${escapeHtml(org.organizationName)}</strong>. Any earlier link no longer works.</p>
+             <p style="margin:0 0 20px"><a href="${escapeHtml(inviteUrl)}" style="background:#111827;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Review the invitation</a></p>`
           ),
         });
         delivery = sent.ok ? "sent" : "failed";
