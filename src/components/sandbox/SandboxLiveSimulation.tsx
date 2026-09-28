@@ -18,8 +18,8 @@ import { StatusDot, Stepper, TimelineMarker } from "./sandbox-ui";
 
 const STATUS_COLOR: Record<EvidenceStatus, string> = {
   confirmed: "var(--color-good)",
-  unverified: "var(--color-changed)",
-  blocking: "var(--color-risk)",
+  unverified: "var(--fydell-changed)",
+  blocking: "var(--fydell-risk)",
 };
 
 export function SandboxLiveSimulation() {

@@ -6,7 +6,7 @@ import { PROVENANCE_LABELS, type EditorEvidenceImport } from "@/lib/profile/type
 import { ProvenanceBadge } from "./EvidenceTimeline";
 
 const inputClass =
-  "w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-3 py-2 text-[14px] text-[var(--text-primary)] focus:border-[var(--text-tertiary)] focus:outline-none";
+  "w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-3 py-2 text-app-body text-[var(--text-primary)] focus:border-[var(--text-tertiary)] focus:outline-none";
 
 const WHERE_TO_FIND: Record<"vscode" | "cursor", { mac: string; linux: string; windows: string }> = {
   vscode: {
@@ -86,20 +86,20 @@ export default function EditorImport({ onImported }: { onImported?: () => void }
   return (
     <div className="space-y-4">
       <div className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4">
-        <p className="text-[13.5px] font-medium text-[var(--text-primary)]">What this is</p>
-        <p className="mt-1 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+        <p className="text-app-body font-medium text-[var(--text-primary)]">What this is</p>
+        <p className="mt-1 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
           Upload a history file from your own editor and Fydell extracts a work summary — files touched, languages,
           active days. Only the summary is stored; the uploaded file is discarded after parsing.{" "}
           <strong className="font-medium text-[var(--text-primary)]">
             This data is self-supplied: it is labeled as such everywhere and never treated as observed work.
           </strong>
         </p>
-        <div className="mt-3 grid gap-2 text-[12.5px] leading-[1.55] text-[var(--text-tertiary)] sm:grid-cols-3">
+        <div className="mt-3 grid gap-2 text-app-meta leading-[1.55] text-[var(--text-tertiary)] sm:grid-cols-3">
           <p><span className="font-medium text-[var(--text-secondary)]">macOS</span><br />~/{paths.mac}</p>
           <p><span className="font-medium text-[var(--text-secondary)]">Linux</span><br />~/{paths.linux}</p>
           <p><span className="font-medium text-[var(--text-secondary)]">Windows</span><br />%APPDATA%/{paths.windows}</p>
         </div>
-        <p className="mt-3 text-[12.5px] leading-[1.55] text-[var(--text-tertiary)]">
+        <p className="mt-3 text-app-meta leading-[1.55] text-[var(--text-tertiary)]">
           Accepts <code className="rounded bg-[var(--surface-selected)] px-1">state.vscdb</code> (SQLite workspace state),{" "}
           <code className="rounded bg-[var(--surface-selected)] px-1">storage.json</code>, or a VS Code Local History{" "}
           <code className="rounded bg-[var(--surface-selected)] px-1">entries.json</code>. Max 10&nbsp;MB.
@@ -115,7 +115,7 @@ export default function EditorImport({ onImported }: { onImported?: () => void }
               type="button"
               onClick={() => setSource(s)}
               aria-pressed={source === s}
-              className={`rounded-[8px] border px-3 py-1.5 text-[13.5px] font-medium ${
+              className={`rounded-[8px] border px-3 py-1.5 text-app-body font-medium ${
                 source === s
                   ? "border-[var(--text-primary)] bg-[var(--surface-selected)] text-[var(--text-primary)]"
                   : "border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -132,7 +132,7 @@ export default function EditorImport({ onImported }: { onImported?: () => void }
           className={inputClass}
           aria-label="Editor history file"
         />
-        <label className="flex cursor-pointer items-start gap-2 text-[13px] leading-[1.55] text-[var(--text-secondary)]">
+        <label className="flex cursor-pointer items-start gap-2 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
           <input
             type="checkbox"
             checked={consent}
@@ -144,11 +144,11 @@ export default function EditorImport({ onImported }: { onImported?: () => void }
             I understand it will be labeled as self-supplied, not independently observed.
           </span>
         </label>
-        {error ? <p className="text-[13px] text-[var(--status-attention-ink)]">{error}</p> : null}
+        {error ? <p className="text-app-meta text-[var(--status-attention-ink)]">{error}</p> : null}
         <button
           type="submit"
           disabled={busy || !file || !consent}
-          className="rounded-[8px] bg-[var(--text-primary)] px-4 py-2 text-[13.5px] font-medium text-[var(--surface-canvas)] disabled:opacity-50"
+          className="rounded-[8px] bg-[var(--text-primary)] px-4 py-2 text-app-body font-medium text-[var(--surface-canvas)] disabled:opacity-50"
         >
           {busy ? "Parsing…" : "Import history"}
         </button>
@@ -157,11 +157,11 @@ export default function EditorImport({ onImported }: { onImported?: () => void }
       {result ? (
         <div className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[14px] font-medium text-[var(--text-primary)]">Import complete</p>
+            <p className="text-app-body font-medium text-[var(--text-primary)]">Import complete</p>
             <ProvenanceBadge provenance="local-import" />
           </div>
-          <p className="mt-1 text-[12.5px] text-[var(--text-tertiary)]">{PROVENANCE_LABELS["local-import"].detail}</p>
-          <dl className="mt-3 grid grid-cols-2 gap-3 text-[13px] sm:grid-cols-4">
+          <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">{PROVENANCE_LABELS["local-import"].detail}</p>
+          <dl className="mt-3 grid grid-cols-2 gap-3 text-app-meta sm:grid-cols-4">
             <div>
               <dt className="text-[var(--text-tertiary)]">Files touched</dt>
               <dd className="mt-0.5 font-medium text-[var(--text-primary)]">{result.filesTouched.length}</dd>
@@ -183,19 +183,19 @@ export default function EditorImport({ onImported }: { onImported?: () => void }
             </div>
           </dl>
           <details className="mt-3">
-            <summary className="cursor-pointer text-[13px] font-medium text-[var(--text-secondary)]">
+            <summary className="cursor-pointer text-app-meta font-medium text-[var(--text-secondary)]">
               How this was parsed ({result.filesTouched.length} files)
             </summary>
-            <p className="mt-2 text-[12.5px] leading-[1.6] text-[var(--text-tertiary)]">{result.parseMethod}</p>
+            <p className="mt-2 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">{result.parseMethod}</p>
             {warnings.length ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-[12.5px] leading-[1.6] text-[var(--text-tertiary)]">
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
                 {warnings.map((w, i) => (
                   <li key={i}>{w}</li>
                 ))}
               </ul>
             ) : null}
             {result.filesTouched.length ? (
-              <ul className="mt-2 max-h-48 space-y-1 overflow-auto text-[12.5px] text-[var(--text-secondary)]">
+              <ul className="mt-2 max-h-48 space-y-1 overflow-auto text-app-meta text-[var(--text-secondary)]">
                 {result.filesTouched.slice(0, 100).map((f) => (
                   <li key={f.path} className="truncate font-mono">
                     {f.path}

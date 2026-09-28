@@ -405,7 +405,7 @@ export default function CohortWorkspace({
         {inviteResult ? (
           <div className="space-y-4">
             <div className="rounded-[var(--radius-panel)] border border-[rgba(103,217,160,0.28)] bg-[rgba(103,217,160,0.07)] px-3.5 py-3">
-              <p className="text-app-body font-medium text-[#8fe6bb]">
+              <p className="text-app-body font-medium text-[var(--fydell-good)]">
                 Invitation created
               </p>
               <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">

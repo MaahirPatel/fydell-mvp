@@ -30,7 +30,7 @@ export function WorkReceiptView({ receipt }: { receipt: Record<string, unknown> 
 
   return (
     <article className="mx-auto max-w-[920px] text-[var(--text-primary)]">
-      <p className="text-app-meta font-medium text-[var(--color-changed)]">Demo Work Receipt</p>
+      <p className="text-app-meta font-medium text-[var(--fydell-changed)]">Demo Work Receipt</p>
       <h1 className="mt-2 text-app-page">Candidate 01 · {roleTitle}</h1>
       <p className="mt-2 text-app-body text-[var(--text-secondary)]">
         {targets.length

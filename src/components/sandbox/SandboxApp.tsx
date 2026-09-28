@@ -299,7 +299,7 @@ export function SandboxApp({ surface, publicId }: { surface: Surface; runId?: st
 
         <div className="min-w-0 flex-1">
           {error ? (
-            <div className="border-b border-[var(--border-subtle)] px-5 py-3 text-app-body text-[var(--color-risk)] md:px-8">
+            <div className="border-b border-[var(--border-subtle)] px-5 py-3 text-app-body text-[var(--fydell-risk)] md:px-8">
               {error}{" "}
               <button type="button" className="text-[var(--action-ink)]" onClick={() => void load()}>
                 Retry

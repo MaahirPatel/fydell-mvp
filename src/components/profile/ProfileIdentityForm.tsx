@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { EngineerProfile } from "@/lib/profile/types";
 
 const inputClass =
-  "w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-3 py-2 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--text-tertiary)] focus:outline-none";
+  "w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-3 py-2 text-app-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--text-tertiary)] focus:outline-none";
 
 export default function ProfileIdentityForm({ initial }: { initial: EngineerProfile }) {
   const router = useRouter();
@@ -45,7 +45,7 @@ export default function ProfileIdentityForm({ initial }: { initial: EngineerProf
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label htmlFor="profile-display-name" className="mb-1 block text-[13px] font-medium text-[var(--text-secondary)]">
+        <label htmlFor="profile-display-name" className="mb-1 block text-app-meta font-medium text-[var(--text-secondary)]">
           Display name
         </label>
         <input
@@ -59,7 +59,7 @@ export default function ProfileIdentityForm({ initial }: { initial: EngineerProf
         />
       </div>
       <div>
-        <label htmlFor="profile-headline" className="mb-1 block text-[13px] font-medium text-[var(--text-secondary)]">
+        <label htmlFor="profile-headline" className="mb-1 block text-app-meta font-medium text-[var(--text-secondary)]">
           Headline
         </label>
         <input
@@ -72,7 +72,7 @@ export default function ProfileIdentityForm({ initial }: { initial: EngineerProf
         />
       </div>
       <div>
-        <label htmlFor="profile-role" className="mb-1 block text-[13px] font-medium text-[var(--text-secondary)]">
+        <label htmlFor="profile-role" className="mb-1 block text-app-meta font-medium text-[var(--text-secondary)]">
           Role
         </label>
         <input
@@ -85,12 +85,12 @@ export default function ProfileIdentityForm({ initial }: { initial: EngineerProf
           autoComplete="organization-title"
         />
       </div>
-      {error ? <p className="text-[13px] text-[var(--status-attention-ink)]">{error}</p> : null}
-      {saved ? <p className="text-[13px] text-[var(--text-secondary)]">Saved.</p> : null}
+      {error ? <p className="text-app-meta text-[var(--status-attention-ink)]">{error}</p> : null}
+      {saved ? <p className="text-app-meta text-[var(--text-secondary)]">Saved.</p> : null}
       <button
         type="submit"
         disabled={saving}
-        className="rounded-[8px] bg-[var(--text-primary)] px-4 py-2 text-[13.5px] font-medium text-[var(--surface-canvas)] disabled:opacity-50"
+        className="rounded-[8px] bg-[var(--text-primary)] px-4 py-2 text-app-body font-medium text-[var(--surface-canvas)] disabled:opacity-50"
       >
         {saving ? "Saving…" : "Save profile"}
       </button>

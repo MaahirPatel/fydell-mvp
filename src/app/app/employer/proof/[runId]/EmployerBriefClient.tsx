@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 type Brief = {
   recommendation: string;
@@ -124,9 +125,9 @@ export default function EmployerBriefClient({
         </label>
         <label className="flex gap-2 text-app-body"><input name="hired" type="checkbox" /> Hired</label>
         <textarea className="w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
-        <button type="submit" className="rounded-full bg-[var(--surface-paper)] px-4 py-2 text-app-meta text-[#111]">
+        <Button type="submit" variant="primary" shape="pill">
           Save outcome
-        </button>
+        </Button>
         {saved ? <p className="text-app-meta text-[var(--text-secondary)]">{saved}</p> : null}
       </form>
     </div>

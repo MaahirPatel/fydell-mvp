@@ -98,8 +98,8 @@ export function SandboxEvidence({
                         claim.direction === "STRENGTH"
                           ? "var(--color-good)"
                           : claim.direction === "CONCERN"
-                            ? "var(--color-risk)"
-                            : "var(--color-changed)",
+                            ? "var(--fydell-risk)"
+                            : "var(--fydell-changed)",
                     }}
                   >
                     {claim.direction.replaceAll("_", " ")}
@@ -143,7 +143,7 @@ export function SandboxEvidence({
               <p className="mt-2 text-app-body text-[var(--text-secondary)]">{claim.claim}</p>
               <div className="mt-4 grid gap-5 md:grid-cols-2">
                 <EventList label="Supporting events" events={claim.supportingEvents} tone="var(--color-good)" />
-                <EventList label="Counterevidence events" events={claim.counterevidenceEvents} tone="var(--color-risk)" />
+                <EventList label="Counterevidence events" events={claim.counterevidenceEvents} tone="var(--fydell-risk)" />
               </div>
             </article>
           ))}
@@ -165,7 +165,7 @@ export function SandboxEvidence({
       {session.step === "review_pending" ? (
         <div className="mt-7 border-t border-[var(--border-subtle)] pt-5">
           <div className="flex items-start gap-3">
-            <CircleAlert className="mt-0.5 h-4 w-4 text-[var(--color-changed)]" strokeWidth={1.8} aria-hidden />
+            <CircleAlert className="mt-0.5 h-4 w-4 text-[var(--fydell-changed)]" strokeWidth={1.8} aria-hidden />
             <div>
               <h2 className="text-app-section">Record sandbox visitor review</h2>
               <p className="mt-1 max-w-[75ch] text-app-body text-[var(--text-secondary)]">

@@ -49,13 +49,13 @@ const GROUPS: {
     severity: "blocking",
     label: "Blocking",
     description: "No candidate can move past these without you.",
-    color: "var(--color-risk)",
+    color: "var(--fydell-risk)",
   },
   {
     severity: "action",
     label: "Needs your action",
     description: "Waiting on someone in this workspace.",
-    color: "var(--color-changed)",
+    color: "var(--fydell-changed)",
   },
   {
     severity: "waiting",

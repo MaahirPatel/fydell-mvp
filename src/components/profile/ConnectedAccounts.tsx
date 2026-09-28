@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { PROVIDER_LABELS, type ConnectedAccount, type ConnectedAccountProvider } from "@/lib/profile/types";
 
 const inputClass =
-  "w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-3 py-2 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--text-tertiary)] focus:outline-none";
+  "w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-3 py-2 text-app-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--text-tertiary)] focus:outline-none";
 
 function formatDate(iso: string | null) {
   if (!iso) return "never";
@@ -85,7 +85,7 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
   return (
     <div className="space-y-5">
       {accounts.length === 0 ? (
-        <p className="text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+        <p className="text-app-body leading-[1.6] text-[var(--text-secondary)]">
           No accounts connected yet. Connecting GitHub lets employers see repository evidence on your profile.
         </p>
       ) : null}
@@ -96,11 +96,11 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
           className="flex items-center justify-between gap-4 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4 py-3"
         >
           <div className="min-w-0">
-            <p className="text-[14px] font-medium text-[var(--text-primary)]">
+            <p className="text-app-body font-medium text-[var(--text-primary)]">
               {PROVIDER_LABELS[a.provider]}
               <span className="ml-2 font-normal text-[var(--text-secondary)]">{a.label}</span>
             </p>
-            <p className="mt-0.5 text-[12.5px] text-[var(--text-tertiary)]">
+            <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">
               Connected {formatDate(a.connectedAt)}
               {" · "}last synced {formatDate(a.lastSyncedAt)}
             </p>
@@ -109,7 +109,7 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
             type="button"
             onClick={() => void disconnect(a.provider, a.label)}
             disabled={busy}
-            className="shrink-0 rounded-[8px] border border-[var(--border-default)] px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-50"
+            className="shrink-0 rounded-[8px] border border-[var(--border-default)] px-3 py-1.5 text-app-meta font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-50"
           >
             Disconnect
           </button>
@@ -117,8 +117,8 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
       ))}
 
       <form onSubmit={connectGithub} className="rounded-[10px] border border-dashed border-[var(--border-default)] p-4">
-        <p className="text-[13.5px] font-medium text-[var(--text-primary)]">Connect GitHub</p>
-        <p className="mt-1 text-[13px] leading-[1.55] text-[var(--text-secondary)]">
+        <p className="text-app-body font-medium text-[var(--text-primary)]">Connect GitHub</p>
+        <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
           Enter your GitHub username, then analyze your repositories in the passport section below.
           Full GitHub sign-in (OAuth) is coming later — today Fydell reads only the public repositories you choose.
         </p>
@@ -134,7 +134,7 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
           <button
             type="submit"
             disabled={busy || !login.trim()}
-            className="shrink-0 rounded-[8px] bg-[var(--text-primary)] px-4 py-2 text-[13.5px] font-medium text-[var(--surface-canvas)] disabled:opacity-50"
+            className="shrink-0 rounded-[8px] bg-[var(--text-primary)] px-4 py-2 text-app-body font-medium text-[var(--surface-canvas)] disabled:opacity-50"
           >
             Connect
           </button>
@@ -142,11 +142,11 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
       </form>
 
       {editors.length > 0 ? null : (
-        <p className="text-[13px] leading-[1.6] text-[var(--text-tertiary)]">
+        <p className="text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
           VS Code and Cursor appear here automatically when you import editor history below.
         </p>
       )}
-      {error ? <p className="text-[13px] text-[var(--status-attention-ink)]">{error}</p> : null}
+      {error ? <p className="text-app-meta text-[var(--status-attention-ink)]">{error}</p> : null}
     </div>
   );
 }

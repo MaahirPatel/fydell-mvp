@@ -14,10 +14,10 @@ export default function ProfileHeader({ profile }: { profile: EngineerProfile })
       <div className="min-w-0">
         <h1 className="text-app-page font-semibold tracking-[-0.02em]">{profile.displayName || "Your profile"}</h1>
         {profile.headline ? (
-          <p className="mt-1 text-[15px] leading-[1.5] text-[var(--text-secondary)]">{profile.headline}</p>
+          <p className="mt-1 text-app-body leading-[1.5] text-[var(--text-secondary)]">{profile.headline}</p>
         ) : null}
         {profile.role ? (
-          <p className="mt-1 text-[13px] font-medium text-[var(--text-tertiary)]">{profile.role}</p>
+          <p className="mt-1 text-app-meta font-medium text-[var(--text-tertiary)]">{profile.role}</p>
         ) : null}
       </div>
     </div>

@@ -83,7 +83,7 @@ function HealthPanel({ health }: { health: WorkspaceHealth }) {
                 className="mt-[7px] h-[7px] w-[7px] shrink-0 rounded-full"
                 style={{
                   background:
-                    row.tone === "risk" ? "var(--color-risk)" : "var(--color-changed)",
+                    row.tone === "risk" ? "var(--fydell-risk)" : "var(--fydell-changed)",
                 }}
               />
               <div className="min-w-0">

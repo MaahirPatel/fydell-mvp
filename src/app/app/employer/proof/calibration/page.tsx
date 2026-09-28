@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 export default function CalibrationPage() {
   const [form, setForm] = useState({
@@ -46,7 +47,7 @@ export default function CalibrationPage() {
           <textarea className="mt-1 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2" rows={3} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
         </label>
       ))}
-      <button type="submit" className="rounded-full bg-[var(--surface-paper)] px-4 py-2 text-app-meta text-[#111]">Save</button>
+      <Button type="submit" variant="primary" shape="pill">Save</Button>
       {saved ? <p className="text-app-meta text-[var(--text-secondary)]">{saved}</p> : null}
     </form>
   );

@@ -13,7 +13,7 @@ const TONE: Record<SurfaceTone, string> = {
   panel: "border border-[var(--border-subtle)] bg-[var(--surface-raised)]",
   raised: "border border-[var(--border-default)] bg-[var(--surface-panel)]",
   outline: "border border-[var(--border-subtle)] bg-transparent",
-  paper: "border border-black/10 bg-[var(--surface-paper)] text-[#14161a]",
+  paper: "border border-black/10 bg-[var(--surface-paper)] text-[var(--text-primary)]",
 };
 
 export function Surface({

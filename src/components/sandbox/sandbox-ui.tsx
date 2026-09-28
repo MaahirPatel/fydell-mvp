@@ -3,8 +3,8 @@ import type { SampleStepState } from "./sample-artifacts";
 
 const TONE_COLOR = {
   good: "var(--color-good)",
-  changed: "var(--color-changed)",
-  risk: "var(--color-risk)",
+  changed: "var(--fydell-changed)",
+  risk: "var(--fydell-risk)",
   evidence: "var(--color-evidence)",
 } as const;
 

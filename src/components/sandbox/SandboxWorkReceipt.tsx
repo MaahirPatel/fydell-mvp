@@ -116,7 +116,7 @@ export function SandboxWorkReceipt({
             <span className="ml-auto font-mono text-app-meta text-[var(--text-tertiary)]">{publicId}</span>
           </header>
           <div className="px-6 py-5">
-            <p className="flex items-center gap-2 text-app-meta text-[var(--color-changed)]">
+            <p className="flex items-center gap-2 text-app-meta text-[var(--fydell-changed)]">
               <TriangleAlert className="h-4 w-4" strokeWidth={1.8} aria-hidden />
               {String(payload.label)}
             </p>
