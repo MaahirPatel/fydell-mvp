@@ -33,14 +33,19 @@ const active = [page, home, workspace, sharing, stage, fixture, nav, footer, pri
 console.log("\nFydell homepage contract");
 
 ok("homepage mounts the Fydell composition", page.includes("FydellHome"));
+// Page contract (release checklist, Landing): a clear proposition for both
+// audiences, and "Get started" and "Explore demo" both work.
+const hero = home.slice(home.indexOf("<h1"), home.indexOf("<HeroWindow"));
 ok(
-  "hero headline and supporting copy",
-  home.includes("Hiring infrastructure built on real engineering work") &&
-    /Engineering Passports from real repositories\./.test(home),
+  "hero speaks to both audiences",
+  /<h1/.test(hero) && /candidates|hiring|team/i.test(hero) && /Developers/.test(hero),
 );
 ok(
-  "hero actions route employers to signup and developers to the passport builder",
-  /href="\/signup\?as=employer"[^>]*>Start hiring/.test(home) && /href="\/passport\/new"/.test(home),
+  "hero actions: Get started (audience choice), Explore demo, and a developer path",
+  /href="\/get-started"[^>]*>\s*Get started/.test(hero) &&
+    /href="\/demo"[^>]*>\s*Explore demo/.test(hero) &&
+    /href="\/developers"/.test(hero) &&
+    ["src/app/get-started/page.tsx", "src/app/demo/page.tsx", "src/app/developers/page.tsx"].every((f) => existsSync(resolve(f))),
 );
 ok(
   "audience choice offers developer and employer paths into signup",

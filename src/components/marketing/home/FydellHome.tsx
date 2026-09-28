@@ -909,16 +909,19 @@ export default function FydellHome() {
           </h1>
           <div className={s.heroRow}>
             <p className={s.lede}>
-              Fydell runs candidates through realistic engineering simulations — working codebases,
-              real incidents, recorded test runs — and gives your team evidence they can inspect.
-              The code, the commit, the reasoning. No surveillance. No black box.
+              Fydell runs candidates through realistic engineering simulations: working codebases,
+              real incidents, recorded test runs. Your team gets evidence it can inspect. Developers
+              keep a record of their work that they control. No surveillance. No black box.
             </p>
             <div className={s.heroActions}>
-              <Link href="/signup?as=employer" className={s.btnSolid}>
-                Start hiring <ArrowRight className="h-4 w-4" aria-hidden />
+              <Link href="/get-started" className={s.btnSolid}>
+                Get started <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
-              <Link href="/how-it-works" className={s.btnGhost}>
-                See how it works
+              <Link href="/demo" className={s.btnGhost}>
+                Explore demo
+              </Link>
+              <Link href="/developers" className={s.btnGhost}>
+                I&apos;m a developer
               </Link>
             </div>
           </div>
