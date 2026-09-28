@@ -1,0 +1,103 @@
+{
+  "kind": "internal-release-metadata",
+  "visibility": "internal",
+  "templateId": "webhook-retry-incident",
+  "version": "1.0.0",
+  "note": "INTERNAL ONLY. Never packaged for candidates: .fydell/ and .hidden/ are not on the scenario.json allowlist and buildScenarioPackage reads only allowlisted files.",
+  "targetEffortMinutes": 60,
+  "intendedRegression": {
+    "summary": "Release 2.14 introduced two defects: (1) webhooks/retry.py is_retryable returns True for every status >= 400, so permanent 4xx responses (e.g. 410 Gone) are retried up to the attempt cap; (2) Dispatcher.enqueue always creates a new delivery, so the at-least-once event bus republishing an event produces a second delivery to the same endpoint.",
+    "demonstratedBy": "tests/test_dispatcher.py::test_gone_endpoint_is_not_retried and ::test_republished_event_is_delivered_once fail on the shipped code; the other 10 provided tests pass."
+  },
+  "permittedFixes": [
+    "Any correct retry classification: explicit transient set, explicit permanent set, or range checks with 408/429 exceptions",
+    "Deduplicate on (event id, endpoint id) in the dispatcher, in the store, or with an index; returning the existing delivery",
+    "Retry-After parsing in retry.py, the dispatcher, or a helper, as long as behaviour matches the update",
+    "Adding tests under tests/ for the new behaviour"
+  ],
+  "forbiddenShortcuts": [
+    "Editing the provided tests to weaken assertions (the runner restores them, so this has no effect on results)",
+    "Special-casing the statuses or event ids named in the incident instead of fixing the rule",
+    "Deduplicating on event id alone (breaks fan-out to multiple endpoints)"
+  ],
+  "clarificationFacts": [
+    {
+      "id": "fact_404",
+      "question": "Should 404 be retried? The log shows dlv_8860 got a 404 during a merchant deploy and succeeded on retry.",
+      "answer": "Keep 404 permanent for this hotfix, as the runbook says. Merchants replay from the dashboard. RFC-12 tracks a grace period for deploy-time 404s; call it out in the handoff as a risk rather than changing it here.",
+      "judgmentArea": true
+    },
+    {
+      "id": "fact_dedupe_scope",
+      "question": "Deduplicate per event, or per event and endpoint?",
+      "answer": "Per event and endpoint. One event fans out to every subscribed endpoint; each is its own delivery."
+    },
+    {
+      "id": "fact_failed_republish",
+      "question": "If the first delivery failed, should a republish create a new delivery?",
+      "answer": "No. A republish is always a duplicate. Replays go through the dashboard tool, which is out of scope."
+    },
+    {
+      "id": "fact_scope",
+      "question": "Can I refactor the dispatcher or change the store schema?",
+      "answer": "Keep it a hotfix. A small store change is fine if you explain it; no broad refactor."
+    }
+  ],
+  "requirementUpdate": {
+    "id": "retry_after_rollout",
+    "summary": "The partner gateway starts rate limiting: on 429 or 503 with a Retry-After header in whole seconds, schedule the next attempt after that many seconds, capped at MAX_DELAY_SECONDS; otherwise use normal backoff; the attempt cap still applies.",
+    "delivery": "deterministic server milestone via the curveball policy, never randomized per candidate",
+    "expectedCandidateResponse": "acknowledge the update, implement it, add or run a test for it, reflect it in the handoff"
+  },
+  "dimensions": {
+    "correctness": {
+      "description": "The incident is fixed without breaking existing delivery behaviour.",
+      "evidenceSources": ["deterministic: trusted provided tests", "deterministic: hidden tests (groups incident_fix, preserved_behaviour)"],
+      "observableAnchors": [
+        "incident_fix group passes",
+        "preserved_behaviour group passes",
+        "Harness canary reported as failed (run not tampered)"
+      ]
+    },
+    "engineeringJudgment": {
+      "description": "Fixes the rule rather than the symptom and keeps the change reviewable.",
+      "evidenceSources": ["diff against the starter", "handoff"],
+      "observableAnchors": [
+        "Change is localized to webhooks/ and small enough to review as a hotfix",
+        "Retry classification is a rule, not a special case for 410",
+        "Deduplication key includes the endpoint",
+        "Raises the deploy-time 404 trade-off (asked, or named as a risk) rather than silently changing it"
+      ]
+    },
+    "responseToRequirements": {
+      "description": "Adapts to the Retry-After update delivered mid-session.",
+      "evidenceSources": ["deterministic: hidden tests (group requirement_update)", "event trail: curveball_acknowledged", "handoff"],
+      "observableAnchors": [
+        "requirement_update group passes",
+        "Update acknowledged in the workspace",
+        "Handoff mentions the update and how it was tested"
+      ]
+    },
+    "workCommunication": {
+      "description": "Handoff lets an on-call reviewer ship or reject the fix without re-deriving it.",
+      "evidenceSources": ["handoff fields", "team thread messages"],
+      "observableAnchors": [
+        "All four handoff fields complete",
+        "Testing section matches the recorded test runs (claims reconciled against runs)",
+        "Remaining risks are concrete (e.g. deploy-time 404s, existing duplicate deliveries already sent)"
+      ]
+    }
+  },
+  "expectedOutcomes": {
+    "greenState": "reference and both alternative variants: all 45 non-canary checks pass",
+    "partialState": "partial_no_update: incident_fix and preserved_behaviour pass, requirement_update fails; the report must not claim adaptation was demonstrated",
+    "redState": "shipped code: 2 provided tests fail (the incident reproductions); incident_fix and requirement_update groups fail"
+  },
+  "knownIssues": [
+    "Candidate code runs in the same pytest process as trusted tests. The canary test and expected-test-id checks detect reporting tampering, but a determined candidate could still attempt it; such runs are marked indeterminate and routed to human review, never scored as passes."
+  ],
+  "humanReview": {
+    "status": "pending",
+    "note": "No qualified engineer outside the author has reviewed this scenario, rubric or hidden tests. Required before paid production use (SCEN-09)."
+  }
+}

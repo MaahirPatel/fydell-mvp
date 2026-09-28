@@ -1,0 +1,83 @@
+{
+  "kind": "internal-evaluation-descriptor",
+  "visibility": "internal",
+  "note": "INTERNAL. Never packaged: .fydell/ is not on the scenario.json allowlist. Read only by the server-side runner (src/lib/engineering).",
+  "scenarioId": "webhook-retry-incident",
+  "scenarioVersion": "1.0.0",
+  "suiteVersion": "webhook-retry-incident@1.0.0/suite-1",
+  "runtime": {
+    "python": "3.12",
+    "packages": ["pytest==8.3.3"],
+    "timeoutSeconds": 60,
+    "maxOutputBytes": 65536
+  },
+  "editablePrefixes": ["webhooks/", "tests/"],
+  "trustedFiles": ["tests/__init__.py", "tests/fakes.py", "tests/test_dispatcher.py", "tests/test_signing.py"],
+  "hidden": {
+    "sourceDir": ".hidden/hidden_tests",
+    "mountDir": "tests/hidden"
+  },
+  "canary": "tests/hidden/test_zz_harness_canary.py::test_harness_canary_must_fail",
+  "groups": [
+    {
+      "id": "incident_fix",
+      "label": "INC-2291 fixed",
+      "dimension": "correctness",
+      "description": "Permanent 4xx responses are not retried; a republished event never produces a second delivery to the same endpoint.",
+      "tests": [
+        "tests/test_dispatcher.py::test_gone_endpoint_is_not_retried",
+        "tests/test_dispatcher.py::test_republished_event_is_delivered_once",
+        "tests/hidden/test_hidden_incident.py::test_permanent_client_errors_fail_after_one_attempt",
+        "tests/hidden/test_hidden_incident.py::test_republish_returns_the_existing_delivery",
+        "tests/hidden/test_hidden_incident.py::test_republish_after_delivery_sends_nothing",
+        "tests/hidden/test_hidden_incident.py::test_republish_after_failure_does_not_create_a_second_delivery"
+      ]
+    },
+    {
+      "id": "preserved_behaviour",
+      "label": "Existing behaviour preserved",
+      "dimension": "correctness",
+      "description": "Transient failures are still retried with backoff and the attempt cap; fan-out to multiple endpoints still works; signing is unchanged.",
+      "tests": [
+        "tests/test_signing.py::",
+        "tests/test_dispatcher.py::test_successful_delivery_is_marked_delivered",
+        "tests/test_dispatcher.py::test_request_is_signed_and_identified",
+        "tests/test_dispatcher.py::test_server_error_is_retried_after_backoff",
+        "tests/test_dispatcher.py::test_connection_failure_is_retried",
+        "tests/test_dispatcher.py::test_attempts_are_capped",
+        "tests/test_dispatcher.py::test_backoff_doubles_and_is_capped",
+        "tests/test_dispatcher.py::test_deliveries_are_only_attempted_when_due",
+        "tests/hidden/test_hidden_incident.py::test_transient_statuses_are_still_retried",
+        "tests/hidden/test_hidden_incident.py::test_network_failures_are_still_retried",
+        "tests/hidden/test_hidden_incident.py::test_any_2xx_is_delivered",
+        "tests/hidden/test_hidden_incident.py::test_retry_cap_still_applies_to_transient_errors",
+        "tests/hidden/test_hidden_incident.py::test_same_event_fans_out_to_each_endpoint",
+        "tests/hidden/test_hidden_incident.py::test_different_events_to_one_endpoint_are_separate",
+        "tests/hidden/test_hidden_incident.py::test_only_due_deliveries_are_attempted"
+      ]
+    },
+    {
+      "id": "requirement_update",
+      "label": "Retry-After requirement update",
+      "dimension": "response_to_requirements",
+      "description": "After the mid-session update: Retry-After (whole seconds) on 429/503 schedules the next attempt, capped at one hour; unusable values fall back to backoff; the attempt cap still applies.",
+      "requiresUpdate": "retry_after_rollout",
+      "tests": ["tests/hidden/test_hidden_update.py::"]
+    }
+  ],
+  "validation": {
+    "note": "Authoring-time acceptance run by scripts/validate-engineering-scenario.ts through the same workspace assembly and result parsing the production runner uses.",
+    "variantsDir": ".hidden/solutions",
+    "expected": {
+      "__shipped__": { "incident_fix": "fail", "preserved_behaviour": "pass", "requirement_update": "fail" },
+      "reference": { "incident_fix": "pass", "preserved_behaviour": "pass", "requirement_update": "pass" },
+      "alt_index_in_dispatcher": { "incident_fix": "pass", "preserved_behaviour": "pass", "requirement_update": "pass" },
+      "alt_store_lookup": { "incident_fix": "pass", "preserved_behaviour": "pass", "requirement_update": "pass" },
+      "partial_no_update": { "incident_fix": "pass", "preserved_behaviour": "pass", "requirement_update": "fail" },
+      "defect_410_only": { "incident_fix": "fail", "preserved_behaviour": "pass", "requirement_update": "pass" },
+      "defect_dedupe_by_event_only": { "incident_fix": "pass", "preserved_behaviour": "fail", "requirement_update": "pass" },
+      "defect_never_retry_http": { "incident_fix": "pass", "preserved_behaviour": "fail", "requirement_update": "fail" },
+      "defect_retry_after_uncapped": { "incident_fix": "pass", "preserved_behaviour": "pass", "requirement_update": "fail" }
+    }
+  }
+}

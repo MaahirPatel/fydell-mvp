@@ -1,0 +1,21 @@
+{
+  "templateId": "webhook-retry-incident",
+  "version": "1.0.0",
+  "label": "Kestrel Ledger — Webhook retry incident (INC-2291)",
+  "durationMinutes": 60,
+  "curveballs": ["retry_after_rollout"],
+  "canonicalFacts": [
+    "Release 2.14 made is_retryable return True for every status >= 400, so permanent 4xx responses are retried to the attempt cap.",
+    "Release 2.14 moved delivery creation into Dispatcher.enqueue and dropped the consumer's already-enqueued lookup, so a republished event creates a second delivery.",
+    "Deduplication is per (event id, endpoint id); the same event fans out to each subscribed endpoint.",
+    "A republish is always a duplicate, even when the first delivery failed; replays use the dashboard tool (out of scope).",
+    "404 stays permanent for this hotfix; deploy-time 404s are tracked in RFC-12 and belong in the handoff as a risk.",
+    "Retry-After update: on 429 or 503, a whole-seconds Retry-After schedules the next attempt, capped at MAX_DELAY_SECONDS; unusable values fall back to backoff; the attempt cap still applies."
+  ],
+  "candidateVisibleFacts": [
+    "Maya Chen (platform lead) owns the webhook service and can clarify the delivery promise.",
+    "The event bus is at-least-once.",
+    "The runbook is the source of truth for retry rules.",
+    "The fix ships as a hotfix; keep it reviewable."
+  ]
+}
