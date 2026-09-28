@@ -73,8 +73,9 @@
     "test:sim-chat": "tsx --conditions react-server scripts/test-sim-chat.ts",
     "test:sim-chat-api": "tsx --conditions react-server scripts/test-sim-chat-api.ts",
     "test:profile": "tsx --conditions react-server scripts/test-engineering-profile.ts",
-    "test:engineering": "tsx --conditions react-server scripts/test-engineering-runner.ts && tsx --conditions react-server scripts/test-engineering-runs.ts",
-    "validate:scenario": "tsx --conditions react-server scripts/validate-engineering-scenario.ts"
+    "test:engineering": "tsx --conditions react-server scripts/test-engineering-runner.ts && tsx --conditions react-server scripts/test-engineering-runs.ts && node --test services/engineering-runner/runner.test.mjs",
+    "validate:scenario": "tsx --conditions react-server scripts/validate-engineering-scenario.ts",
+    "engineering:snapshot": "node --env-file=.env.local scripts/create-engineering-runtime-snapshot.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

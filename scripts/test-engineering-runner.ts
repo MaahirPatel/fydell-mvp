@@ -13,7 +13,8 @@ import { loadTrustedMaterial } from "../src/lib/engineering/descriptor";
 import { assembleRunWorkspace, WorkspaceRejected, RUNNER_CONFIG_PATH } from "../src/lib/engineering/workspace";
 import { parseJUnitXml } from "../src/lib/engineering/junit";
 import { interpretRun, toCandidateView } from "../src/lib/engineering/evaluate";
-import { parseEnvelope } from "../src/lib/engineering/bootstrap";
+import { readFileSync } from "node:fs";
+import { BOOTSTRAP_PY, parseEnvelope } from "../src/lib/engineering/bootstrap";
 import { buildScenarioPackage } from "../src/lib/simulations/scenario-package";
 import type { ProviderResult } from "../src/lib/engineering/types";
 
@@ -202,6 +203,14 @@ check("timeout surfaces the limit, not a skill verdict", timeout.status === "ind
 const view = toCandidateView(good);
 check("candidate view never lists hidden tests", view.tests.every((t) => t.origin !== "hidden"));
 check("candidate view of an evaluation carries no raw output", view.output === "");
+
+// ------------------------------------------------------------ bootstrap parity
+// The isolated worker ships its own copy of the bootstrap (it must not trust
+// one sent in a request). Both copies must stay byte-identical.
+check(
+  "worker bootstrap.py is identical to the app's BOOTSTRAP_PY",
+  readFileSync("services/engineering-runner/bootstrap.py", "utf8").replace(/\r\n/g, "\n") === BOOTSTRAP_PY.replace(/^\n/, "")
+);
 
 // ------------------------------------------------------------ envelope
 const nonce = "abc123";
