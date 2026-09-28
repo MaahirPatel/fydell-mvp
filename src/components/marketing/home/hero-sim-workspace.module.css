@@ -9,6 +9,13 @@
   padding: clamp(56px, 7vw, 110px) clamp(8px, 4vw, 72px) clamp(72px, 8vw, 120px);
 }
 
+/* Layout-neutral wrapper: carries role="img" so the replay button is not
+   inside the image semantics. display:contents keeps every offset tuned
+   against .scene exactly as before. */
+.stage {
+  display: contents;
+}
+
 /* Our own background weather: two slow-breathing brand glows on warm canvas. */
 .glowA,
 .glowB {
