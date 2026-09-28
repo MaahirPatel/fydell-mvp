@@ -1549,7 +1549,7 @@
 /* ---------- Closing ---------- */
 
 .closing {
-  padding-block: clamp(140px, 16vw, 220px) clamp(100px, 12vw, 160px);
+  padding-block: clamp(80px, 10vw, 120px) clamp(64px, 8vw, 96px);
   text-align: left;
 }
 

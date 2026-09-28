@@ -144,11 +144,12 @@ export default function HeroSimWorkspace() {
 
       {/* ------------------------- the workspace window ------------------------- */}
       <div
+        key={run}
         className={styles.stage}
         role="img"
         aria-label="The Fydell simulation client: a candidate fixes a webhook retry bug while tests stream and cited lines feed an evidence receipt"
       >
-       <div className={styles.window} key={run}>
+       <div className={styles.window}>
         <div className={styles.titlebar}>
           <span className={styles.dots} aria-hidden>
             <i /><i /><i />
@@ -293,7 +294,7 @@ export default function HeroSimWorkspace() {
       </div>
 
       {/* ------------------------- floating: fydell analysis ------------------------- */}
-      <div key={run} className={`${styles.card} ${styles.cardAnalysis}`} style={{ "--d": "3900ms" } as React.CSSProperties}>
+      <div className={`${styles.card} ${styles.cardAnalysis}`} style={{ "--d": "3900ms" } as React.CSSProperties}>
         <p className={styles.cardKicker}>
           <span className={styles.agentDot} aria-hidden /> Fydell analysis
         </p>
