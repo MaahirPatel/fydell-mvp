@@ -14,7 +14,7 @@ export function AdminPageHeader({
       <div className="min-w-0">
         <h1
           className="text-app-page text-[var(--text-primary)]"
-          style={{ fontWeight: 560 }}
+          style={{ fontWeight: 500 }}
         >
           {title}
         </h1>
@@ -50,7 +50,7 @@ export function AdminMetricCard({
       </p>
       <p
         className="mt-2.5 stat-value"
-        style={{ fontWeight: 560, letterSpacing: "-0.04em" }}
+        style={{ fontWeight: 500, letterSpacing: "-0.04em" }}
       >
         {value}
       </p>

@@ -102,7 +102,7 @@ export default function UserAdminActions({
             void run("grant-role", { role });
           }}
           className="h-9 w-full rounded-[8px] bg-[#F1F2F4] text-[#08090C]"
-          style={{ fontWeight: 560 }}
+          style={{ fontWeight: 500 }}
         >
           Grant role
         </button>

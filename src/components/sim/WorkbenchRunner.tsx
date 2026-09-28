@@ -1392,7 +1392,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             <FydellMark width={24} />
             <span
               className="text-app-body leading-none tracking-tight text-[var(--text-primary)]"
-              style={{ fontWeight: 560, letterSpacing: "-0.045em" }}
+              style={{ fontWeight: 500, letterSpacing: "-0.045em" }}
             >
               fydell
             </span>

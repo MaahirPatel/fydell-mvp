@@ -37,7 +37,7 @@
   border-bottom: 1px solid var(--lib-line-soft);
   text-align: left;
   font-size: 12px;
-  font-weight: 560;
+  font-weight: 500;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--lib-dim);
@@ -67,7 +67,7 @@
 }
 
 .title {
-  font-weight: 540 !important;
+  font-weight: 500 !important;
   letter-spacing: -0.012em;
   color: var(--text-primary) !important;
 }
@@ -114,7 +114,7 @@
 }
 
 .released {
-  font-weight: 540;
+  font-weight: 500;
   color: var(--brand-blue);
   text-decoration: underline;
   text-underline-offset: 3px;

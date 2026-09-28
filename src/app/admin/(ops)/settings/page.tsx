@@ -37,7 +37,7 @@ export default async function AdminSettingsPage() {
 
   return (
     <div>
-      <h1 className="text-app-page" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+      <h1 className="text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
         System settings
       </h1>
       <p className="mt-2 text-app-body text-[var(--text-secondary)]">
@@ -51,7 +51,7 @@ export default async function AdminSettingsPage() {
             className="flex items-center justify-between rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-3 text-app-meta"
           >
             <div>
-              <p style={{ fontWeight: 520 }}>{check.label}</p>
+              <p style={{ fontWeight: 500 }}>{check.label}</p>
               <p className="mt-1 text-[var(--text-secondary)]">{check.detail}</p>
             </div>
             <span

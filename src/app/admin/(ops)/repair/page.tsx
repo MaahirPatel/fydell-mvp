@@ -37,7 +37,7 @@ export default function AdminRepairPage() {
 
   return (
     <div>
-      <h1 className="text-app-page" style={{ fontWeight: 560, letterSpacing: "-0.03em" }}>
+      <h1 className="text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.03em" }}>
         Repair console
       </h1>
       <p className="mt-2 text-app-body text-[var(--text-secondary)]">

@@ -75,7 +75,7 @@
 
 .cardName {
   font-size: 17px;
-  font-weight: 580;
+  font-weight: 500;
   letter-spacing: -0.015em;
 }
 
@@ -86,7 +86,7 @@
   background: var(--brand-blue);
   color: #fff;
   font-size: 12px;
-  font-weight: 560;
+  font-weight: 500;
   letter-spacing: 0.01em;
 }
 
@@ -113,7 +113,7 @@
   padding-inline: 18px;
   border-radius: 999px;
   font-size: 14.5px;
-  font-weight: 540;
+  font-weight: 500;
   letter-spacing: -0.012em;
   transition: background-color 150ms var(--dl-ease), border-color 150ms var(--dl-ease);
 }
@@ -157,7 +157,7 @@
 
 .h2 {
   font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.125rem);
-  font-weight: 560;
+  font-weight: 500;
   letter-spacing: -0.028em;
   color: var(--text-primary);
   text-wrap: balance;
@@ -181,7 +181,7 @@
 
 .featureTitle {
   font-size: 15.5px;
-  font-weight: 580;
+  font-weight: 500;
   letter-spacing: -0.012em;
   color: var(--text-primary);
 }
@@ -215,7 +215,7 @@
 
 .req dt {
   font-size: 14px;
-  font-weight: 580;
+  font-weight: 500;
   color: var(--text-primary);
 }
 

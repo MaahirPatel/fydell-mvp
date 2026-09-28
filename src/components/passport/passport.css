@@ -58,7 +58,7 @@
   font-size: var(--type-app-page);
   line-height: var(--type-app-page-lh);
   letter-spacing: var(--type-app-page-tracking);
-  font-weight: 650;
+  font-weight: 600;
   color: var(--text-primary);
 }
 

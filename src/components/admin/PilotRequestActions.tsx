@@ -97,7 +97,7 @@ export default function PilotRequestActions({
           disabled={busy}
           onClick={() => run("status")}
           className="h-9 rounded-[8px] bg-[#F1F2F4] px-3 text-app-meta text-[#08090C]"
-          style={{ fontWeight: 560 }}
+          style={{ fontWeight: 500 }}
         >
           Update status
         </button>

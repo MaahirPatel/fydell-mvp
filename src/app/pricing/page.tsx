@@ -125,8 +125,7 @@ export default function PricingPage() {
             <h1 className={s.title}>Free for engineers. <span className="t-evidence">Pay per completed simulation.</span></h1>
             <div className={s.heroRow}>
               <p className={s.lede}>
-                No seats, no platform fee on Starter, and nothing billed until a candidate finishes. Pick a plan
-                or estimate your month below.
+                Nothing billed until a candidate finishes. Pick a plan or estimate your month below.
               </p>
             </div>
           </div>

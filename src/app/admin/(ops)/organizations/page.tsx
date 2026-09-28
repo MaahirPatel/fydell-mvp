@@ -26,7 +26,7 @@ export default async function AdminOrganizationsPage() {
 
   return (
     <div>
-      <h1 className="text-app-page" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+      <h1 className="text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
         Organizations
       </h1>
       <p className="mt-2 text-app-body text-[var(--text-secondary)]">
@@ -55,7 +55,7 @@ export default async function AdminOrganizationsPage() {
               rows.map((row) => (
                 <tr key={row.id} className="border-b border-[var(--border-subtle)]">
                   <td className="px-4 py-3">
-                    <div style={{ fontWeight: 520 }}>{row.name}</div>
+                    <div style={{ fontWeight: 500 }}>{row.name}</div>
                     <div className="text-app-meta text-[var(--text-tertiary)]">{row.slug || "-"}</div>
                   </td>
                   <td className="px-4 py-3 capitalize">{row.status || "-"}</td>

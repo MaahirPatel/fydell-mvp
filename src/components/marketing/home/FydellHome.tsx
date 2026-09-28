@@ -869,15 +869,15 @@ export function ShareVisual() {
 const PROBLEMS = [
   {
     title: "Résumés are marketing documents.",
-    body: "They describe the work; they never show it. The best résumé in the pile is rarely the best engineer — it's the best-written one.",
+    body: "They describe the work. They never show it. The best résumé in the pile is rarely the best engineer. It is the best-written one.",
   },
   {
     title: "Keyword screens filter out the best people.",
-    body: "Great engineers with unconventional backgrounds die in the ATS. You're selecting for keyword density, not ability.",
+    body: "Great engineers with unconventional backgrounds die in the ATS. You are selecting for keyword density, not ability.",
   },
   {
     title: "Take-homes take hours and prove nothing.",
-    body: "Candidates burn weekends on toy problems. You can't tell who wrote the code, so you run the whiteboard anyway — and learn even less.",
+    body: "Candidates burn weekends on toy problems. You cannot tell who wrote the code, so you run the whiteboard anyway and learn even less.",
   },
 ] as const;
 
@@ -885,7 +885,7 @@ const PRINCIPLES = [
   {
     index: "P.1",
     title: "Record the work, not the worker.",
-    body: "Candidates see everything that's captured before they begin — files, tests, timeline. No keystroke logging, no screen recording, no spyware. The simulation is the assessment.",
+    body: "Candidates see everything that is captured before they begin: files, tests, timeline. No keystroke logging. No screen recording. No spyware. The simulation is the assessment.",
   },
   {
     index: "P.2",
@@ -902,7 +902,7 @@ const PRINCIPLES = [
 const HOME_FAQ = [
   {
     q: "Are the examples on this page real?",
-    a: "The walkthroughs use fictional example data and are labeled as such — there is no real candidate behind them. The scenarios, prices, and controls described are real product capabilities; the demo data is illustration, not evidence.",
+    a: "The walkthroughs use fictional example data and are labeled as such. There is no real candidate behind them. The scenarios, prices, and controls described are real product capabilities. The demo data is illustration, not evidence.",
   },
   {
     q: "What does Fydell cost?",
@@ -910,11 +910,11 @@ const HOME_FAQ = [
   },
   {
     q: "Does Fydell replace interviews?",
-    a: "No. Fydell gives your reviewers evidence to read before the interview: cited findings, recorded test runs, and questions drawn from the candidate's own work. There is no score, no ranking, and no auto-reject — your team makes the call.",
+    a: "No. Fydell gives your reviewers evidence to read before the interview: cited findings, recorded test runs, and questions drawn from the candidate's own work. There is no score, no ranking, and no auto-reject. Your team makes the call.",
   },
   {
     q: "Is this surveillance software?",
-    a: "No. There is no keystroke logging, screen recording, or webcam. Candidates see exactly what is recorded before they start, and the simulation itself — the work, not the worker — is what gets assessed.",
+    a: "No. There is no keystroke logging, screen recording, or webcam. Candidates see exactly what is recorded before they start. The simulation assesses the work, not the worker.",
   },
   {
     q: "Which roles and languages are covered?",
@@ -937,22 +937,20 @@ export default function FydellHome() {
         <div className={`${s.container} ${s.heroCopyIn}`}>
           <Kicker>Hiring infrastructure</Kicker>
           <h1 className={s.heroTitle}>
-            Hire for <span className="t-project">the&nbsp;work</span>,
+            A new way to hire.
             <br />
-            not the résumé.
+            A better way to <span className="t-project">get&nbsp;hired.</span>
           </h1>
           <div className={s.heroRow}>
             <p className={s.lede}>
-              Fydell runs candidates through realistic engineering simulations — working codebases,
-              real incidents, recorded test runs — and gives your team evidence they can inspect.
-              The code, the commit, the reasoning. No surveillance. No black box.
+              Fydell evaluates engineers on real work. Project evidence from their code. Realistic simulations. Your team reviews evidence, not résumés.
             </p>
             <div className={s.heroActions}>
-              <Link href="/signup?as=employer" className={s.btnSolid}>
-                Start hiring <ArrowRight className="h-4 w-4" aria-hidden />
+              <Link href="/signup" className={s.btnSolid}>
+                Get started <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
-              <Link href="/how-it-works" className={s.btnGhost}>
-                See how it works
+              <Link href="/demo" className={s.btnGhost}>
+                Explore demo
               </Link>
             </div>
           </div>
@@ -1013,7 +1011,7 @@ export default function FydellHome() {
           label="Passports"
           href="/developers"
           title="Turn repositories into a record of real work"
-          copy="Import public GitHub projects. Fydell reads them at a pinned commit, cites every finding, and states plainly what it could not assess."
+          copy="Import public GitHub projects. Fydell pins a commit, cites every finding, and states plainly what it could not assess."
         />
         <Reveal delay={0.08}>
           <IntakeVisual />
@@ -1113,17 +1111,15 @@ export default function FydellHome() {
 
       <section className={`${s.container} ${s.closing}`}>
         <h2 className={s.closingTitle}>
-          Hire from the work.
-          <br />
-          <span>Get hired for it.</span>
+          Hire for the work.
         </h2>
         <div className={s.closingRow}>
           <p className={s.lede}>Free for engineers. Hiring teams pay per completed simulation.</p>
           <div className={s.heroActions}>
-            <Link href="/signup?as=employer" className={s.btnSolid}>
-              Start hiring <ArrowRight className="h-4 w-4" aria-hidden />
+            <Link href="/signup" className={s.btnSolid}>
+              Get started <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
-            <Link href="/pricing" className={s.btnGhost}>See pricing</Link>
+            <Link href="/demo" className={s.btnGhost}>Explore demo</Link>
           </div>
         </div>
       </section>

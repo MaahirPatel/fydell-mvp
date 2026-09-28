@@ -21,7 +21,7 @@ export function PilotSection({
     <section className="rounded-[16px] border border-white/[0.09] bg-white/[0.025] p-5 sm:p-7">
       <h2
         className="text-[19px] text-[#F4F5F7]"
-        style={{ fontWeight: 580, letterSpacing: "-0.02em" }}
+        style={{ fontWeight: 500, letterSpacing: "-0.02em" }}
       >
         {title}
       </h2>
@@ -63,7 +63,7 @@ export function RatingScale({
   const id = useId();
   return (
     <fieldset>
-      <legend className="text-app-body leading-[1.5] text-[#F4F5F7]" style={{ fontWeight: 540 }}>
+      <legend className="text-app-body leading-[1.5] text-[#F4F5F7]" style={{ fontWeight: 500 }}>
         {label}
       </legend>
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -77,7 +77,7 @@ export function RatingScale({
                   ? "border-[#F1F2F4] bg-[#F1F2F4] text-[#08090C]"
                   : "border-white/[0.14] bg-white/[0.02] text-[rgba(244,245,247,0.72)] hover:border-white/30"
               } focus-within:ring-2 focus-within:ring-[rgba(86,98,255,0.55)]`}
-              style={{ fontWeight: 560 }}
+              style={{ fontWeight: 500 }}
             >
               <input
                 type="radio"
@@ -124,7 +124,7 @@ export function ChoiceGroup({
   const id = useId();
   return (
     <fieldset>
-      <legend className="text-app-body leading-[1.5] text-[#F4F5F7]" style={{ fontWeight: 540 }}>
+      <legend className="text-app-body leading-[1.5] text-[#F4F5F7]" style={{ fontWeight: 500 }}>
         {label}
       </legend>
       {hint ? (
@@ -189,7 +189,7 @@ export function TextField({
       <label
         htmlFor={id}
         className="block text-app-body leading-[1.5] text-[#F4F5F7]"
-        style={{ fontWeight: 540 }}
+        style={{ fontWeight: 500 }}
       >
         {label}
         {optional ? (
@@ -233,7 +233,7 @@ export function TextAreaField({
       <label
         htmlFor={id}
         className="block text-app-body leading-[1.5] text-[#F4F5F7]"
-        style={{ fontWeight: 540 }}
+        style={{ fontWeight: 500 }}
       >
         {label}
         {optional ? (
@@ -271,7 +271,7 @@ export function PrimaryButton({
       onClick={onClick}
       disabled={disabled}
       className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#F2F3F5] px-7 text-app-body text-[#090A0D] transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
-      style={{ fontWeight: 580 }}
+      style={{ fontWeight: 500 }}
     >
       {children}
     </button>

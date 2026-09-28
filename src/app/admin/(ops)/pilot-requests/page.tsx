@@ -55,7 +55,7 @@ export default async function AdminPilotRequestsPage() {
                       <Link
                         href={`/admin/pilot-requests/${row.id}`}
                         className="tabular-nums text-[var(--text-primary)] hover:underline"
-                        style={{ fontWeight: 540 }}
+                        style={{ fontWeight: 500 }}
                       >
                         {row.public_reference || row.id.slice(0, 8)}
                       </Link>

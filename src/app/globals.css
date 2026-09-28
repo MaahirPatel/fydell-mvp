@@ -81,7 +81,7 @@ body {
   h1 {
     font-size: var(--type-page);
     line-height: 1.06;
-    font-weight: 640;
+    font-weight: 600;
     letter-spacing: -0.03em;
   }
 
@@ -266,7 +266,7 @@ nextjs-portal,
   max-width: 14ch;
   color: var(--text-primary);
   font-size: var(--type-display);
-  font-weight: 660;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: -0.038em;
   text-wrap: balance;
@@ -280,7 +280,7 @@ nextjs-portal,
   max-width: 680px;
   color: var(--text-primary);
   font-size: clamp(2rem, 4.4vw, 4rem);
-  font-weight: 660;
+  font-weight: 600;
   line-height: 1.04;
   letter-spacing: -0.036em;
   text-align: center;
@@ -330,7 +330,7 @@ nextjs-portal,
   margin: 0;
   color: var(--text-primary);
   font-size: clamp(2.5rem, 3.8vw, 3.5rem);
-  font-weight: 640;
+  font-weight: 600;
   line-height: 1.04;
   letter-spacing: -0.032em;
   text-wrap: balance;
@@ -356,7 +356,7 @@ nextjs-portal,
   margin: 0;
   color: var(--text-primary);
   font-size: clamp(1.625rem, 2.4vw, 1.9375rem);
-  font-weight: 640;
+  font-weight: 600;
   line-height: 1.14;
   letter-spacing: -0.03em;
   text-wrap: balance;
@@ -367,7 +367,7 @@ nextjs-portal,
   max-width: 22ch;
   color: var(--text-primary);
   font-size: var(--type-page);
-  font-weight: 640;
+  font-weight: 600;
   line-height: 1.06;
   letter-spacing: -0.034em;
   text-wrap: balance;
@@ -452,7 +452,7 @@ nextjs-portal,
    a .t-* class to set them in an evidence color. */
 .stat-numeral {
   font-variant-numeric: tabular-nums;
-  font-weight: 640;
+  font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1;
 }
@@ -601,7 +601,7 @@ textarea.platform-input {
    title size with tight tracking and tabular numerals. Data, not text. */
 .stat-value {
   font-size: var(--type-app-page);
-  font-weight: 560;
+  font-weight: 500;
   letter-spacing: -0.03em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -829,7 +829,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
 
 .display {
   font-family: var(--font-display), system-ui, sans-serif;
-  font-weight: 640;
+  font-weight: 600;
   letter-spacing: -0.045em;
   line-height: 0.98;
   text-wrap: balance;
@@ -843,7 +843,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
 }
 .display-serif {
   font-family: var(--font-display), system-ui, sans-serif;
-  font-weight: 620;
+  font-weight: 600;
   letter-spacing: -0.034em;
 }
 .eyebrow {
@@ -851,7 +851,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
   align-items: center;
   gap: 0.45rem;
   font-size: 0.8125rem;
-  font-weight: 560;
+  font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--text-secondary);
 }

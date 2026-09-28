@@ -25,7 +25,7 @@ export default async function SetupRequiredPage({
     <main className="grid min-h-[100dvh] place-items-center bg-[#050609] px-6 text-[#F4F5F7]">
       <div className="w-full max-w-lg">
         <FydellBrand markSize={36} wordmarkSize={22} />
-        <h1 className="mt-10 text-app-page" style={{ fontWeight: 560, letterSpacing: "-0.03em" }}>
+        <h1 className="mt-10 text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.03em" }}>
           Setup required
         </h1>
         <p className="mt-3 text-app-body leading-relaxed text-white/60">{copy}</p>

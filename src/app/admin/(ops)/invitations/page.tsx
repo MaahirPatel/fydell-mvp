@@ -39,7 +39,7 @@ export default async function AdminInvitationsPage() {
 
   return (
     <div>
-      <h1 className="text-app-page" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+      <h1 className="text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
         Invitations
       </h1>
       <p className="mt-2 text-app-body text-[var(--text-secondary)]">

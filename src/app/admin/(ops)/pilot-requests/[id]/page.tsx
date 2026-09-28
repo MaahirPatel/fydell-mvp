@@ -79,7 +79,7 @@ export default async function AdminPilotRequestDetailPage({
           <p className="text-app-meta tabular-nums text-[var(--text-tertiary)]">
             {String(r.public_reference || "")}
           </p>
-          <h1 className="mt-1 text-app-page" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+          <h1 className="mt-1 text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
             {String(r.company_name || r.company || "")}
           </h1>
           <p className="mt-2 text-app-body text-[var(--text-secondary)]">
@@ -150,7 +150,7 @@ export default async function AdminPilotRequestDetailPage({
                 className="flex flex-wrap items-start justify-between gap-2 border-b border-[var(--border-subtle)] pb-3 text-app-meta"
               >
                 <div>
-                  <p style={{ fontWeight: 520 }}>{email.template_key}</p>
+                  <p style={{ fontWeight: 500 }}>{email.template_key}</p>
                   <p className="text-[var(--text-secondary)]">{email.recipient_email}</p>
                   {email.last_error ? (
                     <p className="mt-1 text-[var(--fydell-risk)]">{email.last_error}</p>
@@ -173,7 +173,7 @@ export default async function AdminPilotRequestDetailPage({
           ) : (
             events.map((event) => (
               <li key={event.id} className="border-b border-[var(--border-subtle)] pb-3 text-app-meta">
-                <p style={{ fontWeight: 520 }}>{event.event_type}</p>
+                <p style={{ fontWeight: 500 }}>{event.event_type}</p>
                 <p className="text-[var(--text-secondary)]">
                   {event.description || `${event.old_status || ""} → ${event.new_status || ""}`}
                 </p>

@@ -69,7 +69,7 @@ export default async function AdminEmailCenterPage({
     <div>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-app-page" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+          <h1 className="text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
             Email Center
           </h1>
           <p className="mt-2 text-app-body text-[var(--text-secondary)]">
@@ -85,7 +85,7 @@ export default async function AdminEmailCenterPage({
           <button
             type="submit"
             className="h-9 rounded-[8px] bg-[var(--control-solid)] px-3 text-app-meta text-[var(--control-solid-ink)]"
-            style={{ fontWeight: 560 }}
+            style={{ fontWeight: 500 }}
           >
             Process queue now
           </button>

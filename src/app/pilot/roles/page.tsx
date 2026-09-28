@@ -18,7 +18,7 @@ export default function PilotRolesPage() {
           </p>
           <p className="mt-4 rounded-[12px] border border-[rgba(140,150,255,0.3)] bg-[rgba(86,98,255,0.09)] px-4 py-3.5 text-app-body leading-[1.6] text-[rgba(244,245,247,0.82)]">
             After you finish the simulation and review your result, return to{" "}
-            <span className="text-[#F4F5F7]" style={{ fontWeight: 560 }}>
+            <span className="text-[#F4F5F7]" style={{ fontWeight: 500 }}>
               fydell.com/pilot/feedback
             </span>
           </p>

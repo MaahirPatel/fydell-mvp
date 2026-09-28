@@ -64,7 +64,7 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="text-app-page" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+      <h1 className="text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
         Users
       </h1>
       <p className="mt-2 text-app-body text-[var(--text-secondary)]">
@@ -103,7 +103,7 @@ export default async function AdminUsersPage() {
                       <Link
                         href={`/admin/users/${user.id}`}
                         className="text-[var(--text-primary)] hover:underline"
-                        style={{ fontWeight: 520 }}
+                        style={{ fontWeight: 500 }}
                       >
                         {name}
                       </Link>

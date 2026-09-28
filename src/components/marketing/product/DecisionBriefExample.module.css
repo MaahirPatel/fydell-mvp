@@ -18,7 +18,7 @@
 .intro h1 {
   max-width: 900px;
   font-size: clamp(2.9rem, 5.7vw, 5rem);
-  font-weight: 540;
+  font-weight: 500;
   line-height: 0.98;
   letter-spacing: -0.045em;
   text-wrap: balance;
@@ -60,7 +60,7 @@
 
 .reportBar strong {
   color: var(--text-secondary);
-  font-weight: 520;
+  font-weight: 500;
 }
 
 .reportLayout {
@@ -77,7 +77,7 @@
 .railTitle {
   color: var(--text-primary);
   font-size: 16px;
-  font-weight: 540;
+  font-weight: 500;
 }
 
 .railMeta {
@@ -151,7 +151,7 @@
   max-width: 660px;
   margin-top: 10px;
   font-size: clamp(1.8rem, 3vw, 2.6rem);
-  font-weight: 540;
+  font-weight: 500;
   line-height: 1.08;
   letter-spacing: -0.032em;
 }
@@ -204,7 +204,7 @@
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 13px;
-  font-weight: 540;
+  font-weight: 500;
 }
 
 .claimConcern .claimDirection {
@@ -302,7 +302,7 @@
 .reviewNote strong {
   flex: 0 0 auto;
   color: var(--text-primary);
-  font-weight: 520;
+  font-weight: 500;
 }
 
 .process {
@@ -319,7 +319,7 @@
 .processHead h2,
 .closing h2 {
   font-size: clamp(2.3rem, 4vw, 3.6rem);
-  font-weight: 520;
+  font-weight: 500;
   line-height: 1.04;
   letter-spacing: -0.035em;
 }
@@ -355,7 +355,7 @@
 
 .runStep h3 {
   font-size: 15px;
-  font-weight: 540;
+  font-weight: 500;
 }
 
 .runStep p {

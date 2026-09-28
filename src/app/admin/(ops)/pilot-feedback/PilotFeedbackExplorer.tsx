@@ -293,7 +293,7 @@ export default function PilotFeedbackExplorer({ rows }: { rows: PilotFeedbackRow
                 className="inline-flex items-center gap-2 rounded-[var(--radius-tag)] bg-[var(--surface-selected)] px-3 py-1.5 text-app-meta text-[var(--text-secondary)] ring-1 ring-inset ring-[var(--border-default)]"
               >
                 {answer}
-                <span className="tabular-nums text-[var(--text-primary)]" style={{ fontWeight: 560 }}>
+                <span className="tabular-nums text-[var(--text-primary)]" style={{ fontWeight: 500 }}>
                   {count}
                 </span>
               </span>

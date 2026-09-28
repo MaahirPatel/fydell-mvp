@@ -52,7 +52,7 @@ export default function PilotIntroPage() {
             <Link
               href="/pilot/profile"
               className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#F2F3F5] px-7 text-app-body text-[#090A0D] transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[0.97]"
-              style={{ fontWeight: 580 }}
+              style={{ fontWeight: 500 }}
             >
               Choose a role
             </Link>

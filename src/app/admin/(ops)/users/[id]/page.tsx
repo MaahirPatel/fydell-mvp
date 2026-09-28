@@ -51,7 +51,7 @@ export default async function AdminUserDetailPage({
       <Link href="/admin/users" className="text-app-meta text-[var(--text-secondary)]">
         ← Users
       </Link>
-      <h1 className="mt-4 text-app-page" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+      <h1 className="mt-4 text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
         {profile?.full_name || user.user_metadata?.full_name || user.email}
       </h1>
       <p className="mt-2 text-app-body text-[var(--text-secondary)]">{user.email}</p>
