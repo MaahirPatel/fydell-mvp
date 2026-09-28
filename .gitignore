@@ -25,3 +25,7 @@ build-out.txt
 
 # Scenario fixtures are candidate-facing content, not runtime logs.
 !scenarios/**/logs/*.log
+
+# Build output (Rust/Tauri and TypeScript incremental state).
+desktop/src-tauri/target/
+*.tsbuildinfo
