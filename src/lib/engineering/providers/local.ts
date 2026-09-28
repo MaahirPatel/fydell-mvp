@@ -1,5 +1,5 @@
 /**
- * Local-process provider — DEVELOPMENT AND AUTHORING VALIDATION ONLY.
+ * Local-process provider: DEVELOPMENT AND AUTHORING VALIDATION ONLY.
  *
  * Runs the bootstrap with a Python interpreter on the current host. There is
  * no isolation boundary here, so it refuses to run in production and must be

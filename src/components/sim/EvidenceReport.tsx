@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import EmployerReviewActions from "@/components/employer/EmployerReviewActions";
 import { EvidenceReportV2 } from "@/components/sim/EvidenceReportV2";
+import { EngineeringResults, type EngineeringReportData } from "@/components/sim/EngineeringResults";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -81,6 +82,8 @@ interface Report {
   messages?: { thread: string; stakeholderId: string | null; sender: string; body: string; at: string }[];
   decisions?: { id: string; decision: string; notes: string; created_at: string }[];
   credential?: { credential_number: string } | null;
+  /** Present for engineering scenarios: deterministic test results. */
+  engineering?: EngineeringReportData | null;
 }
 
 const BAND_TONE: Record<string, StatusTone> = {
@@ -219,6 +222,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
     timeline,
     decisions,
     credential,
+    engineering,
   } = report;
   if (!analysis || !simulation) return null;
   const rec = RECOMMENDATION_COPY[analysis.recommendation] || RECOMMENDATION_COPY.review;
@@ -318,6 +322,8 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
           </div>
         </dl>
       </Surface>
+
+      {engineering ? <EngineeringResults data={engineering} /> : null}
 
       {analysis.citations && analysis.citations.length > 0 ? (
         <section aria-labelledby="cite-h">

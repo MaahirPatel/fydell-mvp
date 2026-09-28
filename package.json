@@ -73,7 +73,7 @@
     "test:sim-chat": "tsx --conditions react-server scripts/test-sim-chat.ts",
     "test:sim-chat-api": "tsx --conditions react-server scripts/test-sim-chat-api.ts",
     "test:profile": "tsx --conditions react-server scripts/test-engineering-profile.ts",
-    "test:engineering": "tsx --conditions react-server scripts/test-engineering-runner.ts",
+    "test:engineering": "tsx --conditions react-server scripts/test-engineering-runner.ts && tsx --conditions react-server scripts/test-engineering-runs.ts",
     "validate:scenario": "tsx --conditions react-server scripts/validate-engineering-scenario.ts"
   },
   "dependencies": {

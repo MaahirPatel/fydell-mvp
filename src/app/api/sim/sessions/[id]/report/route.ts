@@ -7,6 +7,7 @@ import { isMicroContent } from "@/lib/simulations/micro-types";
 import { isV2PersistedResult } from "@/lib/simulations/v2/scoring";
 import { isPreviewMode, previewReport } from "@/lib/dev/preview";
 import { DA01_CONTENT_VERSION, DA01_SLUG } from "@/lib/contracts/da01";
+import { engineeringReportFor } from "@/lib/engineering/submission-eval";
 
 export const runtime = "nodejs";
 
@@ -116,6 +117,11 @@ export async function GET(
 
     const resultJson = run.result;
     const v2 = isV2PersistedResult(resultJson);
+    // Deterministic test results, kept separate from interpretive analysis.
+    const engineering = await engineeringReportFor(id, session.template_id).catch((err) => {
+      console.error(`[report] engineering results unavailable for session ${id}:`, err);
+      return null;
+    });
 
     return NextResponse.json({
       ready: true,
@@ -210,6 +216,7 @@ export async function GET(
       })),
       decisions: decisions || [],
       credential: credential || null,
+      engineering,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Failed to load report";

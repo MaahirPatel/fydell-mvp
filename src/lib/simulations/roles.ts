@@ -15,6 +15,12 @@ export interface PathwayDefinition {
 
 export const PATHWAYS: PathwayDefinition[] = [
   {
+    key: "software_engineering",
+    title: "Software Engineering",
+    description:
+      "Roles that change production code: finding the cause of a defect, fixing it without breaking what works, and handing the change off safely.",
+  },
+  {
     key: "data_analytics",
     title: "Data and Analytics",
     description:
@@ -35,6 +41,26 @@ export const PATHWAYS: PathwayDefinition[] = [
 ];
 
 export const ROLES: RoleDefinition[] = [
+  {
+    key: "backend_engineer",
+    pathway: "software_engineering",
+    title: "Backend Engineer",
+    shortDescription:
+      "Finds the cause of a production defect in a real codebase, fixes it without breaking existing behaviour, and hands the change off clearly.",
+    whatTheyDo:
+      "Backend engineers own services other systems depend on. Much of the job is incident work: reading logs and a changelog, reproducing a defect with a test, changing the rule rather than the symptom, adapting when requirements shift mid-fix, and telling the next reviewer exactly what changed and what is still risky.",
+    whyHardToEvaluate:
+      "Algorithm screens test puzzles, and take-homes arrive with no record of how they were built. Neither shows whether someone can work in an unfamiliar codebase, keep an existing test suite green, ask the right clarifying question, and write a handoff an on-call reviewer can act on.",
+    skillsEvaluated: [
+      "Correctness under an existing test suite",
+      "Engineering judgment",
+      "Response to changing requirements",
+      "Clarifying ambiguity",
+      "Handoff communication",
+    ],
+    simulationSlug: "webhook-retry-incident",
+    simulationSlugs: ["webhook-retry-incident"],
+  },
   {
     key: "data_analyst",
     pathway: "data_analytics",

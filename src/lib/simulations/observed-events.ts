@@ -47,6 +47,7 @@ export const DISCLOSED_EVENT_TAXONOMY: EventTaxonomyEntry[] = [
   { type: "proactive_message_delivered", actor: "stakeholder", captures: "A scripted teammate message delivered." },
   { type: "curveball_presented", actor: "system", captures: "Server timestamp when the requirement update was shown." },
   { type: "submission_confirmed", actor: "system", captures: "Server timestamp of the confirmed submission." },
+  { type: "test_run_completed", actor: "system", captures: "That you ran the tests, which saved version of your files they ran against, and how many passed or failed (not the output)." },
   { type: "connectivity_interrupted", actor: "candidate", captures: "Client-reported loss of connectivity (server-timestamped)." },
   { type: "connectivity_restored", actor: "candidate", captures: "Client-reported connectivity recovery (server-timestamped)." },
   { type: "hint_exposed", actor: "system", captures: "Which authored hint/fact was shown to the candidate." },

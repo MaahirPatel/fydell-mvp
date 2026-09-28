@@ -11,6 +11,8 @@ import {
   recordEvent,
 } from "@/lib/simulations/db";
 import { draftReply, findStakeholder } from "@/lib/simulations/stakeholder";
+import { isMicroContent } from "@/lib/simulations/micro-types";
+import { maybePresentCurveball } from "@/lib/simulations/curveball-present";
 import { buildSessionChatContext, toChatEvents } from "@/lib/simulations/chat-context";
 import { deliverDueProactiveMessages } from "@/lib/simulations/proactive";
 import {
@@ -33,7 +35,17 @@ export async function GET(
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    await getSessionForCandidate(id, user.id);
+    const session = await getSessionForCandidate(id, user.id);
+    // Clients poll this route, so it is where a due requirement update is
+    // presented server-side (SIM-05). Best-effort: never fails the poll.
+    if (session.status === "active" && !session.curveball_presented_at) {
+      try {
+        const content = await getVersionContent(session.template_version_id);
+        if (isMicroContent(content) && content.curveball) await maybePresentCurveball(session, content);
+      } catch (err) {
+        console.error(`[sim] curveball presentation on poll failed for session ${id}:`, err);
+      }
+    }
     const messages = await listMessages(id);
     return NextResponse.json({
       ok: true,

@@ -59,7 +59,7 @@ async function main(): Promise<void> {
   const { toCandidateView, toMicroCandidateView } = await import("@/lib/simulations/candidate-view");
   const { toV2CandidateView } = await import("@/lib/simulations/v2/candidate-view");
   const { microToV2 } = await import("@/lib/simulations/v2/from-micro");
-  const { ALL_SIMULATIONS } = await import("@/lib/simulations/content/index");
+  const { ALL_SIMULATIONS, MICRO_OPS_YIELD } = await import("@/lib/simulations/content/index");
   const { buildHintLedger, authoredHintsReceived, validateHintStability } =
     await import("@/lib/simulations/hint-log");
   const { SIMULATED_TEAMMATE_DISCLOSURE, withTeammateDisclosure } =
@@ -72,7 +72,9 @@ async function main(): Promise<void> {
     OUTAGE_CONSECUTIVE_THRESHOLD,
   } = await import("@/lib/simulations/outage-policy");
 
-  const sim = ALL_SIMULATIONS[0];
+  // The HOLD_RECLASS fixture below is authored for the ops-yield sim; pick it
+  // by identity rather than by catalog position.
+  const sim = MICRO_OPS_YIELD;
   t.ok(sim && sim.stakeholders.length === 1, "fixture sim loaded with one stakeholder");
   const stakeholder = sim.stakeholders[0];
 
