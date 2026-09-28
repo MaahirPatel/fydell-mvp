@@ -475,10 +475,20 @@ pub async fn begin_session(app: AppHandle) -> AppResult<SessionInfo> {
     })
     .await?;
 
-    // 3. Runtime check: the declared test runner must resolve under the
-    // minimal PATH the runner uses. Failing here — before the server clock
-    // starts — is honest: the candidate cannot run tests without it.
+    // 3. Runtime check. Remote-execution packages run tests on the platform's
+    // isolated runner, so nothing needs to exist on this computer (DESK-06).
+    // Legacy packages: the declared test runner must resolve under the
+    // minimal PATH the runner uses. Failing here, before the server clock
+    // starts, is honest: the candidate cannot run tests without it.
+    let remote = full
+        .file_package
+        .as_ref()
+        .and_then(|p| p.execution.as_deref())
+        == Some("remote");
     provision_step(&app, "runtime", || async {
+        if remote {
+            return Ok(());
+        }
         let argv: Vec<String> = full
             .file_package
             .as_ref()
@@ -682,6 +692,8 @@ fn materialize_package(
         "scenarioId": pkg.scenario_id,
         "scenarioVersion": pkg.scenario_version,
         "manifest": pkg.manifest,
+        // Where tests run for this package (execution.rs reads it).
+        "execution": pkg.execution.as_deref().unwrap_or("local"),
     });
     std::fs::write(
         dir.join(".fydell").join("package.json"),
@@ -827,7 +839,8 @@ pub fn mark_submitted() -> AppResult<()> {
     Ok(())
 }
 
-#[cfg(test)]
+// The legacy local runner resolves programs on a Unix PATH.
+#[cfg(all(test, unix))]
 mod tests {
     use super::*;
 

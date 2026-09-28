@@ -8,6 +8,7 @@ import {
 } from "@/lib/pilot/cohort";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { PILOT_EVALUATION_SLUG } from "@/lib/simulations/content/micro-ops-yield";
+import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 
 export const runtime = "nodejs";
 
@@ -72,6 +73,8 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const org = await requireOrgMember(user.id);
   if (!org) return NextResponse.json({ error: "No organization" }, { status: 403 });
+  if (!orgCan(org.role, "manage_candidates"))
+    return NextResponse.json({ error: capabilityDeniedMessage("manage_candidates") }, { status: 403 });
 
   let body: { status?: CohortStatus };
   try {

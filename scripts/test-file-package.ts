@@ -72,7 +72,8 @@ const sha256 = (s: string) => createHash("sha256").update(s, "utf8").digest("hex
 // ---------------------------------------------------------------- W3: package
 const pkg = buildScenarioPackage("project-relay", REPO);
 
-check("W3: scenario version pinned to 2.0.0", pkg.scenarioVersion === "2.0.0", pkg.scenarioVersion);
+const pinnedVersion = JSON.parse(readFileSync(join(REPO, "scenarios/project-relay/.fydell/scenario.json"), "utf8")).version;
+check(`W3: scenario version pinned to the manifest version (${pinnedVersion})`, pkg.scenarioVersion === pinnedVersion, pkg.scenarioVersion);
 check("W3: scenario id is project-relay", pkg.scenarioId === "project-relay");
 
 const allowlist: string[] = JSON.parse(

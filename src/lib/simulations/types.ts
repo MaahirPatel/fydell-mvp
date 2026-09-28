@@ -9,6 +9,7 @@
  */
 
 export type RoleKey =
+  | "backend_engineer"
   | "data_analyst"
   | "bi_analyst"
   | "applied_ai_engineer"
@@ -17,7 +18,11 @@ export type RoleKey =
   | "technical_support_engineer"
   | "business_systems_analyst";
 
-export type PathwayKey = "data_analytics" | "solutions_delivery" | "technical_operations";
+export type PathwayKey =
+  | "software_engineering"
+  | "data_analytics"
+  | "solutions_delivery"
+  | "technical_operations";
 
 export interface RoleDefinition {
   key: RoleKey;

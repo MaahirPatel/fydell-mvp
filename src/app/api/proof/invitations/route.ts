@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { createInvitation } from "@/lib/sim-engine/proof/db";
 
@@ -7,6 +8,8 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const org = await requireOrgMember(user.id);
   if (!org) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!orgCan(org.role, "manage_candidates"))
+    return NextResponse.json({ error: capabilityDeniedMessage("manage_candidates") }, { status: 403 });
   const body = (await request.json()) as { email?: string };
   const email = body.email?.trim().toLowerCase();
   if (!email) return NextResponse.json({ error: "email required" }, { status: 400 });

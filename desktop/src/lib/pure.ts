@@ -229,3 +229,58 @@ export function formatChatTime(iso: string): string {
     ? ""
     : d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
+
+/* ---------------- DESK-12/13: test run wording ----------------
+   Where the tests ran, what the result means, and whether it still reflects
+   the files on disk. Infrastructure problems are never worded as results
+   about the candidate's code. */
+
+export function testRunIntro(mode: "remote" | "local"): string {
+  return mode === "remote"
+    ? "Runs the provided tests, plus any test files you add under tests/, on Fydell's isolated test runner against your saved files. Nothing runs on this computer."
+    : "Runs the provided tests on this computer.";
+}
+
+export interface TestRunHeadline {
+  tone: "ok" | "fail" | "neutral";
+  text: string;
+}
+
+export function testRunHeadline(r: {
+  mode: "remote" | "local";
+  status: string;
+  passed: number | null;
+  failed: number | null;
+  errors: number | null;
+  status_reason: string | null;
+}): TestRunHeadline {
+  if (r.mode === "remote") {
+    if (r.status === "infrastructure_error" || r.status === "not_configured") {
+      return { tone: "neutral", text: r.status_reason ?? "The test runner is unavailable. Your work is saved; this is not a result about your code." };
+    }
+    if (r.status === "indeterminate") {
+      return { tone: "fail", text: r.status_reason ?? "The tests could not produce a result. Check the output." };
+    }
+  } else if (r.status !== "completed") {
+    const reason: Record<string, string> = {
+      timeout: "The run hit the time limit.",
+      output_limit: "The run produced too much output and was stopped.",
+      runtime_error: "The test runner could not run.",
+    };
+    return { tone: "fail", text: reason[r.status] ?? `Run ended: ${r.status}` };
+  }
+  const failed = (r.failed ?? 0) + (r.errors ?? 0);
+  const passed = r.passed ?? 0;
+  if (failed === 0 && passed === 0) return { tone: "neutral", text: "No tests ran." };
+  return failed === 0
+    ? { tone: "ok", text: `All ${passed} passed` }
+    : { tone: "fail", text: `${failed} failing, ${passed} passed` };
+}
+
+/** DESK-12: the label shown once the workspace has changed since the run. */
+export const STALE_RESULTS_LABEL =
+  "Results from an earlier version. Run the tests again to check your latest saved changes.";
+
+export function isStaleResult(runFingerprint: string | null, currentFingerprint: string | null): boolean {
+  return Boolean(runFingerprint && currentFingerprint && runFingerprint !== currentFingerprint);
+}

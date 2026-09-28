@@ -1,4 +1,5 @@
 import type { MicroSimContent } from "../micro-types";
+import { ENGINEERING_WEBHOOK_RETRY } from "./engineering-webhook-retry";
 import {
   MICRO_BI_ANALYST,
   MICRO_DATA_ANALYST,
@@ -48,6 +49,8 @@ import {
  * this directory remains unpublished and is not seeded to the catalog.)
  */
 export const ALL_SIMULATIONS: MicroSimContent[] = [
+  // Backend Engineer: engineering scenario on a real code workspace
+  ENGINEERING_WEBHOOK_RETRY,
   // Data Analyst (October pilot flagship first)
   MICRO_OPS_YIELD,
   MICRO_DATA_ANALYST,

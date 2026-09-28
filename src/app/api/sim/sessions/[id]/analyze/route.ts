@@ -6,9 +6,11 @@ import { getVersionContent } from "@/lib/simulations/db";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 import { runV2Scoring } from "@/lib/simulations/v2/run";
 import { mayUseKeywordFallback } from "@/lib/contracts/da01";
+import { evaluateSubmittedSession } from "@/lib/engineering/submission-eval";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+// Engineering attempts also run the trusted + hidden tests in an isolated runner.
+export const maxDuration = 300;
 
 /**
  * POST: run (or re-check) analysis for a submitted session. Idempotent -
@@ -58,9 +60,29 @@ export async function POST(
       );
     }
 
+    // Engineering scenarios: deterministic correctness evidence comes from the
+    // trusted and hidden tests run against the immutable submission. The run
+    // is idempotent and records its own failures (never a candidate failure),
+    // so a runner problem must not block the rest of the analysis.
+    let engineering: { status: string; runId?: string } | null = null;
+    if (content.engineering) {
+      try {
+        const outcome = await evaluateSubmittedSession(id);
+        engineering =
+          outcome.kind === "evaluated"
+            ? { status: outcome.result?.status ?? "running", runId: outcome.runId }
+            : outcome.kind === "no_files"
+              ? { status: "no_files" }
+              : null;
+      } catch (err) {
+        console.error(`[analyze] engineering evaluation failed for session ${id}:`, err);
+        engineering = { status: "error" };
+      }
+    }
+
     try {
       const { analysisRunId } = await runV2Scoring(id);
-      return NextResponse.json({ ok: true, analysisRunId, engineVersion: "v2" });
+      return NextResponse.json({ ok: true, analysisRunId, engineVersion: "v2", engineering });
     } catch (v2Err) {
       if (!mayUseKeywordFallback(content.slug)) {
         console.error("[analyze] DA-01 v2 scoring failed; no keyword fallback:", v2Err);
