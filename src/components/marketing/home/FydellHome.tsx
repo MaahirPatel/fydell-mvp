@@ -944,7 +944,7 @@ export default function FydellHome() {
             <span className="t-project">get&nbsp;hired.</span>
           </h1>
           <p className={s.lede}>
-            Fydell evaluates engineers on real work. Project evidence from their code. Realistic simulations. Your team reviews evidence, not résumés.
+            Real engineering simulations. You review the code, not the résumé.
           </p>
           <div className={s.heroActions}>
             <Link href="/signup" className={s.btnSolid}>
