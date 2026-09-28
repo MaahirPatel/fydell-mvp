@@ -63,7 +63,6 @@ const nextConfig: NextConfig = {
       // Old marketing pages
       { source: "/simulation", destination: "/how-it-works", permanent: true },
       { source: "/simulations", destination: "/how-it-works", permanent: true },
-      { source: "/product", destination: "/how-it-works", permanent: true },
       { source: "/evidence-report", destination: "/how-it-works", permanent: true },
       { source: "/request-pilot", destination: "/contact", permanent: true },
       { source: "/security", destination: "/trust", permanent: true },

@@ -9,7 +9,7 @@ import FydellLogo from "@/components/brand/FydellLogo";
 const LINKS = [
   { label: "Developers", href: "/developers" },
   { label: "Employers", href: "/employers" },
-  { label: "Product", href: "/how-it-works" },
+  { label: "Product", href: "/product" },
   { label: "Pricing", href: "/pricing" },
   { label: "Download", href: "/download" },
 ];
