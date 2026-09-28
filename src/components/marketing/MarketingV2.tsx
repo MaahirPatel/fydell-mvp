@@ -28,6 +28,7 @@ export function Nav() {
           <Link href="/employers">Employers</Link>
           <Link href="/product">Product</Link>
           <Link href="/pricing">Pricing</Link>
+          <Link href="/download">Download</Link>
         </div>
         <div className="mk-nav-actions">
           <Link href="/login" style={{ fontSize: 14, color: "var(--mk-text-secondary)", textDecoration: "none" }}>

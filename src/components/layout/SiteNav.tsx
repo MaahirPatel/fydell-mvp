@@ -11,6 +11,7 @@ const LINKS = [
   { label: "Employers", href: "/employers" },
   { label: "Product", href: "/how-it-works" },
   { label: "Pricing", href: "/pricing" },
+  { label: "Download", href: "/download" },
 ];
 
 export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) {
