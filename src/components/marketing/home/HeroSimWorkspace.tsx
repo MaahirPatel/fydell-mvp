@@ -69,13 +69,12 @@ const CODE: Tok[][] = [
   [{ t: "    try", c: "kw" }, { t: ":" }],
   [{ t: "        send_receipt(job.receipt)", c: "fn" }],
   [{ t: "    except", c: "kw" }, { t: " TransientError:" }],
-  [{ t: "        claims.release(job.order_id)" }],
   [{ t: "        raise", c: "kw" }],
   [{ t: "    claims.mark_sent(job.order_id)" }],
 ];
 
-/** 1-based line numbers the evidence receipt cites. */
-const CITED = new Set([13, 14, 15, 16]);
+/** 1-based line numbers the evidence receipt cites: the try/except region. */
+const CITED = new Set([13, 14, 15]);
 
 const FILES: { name: string; dir: string; active?: boolean; flag?: boolean }[] = [
   { name: "worker.py", dir: "src", active: true },
@@ -139,14 +138,17 @@ export default function HeroSimWorkspace() {
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
       style={{ "--px": tilt.x, "--py": tilt.y } as React.CSSProperties}
-      role="img"
-      aria-label="The Fydell simulation client: a candidate fixes a webhook retry bug while tests stream and cited lines feed an evidence receipt"
     >
       <div className={styles.glowA} aria-hidden />
       <div className={styles.glowB} aria-hidden />
 
       {/* ------------------------- the workspace window ------------------------- */}
-      <div className={styles.window} key={run}>
+      <div
+        className={styles.stage}
+        role="img"
+        aria-label="The Fydell simulation client: a candidate fixes a webhook retry bug while tests stream and cited lines feed an evidence receipt"
+      >
+       <div className={styles.window} key={run}>
         <div className={styles.titlebar}>
           <span className={styles.dots} aria-hidden>
             <i /><i /><i />
@@ -214,7 +216,7 @@ export default function HeroSimWorkspace() {
                           {tok.t}
                         </span>
                       ))}
-                      {n === 13 ? <span className={styles.cursor} aria-hidden /> : null}
+                      {n === 15 ? <span className={styles.cursor} aria-hidden /> : null}
                     </span>
                     {cited ? <span className={styles.citeBar} aria-hidden /> : null}
                   </div>
@@ -273,16 +275,16 @@ export default function HeroSimWorkspace() {
       </div>
 
       {/* ------------------------- floating: evidence receipt ------------------------- */}
-      <div className={`${styles.card} ${styles.cardReceipt}`} style={{ "--d": "3600ms" } as React.CSSProperties}>
+      <div key={run} className={`${styles.card} ${styles.cardReceipt}`} style={{ "--d": "3600ms" } as React.CSSProperties}>
         <p className={styles.cardKicker}>
           <FydellMark width={14} /> Evidence receipt
         </p>
         <p className={styles.cardFile}>
-          src/worker.py <span>· lines 13–16</span>
+          src/worker.py <span>· lines 13–15</span>
         </p>
         <div className={styles.cardCode} aria-hidden>
-          <span><b>13</b>    except TransientError:</span>
-          <span><b>14</b>        claims.release(job.order_id)</span>
+          <span><b>13</b>        send_receipt(job.receipt)</span>
+          <span><b>14</b>    except TransientError:</span>
           <span><b>15</b>        raise</span>
         </div>
         <p className={styles.cardMeta}>
@@ -291,17 +293,18 @@ export default function HeroSimWorkspace() {
       </div>
 
       {/* ------------------------- floating: fydell analysis ------------------------- */}
-      <div className={`${styles.card} ${styles.cardAnalysis}`} style={{ "--d": "3900ms" } as React.CSSProperties}>
+      <div key={run} className={`${styles.card} ${styles.cardAnalysis}`} style={{ "--d": "3900ms" } as React.CSSProperties}>
         <p className={styles.cardKicker}>
           <span className={styles.agentDot} aria-hidden /> Fydell analysis
         </p>
         <p className={styles.cardVerdict}>
-          The claim is released when the mailer raises, so a retry re-acquires instead of
-          exiting early. The one failing test is recorded with the code behind it.
+          TransientError re-raises without releasing the claim, so the retry can never
+          re-acquire it. The failing test is recorded with the code behind it.
         </p>
         <p className={styles.cardMeta}>
           <ChevronRight className={styles.metaIcon} aria-hidden /> cites 3 lines · generated from this run
         </p>
+      </div>
       </div>
 
       <button type="button" className={styles.replay} onClick={replay}>

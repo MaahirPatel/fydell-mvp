@@ -20,12 +20,16 @@ uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1"
 zip = "2"
-rlimit = "0.10"
 url = "2"
 keyring = "3"
 tauri-plugin-opener = "2"
 tauri-plugin-deep-link = "2"
 tauri-plugin-updater = "2"
+
+# rlimit (POSIX setrlimit) is Unix-only; execution.rs already gates its use
+# behind #[cfg(unix)].
+[target.'cfg(unix)'.dependencies]
+rlimit = "0.10"
 
 [features]
 default = ["custom-protocol"]
