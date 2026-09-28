@@ -1,0 +1,37 @@
+# Files changed by chunk-passport (GH-01..GH-12, PASS-01..PASS-09, E2E-01 in-process)
+# One path per line. Ownership: src/lib/passport/**, src/app/api/passport/**,
+# scripts/test-passport-grind-*.ts. No design/styling/pages, no package.json.
+
+# --- modified: src/lib/passport ---
+src/lib/passport/assemble.ts
+src/lib/passport/store.ts
+src/lib/passport/view.ts
+src/lib/passport/github/client.ts
+src/lib/passport/github/extract.ts
+src/lib/passport/github/retry.ts
+src/lib/passport/github/types.ts
+
+# --- added: src/lib/passport ---
+src/lib/passport/corrections.ts
+src/lib/passport/export.ts
+src/lib/passport/removal.ts
+src/lib/passport/sharing.ts
+src/lib/passport/simulationEvidence.ts
+src/lib/passport/snapshots.ts
+src/lib/passport/github/redact.ts
+
+# --- modified: src/app/api/passport ---
+src/app/api/passport/github/route.ts
+src/app/api/passport/projects/route.ts
+src/app/api/passport/shares/route.ts
+src/app/api/passport/shares/[id]/route.ts
+
+# --- added: src/app/api/passport ---
+src/app/api/passport/corrections/route.ts
+src/app/api/passport/export/route.ts
+
+# --- added: grind test scripts (real in-process tsx, fake GitHub Fetcher) ---
+scripts/test-passport-grind-fake.ts
+scripts/test-passport-grind-extract.ts
+scripts/test-passport-grind-sharing.ts
+scripts/test-passport-grind-passport.ts

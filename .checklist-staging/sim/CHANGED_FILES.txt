@@ -1,0 +1,49 @@
+# chunk-sim — files created / modified
+# Branch: feature/desktop-sim-client. Scope: WORK-01..10, SCEN-01..10,
+# SIM-01..10 (+ in-process E2E-04 / E2E-24). package.json untouched.
+# Deleted temp files: scripts/sim-test/helpers.ts, scripts/sim-test/hooks.mjs,
+# scripts/sim-test/preload.cjs, scripts/sim-test/preload.mjs
+
+## Created
+src/lib/simulations/timing.ts
+src/lib/simulations/observed-events.ts
+src/lib/simulations/hint-log.ts
+src/lib/simulations/teammate-disclosure.ts
+src/lib/simulations/curveball-policy.ts
+src/lib/simulations/outage-policy.ts
+src/lib/simulations/handoff.ts
+src/lib/simulations/partial-submission.ts
+src/lib/simulations/process-observations.ts
+src/lib/simulations/evidence-map.ts
+src/lib/simulations/content-guards.ts
+src/lib/simulations/content-version.ts
+src/lib/simulations/comparability.ts
+src/lib/simulations/attempt-binding.ts
+src/lib/simulations/ai-use-policy.ts
+scenarios/project-relay/.fydell/rubric.json
+scripts/test-sim-grind-timing.ts
+scripts/test-sim-grind-teammates.ts
+scripts/test-sim-grind-milestones.ts
+scripts/test-sim-grind-content.ts
+scripts/test-sim-grind-journey.ts
+CHECKLIST_PROGRESS_sim.md
+
+## Modified
+src/lib/simulations/candidate-view.ts
+src/lib/simulations/v2/candidate-view.ts
+src/lib/simulations/stakeholder.ts
+src/lib/simulations/db.ts
+src/lib/simulations/scoring.ts
+src/lib/simulations/v2/run.ts
+src/lib/simulations/v2/scoring.ts
+src/lib/simulations/content/micro-data-analytics.ts
+src/lib/simulations/content/micro-solutions-delivery-2.ts
+src/app/api/sim/sessions/[id]/route.ts
+src/app/api/sim/sessions/[id]/events/route.ts
+src/app/api/sim/sessions/[id]/curveball/route.ts
+src/app/api/sim/sessions/[id]/messages/route.ts
+scenarios/project-relay/src/reconcile.py
+scenarios/project-relay/evals/run_evals.py
+scenarios/project-relay/README.md
+scenarios/project-relay/.fydell/scenario.json
+scenarios/project-relay/canonical.json

@@ -98,9 +98,14 @@ jobs:
           releaseBody: |
             Fydell desktop installers for ${{ github.ref_name }}.
 
+            These are unsigned test builds. macOS Gatekeeper and Windows
+            SmartScreen will warn on first launch; Linux builds run normally.
+            Signed installers ship once code-signing is provisioned
+            (docs/desktop-release.md).
+
             Download the installer for your OS from the assets below.
-            Install and release notes: docs/desktop-release.md in this repo.
-          # Draft so a human reviews the artifacts before publishing.
-          releaseDraft: true
+          # Publishes automatically so the /download page has real installers.
+          # Unsigned builds are labeled as such in the release notes below.
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
