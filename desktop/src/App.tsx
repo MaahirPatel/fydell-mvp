@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import {
   api,
+  InboxInvitation,
   ProvisionProgress,
   RecoveryOutcome,
   SessionInfo,
@@ -16,19 +17,25 @@ import {
   versionGateMessage,
 } from "./lib/pure";
 import Workspace from "./components/Workspace";
+import Home from "./components/Home";
+import Inbox from "./components/Inbox";
+import Profile from "./components/Profile";
+import { BrandLockup } from "./components/Brand";
 import { ProvenanceTag } from "./components/ui";
 
 type Screen =
   | "loading"
   | "signin"
   | "signin-waiting"
-  | "invite"
+  | "home"
   | "consent"
   | "provisioning"
   | "update-required"
   | "locked"
   | "workspace"
   | "submitted";
+
+type HomeTab = "home" | "inbox" | "profile";
 
 /* ---------------- DESK-06: truthful provisioning progress ---------------- */
 
@@ -82,7 +89,7 @@ function Provisioning({
     <div className="screen">
       <div className="card">
         <div className="brand">
-          Fydell<span className="dot">.</span>
+          <BrandLockup />
         </div>
         <h1>Setting up your workspace</h1>
         <p className="muted">
@@ -126,12 +133,121 @@ function Provisioning({
   );
 }
 
+/* ---------------- app shell: sidebar + home-area screens ----------------
+   The signed-in candidate home. Linear-style: a quiet sidebar for
+   navigation, the content area owns the information density. */
+
+function Shell({
+  auth,
+  session,
+  onSignOut,
+  onAcceptInvite,
+  onContinueSession,
+}: {
+  auth: SessionSummary | null;
+  session: SessionInfo | null;
+  onSignOut: () => void;
+  onAcceptInvite: (token: string) => void;
+  onContinueSession: () => void;
+}) {
+  const [tab, setTab] = useState<HomeTab>("home");
+  const [inboxCount, setInboxCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .listInvitations()
+      .then((invs: InboxInvitation[]) => {
+        if (!cancelled) setInboxCount(invs.length);
+      })
+      .catch(() => {
+        if (!cancelled) setInboxCount(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const hasSession =
+    session != null &&
+    (session.status === "active" || session.status === "joined") &&
+    session.platform_session_id != null;
+
+  return (
+    <div className="app-shell">
+      <aside className="sidebar" aria-label="Primary">
+        <div className="sidebar-brand">
+          <BrandLockup size={24} />
+        </div>
+        <nav className="sidebar-nav">
+          <button
+            className={`nav-item ${tab === "home" ? "active" : ""}`}
+            onClick={() => setTab("home")}
+            aria-current={tab === "home" ? "page" : undefined}
+          >
+            Home
+          </button>
+          <button
+            className={`nav-item ${tab === "inbox" ? "active" : ""}`}
+            onClick={() => setTab("inbox")}
+            aria-current={tab === "inbox" ? "page" : undefined}
+          >
+            <span>Inbox</span>
+            {inboxCount != null && inboxCount > 0 && (
+              <span className="nav-badge">{inboxCount}</span>
+            )}
+          </button>
+          <button
+            className={`nav-item ${tab === "profile" ? "active" : ""}`}
+            onClick={() => setTab("profile")}
+            aria-current={tab === "profile" ? "page" : undefined}
+          >
+            Profile
+          </button>
+        </nav>
+        {hasSession && (
+          <div className="sidebar-session">
+            <div className="sidebar-session-label">Simulation</div>
+            <div className="sidebar-session-title">
+              {session!.title ?? "Your assignment"}
+            </div>
+            <button className="btn ghost sm" onClick={onContinueSession}>
+              {session!.status === "active" ? "Continue" : "Continue setup"}
+            </button>
+          </div>
+        )}
+        <div className="spacer" />
+        <div className="sidebar-foot">
+          <div className="sidebar-email" title={auth?.email ?? ""}>
+            {auth?.email ?? "Signed in"}
+          </div>
+          <button className="btn ghost sm" onClick={onSignOut}>
+            Sign out
+          </button>
+        </div>
+      </aside>
+      <main className="shell-main">
+        {tab === "home" && (
+          <Home
+            session={session}
+            email={auth?.email ?? null}
+            onContinueSession={onContinueSession}
+            onOpenInbox={() => setTab("inbox")}
+            onOpenProfile={() => setTab("profile")}
+          />
+        )}
+        {tab === "inbox" && <Inbox onAccept={onAcceptInvite} />}
+        {tab === "profile" && <Profile />}
+      </main>
+    </div>
+  );
+}
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>("loading");
   const [auth, setAuth] = useState<SessionSummary | null>(null);
   const [session, setSession] = useState<SessionInfo | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
-  const [inviteToken, setInviteToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [versionGate, setVersionGate] = useState<VersionGate | null>(null);
@@ -168,7 +284,7 @@ export default function App() {
               ? "submitted"
               : s.status === "joined"
                 ? "consent"
-                : "invite"
+                : "home"
         );
       } catch {
         if (!cancelled) setScreen("signin");
@@ -186,7 +302,7 @@ export default function App() {
       setAuth(e.payload);
       if (e.payload.signed_in) {
         setError(null);
-        setScreen("invite");
+        setScreen("home");
       } else {
         setSession(null);
         setScreen("signin");
@@ -257,42 +373,56 @@ export default function App() {
     }
   }, []);
 
-  const join = useCallback(async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const s = await api.joinSession(inviteToken);
-      setSession(s);
-      // DESK-19: check the version gate before anything timed starts.
+  const join = useCallback(
+    async (token: string) => {
+      setBusy(true);
+      setError(null);
       try {
-        const gate = await api.checkClientVersion();
-        setVersionGate(gate);
-        if (gate.kind === "blocked") {
-          setScreen("update-required");
-          return;
+        const s = await api.joinSession(token);
+        setSession(s);
+        // DESK-19: check the version gate before anything timed starts.
+        try {
+          const gate = await api.checkClientVersion();
+          setVersionGate(gate);
+          if (gate.kind === "blocked") {
+            setScreen("update-required");
+            return;
+          }
+          if (gate.kind === "current" && gate.update_available) {
+            setUpdateNotice(versionGateMessage(gate));
+          }
+        } catch {
+          // Version check is advisory on failure: unknown gate, visible in UI.
         }
-        if (gate.kind === "current" && gate.update_available) {
-          setUpdateNotice(versionGateMessage(gate));
+        if (s.consent_accepted) {
+          begin(s);
+        } else {
+          setScreen("consent");
         }
-      } catch {
-        // Version check is advisory on failure: unknown gate, visible in UI.
+      } catch (e: unknown) {
+        if (isAuthRequired(e)) {
+          setScreen("signin");
+          setError("Your sign-in expired — please sign in again.");
+        } else {
+          setError(messageOf(e));
+          setScreen("home");
+        }
+      } finally {
+        setBusy(false);
       }
-      if (s.consent_accepted) {
-        begin(s);
-      } else {
-        setScreen("consent");
-      }
-    } catch (e: unknown) {
-      if (isAuthRequired(e)) {
-        setScreen("signin");
-        setError("Your sign-in expired — please sign in again.");
-      } else {
-        setError(messageOf(e));
-      }
-    } finally {
-      setBusy(false);
+    },
+    [begin]
+  );
+
+  const continueSession = useCallback(() => {
+    if (session?.status === "active") {
+      setScreen("workspace");
+    } else if (session?.status === "joined") {
+      setScreen("consent");
+    } else {
+      setScreen("home");
     }
-  }, [inviteToken, begin]);
+  }, [session]);
 
   const acceptAndStart = useCallback(async () => {
     setBusy(true);
@@ -320,7 +450,7 @@ export default function App() {
       <div className="screen">
         <div className="card">
           <div className="brand">
-            Fydell<span className="dot">.</span>
+            <BrandLockup />
           </div>
           <h1>Sign in to Fydell</h1>
           {screen === "signin-waiting" ? (
@@ -354,44 +484,15 @@ export default function App() {
     );
   }
 
-  if (screen === "invite") {
+  if (screen === "home") {
     return (
-      <div className="screen">
-        <div className="card">
-          <div className="brand">
-            Fydell<span className="dot">.</span>
-          </div>
-          <div className="row mb-2">
-            <span className="muted">{auth?.email}</span>
-            <div className="spacer" />
-            <button className="btn ghost" onClick={signOut}>
-              Sign out
-            </button>
-          </div>
-          <h1>Join your simulation</h1>
-          <p>
-            Enter the invite code from your hiring task. The assignment's brief
-            and workspace sync with the Fydell platform; your work stays on
-            this computer until you submit.
-          </p>
-          {error && <div className="error">{error}</div>}
-          <div className="field">
-            <label>Invite code</label>
-            <input
-              className="input mono"
-              value={inviteToken}
-              onChange={(e) => setInviteToken(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && join()}
-              placeholder="Paste your invite token"
-              autoFocus
-              spellCheck={false}
-            />
-          </div>
-          <button className="btn" disabled={busy || !inviteToken.trim()} onClick={join}>
-            {busy ? "Connecting…" : "Continue"}
-          </button>
-        </div>
-      </div>
+      <Shell
+        auth={auth}
+        session={session}
+        onSignOut={signOut}
+        onAcceptInvite={(token) => void join(token)}
+        onContinueSession={continueSession}
+      />
     );
   }
 
@@ -400,7 +501,7 @@ export default function App() {
       <div className="screen">
         <div className="card wide">
           <div className="brand">
-            Fydell<span className="dot">.</span>
+            <BrandLockup />
           </div>
           <h1>Before you start</h1>
           <p>
@@ -441,7 +542,7 @@ export default function App() {
             </div>
           )}
           <div className="row">
-            <button className="btn ghost" onClick={() => setScreen("invite")}>
+            <button className="btn ghost" onClick={() => setScreen("home")}>
               Back
             </button>
             <div className="spacer" />
@@ -461,7 +562,7 @@ export default function App() {
       <div className="screen">
         <div className="card">
           <div className="brand">
-            Fydell<span className="dot">.</span>
+            <BrandLockup />
           </div>
           <h1>Update required</h1>
           <p>{versionGateMessage(versionGate)}</p>
@@ -489,7 +590,7 @@ export default function App() {
       <div className="screen">
         <div className="card">
           <div className="brand">
-            Fydell<span className="dot">.</span>
+            <BrandLockup />
           </div>
           <h1>Already open</h1>
           <p>
@@ -532,7 +633,7 @@ export default function App() {
       <div className="screen">
         <div className="card wide">
           <div className="brand">
-            Fydell<span className="dot">.</span>
+            <BrandLockup />
           </div>
           <h1>Submitted</h1>
           {receipt ? (
@@ -542,7 +643,8 @@ export default function App() {
                 <div className="receipt-head">
                   <ProvenanceTag kind="observed" />
                   <span className="muted">This receipt describes your observed work.</span>
-                </div>                <div><span className="k">submission </span>{receipt.submission_id}</div>
+                </div>
+                <div><span className="k">submission </span>{receipt.submission_id}</div>
                 <div><span className="k">sha256 </span><span className="hash">{receipt.sha256}</span></div>
                 {receipt.server_receipt_hash && (
                   <div><span className="k">server receipt </span><span className="hash">{receipt.server_receipt_hash}</span></div>
@@ -562,6 +664,10 @@ export default function App() {
             A human reviews every submission — scores are never final without one.
           </p>
           <div className="row mt-4">
+            <button className="btn ghost" onClick={() => setScreen("home")}>
+              Home
+            </button>
+            <div className="spacer" />
             <button className="btn ghost" onClick={signOut}>
               Sign out
             </button>

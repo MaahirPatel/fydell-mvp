@@ -205,6 +205,63 @@ export interface Diagnostics {
   recent_errors: ErrorNote[];
 }
 
+/* ---------------- Invitation inbox ---------------- */
+
+export interface InboxInvitation {
+  id: string;
+  organizationName: string;
+  simulationTitle: string;
+  roleTitle: string;
+  candidateName: string | null;
+  status: string;
+  expiresAt: string;
+  /** Freshly minted token feeding the existing token-based accept flow. */
+  token: string;
+}
+
+/* ---------------- Stakeholder chat ---------------- */
+
+export interface ChatMessage {
+  id: string;
+  thread: string;
+  sender: "candidate" | "stakeholder" | string;
+  stakeholderId: string | null;
+  body: string;
+  createdAt: string;
+}
+
+export interface StakeholderView {
+  id: string;
+  name: string;
+  role: string;
+  /** Always true on the candidate view (SIM-03). Carried so the UI labels honestly. */
+  simulated: boolean;
+}
+
+/* ---------------- Candidate passport ---------------- */
+
+export interface PassportProjectView {
+  repository: string;
+  url: string | null;
+  primaryLanguage: string | null;
+  status: string;
+  contributionStatement: string | null;
+  evidenceCount: number;
+}
+
+export interface PassportView {
+  displayName: string;
+  headline: string;
+  githubLogin: string | null;
+  projects: PassportProjectView[];
+  capabilities: string[];
+  roleSuggestions: string[];
+}
+
+/** Raw `{ result, passport }` payload from the projects route (analysis
+ *  outcomes, including failures, travel verbatim so the UI can explain them). */
+export type AddProjectResult = Record<string, unknown>;
+
 export const api = {
   // Auth (src-tauri/src/auth.rs)
   authSignIn: () => invoke<void>("auth_sign_in"),
@@ -243,4 +300,20 @@ export const api = {
   // Submission (src-tauri/src/submission.rs)
   submit: (handoff: Record<string, unknown>, external_ai_disclosed: boolean) =>
     invoke<Receipt>("submit", { handoff, externalAiDisclosed: external_ai_disclosed }),
+  // Invitation inbox (src-tauri/src/inbox.rs)
+  listInvitations: () => invoke<InboxInvitation[]>("list_invitations"),
+  // Stakeholder chat (src-tauri/src/chat.rs) — simulated teammates, SIM-03
+  listMessages: () => invoke<ChatMessage[]>("list_messages"),
+  listStakeholders: () => invoke<StakeholderView[]>("list_stakeholders"),
+  sendMessage: (stakeholderId: string, text: string) =>
+    invoke<ChatMessage[]>("send_message", { stakeholderId, text }),
+  // Candidate passport (src-tauri/src/passport.rs)
+  getPassport: () => invoke<PassportView | null>("get_passport"),
+  addProject: (repository: string, contribution: string, githubLogin?: string | null) =>
+    invoke<AddProjectResult>("add_project", {
+      repository,
+      contribution,
+      githubLogin: githubLogin ?? null,
+    }),
+  removeProject: (repo: string) => invoke<AddProjectResult>("remove_project", { repo }),
 };

@@ -20,10 +20,13 @@
 //! validated workspace bridge (workspace.rs).
 
 mod auth;
+mod chat;
 mod diagnostics;
 mod error;
 mod events;
 mod execution;
+mod inbox;
+mod passport;
 mod platform;
 mod recovery;
 mod session;
@@ -62,6 +65,13 @@ fn main() {
             auth::auth_sign_in,
             auth::auth_sign_out,
             auth::auth_session,
+            inbox::list_invitations,
+            chat::list_messages,
+            chat::list_stakeholders,
+            chat::send_message,
+            passport::get_passport,
+            passport::add_project,
+            passport::remove_project,
             session::join_session,
             session::accept_consent,
             session::begin_session,

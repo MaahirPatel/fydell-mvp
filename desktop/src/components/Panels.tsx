@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, Diagnostics, Receipt, SessionEvent, SyncPhase, SyncView, TestRunResult } from "../lib/tauri";
-import { formatDiagnostics, syncPhaseLabel } from "../lib/pure";
+import { api, ChatMessage, Diagnostics, Receipt, SessionEvent, StakeholderView, SyncPhase, SyncView, TestRunResult } from "../lib/tauri";
+import { formatDiagnostics, mergeChatMessagesView, chatSenderName, formatChatTime, syncPhaseLabel } from "../lib/pure";
 import { messageOf } from "../App";
 import { Dialog, EmptyState, ProvenanceTag } from "./ui";
 
@@ -151,81 +151,99 @@ export function TestsPanel({ onTestsRun }: { onTestsRun: () => void }) {
   );
 }
 
-/* ---------------- team ---------------- */
+/* ---------------- team: real platform-backed chat ----------------
+   Stakeholder messages come from the platform (GET/POST /api/sim/sessions/
+   [id]/messages) — the replies are scenario-authored and always labeled
+   simulated. When the platform is unreachable, a clearly-labeled offline
+   scripted fallback answers instead. Polling runs only while this panel is
+   mounted, every 15s. */
 
-interface Teammate {
-  name: string;
-  role: string;
-  replies: { match: string[]; text: string }[];
-  fallback: string;
-}
-
-interface ChatMsg {
-  from: string;
-  text: string;
-  mine: boolean;
-  simulated?: boolean;
-}
+export const CHAT_POLL_MS = 15_000;
 
 export function TeamPanel() {
-  const [teammates, setTeammates] = useState<Teammate[]>([]);
-  const [msgs, setMsgs] = useState<ChatMsg[]>([]);
+  const [stakeholders, setStakeholders] = useState<StakeholderView[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [msgs, setMsgs] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [online, setOnline] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const bottomRef = useCallback((el: HTMLDivElement | null) => {
+    el?.scrollIntoView({ block: "end" });
+  }, []);
 
-  const load = useCallback(() => {
-    setLoaded(false);
-    api
-      .readFile(".fydell/teammates.json")
-      .then((f) => {
-        try {
-          const def = JSON.parse(f.content) as { teammates: Teammate[]; thread: ChatMsg[] };
-          setTeammates(def.teammates ?? []);
-          setMsgs(def.thread ?? []);
-        } catch {
-          setTeammates([]);
-        } finally {
-          setLoaded(true);
-        }
-      })
-      .catch(() => {
-        setTeammates([]);
-        setLoaded(true);
-      });
+  const load = useCallback(async (quiet: boolean) => {
+    try {
+      const [sts, messages] = await Promise.all([
+        api.listStakeholders(),
+        api.listMessages(),
+      ]);
+      setStakeholders(sts);
+      setMsgs((prev) => mergeChatMessagesView(prev, messages));
+      setSelectedId((prev) => prev ?? sts[0]?.id ?? null);
+      setOnline(true);
+      if (!quiet) setError(null);
+    } catch (e) {
+      setOnline(false);
+      if (!quiet) setError(messageOf(e));
+    } finally {
+      setLoaded(true);
+    }
   }, []);
 
   useEffect(() => {
-    load();
+    void load(false);
+    const t = setInterval(() => void load(true), CHAT_POLL_MS);
+    return () => clearInterval(t);
   }, [load]);
 
   const send = useCallback(async () => {
     const text = draft.trim();
-    if (!text) return;
+    if (!text || sending || !selectedId) return;
     setDraft("");
-    setMsgs((m) => [...m, { from: "You", text, mine: true }]);
+    setSending(true);
+    setError(null);
     try {
-      await api.appendEvent("message_sent", { chars: text.length });
-    } catch {}
-
-    // Scripted reply: first teammate whose keywords match, else fallback.
-    const lower = text.toLowerCase();
-    let reply: ChatMsg | null = null;
-    for (const t of teammates) {
-      const hit = t.replies.find((r) => r.match.some((k) => lower.includes(k.toLowerCase())));
-      if (hit) {
-        reply = { from: t.name, text: hit.text, mine: false, simulated: true };
-        break;
+      if (online) {
+        const refreshed = await api.sendMessage(selectedId, text);
+        setMsgs((prev) => mergeChatMessagesView(prev, refreshed));
+        try {
+          await api.appendEvent("message_sent", { chars: text.length });
+        } catch {}
+      } else {
+        // Offline fallback: clearly labeled, local only.
+        const now = new Date().toISOString();
+        setMsgs((prev) =>
+          mergeChatMessagesView(prev, [
+            {
+              id: `local-${Date.now()}`,
+              thread: "team",
+              sender: "candidate",
+              stakeholderId: null,
+              body: text,
+              createdAt: now,
+            },
+            {
+              id: `local-reply-${Date.now()}`,
+              thread: "team",
+              sender: "stakeholder",
+              stakeholderId: selectedId,
+              body: "You're offline right now, so this is a scripted local reply — not the scenario. Reconnect and the real team thread will load.",
+              createdAt: now,
+            },
+          ])
+        );
       }
+    } catch (e) {
+      setError(messageOf(e));
+      setDraft(text);
+    } finally {
+      setSending(false);
     }
-    if (!reply && teammates.length) {
-      const t = teammates[0];
-      reply = { from: t.name, text: t.fallback, mine: false, simulated: true };
-    }
-    if (reply) {
-      const r = reply;
-      setTimeout(() => setMsgs((m) => [...m, r]), 900);
-    }
-  }, [draft, teammates]);
+  }, [draft, sending, selectedId, online]);
+
+  const selected = stakeholders.find((s) => s.id === selectedId) ?? null;
 
   return (
     <>
@@ -236,24 +254,60 @@ export function TeamPanel() {
         Everyone here except you is <strong>simulated</strong> — scripted by the
         scenario, not a real coworker. Your own messages are observed evidence.
       </p>
-      {loaded && teammates.length === 0 && msgs.length === 0 ? (
+      {!online && loaded && (
+        <div className="offline-banner" role="status">
+          <span className="tag tag-attention">Offline</span>
+          <span className="muted">
+            Can't reach the platform. Messages are scripted locally until you
+            reconnect.
+          </span>
+          <button className="btn ghost sm" onClick={() => void load(false)}>
+            Retry
+          </button>
+        </div>
+      )}
+      {error && loaded && online && <div className="error mb-2">{error}</div>}
+      {loaded && stakeholders.length > 0 && (
+        <div className="stakeholder-row" role="tablist" aria-label="Stakeholders">
+          {stakeholders.map((s) => (
+            <button
+              key={s.id}
+              role="tab"
+              aria-selected={s.id === selectedId}
+              className={`stakeholder-tab ${s.id === selectedId ? "active" : ""}`}
+              onClick={() => setSelectedId(s.id)}
+              title={s.role}
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+      )}
+      {loaded && stakeholders.length === 0 && msgs.length === 0 ? (
         <EmptyState
           icon="chat"
           title="No team thread"
           body="The scenario's team thread couldn't load. Your work is unaffected — try loading it again."
           actionLabel="Retry"
-          onAction={load}
+          onAction={() => void load(false)}
         />
       ) : (
-        <div>
-          {msgs.map((m, i) => (
-            <div key={i} className={`msg ${m.mine ? "me" : ""} ${m.simulated ? "simulated" : ""}`}>
-              <div className="who">
-                {m.from} {m.simulated && <ProvenanceTag kind="generated" />}
+        <div className="chat-scroll">
+          {msgs.map((m) => {
+            const mine = m.sender === "candidate";
+            const simulated = !mine;
+            return (
+              <div key={m.id} className={`msg ${mine ? "me" : ""} ${simulated ? "simulated" : ""}`}>
+                <div className="who">
+                  {chatSenderName(m, stakeholders)}{" "}
+                  {simulated && <ProvenanceTag kind="generated" />}
+                  <span className="msg-time">{formatChatTime(m.createdAt)}</span>
+                </div>
+                <div className="bubble">{m.body}</div>
               </div>
-              <div className="bubble">{m.text}</div>
-            </div>
-          ))}
+            );
+          })}
+          <div ref={bottomRef} />
         </div>
       )}
       <div className="composer">
@@ -261,11 +315,20 @@ export function TeamPanel() {
           className="input"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Ask the team…"
+          onKeyDown={(e) => e.key === "Enter" && void send()}
+          placeholder={
+            selected ? `Message ${selected.name}…` : "Ask the team…"
+          }
           aria-label="Message the simulated team"
+          disabled={!selectedId || sending}
         />
-        <button className="btn ghost" onClick={send}>Send</button>
+        <button
+          className="btn ghost"
+          onClick={() => void send()}
+          disabled={!draft.trim() || !selectedId || sending}
+        >
+          {sending ? "Sending…" : "Send"}
+        </button>
       </div>
     </>
   );

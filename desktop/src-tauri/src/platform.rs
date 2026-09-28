@@ -647,4 +647,386 @@ impl Platform {
             body.receipt_hash,
         ))
     }
+
+    // -- invitation inbox ---------------------------------------------------
+    // src/app/api/sim/invitations/mine/route.ts
+    // Candidate-scoped listing. Each listing re-issues tokens (same semantics
+    // as resend); callers fetch on explicit user action, not on a timer.
+
+    /// GET /api/sim/invitations/mine → { ok, invitations }
+    pub async fn list_invitations(&self) -> AppResult<Vec<InboxInvitation>> {
+        let res = self
+            .authed(reqwest::Method::GET, "/api/sim/invitations/mine")
+            .await?
+            .send()
+            .await
+            .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
+        let res = self.check(res, "list invitations").await?;
+        let body: InboxListResponse = res
+            .json()
+            .await
+            .map_err(|e| AppError::Platform(format!("bad invitations response: {e}")))?;
+        Ok(body.invitations)
+    }
+
+    // -- stakeholder chat ---------------------------------------------------
+    // src/app/api/sim/sessions/[id]/messages/route.ts
+    // GET → { ok, messages: [{ id, thread, sender, stakeholderId, body,
+    //   createdAt }] } (oldest first). POST { stakeholderId, text,
+    //   clientMsgId } → { ok, candidateMessage, reply, teammateOutageDeclared }.
+    // Replies are scenario-authored (optionally AI-redrafted) teammate
+    // content: simulated, never a real coworker. The UI must keep the
+    // "simulated" disclosure.
+
+    /// GET stakeholder-thread messages for a session.
+    pub async fn list_messages(&self, session_id: &str) -> AppResult<Vec<PlatformChatMessage>> {
+        let res = self
+            .authed(
+                reqwest::Method::GET,
+                &format!("/api/sim/sessions/{}/messages", session_id),
+            )
+            .await?
+            .send()
+            .await
+            .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
+        let res = self.check(res, "list messages").await?;
+        let body: MessagesListResponse = res
+            .json()
+            .await
+            .map_err(|e| AppError::Platform(format!("bad messages response: {e}")))?;
+        Ok(body.messages)
+    }
+
+    /// POST a candidate message, then refresh from GET.
+    ///
+    /// The POST response carries raw DB rows (snake_case); the GET endpoint
+    /// maps to the camelCase contract this client parses. Refreshing from GET
+    /// keeps one parsed shape instead of two, and returns the stakeholder
+    /// reply in the same round trip (the reply is inserted synchronously
+    /// before POST returns).
+    pub async fn send_message(
+        &self,
+        session_id: &str,
+        stakeholder_id: &str,
+        text: &str,
+        client_msg_id: &str,
+    ) -> AppResult<Vec<PlatformChatMessage>> {
+        let res = self
+            .authed(
+                reqwest::Method::POST,
+                &format!("/api/sim/sessions/{}/messages", session_id),
+            )
+            .await?
+            .json(&serde_json::json!({
+                "stakeholderId": stakeholder_id,
+                "text": text,
+                "clientMsgId": client_msg_id,
+            }))
+            .send()
+            .await
+            .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
+        // Check status for a clean error; the body is intentionally not
+        // parsed (see doc comment) — the GET below is the source of truth.
+        let _ = self.check(res, "send message").await?;
+        self.list_messages(session_id).await
+    }
+
+    /// Stakeholder roster from the session's candidate-safe content view.
+    /// Every returned stakeholder is simulated (SIM-03 disclosure applies).
+    pub async fn list_stakeholders(&self, session_id: &str) -> AppResult<Vec<StakeholderView>> {
+        let full = self.fetch_session(session_id).await?;
+        let mut out = Vec::new();
+        if let Some(arr) = full.content.get("stakeholders").and_then(|v| v.as_array()) {
+            for s in arr {
+                let id = s
+                    .get("id")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                if id.is_empty() {
+                    continue;
+                }
+                out.push(StakeholderView {
+                    id,
+                    name: s
+                        .get("name")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("Teammate")
+                        .to_string(),
+                    role: s
+                        .get("role")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    // SIM-03: the platform marks every candidate-visible
+                    // stakeholder simulated; surface that fact, don't invent it.
+                    simulated: s.get("simulated").and_then(|v| v.as_bool()).unwrap_or(true),
+                });
+            }
+        }
+        Ok(out)
+    }
+
+    // -- candidate passport -------------------------------------------------
+    // src/app/api/passport/* — candidate-scoped via requireUser().
+
+    /// GET /api/passport/export → the candidate's own passport record.
+    /// 404 means no passport yet (not an error for the UI: show the empty
+    /// state that invites adding a first repository).
+    pub async fn get_passport(&self) -> AppResult<Option<PassportView>> {
+        let res = self
+            .authed(reqwest::Method::GET, "/api/passport/export")
+            .await?
+            .send()
+            .await
+            .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
+        if res.status() == reqwest::StatusCode::NOT_FOUND {
+            return Ok(None);
+        }
+        let res = self.check(res, "load passport").await?;
+        let raw: serde_json::Value = res
+            .json()
+            .await
+            .map_err(|e| AppError::Platform(format!("bad passport response: {e}")))?;
+        Ok(Some(PassportView::from_export(&raw)))
+    }
+
+    /// POST /api/passport/projects { repository, contribution, githubLogin }
+    /// → { result, passport }. `result.status` may be "failed" (422): the
+    /// analysis outcome is returned, not thrown, so the UI can explain it.
+    pub async fn add_project(
+        &self,
+        repository: &str,
+        contribution: &str,
+        github_login: Option<&str>,
+    ) -> AppResult<serde_json::Value> {
+        let res = self
+            .authed(reqwest::Method::POST, "/api/passport/projects")
+            .await?
+            .json(&serde_json::json!({
+                "repository": repository,
+                "contribution": contribution,
+                "githubLogin": github_login,
+            }))
+            .send()
+            .await
+            .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
+        // 422 is an analysis outcome (e.g. repo not found), not a transport
+        // failure: surface the body's explanation to the candidate.
+        if res.status() == reqwest::StatusCode::UNPROCESSABLE_ENTITY {
+            let body: serde_json::Value = res.json().await.unwrap_or(serde_json::Value::Null);
+            return Ok(body);
+        }
+        let res = self.check(res, "add project").await?;
+        res.json()
+            .await
+            .map_err(|e| AppError::Platform(format!("bad add-project response: {e}")))
+    }
+
+    /// DELETE /api/passport/projects?repo={owner/repo}
+    /// → { passport, explanation }.
+    pub async fn remove_project(&self, repo: &str) -> AppResult<serde_json::Value> {
+        let res = self
+            .authed(
+                reqwest::Method::DELETE,
+                &format!("/api/passport/projects?repo={}", repo),
+            )
+            .await?
+            .send()
+            .await
+            .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
+        let res = self.check(res, "remove project").await?;
+        res.json()
+            .await
+            .map_err(|e| AppError::Platform(format!("bad remove-project response: {e}")))
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Invitation inbox — src/app/api/sim/invitations/mine/route.ts
+// ---------------------------------------------------------------------------
+
+/// One pending invitation, candidate-scoped. The token is freshly minted on
+/// each listing (see the route's docstring); it feeds the existing
+/// token-based accept flow.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InboxInvitation {
+    pub id: String,
+    pub organization_name: String,
+    pub simulation_title: String,
+    pub role_title: String,
+    pub candidate_name: Option<String>,
+    pub status: String,
+    pub expires_at: String,
+    pub token: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct InboxListResponse {
+    invitations: Vec<InboxInvitation>,
+}
+
+// ---------------------------------------------------------------------------
+// Stakeholder chat — src/app/api/sim/sessions/[id]/messages/route.ts
+// ---------------------------------------------------------------------------
+
+/// A stakeholder-thread message, as the frontend renders it. Replies are
+/// scenario-authored teammate content: simulated, never a real coworker.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlatformChatMessage {
+    pub id: String,
+    pub thread: String,
+    pub sender: String,
+    pub stakeholder_id: Option<String>,
+    pub body: String,
+    pub created_at: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct MessagesListResponse {
+    #[serde(default)]
+    messages: Vec<PlatformChatMessage>,
+}
+
+/// Candidate-visible stakeholder roster entry. `simulated` is always true on
+/// the candidate view (SIM-03); carried so the UI can label honestly.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StakeholderView {
+    pub id: String,
+    pub name: String,
+    pub role: String,
+    pub simulated: bool,
+}
+
+// ---------------------------------------------------------------------------
+// Candidate passport — src/app/api/passport/export/route.ts (GET),
+// src/app/api/passport/projects/route.ts (POST/DELETE)
+// ---------------------------------------------------------------------------
+
+/// Trimmed passport view for the desktop profile screen. Built defensively
+/// from the export record: unknown fields are ignored, missing fields fall
+/// back to empty rather than failing the whole view.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PassportView {
+    pub display_name: String,
+    pub headline: String,
+    pub github_login: Option<String>,
+    pub projects: Vec<PassportProjectView>,
+    pub capabilities: Vec<String>,
+    pub role_suggestions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PassportProjectView {
+    pub repository: String,
+    pub url: Option<String>,
+    pub primary_language: Option<String>,
+    pub status: String,
+    pub contribution_statement: Option<String>,
+    pub evidence_count: usize,
+}
+
+impl PassportView {
+    pub fn from_export(raw: &serde_json::Value) -> Self {
+        let owner = raw.get("owner");
+        let str_field = |v: Option<&serde_json::Value>, key: &str| {
+            v.and_then(|o| o.get(key))
+                .and_then(|x| x.as_str())
+                .unwrap_or("")
+                .to_string()
+        };
+        let projects = raw
+            .get("projects")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .map(|p| PassportProjectView {
+                        repository: p
+                            .get("repository")
+                            .and_then(|x| x.as_str())
+                            .unwrap_or("unknown")
+                            .to_string(),
+                        url: p.get("url").and_then(|x| x.as_str()).map(|s| s.to_string()),
+                        primary_language: p
+                            .get("primaryLanguage")
+                            .and_then(|x| x.as_str())
+                            .map(|s| s.to_string()),
+                        status: p
+                            .get("status")
+                            .and_then(|x| x.as_str())
+                            .unwrap_or("unknown")
+                            .to_string(),
+                        contribution_statement: p
+                            .get("contributionStatement")
+                            .and_then(|x| x.as_str())
+                            .map(|s| s.to_string()),
+                        evidence_count: p
+                            .get("evidence")
+                            .and_then(|x| x.as_array())
+                            .map(|a| a.len())
+                            .unwrap_or(0),
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+        let capabilities = raw
+            .get("capabilities")
+            .and_then(|v| v.get("capabilities"))
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|c| c.get("statement").and_then(|x| x.as_str()))
+                    .map(|s| s.to_string())
+                    .collect()
+            })
+            .unwrap_or_default();
+        let role_suggestions = raw
+            .get("roleSuggestions")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|r| {
+                        r.get("title")
+                            .and_then(|x| x.as_str())
+                            .map(|s| s.to_string())
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+        PassportView {
+            display_name: str_field(owner, "displayName"),
+            headline: str_field(owner, "headline"),
+            github_login: owner
+                .and_then(|o| o.get("githubLogin"))
+                .and_then(|x| x.as_str())
+                .map(|s| s.to_string()),
+            projects,
+            capabilities,
+            role_suggestions,
+        }
+    }
+}
+
+/// Merge a fresh message list into the cached one, newest state wins,
+/// ordered oldest-first. Pure helper, unit-tested.
+pub fn merge_chat_messages(
+    cached: Vec<PlatformChatMessage>,
+    fresh: Vec<PlatformChatMessage>,
+) -> Vec<PlatformChatMessage> {
+    use std::collections::HashMap;
+    let mut by_id: HashMap<String, PlatformChatMessage> = HashMap::new();
+    for m in cached {
+        by_id.insert(m.id.clone(), m);
+    }
+    for m in fresh {
+        by_id.insert(m.id.clone(), m);
+    }
+    let mut out: Vec<PlatformChatMessage> = by_id.into_values().collect();
+    out.sort_by(|a, b| a.created_at.cmp(&b.created_at).then(a.id.cmp(&b.id)));
+    out
 }

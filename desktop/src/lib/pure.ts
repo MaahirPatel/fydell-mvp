@@ -1,6 +1,10 @@
 import type {
+  ChatMessage,
   Diagnostics,
+  InboxInvitation,
+  PassportView,
   ProvisionStepId,
+  StakeholderView,
   SyncPhase,
   VersionGate,
 } from "./tauri";
@@ -106,4 +110,122 @@ export function formatDiagnostics(d: Diagnostics): string {
     `note: diagnostics never include your code, tokens, or message bodies`
   );
   return lines.join("\n");
+}
+
+/* ---------------- invitation inbox ----------------
+   Expiry wording stays factual: whole days/hours remaining, never a fake
+   countdown to the second (the server is authoritative on expiry). */
+
+export function invitationExpiryLabel(expiresAt: string, nowMs: number = Date.now()): string {
+  const ms = new Date(expiresAt).getTime() - nowMs;
+  if (!Number.isFinite(ms) || ms <= 0) return "Expired";
+  const hours = Math.floor(ms / 3_600_000);
+  if (hours < 1) return "Expires within the hour";
+  if (hours < 24) return `Expires in ${hours} hour${hours === 1 ? "" : "s"}`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "Expires tomorrow";
+  if (days < 30) return `Expires in ${days} days`;
+  return `Expires ${new Date(expiresAt).toLocaleDateString()}`;
+}
+
+export function invitationUrgency(expiresAt: string, nowMs: number = Date.now()): "soon" | "normal" {
+  const ms = new Date(expiresAt).getTime() - nowMs;
+  return Number.isFinite(ms) && ms > 0 && ms < 48 * 3_600_000 ? "soon" : "normal";
+}
+
+/* ---------------- passport profile completeness ----------------
+   Honest data-completeness meter: what share of the profile's evidence
+   inputs exist. Never a quality score — a thin profile says nothing about
+   ability (the empty-passport rule from the platform). */
+
+export interface CompletenessStep {
+  id: string;
+  label: string;
+  done: boolean;
+  hint: string;
+}
+
+export function profileCompleteness(p: PassportView | null): {
+  percent: number;
+  steps: CompletenessStep[];
+} {
+  const steps: CompletenessStep[] = [
+    {
+      id: "identity",
+      label: "Name your profile",
+      done: p != null && p.displayName.trim().length > 0,
+      hint: "Add how you'd like employers to see you",
+    },
+    {
+      id: "project",
+      label: "Add a repository",
+      done: (p?.projects.length ?? 0) > 0,
+      hint: "Connect a GitHub repo — Fydell extracts evidence from real work",
+    },
+    {
+      id: "contribution",
+      label: "Describe your contribution",
+      done: (p?.projects ?? []).some(
+        (pr) => (pr.contributionStatement ?? "").trim().length > 0
+      ),
+      hint: "One honest paragraph about what you actually did",
+    },
+    {
+      id: "capabilities",
+      label: "Earn capability evidence",
+      done: (p?.capabilities.length ?? 0) > 0,
+      hint: "Capabilities appear as Fydell analyzes your projects",
+    },
+  ];
+  const done = steps.filter((s) => s.done).length;
+  return { percent: Math.round((done / steps.length) * 100), steps };
+}
+
+/** Next incomplete step, for the dashboard nudge. Null when complete. */
+export function nextCompletenessStep(p: PassportView | null): CompletenessStep | null {
+  return profileCompleteness(p).steps.find((s) => !s.done) ?? null;
+}
+
+/** Stable key for an invitation row. */
+export function invitationKey(inv: InboxInvitation): string {
+  return inv.id;
+}
+
+/* ---------------- chat merge + display ----------------
+   The Rust backend merges on refresh too; the frontend merge keeps the
+   polling view stable between refreshes (dedup by id, chronological). */
+
+export function mergeChatMessagesView(
+  prev: ChatMessage[],
+  incoming: ChatMessage[]
+): ChatMessage[] {
+  const seen = new Set(prev.map((m) => m.id));
+  const next = [...prev];
+  for (const m of incoming) {
+    if (!seen.has(m.id)) {
+      seen.add(m.id);
+      next.push(m);
+    }
+  }
+  next.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  return next;
+}
+
+export function chatSenderName(
+  m: ChatMessage,
+  stakeholders: StakeholderView[]
+): string {
+  if (m.sender === "candidate") return "You";
+  if (m.stakeholderId) {
+    const s = stakeholders.find((st) => st.id === m.stakeholderId);
+    if (s) return s.name;
+  }
+  return "Team";
+}
+
+export function formatChatTime(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? ""
+    : d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }

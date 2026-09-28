@@ -13,6 +13,7 @@ import { syncPhaseLabel, syncSummary } from "../lib/pure";
 import { messageOf } from "../App";
 import { BriefPanel, TestsPanel, TeamPanel, SubmitPanel, TimelinePanel, Milestone } from "./Panels";
 import { Dialog, EmptyState, ProvenanceTag } from "./ui";
+import { BrandLockup } from "./Brand";
 
 interface Tab {
   path: string;
@@ -360,7 +361,7 @@ export default function Workspace({
     <div className="workspace">
       <div className="topbar">
         <div className="brand">
-          Fydell<span className="dot">.</span>
+          <BrandLockup size={22} />
         </div>
         <span className="scenario-chip">
           {session.title ?? session.scenario_id}
