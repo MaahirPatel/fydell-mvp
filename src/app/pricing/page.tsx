@@ -1,204 +1,187 @@
 import Link from "next/link";
-import { Check } from "lucide-react";
-import MarketingShell from "@/components/layout/MarketingShell";
-import PricingEstimator from "@/components/marketing/PricingEstimator";
-import { Kicker } from "@/components/marketing/ui";
-import s from "@/components/marketing/home/fydell-home.module.css";
-import { PRICING, planSignupHref, usd } from "@/lib/marketing/pricing";
+import "@/styles/marketing-v2.css";
+import { Nav, Footer, FooterCTA } from "@/components/marketing/MarketingV2";
+import { PRICING, usd, planSignupHref } from "@/lib/marketing/pricing";
 
 export const metadata = {
   title: "Pricing",
   description: `Free for engineers. Hiring teams pay ${usd(PRICING.starterPerSimulation)} per completed simulation, or ${usd(PRICING.teamMonthly)} a month with ${PRICING.teamIncluded} included.`,
 };
 
-type Plan = {
-  key: string;
-  name: string;
-  badge?: string;
-  price: string;
-  per?: string;
-  unit: string;
-  includes: readonly string[];
-  action: { label: string; href: string };
-  solid?: boolean;
-  featured?: boolean;
-};
-
-const PLANS: readonly Plan[] = [
+const PLANS = [
   {
-    key: "engineers",
     name: "Engineers",
     price: "Free",
-    unit: "Always. For anyone building or sharing a passport.",
-    includes: [
-      "Engineering Passport from public repositories",
-      "Source-linked findings with coverage",
-      "Scoped, revocable share links",
-      "JSON export of your record",
-      "Simulations you are invited to",
+    per: "",
+    unit: "Always free. Build and share your passport.",
+    features: [
+      "Passport from your public repos",
+      "Source-linked findings",
+      "Share links you control",
+      "Invited simulations",
     ],
-    action: { label: "Build your passport", href: "/passport/new" },
+    cta: "Build your passport",
+    href: "/passport/new",
+    dark: false,
   },
   {
-    key: "starter",
     name: "Starter",
     price: usd(PRICING.starterPerSimulation),
     per: "/ simulation",
-    unit: "Pay per completed simulation. No monthly fee.",
-    includes: [
-      "Unlimited roles, invitations, and reviewers",
-      "Python backend simulation",
+    unit: "No monthly fee. Pay when candidates finish.",
+    features: [
+      "Unlimited roles and reviewers",
+      "Python backend simulations",
       "Evidence reports with citations",
-      "Open passports candidates share with you",
-      "Decision log and reviewer notes",
+      "Decision log and notes",
     ],
-    action: { label: "Start on Starter", href: planSignupHref("starter") },
+    cta: "Start on Starter",
+    href: planSignupHref("starter"),
+    dark: false,
   },
   {
-    key: "team",
     name: "Team",
-    badge: "Recommended",
+    badge: "Most popular",
     price: usd(PRICING.teamMonthly),
     per: "/ month",
-    unit: `${PRICING.teamIncluded} completed simulations included, then ${usd(PRICING.teamOverage)} each.`,
-    includes: [
+    unit: `${PRICING.teamIncluded} simulations included. Then ${usd(PRICING.teamOverage)} each.`,
+    features: [
       "Everything in Starter",
-      `${PRICING.teamIncluded} completed simulations every month`,
-      `${usd(PRICING.teamOverage)} per extra simulation`,
-      "Priority support from the Fydell team",
+      `${PRICING.teamIncluded} simulations every month`,
+      "Priority support",
       "Onboarding call for your first role",
     ],
-    action: { label: "Start on Team", href: planSignupHref("team") },
-    solid: true,
-    featured: true,
+    cta: "Start on Team",
+    href: planSignupHref("team"),
+    dark: true,
   },
   {
-    key: "enterprise",
     name: "Enterprise",
     price: "Custom",
-    unit: `For ${PRICING.enterpriseFrom}+ completed simulations a month.`,
-    includes: [
+    per: "",
+    unit: `For ${PRICING.enterpriseFrom}+ simulations a month.`,
+    features: [
       "Everything in Team",
-      "Volume pricing and contract terms",
-      "Security and data-handling review",
+      "Volume pricing",
+      "Security review",
       "Invoiced billing",
-      "Named contact",
     ],
-    action: { label: "Talk to us", href: "/contact" },
+    cta: "Talk to us",
+    href: "/contact",
+    dark: false,
   },
 ];
 
-const FAQ = [
+const FAQS = [
   {
-    q: "What exactly is billed?",
-    a: "A completed simulation: a candidate submitted an attempt and it produced a report. Invitations, expired links, abandoned attempts, and runs that fail for infrastructure reasons are never billed.",
+    q: "What counts as billed?",
+    a: "A completed simulation. Invites, expired links, and abandoned attempts are never billed.",
   },
   {
-    q: "Do reviewers or roles cost extra?",
-    a: "No. Every plan includes unlimited roles, invitations, and reviewers. You pay for completed work, not seats.",
+    q: "Do seats cost extra?",
+    a: "No. Unlimited roles, invites, and reviewers on every plan.",
   },
   {
-    q: "What happens to unused Team simulations?",
-    a: "Included simulations reset each month and do not roll over. If your volume varies a lot, Starter may cost less; the estimator shows both.",
-  },
-  {
-    q: "Can I switch plans?",
-    a: "Yes. Move between Starter and Team at the start of any billing month. Enterprise terms are set in your agreement.",
+    q: "Do unused Team simulations roll over?",
+    a: "No. They reset monthly. Starter may cost less for uneven volume.",
   },
   {
     q: "Do engineers ever pay?",
-    a: "Never. Passports, share links, exports, and invited simulations are free for engineers.",
+    a: "Never. Passports, share links, and invited simulations are free.",
   },
-  {
-    q: "What is covered today?",
-    a: "Simulations cover Python backend work. Frontend, full-stack, and AI/ML candidates can be reviewed through their Engineering Passport evidence at no charge.",
-  },
-] as const;
+];
 
 export default function PricingPage() {
   return (
-    <MarketingShell>
-      <div className={s.page}>
-        <section className={s.hero}>
-          <div className={`${s.container} ${s.heroCopyIn}`}>
-            <Kicker>Pricing</Kicker>
-            <h1 className={s.title}>Free for engineers. <span className="t-evidence">Pay per completed simulation.</span></h1>
-            <div className={s.heroRow}>
-              <p className={s.lede}>
-                Nothing billed until a candidate finishes. Pick a plan or estimate your month below.
-              </p>
+    <div className="mk-canvas">
+      <Nav />
+
+      <div className="mk-hero" style={{ textAlign: "center" }}>
+        <h1 style={{ maxWidth: "none" }}>Pay per simulation.</h1>
+        <p className="mk-sub" style={{ maxWidth: 560, margin: "0 auto 32px" }}>
+          Free for engineers. Teams pay only when candidates finish.
+        </p>
+      </div>
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 96px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+          {PLANS.map((plan) => (
+            <div
+              key={plan.name}
+              style={{
+                background: plan.dark ? "var(--mk-text)" : "var(--mk-surface)",
+                color: plan.dark ? "#fff" : "var(--mk-text)",
+                border: plan.dark ? "none" : "1px solid var(--mk-border)",
+                borderRadius: 12,
+                padding: 28,
+                display: "flex",
+                flexDirection: "column",
+                position: "relative",
+              }}
+            >
+              {plan.badge && (
+                <span style={{
+                  position: "absolute", top: -12, left: 28,
+                  fontSize: 12, fontWeight: 600,
+                  background: "var(--mk-teal)", color: "#fff",
+                  padding: "4px 12px", borderRadius: 999,
+                }}>
+                  {plan.badge}
+                </span>
+              )}
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>{plan.name}</div>
+              <div style={{ marginBottom: 8 }}>
+                <span style={{ fontSize: 36, fontWeight: 600, letterSpacing: "-0.02em" }}>{plan.price}</span>
+                {plan.per && (
+                  <span style={{ fontSize: 14, color: plan.dark ? "#aaa" : "var(--mk-text-secondary)", marginLeft: 4 }}>
+                    {plan.per}
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: 14, color: plan.dark ? "#aaa" : "var(--mk-text-secondary)", marginBottom: 20, lineHeight: 1.5 }}>
+                {plan.unit}
+              </div>
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", flex: 1 }}>
+                {plan.features.map((f) => (
+                  <li key={f} style={{
+                    fontSize: 14, padding: "8px 0",
+                    borderTop: `1px solid ${plan.dark ? "#333" : "var(--mk-border)"}`,
+                    color: plan.dark ? "#ddd" : "var(--mk-text-secondary)",
+                    display: "flex", gap: 8, alignItems: "center",
+                  }}>
+                    <span style={{ color: plan.dark ? "var(--mk-teal-bright)" : "var(--mk-teal)" }}>✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={plan.href}
+                className={plan.dark ? "mk-btn-light" : "mk-btn-dark"}
+                style={plan.dark ? { background: "#fff", color: "var(--mk-text)", border: "none", justifyContent: "center" } : { justifyContent: "center" }}
+              >
+                {plan.cta}
+              </Link>
             </div>
-          </div>
+          ))}
+        </div>
 
-          <div className={s.container}>
-            <div className={s.plans}>
-              {PLANS.map((plan) => (
-                <div key={plan.key} id={plan.key} className={`${s.plan} ${plan.featured ? s.planFeatured : ""}`}>
-                  <p className={s.planName}>
-                    {plan.name}
-                    {plan.badge ? <span className={s.example}>{plan.badge}</span> : null}
-                  </p>
-                  <p className={s.planPrice}>
-                    {plan.price}
-                    {plan.per ? <small>{plan.per}</small> : null}
-                  </p>
-                  <p className={s.planUnit}>{plan.unit}</p>
-                  <ul className={s.planList}>
-                    {plan.includes.map((item) => (
-                      <li key={item}>
-                        <Check aria-hidden /> {item}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className={s.planAction}>
-                    <Link href={plan.action.href} className={plan.solid ? s.btnSolid : s.btnGhost}>
-                      {plan.action.label}
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="estimate" className={`${s.container} ${s.chapter}`}>
-          <div className={s.chapterHead}>
-            <h2 className={s.chapterTitle}>Estimate your month</h2>
-            <p className={s.chapterCopy}>
-              Drag to your expected volume of completed simulations. The estimator compares Starter and Team at
-              published prices and flags the cheaper one.
-            </p>
-          </div>
-          <PricingEstimator />
-        </section>
-
-        <section className={`${s.container} ${s.chapter}`} aria-labelledby="pricing-faq">
-          <h2 id="pricing-faq" className={s.chapterTitle}>Billing questions</h2>
-          <div className={s.faq}>
-            {FAQ.map((item) => (
-              <details key={item.q}>
-                <summary>{item.q}</summary>
-                <p>{item.a}</p>
-              </details>
+        <div style={{ marginTop: 96 }}>
+          <h2 style={{ fontSize: 32, fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 32px" }}>
+            Billing questions
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 48px" }}>
+            {FAQS.map((faq) => (
+              <div key={faq.q} style={{ padding: "20px 0", borderTop: "1px solid var(--mk-border)" }}>
+                <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 8 }}>{faq.q}</div>
+                <div style={{ fontSize: 15, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>{faq.a}</div>
+              </div>
             ))}
           </div>
-        </section>
-
-        <section className={`${s.container} ${s.closing}`}>
-          <h2 className={s.closingTitle}>
-            Start with one role.
-            <br />
-            <span>Pay only when candidates finish.</span>
-          </h2>
-          <div className={s.closingRow}>
-            <p className={s.lede}>Prices in US dollars, excluding applicable taxes.</p>
-            <div className={s.heroActions}>
-              <Link href="/signup?as=employer" className={s.btnSolid}>Start hiring</Link>
-              <Link href="/contact" className={s.btnGhost}>Talk to us</Link>
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
-    </MarketingShell>
+
+      <FooterCTA heading="Start with one role." />
+      <Footer />
+    </div>
   );
 }
