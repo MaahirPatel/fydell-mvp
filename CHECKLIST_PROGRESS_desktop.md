@@ -27,7 +27,9 @@ deferred. DESK-03/05/07/08/12/13/14/18 belong to other chunks.
 ## Verification evidence (this chunk)
 
 - Rust: `cargo check --offline` — clean, no errors (desktop/src-tauri).
-- Rust: `cargo test --offline` — <see final report for count; was still compiling at write time>.
+- Rust: `cargo test --offline` — 20/20 pass (diagnostics redaction ×7,
+  recovery lock/record ×4, session runtime resolution ×1, sync transitions ×5,
+  version parse/compare ×3). 0 failed.
 - Frontend pure logic: `node --test` on compiled src/lib/pure.test.ts — 14/14 pass (sync wording, sync summary, provision steps, version-gate messages, diagnostics formatting).
 - Frontend: desktop `tsc --noEmit` — clean; `vite build` — succeeds (54 modules).
 - Repo root: `npx tsc --noEmit` — FAILS on 9 web-side files

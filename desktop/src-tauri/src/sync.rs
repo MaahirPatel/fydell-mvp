@@ -183,12 +183,6 @@ pub fn dirty_count() -> usize {
     read_journal().dirty_paths.len()
 }
 
-/// Internal: is there unsynced work?
-pub fn has_unsynced() -> bool {
-    let j = read_journal();
-    !j.dirty_paths.is_empty() || *phase().lock().unwrap() == SyncPhase::Conflict
-}
-
 /// Called by `write_file` after the bytes are durably on disk.
 /// The save itself already succeeded; a journal failure must not fail the
 /// save, so errors are swallowed (the next write retries the journal).
@@ -206,7 +200,8 @@ pub fn mark_dirty(path: &str) {
 /// Called on join/begin: the workspace is fresh from the server.
 pub fn reset_for_new_workspace() {
     let _ = write_journal(&Journal::default());
-    set_phase(SyncPhase::Synced);
+    let cur = *phase().lock().unwrap();
+    set_phase(next_phase(cur, SyncEvent::Reset));
 }
 
 /// Called by the submit path: the submission snapshot supersedes the journal.
@@ -513,19 +508,19 @@ mod tests {
 
     #[test]
     fn happy_path_transitions() {
-        use SyncEvent::*;
-        use SyncPhase::*;
-        assert_eq!(next_phase(Synced, MarkedDirty), SavedLocal);
-        assert_eq!(next_phase(SavedLocal, SyncStarted), Syncing);
-        assert_eq!(next_phase(Syncing, SyncSucceeded), Synced);
-        assert_eq!(next_phase(Synced, SyncStarted), Syncing);
-        assert_eq!(next_phase(Syncing, SyncFailed), SyncFailed);
-        assert_eq!(next_phase(SyncFailed, MarkedDirty), SavedLocal);
-        assert_eq!(next_phase(SyncFailed, SyncStarted), Syncing);
-        assert_eq!(next_phase(Syncing, ConflictDetected), Conflict);
-        assert_eq!(next_phase(SavedLocal, ConflictDetected), Conflict);
-        assert_eq!(next_phase(Synced, Reset), Synced);
-        assert_eq!(next_phase(Conflict, Reset), Synced);
+        use SyncEvent as E;
+        use SyncPhase as P;
+        assert_eq!(next_phase(P::Synced, E::MarkedDirty), P::SavedLocal);
+        assert_eq!(next_phase(P::SavedLocal, E::SyncStarted), P::Syncing);
+        assert_eq!(next_phase(P::Syncing, E::SyncSucceeded), P::Synced);
+        assert_eq!(next_phase(P::Synced, E::SyncStarted), P::Syncing);
+        assert_eq!(next_phase(P::Syncing, E::SyncFailed), P::SyncFailed);
+        assert_eq!(next_phase(P::SyncFailed, E::MarkedDirty), P::SavedLocal);
+        assert_eq!(next_phase(P::SyncFailed, E::SyncStarted), P::Syncing);
+        assert_eq!(next_phase(P::Syncing, E::ConflictDetected), P::Conflict);
+        assert_eq!(next_phase(P::SavedLocal, E::ConflictDetected), P::Conflict);
+        assert_eq!(next_phase(P::Synced, E::Reset), P::Synced);
+        assert_eq!(next_phase(P::Conflict, E::Reset), P::Synced);
     }
 
     #[test]

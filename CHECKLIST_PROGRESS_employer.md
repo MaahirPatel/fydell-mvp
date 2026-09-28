@@ -52,8 +52,15 @@ route file; the rules themselves are DONE-TESTED.
 
 ## tsc --noEmit
 
-Pass for all chunk files. (Repo-wide run surfaces only pre-existing stray
-`narrow*.tmp.ts` probe files from parallel work, unrelated to this chunk.)
+PASS for all chunk files (verified 2026-09-27 final run: zero errors in
+`src/lib/invitations|employer|reports`, `src/app/api/employer`, and all six
+`scripts/test-employer-grind-*.ts`). Repo-wide runs surface only transient
+probe files (`narrow*.tmp.ts`, `probe*.ts`, `trace.tmp.ts`) from parallel
+chunks — not this chunk's code.
+
+Note: this repo compiles with `"strict": false`, so discriminated-union
+narrowing via `if (!result.ok)` does NOT narrow — use `if (result.ok === false)`.
+(All chunk code follows this.)
 
 ## Notes for parent
 
