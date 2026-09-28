@@ -2,8 +2,8 @@ import "./passport.css";
 
 export default function PassportSkeleton() {
   return (
-    <div role="status" aria-label="Loading passport" className="passport-doc">
-      <div className="passport-masthead">
+    <div role="status" aria-label="Loading passport" className="pp">
+      <div className="pp-head">
         <div className="flex items-center justify-between gap-3">
           <div className="passport-skeleton-bar h-3 w-44" />
           <div className="passport-skeleton-bar h-5 w-24" />

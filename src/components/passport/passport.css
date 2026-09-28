@@ -1,60 +1,40 @@
-/* ============================================================================
-   Fydell Engineering Passport surfaces.
-   First real web adopter of src/styles/fydell-tokens.css: the token contract
-   is imported (not forked) and these classes build on it.
+/* Engineering Passport. Warm light, hairline rules, flat. */
 
-   Design intent: the passport is a verifiable record of observed work, not a
-   profile card. Ink on paper, hairline rules, one saturated accent per
-   viewport, evidence semantics (teal = observed, amber = needs attention).
-   No gradients, no decorative textures, no serif display type.
-   ========================================================================== */
-
-/* Platform binding: this app loads Geist through next/font, so the stacks are
-   re-pinned to the generated variables after the token import. The token
-   contract still owns the values; this only names the local faces, and it is
-   deterministic regardless of stylesheet order. */
 :root {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* ---- The document frame ---------------------------------------------------
-   One frame per passport. Everything inside is separated by hairlines, never
-   nested cards (contract: max containment depth 2). */
-.passport-doc {
+.pp {
   overflow: hidden;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-frame);
   background: var(--surface-raised);
-  box-shadow: var(--shadow-2);
 }
 
-/* ---- Masthead: the record header ------------------------------------------
-   Replaces the old gradient cover. Paper surface, chain mark, focal name in
-   Geist, mono provenance line, and an honesty strip. */
-.passport-masthead {
+.pp-head {
   border-bottom: 1px solid var(--border-subtle);
-  padding: var(--space-5) var(--space-5) 0;
+  padding: 24px 24px 0;
 }
 @media (min-width: 640px) {
-  .passport-masthead {
-    padding: var(--space-6) var(--space-6) 0;
+  .pp-head {
+    padding: 28px 28px 0;
   }
 }
 
-.passport-eyebrow {
+.pp-kicker {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 8px;
   font-size: var(--type-app-meta);
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-tertiary);
 }
 
-.passport-name {
-  margin-top: var(--space-4);
+.pp-name {
+  margin-top: 16px;
   font-size: var(--type-app-page);
   line-height: var(--type-app-page-lh);
   letter-spacing: var(--type-app-page-tracking);
@@ -62,59 +42,53 @@
   color: var(--text-primary);
 }
 
-.passport-headline {
-  margin-top: var(--space-1);
+.pp-headline {
+  margin-top: 4px;
   font-size: var(--type-app-body);
   line-height: var(--type-app-body-lh);
   color: var(--text-secondary);
 }
 
-.passport-provenance {
-  margin-top: var(--space-3);
+.pp-meta {
+  margin-top: 12px;
   font-family: var(--font-mono);
   font-size: var(--type-app-meta);
   line-height: var(--type-app-meta-lh);
   color: var(--text-tertiary);
 }
 
-/* Honesty strip: what the record guarantees, in one ruled line. */
-.passport-guarantee {
-  margin-top: var(--space-4);
+.pp-trust {
+  margin-top: 16px;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
+  gap: 8px 20px;
   border-top: 1px solid var(--border-subtle);
-  padding: var(--space-3) 0;
+  padding: 12px 0;
   font-size: var(--type-app-meta);
   line-height: var(--type-app-meta-lh);
   color: var(--text-secondary);
 }
-.passport-guarantee .guarantee-item {
+.pp-trust .trust-item {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
-.passport-guarantee .guarantee-item svg {
+.pp-trust .trust-item svg {
   color: var(--ev-observed-ink);
   flex: none;
 }
 
-/* ---- Sections: ruled, not nested ------------------------------------------ */
-.passport-section {
+.pp-section {
   border-bottom: 1px solid var(--border-subtle);
-  padding: var(--space-5) var(--space-5);
+  padding: 24px;
 }
 @media (min-width: 640px) {
-  .passport-section {
-    padding: var(--space-6) var(--space-6);
+  .pp-section {
+    padding: 28px;
   }
 }
-.passport-section:last-child {
-  border-bottom: 0;
-}
 
-.passport-section-title {
+.pp-title {
   font-size: var(--type-app-section);
   line-height: var(--type-app-section-lh);
   letter-spacing: var(--type-app-section-tracking);
@@ -122,34 +96,31 @@
   color: var(--text-primary);
 }
 
-/* Hairline-divided rows: the document alternative to cards-in-cards. */
-.passport-rows {
+.pp-rows {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-panel);
   background: var(--surface-raised);
   overflow: hidden;
 }
-.passport-rows > li + li {
+.pp-rows > li + li {
   border-top: 1px solid var(--border-subtle);
 }
 
-/* ---- Footer: the standing caveat ------------------------------------------ */
-.passport-footer {
+.pp-foot {
   background: var(--surface-panel);
   border-top: 1px solid var(--border-subtle);
-  padding: var(--space-4) var(--space-5);
+  padding: 16px 24px;
   font-size: var(--type-app-meta);
   line-height: 1.55;
   color: var(--text-secondary);
 }
 @media (min-width: 640px) {
-  .passport-footer {
-    padding-left: var(--space-6);
-    padding-right: var(--space-6);
+  .pp-foot {
+    padding-left: 28px;
+    padding-right: 28px;
   }
 }
 
-/* ---- Skeleton: matches the new masthead ----------------------------------- */
 .passport-skeleton-bar {
   border-radius: var(--radius-tag);
   background: var(--surface-hover);
