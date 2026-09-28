@@ -31,6 +31,8 @@ export interface OrgContext {
   userId: string;
   organizationId: string;
   organizationName: string;
+  /** organization_members.role; routes check capabilities via orgCan(). */
+  role: string;
 }
 
 /** Resolve the caller's active organization membership (employers). */
@@ -39,7 +41,7 @@ export async function requireOrgMember(userId: string): Promise<OrgContext | nul
   const admin = createAdminSupabaseClient();
   const { data } = await admin
     .from("organization_members")
-    .select("organization_id, organizations(name)")
+    .select("organization_id, role, organizations(name)")
     .eq("user_id", userId)
     .eq("status", "active")
     .limit(1)
@@ -50,5 +52,19 @@ export async function requireOrgMember(userId: string): Promise<OrgContext | nul
     userId,
     organizationId: data.organization_id,
     organizationName: org?.name || "Your organization",
+    role: (data.role as string) || "viewer",
   };
+}
+
+/** The caller's active role in a specific organization, or null. */
+export async function orgMemberRole(userId: string, organizationId: string): Promise<string | null> {
+  if (isPreviewMode()) return PREVIEW_ORG.role;
+  const { data } = await createAdminSupabaseClient()
+    .from("organization_members")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("organization_id", organizationId)
+    .eq("status", "active")
+    .maybeSingle();
+  return (data?.role as string | undefined) ?? null;
 }

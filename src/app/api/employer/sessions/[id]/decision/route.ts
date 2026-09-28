@@ -23,6 +23,7 @@ import {
   type HiringDecision,
 } from "@/lib/employer/decisions";
 import { createAuditMemoryStore } from "@/lib/employer/audit";
+import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,6 +43,8 @@ export async function POST(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const org = await requireOrgMember(user.id);
   if (!org) return NextResponse.json({ error: "No organization" }, { status: 403 });
+  if (!orgCan(org.role, "record_decisions"))
+    return NextResponse.json({ error: capabilityDeniedMessage("record_decisions") }, { status: 403 });
 
   let body: { decision?: string; rationale?: string | null };
   try {

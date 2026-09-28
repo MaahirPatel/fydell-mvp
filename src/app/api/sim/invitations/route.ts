@@ -10,6 +10,7 @@ import { invitationEmailCopy } from "@/lib/simulations/invitation-copy";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 import type { RoleKey } from "@/lib/simulations/types";
 import { invitationTruth } from "@/lib/contracts/lifecycle";
+import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 
 export const runtime = "nodejs";
 
@@ -38,6 +39,8 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const org = await requireOrgMember(user.id);
   if (!org) return NextResponse.json({ error: "No organization" }, { status: 403 });
+  if (!orgCan(org.role, "manage_candidates"))
+    return NextResponse.json({ error: capabilityDeniedMessage("manage_candidates") }, { status: 403 });
 
   let body: {
     templateId?: string;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireUser } from "@/lib/simulations/auth";
+import { orgMemberRole, requireUser } from "@/lib/simulations/auth";
+import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 import { getSessionForOrgMember } from "@/lib/simulations/db";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
@@ -38,6 +39,8 @@ export async function POST(
 
   try {
     const session = await getSessionForOrgMember(id, user.id);
+    if (!orgCan(await orgMemberRole(user.id, session.organization_id), "record_decisions"))
+      return NextResponse.json({ error: capabilityDeniedMessage("record_decisions") }, { status: 403 });
     const admin = createAdminSupabaseClient();
     const { data, error } = await admin
       .from("sim_employer_decisions")

@@ -56,6 +56,7 @@ export const PREVIEW_ORG: OrgContext = {
   userId: PREVIEW_USER.id,
   organizationId: "00000000-0000-4000-8000-0000000000a1",
   organizationName: "Meridian Industrial Systems",
+  role: "owner",
 };
 
 const EVALUATION = "Operations performance investigation";

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { resendInvitation, revokeInvitation } from "@/lib/simulations/db";
 import { fydellEmailShell, isResendConfigured, sendResendHtml } from "@/lib/email";
@@ -18,6 +19,8 @@ export async function POST(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const org = await requireOrgMember(user.id);
   if (!org) return NextResponse.json({ error: "No organization" }, { status: 403 });
+  if (!orgCan(org.role, "manage_candidates"))
+    return NextResponse.json({ error: capabilityDeniedMessage("manage_candidates") }, { status: 403 });
 
   let body: { action?: string };
   try {
