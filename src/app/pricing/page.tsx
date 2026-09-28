@@ -74,20 +74,66 @@ const PLANS = [
 
 const FAQS = [
   {
-    q: "What counts as billed?",
-    a: "A completed simulation. Invites, expired links, and abandoned attempts are never billed.",
+    q: "Is there a free trial?",
+    a: "There is no separate trial. Starter has no monthly fee. You pay only when a candidate completes a simulation.",
   },
   {
-    q: "Do seats cost extra?",
-    a: "No. Unlimited roles, invites, and reviewers on every plan.",
+    q: "What if a candidate doesn't finish?",
+    a: "You pay nothing. Invites, expired links, and abandoned attempts are never billed.",
   },
   {
-    q: "Do unused Team simulations roll over?",
-    a: "No. They reset monthly. Starter may cost less for uneven volume.",
+    q: "Can I change plans?",
+    a: "Yes. Switch plans anytime from your billing settings. The new plan starts on your next cycle.",
   },
   {
-    q: "Do engineers ever pay?",
-    a: "Never. Passports, share links, and invited simulations are free.",
+    q: "Do you offer discounts?",
+    a: "Enterprise plans include volume pricing for teams running 50 or more simulations a month.",
+  },
+  {
+    q: "What payment methods do you accept?",
+    a: "We bill through Stripe. All major credit and debit cards work. Enterprise can pay by invoice.",
+  },
+  {
+    q: "Is there a contract?",
+    a: "No. Starter and Team are month to month. Cancel anytime from your settings.",
+  },
+];
+
+const COMPARISON_ROWS: { label: string; values: [string, string, string, string] }[] = [
+  {
+    label: "Completed simulations",
+    values: ["Invited only", usd(PRICING.starterPerSimulation) + " each", `${PRICING.teamIncluded}/mo, then ${usd(PRICING.teamOverage)} each`, "Volume pricing"],
+  },
+  {
+    label: "Roles",
+    values: ["—", "Unlimited", "Unlimited", "Unlimited"],
+  },
+  {
+    label: "Reviewers",
+    values: ["—", "Unlimited", "Unlimited", "Unlimited"],
+  },
+  {
+    label: "Evidence reports",
+    values: ["Your passport", "With source citations", "With source citations", "With source citations"],
+  },
+  {
+    label: "Support",
+    values: ["—", "—", "Priority", "—"],
+  },
+];
+
+const BILLING_STEPS = [
+  {
+    title: "Charged on submission",
+    body: "You pay when a candidate submits their work. Not when you send an invite. Not when a link expires.",
+  },
+  {
+    title: "One submission, one charge",
+    body: "Each completed simulation counts once. Invites and abandoned attempts never count.",
+  },
+  {
+    title: "No lock-in",
+    body: "Starter has no monthly fee. Team renews monthly. Cancel anytime from settings.",
   },
 ];
 
@@ -163,6 +209,81 @@ export default function PricingPage() {
               </Link>
             </div>
           ))}
+        </div>
+
+        {/* Comparison table */}
+        <div style={{ marginTop: 96 }}>
+          <h2 style={{ fontSize: 32, fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 8px" }}>
+            What's included
+          </h2>
+          <p style={{ fontSize: 16, color: "var(--mk-text-secondary)", margin: "0 0 32px", lineHeight: 1.6 }}>
+            Every plan includes unlimited invites. You only pay for completed work.
+          </p>
+          <div style={{ overflowX: "auto", border: "1px solid var(--mk-border)", borderRadius: 12, background: "var(--mk-surface)" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, minWidth: 640 }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "left", padding: "16px 20px", fontWeight: 600, borderBottom: "1px solid var(--mk-border)", width: "28%" }}></th>
+                  {["Engineers", "Starter", "Team", "Enterprise"].map((tier) => (
+                    <th key={tier} style={{ textAlign: "left", padding: "16px 20px", fontWeight: 600, borderBottom: "1px solid var(--mk-border)" }}>
+                      {tier}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON_ROWS.map((row, i) => (
+                  <tr key={row.label} style={{ background: i % 2 === 1 ? "var(--mk-surface-warm)" : "transparent" }}>
+                    <td style={{ padding: "14px 20px", fontWeight: 500, borderBottom: i < COMPARISON_ROWS.length - 1 ? "1px solid var(--mk-border)" : "none" }}>
+                      {row.label}
+                    </td>
+                    {row.values.map((v, j) => (
+                      <td key={j} style={{ padding: "14px 20px", color: "var(--mk-text-secondary)", borderBottom: i < COMPARISON_ROWS.length - 1 ? "1px solid var(--mk-border)" : "none" }}>
+                        {v}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* How billing works */}
+        <div style={{ marginTop: 96 }}>
+          <h2 style={{ fontSize: 32, fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 32px" }}>
+            How billing works
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+            {BILLING_STEPS.map((step) => (
+              <div key={step.title} style={{
+                background: "var(--mk-surface)", border: "1px solid var(--mk-border)",
+                borderRadius: 12, padding: 24,
+              }}>
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{step.title}</div>
+                <div style={{ fontSize: 14, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>{step.body}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* For engineers callout */}
+        <div style={{
+          marginTop: 96, background: "#E6F4F2", border: "1px solid var(--mk-border)",
+          borderRadius: 12, padding: 40, display: "flex",
+          alignItems: "center", justifyContent: "space-between", gap: 32, flexWrap: "wrap",
+        }}>
+          <div style={{ flex: "1 1 320px" }}>
+            <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: "-0.02em", marginBottom: 8 }}>
+              Engineers never pay.
+            </div>
+            <div style={{ fontSize: 15, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>
+              Build your passport from public repos. Share it with links you control. Accept simulation invites. Free forever.
+            </div>
+          </div>
+          <Link href="/passport/new" className="mk-btn-dark">
+            Build your passport
+          </Link>
         </div>
 
         <div style={{ marginTop: 96 }}>
