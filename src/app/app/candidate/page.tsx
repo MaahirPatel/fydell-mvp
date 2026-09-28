@@ -129,6 +129,13 @@ export default async function CandidateHomePage() {
             </p>
             <p className="mt-4 text-app-body">
               <Link
+                href="/app/candidate/profile"
+                className="text-[var(--text-primary)] underline underline-offset-2"
+              >
+                Build your Engineering Passport
+              </Link>
+              <span className="text-[var(--text-tertiary)]"> · </span>
+              <Link
                 href="/simulations"
                 className="text-[var(--text-primary)] underline underline-offset-2"
               >

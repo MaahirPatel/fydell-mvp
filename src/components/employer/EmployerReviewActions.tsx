@@ -91,7 +91,7 @@ export default function EmployerReviewActions({ sessionId }: { sessionId: string
       <Surface tone="panel">
         <SurfaceHeader
           title="Your decision"
-          description="The hiring team owns the outcome. Fydell records what you decided and how much the evidence mattered."
+          description="The hiring team owns the outcome. Fydell records what you decided and how much the evidence mattered. Private to your workspace. Never shown to the candidate."
         />
         <div className="space-y-4 px-5 py-4">
           <div className="grid gap-4 sm:grid-cols-2">
