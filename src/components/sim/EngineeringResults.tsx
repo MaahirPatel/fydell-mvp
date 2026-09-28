@@ -50,6 +50,56 @@ export interface EngineeringReportData {
         };
       };
   practice: { runCount: number; lastRunAt: string | null; submittedVersionWasRun: boolean; note: string };
+  changes?:
+    | { files: { path: string; change: "added" | "removed" | "modified"; added: number; removed: number; hunks: string | null }[] }
+    | { unavailable: string };
+}
+
+function CodeChanges({ changes }: { changes: NonNullable<EngineeringReportData["changes"]> }) {
+  if ("unavailable" in changes) {
+    return <p className="text-app-meta text-[var(--text-secondary)]">{changes.unavailable}</p>;
+  }
+  if (changes.files.length === 0) {
+    return <p className="text-app-meta text-[var(--text-secondary)]">The candidate did not change any code.</p>;
+  }
+  return (
+    <ul className="space-y-2">
+      {changes.files.map((f) => (
+        <li key={f.path}>
+          <details className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] px-3 py-2">
+            <summary className="cursor-pointer text-app-meta">
+              <span className="font-mono text-[var(--text-primary)] [overflow-wrap:anywhere]">{f.path}</span>{" "}
+              <span className="text-[var(--text-tertiary)]">
+                {f.change} · +{f.added} −{f.removed}
+              </span>
+            </summary>
+            {f.hunks === null ? (
+              <p className="mt-2 text-app-meta text-[var(--text-secondary)]">Too large to show as a line diff.</p>
+            ) : (
+              <pre className="mt-2 max-h-[420px] overflow-auto text-app-meta leading-[1.5]">
+                {f.hunks.split("\n").map((line, i) => (
+                  <span
+                    key={i}
+                    className={
+                      line.startsWith("+")
+                        ? "block text-[var(--ev-success-ink,var(--text-primary))]"
+                        : line.startsWith("-")
+                          ? "block text-[var(--status-attention-ink)]"
+                          : line.startsWith("@@")
+                            ? "block text-[var(--text-tertiary)]"
+                            : "block text-[var(--text-secondary)]"
+                    }
+                  >
+                    {line || " "}
+                  </span>
+                ))}
+              </pre>
+            )}
+          </details>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 const GROUP_TONE: Record<GroupResult["status"], StatusTone> = {
@@ -96,6 +146,16 @@ export function EngineeringResults({ data }: { data: EngineeringReportData }) {
       ) : (
         <FinishedEvaluation evaluation={evaluation} />
       )}
+
+      {data.changes ? (
+        <Surface tone="panel" className="px-5 py-4">
+          <h3 className="mb-2 text-app-body font-medium text-[var(--text-primary)]">Code changes</h3>
+          <p className="mb-2 max-w-[74ch] text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
+            The candidate&apos;s submitted files compared with the starter repository they were given.
+          </p>
+          <CodeChanges changes={data.changes} />
+        </Surface>
+      ) : null}
 
       <Surface tone="panel" className="px-5 py-4">
         <p className="text-app-body text-[var(--text-primary)]">

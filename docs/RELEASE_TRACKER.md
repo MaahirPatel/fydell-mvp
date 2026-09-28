@@ -29,8 +29,7 @@ Tracks every ID in the paid-customer release checklist (version 2026-09-27:
 ## Headline
 
 - **Stop conditions still open:** unverified sandbox isolation (RUN-01/02),
-  no human QA hold before employer report delivery (AI-12), scenario not yet
-  reviewed by a qualified engineer (SCEN-09), no clean-machine installer
+  scenario not yet reviewed by a qualified engineer (SCEN-09), no clean-machine installer
   test (DESK-02/21, E2E-17), no live cross-tenant test (SEC-06, E2E-09),
   payment lifecycle not run against Stripe (BILL-07, E2E-14).
 - **Release gates passed end to end:** none yet. Every gate needs the live
@@ -42,7 +41,9 @@ Tracks every ID in the paid-customer release checklist (version 2026-09-27:
   role-based authorization on hiring actions (AUTH-04), the desktop version
   endpoint (DESK-19), invitation email correctness and escaping (SEC-07),
   usage held for unevaluated work (BUY-03), removal of fake-success routes
-  (UX-04), and landing-page contract fixes.
+  (UX-04), landing-page contract fixes, a human QA hold on engineering
+  reports with an admin review queue (AI-12), and starter-vs-submission code
+  diffs in the report (REP-02).
 
 ## Visual and interaction
 
@@ -76,7 +77,7 @@ Tracks every ID in the paid-customer release checklist (version 2026-09-27:
 | Employer home | I | `/app/employer` queue-first home | Review with real data |
 | Role detail | I | `/app/employer/roles` | Role definitions are not persisted (EMP-01) |
 | Candidate list | I | `/app/employer/candidates` | Filter/sort review with real data |
-| Employer report | I | `EvidenceReport` + new `EngineeringResults` section | Source/diff links (REP-02), QA hold (AI-12) |
+| Employer report | I | `EvidenceReport` + `EngineeringResults` (test groups, code changes, practice-run facts); held as "Report in review" until released | Live review of the released report |
 | Desktop welcome | I | Invitation inbox, provisioning stepper | Live run |
 | Desktop assessment | I | Editor, files, team thread, tests panel | Live run on a laptop-size window |
 | Desktop submission | I | Submit dialog with sync warning, receipt | Live lost-response test (E2E-20) |
@@ -114,7 +115,7 @@ Tracks every ID in the paid-customer release checklist (version 2026-09-27:
 | ID | Status | Implementation / evidence | Remaining |
 | --- | --- | --- | --- |
 | WORK-01 | V | `scenarios/webhook-retry-incident` with regression, permitted fixes, tests, clarification facts and update documented in `.fydell/rubric.json`; no local setup needed; validation passes | Expert review is tracked under SCEN-09 |
-| WORK-02 | I | Correctness: trusted + hidden test groups; adaptation: `requirement_update` group; communication: handoff + messages | Design reasoning needs the diff shown to reviewers (REP-02) |
+| WORK-02 | I | Correctness: trusted + hidden test groups; adaptation: `requirement_update` group; design reasoning: starter-vs-submission diff + handoff; communication: handoff + messages | Live review with real submissions |
 | WORK-03 | I | Server timestamps, fair response window, extensions (`timing.ts`, `curveball-policy.ts`) | Live DB |
 | WORK-04 | I | Update group reported "Not observed" when the update was never presented; partial-submission rules | Desktop does not warn before submitting ahead of the update |
 | WORK-05 | I | Authored teammate rules with fixed facts; hint ledger | Live check of AI redraft constraints |
@@ -288,7 +289,7 @@ Tracks every ID in the paid-customer release checklist (version 2026-09-27:
 | AI-01 | V | Engineering results come only from executed tests and are a separate report section; no model can mark tests passed | — |
 | AI-02..AI-10 | I (rules only) | `src/lib/analysis/*` (232 in-process checks); only `validate-review` route uses part of it | No LLM review in the engineering path yet; wire these before adding one |
 | AI-11 | I | 22-fixture analysis benchmark; 9-variant scenario matrix | 20+ submissions adjudicated by experienced engineers |
-| AI-12 | M | `src/lib/analysis/qaGate.ts` (rules only) | Reports reach employers without a human QA hold |
+| AI-12 | I | Engineering reports are withheld ("Report in review") until a platform reviewer releases them from `/admin/reviews`; release of a non-clean evaluation needs a note; append-only history (migration 035, `src/lib/engineering/report-review.ts`, 33 checks) | Apply migration 035; staff the reviewer role; track turnaround; non-engineering micro sims are not held |
 | AI-13 | B | Minimization rules | Provider retention/training settings |
 | AI-14 | P1 | — | — |
 
@@ -297,7 +298,7 @@ Tracks every ID in the paid-customer release checklist (version 2026-09-27:
 | ID | Status | Evidence | Remaining |
 | --- | --- | --- | --- |
 | REP-01 | I | Report summary, competencies, interview guide; engineering test groups | Decision-brief format (`src/lib/reports/assemble.ts`, rules only) |
-| REP-02 | I | Per-test outcomes | Links to source, diff and messages |
+| REP-02 | I | Per-test outcomes and per-file unified diffs against the pinned starter (`src/lib/engineering/diff.ts`) | Message links; line-level links from findings once LLM findings exist |
 | REP-03 | I | Coding results, interpretation and infrastructure status separated | v2 "Performance" number is a single aggregate; review against "no universal hireability number" |
 | REP-04 | I | Versions and snapshot hash shown | Versioned corrections not wired |
 | REP-05 | I | Decisions with notes persist | Finding flags/correction requests (rules only) |
@@ -362,7 +363,7 @@ Tracks every ID in the paid-customer release checklist (version 2026-09-27:
 | Access matrix | I | Hidden tests server-only; employer reports org-scoped; candidate runs see provided/own tests only; billing owner/admin | Live verification of each cell |
 | Import / attempt / decision machines | I | Rules tested in-process | Enforce in routes |
 | Snapshot transfer | I | SQL function + TS mirror | Apply migration 031 |
-| Evaluation | I | Run statuses (running → completed / indeterminate / infrastructure_error / not_configured) enforced by an immutability trigger | No explicit human_review state before delivery (AI-12) |
+| Evaluation | I | Run statuses (running → completed / indeterminate / infrastructure_error / not_configured) enforced by an immutability trigger; report review pending → released / changes_requested → reopened | Live |
 | Billing | I | Webhook states; usage hold | Live |
 
 ## End-to-end journeys

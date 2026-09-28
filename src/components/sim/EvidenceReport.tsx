@@ -139,8 +139,9 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok) throw new Error(data.error || "Could not load the report");
-        if (!data.ready) {
-          // Trigger analysis (idempotent) and poll.
+        if (!data.ready && data.reviewState !== "review_required") {
+          // Trigger analysis (idempotent) and poll. A report held for human
+          // review has finished analysis; it only waits to be released.
           void fetch(`/api/sim/sessions/${sessionId}/analyze`, { method: "POST" }).catch(
             () => {}
           );
@@ -160,7 +161,8 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
 
   useEffect(() => {
     if (!report || report.ready) return;
-    const t = setTimeout(reload, 5000);
+    // Human review takes minutes to hours; poll gently while it happens.
+    const t = setTimeout(reload, report.reviewState === "review_required" ? 30000 : 5000);
     return () => clearTimeout(t);
   }, [report, reload]);
 
@@ -202,6 +204,14 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
               Retry analysis
             </Button>
           }
+        />
+      );
+    }
+    if (report.reviewState === "review_required") {
+      return (
+        <EmptyState
+          title="Report in review"
+          description={report.message ?? "A Fydell reviewer is checking this report before it is released."}
         />
       );
     }

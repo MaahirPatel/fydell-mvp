@@ -10,6 +10,9 @@
 
 import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { buildScenarioPackage } from "@/lib/simulations/scenario-package";
+import { diffFiles, type FileChange } from "./diff";
+import type { EvaluationState, ReviewStatus } from "./report-review";
 import { runEvaluation } from "./run";
 import { engineeringRunDeps, engineeringScenarioForTemplate } from "./session";
 import type { StoredRun } from "./store";
@@ -82,15 +85,63 @@ export interface EngineeringReport {
     submittedVersionWasRun: boolean;
     note: string;
   };
+  /** The candidate's changes against the pinned starter files (REP-02). */
+  changes: { files: FileChange[] } | { unavailable: string };
+  /** Human QA hold (AI-12). */
+  review: {
+    status: ReviewStatus;
+    notes: string;
+    decidedAt: string | null;
+    evaluationRunId: string | null;
+  };
+}
+
+/** The evaluation state a reviewer is deciding on. */
+export function evaluationStateOf(report: EngineeringReport): EvaluationState {
+  if (report.evaluation.state === "pending") return "pending";
+  if (report.evaluation.state === "no_files") return "no_files";
+  return report.evaluation.result.status;
+}
+
+function codeChanges(
+  scenarioId: string,
+  snapshot: unknown,
+  editablePrefixes: string[]
+): EngineeringReport["changes"] {
+  const s = snapshot as { fileSnapshot?: { scenarioVersion?: string; files?: Record<string, string> } } | null;
+  const files = submittedFiles(snapshot);
+  if (!files) return { unavailable: "No code files were submitted." };
+  let starter;
+  try {
+    starter = buildScenarioPackage(scenarioId);
+  } catch {
+    return { unavailable: "The starter files for this scenario could not be loaded." };
+  }
+  const submittedVersion = s?.fileSnapshot?.scenarioVersion;
+  if (submittedVersion && submittedVersion !== starter.scenarioVersion) {
+    return {
+      unavailable: `The submission started from scenario version ${submittedVersion}; the current starter is ${starter.scenarioVersion}, so a diff would be misleading.`,
+    };
+  }
+  return {
+    files: diffFiles(starter.files, files, (p) => editablePrefixes.some((prefix) => p.startsWith(prefix))),
+  };
 }
 
 export async function engineeringReportFor(sessionId: string, templateId: string): Promise<EngineeringReport | null> {
   const scenarioId = await engineeringScenarioForTemplate(templateId);
   if (!scenarioId) return null;
   const deps = await engineeringRunDeps(scenarioId);
-  const [evaluations, practice] = await Promise.all([
+  const admin = createAdminSupabaseClient();
+  const [evaluations, practice, { data: submissionRow }, { data: reviewRow }] = await Promise.all([
     deps.store.listRuns(sessionId, "evaluation", 5),
     deps.store.listRuns(sessionId, "practice", 200),
+    admin.from("sim_submissions").select("snapshot").eq("session_id", sessionId).maybeSingle(),
+    admin
+      .from("sim_report_reviews")
+      .select("status, notes, decided_at, evaluation_run_id")
+      .eq("session_id", sessionId)
+      .maybeSingle(),
   ]);
 
   // Prefer a trustworthy finished run; fall back to the latest record.
@@ -101,10 +152,8 @@ export async function engineeringReportFor(sessionId: string, templateId: string
   if (finished && finished.result) {
     evaluation = { state: "finished", runId: finished.id, completedAt: finished.completedAt, result: finished.result };
   } else {
-    const admin = createAdminSupabaseClient();
-    const { data: submission } = await admin.from("sim_submissions").select("snapshot").eq("session_id", sessionId).maybeSingle();
     evaluation =
-      submission && !submittedFiles(submission.snapshot)
+      submissionRow && !submittedFiles(submissionRow.snapshot)
         ? { state: "no_files", reason: "No code files were included in the submission, so nothing could be tested." }
         : { state: "pending" };
   }
@@ -121,6 +170,15 @@ export async function engineeringReportFor(sessionId: string, templateId: string
       submittedVersionWasRun,
       note:
         "Practice runs show that tests were run in the workspace and on which saved version. They do not show whether the candidate read or understood the results, and runs done outside Fydell are not visible.",
+    },
+    changes: submissionRow
+      ? codeChanges(scenarioId, submissionRow.snapshot, deps.material.descriptor.editablePrefixes)
+      : { unavailable: "Not submitted yet." },
+    review: {
+      status: ((reviewRow?.status as ReviewStatus | undefined) ?? "pending"),
+      notes: (reviewRow?.notes as string | undefined) ?? "",
+      decidedAt: (reviewRow?.decided_at as string | null | undefined) ?? null,
+      evaluationRunId: (reviewRow?.evaluation_run_id as string | null | undefined) ?? null,
     },
   };
 }

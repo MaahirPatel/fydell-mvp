@@ -8,6 +8,8 @@ import { isV2PersistedResult } from "@/lib/simulations/v2/scoring";
 import { isPreviewMode, previewReport } from "@/lib/dev/preview";
 import { DA01_CONTENT_VERSION, DA01_SLUG } from "@/lib/contracts/da01";
 import { engineeringReportFor } from "@/lib/engineering/submission-eval";
+import { engineeringScenarioForTemplate } from "@/lib/engineering/session";
+import { REVIEW_HOLD_MESSAGE, employerCanSeeReport } from "@/lib/engineering/report-review";
 
 export const runtime = "nodejs";
 
@@ -122,6 +124,20 @@ export async function GET(
       console.error(`[report] engineering results unavailable for session ${id}:`, err);
       return null;
     });
+    // AI-12: engineering reports reach the employer only after a qualified
+    // Fydell reviewer releases them. If the engineering data cannot be
+    // loaded for an engineering template, hold rather than show a partial
+    // report.
+    const engineeringTemplate = await engineeringScenarioForTemplate(session.template_id).catch(() => null);
+    if (engineeringTemplate && (!engineering || !employerCanSeeReport(engineering.review.status))) {
+      return NextResponse.json({
+        ready: false,
+        failed: false,
+        sessionStatus: session.status,
+        reviewState: "review_required",
+        message: REVIEW_HOLD_MESSAGE,
+      });
+    }
 
     return NextResponse.json({
       ready: true,

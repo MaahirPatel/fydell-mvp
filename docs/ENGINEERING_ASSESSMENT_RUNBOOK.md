@@ -22,7 +22,7 @@ a database and an isolated runner.
 
 ## Enable in an environment
 
-1. Apply migrations through `034_engineering_test_runs.sql` to staging first
+1. Apply migrations through `035_engineering_report_reviews.sql` to staging first
    (`031_submit_transfer_state`, `032_billing_ledger` and
    `033_passport_sharing_corrections` are also new on this branch).
 2. Publish the catalog entry: `npx tsx scripts/seed-simulations.ts` (creates
@@ -75,6 +75,9 @@ tamper, conftest, weakened-test and infinite-loop fixtures pass.
      team thread); acknowledge it.
    - Submit. Kill the network during submit once and confirm the receipt
      recovers (DESK-16).
+   - The employer sees "Report in review". A platform reviewer opens
+     `/admin/reviews`, checks the evaluation, code changes and handoff, and
+     releases it.
    - Employer report: Code evaluation shows all three groups passing,
      canary "failed as expected", snapshot hash matches the submission.
    - Repeat with `partial_no_update` and with a candidate who submits before
@@ -85,6 +88,14 @@ tamper, conftest, weakened-test and infinite-loop fixtures pass.
    `.fydell/rubric.json` → `humanReview`.
 
 ## Operate
+
+- **Every report needs a human release** (AI-12). Platform users with the
+  `reviewer`, `admin` or `super_admin` role work the queue at
+  `/admin/reviews` (oldest first). Releasing a report whose code was not
+  evaluated cleanly requires a note explaining what the employer can rely
+  on. "Reopen for correction" withdraws a released report; every decision
+  is kept in the review history. Track time from submission to release
+  against the turnaround promised to the buyer.
 
 - **A run is stuck "running":** after the suite timeout plus 3 minutes it is
   treated as abandoned on the next request and a new run proceeds. Nothing
