@@ -47,7 +47,7 @@
       }
     },
     "updater": {
-      "active": true,
+      "active": false,
       "dialog": true,
       "endpoints": [
         "https://github.com/MaahirPatel/fydell-mvp/releases/latest/download/latest.json"
