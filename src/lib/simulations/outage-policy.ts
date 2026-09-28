@@ -33,8 +33,9 @@ export interface OutageEvaluation {
 
 /**
  * Pure escalation decision. `consecutiveDegraded` counts back-to-back
- * degraded replies (resets to 0 on any healthy reply). `outageAlreadyOpen`
- * prevents double-declaring while an outage pause is active.
+ * degraded replies **including the current one** (resets to 0 on any healthy
+ * reply). `outageAlreadyOpen` prevents double-declaring while an outage
+ * pause is active.
  */
 export function evaluateOutage(args: {
   degraded: boolean;
@@ -43,7 +44,7 @@ export function evaluateOutage(args: {
 }): OutageEvaluation {
   if (!args.degraded)
     return { action: "none", consecutiveDegraded: 0, extensionMs: 0 };
-  const consecutive = args.consecutiveDegraded + 1;
+  const consecutive = args.consecutiveDegraded;
   if (!args.outageAlreadyOpen && consecutive >= OUTAGE_CONSECUTIVE_THRESHOLD)
     return { action: "declare_outage", consecutiveDegraded: consecutive, extensionMs: OUTAGE_PAUSE_MS };
   return { action: "fallback_only", consecutiveDegraded: consecutive, extensionMs: 0 };
@@ -51,10 +52,22 @@ export function evaluateOutage(args: {
 
 /**
  * Count trailing consecutive `teammate_service_degraded` events (most recent
- * first). A `teammate_service_recovered` or healthy reply resets the streak.
+ * first). A `teammate_service_recovered`, a declared outage, or a healthy
+ * AI-redrafted reply (`message_received` with `source: "ai_redraft"`) resets
+ * the streak.
+ *
+ * NOTE: a degraded redraft still delivers the authored fallback reply, so
+ * each degraded attempt also records `message_received` with
+ * `source: "authored"`. Those are part of the degraded cycle and must be
+ * skipped, not treated as recovery — otherwise the streak can never reach
+ * the outage threshold in the real route ordering.
  */
 export function countConsecutiveDegraded(
-  events: Array<{ event_type: string; created_at: string }>
+  events: Array<{
+    event_type: string;
+    created_at: string;
+    payload?: Record<string, unknown> | null;
+  }>
 ): number {
   const ordered = [...events].sort((a, b) =>
     a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0
@@ -67,10 +80,16 @@ export function countConsecutiveDegraded(
     }
     if (
       e.event_type === "teammate_service_recovered" ||
-      e.event_type === "teammate_service_outage" ||
-      e.event_type === "message_received"
+      e.event_type === "teammate_service_outage"
     )
       break;
+    if (e.event_type === "message_received") {
+      // Only a healthy AI redraft breaks the streak; the degraded fallback's
+      // own authored reply (and unrelated deliveries) are skipped.
+      if ((e.payload as { source?: unknown } | null | undefined)?.source === "ai_redraft")
+        break;
+      continue;
+    }
   }
   return count;
 }

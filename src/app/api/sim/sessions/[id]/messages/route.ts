@@ -168,6 +168,7 @@ export async function POST(
       const outageEvents = (await listEvents(id)).map((e) => ({
         event_type: e.event_type,
         created_at: e.created_at,
+        payload: e.payload,
       }));
       if (!degraded && aiConfigured) {
         // Healthy redraft after degradation: close the loop for the audit trail.
@@ -182,16 +183,25 @@ export async function POST(
           });
         }
       } else if (degraded) {
+        // Record first, then count on the refreshed trail (including this
+        // attempt): the degraded fallback also writes message_received, so
+        // counting before the record would undercount by one and the streak
+        // could never reach the outage threshold.
         await recordEvent(id, {
           eventType: "teammate_service_degraded",
           actor: "system",
           payload: { stakeholderId: stakeholder.id },
           clientEventId: `tm_degraded_${id}_${Date.now()}`,
         });
+        const refreshed = (await listEvents(id)).map((e) => ({
+          event_type: e.event_type,
+          created_at: e.created_at,
+          payload: e.payload,
+        }));
         const decision = evaluateOutage({
           degraded: true,
-          consecutiveDegraded: countConsecutiveDegraded(outageEvents),
-          outageAlreadyOpen: outageIsOpen(outageEvents),
+          consecutiveDegraded: countConsecutiveDegraded(refreshed),
+          outageAlreadyOpen: outageIsOpen(refreshed),
         });
         if (decision.action === "declare_outage") {
           await recordEvent(id, {

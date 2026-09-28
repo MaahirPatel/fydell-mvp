@@ -2,7 +2,7 @@
   "id": "project-relay",
   "version": "2.0.1",
   "label": "Northbeam Logistics — Shipment Delay Visibility",
-  "description": "Northbeam Logistics asked for 'better visibility into shipment delays' with no further spec. Candidates must find and fix a naive-join data-integrity defect (mismatched shipment ID formats silently drop ~12% of manually tracked delay rows), reconcile a stakeholder conflict between an ops manager who wants a dashboard and a VP who wants a root-cause report, and prove their fix with tests and evals.",
+  "description": "Northbeam Logistics asked for 'better visibility into shipment delays' with no further spec. Candidates must find and fix a naive-join data-integrity defect (mismatched shipment ID formats silently drop a meaningful share of manually tracked delay rows), reconcile a stakeholder conflict between an ops manager who wants a dashboard and a VP who wants a root-cause report, and prove their fix with tests and evals.",
   "allowedCommands": ["test", "pytest", "evals", "preview", "help", "reconcile"],
   "entrypoints": {
     "tests": "tests/test_reconcile.py",

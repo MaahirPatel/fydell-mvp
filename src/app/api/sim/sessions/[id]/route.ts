@@ -20,6 +20,9 @@ import { isMicroContent } from "@/lib/simulations/micro-types";
 import { microToV2, toV2CandidateView } from "@/lib/simulations/v2";
 import { buildSessionChatContext, toChatEvents } from "@/lib/simulations/chat-context";
 import { deliverDueProactiveMessages } from "@/lib/simulations/proactive";
+import { AI_USE_POLICY_TEXT } from "@/lib/simulations/ai-use-policy";
+import { DISCLOSED_EVENT_TAXONOMY, TELEMETRY_DISCLOSURE } from "@/lib/simulations/observed-events";
+import { HANDOFF_FIELDS } from "@/lib/simulations/handoff";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { CONSENT_POLICY_VERSION } from "@/lib/pilot/consent";
 
@@ -144,6 +147,24 @@ export async function GET(
         ),
         preflightLimitations: preflight?.limitations || [],
         desktopRequired: true,
+      },
+      // Candidate-visible policy disclosures: AI-use provenance rules, what
+      // telemetry is (and is not) recorded, the disclosed event taxonomy,
+      // and the required handoff fields for a complete submission.
+      policies: {
+        aiUse: AI_USE_POLICY_TEXT,
+        telemetry: TELEMETRY_DISCLOSURE,
+        eventTaxonomy: DISCLOSED_EVENT_TAXONOMY.map((e) => ({
+          type: e.type,
+          actor: e.actor,
+          captures: e.captures,
+        })),
+        handoffFields: HANDOFF_FIELDS.map((f) => ({
+          key: f.key,
+          label: f.label,
+          helpText: f.helpText,
+          required: f.required,
+        })),
       },
       state: {
         revision: state.revision,

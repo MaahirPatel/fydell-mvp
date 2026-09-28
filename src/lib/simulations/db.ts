@@ -760,7 +760,8 @@ export async function acknowledgeCurveball(sessionId: string): Promise<void> {
 export async function extendSessionEndsAt(
   sessionId: string,
   extraMs: number,
-  reason: string
+  reason: string,
+  opts?: { clientEventId?: string; extensionKey?: string }
 ): Promise<string> {
   if (!Number.isFinite(extraMs) || extraMs <= 0)
     throw new Error("extraMs must be positive");
@@ -781,8 +782,13 @@ export async function extendSessionEndsAt(
   await recordEvent(sessionId, {
     eventType: "deadline_extended",
     actor: "system",
-    payload: { extraMs, reason, newEndsAt },
-    clientEventId: `deadline_ext_${sessionId}_${Date.now()}`,
+    payload: {
+      extraMs,
+      reason,
+      newEndsAt,
+      ...(opts?.extensionKey ? { extensionKey: opts.extensionKey } : {}),
+    },
+    clientEventId: opts?.clientEventId || `deadline_ext_${sessionId}_${Date.now()}`,
   });
   return newEndsAt;
 }

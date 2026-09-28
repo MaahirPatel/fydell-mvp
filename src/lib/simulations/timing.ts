@@ -35,6 +35,8 @@ export interface InterruptionRecord {
 /** Candidate-reportable event types that open/close an interruption. */
 export const INTERRUPTION_START_EVENT = "connectivity_interrupted";
 export const INTERRUPTION_END_EVENT = "connectivity_restored";
+/** System event recording that a deadline was extended for an interruption. */
+export const DEADLINE_EXTENDED_EVENT = "deadline_extended";
 
 export interface TimingSummary {
   /** Wall-clock ms between start and now/end. */
@@ -186,4 +188,53 @@ export function applyExtension(
     extensionMs,
     reason: reason.trim(),
   };
+}
+
+export interface PendingConnectivityExtension {
+  /** Stable ledger id of the closed interruption. */
+  interruptionId: string;
+  /** Exact downtime to credit back, from server timestamps. */
+  extraMs: number;
+  /** Stable idempotency key for the deadline_extended audit event. */
+  extensionKey: string;
+}
+
+/**
+ * Which closed platform connectivity interruptions still owe the candidate a
+ * deadline extension. Idempotent: an interruption is pending only when no
+ * `deadline_extended` event carrying its extensionKey exists yet.
+ *
+ * Teammate-outage pauses are excluded — the messages route extends the
+ * deadline at outage-declaration time, not here — and candidate-caused
+ * pauses never extend the deadline.
+ */
+export function pendingConnectivityExtensions(
+  sessionId: string,
+  events: Array<{
+    event_type: string;
+    actor: string;
+    payload: Record<string, unknown>;
+    created_at: string;
+  }>
+): PendingConnectivityExtension[] {
+  const ledger = buildInterruptionLedger(sessionId, events);
+  const credited = new Set(
+    events
+      .filter((e) => e.event_type === DEADLINE_EXTENDED_EVENT)
+      .map((e) => (e.payload as { extensionKey?: unknown } | null)?.extensionKey)
+  );
+  return ledger
+    .filter(
+      (r) =>
+        r.cause === "platform" &&
+        r.reason !== "teammate_outage_pause" &&
+        r.endedAt !== null &&
+        !credited.has(r.id)
+    )
+    .map((r) => ({
+      interruptionId: r.id,
+      extraMs: new Date(r.endedAt as string).getTime() - new Date(r.startedAt).getTime(),
+      extensionKey: r.id,
+    }))
+    .filter((p) => Number.isFinite(p.extraMs) && p.extraMs > 0);
 }

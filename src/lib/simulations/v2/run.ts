@@ -101,9 +101,10 @@ function deriveStrengthsImprovements(
   return { strengths, improvements };
 }
 
-function recommendationFor(band: ScoreBandV2): "advance" | "review" | "further_evidence_required" {
-  if (band === "strong" || band === "established") return "advance";
-  if (band === "developing") return "review";
+function recommendationFor(band: ScoreBandV2): "review" | "further_evidence_required" {
+  // Hard rule: analysis never emits an automatic hiring decision. Even a
+  // strong result resolves to "review" — a human makes the call.
+  if (band === "strong" || band === "established" || band === "developing") return "review";
   return "further_evidence_required";
 }
 

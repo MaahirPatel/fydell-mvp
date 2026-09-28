@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import {
+  extendSessionEndsAt,
   getSessionForCandidate,
   getSessionState,
   getVersionContent,
@@ -11,6 +12,7 @@ import {
 import { buildSessionChatContext, toChatEvents } from "@/lib/simulations/chat-context";
 import { deliverDueProactiveMessages } from "@/lib/simulations/proactive";
 import { ALLOWED_CANDIDATE_EVENTS } from "@/lib/simulations/observed-events";
+import { pendingConnectivityExtensions } from "@/lib/simulations/timing";
 
 export const runtime = "nodejs";
 
@@ -51,6 +53,35 @@ export async function POST(
       clientEventId: body.clientEventId,
     });
 
+    // WORK-03: when connectivity is restored, credit the candidate back the
+    // platform downtime. Idempotent: duplicate restored events are skipped,
+    // and each closed interruption is extended exactly once (keyed on the
+    // interruption's stable ledger id). Best-effort: never fails the event.
+    let deadlineCreditedMs = 0;
+    if (body.eventType === "connectivity_restored" && !result.duplicate) {
+      try {
+        const trail = await listEvents(id);
+        const pending = pendingConnectivityExtensions(
+          id,
+          trail.map((e) => ({
+            event_type: e.event_type,
+            actor: e.actor,
+            payload: e.payload,
+            created_at: e.created_at,
+          }))
+        );
+        for (const p of pending) {
+          await extendSessionEndsAt(id, p.extraMs, "connectivity_restored", {
+            clientEventId: `deadline_ext_${id}_${p.extensionKey}`,
+            extensionKey: p.extensionKey,
+          });
+          deadlineCreditedMs += p.extraMs;
+        }
+      } catch (err) {
+        console.error(`[sim] connectivity credit failed for session ${id}:`, err);
+      }
+    }
+
     // Deliver any proactive teammate messages now due (progress reactions,
     // elapsed-time nudges). Best-effort: never fails the event recording.
     try {
@@ -87,7 +118,12 @@ export async function POST(
       // Swallow: proactive messages must never break candidate actions.
     }
 
-    return NextResponse.json({ ok: true, id: result.id, duplicate: result.duplicate });
+    return NextResponse.json({
+      ok: true,
+      id: result.id,
+      duplicate: result.duplicate,
+      ...(deadlineCreditedMs > 0 ? { deadlineCreditedMs } : {}),
+    });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Could not record event" },
