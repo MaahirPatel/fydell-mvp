@@ -25,7 +25,10 @@ const OUTPUT_CAP: usize = 256 * 1024;
 /// The minimal PATH candidate code runs under. The provisioning runtime
 /// check (session.rs) verifies the declared test runner against this same
 /// PATH, so the check and the run cannot disagree.
+#[cfg(unix)]
 pub(crate) const EXEC_PATH: &str = "/usr/local/bin:/usr/bin:/bin";
+#[cfg(windows)]
+pub(crate) const EXEC_PATH: &str = "C:\\Windows\\System32;C:\\Windows;C:\\Program Files\\Python311;C:\\Program Files\\Python311\\Scripts";
 
 #[derive(Serialize)]
 pub struct TestRunResult {

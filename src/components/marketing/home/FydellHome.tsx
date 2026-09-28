@@ -940,7 +940,8 @@ export default function FydellHome() {
           <h1 className={s.heroTitle}>
             A new way to hire.
             <br />
-            A better way to <span className="t-project">get&nbsp;hired.</span>
+            A better way to{" "}
+            <span className="t-project">get&nbsp;hired.</span>
           </h1>
           <p className={s.lede}>
             Fydell evaluates engineers on real work. Project evidence from their code. Realistic simulations. Your team reviews evidence, not résumés.

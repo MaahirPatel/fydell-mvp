@@ -399,7 +399,7 @@
   text-align: left;
 }
 .cardReceipt {
-  top: 34px;
+  top: -28px;
   right: clamp(0px, 2vw, 48px);
   transform: translateY(26px) rotate(2.5deg) scale(0.94);
   border-top: 2px solid oklch(65% 0.1 178);
