@@ -41,6 +41,7 @@
     "node_modules",
     "scripts",
     "e2e",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "desktop"
   ]
 }
