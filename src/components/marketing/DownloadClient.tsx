@@ -88,7 +88,8 @@ export default function DownloadClient() {
   return (
     <div className={s.page}>
       <PageIntro
-        title="Download the desktop app."
+        kicker="Desktop client"
+        title={<>Download the <span className="t-evidence">desktop app.</span></>}
         lead="The Fydell simulation client for Windows, macOS, and Linux: a local workspace with a real editor, recorded test runs, and an atomic submit. Installers publish with v0.1.0."
         actions={
           <p className={s.stateNote}>

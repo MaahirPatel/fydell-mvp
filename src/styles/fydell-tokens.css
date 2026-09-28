@@ -59,6 +59,7 @@
 
   /* ---- Text ---- */
   --text-primary: oklch(17% 0.015 var(--hue-signal));
+  --text-body: oklch(30% 0.016 var(--hue-signal));
   --text-secondary: oklch(42% 0.018 var(--hue-signal));
   --text-tertiary: oklch(51% 0.016 var(--hue-signal));
   --text-disabled: oklch(58% 0.012 var(--hue-signal));

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import MarketingShell from "@/components/layout/MarketingShell";
+import { Kicker } from "@/components/marketing/ui";
 import {
   ChapterHead,
   Features,
@@ -46,11 +47,8 @@ export default function EmployersPage() {
       <div className={s.page}>
         <section className={s.hero}>
           <div className={`${s.container} ${s.heroCopyIn}`}>
-            <p className={s.eyebrow}>
-              <span className={s.eyebrowDot} aria-hidden />
-              For employers
-            </p>
-            <h1 className={s.heroTitle}>Review engineers on work you can open</h1>
+            <Kicker>For employers</Kicker>
+            <h1 className={s.heroTitle}>Review engineers on <span className="t-project">work you can open</span></h1>
             <div className={s.heroRow}>
               <p className={s.lede}>
                 Source-linked Engineering Passports and simulations in working codebases. Your team decides on

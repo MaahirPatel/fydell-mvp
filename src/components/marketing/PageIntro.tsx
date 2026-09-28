@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Kicker } from "@/components/marketing/ui";
 
 /**
  * Linear-style page open: title on the left, reading column on the right.
@@ -8,18 +9,23 @@ export function PageIntro({
   title,
   lead,
   meta,
+  kicker,
   actions,
 }: {
-  title: string;
+  title: ReactNode;
   lead: ReactNode;
   meta?: ReactNode;
+  kicker?: string;
   actions?: ReactNode;
 }) {
   return (
     <section className="pb-12 pt-[128px] sm:pt-[144px]">
       <div className="mkt-content">
         <div className="grid items-start gap-6 lg:grid-cols-12 lg:gap-16">
-          <h1 className="page-display lg:col-span-6">{title}</h1>
+          <div className="lg:col-span-6">
+            {kicker ? <Kicker>{kicker}</Kicker> : null}
+            <h1 className="page-display">{title}</h1>
+          </div>
           <div className="lg:col-span-6 lg:pt-1.5">
             {meta}
             <p className={meta ? "page-lead" : "page-lead mt-0"}>{lead}</p>

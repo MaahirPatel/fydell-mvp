@@ -27,6 +27,7 @@ import { CodeBlock } from "./CodeBlock";
 import DesktopWorkspaceMock from "./DesktopWorkspaceMock";
 import { DesktopShowcase } from "./DesktopShowcase";
 import ProofStrip from "@/components/marketing/ProofStrip";
+import { Kicker } from "@/components/marketing/ui";
 import { DEMO_LABEL, DEMO_TASK, EVIDENCE_RECORDS, type CodeLine } from "@/lib/marketing/demo-fixture";
 import s from "./fydell-home.module.css";
 
@@ -934,12 +935,9 @@ export default function FydellHome() {
     <div className={s.page}>
       <section className={s.hero}>
         <div className={`${s.container} ${s.heroCopyIn}`}>
-          <p className={s.eyebrow}>
-            <span className={s.eyebrowDot} aria-hidden />
-            Hiring infrastructure for engineering teams
-          </p>
+          <Kicker>Hiring infrastructure</Kicker>
           <h1 className={s.heroTitle}>
-            Hire for the work,
+            Hire for <span className="t-project">the&nbsp;work</span>,
             <br />
             not the résumé.
           </h1>
@@ -973,7 +971,7 @@ export default function FydellHome() {
       </section>
 
       <section className={`${s.container} ${s.problem}`} aria-labelledby="problem-title">
-        <p className={s.eyebrow}>The problem</p>
+        <Kicker>The problem</Kicker>
         <h2 id="problem-title" className={s.problemTitle}>
           Hiring runs on signals nobody trusts.
         </h2>
@@ -989,7 +987,7 @@ export default function FydellHome() {
 
       <section className={`${s.container} ${s.manifesto}`} aria-labelledby="manifesto">
         <p id="manifesto" className={s.statement}>
-          Résumés describe the work. Fydell shows it.{" "}
+          Résumés describe the work. <span className="t-project">Fydell shows it.</span>{" "}
           <span>
             Every claim about a candidate opens to the file, commit, or test behind it, so teams decide on evidence
             and engineers get credit for what they actually built.
@@ -1082,9 +1080,9 @@ export default function FydellHome() {
       </section>
 
       <section className={`${s.container} ${s.principles}`} aria-labelledby="principles-title">
-        <p className={s.eyebrow}>How Fydell is different</p>
+        <Kicker>How Fydell is different</Kicker>
         <h2 id="principles-title" className={s.problemTitle}>
-          Evidence you can inspect. Nothing you can&rsquo;t.
+          Evidence you can <span className="t-project">inspect</span>. Nothing you can&rsquo;t.
         </h2>
         <Stagger className={s.problemGrid}>
           {PRINCIPLES.map((p) => (

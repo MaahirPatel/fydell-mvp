@@ -52,7 +52,7 @@ export default function AuthShell({
         >
           <h1 className="auth-display text-center">{title}</h1>
           {description ? (
-            <p className="mt-3 text-balance text-center text-app-body font-[430] leading-[1.6] tracking-[-0.006em] text-[var(--text-secondary)]">
+            <p className="mt-3 text-balance text-center text-app-body leading-[1.6] tracking-[-0.006em] text-[var(--text-body)]">
               {description}
             </p>
           ) : null}

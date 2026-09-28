@@ -89,7 +89,8 @@ export default function ProductPage() {
   return (
     <MarketingShell>
       <PageIntro
-        title="An evaluation you can audit, not a score you have to trust."
+        kicker="Product"
+        title={<>An evaluation <span className="t-project">you can audit</span>, not a score you have to trust.</>}
         lead="A candidate does a piece of real work. Your team reads what they concluded, opens the evidence behind it, and interviews from there. Nothing in the report is a number you cannot trace back to a row."
         actions={
           <>

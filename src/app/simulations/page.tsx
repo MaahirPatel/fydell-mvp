@@ -126,6 +126,7 @@ export default function EvaluationPage() {
   return (
     <MarketingShell>
       <PageIntro
+        kicker="Evaluations"
         title={NORTHLINE_SCENARIO.evaluation}
         meta={
           <p className="text-app-body tabular-nums text-[var(--text-tertiary)]">

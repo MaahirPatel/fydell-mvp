@@ -52,9 +52,9 @@
 .title {
   max-width: 14em;
   font-size: clamp(2.5rem, 1.35rem + 3.7vw, 4.125rem);
-  font-weight: 540;
+  font-weight: 600;
   line-height: 1.02;
-  letter-spacing: -0.036em;
+  letter-spacing: -0.038em;
   color: var(--text-primary);
   text-wrap: balance;
 }
@@ -73,7 +73,7 @@
   font-size: clamp(1rem, 0.95rem + 0.25vw, 1.1875rem);
   line-height: 1.55;
   letter-spacing: -0.012em;
-  color: var(--text-secondary);
+  color: var(--text-body);
 }
 
 .heroActions {
@@ -109,11 +109,10 @@
 }
 
 .btnGhost {
-  border: 1px solid var(--border-default);
+  background: var(--surface-selected);
   color: var(--text-primary);
 }
 .btnGhost:hover {
-  border-color: var(--border-strong);
   background: var(--surface-hover);
 }
 
@@ -161,30 +160,10 @@
   padding-inline: clamp(16px, 3vw, 48px);
 }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 20px;
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-.eyebrowDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: var(--brand-teal);
-  flex-shrink: 0;
-}
-
 .heroTitle {
   max-width: 12em;
   font-size: clamp(3rem, 2rem + 5vw, 4.5rem);
-  font-weight: 600;
+  font-weight: 660;
   line-height: 1.0;
   letter-spacing: -0.045em;
   color: var(--text-primary);
@@ -218,7 +197,7 @@
   max-width: 16em;
   margin-top: 20px;
   font-size: clamp(1.75rem, 1.35rem + 1.9vw, 2.5rem);
-  font-weight: 560;
+  font-weight: 600;
   line-height: 1.08;
   letter-spacing: -0.032em;
   color: var(--text-primary);
@@ -259,10 +238,10 @@
 
 .problemBody {
   max-width: 36ch;
-  font-size: 14.5px;
+  font-size: 15px;
   line-height: 1.6;
   letter-spacing: -0.004em;
-  color: var(--text-secondary);
+  color: var(--text-body);
 }
 
 .crop {
@@ -816,11 +795,24 @@
 .example {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  padding: 3px 10px;
+  border: 1px solid var(--border-subtle);
   border-radius: 999px;
   background: var(--tint);
-  font-size: 11.5px;
-  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* The anchor plan's badge carries the evidence color; everywhere else the
+   label stays neutral. */
+.planFeatured .example {
+  border-color: rgba(109, 40, 217, 0.28);
+  background: rgba(109, 40, 217, 0.08);
+  color: var(--evidence-generated);
 }
 
 /* ---------- Manifesto ---------- */
@@ -832,14 +824,17 @@
 .statement {
   max-width: 30em;
   font-size: clamp(1.625rem, 1.1rem + 1.9vw, 2.625rem);
-  font-weight: 520;
+  font-weight: 560;
   line-height: 1.16;
   letter-spacing: -0.028em;
   color: var(--text-primary);
   text-wrap: pretty;
 }
 .statement span {
-  color: var(--dim);
+  color: var(--text-tertiary);
+}
+.statement :global(.t-project) {
+  color: var(--evidence-observed);
 }
 
 .figs {
@@ -971,7 +966,7 @@
 .chapterTitle {
   max-width: 13em;
   font-size: clamp(2rem, 1.3rem + 2.4vw, 3.25rem);
-  font-weight: 540;
+  font-weight: 600;
   line-height: 1.04;
   letter-spacing: -0.034em;
   color: var(--text-primary);
@@ -1535,13 +1530,13 @@
 
 .closingTitle {
   font-size: clamp(2.25rem, 1.3rem + 3.2vw, 4rem);
-  font-weight: 540;
+  font-weight: 600;
   line-height: 1.02;
   letter-spacing: -0.036em;
   color: var(--text-primary);
 }
 .closingTitle span {
-  color: var(--dim);
+  color: var(--text-tertiary);
 }
 
 .closingRow {
@@ -1769,16 +1764,21 @@
   justify-content: space-between;
   gap: 8px;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: -0.012em;
   color: var(--text-primary);
 }
 .planPrice {
   margin-top: 20px;
   font-size: clamp(2rem, 1.5rem + 1.4vw, 2.75rem);
-  font-weight: 540;
+  font-weight: 640;
   line-height: 1;
   letter-spacing: -0.035em;
   color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.planFeatured .planPrice {
+  color: var(--evidence-generated);
 }
 .planPrice small {
   margin-left: 4px;
@@ -1792,7 +1792,7 @@
   min-height: 3em;
   font-size: 13.5px;
   line-height: 1.5;
-  color: var(--text-secondary);
+  color: var(--text-body);
 }
 .planList {
   display: grid;
@@ -1802,7 +1802,7 @@
   border-top: 1px dashed var(--line);
   font-size: 14px;
   line-height: 1.5;
-  color: var(--text-secondary);
+  color: var(--text-body);
 }
 .planList li {
   display: flex;

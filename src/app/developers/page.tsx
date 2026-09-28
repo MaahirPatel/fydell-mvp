@@ -1,5 +1,6 @@
 import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
+import { Kicker } from "@/components/marketing/ui";
 import {
   ChapterHead,
   Features,
@@ -56,11 +57,8 @@ export default function DevelopersPage() {
       <div className={s.page}>
         <section className={s.hero}>
           <div className={`${s.container} ${s.heroCopyIn}`}>
-            <p className={s.eyebrow}>
-              <span className={s.eyebrowDot} aria-hidden />
-              For developers
-            </p>
-            <h1 className={s.heroTitle}>Get hired for the work you&rsquo;ve already done</h1>
+            <Kicker>For developers</Kicker>
+            <h1 className={s.heroTitle}>Get hired for <span className="t-project">the&nbsp;work</span> you&rsquo;ve already done</h1>
             <div className={s.heroRow}>
               <p className={s.lede}>
                 Turn your public repositories into an Engineering Passport. Every finding cites the exact lines, and

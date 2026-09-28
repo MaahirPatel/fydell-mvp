@@ -81,22 +81,22 @@ body {
   h1 {
     font-size: var(--type-page);
     line-height: 1.06;
-    font-weight: 560;
-    letter-spacing: -0.024em;
+    font-weight: 640;
+    letter-spacing: -0.03em;
   }
 
   h2 {
     font-size: var(--type-section);
     line-height: 1.12;
-    font-weight: 540;
-    letter-spacing: -0.021em;
+    font-weight: 600;
+    letter-spacing: -0.026em;
   }
 
   h3 {
     font-size: 1.0625rem;
     line-height: 1.35;
-    font-weight: 540;
-    letter-spacing: -0.014em;
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
   p {
@@ -266,9 +266,9 @@ nextjs-portal,
   max-width: 14ch;
   color: var(--text-primary);
   font-size: var(--type-display);
-  font-weight: 560;
+  font-weight: 660;
   line-height: 1;
-  letter-spacing: -0.026em;
+  letter-spacing: -0.038em;
   text-wrap: balance;
 }
 
@@ -280,9 +280,9 @@ nextjs-portal,
   max-width: 680px;
   color: var(--text-primary);
   font-size: clamp(2rem, 4.4vw, 4rem);
-  font-weight: 560;
+  font-weight: 660;
   line-height: 1.04;
-  letter-spacing: -0.026em;
+  letter-spacing: -0.036em;
   text-align: center;
   text-wrap: pretty;
 }
@@ -317,9 +317,9 @@ nextjs-portal,
   margin: 0;
   color: var(--text-primary);
   font-size: clamp(1.5rem, 2.1vw, 1.875rem);
-  font-weight: 540;
+  font-weight: 600;
   line-height: 1.14;
-  letter-spacing: -0.021em;
+  letter-spacing: -0.028em;
   text-wrap: balance;
 }
 
@@ -330,9 +330,9 @@ nextjs-portal,
   margin: 0;
   color: var(--text-primary);
   font-size: clamp(2.5rem, 3.8vw, 3.5rem);
-  font-weight: 560;
+  font-weight: 640;
   line-height: 1.04;
-  letter-spacing: -0.024em;
+  letter-spacing: -0.032em;
   text-wrap: balance;
 }
 
@@ -356,9 +356,9 @@ nextjs-portal,
   margin: 0;
   color: var(--text-primary);
   font-size: clamp(1.625rem, 2.4vw, 1.9375rem);
-  font-weight: 600;
+  font-weight: 640;
   line-height: 1.14;
-  letter-spacing: -0.028em;
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 
@@ -367,16 +367,16 @@ nextjs-portal,
   max-width: 22ch;
   color: var(--text-primary);
   font-size: var(--type-page);
-  font-weight: 560;
+  font-weight: 640;
   line-height: 1.06;
-  letter-spacing: -0.024em;
+  letter-spacing: -0.034em;
   text-wrap: balance;
 }
 
 .page-lead {
   margin: 18px 0 0;
   max-width: 46ch;
-  color: var(--text-secondary);
+  color: var(--text-body);
   font-size: 1.0625rem;
   font-weight: 400;
   line-height: 1.6;
@@ -387,14 +387,14 @@ nextjs-portal,
   max-width: 22ch;
   color: var(--text-primary);
   font-size: var(--type-section);
-  font-weight: 540;
+  font-weight: 600;
   line-height: 1.12;
-  letter-spacing: -0.021em;
+  letter-spacing: -0.028em;
 }
 
 .section-desc {
   max-width: 46ch;
-  color: var(--text-secondary);
+  color: var(--text-body);
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.62;
@@ -402,11 +402,59 @@ nextjs-portal,
 }
 
 .mkt-body {
-  color: var(--text-secondary);
+  color: var(--text-body);
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.62;
   letter-spacing: -0.002em;
+}
+
+/* The mono label voice: kickers, eyebrows, badges, IDs. The engineering-
+   drawing layer over the sans canvas — sans speaks, mono labels. */
+.mkt-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 22px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mkt-kicker::before {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: var(--text-tertiary);
+  opacity: 0.7;
+}
+
+/* Colored type: color is content, never decoration. Teal marks project
+   evidence, violet marks simulation evidence, amber marks attention. One
+   colored clause per composition — never a rainbow. */
+.t-project {
+  color: var(--evidence-observed);
+}
+
+.t-evidence {
+  color: var(--evidence-generated);
+}
+
+.t-attention {
+  color: var(--evidence-uncertain);
+}
+
+/* Large numerals: tabular figures, tight tracking, display weight. Pair with
+   a .t-* class to set them in an evidence color. */
+.stat-numeral {
+  font-variant-numeric: tabular-nums;
+  font-weight: 640;
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
 .stage-label {
