@@ -153,7 +153,7 @@ export default function CandidatePipeline({
                 </span>
                 <span
                   className={cn(
-                    "mt-1 block text-[20px] leading-none tabular-nums tracking-[-0.02em]",
+                    "mt-1 block text-app-page leading-none tabular-nums tracking-[-0.02em]",
                     empty
                       ? "font-normal text-[var(--text-tertiary)]"
                       : "font-medium text-[var(--text-primary)]",

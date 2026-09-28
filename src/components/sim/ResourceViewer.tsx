@@ -76,14 +76,14 @@ function CsvTable({ content }: { content: string }) {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter rows…"
           aria-label="Filter table rows"
-          className="w-56 rounded-md border border-slate-300 px-2.5 py-1.5 text-[13px] text-slate-800 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
+          className="w-56 rounded-md border border-slate-300 px-2.5 py-1.5 text-app-meta text-slate-800 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
         />
         <span className="text-xs text-slate-500">
           {filtered.length} of {rows.length} rows
         </span>
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
-        <table className="w-full border-collapse text-[13px]">
+        <table className="w-full border-collapse text-app-meta">
           <thead className="sticky top-0 z-10 bg-slate-50">
             <tr>
               {headers.map((h, i) => (
@@ -116,7 +116,7 @@ function CsvTable({ content }: { content: string }) {
                 {headers.map((_, ci) => (
                   <td
                     key={ci}
-                    className="whitespace-nowrap border-b border-slate-100 px-3 py-1.5 font-mono text-[12.5px] text-slate-800"
+                    className="whitespace-nowrap border-b border-slate-100 px-3 py-1.5 font-mono text-app-meta text-slate-800"
                   >
                     {r[ci] ?? ""}
                   </td>
@@ -150,7 +150,7 @@ function inlineMd(text: string): React.ReactNode[] {
       parts.push(<strong key={key++}>{token.slice(2, -2)}</strong>);
     else
       parts.push(
-        <code key={key++} className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[12px]">
+        <code key={key++} className="rounded bg-slate-100 px-1 py-0.5 font-mono text-app-meta">
           {token.slice(1, -1)}
         </code>
       );
@@ -191,7 +191,7 @@ function MarkdownDoc({ content }: { content: string }) {
     return out;
   }, [content]);
   return (
-    <div className="mx-auto max-w-3xl space-y-4 px-6 py-6 text-[15px] leading-relaxed text-slate-800">
+    <div className="mx-auto max-w-3xl space-y-4 px-6 py-6 text-app-body leading-relaxed text-slate-800">
       {blocks.map((block, bi) => {
         const lines = block.split("\n");
         // Fenced code block
@@ -200,7 +200,7 @@ function MarkdownDoc({ content }: { content: string }) {
           return (
             <pre
               key={bi}
-              className="overflow-x-auto rounded-lg bg-slate-950 p-4 font-mono text-[12.5px] leading-[1.7] text-slate-200"
+              className="overflow-x-auto rounded-lg bg-slate-950 p-4 font-mono text-app-meta leading-[1.7] text-slate-200"
             >
               {code}
             </pre>
@@ -214,7 +214,7 @@ function MarkdownDoc({ content }: { content: string }) {
           const rows = lines.slice(2).map(parse);
           return (
             <div key={bi} className="overflow-x-auto">
-              <table className="w-full border-collapse text-[13.5px]">
+              <table className="w-full border-collapse text-app-body">
                 <thead>
                   <tr>
                     {headers.map((h, i) => (
@@ -241,9 +241,9 @@ function MarkdownDoc({ content }: { content: string }) {
         }
         // Headings
         if (block.startsWith("### "))
-          return <h4 key={bi} className="pt-2 text-[14px] font-semibold text-slate-900">{inlineMd(block.slice(4))}</h4>;
+          return <h4 key={bi} className="pt-2 text-app-body font-semibold text-slate-900">{inlineMd(block.slice(4))}</h4>;
         if (block.startsWith("## "))
-          return <h3 key={bi} className="pt-2 text-[15px] font-semibold text-slate-900">{inlineMd(block.slice(3))}</h3>;
+          return <h3 key={bi} className="pt-2 text-app-body font-semibold text-slate-900">{inlineMd(block.slice(3))}</h3>;
         if (block.startsWith("# "))
           return <h2 key={bi} className="text-lg font-semibold text-slate-900">{inlineMd(block.slice(2))}</h2>;
         // Lists
@@ -282,11 +282,11 @@ function LogView({ content }: { content: string }) {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search log lines…"
           aria-label="Search log lines"
-          className="w-56 rounded-md border border-slate-300 px-2.5 py-1.5 text-[13px] focus:border-slate-500 focus:outline-none"
+          className="w-56 rounded-md border border-slate-300 px-2.5 py-1.5 text-app-meta focus:border-slate-500 focus:outline-none"
         />
         <span className="text-xs text-slate-500">{filtered.length} lines</span>
       </div>
-      <pre className="min-h-0 flex-1 overflow-auto bg-slate-950 p-4 font-mono text-[12px] leading-[1.7] text-slate-200">
+      <pre className="min-h-0 flex-1 overflow-auto bg-slate-950 p-4 font-mono text-app-meta leading-[1.7] text-slate-200">
         {filtered.map((l, i) => (
           <div key={i} className={/error|fail|warn/i.test(l) ? "text-amber-300" : undefined}>
             {l || " "}
@@ -311,7 +311,7 @@ export function ResourceViewer({
   if (kind === "log") return <LogView content={content} />;
   if (kind === "json")
     return (
-      <pre className="h-full overflow-auto bg-slate-950 p-4 font-mono text-[12.5px] leading-relaxed text-emerald-200">
+      <pre className="h-full overflow-auto bg-slate-950 p-4 font-mono text-app-meta leading-relaxed text-emerald-200">
         {content}
       </pre>
     );

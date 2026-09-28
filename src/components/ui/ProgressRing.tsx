@@ -58,7 +58,7 @@ export function ProgressRing({
           }}
         />
       </svg>
-      <span className="absolute inset-0 grid place-items-center text-[11px] font-medium tabular-nums leading-none text-[var(--text-secondary)]">
+      <span className="absolute inset-0 grid place-items-center text-app-caption font-medium tabular-nums leading-none text-[var(--text-secondary)]">
         {clamped}
       </span>
     </div>

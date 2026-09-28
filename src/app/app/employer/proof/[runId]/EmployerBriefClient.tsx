@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 type Brief = {
   recommendation: string;
@@ -40,23 +41,23 @@ export default function EmployerBriefClient({
     <div className="mx-auto max-w-[720px] px-6 py-10">
       <p className="text-app-meta text-[var(--text-tertiary)]">Solutions Engineer</p>
       <h1 className="mt-1 text-app-page">{email}</h1>
-      <p className="mt-4 text-[15px] text-[var(--fydell-evidence)]">{brief.recommendation.replaceAll("_", " ")}</p>
+      <p className="mt-4 text-app-body text-[var(--fydell-evidence)]">{brief.recommendation.replaceAll("_", " ")}</p>
       <h2 className="mt-8 text-app-section">Why</h2>
-      <p className="mt-2 text-[15px] leading-6 text-[var(--text-secondary)]">{brief.why}</p>
+      <p className="mt-2 text-app-body leading-6 text-[var(--text-secondary)]">{brief.why}</p>
       <h2 className="mt-8 text-app-section">Top evidence</h2>
-      <ol className="mt-2 list-decimal pl-5 text-[15px] text-[var(--text-primary)]">
+      <ol className="mt-2 list-decimal pl-5 text-app-body text-[var(--text-primary)]">
         {(brief.strengths || []).map((s) => (
           <li key={s} className="mt-1">{s}</li>
         ))}
       </ol>
       <h2 className="mt-8 text-app-section">Main uncertainties</h2>
-      <ul className="mt-2 list-disc pl-5 text-[15px] text-[var(--text-secondary)]">
+      <ul className="mt-2 list-disc pl-5 text-app-body text-[var(--text-secondary)]">
         {(brief.concerns || []).map((s) => (
           <li key={s}>{s}</li>
         ))}
       </ul>
       <h2 className="mt-8 text-app-section">Interview next</h2>
-      <ol className="mt-2 list-decimal pl-5 text-[15px]">
+      <ol className="mt-2 list-decimal pl-5 text-app-body">
         {(brief.probes || []).map((s) => (
           <li key={s} className="mt-1">{s}</li>
         ))}
@@ -64,24 +65,24 @@ export default function EmployerBriefClient({
       {plan ? (
         <section className="mt-10">
           <h2 className="text-app-section">Interview plan</h2>
-          <p className="mt-3 text-[13px] text-[var(--text-tertiary)]">Confirm</p>
-          <ul className="text-[14px]">{(plan.confirm || []).map((x) => <li key={x}>{x}</li>)}</ul>
-          <p className="mt-3 text-[13px] text-[var(--text-tertiary)]">Investigate</p>
-          <ul className="text-[14px]">{(plan.investigate || []).map((x) => <li key={x}>{x}</li>)}</ul>
-          <p className="mt-3 text-[13px] text-[var(--text-tertiary)]">Challenge</p>
-          <ul className="text-[14px]">{(plan.challenge || []).map((x) => <li key={x}>{x}</li>)}</ul>
+          <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">Confirm</p>
+          <ul className="text-app-body">{(plan.confirm || []).map((x) => <li key={x}>{x}</li>)}</ul>
+          <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">Investigate</p>
+          <ul className="text-app-body">{(plan.investigate || []).map((x) => <li key={x}>{x}</li>)}</ul>
+          <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">Challenge</p>
+          <ul className="text-app-body">{(plan.challenge || []).map((x) => <li key={x}>{x}</li>)}</ul>
         </section>
       ) : null}
-      <button type="button" className="mt-8 text-[13px] text-[var(--action-ink)]" onClick={() => setOpen((v) => !v)}>
+      <button type="button" className="mt-8 text-app-meta text-[var(--action-ink)]" onClick={() => setOpen((v) => !v)}>
         {open ? "Hide evidence" : "Full evidence"}
       </button>
       {open ? (
         <ul className="mt-4 space-y-3">
           {claims.map((c) => (
-            <li key={c.id} className="border-t border-[var(--border-subtle)] pt-3 text-[14px]">
+            <li key={c.id} className="border-t border-[var(--border-subtle)] pt-3 text-app-body">
               <p className="font-medium">{c.competency}</p>
               <p className="text-[var(--text-secondary)]">{c.claim}</p>
-              <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
+              <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
                 {c.direction} · {c.confidence} · events {(c.proof_claim_events || []).map((e) => e.event_id.slice(0, 8)).join(", ")}
               </p>
             </li>
@@ -112,9 +113,9 @@ export default function EmployerBriefClient({
         }}
       >
         <h2 className="text-app-section">Outcome</h2>
-        <label className="flex gap-2 text-[14px]"><input name="interviewed" type="checkbox" /> Interviewed</label>
-        <label className="flex gap-2 text-[14px]"><input name="probes" type="checkbox" /> Used Fydell probes</label>
-        <label className="block text-[14px]">
+        <label className="flex gap-2 text-app-body"><input name="interviewed" type="checkbox" /> Interviewed</label>
+        <label className="flex gap-2 text-app-body"><input name="probes" type="checkbox" /> Used Fydell probes</label>
+        <label className="block text-app-body">
           Evidence in the interview
           <select name="confirmed" className="ml-2 bg-[var(--surface-panel)]">
             <option value="confirmed">confirmed</option>
@@ -122,12 +123,12 @@ export default function EmployerBriefClient({
             <option value="unclear">unclear</option>
           </select>
         </label>
-        <label className="flex gap-2 text-[14px]"><input name="hired" type="checkbox" /> Hired</label>
+        <label className="flex gap-2 text-app-body"><input name="hired" type="checkbox" /> Hired</label>
         <textarea className="w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
-        <button type="submit" className="rounded-full bg-[var(--surface-paper)] px-4 py-2 text-[13px] text-[#111]">
+        <Button type="submit" variant="primary" shape="pill">
           Save outcome
-        </button>
-        {saved ? <p className="text-[13px] text-[var(--text-secondary)]">{saved}</p> : null}
+        </Button>
+        {saved ? <p className="text-app-meta text-[var(--text-secondary)]">{saved}</p> : null}
       </form>
     </div>
   );

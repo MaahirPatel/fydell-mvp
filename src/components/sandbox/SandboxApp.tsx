@@ -234,7 +234,7 @@ export function SandboxApp({ surface, publicId }: { surface: Surface; runId?: st
         </button>
         <Link
           href="/app/employer"
-          className="inline-flex h-[22px] items-center rounded-[var(--radius-tag)] bg-[var(--control-solid)] px-2.5 text-[11.5px] font-medium text-[var(--control-solid-ink)]"
+          className="inline-flex h-[22px] items-center rounded-[var(--radius-tag)] bg-[var(--control-solid)] px-2.5 text-app-caption font-medium text-[var(--control-solid-ink)]"
         >
           Use Fydell with your team
         </Link>
@@ -243,7 +243,7 @@ export function SandboxApp({ surface, publicId }: { surface: Surface; runId?: st
       <div className="sticky top-[30px] z-40 flex h-12 items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4">
         <Link href="/sandbox" className="inline-flex items-center gap-2" aria-label="Fydell sandbox home">
           <FydellMark width={22} />
-          <span className="text-[15px] font-semibold tracking-[-0.026em]">fydell</span>
+          <span className="text-app-body font-semibold tracking-[-0.026em]">fydell</span>
         </Link>
         <span className="ml-2 min-w-0 truncate text-app-body text-[var(--text-secondary)] sm:ml-4">
           Applied AI proof sandbox
@@ -299,7 +299,7 @@ export function SandboxApp({ surface, publicId }: { surface: Surface; runId?: st
 
         <div className="min-w-0 flex-1">
           {error ? (
-            <div className="border-b border-[var(--border-subtle)] px-5 py-3 text-app-body text-[var(--color-risk)] md:px-8">
+            <div className="border-b border-[var(--border-subtle)] px-5 py-3 text-app-body text-[var(--fydell-risk)] md:px-8">
               {error}{" "}
               <button type="button" className="text-[var(--action-ink)]" onClick={() => void load()}>
                 Retry

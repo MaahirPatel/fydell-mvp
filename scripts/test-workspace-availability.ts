@@ -158,6 +158,28 @@ async function main(): Promise<void> {
     }
   });
 
+  check("the employer layout guards on admin status before loading data", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/app/app/employer/layout.tsx"),
+      "utf8"
+    );
+    const guardAt = source.indexOf('adminStatus.status !== "ready"');
+    assertTrue(guardAt !== -1, "the layout must branch on a non-ready admin status");
+    assertTrue(
+      source.indexOf("<WorkspaceUnavailable", guardAt) !== -1,
+      "a non-ready admin status must render WorkspaceUnavailable, not throw"
+    );
+    const firstDataLoad = Math.min(
+      ...["createAdminSupabaseClient()", "getReportRecords("]
+        .map((needle) => source.indexOf(needle))
+        .filter((i) => i !== -1)
+    );
+    assertTrue(
+      guardAt < firstDataLoad,
+      "the unavailable guard must run before any admin data load"
+    );
+  });
+
   if (failures > 0) {
     console.error(`\n${failures} check(s) failed.`);
     process.exit(1);

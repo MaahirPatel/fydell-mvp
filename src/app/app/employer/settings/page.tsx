@@ -179,7 +179,7 @@ export default async function EmployerSettingsPage({
               ) : (
                 <span
                   aria-hidden
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-raised)] text-[13px] font-medium text-[var(--text-primary)]"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-raised)] text-app-meta font-medium text-[var(--text-primary)]"
                 >
                   {identity.initials}
                 </span>

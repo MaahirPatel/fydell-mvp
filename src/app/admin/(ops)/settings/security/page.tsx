@@ -7,15 +7,15 @@ export default function AdminSecurityMfaPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+      <h1 className="text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
         Security · MFA
       </h1>
-      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
+      <p className="mt-2 text-app-body text-[var(--text-secondary)]">
         Platform administrators must enroll TOTP MFA before high-risk mutations are enabled in
         production.
       </p>
 
-      <div className="mt-8 rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 text-[14px]">
+      <div className="mt-8 rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 text-app-body">
         <p className="text-app-section font-medium text-[var(--text-primary)]">
           Enforcement
         </p>
@@ -52,7 +52,7 @@ export default function AdminSecurityMfaPage() {
             AAL2.
           </li>
         </ol>
-        <p className="mt-5 text-[13px] text-[var(--text-secondary)]">
+        <p className="mt-5 text-app-meta text-[var(--text-secondary)]">
           Transitional env-password admin login cannot satisfy AAL2 by itself. Long-term, admin
           access should use Supabase Auth + MFA exclusively.
         </p>

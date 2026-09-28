@@ -20,7 +20,7 @@ export type SetupStep = {
 function StepAction({ action }: { action: NonNullable<SetupStep["action"]> }) {
   const { open } = useInviteModal();
   const className =
-    "inline-flex h-8 shrink-0 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-[13px] font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]";
+    "inline-flex h-8 shrink-0 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-app-meta font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]";
 
   if (action.invite) {
     return (
@@ -56,7 +56,7 @@ export default function SetupPath({ steps }: { steps: SetupStep[] }) {
           >
             <span
               aria-hidden
-              className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border text-[11.5px] font-medium tabular-nums ${
+              className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border text-app-caption font-medium tabular-nums ${
                 step.state === "done"
                   ? "border-[color-mix(in_srgb,var(--fydell-good)_45%,transparent)] text-[var(--fydell-good)]"
                   : current

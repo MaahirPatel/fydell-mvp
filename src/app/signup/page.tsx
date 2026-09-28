@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import AuthShell from "@/components/auth/AuthShell";
 import SignupForm from "@/components/auth/SignupForm";
-import EvidenceWorkspace from "@/components/marketing/home/EvidenceWorkspace";
 import { isCandidateDestination, withNext } from "@/lib/auth/safe-next";
 
 function SignupContent() {
@@ -38,7 +37,6 @@ function SignupContent() {
     <AuthShell
       title={copy.title}
       description={copy.description}
-      aside={audience === "invited" ? undefined : <EvidenceWorkspace variant={audience === "employer" ? "review" : "passport"} />}
       footer={
         <>
           Already have an account?{" "}

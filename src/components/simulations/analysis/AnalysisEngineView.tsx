@@ -21,8 +21,8 @@ export function AnalysisEngineView({ analysis }: { analysis: AnalysisResult }) {
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-6">
       <header>
-        <h1 className="text-[22px] font-semibold text-[var(--text-primary)]">Employer analysis</h1>
-        <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
+        <h1 className="text-app-page font-semibold text-[var(--text-primary)]">Employer analysis</h1>
+        <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
           scenario {analysis.versions.scenarioVersion} · engine {analysis.versions.engineVersion} ·
           analysis {analysis.versions.analysisVersion}
         </p>
@@ -35,7 +35,7 @@ export function AnalysisEngineView({ analysis }: { analysis: AnalysisResult }) {
             className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3"
           >
             <div className="flex items-center justify-between gap-2">
-              <div className="text-[13px] font-medium text-[var(--text-primary)]">{c.label}</div>
+              <div className="text-app-meta font-medium text-[var(--text-primary)]">{c.label}</div>
               <StatusTag
                 tone={
                   c.outcome === "DEMONSTRATED"
@@ -50,14 +50,14 @@ export function AnalysisEngineView({ analysis }: { analysis: AnalysisResult }) {
                 {c.outcome.replaceAll("_", " ")}
               </StatusTag>
             </div>
-            <p className="mt-2 text-[12px] text-[var(--text-secondary)]">
+            <p className="mt-2 text-app-meta text-[var(--text-secondary)]">
               {c.inferences[0]?.statement ??
                 (c.outcome === "INSUFFICIENT_EVIDENCE"
                   ? "Not enough evidence to judge."
                   : c.strengths[0] ?? c.concerns[0] ?? "")}
             </p>
             {c.observations[0] ? (
-              <p className="mt-2 text-[11px] text-[var(--text-tertiary)]">
+              <p className="mt-2 text-app-caption text-[var(--text-tertiary)]">
                 Obs: {c.observations[0].statement}
               </p>
             ) : null}
@@ -67,12 +67,12 @@ export function AnalysisEngineView({ analysis }: { analysis: AnalysisResult }) {
 
       {analysis.sections.map((section) => (
         <section key={section.kind} className="space-y-3">
-          <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">{section.title}</h2>
-          <p className="text-[13px] text-[var(--text-secondary)]">{section.body}</p>
+          <h2 className="text-app-body font-semibold text-[var(--text-primary)]">{section.title}</h2>
+          <p className="text-app-meta text-[var(--text-secondary)]">{section.body}</p>
           {section.kind === "execution" ? (
             <div className="flex flex-wrap items-center gap-2">
               <input
-                className="platform-input h-8 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-[12px]"
+                className="platform-input h-8 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-app-meta"
                 placeholder="Search timeline"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -84,7 +84,7 @@ export function AnalysisEngineView({ analysis }: { analysis: AnalysisResult }) {
                     key={f}
                     type="button"
                     className={cn(
-                      "rounded-[var(--radius-control)] border px-2 py-1 text-[11px]",
+                      "rounded-[var(--radius-control)] border px-2 py-1 text-app-caption",
                       filter === f
                         ? "border-[var(--text-primary)] text-[var(--text-primary)]"
                         : "border-[var(--border-default)] text-[var(--text-tertiary)]"
@@ -104,9 +104,9 @@ export function AnalysisEngineView({ analysis }: { analysis: AnalysisResult }) {
                     key={p.eventId}
                     className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-3 py-2"
                   >
-                    <div className="text-[12px] text-[var(--text-primary)]">{p.label}</div>
+                    <div className="text-app-meta text-[var(--text-primary)]">{p.label}</div>
                     {p.detail ? (
-                      <div className="mt-1 text-[11px] text-[var(--text-tertiary)]">{p.detail}</div>
+                      <div className="mt-1 text-app-caption text-[var(--text-tertiary)]">{p.detail}</div>
                     ) : null}
                   </li>
                 ))
@@ -115,9 +115,9 @@ export function AnalysisEngineView({ analysis }: { analysis: AnalysisResult }) {
                     key={item.id}
                     className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-3 py-2"
                   >
-                    <div className="text-[12px] text-[var(--text-primary)]">{item.label}</div>
+                    <div className="text-app-meta text-[var(--text-primary)]">{item.label}</div>
                     {item.detail ? (
-                      <div className="mt-1 text-[11px] text-[var(--text-tertiary)]">{item.detail}</div>
+                      <div className="mt-1 text-app-caption text-[var(--text-tertiary)]">{item.detail}</div>
                     ) : null}
                   </li>
                 ))}

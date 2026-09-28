@@ -52,16 +52,16 @@ export default function SecurityPage() {
                 key={title}
                 className="grid gap-2 py-5 sm:grid-cols-[220px_1fr] sm:gap-8"
               >
-                <dt className="text-[14.5px] font-medium text-[var(--text-primary)]">
+                <dt className="text-app-body font-medium text-[var(--text-primary)]">
                   {title}
                 </dt>
-                <dd className="text-[14px] leading-[1.7] text-[var(--text-secondary)]">
+                <dd className="text-app-body leading-[1.7] text-[var(--text-secondary)]">
                   {detail}
                 </dd>
               </div>
             ))}
           </dl>
-          <p className="mt-8 text-[14px] leading-[1.7] text-[var(--text-secondary)]">
+          <p className="mt-8 text-app-body leading-[1.7] text-[var(--text-secondary)]">
             To report a vulnerability, email{" "}
             <ContactLink kind="security" />
             . We will confirm receipt and tell you what we are doing about it.

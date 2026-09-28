@@ -11,15 +11,15 @@ function highlight(text: string) {
     if (start > last) out.push(text.slice(last, start));
     const [value, comment, str, decorator, keyword, num] = m;
     const color = comment
-      ? "text-[oklch(55%_0.012_258)]"
+      ? "text-[var(--text-tertiary)]"
       : str
-        ? "text-[oklch(44%_0.09_178)]"
+        ? "text-[var(--ink-teal)]"
         : decorator
-          ? "text-[oklch(50%_0.17_18)]"
+          ? "text-[var(--ink-coral)]"
           : keyword
-            ? "text-[oklch(46%_0.2_285)]"
+            ? "text-[var(--ink-violet)]"
             : num
-              ? "text-[oklch(52%_0.13_60)]"
+              ? "text-[var(--ink-warm)]"
               : "";
     out.push(
       <span key={start} className={color}>
@@ -33,10 +33,10 @@ function highlight(text: string) {
 }
 
 const MARK: Record<NonNullable<CodeLine["mark"]>, string> = {
-  cited: "bg-[oklch(95%_0.04_178)] shadow-[inset_2px_0_0_oklch(58%_0.11_178)]",
-  observed: "bg-[oklch(95.5%_0.035_285)] shadow-[inset_2px_0_0_oklch(56%_0.2_285)]",
-  added: "bg-[oklch(95.5%_0.045_150)] shadow-[inset_2px_0_0_oklch(56%_0.14_150)]",
-  removed: "bg-[oklch(95.5%_0.03_18)] shadow-[inset_2px_0_0_oklch(58%_0.19_18)]",
+  cited: "bg-[var(--field-teal)] shadow-[inset_2px_0_0_var(--brand-teal)]",
+  observed: "bg-[var(--field-violet)] shadow-[inset_2px_0_0_var(--brand-violet)]",
+  added: "bg-[var(--ev-success-field)] shadow-[inset_2px_0_0_var(--ev-success)]",
+  removed: "bg-[var(--ev-error-field)] shadow-[inset_2px_0_0_var(--ev-error)]",
 };
 
 export function CodeBlock({
@@ -51,23 +51,23 @@ export function CodeBlock({
   compact?: boolean;
 }) {
   return (
-    <figure className="overflow-hidden rounded-[6px] border border-[oklch(22%_0.02_258/0.12)] bg-[oklch(98.6%_0.003_258)] text-[oklch(24%_0.02_258)]">
-      <figcaption className="flex items-center justify-between gap-3 border-b border-[oklch(22%_0.02_258/0.1)] px-4 py-2.5 font-mono text-[12px] text-[oklch(48%_0.016_258)]">
+    <figure className="overflow-hidden rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-panel)] text-[var(--text-primary)]">
+      <figcaption className="flex items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-2.5 font-mono text-app-meta text-[var(--text-tertiary)]">
         <span className="truncate">{path}</span>
         {meta ? <span className="shrink-0">{meta}</span> : null}
       </figcaption>
-      <pre className={`overflow-x-auto py-2 font-mono leading-[1.75] ${compact ? "text-[11.5px]" : "text-[12.5px]"}`}>
+      <pre className={`overflow-x-auto py-2 font-mono leading-[1.75] ${compact ? "text-app-caption" : "text-app-meta"}`}>
         <code>
           {lines.map((line) => (
             <span
               key={line.n}
               className={`flex min-w-max pr-4 ${line.mark ? MARK[line.mark] : ""}`}
             >
-              <span aria-hidden className={`shrink-0 select-none pr-3 text-right text-[oklch(62%_0.01_258)] ${compact ? "w-8" : "w-11"}`}>
+              <span aria-hidden className={`shrink-0 select-none pr-3 text-right text-[var(--text-disabled)] ${compact ? "w-8" : "w-11"}`}>
                 {line.n}
               </span>
               {line.mark === "added" ? (
-                <span aria-hidden className="w-3 shrink-0 text-[oklch(50%_0.14_150)]">+</span>
+                <span aria-hidden className="w-3 shrink-0 text-[var(--status-positive-ink)]">+</span>
               ) : (
                 <span aria-hidden className="w-3 shrink-0" />
               )}

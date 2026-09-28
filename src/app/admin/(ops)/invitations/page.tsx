@@ -39,16 +39,16 @@ export default async function AdminInvitationsPage() {
 
   return (
     <div>
-      <h1 className="text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+      <h1 className="text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
         Invitations
       </h1>
-      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
+      <p className="mt-2 text-app-body text-[var(--text-secondary)]">
         Application invitation tracking. Auth tokens are never stored or shown.
       </p>
 
       <div className="mt-8 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
-        <table className="min-w-full text-left text-[13px]">
-          <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] font-medium text-[var(--text-secondary)]">
+        <table className="min-w-full text-left text-app-meta">
+          <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-app-meta font-medium text-[var(--text-secondary)]">
             <tr>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Type</th>
@@ -82,7 +82,7 @@ export default async function AdminInvitationsPage() {
                       {row.last_sent_at
                         ? new Date(row.last_sent_at).toLocaleString()
                         : "-"}
-                      <div className="text-[11px]">count {row.send_count}</div>
+                      <div className="text-app-caption">count {row.send_count}</div>
                     </td>
                     <td className="px-4 py-3">
                       <InvitationActions id={row.id} status={row.status} />

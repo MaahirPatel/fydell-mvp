@@ -87,6 +87,57 @@ export interface StakeholderResponseRule {
   onceOnly?: boolean;
   /** Only active after the curveball has been presented. */
   requiresCurveball?: boolean;
+  /**
+   * Optional session-context conditions: the rule only matches when ALL of
+   * the present conditions hold against the candidate's observed session.
+   * Lets authored replies react to what the candidate has actually done.
+   */
+  requires?: RuleContextRequires;
+}
+
+/**
+ * Observable session conditions a response rule or proactive message can
+ * depend on. Every condition is a fact about the candidate's session —
+ * never hidden scenario material.
+ */
+export interface RuleContextRequires {
+  minElapsedMinutes?: number;
+  minCandidateMessages?: number;
+  minCandidateEvents?: number;
+  answeredQuestion?: string;
+  completedTask?: string;
+  openedResource?: string;
+  minFlaggedRows?: number;
+}
+
+/**
+ * When a stakeholder speaks without being asked first.
+ */
+export type ProactiveTrigger =
+  | { kind: "session_start" }
+  | { kind: "elapsed_minutes"; minutes: number }
+  | { kind: "curveball_elapsed_minutes"; minutes: number }
+  | { kind: "candidate_events"; count: number }
+  | { kind: "answered_question"; questionId: string }
+  | { kind: "task_completed"; taskId: string }
+  | { kind: "curveball_presented" };
+
+export interface ProactiveMessageDef {
+  id: string;
+  trigger: ProactiveTrigger;
+  /**
+   * Chat message body. May use {elapsedMinutes} {answeredCount}
+   * {messageCount} {eventCount} tokens, interpolated from session context.
+   */
+  body: string;
+  /** Do not deliver when any of these already hold (avoids nagging). */
+  unless?: {
+    openedResource?: string;
+    answeredQuestion?: string;
+    minCandidateEvents?: number;
+  };
+  /** Deliver at most once per session (default true). */
+  onceOnly?: boolean;
 }
 
 export interface SimulationStakeholder {
@@ -104,6 +155,12 @@ export interface SimulationStakeholder {
   fallbackReply: string;
   /** Optional style hints for an AI reply drafter (server-side only). */
   aiPersona?: string;
+  /**
+   * Messages this stakeholder sends unprompted at session triggers
+   * (welcome, nudges, reactions to progress). Every message is tagged as
+   * simulation content in the UI; these never claim real-world events.
+   */
+  proactiveMessages?: ProactiveMessageDef[];
 }
 
 // ---------------------------------------------------------------------------
@@ -305,6 +362,21 @@ export function validateSimulationContent(content: SimulationContent): string[] 
 
   for (const s of content.stakeholders) {
     if (!s.fallbackReply) errors.push(`Stakeholder ${s.id} missing fallback reply`);
+    const seenRuleIds = new Set<string>();
+    for (const r of s.responseRules || []) {
+      if (seenRuleIds.has(r.id)) errors.push(`Stakeholder ${s.id} duplicate rule id ${r.id}`);
+      seenRuleIds.add(r.id);
+    }
+    const seenProactiveIds = new Set<string>();
+    for (const p of s.proactiveMessages || []) {
+      if (seenProactiveIds.has(p.id))
+        errors.push(`Stakeholder ${s.id} duplicate proactive id ${p.id}`);
+      seenProactiveIds.add(p.id);
+      if (!p.body || !p.body.trim()) errors.push(`Stakeholder ${s.id} proactive ${p.id} has empty body`);
+      const t = p.trigger;
+      if (!t || typeof t.kind !== "string")
+        errors.push(`Stakeholder ${s.id} proactive ${p.id} has invalid trigger`);
+    }
   }
 
   const resourceIds = new Set<string>();

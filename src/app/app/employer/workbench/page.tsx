@@ -66,7 +66,7 @@ export default async function WorkspaceSimulationsPage() {
                 <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
                   {meta.description}
                 </p>
-                <p className="mt-2 font-mono text-[11.5px] text-[var(--text-tertiary)]">
+                <p className="mt-2 font-mono text-app-caption text-[var(--text-tertiary)]">
                   {meta.id} &middot; scenario {scenario.versions.scenarioVersion} &middot;
                   engine {scenario.versions.engineVersion} &middot;{" "}
                   {meta.estimatedDurationMinutes} min &middot; {meta.difficulty}
@@ -76,13 +76,13 @@ export default async function WorkspaceSimulationsPage() {
               <div className="flex shrink-0 items-center gap-2">
                 <Link
                   href={`/app/employer/workbench/${meta.id}`}
-                  className="inline-flex h-8 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3 text-[13px] font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)]"
+                  className="inline-flex h-8 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3 text-app-meta font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)]"
                 >
                   Open workbench
                 </Link>
                 <Link
                   href={`/app/employer/workbench/${meta.id}/analysis`}
-                  className="inline-flex h-8 items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
+                  className="inline-flex h-8 items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3 text-app-meta font-medium text-[var(--text-primary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
                 >
                   Analysis
                 </Link>

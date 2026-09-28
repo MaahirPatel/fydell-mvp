@@ -37,10 +37,10 @@ export default async function AdminSettingsPage() {
 
   return (
     <div>
-      <h1 className="text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+      <h1 className="text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
         System settings
       </h1>
-      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
+      <p className="mt-2 text-app-body text-[var(--text-secondary)]">
         Safe configuration presence checks. Secret values are never shown.
       </p>
 
@@ -48,10 +48,10 @@ export default async function AdminSettingsPage() {
         {checks.map((check) => (
           <div
             key={check.label}
-            className="flex items-center justify-between rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-3 text-[13px]"
+            className="flex items-center justify-between rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-3 text-app-meta"
           >
             <div>
-              <p style={{ fontWeight: 520 }}>{check.label}</p>
+              <p style={{ fontWeight: 500 }}>{check.label}</p>
               <p className="mt-1 text-[var(--text-secondary)]">{check.detail}</p>
             </div>
             <span
@@ -72,23 +72,23 @@ export default async function AdminSettingsPage() {
           <p className="text-app-meta font-medium text-[var(--text-secondary)]">
             Outbox backlog
           </p>
-          <p className="mt-2 text-[24px] tabular-nums">{metrics.pendingEmails}</p>
+          <p className="mt-2 text-app-page tabular-nums">{metrics.pendingEmails}</p>
         </div>
         <div className="px-4 py-4">
           <p className="text-app-meta font-medium text-[var(--text-secondary)]">
             Failed emails
           </p>
-          <p className="mt-2 text-[24px] tabular-nums">{metrics.failedEmails}</p>
+          <p className="mt-2 text-app-page tabular-nums">{metrics.failedEmails}</p>
         </div>
         <div className="px-4 py-4">
           <p className="text-app-meta font-medium text-[var(--text-secondary)]">
             Bounced emails
           </p>
-          <p className="mt-2 text-[24px] tabular-nums">{metrics.bouncedEmails}</p>
+          <p className="mt-2 text-app-page tabular-nums">{metrics.bouncedEmails}</p>
         </div>
       </div>
 
-      <p className="mt-8 text-[13px] text-[var(--text-secondary)]">
+      <p className="mt-8 text-app-meta text-[var(--text-secondary)]">
         MFA enrollment for platform admins is required before enabling high-risk mutations in
         production. See docs/production-setup.md.
       </p>

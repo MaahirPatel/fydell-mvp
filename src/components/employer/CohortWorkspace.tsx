@@ -202,16 +202,16 @@ export default function CohortWorkspace({
       <Surface tone="panel" className="px-5 py-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[12px] text-[var(--text-tertiary)]">{organizationName}</p>
+            <p className="text-app-meta text-[var(--text-tertiary)]">{organizationName}</p>
             <div className="mt-1 flex flex-wrap items-center gap-2.5">
-              <h2 className="text-[17px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+              <h2 className="text-app-section font-medium tracking-[-0.02em] text-[var(--text-primary)]">
                 {cohort.name}
               </h2>
               <StatusTag tone={COHORT_TONE[cohort.status]}>
                 {cohort.status.charAt(0).toUpperCase() + cohort.status.slice(1)}
               </StatusTag>
             </div>
-            <p className="mt-1.5 text-[13px] text-[var(--text-secondary)]">
+            <p className="mt-1.5 text-app-meta text-[var(--text-secondary)]">
               Operations performance investigation · invitations expire after{" "}
               {cohort.invitation_expires_days} days
             </p>
@@ -258,7 +258,7 @@ export default function CohortWorkspace({
         </div>
 
         {error ? (
-          <p role="alert" className="mt-3 text-[13px] text-[var(--fydell-risk)]">
+          <p role="alert" className="mt-3 text-app-meta text-[var(--fydell-risk)]">
             {error}
           </p>
         ) : null}
@@ -279,13 +279,13 @@ export default function CohortWorkspace({
 
       <section>
         <div className="flex items-baseline justify-between gap-3">
-          <h3 className="text-[15px] font-medium tracking-[-0.015em] text-[var(--text-primary)]">
+          <h3 className="text-app-body font-medium tracking-[-0.015em] text-[var(--text-primary)]">
             Candidates in this cohort
           </h3>
           {metrics.reportsReady >= 2 ? (
             <Link
               href="/app/employer/compare"
-              className="text-[13px] text-[var(--text-secondary)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline"
+              className="text-app-meta text-[var(--text-secondary)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline"
             >
               Compare completed
             </Link>
@@ -338,7 +338,7 @@ export default function CohortWorkspace({
                             {row.candidate_name || row.candidate_email}
                           </span>
                           {row.candidate_name ? (
-                            <span className="mt-0.5 block truncate text-[12.5px] font-normal text-[var(--text-tertiary)]">
+                            <span className="mt-0.5 block truncate text-app-meta font-normal text-[var(--text-tertiary)]">
                               {row.candidate_email}
                             </span>
                           ) : null}
@@ -347,7 +347,7 @@ export default function CohortWorkspace({
                           <StatusTag tone={INVITE_TONE[row.status] ?? "neutral"}>
                             {row.status}
                           </StatusTag>
-                          <span className="mt-1 block text-[12px] text-[var(--text-tertiary)]">
+                          <span className="mt-1 block text-app-meta text-[var(--text-tertiary)]">
                             {deliveryLabel(row.email_delivery)}
                           </span>
                         </TD>
@@ -357,7 +357,7 @@ export default function CohortWorkspace({
                           {session?.id ? (
                             <Link
                               href={`/app/employer/assessments/report/${session.id}`}
-                              className="inline-flex h-8 items-center rounded-[var(--radius-control)] px-2.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+                              className="inline-flex h-8 items-center rounded-[var(--radius-control)] px-2.5 text-app-meta font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
                             >
                               Open report
                             </Link>
@@ -404,17 +404,17 @@ export default function CohortWorkspace({
       >
         {inviteResult ? (
           <div className="space-y-4">
-            <div className="rounded-[var(--radius-panel)] border border-[rgba(103,217,160,0.28)] bg-[rgba(103,217,160,0.07)] px-3.5 py-3">
-              <p className="text-[13.5px] font-medium text-[#8fe6bb]">
+            <div className="rounded-[var(--radius-panel)] border border-[var(--status-positive-line)] bg-[var(--status-positive-bg)] px-3.5 py-3">
+              <p className="text-app-body font-medium text-[var(--status-positive-ink)]">
                 Invitation created
               </p>
-              <p className="mt-1 text-[13px] leading-[1.55] text-[var(--text-secondary)]">
+              <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
                 {inviteResult.label}.
               </p>
             </div>
             <div>
-              <p className="text-[12.5px] text-[var(--text-tertiary)]">Secure link</p>
-              <p className="mt-1 break-all rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-band)] px-3 py-2 text-[12.5px] text-[var(--text-secondary)]">
+              <p className="text-app-meta text-[var(--text-tertiary)]">Secure link</p>
+              <p className="mt-1 break-all rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-band)] px-3 py-2 text-app-meta text-[var(--text-secondary)]">
                 {inviteResult.url}
               </p>
               <div className="mt-2 flex items-center gap-2">
@@ -486,7 +486,7 @@ export default function CohortWorkspace({
           </>
         }
       >
-        <p className="text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+        <p className="text-app-body leading-[1.6] text-[var(--text-secondary)]">
           Candidates who already hold an unopened link will no longer be able to
           start. You can reopen the cohort afterwards.
         </p>

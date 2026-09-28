@@ -8,7 +8,7 @@ import { getReportRecords } from "../../_lib/data";
 
 export const dynamic = "force-dynamic";
 
-const TABS = ["brief", "evidence", "work", "defense", "interview", "outcome"] as const;
+const TABS = ["brief", "evidence", "work", "defense", "outcome"] as const;
 type CandidateTab = (typeof TABS)[number];
 
 export default async function CandidateDecisionPage({
@@ -76,16 +76,19 @@ export default async function CandidateDecisionPage({
             />
           </Panel>
         ) : null}
-        {tab === "interview" || tab === "outcome" ? (
+        {tab === "outcome" ? (
           <Panel>
             <PanelSection
-              title={tab === "interview" ? "Interview finding" : "Outcome"}
-              description={
-                tab === "interview"
-                  ? "Record what the interview confirmed, contradicted, or left unresolved."
-                  : "Hiring outcomes appear after an authorized workspace member records them."
-              }
-            />
+              title="Outcome"
+              description="Hiring outcomes appear after an authorized workspace member records them."
+            >
+              <Link
+                href={`/app/employer/candidates/${sessionId}?tab=evidence`}
+                className="text-app-body text-[var(--action-ink)] hover:underline"
+              >
+                Record a decision on the evidence tab
+              </Link>
+            </PanelSection>
           </Panel>
         ) : null}
       </div>

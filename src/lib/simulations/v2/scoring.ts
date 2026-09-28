@@ -6,6 +6,7 @@
  */
 import type { MicroConcept } from "../micro-types";
 import { normalizeEvent, type SemanticEvent } from "./events";
+import { stakeholderQualityFloor } from "../outage-policy";
 import type {
   EvidenceOpportunity,
   SimulationDefinitionV2,
@@ -49,6 +50,12 @@ export interface V2AttemptInput {
   stakeholderRuleIds?: string[];
   /** When true, platform failure removed intended evidence. */
   technicalFailure?: boolean;
+  /**
+   * SIM-07: a teammate-service outage was recorded for this session. The
+   * stakeholder opportunity must not be scored down for missing/slow bot
+   * replies; other opportunities are unaffected.
+   */
+  teammateOutage?: boolean;
 }
 
 export interface V2ScoreResult {
@@ -296,7 +303,15 @@ function opportunityQuality(
     const allRules = new Set([...rules, ...fromEvents]);
     if ([...allRules].some((r) => r.startsWith("rel_"))) return 1;
     if (allRules.size > 0 || signals.has("stakeholder_reply_received")) return 0.5;
-    if (signals.has("stakeholder_message_sent")) return 0;
+    if (signals.has("stakeholder_message_sent")) {
+      // SIM-07: the candidate asked; a missing reply during a recorded
+      // teammate-service outage is our failure, not theirs. Floor the
+      // quality instead of scoring the silence as a zero.
+      return stakeholderQualityFloor({
+        outageRecorded: Boolean(input.teammateOutage),
+        candidateSentMessage: true,
+      });
+    }
     return 0;
   }
 

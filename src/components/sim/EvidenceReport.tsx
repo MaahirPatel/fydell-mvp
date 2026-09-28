@@ -228,14 +228,14 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
       <header>
         <Link
           href="/app/employer/reports"
-          className="text-[13px] text-[var(--text-secondary)] underline-offset-2 transition-colors hover:text-[var(--text-primary)] hover:underline"
+          className="text-app-meta text-[var(--text-secondary)] underline-offset-2 transition-colors hover:text-[var(--text-primary)] hover:underline"
         >
           All reports
         </Link>
-        <h1 className="mt-2 text-[22px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
+        <h1 className="mt-2 text-app-page font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
           {candidate?.name || candidate?.email}
         </h1>
-        <p className="mt-1.5 text-[13.5px] text-[var(--text-secondary)]">
+        <p className="mt-1.5 text-app-body text-[var(--text-secondary)]">
           {simulation.title} · submitted{" "}
           {session?.submittedAt
             ? new Date(session.submittedAt).toLocaleString()
@@ -246,7 +246,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
 
       <Surface tone="panel" className="px-5 py-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <p className="text-[15px] font-medium tracking-[-0.015em] text-[var(--text-primary)]">
+          <p className="text-app-body font-medium tracking-[-0.015em] text-[var(--text-primary)]">
             {rec.label}
           </p>
           <StatusTag tone={rec.tone}>
@@ -254,7 +254,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
           </StatusTag>
         </div>
         {analysis.cappedByCritical ? (
-          <p className="mt-2 max-w-[70ch] text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+          <p className="mt-2 max-w-[70ch] text-app-meta leading-[1.6] text-[var(--text-secondary)]">
             Held back by the role-critical competency &ldquo;
             {analysis.cappedByCritical}&rdquo;. Strong performance elsewhere does not
             offset it.
@@ -280,35 +280,35 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
               .filter(([, v]) => v !== null)
               .map(([label, value]) => (
                 <div key={label as string}>
-                  <dt className="text-[12px] text-[var(--text-tertiary)]">{label}</dt>
-                  <dd className="mt-0.5 text-[16px] font-medium tabular-nums text-[var(--text-primary)]">
+                  <dt className="text-app-meta text-[var(--text-tertiary)]">{label}</dt>
+                  <dd className="mt-0.5 text-app-body font-medium tabular-nums text-[var(--text-primary)]">
                     {value}
                   </dd>
                 </div>
               ))}
           </dl>
         ) : null}
-        <p className="mt-3 max-w-[74ch] text-[12.5px] leading-[1.6] text-[var(--text-tertiary)]">
+        <p className="mt-3 max-w-[74ch] text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
           Bands describe how strong the observed evidence is, not a ranking. This report
           shows what the candidate did so you can judge it yourself. Fydell analysis is
           not an employer decision.
         </p>
         <dl className="mt-3 grid gap-3 border-t border-[var(--border-subtle)] pt-3 sm:grid-cols-3">
           <div>
-            <dt className="text-[12px] text-[var(--text-tertiary)]">Simulation version</dt>
-            <dd className="mt-0.5 font-mono text-[12.5px] text-[var(--text-primary)]">
+            <dt className="text-app-meta text-[var(--text-tertiary)]">Simulation version</dt>
+            <dd className="mt-0.5 font-mono text-app-meta text-[var(--text-primary)]">
               {simulation.version || simulation.slug || "unversioned"}
             </dd>
           </div>
           <div>
-            <dt className="text-[12px] text-[var(--text-tertiary)]">Analysis version</dt>
-            <dd className="mt-0.5 font-mono text-[12.5px] text-[var(--text-primary)]">
+            <dt className="text-app-meta text-[var(--text-tertiary)]">Analysis version</dt>
+            <dd className="mt-0.5 font-mono text-app-meta text-[var(--text-primary)]">
               {analysis.engineVersion || "v2"}
             </dd>
           </div>
           <div>
-            <dt className="text-[12px] text-[var(--text-tertiary)]">Review state</dt>
-            <dd className="mt-0.5 text-[13px] text-[var(--text-primary)]">
+            <dt className="text-app-meta text-[var(--text-tertiary)]">Review state</dt>
+            <dd className="mt-0.5 text-app-meta text-[var(--text-primary)]">
               {report.reviewState === "review_required"
                 ? "Needs review"
                 : report.reviewState === "failed"
@@ -328,10 +328,10 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
                 key={i}
                 className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4 py-3"
               >
-                <p className="text-[13.5px] font-medium text-[var(--text-primary)]">
+                <p className="text-app-body font-medium text-[var(--text-primary)]">
                   {c.claim}
                 </p>
-                <p className="mt-1 max-w-[74ch] text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                <p className="mt-1 max-w-[74ch] text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                   {c.detail}
                 </p>
               </li>
@@ -349,20 +349,20 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
               className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4 py-3"
             >
               <div className="flex items-start justify-between gap-2">
-                <p className="text-[13.5px] font-medium text-[var(--text-primary)]">
+                <p className="text-app-body font-medium text-[var(--text-primary)]">
                   {c.label}
                   {c.critical ? (
-                    <span className="ml-1.5 text-[12px] font-normal text-[var(--text-tertiary)]">
+                    <span className="ml-1.5 text-app-meta font-normal text-[var(--text-tertiary)]">
                       critical
                     </span>
                   ) : null}
                 </p>
                 <StatusTag tone={BAND_TONE[c.band] ?? "neutral"}>{c.bandLabel}</StatusTag>
               </div>
-              <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+              <p className="mt-1.5 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                 {c.summary}
               </p>
-              <p className="mt-1.5 text-[12px] text-[var(--text-tertiary)]">
+              <p className="mt-1.5 text-app-meta text-[var(--text-tertiary)]">
                 Coverage {Math.round(c.coverage * 100)}% · confidence{" "}
                 {Math.round(c.confidence * 100)}%
               </p>
@@ -394,7 +394,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
                 aria-selected={selected}
                 onClick={() => setTab(id)}
                 className={[
-                  "-mb-px border-b-[1.5px] px-3 py-2 text-[13px] font-medium transition-colors",
+                  "-mb-px border-b-[1.5px] px-3 py-2 text-app-meta font-medium transition-colors",
                   selected
                     ? "border-[var(--text-primary)] text-[var(--text-primary)]"
                     : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
@@ -415,10 +415,10 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
                   className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4 py-3"
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-[13.5px] font-medium text-[var(--text-primary)]">
+                    <p className="text-app-body font-medium text-[var(--text-primary)]">
                       {e.indicator}
                     </p>
-                    <span className="text-[12px] text-[var(--text-tertiary)]">
+                    <span className="text-app-meta text-[var(--text-tertiary)]">
                       {e.source === "deterministic"
                         ? "verified check"
                         : e.source === "ai_rubric"
@@ -434,18 +434,18 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
                   {(e.excerpts || []).map((x, xi) => (
                     <p
                       key={xi}
-                      className="mt-2 border-l border-[var(--border-default)] pl-3 text-[13px] leading-[1.6] text-[var(--text-secondary)]"
+                      className="mt-2 border-l border-[var(--border-default)] pl-3 text-app-meta leading-[1.6] text-[var(--text-secondary)]"
                     >
                       {x}
                     </p>
                   ))}
                   {e.explanation ? (
-                    <p className="mt-2 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                    <p className="mt-2 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                       {e.explanation}
                     </p>
                   ) : null}
                   {e.counterevidence ? (
-                    <p className="mt-2 text-[13px] leading-[1.6] text-[var(--status-attention-ink)]">
+                    <p className="mt-2 text-app-meta leading-[1.6] text-[var(--status-attention-ink)]">
                       Counterevidence: {e.counterevidence}
                     </p>
                   ) : null}
@@ -463,10 +463,10 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
                     key={f.key}
                     className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4 py-3"
                   >
-                    <p className="text-[13px] font-medium text-[var(--text-secondary)]">
+                    <p className="text-app-meta font-medium text-[var(--text-secondary)]">
                       {f.label}
                     </p>
-                    <p className="mt-1.5 max-w-[74ch] whitespace-pre-line text-[13.5px] leading-[1.7] text-[var(--text-primary)]">
+                    <p className="mt-1.5 max-w-[74ch] whitespace-pre-line text-app-body leading-[1.7] text-[var(--text-primary)]">
                       {value === undefined || String(value).trim() === "" ? (
                         <span className="text-[var(--text-tertiary)]">Left empty</span>
                       ) : (
@@ -477,10 +477,10 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
                 );
               })}
               <div className="rounded-[var(--radius-panel)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-4 py-3">
-                <p className="text-[13px] font-medium text-[var(--text-secondary)]">
+                <p className="text-app-meta font-medium text-[var(--text-secondary)]">
                   AI use during the session
                 </p>
-                <p className="mt-1.5 max-w-[74ch] text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+                <p className="mt-1.5 max-w-[74ch] text-app-body leading-[1.65] text-[var(--text-secondary)]">
                   {(analysis.aiUse.promptCount ?? 0) === 0
                     ? "Did not use the in-product assistant."
                     : `Used the in-product assistant ${analysis.aiUse.promptCount} time${
@@ -493,7 +493,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
                     : "No external AI use was disclosed."}
                 </p>
                 {analysis.aiUse.trackingNote ? (
-                  <p className="mt-1.5 text-[12px] text-[var(--text-tertiary)]">
+                  <p className="mt-1.5 text-app-meta text-[var(--text-tertiary)]">
                     {analysis.aiUse.trackingNote}
                   </p>
                 ) : null}
@@ -505,7 +505,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
             <Surface tone="panel" className="px-4 py-3">
               <ol className="space-y-1.5">
                 {(timeline || []).map((e, i) => (
-                  <li key={i} className="flex gap-4 text-[13px]">
+                  <li key={i} className="flex gap-4 text-app-meta">
                     <span className="w-[112px] shrink-0 tabular-nums text-[var(--text-tertiary)]">
                       {new Date(e.at).toLocaleTimeString()}
                     </span>
@@ -523,11 +523,11 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
 
           {tab === "interview" ? (
             <Surface tone="panel" className="px-5 py-4">
-              <p className="max-w-[70ch] text-[13px] leading-[1.65] text-[var(--text-secondary)]">
+              <p className="max-w-[70ch] text-app-meta leading-[1.65] text-[var(--text-secondary)]">
                 Generated from this candidate&apos;s own session. Use them to probe the
                 reasoning behind what you read above.
               </p>
-              <ol className="mt-3 list-decimal space-y-2.5 pl-5 text-[13.5px] leading-[1.7] text-[var(--text-primary)] marker:text-[var(--text-tertiary)]">
+              <ol className="mt-3 list-decimal space-y-2.5 pl-5 text-app-body leading-[1.7] text-[var(--text-primary)] marker:text-[var(--text-tertiary)]">
                 {analysis.interviewQuestions.map((q, i) => (
                   <li key={i} className="max-w-[74ch]">
                     {q}
@@ -542,7 +542,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
       {analysis?.result && isV2PersistedResult(analysis.result) ? (
         <section aria-labelledby="v2-h">
           <SectionLabel id="v2-h">Citation-backed evidence</SectionLabel>
-          <p className="mt-2 text-[13px] text-[var(--text-secondary)]">
+          <p className="mt-2 text-app-meta text-[var(--text-secondary)]">
             The candidate-facing document, exactly as they see it.
           </p>
           {/* Rendered on paper so it reads as the document it is. */}
@@ -555,7 +555,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
       {(decisions || []).length > 0 ? (
         <section aria-labelledby="prior-h">
           <SectionLabel id="prior-h">Prior decisions</SectionLabel>
-          <ul className="mt-3 space-y-1.5 text-[13px] text-[var(--text-secondary)]">
+          <ul className="mt-3 space-y-1.5 text-app-meta text-[var(--text-secondary)]">
             {(decisions || []).map((d) => (
               <li key={d.id}>
                 <span className="text-[var(--text-primary)]">

@@ -16,7 +16,7 @@ export function SimulationSubmitDialog({
 }) {
   return (
     <Dialog open={open} onClose={onClose} title="Submit attempt?">
-      <p className="text-[13px] text-[var(--text-secondary)]">
+      <p className="text-app-meta text-[var(--text-secondary)]">
         Submission is final for this attempt. Your artifacts, communications, and telemetry will be frozen for employer analysis.
       </p>
       <div className="mt-4 flex justify-end gap-2">

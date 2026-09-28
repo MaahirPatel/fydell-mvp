@@ -8,7 +8,7 @@ export default function WorkspaceLogoForm({ canEdit }: { canEdit: boolean }) {
   const [url, setUrl] = useState("");
   const [message, setMessage] = useState("");
   if (!canEdit) {
-    return <p className="text-[13.5px] text-[var(--text-tertiary)]">Only an owner or admin can set the logo.</p>;
+    return <p className="text-app-body text-[var(--text-tertiary)]">Only an owner or admin can set the logo.</p>;
   }
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -23,7 +23,7 @@ export default function WorkspaceLogoForm({ canEdit }: { canEdit: boolean }) {
     <form onSubmit={onSubmit} className="flex gap-2">
       <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" />
       <Button type="submit" size="sm">Save</Button>
-      {message ? <span className="text-[12.5px] text-[var(--text-secondary)]">{message}</span> : null}
+      {message ? <span className="text-app-meta text-[var(--text-secondary)]">{message}</span> : null}
     </form>
   );
 }

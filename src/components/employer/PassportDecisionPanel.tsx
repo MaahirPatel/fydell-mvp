@@ -39,7 +39,7 @@ export default function PassportDecisionPanel({
   }
 
   return (
-    <section aria-labelledby="decision-heading" className="rounded-[14px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-2)]">
+    <section aria-labelledby="decision-heading" className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-2)]">
       <h2 id="decision-heading" className="text-app-section font-medium">Team decision</h2>
       <p className="mt-1 text-app-meta text-[var(--text-secondary)]">
         Recorded for your workspace only. Nothing is sent to the candidate, and no interview is scheduled.
@@ -52,7 +52,7 @@ export default function PassportDecisionPanel({
             aria-pressed={decision === o.value}
             disabled={status === "saving"}
             onClick={() => void save(o.value)}
-            className={`h-9 rounded-full px-3.5 text-[13px] font-medium transition-colors duration-150 ${
+            className={`h-9 rounded-full px-3.5 text-app-meta font-medium transition-colors duration-150 ${
               decision === o.value
                 ? "bg-[var(--control-solid)] text-[var(--control-solid-ink)]"
                 : "border border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
@@ -77,7 +77,7 @@ export default function PassportDecisionPanel({
           type="button"
           onClick={() => void save(decision)}
           disabled={status === "saving"}
-          className="text-[13px] font-medium underline underline-offset-4"
+          className="text-app-meta font-medium underline underline-offset-4"
         >
           Save note
         </button>

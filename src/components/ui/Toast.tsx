@@ -19,8 +19,8 @@ export function useToast() {
 
 const TONE: Record<ToastTone, string> = {
   neutral: "border-[var(--border-strong)] text-[var(--text-primary)]",
-  good: "border-[rgba(103,217,160,0.35)] text-[#8fe6bb]",
-  risk: "border-[rgba(242,107,130,0.4)] text-[#ffb3c0]",
+  good: "border-[rgba(103,217,160,0.35)] text-[var(--fydell-good)]",
+  risk: "border-[rgba(242,107,130,0.4)] text-[var(--fydell-risk)]",
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -48,7 +48,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={cn(
-              "pointer-events-auto max-w-[380px] rounded-[var(--radius-panel)] border bg-[var(--surface-panel)] px-3.5 py-2.5 text-[13px] leading-[1.5] shadow-[var(--shadow-pop)]",
+              "pointer-events-auto max-w-[380px] rounded-[var(--radius-panel)] border bg-[var(--surface-panel)] px-3.5 py-2.5 text-app-meta leading-[1.5] shadow-[var(--shadow-pop)]",
               TONE[t.tone],
             )}
             style={{ animation: "fydell-toast-in 180ms ease-out" }}

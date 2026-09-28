@@ -131,6 +131,29 @@ Effective mid-period, units previously coded as \`IN_PROCESS_HOLD\` began mappin
       ],
       fallbackReply:
         "I can confirm the reporting-code change and what the floor saw. I cannot recalculate the dashboard for you.",
+      proactiveMessages: [
+        {
+          id: "jordan_welcome",
+          trigger: { kind: "session_start" },
+          body: "Jordan here — I run the Plant A shift huddles, and I need a number I can trust before the next one. How much of this yield drop is the reporting-code change, and is there any real production risk left after you strip it out? Run data, quality events, and the metric dictionary are all in your resources. Ping me if you need anything from the floor.",
+        },
+        {
+          id: "jordan_reporting_nudge",
+          trigger: { kind: "elapsed_minutes", minutes: 7 },
+          unless: { openedResource: "metric_reporting", minCandidateEvents: 6 },
+          body: "{elapsedMinutes} minutes in — have you opened the metric reporting note yet? The mid-period code change is the thing most people miss on the first pass, and everything else hinges on it.",
+        },
+        {
+          id: "jordan_first_answer",
+          trigger: { kind: "answered_question", questionId: "primary_driver" },
+          body: "Good — you've got a call on the primary driver. Now the harder half: after you strip out the reporting noise, where does any real operational signal sit? That's the question I'll get asked in the huddle.",
+        },
+        {
+          id: "jordan_curveball_followup",
+          trigger: { kind: "curveball_elapsed_minutes", minutes: 2 },
+          body: "The huddle got moved up — I need this airtight. \"It's only a data issue\" won't fly on its own: tell me whether a residual operational risk remains, where it sits, and what we'd validate before the next shift.",
+        },
+      ],
     },
   ],
   questions: [

@@ -49,23 +49,23 @@ export default function SharePanel({ initialShares }: { initialShares: Share[] }
   }
 
   return (
-    <section aria-labelledby="sharing-heading" className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
+    <section aria-labelledby="sharing-heading" className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
       <div className="border-b border-[var(--border-subtle)] px-5 py-4 sm:px-6">
-        <h2 id="sharing-heading" className="text-[16px] font-medium">Sharing</h2>
-        <p className="mt-1 text-[13px] text-[var(--text-secondary)]">
+        <h2 id="sharing-heading" className="text-app-body font-medium">Sharing</h2>
+        <p className="mt-1 text-app-meta text-[var(--text-secondary)]">
           Your passport is private. Create a link for one employer; anyone with the link can view the fields you choose until you revoke it.
         </p>
       </div>
       <form onSubmit={create} className="space-y-3 px-5 py-4 sm:px-6">
         <div>
-          <label htmlFor="share-label" className="text-[13px] font-medium">Who is this link for?</label>
+          <label htmlFor="share-label" className="text-app-meta font-medium">Who is this link for?</label>
           <input id="share-label" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={80} placeholder="e.g. Platform team, backend role" className="platform-input mt-1.5" />
         </div>
         <fieldset>
-          <legend className="text-[13px] font-medium">Include</legend>
+          <legend className="text-app-meta font-medium">Include</legend>
           <div className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
             {(Object.keys(FIELD_LABEL) as ShareField[]).map((f) => (
-              <label key={f} className="flex items-center gap-2 text-[13.5px]">
+              <label key={f} className="flex items-center gap-2 text-app-body">
                 <input
                   type="checkbox"
                   checked={fields.includes(f)}
@@ -78,22 +78,22 @@ export default function SharePanel({ initialShares }: { initialShares: Share[] }
             ))}
           </div>
         </fieldset>
-        {error ? <p role="alert" className="text-[13px] text-[var(--evidence-counter)]">{error}</p> : null}
-        <button type="submit" disabled={busy} className="inline-flex h-10 items-center gap-2 rounded-full bg-[var(--control-solid)] px-4 text-[14px] font-medium text-[var(--control-solid-ink)] disabled:opacity-50">
+        {error ? <p role="alert" className="text-app-meta text-[var(--evidence-counter)]">{error}</p> : null}
+        <button type="submit" disabled={busy} className="inline-flex h-10 items-center gap-2 rounded-full bg-[var(--control-solid)] px-4 text-app-body font-medium text-[var(--control-solid-ink)] disabled:opacity-50">
           <Link2 className="h-4 w-4" aria-hidden /> {busy ? "Creating" : "Create share link"}
         </button>
         {created ? (
           <div className="flex flex-wrap items-center gap-2 rounded-[10px] bg-[var(--field-teal)] p-3">
-            <code className="min-w-0 flex-1 truncate text-[12.5px] text-[var(--ink-teal)]">{created}</code>
+            <code className="min-w-0 flex-1 truncate text-app-meta text-[var(--ink-teal)]">{created}</code>
             <button
               type="button"
               onClick={() => void navigator.clipboard.writeText(created).then(() => setCopied(true))}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[12.5px] font-medium"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-app-meta font-medium"
             >
               {copied ? <Check className="h-3.5 w-3.5" aria-hidden /> : <Copy className="h-3.5 w-3.5" aria-hidden />}
               {copied ? "Copied" : "Copy link"}
             </button>
-            <p className="w-full text-[12px] text-[var(--ink-teal)]">This is the only time the full link is shown. Fydell stores only a hash of it.</p>
+            <p className="w-full text-app-meta text-[var(--ink-teal)]">This is the only time the full link is shown. Fydell stores only a hash of it.</p>
           </div>
         ) : null}
       </form>
@@ -102,8 +102,8 @@ export default function SharePanel({ initialShares }: { initialShares: Share[] }
           {shares.map((s) => (
             <li key={s.id} className="flex flex-wrap items-center gap-3 px-5 py-3 sm:px-6">
               <span className="min-w-0 flex-1">
-                <span className="block text-[13.5px] font-medium">{s.label || "Untitled link"}</span>
-                <span className="block text-[12px] text-[var(--text-tertiary)]">
+                <span className="block text-app-body font-medium">{s.label || "Untitled link"}</span>
+                <span className="block text-app-meta text-[var(--text-tertiary)]">
                   Created {new Date(s.createdAt).toLocaleDateString()}
                   {s.lastAccessedAt ? ` · last opened ${new Date(s.lastAccessedAt).toLocaleDateString()}` : " · not opened yet"}
                 </span>
@@ -111,7 +111,7 @@ export default function SharePanel({ initialShares }: { initialShares: Share[] }
               {s.revokedAt ? (
                 <span className="badge badge-neutral">Revoked</span>
               ) : (
-                <button type="button" onClick={() => void revoke(s.id)} className="text-[13px] font-medium text-[var(--evidence-counter)] underline underline-offset-4">
+                <button type="button" onClick={() => void revoke(s.id)} className="text-app-meta font-medium text-[var(--evidence-counter)] underline underline-offset-4">
                   Revoke
                 </button>
               )}

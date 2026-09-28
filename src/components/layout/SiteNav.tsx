@@ -67,7 +67,7 @@ export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) 
                   key={item.label}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className={`rounded-[8px] px-3 py-1.5 text-[14px] tracking-[-0.01em] transition-colors duration-150 ${
+                  className={`rounded-[8px] px-3 py-1.5 text-app-body tracking-[-0.01em] transition-colors duration-150 ${
                     active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   }`}
                 >
@@ -81,13 +81,13 @@ export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) 
 
           <Link
             href="/login"
-            className="hidden rounded-[8px] px-3 py-1.5 text-[14px] tracking-[-0.01em] text-[var(--text-secondary)] transition-colors duration-150 hover:text-[var(--text-primary)] sm:inline"
+            className="hidden rounded-[8px] px-3 py-1.5 text-app-body tracking-[-0.01em] text-[var(--text-secondary)] transition-colors duration-150 hover:text-[var(--text-primary)] sm:inline"
           >
             Sign in
           </Link>
           <Link
             href="/get-started"
-            className="ml-1 hidden h-8 items-center rounded-full bg-[var(--control-solid)] px-3.5 text-[13.5px] font-medium tracking-[-0.01em] text-[var(--control-solid-ink)] transition-colors duration-150 hover:bg-[var(--control-solid-hover)] sm:inline-flex"
+            className="ml-1 hidden h-8 items-center rounded-full bg-[var(--control-solid)] px-3.5 text-app-body font-medium tracking-[-0.01em] text-[var(--control-solid-ink)] transition-colors duration-150 hover:bg-[var(--control-solid-hover)] sm:inline-flex"
           >
             Get started
           </Link>
@@ -111,7 +111,7 @@ export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) 
                 key={item.label}
                 href={item.href}
                 onClick={() => setOpenedOn(null)}
-                className="border-b border-[var(--border-subtle)] py-3.5 text-[16px] text-[var(--text-primary)]"
+                className="border-b border-[var(--border-subtle)] py-3.5 text-app-body text-[var(--text-primary)]"
               >
                 {item.label}
               </Link>
@@ -119,7 +119,7 @@ export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) 
             <Link
               href="/get-started"
               onClick={() => setOpenedOn(null)}
-              className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-[var(--control-solid)] text-[15px] font-medium text-[var(--control-solid-ink)]"
+              className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-[var(--control-solid)] text-app-body font-medium text-[var(--control-solid-ink)]"
             >
               Get started
             </Link>

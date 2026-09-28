@@ -51,7 +51,7 @@ export function DemoGuide({
             key={index}
             className="h-1 flex-1 rounded-full"
             style={{
-              background: index < guide.step ? "var(--color-action)" : "var(--border-default)",
+              background: index < guide.step ? "var(--fydell-evidence)" : "var(--border-default)",
             }}
           />
         ))}

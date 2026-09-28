@@ -37,7 +37,7 @@ export function AcceptInviteButton({
       <div>
         {/* A disabled button with the reason above it leaves the candidate with
             nothing to press. The way out is a different sign-in, so offer it. */}
-        <p className="max-w-[62ch] rounded-[var(--radius-panel)] border border-[rgba(233,185,73,0.3)] bg-[rgba(233,185,73,0.08)] px-3.5 py-2.5 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+        <p className="max-w-[62ch] rounded-[var(--radius-panel)] border border-[rgba(233,185,73,0.3)] bg-[rgba(233,185,73,0.08)] px-3.5 py-2.5 text-app-body leading-[1.6] text-[var(--text-secondary)]">
           You are signed in as {signedInEmail}, and this invitation was sent to{" "}
           {inviteEmail}. Sign in with that address to accept it.
         </p>
@@ -67,7 +67,7 @@ export function AcceptInviteButton({
       {error ? (
         <p
           role="alert"
-          className="mt-3 max-w-[62ch] text-[13.5px] leading-[1.6] text-[var(--fydell-risk)]"
+          className="mt-3 max-w-[62ch] text-app-body leading-[1.6] text-[var(--fydell-risk)]"
         >
           {error}
         </p>

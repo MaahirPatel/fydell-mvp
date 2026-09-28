@@ -222,14 +222,14 @@ export default function ReportsList({
                   <TDPrimary>
                     <span className="block truncate">{r.candidate}</span>
                     {r.candidate !== r.email && r.email ? (
-                      <span className="mt-0.5 block truncate text-[12.5px] font-normal text-[var(--text-tertiary)]">
+                      <span className="mt-0.5 block truncate text-app-meta font-normal text-[var(--text-tertiary)]">
                         {r.email}
                       </span>
                     ) : null}
                   </TDPrimary>
                   <TD>
                     <span className="block truncate">{r.simulation}</span>
-                    <span className="mt-0.5 block truncate text-[12.5px] text-[var(--text-tertiary)]">
+                    <span className="mt-0.5 block truncate text-app-meta text-[var(--text-tertiary)]">
                       {r.roleTitle}
                     </span>
                   </TD>

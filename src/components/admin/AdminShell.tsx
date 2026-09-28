@@ -57,7 +57,7 @@ export default function AdminShell({
           <nav className="mt-8 flex flex-1 flex-col gap-6 overflow-y-auto pb-4">
             {NAV_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="mb-2 px-3 text-[12px] font-medium text-[var(--text-tertiary)]">
+                <p className="mb-2 px-3 text-app-meta font-medium text-[var(--text-tertiary)]">
                   {group.label}
                 </p>
                 <div className="flex flex-col gap-0.5">
@@ -70,7 +70,7 @@ export default function AdminShell({
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`rounded-[var(--radius-control)] px-3 py-2 text-[13px] transition-colors duration-[var(--motion-fast)] ${
+                        className={`rounded-[var(--radius-control)] px-3 py-2 text-app-meta transition-colors duration-[var(--motion-fast)] ${
                           active
                             ? "bg-[var(--surface-selected)] text-[var(--text-primary)]"
                             : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
@@ -88,17 +88,17 @@ export default function AdminShell({
 
           <div className="mt-auto space-y-3 border-t border-[var(--border-subtle)] px-1 pt-4">
             <div>
-              <p className="truncate text-[12.5px] text-[var(--text-primary)]">
+              <p className="truncate text-app-meta text-[var(--text-primary)]">
                 {admin.email}
               </p>
-              <p className="mt-1 text-[11px] capitalize text-[var(--text-tertiary)]">
+              <p className="mt-1 text-app-caption capitalize text-[var(--text-tertiary)]">
                 {role}
               </p>
             </div>
             <LogoutButton />
             <Link
               href="/"
-              className="block px-1 text-[12px] text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:text-[var(--text-primary)]"
+              className="block px-1 text-app-meta text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:text-[var(--text-primary)]"
             >
               ← Back to fydell.com
             </Link>

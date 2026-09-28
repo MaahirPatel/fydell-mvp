@@ -34,11 +34,11 @@ function pct(n: number): string {
 function Metric({ label, value, help }: { label: string; value: string; help: string }) {
   return (
     <div>
-      <dt className="text-[12px] text-[var(--text-tertiary)]">{label}</dt>
-      <dd className="mt-0.5 text-[19px] font-medium tabular-nums text-[var(--text-primary)]">
+      <dt className="text-app-meta text-[var(--text-tertiary)]">{label}</dt>
+      <dd className="mt-0.5 text-app-section font-medium tabular-nums text-[var(--text-primary)]">
         {value}
       </dd>
-      <p className="mt-0.5 text-[11.5px] leading-[1.45] text-[var(--text-tertiary)]">
+      <p className="mt-0.5 text-app-caption leading-[1.45] text-[var(--text-tertiary)]">
         {help}
       </p>
     </div>
@@ -54,9 +54,9 @@ function SectionHead({
 }) {
   return (
     <div className="border-b border-[var(--border-subtle)] px-5 py-3.5">
-      <h2 className="text-[14px] font-medium text-[var(--text-primary)]">{title}</h2>
+      <h2 className="text-app-body font-medium text-[var(--text-primary)]">{title}</h2>
       {description ? (
-        <p className="mt-1 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+        <p className="mt-1 text-app-meta leading-[1.5] text-[var(--text-secondary)]">
           {description}
         </p>
       ) : null}
@@ -72,21 +72,21 @@ export function EvidenceReportV2({ result }: { result: V2PersistedResult }) {
       <Surface tone="panel">
         <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4 px-5 py-4">
           <div className="min-w-0">
-            <p className="text-[12.5px] text-[var(--text-tertiary)]">
+            <p className="text-app-meta text-[var(--text-tertiary)]">
               Evaluation completed
             </p>
-            <h1 className="mt-1 text-[19px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+            <h1 className="mt-1 text-app-section font-medium tracking-[-0.02em] text-[var(--text-primary)]">
               {result.simulationTitle}
             </h1>
-            <p className="mt-1 text-[13.5px] text-[var(--text-secondary)]">
+            <p className="mt-1 text-app-body text-[var(--text-secondary)]">
               {roleTitle} · finished in {fmtDuration(result.completionSeconds)}
             </p>
           </div>
           {result.performance !== null ? (
             <div className="text-right">
-              <p className="text-[30px] font-medium leading-none tabular-nums text-[var(--text-primary)]">
+              <p className="stat-value">
                 {result.performance}
-                <span className="text-[15px] text-[var(--text-tertiary)]"> / 100</span>
+                <span className="text-app-body text-[var(--text-tertiary)]"> / 100</span>
               </p>
               <div className="mt-2 flex justify-end">
                 <StatusTag tone="neutral">{result.bandLabel}</StatusTag>
@@ -131,15 +131,15 @@ export function EvidenceReportV2({ result }: { result: V2PersistedResult }) {
                   id={anchor}
                   className="scroll-mt-24 px-5 py-3.5"
                 >
-                  <p className="text-[14px] font-medium text-[var(--text-primary)]">
+                  <p className="text-app-body font-medium text-[var(--text-primary)]">
                     {c.claim}
                   </p>
-                  <p className="mt-1 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                  <p className="mt-1 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                     {c.detail}
                   </p>
                   {c.eventOrArtifactId ? (
                     <p className="mt-1.5">
-                      <span className="inline-block max-w-full overflow-x-auto whitespace-nowrap rounded-[5px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-2 py-1 font-mono text-[11.5px] text-[var(--text-tertiary)]">
+                      <span className="inline-block max-w-full overflow-x-auto whitespace-nowrap rounded-[5px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-2 py-1 font-mono text-app-caption text-[var(--text-tertiary)]">
                         {c.eventOrArtifactId}
                       </span>
                     </p>
@@ -149,7 +149,7 @@ export function EvidenceReportV2({ result }: { result: V2PersistedResult }) {
             })}
           </ol>
         ) : (
-          <p className="px-5 py-3.5 text-[13.5px] text-[var(--text-secondary)]">
+          <p className="px-5 py-3.5 text-app-body text-[var(--text-secondary)]">
             No supporting citations were produced for this attempt.
           </p>
         )}
@@ -163,14 +163,14 @@ export function EvidenceReportV2({ result }: { result: V2PersistedResult }) {
               {result.strengths.map((s, i) => (
                 <li
                   key={i}
-                  className="px-5 py-3 text-[13.5px] leading-[1.65] text-[var(--text-secondary)]"
+                  className="px-5 py-3 text-app-body leading-[1.65] text-[var(--text-secondary)]"
                 >
                   {s}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="px-5 py-3 text-[13.5px] text-[var(--text-secondary)]">
+            <p className="px-5 py-3 text-app-body text-[var(--text-secondary)]">
               Nothing stood out strongly enough on this attempt to single out.
             </p>
           )}
@@ -182,14 +182,14 @@ export function EvidenceReportV2({ result }: { result: V2PersistedResult }) {
               {result.improvements.map((s, i) => (
                 <li
                   key={i}
-                  className="px-5 py-3 text-[13.5px] leading-[1.65] text-[var(--text-secondary)]"
+                  className="px-5 py-3 text-app-body leading-[1.65] text-[var(--text-secondary)]"
                 >
                   {s}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="px-5 py-3 text-[13.5px] text-[var(--text-secondary)]">
+            <p className="px-5 py-3 text-app-body text-[var(--text-secondary)]">
               Nothing was left obviously unfinished.
             </p>
           )}
@@ -207,10 +207,10 @@ export function EvidenceReportV2({ result }: { result: V2PersistedResult }) {
             return (
               <li key={c.key} className="px-5 py-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <span className="text-[13.5px] text-[var(--text-primary)]">
+                  <span className="text-app-body text-[var(--text-primary)]">
                     {c.label}
                   </span>
-                  <span className="text-[12.5px] text-[var(--text-tertiary)]">
+                  <span className="text-app-meta text-[var(--text-tertiary)]">
                     {c.bandLabel}
                     {c.performance === null ? null : (
                       <span className="ml-2 tabular-nums text-[var(--text-secondary)]">
@@ -241,7 +241,7 @@ export function EvidenceReportV2({ result }: { result: V2PersistedResult }) {
         </ul>
       </Surface>
 
-      <p className="text-[13px] leading-[1.65] text-[var(--text-tertiary)]">
+      <p className="text-app-meta leading-[1.65] text-[var(--text-tertiary)]">
         {result.disclaimer}
       </p>
     </div>

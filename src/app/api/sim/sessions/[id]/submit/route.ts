@@ -7,6 +7,9 @@ import {
   saveSessionState,
   submitSession,
 } from "@/lib/simulations/db";
+import { toSubmitErrorResponse } from "@/lib/submissions/errors";
+import { finalizeSnapshotSubmission } from "@/lib/submissions/finalize";
+import { realFinalizeDeps } from "@/lib/submissions/real-deps";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 
 export const runtime = "nodejs";
@@ -76,8 +79,18 @@ export async function POST(
 
   let body: {
     externalAiDisclosed?: boolean;
+    /** Idempotency key for the submit operation (DESK-15). Generated if absent. */
+    operationId?: string;
     /** Final client answers; may include the "__aiDisclosure" key. */
     answers?: Record<string, unknown>;
+    /**
+     * W4: full file snapshot from the desktop client. When present, the
+     * snapshot is validated (every hash recomputed server-side), the receipt
+     * hash is computed by the server, and everything is stored transactionally
+     * via `submit_session_atomic` (all files or none). Web candidates never
+     * send this and take the existing path below, unchanged.
+     */
+    fileSnapshot?: unknown;
   };
   try {
     body = await req.json();
@@ -86,6 +99,47 @@ export async function POST(
   }
 
   try {
+    const disclosure = body.answers?.["__aiDisclosure"] as { used?: boolean } | undefined;
+    const disclosed =
+      typeof disclosure?.used === "boolean" ? disclosure.used : Boolean(body.externalAiDisclosed);
+
+    // W4 file-snapshot path (desktop). Goes through the idempotent finalize
+    // core (UP-03/UP-06/DESK-15/DESK-16): transfer-state CAS, server-side
+    // validation, atomic store, durable receipt. Rejections are structured
+    // SubmissionErrors with actionable recovery (UP-08).
+    if (body.fileSnapshot !== undefined && body.fileSnapshot !== null) {
+      const answers =
+        body.answers && typeof body.answers === "object" && !Array.isArray(body.answers)
+          ? (body.answers as Record<string, unknown>)
+          : undefined;
+      try {
+        const result = await finalizeSnapshotSubmission(
+          {
+            sessionId: id,
+            userId: user.id,
+            operationId:
+              typeof body.operationId === "string" && body.operationId.length > 0
+                ? body.operationId
+                : `op_${id}_${Date.now()}`,
+            disclosed,
+            fileSnapshot: body.fileSnapshot,
+            answers,
+          },
+          realFinalizeDeps()
+        );
+        return NextResponse.json({
+          ok: true,
+          submissionId: result.submissionId || undefined,
+          alreadySubmitted: result.alreadySubmitted,
+          receiptHash: result.receiptHash || undefined,
+          transferState: result.state,
+        });
+      } catch (err) {
+        const res = toSubmitErrorResponse(err);
+        return NextResponse.json(res.body, { status: res.status });
+      }
+    }
+
     // Pass the client's final answers (including "__aiDisclosure") through to
     // the saved state so the submission snapshot carries them for scoring.
     if (body.answers && typeof body.answers === "object" && !Array.isArray(body.answers)) {
@@ -104,9 +158,6 @@ export async function POST(
       }
     }
 
-    const disclosure = body.answers?.["__aiDisclosure"] as { used?: boolean } | undefined;
-    const disclosed =
-      typeof disclosure?.used === "boolean" ? disclosure.used : Boolean(body.externalAiDisclosed);
     const result = await submitSession(id, user.id, disclosed);
     return NextResponse.json({
       ok: true,

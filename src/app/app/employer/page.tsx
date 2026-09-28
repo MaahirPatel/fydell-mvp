@@ -83,7 +83,7 @@ function HealthPanel({ health }: { health: WorkspaceHealth }) {
                 className="mt-[7px] h-[7px] w-[7px] shrink-0 rounded-full"
                 style={{
                   background:
-                    row.tone === "risk" ? "var(--color-risk)" : "var(--color-changed)",
+                    row.tone === "risk" ? "var(--fydell-risk)" : "var(--fydell-changed)",
                 }}
               />
               <div className="min-w-0">
@@ -182,13 +182,13 @@ export default async function EmployerHomePage() {
         <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
           <PanelSection
             title="Start with an open role"
-            description="Tell Fydell who you need. We will define the work and help verify the candidates worth interviewing."
+            description="Define the role. Invite candidates. Review evidence when work is submitted."
           >
             <Link
               href="/app/employer/roles"
               className="inline-flex min-h-9 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-app-body font-medium text-[var(--control-solid-ink)]"
             >
-              Create role
+              Browse roles
             </Link>
           </PanelSection>
         </Panel>

@@ -22,7 +22,7 @@ export default function PricingEstimator() {
   return (
     <div className={s.estimator}>
       <div>
-        <label htmlFor="volume" className="text-[14px] text-[var(--text-secondary)]">
+        <label htmlFor="volume" className="text-app-body text-[var(--text-secondary)]">
           Completed simulations per month
         </label>
         <p className={`${s.volume} mt-3`} aria-hidden>
@@ -63,14 +63,14 @@ export default function PricingEstimator() {
             </button>
           ))}
         </div>
-        <p className="mt-6 max-w-[48ch] text-[13px] leading-[1.55] text-[var(--text-tertiary)]">
+        <p className="mt-6 max-w-[48ch] text-app-meta leading-[1.55] text-[var(--text-tertiary)]">
           Count one completed simulation for each candidate who submits. Invitations that are not completed
           are never billed.
         </p>
       </div>
 
       <div aria-live="polite">
-        <p className="text-[14px] text-[var(--text-secondary)]">Estimated monthly cost</p>
+        <p className="text-app-body text-[var(--text-secondary)]">Estimated monthly cost</p>
         <div className="mt-3">
           <p className={`${s.quote} ${plan === "starter" ? s.quoteBest : ""}`}>
             <span>Starter</span>
@@ -85,7 +85,7 @@ export default function PricingEstimator() {
             <b>Custom</b>
           </p>
         </div>
-        <p className="mt-5 text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
+        <p className="mt-5 text-app-body leading-[1.55] text-[var(--text-secondary)]">
           {plan === "enterprise"
             ? `At ${PRICING.enterpriseFrom}+ completed simulations a month, volume pricing beats both published plans.`
             : plan === "team"

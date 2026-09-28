@@ -64,17 +64,17 @@ export function AppWindow({
       >
         <div className="flex min-w-0 items-center gap-2">
           <FydellMark width={compact ? 14 : 16} />
-          <span className="truncate text-[12.5px] font-medium tracking-[-0.018em] text-[var(--text-primary)]">
+          <span className="truncate text-app-meta font-medium tracking-[-0.018em] text-[var(--text-primary)]">
             {title}
           </span>
           {meta ? (
-            <span className="hidden truncate text-[12px] text-[var(--text-tertiary)] sm:inline">
+            <span className="hidden truncate text-app-meta text-[var(--text-tertiary)] sm:inline">
               {meta}
             </span>
           ) : null}
         </div>
         {session ? (
-          <span className="inline-flex shrink-0 items-center gap-1.5 text-[11.5px] text-[var(--text-secondary)]">
+          <span className="inline-flex shrink-0 items-center gap-1.5 text-app-caption text-[var(--text-secondary)]">
             <span
               aria-hidden
               className="h-1.5 w-1.5 rounded-full"

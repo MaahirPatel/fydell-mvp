@@ -10,12 +10,12 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function NewPassportPage() {
-  if (await requireUser()) redirect("/app/candidate/passport");
+  if (await requireUser()) redirect("/app/candidate/profile");
   return (
     <MarketingShell>
       <div className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-[104px] sm:px-8 sm:pt-[112px]">
         <div className="reveal max-w-[720px]">
-          <p className="text-[13.5px] font-medium text-[var(--text-secondary)]">Engineering Passport</p>
+          <p className="text-app-body font-medium text-[var(--text-secondary)]">Engineering Passport</p>
           <h1 className="display-serif mt-2 text-[clamp(2.5rem,5vw,3.75rem)] leading-[1.02]">Show what your code can do.</h1>
           <p className="mt-4 text-[17px] leading-[1.6] text-[var(--text-secondary)]">
             Paste your GitHub profile. Fydell reads your chosen public repositories at a pinned commit and highlights what

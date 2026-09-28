@@ -100,37 +100,37 @@ export default function HeroSimPreview() {
     >
       <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="truncate text-[13px] font-medium text-[var(--text-primary)]">
+          <span className="truncate text-app-meta font-medium text-[var(--text-primary)]">
             Operations performance investigation
           </span>
-          <span className="hidden shrink-0 text-[12.5px] text-[var(--text-tertiary)] sm:inline">
+          <span className="hidden shrink-0 text-app-meta text-[var(--text-tertiary)] sm:inline">
             Northline Components
           </span>
         </div>
         {/* "Saved" used to sit here. It was a static word with no save behind
             it, which is exactly the decorative status pill the product should
             not ship. The timer stays because the task really is timed. */}
-        <div className="flex shrink-0 items-center gap-3 text-[12.5px] text-[var(--text-tertiary)]">
+        <div className="flex shrink-0 items-center gap-3 text-app-meta text-[var(--text-tertiary)]">
           <span className="tabular-nums">19:42 left</span>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-[188px_minmax(0,1fr)_248px]">
         <aside className="border-b border-[var(--border-subtle)] p-4 lg:border-b-0 lg:border-r">
-          <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+          <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
             Business question
           </p>
-          <p className="mt-2 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+          <p className="mt-2 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
             Reported yield fell. Is production worse, or did reporting change?
           </p>
-          <p className="mt-5 text-[12px] font-medium text-[var(--text-tertiary)]">
+          <p className="mt-5 text-app-meta font-medium text-[var(--text-tertiary)]">
             Resources
           </p>
           <ul className="mt-2 space-y-0.5">
             {FILES.map((file, i) => (
               <li
                 key={file}
-                className={`rounded-[5px] px-2 py-1.5 text-[12.5px] ${
+                className={`rounded-[5px] px-2 py-1.5 text-app-meta ${
                   i === 0
                     ? "bg-[var(--surface-selected)] text-[var(--text-primary)]"
                     : "text-[var(--text-secondary)]"
@@ -157,7 +157,7 @@ export default function HeroSimPreview() {
                 type="button"
                 onClick={() => setCurrentOnly(option.value)}
                 aria-pressed={currentOnly === option.value}
-                className={`rounded-[4px] px-2.5 py-1 text-[12px] transition-colors ${
+                className={`rounded-[4px] px-2.5 py-1 text-app-meta transition-colors ${
                   currentOnly === option.value
                     ? "bg-[var(--surface-selected)] text-[var(--text-primary)]"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -169,7 +169,7 @@ export default function HeroSimPreview() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[430px] border-collapse text-left text-[12.5px] tabular-nums">
+            <table className="w-full min-w-[430px] border-collapse text-left text-app-meta tabular-nums">
               <caption className="sr-only">
                 Production runs by period, line and shift
               </caption>
@@ -180,7 +180,7 @@ export default function HeroSimPreview() {
                       <th
                         key={head}
                         scope="col"
-                        className={`py-2 pr-3 text-[11.5px] font-medium text-[var(--text-tertiary)] ${
+                        className={`py-2 pr-3 text-app-caption font-medium text-[var(--text-tertiary)] ${
                           i > 2 ? "text-right" : ""
                         }`}
                       >
@@ -234,19 +234,19 @@ export default function HeroSimPreview() {
         </div>
 
         <aside className="flex flex-col p-4">
-          <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+          <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
             {active.id === "investigate" ? "Notes" : "Conclusion"}
           </p>
-          <p className="mt-2 text-[12.5px] font-medium leading-[1.45] text-[var(--text-primary)]">
+          <p className="mt-2 text-app-meta font-medium leading-[1.45] text-[var(--text-primary)]">
             {active.heading}
           </p>
-          <p className="mt-1.5 text-[12px] leading-[1.6] text-[var(--text-secondary)]">
+          <p className="mt-1.5 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
             {active.body}
           </p>
 
           {evidence.length > 0 ? (
             <>
-              <p className="mt-5 text-[12px] font-medium text-[var(--text-tertiary)]">
+              <p className="mt-5 text-app-meta font-medium text-[var(--text-tertiary)]">
                 Cited evidence
               </p>
               <ul className="mt-2 space-y-1.5">
@@ -255,10 +255,10 @@ export default function HeroSimPreview() {
                     key={item.title}
                     className="rounded-[6px] border border-[var(--border-subtle)] px-3 py-2"
                   >
-                    <p className="text-[12px] font-medium text-[var(--text-primary)]">
+                    <p className="text-app-meta font-medium text-[var(--text-primary)]">
                       {item.title}
                     </p>
-                    <p className="mt-0.5 text-[11.5px] leading-[1.45] text-[var(--text-secondary)]">
+                    <p className="mt-0.5 text-app-caption leading-[1.45] text-[var(--text-secondary)]">
                       {item.detail}
                     </p>
                   </li>
@@ -281,7 +281,7 @@ export default function HeroSimPreview() {
               type="button"
               onClick={() => setStep(s.id)}
               aria-pressed={active}
-              className="group relative flex items-center gap-2 px-3.5 py-2.5 text-[12px] transition-colors"
+              className="group relative flex items-center gap-2 px-3.5 py-2.5 text-app-meta transition-colors"
             >
               <span
                 aria-hidden
@@ -291,7 +291,7 @@ export default function HeroSimPreview() {
               />
               <span
                 aria-hidden
-                className={`inline-flex h-[17px] w-[17px] items-center justify-center rounded-[4px] border text-[10.5px] tabular-nums ${
+                className={`inline-flex h-[17px] w-[17px] items-center justify-center rounded-[4px] border text-app-caption tabular-nums ${
                   active
                     ? "border-[var(--border-strong)] bg-[var(--surface-selected)] text-[var(--fydell-evidence)]"
                     : "border-[var(--border-default)] text-[var(--text-tertiary)]"

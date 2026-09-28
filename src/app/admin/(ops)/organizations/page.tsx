@@ -26,16 +26,16 @@ export default async function AdminOrganizationsPage() {
 
   return (
     <div>
-      <h1 className="text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+      <h1 className="text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
         Organizations
       </h1>
-      <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
+      <p className="mt-2 text-app-body text-[var(--text-secondary)]">
         Workspaces created from approved pilot requests.
       </p>
 
       <div className="mt-8 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
-        <table className="min-w-full text-left text-[13px]">
-          <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-[12px] font-medium text-[var(--text-secondary)]">
+        <table className="min-w-full text-left text-app-meta">
+          <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-app-meta font-medium text-[var(--text-secondary)]">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Status</th>
@@ -55,8 +55,8 @@ export default async function AdminOrganizationsPage() {
               rows.map((row) => (
                 <tr key={row.id} className="border-b border-[var(--border-subtle)]">
                   <td className="px-4 py-3">
-                    <div style={{ fontWeight: 520 }}>{row.name}</div>
-                    <div className="text-[12px] text-[var(--text-tertiary)]">{row.slug || "-"}</div>
+                    <div style={{ fontWeight: 500 }}>{row.name}</div>
+                    <div className="text-app-meta text-[var(--text-tertiary)]">{row.slug || "-"}</div>
                   </td>
                   <td className="px-4 py-3 capitalize">{row.status || "-"}</td>
                   <td className="px-4 py-3 capitalize">{row.pilot_stage || "-"}</td>
@@ -71,7 +71,7 @@ export default async function AdminOrganizationsPage() {
         </table>
       </div>
 
-      <p className="mt-4 text-[12px] text-[var(--text-tertiary)]">
+      <p className="mt-4 text-app-meta text-[var(--text-tertiary)]">
         Tip: open a{" "}
         <Link href="/admin/pilot-requests" className="underline">
           pilot request

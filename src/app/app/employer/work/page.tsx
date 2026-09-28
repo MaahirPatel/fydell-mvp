@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { getInvitationRecords } from "../_lib/data";
 import { PageHeader } from "@/components/ui/PageHeader";
+import InviteActionButton from "@/components/employer/InviteActionButton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Panel } from "@/components/ui/Panel";
 
@@ -34,14 +35,7 @@ export default async function EmployerWorkPage() {
           <EmptyState
             title="Start collecting work evidence"
             description="Invite a candidate to complete realistic work for an active role. The work episode appears here once they begin."
-            action={
-              <Link
-                href="/app/employer/candidates"
-                className="inline-flex h-9 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-app-body font-medium text-[var(--control-solid-ink)]"
-              >
-                Invite candidate
-              </Link>
-            }
+            action={<InviteActionButton label="Invite a candidate" />}
           />
         ) : (
           <Panel>

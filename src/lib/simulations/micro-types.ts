@@ -162,6 +162,15 @@ export function validateMicroSim(sim: MicroSimContent): string[] {
     errors.push("stakeholderCompetencyKey not in competencies");
   const hasRelevantRule = sim.stakeholders[0]?.responseRules.some((r) => r.id.startsWith("rel_"));
   if (!hasRelevantRule) errors.push("Stakeholder needs at least one rel_ (relevant) rule");
+
+  const seenProactiveIds = new Set<string>();
+  for (const p of sim.stakeholders[0]?.proactiveMessages || []) {
+    if (seenProactiveIds.has(p.id)) errors.push(`Duplicate proactive id ${p.id}`);
+    seenProactiveIds.add(p.id);
+    if (!p.body || !p.body.trim()) errors.push(`Proactive ${p.id} has empty body`);
+    if (!p.trigger || typeof p.trigger.kind !== "string")
+      errors.push(`Proactive ${p.id} has invalid trigger`);
+  }
   return errors;
 }
 

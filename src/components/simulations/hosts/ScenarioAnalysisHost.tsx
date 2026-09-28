@@ -109,10 +109,10 @@ export function ScenarioAnalysisHost({
   }, [scenario, attemptId, fixture]);
 
   if (!scenario) {
-    return <div className="p-8 text-[13px] text-[var(--fydell-risk)]">Unknown scenario</div>;
+    return <div className="p-8 text-app-meta text-[var(--fydell-risk)]">Unknown scenario</div>;
   }
   if (!analysis) {
-    return <div className="p-8 text-[13px] text-[var(--text-tertiary)]">Loading analysis</div>;
+    return <div className="p-8 text-app-meta text-[var(--text-tertiary)]">Loading analysis</div>;
   }
   if (
     scenario.metadata.id === "northline-operations-yield" &&
@@ -124,7 +124,7 @@ export function ScenarioAnalysisHost({
   return (
     <div>
       {source === "fixture" ? (
-        <p className="mb-4 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-3 py-2 text-[12.5px] text-[var(--text-secondary)]">
+        <p className="mb-4 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-3 py-2 text-app-meta text-[var(--text-secondary)]">
           Reference attempt. This is a built-in example used to show what the
           analysis engine produces, not a candidate submission.
         </p>

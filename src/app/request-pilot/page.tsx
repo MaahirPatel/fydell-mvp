@@ -55,15 +55,15 @@ export default function RequestPilotPage() {
                   >
                     <span
                       aria-hidden
-                      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] text-[11px] tabular-nums text-[var(--text-tertiary)]"
+                      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] text-app-caption tabular-nums text-[var(--text-tertiary)]"
                     >
                       {i + 1}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[13.5px] font-medium text-[var(--text-primary)]">
+                      <p className="text-app-body font-medium text-[var(--text-primary)]">
                         {title}
                       </p>
-                      <p className="mt-0.5 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+                      <p className="mt-0.5 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                         {detail}
                       </p>
                     </div>
@@ -71,7 +71,7 @@ export default function RequestPilotPage() {
                 ))}
               </ol>
 
-              <p className="mt-6 text-[13px] leading-[1.65] text-[var(--text-tertiary)]">
+              <p className="mt-6 text-app-meta leading-[1.65] text-[var(--text-tertiary)]">
                 In a hurry?{" "}
                 <a
                   href="/signup"
@@ -106,14 +106,14 @@ export default function RequestPilotPage() {
 
           <div className="mt-8 grid gap-px overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--border-subtle)] lg:grid-cols-3">
             <div className="bg-[var(--surface-raised)] p-4">
-              <p className="text-[13.5px] font-medium text-[var(--text-primary)]">
+              <p className="text-app-body font-medium text-[var(--text-primary)]">
                 A configured evaluation
               </p>
-              <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+              <p className="mt-1.5 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                 Attached to the role you are actually hiring for, with
                 invitations ready to send.
               </p>
-              <dl className="mt-3.5 border-t border-[var(--border-subtle)] pt-3 text-[12px]">
+              <dl className="mt-3.5 border-t border-[var(--border-subtle)] pt-3 text-app-meta">
                 <div className="flex justify-between gap-3 py-[3px]">
                   <dt className="text-[var(--text-tertiary)]">Evaluation</dt>
                   <dd className="text-right text-[var(--text-secondary)]">
@@ -136,15 +136,15 @@ export default function RequestPilotPage() {
             </div>
 
             <div className="bg-[var(--surface-raised)] p-4">
-              <p className="text-[13.5px] font-medium text-[var(--text-primary)]">
+              <p className="text-app-body font-medium text-[var(--text-primary)]">
                 Evidence you can open
               </p>
-              <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+              <p className="mt-1.5 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                 One report per candidate. Every claim says what it rests on and
                 where it stops.
               </p>
               <div className="mt-3.5 border-t border-[var(--border-subtle)] pt-3">
-                <p className="text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+                <p className="text-app-meta leading-[1.5] text-[var(--text-secondary)]">
                   {NORTHLINE_CLAIMS[0].text}
                 </p>
                 <div className="mt-2 space-y-1">
@@ -155,14 +155,14 @@ export default function RequestPilotPage() {
             </div>
 
             <div className="bg-[var(--surface-raised)] p-4">
-              <p className="text-[13.5px] font-medium text-[var(--text-primary)]">
+              <p className="text-app-body font-medium text-[var(--text-primary)]">
                 A receipt the candidate keeps
               </p>
-              <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+              <p className="mt-1.5 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
                 Whatever you decide, they leave with a record of the work they
                 did.
               </p>
-              <ul className="mt-3.5 border-t border-[var(--border-subtle)] pt-3 text-[12px]">
+              <ul className="mt-3.5 border-t border-[var(--border-subtle)] pt-3 text-app-meta">
                 {NORTHLINE_RECEIPT.access.map((row) => (
                   <li
                     key={row.party}

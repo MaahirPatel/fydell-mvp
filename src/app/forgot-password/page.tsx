@@ -78,7 +78,7 @@ function ForgotPasswordContent() {
           {/* Neutral by design: the response is identical whether or not the
               account exists, so this form cannot confirm who has an account. */}
           <FormSuccess>Reset link sent to {email}, if that account exists.</FormSuccess>
-          <p className="text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+          <p className="text-app-meta leading-[1.6] text-[var(--text-secondary)]">
             Nothing arrived after a few minutes? Check your spam folder, then{" "}
             <button
               type="button"

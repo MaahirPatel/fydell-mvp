@@ -18,6 +18,7 @@ import type {
   CandidateSimulationViewV2,
   CandidateStakeholderV2,
 } from "@/lib/simulations/v2/candidate-view";
+import { withTeammateDisclosure } from "@/lib/simulations/teammate-disclosure";
 
 const DISCLOSURE_KEY = "__aiDisclosure";
 const REVIEW_ID = "__review";
@@ -361,7 +362,7 @@ function fallbackWorkbench(content: MicroFallback): CandidateSimulationViewV2 {
     version: 1,
     modules,
     competencies: [],
-    stakeholders: [content.stakeholder],
+    stakeholders: withTeammateDisclosure([content.stakeholder]),
     opportunities: [],
   };
 }
@@ -416,7 +417,7 @@ function InteractiveTable({
 
   if (!table.headers.length) {
     return (
-      <div className="whitespace-pre-wrap px-5 py-5 text-[14px] leading-relaxed text-[var(--text-primary)]">
+      <div className="whitespace-pre-wrap px-5 py-5 text-app-body leading-relaxed text-[var(--text-primary)]">
         {content}
       </div>
     );
@@ -425,7 +426,7 @@ function InteractiveTable({
   return (
     <div className="flex flex-col">
       <div className="flex flex-wrap items-center gap-3 border-b border-[var(--border-subtle)] px-4 py-2.5">
-        <p className="mr-auto text-[13px] font-semibold text-[var(--text-primary)]">{title}</p>
+        <p className="mr-auto text-app-meta font-semibold text-[var(--text-primary)]">{title}</p>
         <input
           type="search"
           value={query}
@@ -438,17 +439,17 @@ function InteractiveTable({
           }}
           placeholder="Filter rows…"
           aria-label={`Filter ${title}`}
-          className="w-52 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2.5 py-1.5 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
+          className="w-52 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2.5 py-1.5 text-app-meta text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
         />
-        <span className="text-[12px] text-[var(--text-tertiary)]">
+        <span className="text-app-meta text-[var(--text-tertiary)]">
           {filtered.length} of {table.rows.length} · {flagged.length} flagged
         </span>
       </div>
       <div className="overflow-auto">
-        <table className="w-full border-collapse text-[13px]">
+        <table className="w-full border-collapse text-app-meta">
           <thead className="sticky top-0 z-10 bg-[var(--surface-canvas)]">
             <tr>
-              <th className="w-10 border-b border-[var(--border-subtle)] px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+              <th className="w-10 border-b border-[var(--border-subtle)] px-2 py-2 text-left text-app-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
                 Flag
               </th>
               {table.headers.map((h, i) => (
@@ -498,7 +499,7 @@ function InteractiveTable({
                   {table.headers.map((_, ci) => (
                     <td
                       key={ci}
-                      className="whitespace-nowrap border-b border-[var(--border-subtle)] px-3 py-1.5 font-mono text-[12.5px] text-[var(--text-primary)]"
+                      className="whitespace-nowrap border-b border-[var(--border-subtle)] px-3 py-1.5 font-mono text-app-meta text-[var(--text-primary)]"
                     >
                       {r.cells[ci] ?? ""}
                     </td>
@@ -543,6 +544,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   const [chatBusy, setChatBusy] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const [chatDelivered, setChatDelivered] = useState(false);
+  const [chatUnread, setChatUnread] = useState(0);
 
   const [submitBusy, setSubmitBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -861,6 +863,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   const focusModule = (id: string, modules: CandidateModuleV2[]) => {
     const mod = modules.find((m) => m.id === id);
     if (mod?.kind === "stakeholder") {
+      setChatUnread(0);
       setDrawerOpen(true);
       return;
     }
@@ -916,6 +919,42 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
       drawerInputRef.current?.focus();
     }
   }, [messages, drawerOpen]);
+
+  // Poll for new stakeholder messages (proactive teammate messages, curveball
+  // announcements) while the session is active. Merges by server id so the
+  // optimistic send flow never duplicates.
+  useEffect(() => {
+    if (payload?.session.status !== "active") return;
+    let cancelled = false;
+    const poll = async () => {
+      if (cancelled || document.visibilityState !== "visible") return;
+      try {
+        const res = await fetch(`/api/sim/sessions/${sessionId}/messages`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !Array.isArray(data.messages)) return;
+        const incoming = data.messages as Message[];
+        let addedStakeholder = 0;
+        setMessages((prev) => {
+          const seen = new Set(prev.map((m) => m.id));
+          const fresh = incoming.filter((m) => !seen.has(m.id));
+          if (fresh.length === 0) return prev;
+          addedStakeholder = fresh.filter((m) => m.sender === "stakeholder").length;
+          return [...prev, ...fresh];
+        });
+        if (addedStakeholder > 0 && !drawerOpen) {
+          setChatUnread((n) => n + addedStakeholder);
+        }
+      } catch {
+        // Poll failures are silent; the next tick retries.
+      }
+    };
+    const timer = setInterval(poll, 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [sessionId, payload?.session.status, drawerOpen]);
 
   useEffect(() => {
     if (!drawerOpen && !exitOpen) return;
@@ -1121,7 +1160,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   if (loadError) {
     return (
       <Center>
-        <p className="text-[15px] leading-[1.65] text-[var(--text-secondary)]">
+        <p className="text-app-body leading-[1.65] text-[var(--text-secondary)]">
           {loadError}
         </p>
         <div className="mt-4">
@@ -1135,19 +1174,23 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   if (!payload || !workbench) {
     return (
       <Center>
-        <p className="text-[15px] text-[var(--text-secondary)]" role="status">
+        <p className="text-app-body text-[var(--text-secondary)]" role="status">
           Loading your evaluation.
         </p>
       </Center>
     );
   }
 
-  const stakeholder = workbench.stakeholders[0] || {
-    id: payload.content.stakeholder.id,
-    name: payload.content.stakeholder.name,
-    role: payload.content.stakeholder.role,
-    blurb: payload.content.stakeholder.blurb,
-  };
+  const stakeholder =
+    workbench.stakeholders[0] ||
+    withTeammateDisclosure([
+      {
+        id: payload.content.stakeholder.id,
+        name: payload.content.stakeholder.name,
+        role: payload.content.stakeholder.role,
+        blurb: payload.content.stakeholder.blurb,
+      },
+    ])[0];
   const roleTitle = ROLE_TITLES[workbench.roleKey] || workbench.roleKey;
   const modules = workbench.modules;
   const navModules = modules.filter((m) => m.kind !== "curveball");
@@ -1158,38 +1201,38 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
     const preflightOk = Boolean(gate?.preflightOk);
     return (
       <Center wide>
-        <p className="text-[13px] font-medium text-[var(--text-tertiary)]">
+        <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
           {roleTitle} · {workbench.durationMinutes} minutes · desktop required
         </p>
         <h1 className="mt-2 text-[clamp(1.4rem,2.6vw,1.75rem)] font-medium leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)]">
           {workbench.title}
         </h1>
-        <p className="mt-3.5 max-w-[62ch] text-[15px] leading-[1.65] text-[var(--text-secondary)]">
+        <p className="mt-3.5 max-w-[62ch] text-app-body leading-[1.65] text-[var(--text-secondary)]">
           {workbench.mission}
         </p>
 
         <Surface tone="panel" className="mt-7 overflow-hidden">
           <div className="border-b border-[var(--border-subtle)] px-4 py-3">
-            <h2 className="text-[13.5px] font-medium text-[var(--text-primary)]">
+            <h2 className="text-app-body font-medium text-[var(--text-primary)]">
               What happens once you start
             </h2>
           </div>
           <ul className="divide-y divide-[var(--border-subtle)]">
-            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+            <li className="px-4 py-3 text-app-body leading-[1.6] text-[var(--text-secondary)]">
               You have {workbench.durationMinutes} minutes in one sitting. The clock
               starts when you press the button at the bottom of this page, not
               before.
             </li>
-            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+            <li className="px-4 py-3 text-app-body leading-[1.6] text-[var(--text-secondary)]">
               Your work saves as you go. If your connection drops or you close the
               tab by accident, you can come back to it, though the clock keeps
               running.
             </li>
-            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+            <li className="px-4 py-3 text-app-body leading-[1.6] text-[var(--text-secondary)]">
               You can ask {stakeholder.name}, the {stakeholder.role.toLowerCase()},
               questions at any point. Doing so is part of the work, not a penalty.
             </li>
-            <li className="px-4 py-3 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+            <li className="px-4 py-3 text-app-body leading-[1.6] text-[var(--text-secondary)]">
               Something may change partway through, as it would at work. You are
               not being tricked; you are being given new information.
             </li>
@@ -1198,7 +1241,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
 
         <Surface tone="panel" className="mt-4 overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-3">
-            <h2 className="text-[13.5px] font-medium text-[var(--text-primary)]">
+            <h2 className="text-app-body font-medium text-[var(--text-primary)]">
               System check
             </h2>
             {preflightOk ? (
@@ -1208,13 +1251,13 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             )}
           </div>
           <div className="px-4 py-3.5">
-            <p className="text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
+            <p className="text-app-body leading-[1.6] text-[var(--text-secondary)]">
               {preflightOk
                 ? "Your browser, screen size and connection to Fydell are all fine."
                 : "This checks your browser, your screen size and whether you can reach Fydell. It takes a second and finds problems now rather than at minute twelve."}
             </p>
             {gate?.preflightLimitations?.length || preflightMsg ? (
-              <p className="mt-2.5 text-[13px] leading-[1.6] text-[var(--fydell-changed)]">
+              <p className="mt-2.5 text-app-meta leading-[1.6] text-[var(--fydell-changed)]">
                 {preflightMsg || gate?.preflightLimitations?.join(" ")}
               </p>
             ) : null}
@@ -1233,7 +1276,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
 
         <Surface tone="panel" className="mt-4 overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-3">
-            <h2 className="text-[13.5px] font-medium text-[var(--text-primary)]">
+            <h2 className="text-app-body font-medium text-[var(--text-primary)]">
               Your consent
             </h2>
             {consentOk ? <StatusTag tone="good">Recorded</StatusTag> : null}
@@ -1247,7 +1290,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                 disabled={consentOk}
                 onChange={(e) => setConsentChecked(e.target.checked)}
               />
-              <span className="text-[13.5px] leading-[1.65] text-[var(--text-secondary)]">
+              <span className="text-app-body leading-[1.65] text-[var(--text-secondary)]">
                 I understand that what I open, ask, write and submit inside this
                 workspace is recorded and shown to the company that invited me,
                 that use of the assistant inside the workspace is observed rather
@@ -1255,7 +1298,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                 work afterwards.
               </span>
             </label>
-            <p className="mt-2.5 pl-[27px] text-[12.5px] text-[var(--text-tertiary)]">
+            <p className="mt-2.5 pl-[27px] text-app-meta text-[var(--text-tertiary)]">
               Policy version {gate?.consentPolicyVersion || "current"}. This box is
               never ticked for you.
             </p>
@@ -1276,7 +1319,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
         </Surface>
 
         {loadError ? (
-          <p className="mt-4 text-[13px] text-[var(--fydell-risk)]" role="alert">
+          <p className="mt-4 text-app-meta text-[var(--fydell-risk)]" role="alert">
             {loadError}
           </p>
         ) : null}
@@ -1293,7 +1336,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             Start now: {workbench.durationMinutes} minutes
           </Button>
           {!consentOk || !preflightOk ? (
-            <p className="mt-2.5 text-[13px] text-[var(--text-tertiary)]">
+            <p className="mt-2.5 text-app-meta text-[var(--text-tertiary)]">
               {!preflightOk && !consentOk
                 ? "Run the system check and record your consent first."
                 : !preflightOk
@@ -1309,10 +1352,10 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
   if (tabBlocked) {
     return (
       <Center>
-        <h1 className="text-[20px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">
+        <h1 className="text-app-page font-medium tracking-[-0.02em] text-[var(--text-primary)]">
           This evaluation is open in another tab
         </h1>
-        <p className="mt-3 text-[14px] leading-[1.65] text-[var(--text-secondary)]">
+        <p className="mt-3 text-app-body leading-[1.65] text-[var(--text-secondary)]">
           Two tabs writing to the same session can overwrite each other, so only
           one runs at a time. Carry on in the other tab, or close it and continue
           here. Nothing you have written is lost either way.
@@ -1348,18 +1391,18 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
           <span className="inline-flex items-center gap-2" aria-label="Fydell">
             <FydellMark width={24} />
             <span
-              className="text-[16px] leading-none tracking-tight text-[var(--text-primary)]"
-              style={{ fontWeight: 560, letterSpacing: "-0.045em" }}
+              className="text-app-body leading-none tracking-tight text-[var(--text-primary)]"
+              style={{ fontWeight: 500, letterSpacing: "-0.045em" }}
             >
               fydell
             </span>
           </span>
           <div className="hidden min-w-0 sm:block">
-            <p className="truncate text-[13.5px] font-medium leading-tight">{workbench.title}</p>
-            <p className="truncate text-[11.5px] text-[var(--text-tertiary)]">{roleTitle}</p>
+            <p className="truncate text-app-body font-medium leading-tight">{workbench.title}</p>
+            <p className="truncate text-app-caption text-[var(--text-tertiary)]">{roleTitle}</p>
           </div>
           <div className="ml-auto flex items-center gap-3">
-            <span className="hidden text-[12px] sm:inline" role="status" aria-live="polite">
+            <span className="hidden text-app-meta sm:inline" role="status" aria-live="polite">
               {offline && <span className="mr-2 font-medium text-[var(--fydell-changed)]">Offline</span>}
               {!offline && saveStatus === "saved" && (
                 <span className="font-medium text-[var(--fydell-good)]">Saved</span>
@@ -1377,7 +1420,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
               )}
             </span>
             <span
-              className={`rounded-md px-2.5 py-1 font-mono text-[14px] font-semibold tabular-nums ${
+              className={`rounded-md px-2.5 py-1 font-mono text-app-body font-semibold tabular-nums ${
                 timeUp
                   ? "bg-[rgba(242,107,130,0.1)] text-[var(--fydell-risk)]"
                   : remaining < 60
@@ -1390,7 +1433,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             </span>
             <button
               onClick={() => setExitOpen(true)}
-              className="rounded-lg border border-[var(--border-subtle)] px-3 py-1.5 text-[12.5px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-canvas)]"
+              className="rounded-lg border border-[var(--border-subtle)] px-3 py-1.5 text-app-meta font-medium text-[var(--text-primary)] hover:bg-[var(--surface-canvas)]"
             >
               Exit
             </button>
@@ -1400,7 +1443,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
 
       {timeUp && (
         <div className="border-b border-[rgba(233,185,73,0.28)] bg-[rgba(233,185,73,0.08)]">
-          <p className="mx-auto max-w-[1280px] px-4 py-2 text-[13.5px] text-[var(--fydell-changed)]">
+          <p className="mx-auto max-w-[1280px] px-4 py-2 text-app-body text-[var(--fydell-changed)]">
             Time has ended. Submit your current work.
           </p>
         </div>
@@ -1410,15 +1453,15 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
         <div className="border-b border-[var(--fydell-brand-blue)]/30 bg-[var(--surface-selected)]">
           <div className="mx-auto flex max-w-[1280px] flex-wrap items-start justify-between gap-3 px-4 py-3">
             <div>
-              <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">
+              <p className="text-app-meta font-medium text-[var(--fydell-evidence)]">
                 Mid-session update
               </p>
-              <p className="mt-1 text-[13.5px] text-[var(--text-primary)]">
+              <p className="mt-1 text-app-body text-[var(--text-primary)]">
                 {curveballBanner?.announcement ||
                   "Operations needs residual risk addressed before the next shift."}
               </p>
               {curveballBanner?.requiredAdaptation && (
-                <p className="mt-1 text-[12.5px] text-[var(--text-secondary)]">
+                <p className="mt-1 text-app-meta text-[var(--text-secondary)]">
                   {curveballBanner.requiredAdaptation}
                 </p>
               )}
@@ -1426,7 +1469,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             {!payload.session.curveballAcknowledgedAt && (
               <button
                 type="button"
-                className="rounded-lg bg-[var(--fydell-brand-blue)] px-3 py-2 text-[12.5px] font-semibold text-white"
+                className="rounded-lg bg-[var(--fydell-brand-blue)] px-3 py-2 text-app-meta font-semibold text-white"
                 onClick={() => {
                   void fetch(`/api/sim/sessions/${sessionId}/curveball`, {
                     method: "POST",
@@ -1447,12 +1490,12 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
         <aside className="w-full shrink-0 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] lg:sticky lg:top-14 lg:max-h-screen lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
           <div className="space-y-5 p-4">
             <section>
-              <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">Briefing</p>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--text-secondary)]">{workbench.mission}</p>
+              <p className="text-app-meta font-medium text-[var(--fydell-evidence)]">Briefing</p>
+              <p className="mt-1.5 text-app-meta leading-relaxed text-[var(--text-secondary)]">{workbench.mission}</p>
             </section>
 
             <section>
-              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">Modules</p>
+              <p className="text-app-meta font-medium text-[var(--text-tertiary)]">Modules</p>
               <ul className="mt-2 space-y-0.5">
                 {navModules.map((m) => (
                   <li key={m.id}>
@@ -1462,8 +1505,8 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                       aria-current={activeModuleId === m.id ? "true" : undefined}
                       className={
                         activeModuleId === m.id
-                          ? "relative flex w-full items-center rounded-md bg-[var(--surface-selected)] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-primary)]"
-                          : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                          ? "relative flex w-full items-center rounded-md bg-[var(--surface-selected)] px-2.5 py-2 text-left text-app-meta font-medium text-[var(--text-primary)]"
+                          : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-app-meta font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       }
                     >
                       {activeModuleId === m.id ? (
@@ -1487,8 +1530,8 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     aria-current={activeModuleId === REVIEW_ID ? "true" : undefined}
                     className={
                       activeModuleId === REVIEW_ID
-                        ? "relative flex w-full items-center rounded-md bg-[var(--surface-selected)] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-primary)]"
-                        : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                        ? "relative flex w-full items-center rounded-md bg-[var(--surface-selected)] px-2.5 py-2 text-left text-app-meta font-medium text-[var(--text-primary)]"
+                        : "flex w-full items-center rounded-md px-2.5 py-2 text-left text-app-meta font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                     }
                   >
                     {activeModuleId === REVIEW_ID ? (
@@ -1505,11 +1548,25 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
 
             <button
               type="button"
-              onClick={() => setDrawerOpen(true)}
+              onClick={() => {
+                setChatUnread(0);
+                setDrawerOpen(true);
+              }}
               className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-3 text-left hover:border-[var(--fydell-brand-blue)]"
             >
-              <p className="text-[13px] font-semibold text-[var(--text-primary)]">Ask {firstName}</p>
-              <p className="mt-0.5 text-[12px] text-[var(--text-tertiary)]">{stakeholder.role}</p>
+              <p className="flex items-center gap-2 text-app-meta font-semibold text-[var(--text-primary)]">
+                Ask {firstName}
+                {chatUnread > 0 && (
+                  <span
+                    className="inline-flex min-w-[20px] items-center justify-center rounded-full bg-[var(--fydell-brand-blue)] px-1.5 py-0.5 text-app-caption font-semibold text-white"
+                    role="status"
+                    aria-label={`${chatUnread} new message${chatUnread > 1 ? "s" : ""} from ${stakeholder.name}`}
+                  >
+                    {chatUnread}
+                  </span>
+                )}
+              </p>
+              <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">{stakeholder.role}</p>
             </button>
           </div>
         </aside>
@@ -1519,17 +1576,17 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
           {activeModuleId === REVIEW_ID ? (
             <div className="space-y-4">
               <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-                <h2 className="text-[17px] font-medium tracking-[-0.02em]">Review before you submit</h2>
+                <h2 className="text-app-section font-medium tracking-[-0.02em]">Review before you submit</h2>
                 <dl className="mt-4 space-y-4">
                   {decisionModules.map((m) => {
                     if (m.kind !== "structured_decision") return null;
                     const val = answers[m.id];
                     return (
                       <div key={m.id}>
-                        <dt className="text-[12px] font-medium text-[var(--text-tertiary)]">
+                        <dt className="text-app-meta font-medium text-[var(--text-tertiary)]">
                           {m.prompt}
                         </dt>
-                        <dd className="mt-0.5 text-[15px] text-[var(--text-primary)]">
+                        <dd className="mt-0.5 text-app-body text-[var(--text-primary)]">
                           {Array.isArray(val) ? (
                             val.length ? (
                               <ul className="list-disc space-y-0.5 pl-5">
@@ -1553,10 +1610,10 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     if (m.kind !== "written_deliverable") return null;
                     return (
                       <div key={m.id}>
-                        <dt className="text-[12px] font-medium text-[var(--text-tertiary)]">
+                        <dt className="text-app-meta font-medium text-[var(--text-tertiary)]">
                           {m.prompt}
                         </dt>
-                        <dd className="mt-0.5 whitespace-pre-line text-[15px] text-[var(--text-primary)]">
+                        <dd className="mt-0.5 whitespace-pre-line text-app-body text-[var(--text-primary)]">
                           {String(answers[m.id] ?? "").trim() || "Not written yet."}
                         </dd>
                       </div>
@@ -1575,7 +1632,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     }
                     className="mt-0.5 h-4 w-4 accent-[var(--fydell-brand-blue)]"
                   />
-                  <span className="text-[15px]">
+                  <span className="text-app-body">
                     I used an external AI tool while completing this evaluation.
                   </span>
                 </label>
@@ -1589,16 +1646,16 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                     maxLength={200}
                     placeholder="Optional: which tool and how you used it"
                     aria-label="How you used the AI tool (optional)"
-                    className="mt-3 w-full rounded-lg border border-[var(--border-subtle)] px-4 py-2.5 text-[14px] focus:border-[var(--fydell-brand-blue)] focus:outline-none"
+                    className="mt-3 w-full rounded-lg border border-[var(--border-subtle)] px-4 py-2.5 text-app-body focus:border-[var(--fydell-brand-blue)] focus:outline-none"
                   />
                 )}
-                <p className="mt-3 text-[12.5px] text-[var(--text-tertiary)]">
+                <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">
                   Disclosure is welcome. It does not lower your score by itself.
                 </p>
               </section>
 
               {submitError && (
-                <p className="rounded-xl bg-[rgba(242,107,130,0.1)] px-4 py-3 text-[14px] text-[var(--fydell-risk)]" role="alert">
+                <p className="rounded-xl bg-[rgba(242,107,130,0.1)] px-4 py-3 text-app-body text-[var(--fydell-risk)]" role="alert">
                   {submitError}
                 </p>
               )}
@@ -1606,7 +1663,7 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
               <button
                 onClick={() => void submit()}
                 disabled={submitBusy}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--fydell-brand-blue)] px-6 py-3 text-[15px] font-semibold text-white hover:bg-[#6872ff] disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--fydell-brand-blue)] px-6 py-3 text-app-body font-semibold text-white hover:bg-[var(--fydell-brand-blue-hover)] disabled:opacity-50"
               >
                 {submitBusy && <Spinner />}
                 {submitBusy ? "Submitting..." : "Submit my work"}
@@ -1718,28 +1775,28 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
           <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-[var(--surface-raised)] shadow-2xl">
             <div className="flex items-start justify-between border-b border-[var(--border-subtle)] px-5 py-4">
               <div>
-                <p className="text-[15px] font-semibold">{stakeholder.name}</p>
-                <p className="text-[12.5px] text-[var(--text-tertiary)]">
+                <p className="text-app-body font-semibold">{stakeholder.name}</p>
+                <p className="text-app-meta text-[var(--text-tertiary)]">
                   {stakeholder.role} · {workbench.companyName}
                 </p>
               </div>
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="rounded-lg px-2.5 py-1 text-[13px] font-medium text-[var(--text-tertiary)] hover:bg-[var(--surface-canvas)]"
+                className="rounded-lg px-2.5 py-1 text-app-meta font-medium text-[var(--text-tertiary)] hover:bg-[var(--surface-canvas)]"
               >
                 Close
               </button>
             </div>
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
               {messages.length === 0 && (
-                <p className="text-[13.5px] text-[var(--text-tertiary)]">
+                <p className="text-app-body text-[var(--text-tertiary)]">
                   {stakeholder.blurb} Ask about anything that seems unclear.
                 </p>
               )}
               {messages.map((m) => (
                 <div
                   key={m.id}
-                  className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-[14px] leading-relaxed ${
+                  className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-app-body leading-relaxed ${
                     m.sender === "candidate"
                       ? "ml-auto bg-[var(--fydell-brand-blue)] text-white"
                       : "bg-[var(--surface-canvas)] text-[var(--text-primary)]"
@@ -1749,12 +1806,12 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                 </div>
               ))}
               {chatBusy && (
-                <p className="flex items-center gap-2 text-[12px] text-[var(--text-tertiary)]" role="status">
+                <p className="flex items-center gap-2 text-app-meta text-[var(--text-tertiary)]" role="status">
                   <Spinner dark /> Sending...
                 </p>
               )}
               {!chatBusy && !chatError && chatDelivered && (
-                <p className="text-right text-[11.5px] text-[var(--text-tertiary)]" role="status">
+                <p className="text-right text-app-caption text-[var(--text-tertiary)]" role="status">
                   Delivered
                 </p>
               )}
@@ -1762,10 +1819,10 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             </div>
             {chatError && (
               <div className="flex items-center justify-between gap-3 border-t border-[rgba(242,107,130,0.28)] bg-[rgba(242,107,130,0.08)] px-5 py-2">
-                <p className="text-[12.5px] text-[var(--fydell-risk)]">{chatError}</p>
+                <p className="text-app-meta text-[var(--fydell-risk)]">{chatError}</p>
                 <button
                   onClick={() => void sendChat(stakeholder)}
-                  className="shrink-0 rounded-lg bg-[var(--fydell-risk)] px-3 py-1 text-[12px] font-semibold text-white hover:bg-[#d85a70]"
+                  className="shrink-0 rounded-lg bg-[var(--fydell-risk)] px-3 py-1 text-app-meta font-semibold text-white hover:bg-[var(--fydell-risk-hover)]"
                 >
                   Retry
                 </button>
@@ -1793,12 +1850,12 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
                 disabled={locked}
                 placeholder={`Message ${firstName}...`}
                 aria-label="Message"
-                className="min-h-[46px] flex-1 resize-none rounded-lg border border-[var(--border-subtle)] px-3 py-2.5 text-[14px] focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
+                className="min-h-[46px] flex-1 resize-none rounded-lg border border-[var(--border-subtle)] px-3 py-2.5 text-app-body focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
               />
               <button
                 type="submit"
                 disabled={!chatDraft.trim() || chatBusy || locked}
-                className="inline-flex items-center gap-2 rounded-lg bg-[var(--fydell-brand-blue)] px-4 py-2.5 text-[14px] font-semibold text-white hover:bg-[#6872ff] disabled:opacity-40"
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--fydell-brand-blue)] px-4 py-2.5 text-app-body font-semibold text-white hover:bg-[var(--fydell-brand-blue-hover)] disabled:opacity-40"
               >
                 {chatBusy && <Spinner />}
                 Send
@@ -1821,21 +1878,21 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
             className="absolute inset-0 bg-black/50"
           />
           <div className="relative w-full max-w-sm rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6 shadow-xl">
-            <h2 className="text-[16px] font-medium tracking-[-0.018em]">Leave this evaluation?</h2>
-            <p className="mt-2 text-[14px] leading-relaxed text-[var(--text-secondary)]">
+            <h2 className="text-app-body font-medium tracking-[-0.018em]">Leave this evaluation?</h2>
+            <p className="mt-2 text-app-body leading-relaxed text-[var(--text-secondary)]">
               Your work is saved and you can come back. The timer keeps running while you are away.
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <button
                 onClick={() => setExitOpen(false)}
                 autoFocus
-                className="rounded-lg border border-[var(--border-subtle)] px-4 py-2.5 text-[14px] font-medium hover:bg-[var(--surface-canvas)]"
+                className="rounded-lg border border-[var(--border-subtle)] px-4 py-2.5 text-app-body font-medium hover:bg-[var(--surface-canvas)]"
               >
                 Stay
               </button>
               <button
                 onClick={() => router.push("/app/candidate")}
-                className="rounded-lg bg-[var(--fydell-brand-blue)] px-4 py-2.5 text-[14px] font-semibold text-white hover:bg-[#6872ff]"
+                className="rounded-lg bg-[var(--fydell-brand-blue)] px-4 py-2.5 text-app-body font-semibold text-white hover:bg-[var(--fydell-brand-blue-hover)]"
               >
                 Leave
               </button>
@@ -1897,9 +1954,9 @@ function ModulePanel({
   if (module.kind === "briefing") {
     return (
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-        <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">Briefing</p>
-        <h2 className="mt-1 text-[18px] font-medium tracking-[-0.02em]">{module.title}</h2>
-        <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--text-secondary)]">
+        <p className="text-app-meta font-medium text-[var(--fydell-evidence)]">Briefing</p>
+        <h2 className="mt-1 text-app-section font-medium tracking-[-0.02em]">{module.title}</h2>
+        <p className="mt-4 whitespace-pre-line text-app-body leading-relaxed text-[var(--text-secondary)]">
           {module.body}
         </p>
       </section>
@@ -1910,9 +1967,9 @@ function ModulePanel({
     return (
       <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
+          <p className="text-app-body font-medium tracking-[-0.014em]">{module.title}</p>
         </div>
-        <div className="whitespace-pre-wrap px-5 py-5 text-[14.5px] leading-relaxed text-[var(--text-primary)]">
+        <div className="whitespace-pre-wrap px-5 py-5 text-app-body leading-relaxed text-[var(--text-primary)]">
           {module.content}
         </div>
       </section>
@@ -1943,9 +2000,9 @@ function ModulePanel({
     return (
       <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
+          <p className="text-app-body font-medium tracking-[-0.014em]">{module.title}</p>
           {module.instructions && (
-            <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
+            <p className="mt-1 text-app-meta text-[var(--text-secondary)]">{module.instructions}</p>
           )}
         </div>
         {ids.length > 1 && (
@@ -1956,7 +2013,7 @@ function ModulePanel({
                 <button
                   key={rid}
                   onClick={() => onTableTab(rid)}
-                  className={`rounded-t-md px-3 py-2 text-[13px] font-medium ${
+                  className={`rounded-t-md px-3 py-2 text-app-meta font-medium ${
                     rid === activeId
                       ? "border border-b-0 border-[var(--border-subtle)] bg-[var(--surface-raised)] text-[var(--fydell-brand-blue)]"
                       : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -1995,15 +2052,15 @@ function ModulePanel({
     return (
       <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
+          <p className="text-app-body font-medium tracking-[-0.014em]">{module.title}</p>
           {module.instructions && (
-            <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
+            <p className="mt-1 text-app-meta text-[var(--text-secondary)]">{module.instructions}</p>
           )}
         </div>
         <div className="grid gap-0 lg:grid-cols-2">
           <div className="border-b border-[var(--border-subtle)] lg:border-b-0 lg:border-r">
             <div className="border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4 py-2">
-              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+              <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
                 Requirements
               </p>
             </div>
@@ -2017,7 +2074,7 @@ function ModulePanel({
                       type="button"
                       disabled={locked}
                       onClick={() => onMapRequirement(itemId, module.requirementsResourceId)}
-                      className={`flex w-full items-start gap-3 px-4 py-3 text-left text-[14px] ${
+                      className={`flex w-full items-start gap-3 px-4 py-3 text-left text-app-body ${
                         mapped ? "bg-[var(--surface-selected)]" : "hover:bg-[var(--surface-panel)]"
                       } ${locked ? "cursor-not-allowed opacity-70" : ""}`}
                     >
@@ -2039,19 +2096,19 @@ function ModulePanel({
           </div>
           <div>
             <div className="border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4 py-2">
-              <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+              <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
                 Capabilities
               </p>
             </div>
             {capTable.headers.length > 0 ? (
               <div className="overflow-auto">
-                <table className="w-full border-collapse text-[13px]">
+                <table className="w-full border-collapse text-app-meta">
                   <thead>
                     <tr>
                       {capTable.headers.map((h, i) => (
                         <th
                           key={i}
-                          className="border-b border-[var(--border-subtle)] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]"
+                          className="border-b border-[var(--border-subtle)] px-3 py-2 text-left text-app-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)]"
                         >
                           {h}
                         </th>
@@ -2087,7 +2144,7 @@ function ModulePanel({
                 </table>
               </div>
             ) : (
-              <div className="whitespace-pre-wrap px-4 py-4 text-[14px] text-[var(--text-primary)]">
+              <div className="whitespace-pre-wrap px-4 py-4 text-app-body text-[var(--text-primary)]">
                 {caps?.content || "No capabilities listed."}
               </div>
             )}
@@ -2110,9 +2167,9 @@ function ModulePanel({
     return (
       <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
+          <p className="text-app-body font-medium tracking-[-0.014em]">{module.title}</p>
           {module.instructions && (
-            <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
+            <p className="mt-1 text-app-meta text-[var(--text-secondary)]">{module.instructions}</p>
           )}
         </div>
         <div className="grid gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
@@ -2128,17 +2185,17 @@ function ModulePanel({
                   } ${locked ? "cursor-not-allowed opacity-70" : ""}`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-[13px] font-semibold text-[var(--text-primary)]">
+                    <span className="font-mono text-app-meta font-semibold text-[var(--text-primary)]">
                       {t.id}
                     </span>
                     <span
-                      className={`rounded px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${severityClass[t.severity]}`}
+                      className={`rounded px-1.5 py-0.5 text-app-caption font-semibold uppercase tracking-wide ${severityClass[t.severity]}`}
                     >
                       {t.severity}
                     </span>
-                    <span className="ml-auto text-[12px] text-[var(--text-tertiary)]">{t.time}</span>
+                    <span className="ml-auto text-app-meta text-[var(--text-tertiary)]">{t.time}</span>
                   </div>
-                  <p className="text-[13.5px] text-[var(--text-secondary)]">{t.customer}</p>
+                  <p className="text-app-body text-[var(--text-secondary)]">{t.customer}</p>
                 </button>
               </li>
             ))}
@@ -2149,20 +2206,20 @@ function ModulePanel({
           <div className="px-5 py-4">
             {selected ? (
               <>
-                <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">
+                <p className="text-app-meta font-medium text-[var(--fydell-evidence)]">
                   Ticket detail
                 </p>
-                <h3 className="mt-1 font-mono text-[16px] font-semibold text-[var(--text-primary)]">
+                <h3 className="mt-1 font-mono text-app-body font-semibold text-[var(--text-primary)]">
                   {selected.id}
                 </h3>
-                <p className="mt-1 text-[14px] text-[var(--text-secondary)]">{selected.customer}</p>
-                <p className="mt-3 text-[12px] text-[var(--text-tertiary)]">Reported {selected.time} UTC</p>
-                <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--text-primary)]">
+                <p className="mt-1 text-app-body text-[var(--text-secondary)]">{selected.customer}</p>
+                <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">Reported {selected.time} UTC</p>
+                <p className="mt-3 text-app-body leading-relaxed text-[var(--text-primary)]">
                   {selected.report}
                 </p>
               </>
             ) : (
-              <p className="text-[14px] text-[var(--text-tertiary)]">Select a ticket to inspect the report.</p>
+              <p className="text-app-body text-[var(--text-tertiary)]">Select a ticket to inspect the report.</p>
             )}
           </div>
         </div>
@@ -2176,11 +2233,11 @@ function ModulePanel({
     return (
       <section className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-          <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
+          <p className="text-app-body font-medium tracking-[-0.014em]">{module.title}</p>
           {module.instructions && (
-            <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
+            <p className="mt-1 text-app-meta text-[var(--text-secondary)]">{module.instructions}</p>
           )}
-          <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
+          <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
             {done} of {total} steps confirmed
           </p>
         </div>
@@ -2197,19 +2254,19 @@ function ModulePanel({
                     on ? "bg-[var(--surface-selected)]" : "hover:bg-[var(--surface-panel)]"
                   } ${locked ? "cursor-not-allowed opacity-70" : ""}`}
                 >
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-raised)] text-[12px] font-semibold text-[var(--text-tertiary)]">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-raised)] text-app-meta font-semibold text-[var(--text-tertiary)]">
                     {on ? "✓" : idx + 1}
                   </span>
                   <span>
                     <span
-                      className={`block text-[14.5px] font-medium ${
+                      className={`block text-app-body font-medium ${
                         on ? "text-[var(--fydell-brand-blue)] line-through decoration-[var(--fydell-brand-blue)]/40" : "text-[var(--text-primary)]"
                       }`}
                     >
                       {step.label}
                     </span>
                     {step.detail && (
-                      <span className="mt-0.5 block text-[12.5px] text-[var(--text-tertiary)]">{step.detail}</span>
+                      <span className="mt-0.5 block text-app-meta text-[var(--text-tertiary)]">{step.detail}</span>
                     )}
                   </span>
                 </button>
@@ -2231,9 +2288,9 @@ function ModulePanel({
       <section className="space-y-4">
         <div className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
           <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-            <p className="text-[13.5px] font-medium tracking-[-0.014em]">{module.title}</p>
+            <p className="text-app-body font-medium tracking-[-0.014em]">{module.title}</p>
             {module.instructions && (
-              <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{module.instructions}</p>
+              <p className="mt-1 text-app-meta text-[var(--text-secondary)]">{module.instructions}</p>
             )}
           </div>
           <ul className="divide-y divide-[var(--border-subtle)]">
@@ -2250,19 +2307,19 @@ function ModulePanel({
                     } ${locked ? "cursor-not-allowed opacity-70" : ""}`}
                   >
                     <span>
-                      <span className="font-mono text-[13px] font-semibold text-[var(--text-primary)]">
+                      <span className="font-mono text-app-meta font-semibold text-[var(--text-primary)]">
                         {idx + 1}. {rule.id}
                       </span>
-                      <span className="mt-0.5 block text-[13.5px] text-[var(--text-secondary)]">
+                      <span className="mt-0.5 block text-app-body text-[var(--text-secondary)]">
                         {rule.condition || "No condition listed"}
                       </span>
                       {open && (
-                        <span className="mt-2 block text-[14px] text-[var(--text-primary)]">
+                        <span className="mt-2 block text-app-body text-[var(--text-primary)]">
                           Routes to: <strong className="font-semibold">{rule.routesTo || "-"}</strong>
                         </span>
                       )}
                     </span>
-                    <span className="shrink-0 text-[12px] font-medium text-[var(--text-tertiary)]">
+                    <span className="shrink-0 text-app-meta font-medium text-[var(--text-tertiary)]">
                       {open ? "Reviewed" : "Expand"}
                     </span>
                   </button>
@@ -2277,9 +2334,9 @@ function ModulePanel({
         {context.map((doc) => (
           <div key={doc.title} className="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
             <div className="border-b border-[var(--border-subtle)] px-5 py-3">
-              <p className="text-[13.5px] font-semibold">{doc.title}</p>
+              <p className="text-app-body font-semibold">{doc.title}</p>
             </div>
-            <div className="whitespace-pre-wrap px-5 py-4 text-[14px] leading-relaxed text-[var(--text-primary)]">
+            <div className="whitespace-pre-wrap px-5 py-4 text-app-body leading-relaxed text-[var(--text-primary)]">
               {doc.content}
             </div>
           </div>
@@ -2291,16 +2348,16 @@ function ModulePanel({
   if (module.kind === "structured_decision") {
     return (
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-        <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">Decision</p>
-        <h2 className="mt-1 text-[16px] font-medium tracking-[-0.018em]">{module.prompt}</h2>
-        {module.helpText && <p className="mt-1 text-[13.5px] text-[var(--text-tertiary)]">{module.helpText}</p>}
+        <p className="text-app-meta font-medium text-[var(--fydell-evidence)]">Decision</p>
+        <h2 className="mt-1 text-app-body font-medium tracking-[-0.018em]">{module.prompt}</h2>
+        {module.helpText && <p className="mt-1 text-app-body text-[var(--text-tertiary)]">{module.helpText}</p>}
 
         {module.decisionKind === "single_select" && (
           <div className="mt-4 space-y-2" role="radiogroup" aria-label={module.prompt}>
             {(module.options || []).map((o) => (
               <label
                 key={o}
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-[15px] ${
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-app-body ${
                   answers[module.id] === o
                     ? "border-[var(--fydell-brand-blue)] bg-[var(--surface-selected)]"
                     : "border-[var(--border-subtle)] hover:border-[var(--border-strong)]"
@@ -2328,7 +2385,7 @@ function ModulePanel({
               return (
                 <label
                   key={o}
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-[15px] ${
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-app-body ${
                     selected
                       ? "border-[var(--fydell-brand-blue)] bg-[var(--surface-selected)]"
                       : "border-[var(--border-subtle)] hover:border-[var(--border-strong)]"
@@ -2371,7 +2428,7 @@ function ModulePanel({
               )
             }
             aria-label={module.prompt}
-            className="mt-4 w-56 rounded-lg border border-[var(--border-subtle)] px-3 py-3 font-mono text-[15px] focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
+            className="mt-4 w-56 rounded-lg border border-[var(--border-subtle)] px-3 py-3 font-mono text-app-body focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
           />
         )}
       </section>
@@ -2383,11 +2440,11 @@ function ModulePanel({
     const text = String(answers[module.id] ?? "");
     return (
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-        <p className="text-[12px] font-medium text-[var(--fydell-evidence)]">
+        <p className="text-app-meta font-medium text-[var(--fydell-evidence)]">
           Written response
         </p>
-        <h2 className="mt-1 text-[16px] font-medium tracking-[-0.018em]">{module.prompt}</h2>
-        {module.helpText && <p className="mt-1 text-[13.5px] text-[var(--text-tertiary)]">{module.helpText}</p>}
+        <h2 className="mt-1 text-app-body font-medium tracking-[-0.018em]">{module.prompt}</h2>
+        {module.helpText && <p className="mt-1 text-app-body text-[var(--text-tertiary)]">{module.helpText}</p>}
         <textarea
           value={text}
           disabled={locked}
@@ -2398,9 +2455,9 @@ function ModulePanel({
           rows={6}
           maxLength={limit}
           aria-label={module.prompt}
-          className="mt-4 w-full resize-y rounded-lg border border-[var(--border-subtle)] px-4 py-3 text-[15px] leading-relaxed focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
+          className="mt-4 w-full resize-y rounded-lg border border-[var(--border-subtle)] px-4 py-3 text-app-body leading-relaxed focus:border-[var(--fydell-brand-blue)] focus:outline-none disabled:bg-[var(--surface-panel)]"
         />
-        <p className="mt-1 text-right text-[12px] text-[var(--text-tertiary)]" aria-live="polite">
+        <p className="mt-1 text-right text-app-meta text-[var(--text-tertiary)]" aria-live="polite">
           {text.length} / {limit}
         </p>
       </section>
@@ -2410,13 +2467,13 @@ function ModulePanel({
   if (module.kind === "stakeholder") {
     return (
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-        <h2 className="text-[16px] font-medium tracking-[-0.018em]">{module.title || "Stakeholder"}</h2>
-        <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
+        <h2 className="text-app-body font-medium tracking-[-0.018em]">{module.title || "Stakeholder"}</h2>
+        <p className="mt-2 text-app-body text-[var(--text-secondary)]">
           Open the conversation panel to ask {stakeholderName} clarifying questions.
         </p>
         <button
           onClick={onOpenStakeholder}
-          className="mt-4 rounded-lg bg-[var(--fydell-brand-blue)] px-4 py-2.5 text-[14px] font-semibold text-white hover:bg-[#6872ff]"
+          className="mt-4 rounded-lg bg-[var(--fydell-brand-blue)] px-4 py-2.5 text-app-body font-semibold text-white hover:bg-[var(--fydell-brand-blue-hover)]"
         >
           Ask {stakeholderName}
         </button>
@@ -2427,9 +2484,9 @@ function ModulePanel({
   if (module.kind === "curveball") {
     return (
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-6">
-        <p className="text-[12px] font-medium text-[var(--fydell-changed)]">Update</p>
-        <p className="mt-2 text-[15px] leading-relaxed">{module.announcement}</p>
-        <p className="mt-3 text-[14px] text-[var(--text-secondary)]">{module.requiredAdaptation}</p>
+        <p className="text-app-meta font-medium text-[var(--fydell-changed)]">Update</p>
+        <p className="mt-2 text-app-body leading-relaxed">{module.announcement}</p>
+        <p className="mt-3 text-app-body text-[var(--text-secondary)]">{module.requiredAdaptation}</p>
       </section>
     );
   }

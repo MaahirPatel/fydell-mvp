@@ -9,13 +9,12 @@ import type {
   StructuredDecisionModule,
   WrittenDeliverableModule,
 } from "./types";
+import {
+  withTeammateDisclosure,
+  type DisclosedStakeholder,
+} from "../teammate-disclosure";
 
-export interface CandidateStakeholderV2 {
-  id: string;
-  name: string;
-  role: string;
-  blurb: string;
-}
+export interface CandidateStakeholderV2 extends DisclosedStakeholder {}
 
 export type CandidateModuleV2 =
   | Exclude<
@@ -115,12 +114,14 @@ export function toV2CandidateView(def: SimulationDefinitionV2): CandidateSimulat
     version: def.version,
     modules: def.modules.map(stripModule),
     competencies: def.competencies.map((c) => ({ key: c.key, label: c.label })),
-    stakeholders: def.stakeholders.map((s) => ({
-      id: s.id,
-      name: s.name,
-      role: s.role,
-      blurb: s.blurb,
-    })),
+    stakeholders: withTeammateDisclosure(
+      def.stakeholders.map((s) => ({
+        id: s.id,
+        name: s.name,
+        role: s.role,
+        blurb: s.blurb,
+      }))
+    ),
     opportunities: def.scoring.opportunities.map((o) => ({
       id: o.id,
       competencyKey: o.competencyKey,

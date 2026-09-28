@@ -374,7 +374,7 @@ export const MICRO_SOLUTIONS_ENGINEER: MicroSimContent = {
       id: "alex",
       name: "Alex Morgan",
       role: "Account Executive",
-      blurb: "Owns the deal. Wants a confident answer for tomorrow's demo.",
+      blurb: "Owns the deal. Wants an evidence-backed answer for tomorrow's demo.",
       knowledge: [
         "SSO and getting candidate results into the CRM are mandatory; real-time updates are nice-to-have.",
         "Sales said 'we support CRM integration' but promised no specific synchronization method.",

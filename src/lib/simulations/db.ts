@@ -3,6 +3,16 @@ import { createHash, randomBytes } from "crypto";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import type { SimulationContent } from "./types";
 import { invitationGate } from "./invitation-gate";
+import { buildScenarioPackage, scenarioIdForTemplateSlug } from "./scenario-package";
+import {
+  buildSubmissionSnapshot,
+  computeReceiptHash,
+  isValidFileSnapshotShape,
+  validateFileSnapshot,
+  type FileSnapshotInput,
+} from "./submission-files";
+import { enqueueEmail } from "@/lib/ops/email-outbox";
+import { appUrl } from "@/lib/app-url";
 
 export { invitationGate } from "./invitation-gate";
 
@@ -236,6 +246,17 @@ export async function getInvitationByToken(token: string): Promise<InvitationRow
   return (data as InvitationRow) || null;
 }
 
+export async function getInvitationById(id: string): Promise<InvitationRow | null> {
+  if (!isSupabaseConfigured()) return null;
+  const db = createAdminSupabaseClient();
+  const { data } = await db
+    .from("sim_invitations")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  return (data as InvitationRow) || null;
+}
+
 /** Mark opened (first view) : non-fatal if racing. */
 export async function markInvitationOpened(id: string): Promise<void> {
   const db = createAdminSupabaseClient();
@@ -251,9 +272,33 @@ export async function acceptInvitation(
   userId: string,
   userEmail: string
 ): Promise<{ session: SessionRow; invitation: InvitationRow }> {
-  const db = createAdminSupabaseClient();
   const inv = await getInvitationByToken(token);
   if (!inv) throw new Error("Invitation not found");
+  return acceptInvitationRow(inv, userId, userEmail);
+}
+
+/**
+ * Accept by invitation id: same gate, same email-ownership check, same
+ * idempotency as the token-based accept. Used by candidate clients (e.g.
+ * the desktop inbox) that already have a server-scoped listing, so no token
+ * needs to round-trip through the client.
+ */
+export async function acceptInvitationById(
+  invitationId: string,
+  userId: string,
+  userEmail: string
+): Promise<{ session: SessionRow; invitation: InvitationRow }> {
+  const inv = await getInvitationById(invitationId);
+  if (!inv) throw new Error("Invitation not found");
+  return acceptInvitationRow(inv, userId, userEmail);
+}
+
+async function acceptInvitationRow(
+  inv: InvitationRow,
+  userId: string,
+  userEmail: string
+): Promise<{ session: SessionRow; invitation: InvitationRow }> {
+  const db = createAdminSupabaseClient();
   const gate = invitationGate(inv);
   if (!gate.ok) throw new Error(gate.reason);
 
@@ -622,11 +667,11 @@ export async function recordEvent(
 
 export async function listEvents(
   sessionId: string
-): Promise<{ id: string; event_type: string; actor: string; resource_id: string | null; payload: Record<string, unknown>; created_at: string }[]> {
+): Promise<{ id: string; event_type: string; actor: string; resource_id: string | null; task_id: string | null; payload: Record<string, unknown>; created_at: string }[]> {
   const db = createAdminSupabaseClient();
   const { data } = await db
     .from("sim_session_events")
-    .select("id, event_type, actor, resource_id, payload, created_at")
+    .select("id, event_type, actor, resource_id, task_id, payload, created_at")
     .eq("session_id", sessionId)
     .order("seq");
   return data || [];
@@ -742,9 +787,135 @@ export async function acknowledgeCurveball(sessionId: string): Promise<void> {
     .is("curveball_acknowledged_at", null);
 }
 
+/**
+ * Extend a session's deadline by extraMs (SIM-05 fair response window,
+ * SIM-07 outage pause, SCEN-08 accommodations). The reason is recorded as a
+ * system event so the extension is auditable. Returns the new ends_at.
+ */
+export async function extendSessionEndsAt(
+  sessionId: string,
+  extraMs: number,
+  reason: string,
+  opts?: { clientEventId?: string; extensionKey?: string }
+): Promise<string> {
+  if (!Number.isFinite(extraMs) || extraMs <= 0)
+    throw new Error("extraMs must be positive");
+  const db = createAdminSupabaseClient();
+  const { data: session } = await db
+    .from("sim_sessions")
+    .select("ends_at, status")
+    .eq("id", sessionId)
+    .maybeSingle();
+  if (!session?.ends_at) throw new Error("Session has no deadline to extend");
+  if (session.status !== "active") throw new Error("Only active sessions can be extended");
+  const newEndsAt = new Date(new Date(session.ends_at).getTime() + extraMs).toISOString();
+  const { error } = await db
+    .from("sim_sessions")
+    .update({ ends_at: newEndsAt })
+    .eq("id", sessionId);
+  if (error) throw new Error(`Could not extend deadline: ${error.message}`);
+  await recordEvent(sessionId, {
+    eventType: "deadline_extended",
+    actor: "system",
+    payload: {
+      extraMs,
+      reason,
+      newEndsAt,
+      ...(opts?.extensionKey ? { extensionKey: opts.extensionKey } : {}),
+    },
+    clientEventId: opts?.clientEventId || `deadline_ext_${sessionId}_${Date.now()}`,
+  });
+  return newEndsAt;
+}
+
 // ---------------------------------------------------------------------------
 // Submission (idempotent; snapshot is immutable at the database level)
 // ---------------------------------------------------------------------------
+
+/**
+ * Best-effort submission notifications. Enqueues the employer "candidate
+ * submitted" email for every active org member and the candidate's own
+ * "submission received" confirmation. Never throws: a notification failure
+ * must not break or delay the submission itself. Idempotent via the outbox's
+ * idempotency-key upsert, so duplicate submissions never double-notify.
+ */
+async function notifySubmissionReceived(args: {
+  sessionId: string;
+  submissionId: string;
+  invitationId: string;
+  organizationId: string;
+}): Promise<void> {
+  try {
+    const db = createAdminSupabaseClient();
+    const { data: inv } = await db
+      .from("sim_invitations")
+      .select("candidate_email, candidate_name")
+      .eq("id", args.invitationId)
+      .maybeSingle();
+    if (!inv?.candidate_email) return;
+
+    const { data: org } = await db
+      .from("organizations")
+      .select("name")
+      .eq("id", args.organizationId)
+      .maybeSingle();
+
+    const { data: members } = await db
+      .from("organization_members")
+      .select("user_id")
+      .eq("organization_id", args.organizationId)
+      .eq("status", "active");
+    const userIds = [...new Set((members ?? []).map((m) => m.user_id).filter(Boolean))];
+    let employerRecipients: { email: string; name: string | null }[] = [];
+    if (userIds.length > 0) {
+      const { data: profiles } = await db
+        .from("profiles")
+        .select("id, email, full_name")
+        .in("id", userIds);
+      employerRecipients = (profiles ?? [])
+        .filter((p) => typeof p.email === "string" && p.email.length > 0)
+        .map((p) => ({ email: p.email as string, name: (p.full_name as string | null) ?? null }));
+    }
+
+    const siteUrl = appUrl();
+    const candidateName = inv.candidate_name || inv.candidate_email;
+    const companyName = (org?.name as string | undefined) || "";
+
+    for (const recipient of employerRecipients) {
+      await enqueueEmail({
+        eventType: "employer_session_submitted",
+        templateKey: "employer_session_submitted",
+        recipientEmail: recipient.email,
+        recipientName: recipient.name,
+        payload: {
+          fullName: candidateName,
+          companyName,
+          actionUrl: `${siteUrl}/app/employer`,
+          siteUrl,
+        },
+        relatedEntityType: "sim_submission",
+        relatedEntityId: args.submissionId,
+        idempotencyKey: `submission-employer-notify:${args.submissionId}:${recipient.email.toLowerCase()}`,
+        priority: 10,
+      });
+    }
+
+    await enqueueEmail({
+      eventType: "candidate_submission_received",
+      templateKey: "candidate_submission_received",
+      recipientEmail: inv.candidate_email,
+      recipientName: inv.candidate_name,
+      payload: { fullName: candidateName, siteUrl },
+      relatedEntityType: "sim_submission",
+      relatedEntityId: args.submissionId,
+      idempotencyKey: `submission-candidate-notify:${args.submissionId}`,
+      priority: 10,
+    });
+  } catch {
+    // Notifications are best-effort; the submission already succeeded.
+  }
+}
+
 export async function submitSession(
   sessionId: string,
   userId: string,
@@ -813,7 +984,112 @@ export async function submitSession(
     clientEventId: `submit_${sessionId}`,
   });
 
+  // Fresh submission only: notify the employer and confirm to the candidate.
+  // Best-effort; never blocks the submission response.
+  await notifySubmissionReceived({
+    sessionId,
+    submissionId: sub.id,
+    invitationId: session.invitation_id,
+    organizationId: session.organization_id,
+  });
+
   return { submissionId: sub.id, alreadySubmitted: false };
+}
+
+export async function getTemplateById(templateId: string): Promise<TemplateRow> {
+  const db = createAdminSupabaseClient();
+  const { data } = await db.from("sim_templates").select("*").eq("id", templateId).maybeSingle();
+  if (!data) throw new Error("Template not found");
+  return data as TemplateRow;
+}
+
+// ---------------------------------------------------------------------------
+// File-snapshot submission (W4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Submit with a full file snapshot (desktop W4 path). The snapshot is
+ * validated (every client-claimed hash recomputed server-side), the receipt
+ * hash is computed by the server, and everything is stored transactionally
+ * via `submit_session_atomic` — all files or none. Idempotent: resubmitting
+ * returns the existing submission id and its stored receipt hash.
+ *
+ * The existing `submitSession()` path is untouched; web candidates never send
+ * a fileSnapshot and never reach this function.
+ */
+export async function submitSessionWithSnapshot(
+  sessionId: string,
+  userId: string,
+  externalAiDisclosed: boolean,
+  fileSnapshot: unknown,
+  answers?: Record<string, unknown>
+): Promise<{ submissionId: string; alreadySubmitted: boolean; receiptHash: string }> {
+  if (!isValidFileSnapshotShape(fileSnapshot)) {
+    throw new Error("Malformed file snapshot");
+  }
+  const session = await getSessionForCandidate(sessionId, userId);
+  const template = await getTemplateById(session.template_id);
+  const scenarioId = scenarioIdForTemplateSlug(template.slug);
+  if (!scenarioId) throw new Error("This session has no scenario file package.");
+  const pkg = buildScenarioPackage(scenarioId);
+
+  const snap = fileSnapshot as FileSnapshotInput;
+  validateFileSnapshot(snap, pkg.scenarioId, pkg.scenarioVersion);
+  const receiptHash = computeReceiptHash(sessionId, pkg.scenarioId, pkg.scenarioVersion, snap.manifest);
+
+  const state = await getSessionState(sessionId);
+  const messages = await listMessages(sessionId);
+  // The client's final answers (handoff text, __aiDisclosure) merge into the
+  // deliverable, mirroring the non-snapshot submit path.
+  const deliverable =
+    answers && typeof answers === "object" && !Array.isArray(answers)
+      ? { ...(state.deliverable as Record<string, unknown>), ...answers }
+      : state.deliverable;
+  const snapshot = buildSubmissionSnapshot({
+    deliverable,
+    notes: state.notes,
+    workspace: state.workspace,
+    completedTaskIds: state.completed_task_ids,
+    messageCount: messages.length,
+    submittedRevision: state.revision,
+    fileSnapshot: {
+      scenarioId: pkg.scenarioId,
+      scenarioVersion: pkg.scenarioVersion,
+      files: snap.files,
+      manifest: snap.manifest,
+    },
+    receiptHash,
+  });
+
+  const db = createAdminSupabaseClient();
+  const { data, error } = await db.rpc("submit_session_atomic", {
+    p_session_id: sessionId,
+    p_snapshot: snapshot,
+    p_disclosed: externalAiDisclosed,
+  });
+  if (error) throw new Error(`Could not submit file snapshot: ${error.message}`);
+  const row = (Array.isArray(data) ? data[0] : data) as {
+    submission_id?: string;
+    already_submitted?: boolean;
+    receipt_hash?: string;
+  } | null;
+  if (!row?.submission_id) throw new Error("Atomic submit returned no submission id");
+  const alreadySubmitted = Boolean(row.already_submitted);
+  if (!alreadySubmitted) {
+    // Fresh submission only: notify the employer and confirm to the candidate.
+    // Best-effort; never blocks the submission response.
+    await notifySubmissionReceived({
+      sessionId,
+      submissionId: row.submission_id,
+      invitationId: session.invitation_id,
+      organizationId: session.organization_id,
+    });
+  }
+  return {
+    submissionId: row.submission_id,
+    alreadySubmitted,
+    receiptHash: row.receipt_hash || receiptHash,
+  };
 }
 
 // ---------------------------------------------------------------------------

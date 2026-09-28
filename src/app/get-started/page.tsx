@@ -50,8 +50,8 @@ export default function GetStartedPage() {
                 <Icon className="h-5 w-5" strokeWidth={1.8} aria-hidden />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[16px] font-medium text-[var(--text-primary)]">{title}</span>
-                <span className="mt-1 block text-[14px] leading-[1.55] text-[var(--text-secondary)]">{body}</span>
+                <span className="block text-app-body font-medium text-[var(--text-primary)]">{title}</span>
+                <span className="mt-1 block text-app-body leading-[1.55] text-[var(--text-secondary)]">{body}</span>
               </span>
               <ArrowRight
                 aria-hidden

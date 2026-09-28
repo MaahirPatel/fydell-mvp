@@ -102,7 +102,7 @@ export default async function AdminOverviewPage() {
       />
 
       {!emailConfigured ? (
-        <div className="mt-6 rounded-[12px] border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-4 py-3 text-[13px] text-[#FCD34D]">
+        <div className="mt-6 rounded-[12px] border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-4 py-3 text-app-meta text-[#FCD34D]">
           Email provider is not configured yet (`RESEND_API_KEY` missing). Pilot
           acknowledgements and admin alerts will stay queued until Resend is
           connected in Vercel.
@@ -134,7 +134,7 @@ export default async function AdminOverviewPage() {
                 <li key={row.id}>
                   <Link
                     href={`/admin/pilot-requests/${row.id}`}
-                    className="flex items-start justify-between gap-3 rounded-[var(--radius-control)] px-3.5 py-3 text-[13px] transition-colors hover:bg-[var(--surface-hover)]"
+                    className="flex items-start justify-between gap-3 rounded-[var(--radius-control)] px-3.5 py-3 text-app-meta transition-colors hover:bg-[var(--surface-hover)]"
                   >
                     <div className="min-w-0">
                       <p className="font-medium text-[var(--text-primary)]">
@@ -163,7 +163,7 @@ export default async function AdminOverviewPage() {
               {failedEmails.map((row) => (
                 <li
                   key={row.id}
-                  className="rounded-[var(--radius-control)] bg-[var(--surface-band)] px-3.5 py-3 text-[13px]"
+                  className="rounded-[var(--radius-control)] bg-[var(--surface-band)] px-3.5 py-3 text-app-meta"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">

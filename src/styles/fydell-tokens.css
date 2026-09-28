@@ -1,0 +1,380 @@
+/* ============================================================================
+   Fydell design tokens — the single canonical token system.
+
+   ONE file owns every design value for the web application: the public site,
+   auth, the employer console, the candidate workbench, the engineering
+   passport, and the evidence report. src/app/globals.css imports this file
+   and must not redeclare any token defined here.
+
+   Themes:
+   - :root is the LIGHT platform default (warm ivory, oklch hue system).
+   - .theme-ink re-points the same names for dark contexts (marketing ink
+     sections, code surfaces). Semantic hues keep their MEANING across
+     themes; only their luminance moves.
+
+   Conventions (from the approved visual contract):
+   - One interface typeface (Geist Sans) + one code monospace (Geist Mono).
+   - Product type scale is FIXED (a console is learned); marketing may use
+     the fluid --step-* scale.
+   - Spacing on a 4px base; 8px primary rhythm.
+   - Borders are hairlines only; max containment depth 2.
+   - Text hierarchy is carried by solid colours, never by opacity.
+   - Motion: 120-220ms state changes only; prefers-reduced-motion kills it.
+   - Focus is never optional: 2px ring, 2px offset.
+   ========================================================================== */
+
+:root,
+.marketing-theme {
+  color-scheme: light;
+
+  /* ---- Palette hues ---- */
+  --hue-brand: 285;
+  --hue-evidence: 178;
+  --hue-signal: 258;
+  --hue-warm: 52;
+
+  /* ---- Surfaces ---- */
+  --surface-canvas: oklch(99.3% 0.002 var(--hue-signal));
+  --surface-deep: oklch(96.4% 0.004 var(--hue-signal));
+  --surface-band: oklch(97.8% 0.003 var(--hue-signal));
+  --surface-raised: #ffffff;
+  --surface-panel: oklch(98.6% 0.003 var(--hue-signal));
+  --surface-hover: oklch(96.8% 0.005 var(--hue-signal));
+  --surface-selected: oklch(94.6% 0.008 var(--hue-signal));
+  --surface-paper: #ffffff;
+  --surface-0: var(--surface-raised);
+  --surface-code: oklch(19% 0.02 var(--hue-signal));
+  --surface-code-raised: oklch(23% 0.022 var(--hue-signal));
+  --wash-sage: oklch(95.5% 0.02 var(--hue-evidence));
+  --surface-intelligence: #f3eefe;
+  --surface-observation: #e8f7f4;
+  --surface-support: #ebf6ef;
+  --surface-uncertain: #fbf3e4;
+  --surface-counter: #fdedf0;
+
+  /* ---- Borders ---- */
+  --border-subtle: oklch(20% 0.02 var(--hue-signal) / 0.08);
+  --border-default: oklch(20% 0.02 var(--hue-signal) / 0.13);
+  --border-strong: oklch(20% 0.02 var(--hue-signal) / 0.22);
+
+  /* ---- Text ---- */
+  --text-primary: oklch(17% 0.015 var(--hue-signal));
+  --text-body: oklch(30% 0.016 var(--hue-signal));
+  --text-secondary: oklch(42% 0.018 var(--hue-signal));
+  --text-tertiary: oklch(51% 0.016 var(--hue-signal));
+  --text-disabled: oklch(58% 0.012 var(--hue-signal));
+
+  /* ---- Controls ---- */
+  --control-solid: oklch(17% 0.015 var(--hue-signal));
+  --control-solid-hover: oklch(28% 0.02 var(--hue-signal));
+  --control-solid-active: #000000;
+  --control-solid-ink: #ffffff;
+
+  /* ---- Brand ---- */
+  --brand-blue: oklch(56% 0.2 var(--hue-signal));
+  --brand-teal: oklch(64% 0.12 var(--hue-evidence));
+  --brand-violet: oklch(54% 0.24 var(--hue-brand));
+  --brand-coral: oklch(62% 0.2 18);
+  --field-teal: oklch(95% 0.04 var(--hue-evidence));
+  --field-blue: oklch(95% 0.035 var(--hue-signal));
+  --field-violet: oklch(95% 0.04 var(--hue-brand));
+  --field-coral: oklch(95% 0.035 18);
+  --field-lime: oklch(96% 0.06 125);
+  --ink-teal: #0b5e58;
+  --ink-blue: #1d4ed8;
+  --ink-violet: #5b21b6;
+  --ink-coral: #b4213f;
+  --field-warm: oklch(96% 0.04 var(--hue-warm));
+  --ink-warm: oklch(45% 0.13 var(--hue-warm));
+  --brand-warm: oklch(70% 0.17 var(--hue-warm));
+
+  /* ---- Evidence and state ---- */
+  --fydell-brand-blue: #5662ff;
+  --fydell-brand-blue-hover: #6872ff;
+  --fydell-brand-blue-active: #4b56f0;
+  --fydell-brand-red: #f26b82;
+  --fydell-action: #e8eaed;
+  --fydell-evidence: #4a5bd4;
+  --fydell-evidence-selected: #3547c4;
+  --fydell-risk: #c2405a;
+  --fydell-risk-hover: #d85a70;
+  --fydell-changed: #a9752a;
+  --fydell-good: #3f7d5c;
+  --action-ink: oklch(45% 0.2 var(--hue-brand));
+  --action-ink-ring: rgba(124, 58, 237, 0.26);
+  --fydell-verified: #7a4fa0;
+  --evidence-generated: #6d28d9;
+  --evidence-observed: #0b6e67;
+  --evidence-support: #2f7a4f;
+  --evidence-uncertain: #8f5d12;
+  --evidence-counter: #b4213f;
+
+  /* ---- Pipeline viz ---- */
+  --viz-track: var(--status-neutral-bg);
+  --viz-idle: var(--status-neutral-line);
+  --viz-active: var(--status-attention-ink);
+  --viz-done: var(--status-positive-ink);
+  --viz-attention: var(--status-attention-ink);
+
+  /* ---- Status ---- */
+  --status-positive-bg: rgba(47, 122, 79, 0.1);
+  --status-positive-ink: #256b43;
+  --status-positive-line: rgba(47, 122, 79, 0.22);
+  --status-neutral-bg: rgba(15, 17, 23, 0.05);
+  --status-neutral-ink: #4b5262;
+  --status-neutral-line: rgba(15, 17, 23, 0.12);
+  --status-attention-bg: rgba(180, 120, 20, 0.1);
+  --status-attention-ink: #80520c;
+  --status-attention-line: rgba(180, 120, 20, 0.22);
+
+  /* ---- Stage ---- */
+  --stage-bg: oklch(97.2% 0.004 var(--hue-signal));
+  --stage-bg-2: oklch(96.2% 0.006 var(--hue-signal));
+  --stage-grid: oklch(20% 0.02 var(--hue-signal) / 0.055);
+  --stage-ink: var(--text-secondary);
+  --page-grid: oklch(20% 0.02 var(--hue-signal) / 0.055);
+
+  /* ---- Type ---- */
+  --type-display: clamp(3rem, 2rem + 5vw, 4.5rem);
+  --type-page: clamp(2.75rem, 1.9rem + 4.2vw, 4.5rem);
+  --type-section: clamp(1.75rem, 1.35rem + 1.9vw, 2.5rem);
+  --type-app-page: 1.625rem;
+  --type-app-section: 1.0625rem;
+  --type-app-body: 0.875rem;
+  --type-app-meta: 0.78125rem;
+  --lh-app-page: 1.15;
+  --lh-app-section: 1.3;
+  --lh-app-body: 1.5;
+  --step--1: clamp(0.8125rem, 0.785rem + 0.12vw, 0.875rem);
+  --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+  --step-1: clamp(1.125rem, 1.04rem + 0.4vw, 1.3125rem);
+  --step-2: clamp(1.5rem, 1.28rem + 1vw, 2.25rem);
+  --step-3: clamp(2rem, 1.55rem + 1.9vw, 3.25rem);
+  --step-4: clamp(2.75rem, 1.85rem + 3.4vw, 5rem);
+
+  /* ---- Spacing ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 80px;
+  --space-10: 96px;
+  --space-11: 120px;
+  --space-12: 144px;
+
+  /* ---- Radii ---- */
+  --radius-tag: 4px;
+  --radius-control: 6px;
+  --radius-panel: 10px;
+  --radius-frame: 14px;
+
+  /* ---- Shadows ---- */
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-pop: 0 8px 28px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 1px 2px rgba(15, 17, 23, 0.05), 0 4px 14px rgba(15, 17, 23, 0.04);
+  --shadow-float: 0 2px 8px rgba(15, 17, 23, 0.06), 0 20px 48px rgba(15, 17, 23, 0.1);
+  --shadow-inspector: 0 1px 2px rgba(15, 17, 23, 0.07), 0 12px 28px rgba(15, 17, 23, 0.09);
+  --shadow-stage: 0 1px 1px rgba(0, 0, 0, 0.04), 0 24px 48px -12px rgba(8, 12, 40, 0.45), 0 48px 96px -24px rgba(8, 12, 40, 0.35);
+  --shadow-1: 0 1px 2px rgba(15, 17, 23, 0.04), 0 2px 6px rgba(15, 17, 23, 0.03);
+  --shadow-2: 0 1px 2px rgba(15, 17, 23, 0.05), 0 8px 20px -8px rgba(15, 17, 23, 0.12);
+  --shadow-3: 0 2px 4px rgba(15, 17, 23, 0.04), 0 20px 44px -16px rgba(15, 17, 23, 0.18);
+  --shadow-4: 0 28px 72px -24px rgba(10, 14, 40, 0.5);
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-fast: 140ms;
+  --motion-panel: 190ms;
+  --motion-reveal: 560ms;
+
+  /* ---- Layout and marketing ---- */
+  --marketing-container: 1180px;
+  --marketing-page-x: 40px;
+  --marketing-section-y: 152px;
+  --marketing-section-y-tight: 112px;
+  --marketing-header-to-visual: 84px;
+  --marketing-column-gap: 104px;
+  --page-max-width: 1320px;
+  --section-narrative-py: clamp(7.5rem, 12vh, 11rem);
+  --page-bg: var(--surface-canvas);
+  --marketing-gutter: clamp(1.25rem, 0.8rem + 2vw, 3rem);
+
+  /* ---- Depth ---- */
+  --depth-ambient: radial-gradient(
+    120% 80% at 50% -10%,
+    rgba(86, 98, 255, 0.06) 0%,
+    rgba(86, 98, 255, 0.02) 38%,
+    transparent 70%
+  );
+  --depth-surface-top: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.035) 0%,
+    rgba(255, 255, 255, 0) 120px
+  );
+
+  /* ---- Aliases ---- */
+  --bg: var(--surface-canvas);
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --border: var(--border-subtle);
+  --risk: var(--fydell-risk);
+  --danger: var(--fydell-risk);
+  --warning: var(--fydell-changed);
+
+  /* ---- Other ---- */
+  --nav-scrim: oklch(99.3% 0.002 var(--hue-signal) / 0.9);
+  --passport-cover: oklch(30% 0.06 var(--hue-evidence));
+  --hero-panel: oklch(30% 0.14 var(--hue-brand));
+  --hero-panel-ink: #d9ccff;
+
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+}
+
+/* Contract aliases carried from the shared token contract. Values are
+   pinned to the live palette above; the names exist so passport and
+   desktop surfaces written against the contract keep working. */
+:root {
+  --font-sans: "Geist Sans", "Geist", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --ev-observed: #0b6e67;
+  --ev-observed-ink: #0b5e58;
+  --ev-observed-field: #e3f2ef;
+  --ev-generated: #6d28d9;
+  --ev-generated-ink: #5b21b6;
+  --ev-generated-field: #efe7fb;
+  --ev-attention: #a9752a;
+  --ev-attention-ink: #80520c;
+  --ev-attention-field: #fbf3e2;
+  --ev-success: #3f7d5c;
+  --ev-success-ink: #2f6b4a;
+  --ev-success-field: #e9f4ee;
+  --ev-error: #c2405a;
+  --ev-error-ink: #a83248;
+  --ev-error-field: #fbe9ed;
+  --action: #4a5bd4;
+  --action-hover: #3d4dc2;
+  --text-on-solid: #ffffff;
+  --focus-ring: 2px solid var(--action-ink);
+  --focus-ring-offset: 2px;
+  --control-height: 42px;
+  --control-height-sm: 34px;
+  --control-padding-x: 12px;
+  --shell-rail-width: 210px;
+  --shell-inspector-width: 280px;
+  --shell-commandbar-height: 48px;
+  --type-app-page-lh: 1.15;
+  --type-app-page-tracking: -0.02em;
+  --type-app-section-lh: 1.3;
+  --type-app-section-tracking: -0.012em;
+  --type-app-body-lh: 1.5;
+  --type-app-meta-lh: 1.4;
+}
+
+/* ============================================================================
+   Ink theme — dark contexts. Re-points the shared token names so every
+   component written against --surface-*, --text-* and --border-* follows
+   without a parallel stylesheet.
+   ========================================================================== */
+.theme-ink {
+  color-scheme: dark;
+
+  --surface-canvas: oklch(14.2% 0.008 268);
+  --surface-deep: oklch(12% 0.008 268);
+  --surface-band: oklch(15.6% 0.009 268);
+  --surface-raised: oklch(17.4% 0.01 268);
+  --surface-panel: oklch(16.2% 0.009 268);
+  --surface-hover: oklch(20.5% 0.011 268);
+  --surface-selected: oklch(23.5% 0.013 268);
+  --surface-paper: oklch(17.4% 0.01 268);
+  --surface-code: oklch(12.6% 0.008 268);
+  --surface-code-raised: oklch(15.4% 0.009 268);
+  --border-subtle: rgba(255, 255, 255, 0.065);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-primary: oklch(96.5% 0.004 268);
+  --text-secondary: oklch(72% 0.012 268);
+  --text-tertiary: oklch(61% 0.012 268);
+  --text-disabled: oklch(48% 0.01 268);
+  --control-solid: oklch(96.5% 0.004 268);
+  --control-solid-hover: #ffffff;
+  --control-solid-active: oklch(88% 0.006 268);
+  --control-solid-ink: oklch(14.2% 0.008 268);
+  --nav-scrim: oklch(14.2% 0.008 268 / 0.72);
+  --brand-teal: oklch(76% 0.12 var(--hue-evidence));
+  --brand-blue: oklch(70% 0.15 var(--hue-signal));
+  --brand-violet: oklch(70% 0.16 var(--hue-brand));
+  --brand-warm: oklch(80% 0.13 64);
+  --brand-coral: oklch(71% 0.16 18);
+  --field-teal: oklch(76% 0.12 var(--hue-evidence) / 0.12);
+  --field-blue: oklch(70% 0.15 var(--hue-signal) / 0.12);
+  --field-violet: oklch(70% 0.16 var(--hue-brand) / 0.14);
+  --field-coral: oklch(71% 0.16 18 / 0.13);
+  --field-warm: oklch(80% 0.13 64 / 0.12);
+  --ink-teal: oklch(84% 0.1 var(--hue-evidence));
+  --ink-blue: oklch(82% 0.1 var(--hue-signal));
+  --ink-violet: oklch(83% 0.11 var(--hue-brand));
+  --ink-coral: oklch(82% 0.1 18);
+  --ink-warm: oklch(86% 0.1 64);
+  --action-ink: oklch(83% 0.11 var(--hue-brand));
+  --action-ink-ring: oklch(70% 0.16 var(--hue-brand) / 0.4);
+  --status-positive-bg: oklch(76% 0.12 150 / 0.12);
+  --status-positive-ink: oklch(84% 0.1 150);
+  --status-positive-line: oklch(76% 0.12 150 / 0.24);
+  --status-neutral-bg: rgba(255, 255, 255, 0.06);
+  --status-neutral-ink: oklch(78% 0.01 268);
+  --status-neutral-line: rgba(255, 255, 255, 0.12);
+  --status-attention-bg: oklch(80% 0.13 72 / 0.13);
+  --status-attention-ink: oklch(86% 0.1 72);
+  --status-attention-line: oklch(80% 0.13 72 / 0.26);
+  --evidence-generated: oklch(80% 0.12 var(--hue-brand));
+  --evidence-observed: oklch(82% 0.1 var(--hue-evidence));
+  --evidence-support: oklch(82% 0.1 150);
+  --evidence-uncertain: oklch(84% 0.1 72);
+  --evidence-counter: oklch(76% 0.14 18);
+  --surface-intelligence: oklch(70% 0.16 var(--hue-brand) / 0.12);
+  --surface-observation: oklch(76% 0.12 var(--hue-evidence) / 0.11);
+  --surface-support: oklch(76% 0.12 150 / 0.11);
+  --surface-uncertain: oklch(80% 0.13 72 / 0.11);
+  --surface-counter: oklch(71% 0.16 18 / 0.12);
+  --fydell-evidence: oklch(76% 0.12 258);
+  --fydell-risk: oklch(74% 0.15 18);
+  --fydell-changed: oklch(82% 0.12 72);
+  --fydell-good: oklch(80% 0.12 150);
+  --fydell-verified: oklch(78% 0.12 var(--hue-brand));
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+  --shadow-3: 0 2px 4px rgba(0, 0, 0, 0.35), 0 24px 56px -20px rgba(0, 0, 0, 0.75);
+  --shadow-4: 0 40px 100px -32px rgba(0, 0, 0, 0.85);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-float: 0 2px 8px rgba(0, 0, 0, 0.4), 0 24px 60px -16px rgba(0, 0, 0, 0.7);
+  --shadow-stage: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 40px 120px -40px rgba(0, 0, 0, 0.9);
+
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+}
+
+.theme-ink ::selection {
+  background: oklch(70% 0.16 var(--hue-brand) / 0.35);
+}
+
+/* Focus is never optional. */
+.fydell-focusable:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Reduced motion: state changes become instant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

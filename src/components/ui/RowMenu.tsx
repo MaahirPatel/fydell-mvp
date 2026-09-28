@@ -72,7 +72,7 @@ export function RowMenu({
               key={item.label}
               type="button"
               role="menuitem"
-              className={`block w-full rounded-[5px] px-2.5 py-1.5 text-left text-[13px] transition-colors hover:bg-white/[0.06] ${
+              className={`block w-full rounded-[5px] px-2.5 py-1.5 text-left text-app-meta transition-colors hover:bg-white/[0.06] ${
                 item.destructive
                   ? "text-[var(--fydell-risk)]"
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"

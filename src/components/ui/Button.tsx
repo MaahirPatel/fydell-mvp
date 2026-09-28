@@ -46,14 +46,14 @@ const VARIANT: Record<ButtonVariant, string> = {
     "border border-[rgba(194,64,90,0.32)] bg-[rgba(194,64,90,0.08)] text-[var(--fydell-risk)] hover:bg-[rgba(194,64,90,0.14)] hover:border-[rgba(194,64,90,0.46)]",
   // Brand fill. Reserved for the primary action inside the candidate flow.
   accent:
-    "bg-[var(--fydell-brand-blue)] text-white hover:bg-[#6872ff] active:bg-[#4b56f0]",
+    "bg-[var(--fydell-brand-blue)] text-white hover:bg-[var(--fydell-brand-blue-hover)] active:bg-[var(--fydell-brand-blue-active)]",
 };
 
 const SIZE: Record<ButtonSize, string> = {
-  sm: "h-8 text-[13px]",
-  md: "h-9 text-[13.5px]",
-  cta: "h-10 text-[14px]",
-  lg: "h-11 text-[15px]",
+  sm: "h-8 text-app-meta",
+  md: "h-9 text-app-body",
+  cta: "h-10 text-app-body",
+  lg: "h-11 text-app-body",
 };
 
 /** Padding is keyed by shape as well as size, and is the only source of a

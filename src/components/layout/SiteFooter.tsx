@@ -5,6 +5,7 @@ const PRODUCT = [
   { label: "Developers", href: "/#developers" },
   { label: "Employers", href: "/#employers" },
   { label: "Demo", href: "/demo" },
+  { label: "Download", href: "/download" },
   { label: "Pricing", href: "/pricing" },
 ];
 
@@ -30,7 +31,7 @@ function FooterCol({
 }) {
   return (
     <div>
-      <p className="text-[12.5px] font-medium tracking-[-0.01em] text-[var(--text-primary)]">
+      <p className="text-app-meta font-medium tracking-[-0.01em] text-[var(--text-primary)]">
         {title}
       </p>
       <ul className="mt-4 space-y-2.5">
@@ -38,7 +39,7 @@ function FooterCol({
           <li key={link.label}>
             <Link
               href={link.href}
-              className="text-[13.5px] tracking-[-0.01em] text-[var(--text-secondary)] transition-colors duration-150 hover:text-[var(--text-primary)]"
+              className="text-app-body tracking-[-0.01em] text-[var(--text-secondary)] transition-colors duration-150 hover:text-[var(--text-primary)]"
             >
               {link.label}
             </Link>
@@ -58,7 +59,7 @@ export default function SiteFooter({ tone = "light" }: { tone?: "ink" | "light" 
             <Link href="/" className="inline-flex items-center gap-2" aria-label="Fydell home">
               <FydellLogo height={20} tone={tone === "ink" ? "dark" : "light"} />
             </Link>
-            <p className="mt-5 max-w-[34ch] text-[13.5px] leading-[1.65] tracking-[-0.01em] text-[var(--text-secondary)]">
+            <p className="mt-5 max-w-[34ch] text-app-body leading-[1.65] tracking-[-0.01em] text-[var(--text-secondary)]">
               The Proof of Work Network for software engineers. Evidence from
               real projects and programming simulations, owned by the developer
               and inspectable by the team hiring them.
@@ -72,13 +73,13 @@ export default function SiteFooter({ tone = "light" }: { tone?: "ink" | "light" 
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-[var(--border-subtle)] pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[12.5px] text-[var(--text-tertiary)]">© 2026 Fydell</p>
+          <p className="text-app-meta text-[var(--text-tertiary)]">© 2026 Fydell</p>
           <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
             {LEGAL.map((link) => (
               <li key={link.label}>
                 <Link
                   href={link.href}
-                  className="text-[12.5px] text-[var(--text-tertiary)] transition-colors duration-150 hover:text-[var(--text-primary)]"
+                  className="text-app-meta text-[var(--text-tertiary)] transition-colors duration-150 hover:text-[var(--text-primary)]"
                 >
                   {link.label}
                 </Link>

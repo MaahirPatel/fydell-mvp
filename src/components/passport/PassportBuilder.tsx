@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Check, GitFork, Loader2, RotateCcw } from "lucide-react";
 import PassportView from "./PassportView";
+import "./passport.css";
 import { ruleSummary, suggestRoles } from "@/lib/passport/rules";
 import type { ExtractionResult } from "@/lib/passport/github/types";
 import type { PassportData, PassportProject } from "@/lib/passport/view";
@@ -19,11 +20,14 @@ export default function PassportBuilder({
   initialLogin = "",
   initialRepos = [],
   showPreview = true,
+  onProjectSaved,
 }: {
   signedIn: boolean;
   initialLogin?: string;
   initialRepos?: string[];
   showPreview?: boolean;
+  /** Called after a signed-in project save, so hosts (e.g. the profile hub) can register the GitHub connection. */
+  onProjectSaved?: (project: PassportProject, githubLogin: string | null) => void;
 }) {
   const router = useRouter();
   const [input, setInput] = useState(initialLogin);
@@ -59,6 +63,13 @@ export default function PassportBuilder({
         }
         if (data.passport) setSavedPassport(data.passport);
         const project = data.project ?? data.passport?.projects.find((p) => p.repoFullName === result.repository?.fullName) ?? null;
+        if (signedIn && data.passport && project && onProjectSaved) {
+          try {
+            onProjectSaved(project, login);
+          } catch {
+            // Host bookkeeping must never break the builder.
+          }
+        }
         setRuns((r) => ({
           ...r,
           [fullName]: {
@@ -71,7 +82,7 @@ export default function PassportBuilder({
         setRuns((r) => ({ ...r, [fullName]: { status: "failed", message: "Fydell could not be reached. Check your connection." } }));
       }
     },
-    [signedIn, contributions, login],
+    [signedIn, contributions, login, onProjectSaved],
   );
 
   const runAll = useCallback(
@@ -145,14 +156,14 @@ export default function PassportBuilder({
   }, [runs, signedIn, savedPassport, login]);
 
   const resumeHref = `/signup?as=developer&next=${encodeURIComponent(
-    `/app/candidate/passport?github=${login ?? ""}&repos=${selected.join(",")}`,
+    `/app/candidate/profile?github=${login ?? ""}&repos=${selected.join(",")}`,
   )}`;
 
   return (
     <div className="space-y-8">
       {phase === "input" || phase === "select" ? (
-        <form onSubmit={findRepositories} className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-2)] sm:p-6">
-          <label htmlFor="github-input" className="text-[14px] font-medium">
+        <form onSubmit={findRepositories} className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-2)] sm:p-6">
+          <label htmlFor="github-input" className="text-app-body font-medium">
             GitHub profile or public repository
           </label>
           <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -163,25 +174,25 @@ export default function PassportBuilder({
               placeholder="github.com/your-username"
               autoComplete="off"
               spellCheck={false}
-              className="platform-input h-11 flex-1 font-mono text-[14px]"
+              className="platform-input h-11 flex-1 font-mono text-app-body"
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? "github-error" : "github-help"}
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--control-solid)] px-5 text-[14.5px] font-medium text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] disabled:opacity-50"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--control-solid)] px-5 text-app-body font-medium text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] disabled:opacity-50"
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
               {loading ? "Looking up" : "Find repositories"}
             </button>
           </div>
           {error ? (
-            <p id="github-error" role="alert" className="mt-2 flex items-center gap-1.5 text-[13px] text-[var(--evidence-counter)]">
+            <p id="github-error" role="alert" className="mt-2 flex items-center gap-1.5 text-app-meta text-[var(--evidence-counter)]">
               <AlertCircle className="h-4 w-4" aria-hidden /> {error}
             </p>
           ) : (
-            <p id="github-help" className="mt-2 text-[12.5px] text-[var(--text-tertiary)]">
+            <p id="github-help" className="mt-2 text-app-meta text-[var(--text-tertiary)]">
               Public repositories only. Fydell reads code at a pinned commit and never runs it.
             </p>
           )}
@@ -189,13 +200,13 @@ export default function PassportBuilder({
       ) : null}
 
       {phase === "select" ? (
-        <section aria-labelledby="select-heading" className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
+        <section aria-labelledby="select-heading" className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
           <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--border-subtle)] px-5 py-4 sm:px-6">
-            <h2 id="select-heading" className="text-[16px] font-medium">Choose up to {MAX} repositories</h2>
-            <p className="text-[12.5px] text-[var(--text-tertiary)]">{repos.length} public repositories for {login}</p>
+            <h2 id="select-heading" className="text-app-body font-medium">Choose up to {MAX} repositories</h2>
+            <p className="text-app-meta text-[var(--text-tertiary)]">{repos.length} public repositories for {login}</p>
           </div>
           {repos.length === 0 ? (
-            <p className="px-6 py-6 text-[14px] text-[var(--text-secondary)]">This account has no public, active repositories to analyze.</p>
+            <p className="px-6 py-6 text-app-body text-[var(--text-secondary)]">This account has no public, active repositories to analyze.</p>
           ) : (
             <ul className="divide-y divide-[var(--border-subtle)]">
               {repos.map((r) => {
@@ -213,12 +224,12 @@ export default function PassportBuilder({
                       />
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-[13.5px] font-medium">{r.name}</span>
+                          <span className="font-mono text-app-body font-medium">{r.name}</span>
                           {r.fork ? (
                             <span className="badge badge-attention inline-flex gap-1"><GitFork className="h-3 w-3" aria-hidden /> Fork</span>
                           ) : null}
                         </span>
-                        <span className="mt-0.5 block text-[12.5px] text-[var(--text-tertiary)]">
+                        <span className="mt-0.5 block text-app-meta text-[var(--text-tertiary)]">
                           {r.language ?? "Language unknown"}
                           {r.pushedAt ? ` · updated ${new Date(r.pushedAt).toLocaleDateString()}` : ""}
                         </span>
@@ -232,7 +243,7 @@ export default function PassportBuilder({
                         rows={2}
                         placeholder="Optional: what did you build in this project? This is shown as your statement, separate from the evidence."
                         aria-label={`Your contribution to ${r.name}`}
-                        className="platform-input mt-2 text-[13.5px]"
+                        className="platform-input mt-2 text-app-body"
                       />
                     ) : null}
                   </li>
@@ -241,12 +252,12 @@ export default function PassportBuilder({
             </ul>
           )}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-subtle)] px-5 py-4 sm:px-6">
-            <p className="text-[12.5px] text-[var(--text-tertiary)]">Forks may contain other people&apos;s work; findings will say so.</p>
+            <p className="text-app-meta text-[var(--text-tertiary)]">Forks may contain other people&apos;s work; findings will say so.</p>
             <button
               type="button"
               onClick={() => void runAll(selected)}
               disabled={selected.length === 0}
-              className="inline-flex h-10 items-center rounded-full bg-[var(--control-solid)] px-5 text-[14px] font-medium text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] disabled:opacity-50"
+              className="inline-flex h-10 items-center rounded-full bg-[var(--control-solid)] px-5 text-app-body font-medium text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] disabled:opacity-50"
             >
               Build passport from {selected.length} repositor{selected.length === 1 ? "y" : "ies"}
             </button>
@@ -255,7 +266,7 @@ export default function PassportBuilder({
       ) : null}
 
       {phase === "run" || phase === "done" ? (
-        <section aria-label="Analysis progress" className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
+        <section aria-label="Analysis progress" className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[var(--shadow-2)]">
           <ul className="divide-y divide-[var(--border-subtle)]">
             {Object.entries(runs).map(([name, run]) => (
               <li key={name} className="flex flex-wrap items-center gap-3 px-5 py-3.5 sm:px-6">
@@ -265,8 +276,8 @@ export default function PassportBuilder({
                   {run.status === "failed" ? <AlertCircle className="h-4 w-4 text-[var(--evidence-counter)]" /> : null}
                   {run.status === "queued" ? <span className="h-2 w-2 rounded-full bg-[var(--border-strong)]" /> : null}
                 </span>
-                <span className="font-mono text-[13.5px]">{name}</span>
-                <span className="text-[12.5px] text-[var(--text-tertiary)]" aria-live="polite">
+                <span className="font-mono text-app-body">{name}</span>
+                <span className="text-app-meta text-[var(--text-tertiary)]" aria-live="polite">
                   {run.status === "queued" && "Waiting"}
                   {run.status === "running" && "Reading files from GitHub and checking citations"}
                   {run.status === "done" && (run.message ?? `${run.project?.evidence.length ?? 0} verified findings`)}
@@ -276,7 +287,7 @@ export default function PassportBuilder({
                   <button
                     type="button"
                     onClick={() => void runOne(name)}
-                    className="ml-auto inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--text-primary)] underline underline-offset-4"
+                    className="ml-auto inline-flex items-center gap-1.5 text-app-meta font-medium text-[var(--text-primary)] underline underline-offset-4"
                   >
                     <RotateCcw className="h-3.5 w-3.5" aria-hidden /> Try again
                   </button>
@@ -292,16 +303,16 @@ export default function PassportBuilder({
                   setPhase(repos.length ? "select" : "input");
                   setRuns({});
                 }}
-                className="text-[13.5px] font-medium text-[var(--text-secondary)] underline underline-offset-4 hover:text-[var(--text-primary)]"
+                className="text-app-body font-medium text-[var(--text-secondary)] underline underline-offset-4 hover:text-[var(--text-primary)]"
               >
                 Change repositories
               </button>
               {signedIn ? (
-                <Link href="/app/candidate/passport" className="inline-flex h-10 items-center rounded-full bg-[var(--control-solid)] px-5 text-[14px] font-medium text-[var(--control-solid-ink)]">
+                <Link href="/app/candidate/profile" className="inline-flex h-10 items-center rounded-full bg-[var(--control-solid)] px-5 text-app-body font-medium text-[var(--control-solid-ink)]">
                   Saved · manage sharing
                 </Link>
               ) : preview ? (
-                <Link href={resumeHref} className="inline-flex h-10 items-center rounded-full bg-[var(--control-solid)] px-5 text-[14px] font-medium text-[var(--control-solid-ink)]">
+                <Link href={resumeHref} className="inline-flex h-10 items-center rounded-full bg-[var(--control-solid)] px-5 text-app-body font-medium text-[var(--control-solid-ink)]">
                   Save your passport
                 </Link>
               ) : null}

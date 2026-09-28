@@ -69,24 +69,24 @@ export default async function AdminPilotRequestDetailPage({
     <div>
       <Link
         href="/admin/pilot-requests"
-        className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+        className="text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
       >
         ← All requests
       </Link>
 
       <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[12px] tabular-nums text-[var(--text-tertiary)]">
+          <p className="text-app-meta tabular-nums text-[var(--text-tertiary)]">
             {String(r.public_reference || "")}
           </p>
-          <h1 className="mt-1 text-[28px]" style={{ fontWeight: 540, letterSpacing: "-0.035em" }}>
+          <h1 className="mt-1 text-app-page" style={{ fontWeight: 500, letterSpacing: "-0.035em" }}>
             {String(r.company_name || r.company || "")}
           </h1>
-          <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
+          <p className="mt-2 text-app-body text-[var(--text-secondary)]">
             {String(r.full_name || r.name || "")} · {String(r.work_email || r.email || "")}
           </p>
         </div>
-        <div className="rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 py-2 text-[13px] capitalize">
+        <div className="rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 py-2 text-app-meta capitalize">
           {String(r.status || "new")}
         </div>
       </div>
@@ -96,7 +96,7 @@ export default async function AdminPilotRequestDetailPage({
           <h2 className="text-app-section font-medium text-[var(--text-primary)]">
             Hiring request
           </h2>
-          <dl className="mt-4 space-y-3 text-[14px]">
+          <dl className="mt-4 space-y-3 text-app-body">
             <div className="flex justify-between gap-4 border-b border-[var(--border-subtle)] pb-2">
               <dt className="text-[var(--text-tertiary)]">Role</dt>
               <dd>{String(r.role_being_hired || r.role_title || "")}</dd>
@@ -142,18 +142,18 @@ export default async function AdminPilotRequestDetailPage({
         </h2>
         <div className="mt-4 space-y-3">
           {emails.length === 0 ? (
-            <p className="text-[13px] text-[var(--text-secondary)]">No email outbox rows yet.</p>
+            <p className="text-app-meta text-[var(--text-secondary)]">No email outbox rows yet.</p>
           ) : (
             emails.map((email) => (
               <div
                 key={email.id}
-                className="flex flex-wrap items-start justify-between gap-2 border-b border-[var(--border-subtle)] pb-3 text-[13px]"
+                className="flex flex-wrap items-start justify-between gap-2 border-b border-[var(--border-subtle)] pb-3 text-app-meta"
               >
                 <div>
-                  <p style={{ fontWeight: 520 }}>{email.template_key}</p>
+                  <p style={{ fontWeight: 500 }}>{email.template_key}</p>
                   <p className="text-[var(--text-secondary)]">{email.recipient_email}</p>
                   {email.last_error ? (
-                    <p className="mt-1 text-[#F26B82]">{email.last_error}</p>
+                    <p className="mt-1 text-[var(--fydell-risk)]">{email.last_error}</p>
                   ) : null}
                 </div>
                 <p className="capitalize text-[var(--text-secondary)]">{email.status}</p>
@@ -169,15 +169,15 @@ export default async function AdminPilotRequestDetailPage({
         </h2>
         <ol className="mt-4 space-y-3">
           {events.length === 0 ? (
-            <li className="text-[13px] text-[var(--text-secondary)]">No events yet.</li>
+            <li className="text-app-meta text-[var(--text-secondary)]">No events yet.</li>
           ) : (
             events.map((event) => (
-              <li key={event.id} className="border-b border-[var(--border-subtle)] pb-3 text-[13px]">
-                <p style={{ fontWeight: 520 }}>{event.event_type}</p>
+              <li key={event.id} className="border-b border-[var(--border-subtle)] pb-3 text-app-meta">
+                <p style={{ fontWeight: 500 }}>{event.event_type}</p>
                 <p className="text-[var(--text-secondary)]">
                   {event.description || `${event.old_status || ""} → ${event.new_status || ""}`}
                 </p>
-                <p className="mt-1 tabular-nums text-[12px] text-[var(--text-tertiary)]">
+                <p className="mt-1 tabular-nums text-app-meta text-[var(--text-tertiary)]">
                   {new Date(event.created_at).toLocaleString()}
                 </p>
               </li>
@@ -192,12 +192,12 @@ export default async function AdminPilotRequestDetailPage({
         </h2>
         <div className="mt-4 space-y-3">
           {notes.length === 0 ? (
-            <p className="text-[13px] text-[var(--text-secondary)]">No notes yet.</p>
+            <p className="text-app-meta text-[var(--text-secondary)]">No notes yet.</p>
           ) : (
             notes.map((note) => (
-              <div key={note.id} className="border-b border-[var(--border-subtle)] pb-3 text-[13px]">
+              <div key={note.id} className="border-b border-[var(--border-subtle)] pb-3 text-app-meta">
                 <p className="text-[var(--text-secondary)]">{note.body}</p>
-                <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
+                <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
                   {note.author_email || "admin"} · {new Date(note.created_at).toLocaleString()}
                 </p>
               </div>

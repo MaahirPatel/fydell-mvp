@@ -92,7 +92,7 @@ function ResetPasswordContent() {
       <AuthShell title="Choose a new password">
         <p
           role="status"
-          className="text-[14px] text-[var(--text-secondary)]"
+          className="text-app-body text-[var(--text-secondary)]"
         >
           Checking your reset link.
         </p>
@@ -116,7 +116,7 @@ function ResetPasswordContent() {
       >
         <Link
           href={withNext("/forgot-password", next)}
-          className="inline-flex h-11 w-full items-center justify-center rounded-[8px] bg-[#eceef1] px-5 text-[15px] font-medium text-[#0a0b0d] transition-colors hover:bg-white"
+          className="inline-flex h-11 w-full items-center justify-center rounded-[8px] bg-[var(--surface-selected)] px-5 text-app-body font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
         >
           Request a new link
         </Link>

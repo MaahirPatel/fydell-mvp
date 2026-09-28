@@ -116,13 +116,13 @@ export function ConfigDrivenSandbox({ runtime, debug }: SimulationRendererProps)
           submitDisabled
         />
         <div className="mx-auto flex max-w-2xl flex-1 flex-col justify-center gap-4 p-6">
-          <h1 className="text-[22px] font-semibold tracking-tight text-[var(--text-primary)]">
+          <h1 className="text-app-page font-semibold tracking-tight text-[var(--text-primary)]">
             {scenario.metadata.title}
           </h1>
-          <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
+          <p className="text-app-meta leading-relaxed text-[var(--text-secondary)]">
             {scenario.metadata.description}
           </p>
-          <pre className="whitespace-pre-wrap rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-4 text-[12px] text-[var(--text-secondary)]">
+          <pre className="whitespace-pre-wrap rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-4 text-app-meta text-[var(--text-secondary)]">
             {scenario.metadata.instructions}
           </pre>
           <Button
@@ -153,13 +153,13 @@ export function ConfigDrivenSandbox({ runtime, debug }: SimulationRendererProps)
         <ResizablePanels
           left={
             <div className="flex h-full min-h-0 flex-col">
-              <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-[12px] font-medium text-[var(--text-tertiary)]">
+              <div className="border-b border-[var(--border-subtle)] px-3 py-2 text-app-meta font-medium text-[var(--text-tertiary)]">
                 Tasks
               </div>
               <div className="min-h-0 flex-1 overflow-auto">
                 <TaskList tasks={taskRows} onOpen={(id) => runtime.openTask(id)} />
               </div>
-              <div className="border-t border-[var(--border-subtle)] px-3 py-2 text-[12px] font-medium text-[var(--text-tertiary)]">
+              <div className="border-t border-[var(--border-subtle)] px-3 py-2 text-app-meta font-medium text-[var(--text-tertiary)]">
                 Resources
               </div>
               <div className="min-h-[40%] overflow-hidden">
@@ -201,7 +201,7 @@ export function ConfigDrivenSandbox({ runtime, debug }: SimulationRendererProps)
                     activeResDef ? (
                       <DocumentationViewer title={activeResDef.title} content={activeResDef.content} />
                     ) : (
-                      <div className="p-4 text-[13px] text-[var(--text-tertiary)]">Select a resource</div>
+                      <div className="p-4 text-app-meta text-[var(--text-tertiary)]">Select a resource</div>
                     )
                   ) : null}
                   {tab.value === "rules" && scenario.rulesWorkbench ? (
@@ -422,7 +422,7 @@ export function ConfigDrivenSandbox({ runtime, debug }: SimulationRendererProps)
       <NotificationToasts items={attempt.world.notifications} />
       {debug ? <DevInspector attempt={attempt} /> : null}
       {attempt.status === "SUBMITTED" ? (
-        <div className="border-t border-[var(--border-default)] bg-[var(--surface-panel)] px-4 py-3 text-[13px] text-[var(--text-secondary)]">
+        <div className="border-t border-[var(--border-default)] bg-[var(--surface-panel)] px-4 py-3 text-app-meta text-[var(--text-secondary)]">
           Attempt submitted.{" "}
           <a
             className="text-[var(--action-ink)] underline"

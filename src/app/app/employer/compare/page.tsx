@@ -20,8 +20,8 @@ export default async function ComparePage() {
         title="Compare"
         description="Two candidates on the same evaluation version, shown side by side. There is no ranking across evaluations or across companies."
         action={
-          <ButtonLink href="/app/employer/reports" variant="secondary" size="sm">
-            Back to reports
+          <ButtonLink href="/app/employer/evidence" variant="secondary" size="sm">
+            Back to evidence
           </ButtonLink>
         }
       />

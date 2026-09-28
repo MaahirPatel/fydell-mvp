@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import MarketingShell from "@/components/layout/MarketingShell";
 import PricingEstimator from "@/components/marketing/PricingEstimator";
+import { Kicker } from "@/components/marketing/ui";
 import s from "@/components/marketing/home/fydell-home.module.css";
 import { PRICING, planSignupHref, usd } from "@/lib/marketing/pricing";
 
@@ -120,11 +121,11 @@ export default function PricingPage() {
       <div className={s.page}>
         <section className={s.hero}>
           <div className={`${s.container} ${s.heroCopyIn}`}>
-            <h1 className={s.title}>Free for engineers. Pay per completed simulation.</h1>
+            <Kicker>Pricing</Kicker>
+            <h1 className={s.title}>Free for engineers. <span className="t-evidence">Pay per completed simulation.</span></h1>
             <div className={s.heroRow}>
               <p className={s.lede}>
-                No seats, no platform fee on Starter, and nothing billed until a candidate finishes. Pick a plan
-                or estimate your month below.
+                Nothing billed until a candidate finishes. Pick a plan or estimate your month below.
               </p>
             </div>
           </div>

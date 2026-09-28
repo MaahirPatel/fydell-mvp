@@ -89,7 +89,8 @@ export default function ProductPage() {
   return (
     <MarketingShell>
       <PageIntro
-        title="An evaluation you can audit, not a score you have to trust."
+        kicker="Product"
+        title={<>An evaluation <span className="t-project">you can audit</span>, not a score you have to trust.</>}
         lead="A candidate does a piece of real work. Your team reads what they concluded, opens the evidence behind it, and interviews from there. Nothing in the report is a number you cannot trace back to a row."
         actions={
           <>
@@ -117,15 +118,15 @@ export default function ProductPage() {
                 {SETUP.map((row) => (
                   <div key={row.label} className="px-4 py-2.5">
                     <div className="flex items-baseline justify-between gap-4">
-                      <dt className="text-[12px] text-[var(--text-tertiary)]">
+                      <dt className="text-app-meta text-[var(--text-tertiary)]">
                         {row.label}
                       </dt>
-                      <dd className="text-right text-[13px] text-[var(--text-primary)]">
+                      <dd className="text-right text-app-meta text-[var(--text-primary)]">
                         {row.value}
                       </dd>
                     </div>
                     {row.note ? (
-                      <p className="mt-0.5 text-right text-[11.5px] text-[var(--text-tertiary)]">
+                      <p className="mt-0.5 text-right text-app-caption text-[var(--text-tertiary)]">
                         {row.note}
                       </p>
                     ) : null}
@@ -148,11 +149,11 @@ export default function ProductPage() {
                   <li key={stage} className="flex items-center gap-3 px-4 py-2.5">
                     <span
                       aria-hidden
-                      className="inline-flex h-[19px] w-[19px] shrink-0 items-center justify-center rounded-[5px] border border-[var(--border-default)] text-[11px] tabular-nums text-[var(--text-tertiary)]"
+                      className="inline-flex h-[19px] w-[19px] shrink-0 items-center justify-center rounded-[5px] border border-[var(--border-default)] text-app-caption tabular-nums text-[var(--text-tertiary)]"
                     >
                       {i + 1}
                     </span>
-                    <span className="text-[13px] text-[var(--text-secondary)]">
+                    <span className="text-app-meta text-[var(--text-secondary)]">
                       {stage}
                     </span>
                   </li>
@@ -161,7 +162,7 @@ export default function ProductPage() {
             </ProductStage>
           </div>
 
-          <p className="mt-5 max-w-[62ch] text-[13.5px] leading-[1.65] text-[var(--text-tertiary)]">
+          <p className="mt-5 max-w-[62ch] text-app-body leading-[1.65] text-[var(--text-tertiary)]">
             Invitations are single-use, scoped to one candidate, and expire. When
             you are running several candidates against the same evaluation, they
             group into a cohort so you can look at them together. A cohort lives
@@ -213,16 +214,16 @@ export default function ProductPage() {
               label="An oral defense question derived from a limitation in the candidate's own report"
             >
               <div className="p-4">
-                <p className="text-[11.5px] font-medium text-[var(--text-tertiary)]">
+                <p className="text-app-caption font-medium text-[var(--text-tertiary)]">
                   Because the candidate wrote
                 </p>
-                <p className="mt-1.5 border-l-2 border-[var(--fydell-risk)] pl-2.5 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+                <p className="mt-1.5 border-l-2 border-[var(--fydell-risk)] pl-2.5 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
                   {NORTHLINE_DEFENSE_PROMPT.tiedTo}
                 </p>
-                <p className="mt-4 text-[11.5px] font-medium text-[var(--text-tertiary)]">
+                <p className="mt-4 text-app-caption font-medium text-[var(--text-tertiary)]">
                   Ask them
                 </p>
-                <p className="mt-1.5 text-[14px] leading-[1.5] text-[var(--text-primary)]">
+                <p className="mt-1.5 text-app-body leading-[1.5] text-[var(--text-primary)]">
                   {NORTHLINE_DEFENSE_PROMPT.question}
                 </p>
               </div>
@@ -239,11 +240,11 @@ export default function ProductPage() {
                     key={row.party}
                     className="flex items-center justify-between gap-4 px-4 py-2.5"
                   >
-                    <span className="text-[12.5px] text-[var(--text-secondary)]">
+                    <span className="text-app-meta text-[var(--text-secondary)]">
                       {row.party}
                     </span>
                     <span
-                      className={`shrink-0 text-[11.5px] ${
+                      className={`shrink-0 text-app-caption ${
                         row.state === "No access"
                           ? "text-[var(--text-tertiary)]"
                           : "text-[var(--text-primary)]"
@@ -254,7 +255,7 @@ export default function ProductPage() {
                   </li>
                 ))}
               </ul>
-              <p className="border-t border-[var(--border-subtle)] px-4 py-3 text-[12px] leading-[1.55] text-[var(--text-tertiary)]">
+              <p className="border-t border-[var(--border-subtle)] px-4 py-3 text-app-meta leading-[1.55] text-[var(--text-tertiary)]">
                 The receipt is private to the candidate and the company that
                 invited them. It is not a public profile and it is not listed
                 anywhere.
@@ -272,7 +273,7 @@ export default function ProductPage() {
             {BOUNDARIES.map((line) => (
               <li
                 key={line}
-                className="flex gap-2.5 text-[14px] leading-[1.6] text-[var(--text-secondary)]"
+                className="flex gap-2.5 text-app-body leading-[1.6] text-[var(--text-secondary)]"
               >
                 <span
                   aria-hidden

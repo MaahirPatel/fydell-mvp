@@ -85,7 +85,7 @@ export function SandboxWorkReceipt({
               {session?.fixture.candidate.label ?? "Fictional sandbox candidate"} · {String(role.title ?? session?.fixture.role.title ?? "Applied AI Engineer")}
             </p>
             <p className="mt-2 flex items-center gap-2 text-app-meta text-[var(--text-secondary)]">
-              <Check className="h-4 w-4 text-[var(--color-good)]" strokeWidth={2} aria-hidden />
+              <Check className="h-4 w-4 text-[var(--fydell-good)]" strokeWidth={2} aria-hidden />
               Issued from reviewed fictional sandbox data
             </p>
           </div>
@@ -116,7 +116,7 @@ export function SandboxWorkReceipt({
             <span className="ml-auto font-mono text-app-meta text-[var(--text-tertiary)]">{publicId}</span>
           </header>
           <div className="px-6 py-5">
-            <p className="flex items-center gap-2 text-app-meta text-[var(--color-changed)]">
+            <p className="flex items-center gap-2 text-app-meta text-[var(--fydell-changed)]">
               <TriangleAlert className="h-4 w-4" strokeWidth={1.8} aria-hidden />
               {String(payload.label)}
             </p>

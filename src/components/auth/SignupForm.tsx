@@ -198,12 +198,12 @@ export default function SignupForm({ path }: { path?: SignupPath }) {
         />
       </Field>
 
-      <label className="flex items-start gap-3 text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
+      <label className="flex items-start gap-3 text-app-body leading-[1.55] text-[var(--text-secondary)]">
         <input
           type="checkbox"
           checked={acceptedTerms}
           onChange={(e) => setAcceptedTerms(e.target.checked)}
-          className="mt-0.5 h-4 w-4 accent-[var(--fydell-brand-blue)]"
+          className="auth-check"
           required
         />
         <span>
@@ -219,7 +219,7 @@ export default function SignupForm({ path }: { path?: SignupPath }) {
         </span>
       </label>
       {fieldErrors.acceptedTerms ? (
-        <p className="text-[13px] text-[var(--fydell-risk)]">{fieldErrors.acceptedTerms}</p>
+        <p className="text-app-meta text-[var(--fydell-risk)]">{fieldErrors.acceptedTerms}</p>
       ) : null}
 
       {error ? <FormError>{error}</FormError> : null}

@@ -30,12 +30,12 @@ export default function PilotIntroPage() {
           </p>
 
           <div className="mt-10 rounded-[16px] border border-white/[0.09] bg-white/[0.025] p-6 sm:p-7">
-            <p className="text-[13px] font-medium text-[var(--text-tertiary)]">
+            <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
               You may
             </p>
             <ul className="mt-4 space-y-3">
               {YOU_MAY.map((item) => (
-                <li key={item} className="flex gap-3 text-[15px] leading-[1.55] text-[rgba(244,245,247,0.82)]">
+                <li key={item} className="flex gap-3 text-app-body leading-[1.55] text-[rgba(244,245,247,0.82)]">
                   <span aria-hidden="true" className="mt-[9px] h-[5px] w-[5px] shrink-0 rounded-full bg-[rgba(140,150,255,0.85)]" />
                   {item}
                 </li>
@@ -51,8 +51,8 @@ export default function PilotIntroPage() {
           <div className="mt-10">
             <Link
               href="/pilot/profile"
-              className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#F2F3F5] px-7 text-[15px] text-[#090A0D] transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[0.97]"
-              style={{ fontWeight: 580 }}
+              className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#F2F3F5] px-7 text-app-body text-[#090A0D] transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[0.97]"
+              style={{ fontWeight: 500 }}
             >
               Choose a role
             </Link>

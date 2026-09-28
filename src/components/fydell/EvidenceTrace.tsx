@@ -94,18 +94,18 @@ function Horizontal({
                 />
               ) : null}
             </div>
-            <p className="mt-2.5 text-[12px] font-medium text-[var(--text-tertiary)]">
+            <p className="mt-2.5 text-app-meta font-medium text-[var(--text-tertiary)]">
               {STAGE_NAME[node.stage]}
             </p>
             <p
-              className={`mt-1 text-[12.5px] leading-[1.4] ${
+              className={`mt-1 text-app-meta leading-[1.4] ${
                 isSelected ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"
               }`}
             >
               {node.label}
             </p>
             {node.detail ? (
-              <p className="mt-1 text-[11.5px] leading-[1.45] text-[var(--text-tertiary)]">
+              <p className="mt-1 text-app-caption leading-[1.45] text-[var(--text-tertiary)]">
                 {node.detail}
               </p>
             ) : null}
@@ -150,18 +150,18 @@ function Vertical({
         const isSelected = selected === i;
         const body = (
           <>
-            <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+            <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
               {STAGE_NAME[node.stage]}
             </p>
             <p
-              className={`mt-0.5 text-[12.5px] leading-[1.45] ${
+              className={`mt-0.5 text-app-meta leading-[1.45] ${
                 isSelected ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"
               }`}
             >
               {node.label}
             </p>
             {node.detail ? (
-              <p className="mt-0.5 text-[11.5px] leading-[1.5] text-[var(--text-tertiary)]">
+              <p className="mt-0.5 text-app-caption leading-[1.5] text-[var(--text-tertiary)]">
                 {node.detail}
               </p>
             ) : null}
@@ -190,7 +190,7 @@ function Vertical({
                   className={`-mx-2 w-[calc(100%+1rem)] rounded-[var(--radius-control)] px-2 py-1 text-left transition-colors ${
                     isSelected
                       ? "bg-[var(--surface-hover)]"
-                      : "hover:bg-[rgba(255,255,255,0.045)]"
+                      : "hover:bg-[var(--surface-hover)]"
                   }`}
                 >
                   {body}

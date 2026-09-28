@@ -23,11 +23,11 @@ type Variant = "dark" | "light";
 const THEME = {
   dark: {
     card: "rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 sm:p-6",
-    eyebrow: "text-[13px] font-medium text-[var(--text-secondary)]",
+    eyebrow: "text-app-meta font-medium text-[var(--text-secondary)]",
     title: "text-xl font-semibold text-[var(--text-primary)]",
-    muted: "text-[15px] text-[var(--text-tertiary)]",
-    body: "text-[15px] leading-relaxed text-[var(--text-secondary)]",
-    heading: "text-[15px] font-semibold text-[var(--text-primary)]",
+    muted: "text-app-body text-[var(--text-tertiary)]",
+    body: "text-app-body leading-relaxed text-[var(--text-secondary)]",
+    heading: "text-app-body font-semibold text-[var(--text-primary)]",
     score: "text-3xl font-bold tabular-nums text-[var(--text-primary)]",
     scoreDenom: "text-base font-medium text-[var(--text-tertiary)]",
     markOk: "mt-0.5 text-[var(--status-positive-ink)]",
@@ -36,16 +36,16 @@ const THEME = {
     barStrong: "bg-[var(--viz-done)]",
     barMid: "bg-[var(--viz-active)]",
     barLow: "bg-[var(--viz-idle)]",
-    label: "w-56 shrink-0 text-[14px] text-[var(--text-secondary)]",
-    meta: "w-16 shrink-0 text-right text-[13px] tabular-nums text-[var(--text-tertiary)]",
-    bandMeta: "w-32 shrink-0 text-right text-[12px] text-[var(--text-tertiary)]",
-    tableHead: "border-b border-[var(--border-subtle)] text-[12px] font-medium text-[var(--text-secondary)]",
+    label: "w-56 shrink-0 text-app-body text-[var(--text-secondary)]",
+    meta: "w-16 shrink-0 text-right text-app-meta tabular-nums text-[var(--text-tertiary)]",
+    bandMeta: "w-32 shrink-0 text-right text-app-meta text-[var(--text-tertiary)]",
+    tableHead: "border-b border-[var(--border-subtle)] text-app-meta font-medium text-[var(--text-secondary)]",
     tableRow: "border-b border-[var(--border-subtle)]",
     tableCell: "font-medium text-[var(--text-primary)]",
     tableMuted: "text-[var(--text-secondary)]",
-    formula: "mt-4 space-y-2 rounded-[var(--radius-control)] bg-[var(--surface-band)] p-4 font-mono text-[13.5px] text-[var(--text-primary)]",
-    inset: "mt-2.5 whitespace-pre-line rounded-[var(--radius-control)] bg-[var(--surface-band)] p-4 text-[15px] leading-relaxed text-[var(--text-secondary)]",
-    disclaimer: "px-1 text-[13px] leading-relaxed text-[var(--text-tertiary)]",
+    formula: "mt-4 space-y-2 rounded-[var(--radius-control)] bg-[var(--surface-band)] p-4 font-mono text-app-body text-[var(--text-primary)]",
+    inset: "mt-2.5 whitespace-pre-line rounded-[var(--radius-control)] bg-[var(--surface-band)] p-4 text-app-body leading-relaxed text-[var(--text-secondary)]",
+    disclaimer: "px-1 text-app-meta leading-relaxed text-[var(--text-tertiary)]",
     band: {
       strong: "border border-[var(--status-positive-line)] bg-[var(--status-positive-bg)] text-[var(--status-positive-ink)]",
       established: "border border-[var(--status-neutral-line)] bg-[var(--status-neutral-bg)] text-[var(--text-primary)]",
@@ -115,7 +115,7 @@ export function MicroResultView({
               <span className={t.scoreDenom}> / 100</span>
             </p>
             <span
-              className={`mt-1 inline-block rounded-md px-2.5 py-1 text-[12px] font-semibold ${t.band[result.band] || t.band.limited}`}
+              className={`mt-1 inline-block rounded-md px-2.5 py-1 text-app-meta font-semibold ${t.band[result.band] || t.band.limited}`}
             >
               {result.bandLabel}
             </span>
@@ -194,7 +194,7 @@ export function MicroResultView({
           </p>
 
           <div className="mt-3 overflow-x-auto">
-            <table className="w-full text-left text-[14px]">
+            <table className="w-full text-left text-app-body">
               <thead>
                 <tr className={t.tableHead}>
                   <th className="py-2 pr-3 font-semibold">Component</th>
@@ -213,7 +213,7 @@ export function MicroResultView({
                       className={`${t.tableRow} ${c.applicable ? "" : "opacity-50"}`}
                     >
                       <td className={`py-2 pr-3 ${t.tableCell}`}>
-                        {c.label} <span className="opacity-50">({k})</span>
+                        {c.label} <span className="text-[var(--text-tertiary)]">({k})</span>
                       </td>
                       <td className="py-2 pr-3 tabular-nums">
                         {c.applicable ? fmt2(c.usedWeight) : "0.00"}
@@ -240,7 +240,7 @@ export function MicroResultView({
             <p>{rawFormula}</p>
             <p>
               Coverage = {fmt2(analysis.coverage)}{" "}
-              <span className="font-sans opacity-60">
+              <span className="font-sans text-[var(--text-tertiary)]">
                 (
                 {analysis.coverageSignals
                   .filter((s) => s.applicable)
@@ -271,11 +271,11 @@ export function MicroResultView({
               <li key={i} className={`flex gap-3 ${t.body}`}>
                 <span
                   aria-hidden
-                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400"
+                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--fydell-evidence)]"
                 />
                 <span>
                   <span className={t.tableCell}>{item.label}</span>
-                  <span className="opacity-60"> · {item.detail}</span>
+                  <span className="text-[var(--text-tertiary)]"> · {item.detail}</span>
                 </span>
               </li>
             ))}

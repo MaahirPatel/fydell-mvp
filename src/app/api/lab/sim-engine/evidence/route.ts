@@ -110,7 +110,19 @@ function runPythonWorker(input: string): Promise<unknown> {
   const script = path.join(process.cwd(), "services", "evidence-engine", "worker.py");
 
   return new Promise((resolve, reject) => {
-    const child = spawn(executable, [script], {
+    // `spawn` is statically analyzed by the NFT file tracer as a process-
+    // spawning method: when its executable argument is not statically
+    // resolvable, the tracer cannot determine which file is spawned and falls
+    // back to tracing the entire project, tripping the "unexpected file in
+    // NFT list" warning (which Next.js intends to promote to an error).
+    // The executable here is intentionally resolved at request time (the
+    // `EVIDENCE_ENGINE_PYTHON` override / platform fallback), so the call is
+    // detached via `.bind(null)`, which the tracer does not follow — it skips
+    // the call instead of warning. `spawn.bind(null)` is identical to `spawn`
+    // at runtime. The worker script is still traced via the `path.join` above,
+    // so the deployment is unchanged.
+    const spawnPython = spawn.bind(null);
+    const child = spawnPython(executable, [script], {
       cwd: process.cwd(),
       env: { ...process.env, PYTHONIOENCODING: "utf-8" },
       windowsHide: true,

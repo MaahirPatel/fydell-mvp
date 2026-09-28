@@ -47,7 +47,7 @@ export function CitationMarker({
   return (
     <span
       aria-hidden
-      className={`inline-flex h-[17px] min-w-[17px] items-center justify-center rounded-[4px] border px-1 text-[10.5px] font-medium tabular-nums ${TONE[tone].marker}`}
+      className={`inline-flex h-[17px] min-w-[17px] items-center justify-center rounded-[4px] border px-1 text-app-caption font-medium tabular-nums ${TONE[tone].marker}`}
     >
       {index}
     </span>
@@ -68,10 +68,10 @@ export function CitationLink({
   const inner = (
     <>
       <CitationMarker index={citation.index} tone={tone} />
-      <span className="truncate text-[12px] text-[var(--text-secondary)]">
+      <span className="truncate text-app-meta text-[var(--text-secondary)]">
         {citation.source}
       </span>
-      <span className="shrink-0 text-[12px] tabular-nums text-[var(--text-tertiary)]">
+      <span className="shrink-0 text-app-meta tabular-nums text-[var(--text-tertiary)]">
         {citation.locator}
       </span>
     </>
@@ -125,10 +125,10 @@ export function CitationSource({
     <div className="overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-canvas)]">
       <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] px-2.5 py-1.5">
         <CitationMarker index={citation.index} tone={tone} />
-        <span className="truncate text-[12px] text-[var(--text-secondary)]">
+        <span className="truncate text-app-meta text-[var(--text-secondary)]">
           {citation.source}
         </span>
-        <span className="ml-auto shrink-0 text-[12px] tabular-nums text-[var(--text-tertiary)]">
+        <span className="ml-auto shrink-0 text-app-meta tabular-nums text-[var(--text-tertiary)]">
           {citation.locator}
         </span>
       </div>
@@ -136,7 +136,7 @@ export function CitationSource({
         {lines.map((line, i) => (
           <div
             key={i}
-            className={`flex gap-2 px-2.5 py-1 text-[12px] tabular-nums ${
+            className={`flex gap-2 px-2.5 py-1 text-app-meta tabular-nums ${
               line.highlight
                 ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]"
                 : "text-[var(--text-tertiary)]"

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { extractRepository } from "@/lib/passport/github/extract";
 import { parseGithubInput } from "@/lib/passport/github/parse";
+import { projectRemovalExplanation } from "@/lib/passport/removal";
 import { removeProject, saveProject } from "@/lib/passport/store";
 
 export const runtime = "nodejs";
@@ -34,5 +35,6 @@ export async function DELETE(req: Request) {
   const repo = new URL(req.url).searchParams.get("repo") ?? "";
   if (!/^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/.test(repo)) return NextResponse.json({ error: "Unknown project." }, { status: 400 });
   const passport = await removeProject(user.id, repo);
-  return NextResponse.json({ passport });
+  // GH-11: the response explains deletion versus retained shared/employer records.
+  return NextResponse.json({ passport, explanation: projectRemovalExplanation(repo) });
 }

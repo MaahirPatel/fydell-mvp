@@ -89,12 +89,12 @@ function Head({
       <div className="min-w-0">
         <h2
           id={titleId}
-          className="text-[15px] font-semibold tracking-[-0.015em] text-[var(--text-primary)]"
+          className="text-app-body font-semibold tracking-[-0.015em] text-[var(--text-primary)]"
         >
           {title}
         </h2>
         {description ? (
-          <p id={descId} className="mt-1 text-[13px] leading-[1.55] text-[var(--text-secondary)]">
+          <p id={descId} className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
             {description}
           </p>
         ) : null}

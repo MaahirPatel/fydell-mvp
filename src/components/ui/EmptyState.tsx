@@ -23,13 +23,13 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-frame)] border border-dashed border-[var(--border-default)] bg-[rgba(255,255,255,0.014)] px-5 py-6",
+        "rounded-[var(--radius-frame)] border border-dashed border-[var(--border-default)] bg-[var(--surface-panel)] px-5 py-6",
         className,
       )}
     >
-      <p className="text-[14px] font-medium text-[var(--text-primary)]">{title}</p>
+      <p className="text-app-body font-medium text-[var(--text-primary)]">{title}</p>
       {description ? (
-        <p className="mt-1.5 max-w-[62ch] text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+        <p className="mt-1.5 max-w-[62ch] text-app-meta leading-[1.6] text-[var(--text-secondary)]">
           {description}
         </p>
       ) : null}

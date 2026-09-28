@@ -12,7 +12,7 @@ export default function PilotProfilePage() {
       <Container className="pt-[168px] sm:pt-[180px] lg:pt-[200px]">
         <Reveal className="mx-auto max-w-[680px]">
           <h1 className="flat-type page-display">A little about you</h1>
-          <p className="mt-5 text-[16px] leading-[1.7] text-[rgba(244,245,247,0.72)]">
+          <p className="mt-5 text-app-body leading-[1.7] text-[rgba(244,245,247,0.72)]">
             Two quick questions so we can read your feedback in context. Name,
             email and organization are optional.
           </p>

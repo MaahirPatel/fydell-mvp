@@ -28,7 +28,7 @@ export default function InvitationActions({
   }
 
   if (status === "revoked" || status === "accepted") {
-    return <span className="text-[12px] text-[rgba(244,245,247,0.4)]">-</span>;
+    return <span className="text-app-meta text-[rgba(244,245,247,0.4)]">-</span>;
   }
 
   return (
@@ -37,7 +37,7 @@ export default function InvitationActions({
         type="button"
         disabled={busy}
         onClick={() => void run("resend")}
-        className="text-[12px] text-[rgba(244,245,247,0.75)] hover:underline"
+        className="text-app-meta text-[rgba(244,245,247,0.75)] hover:underline"
       >
         Resend
       </button>
@@ -48,7 +48,7 @@ export default function InvitationActions({
           if (!window.confirm("Revoke this invitation?")) return;
           void run("revoke");
         }}
-        className="text-[12px] text-[#F26B82] hover:underline"
+        className="text-app-meta text-[var(--fydell-risk)] hover:underline"
       >
         Revoke
       </button>

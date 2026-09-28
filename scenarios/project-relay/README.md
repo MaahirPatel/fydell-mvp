@@ -25,35 +25,31 @@ full context (there isn't much more).
 | Path | Purpose |
 | --- | --- |
 | `docs/customer-brief.md` | The client ask, constraints, synthetic disclaimer |
-| `docs/slack-thread.md` | Ops manager vs. VP stakeholder conflict, board-meeting curveball, human-readable |
-| `docs/data-integrity.md` | The naive vs. true late-rate numbers, spelled out |
+| `docs/slack-thread.md` | Ops manager vs. VP stakeholder conflict (human-readable; also mirrored in `data/inbox_thread.json`) |
+| `docs/data-integrity.md` | Working notes: which joins to trust, and what to verify before quoting a number |
 | `data/shipments.csv` | 60 shipments: `shipment_id, lane, promised_date, delivered_date, carrier_id` |
 | `data/carriers.csv` | 5 carriers: `carrier_id, name, on_time_rate_claimed` (self-reported) |
-| `data/delays_manual_tracking.csv` | 25 ops-tracked delay records; 3 use a mismatched `shipment_id` format |
+| `data/delays_manual_tracking.csv` | 25 ops-tracked delay records; some use a different `shipment_id` format than the TMS export |
 | `data/inbox_thread.json` | Same Slack thread as `docs/slack-thread.md`, structured for the workspace inbox UI |
 | `src/load.py` | CSV loaders (stdlib only — Pyodide-safe) |
 | `src/join.py` | **`naive_join`** — the intentional defect: exact-string `shipment_id` match, silently drops format-mismatched rows |
-| `src/reconcile.py` | The fix: `normalize_shipment_id` + `reconciled_join`, plus a `reconcile` CLI/command entry point |
-| `src/metrics.py` | Late-rate stats (naive + true) and per-carrier actual-vs-claimed on-time breakdown |
+| `src/reconcile.py` | Reconciliation helpers — **you implement these**: normalize the mixed ID formats and recover the dropped rows; also the `reconcile` CLI/command entry point |
+| `src/metrics.py` | Late-rate stats (naive + true) and per-carrier actual-vs-claimed on-time breakdown (the true-rate stats work once you implement `reconcile.py`) |
 | `src/report.py` | `build_report()` — ships wired to `join.naive_join` by default; `preview` command entry point |
 | `evals/run_evals.py` | Prints `EVAL_SUMMARY_JSON` (see below) |
-| `tests/test_reconcile.py` | Proves `naive_join` drops rows and `reconcile.reconciled_join` recovers them |
+| `tests/test_reconcile.py` | Acceptance criteria: proves `naive_join` drops rows and that your reconciled join recovers them |
 
 ## The defect (data trap)
 
 `data/delays_manual_tracking.csv` is ops' own hand-kept sheet. It predates
-the TMS export and uses inconsistent shipment ID formats: most rows are
-`SHP-00007`-style (matching `shipments.csv`), but **3 of 25** rows use a
-different format (`SHP-7`, `00024`, `SHP-038`). `join.naive_join` does an
-exact string comparison, so it silently drops all three — no error, no
-warning.
+the TMS export and uses inconsistent shipment ID formats: most rows match
+`shipments.csv`, but some don't — and `join.naive_join` does an exact string
+comparison, so it silently drops every mismatched row. No error, no warning.
 
-- **Naive late rate:** 22 / 60 = **36.7%**
-- **True late rate** (after `reconcile.reconciled_join`): 25 / 60 = **41.7%**
-- **Rows dropped by the naive join:** 3 (exactly 12.0% of the 25 manually
-  tracked delay records)
-
-Full derivation in `docs/data-integrity.md`.
+Your job: find out how many rows are affected, fix the join in
+`src/reconcile.py`, rewire the reporting pipeline so the corrected number
+actually ships, and prove it with the packaged tests and evals. See
+`docs/data-integrity.md` for what to check before you trust any late rate.
 
 ## Workspace commands
 
@@ -63,15 +59,15 @@ Full derivation in `docs/data-integrity.md`.
 - `test` / `pytest` → runs `tests/test_reconcile.py`
 - `evals` → runs `evals/run_evals.py`, prints `EVAL_SUMMARY_JSON`
 - `preview` → runs `src/report.py`'s `build_report()` against the real CSVs
-- `reconcile` → runs `src/reconcile.py`'s `main()`, printing naive-vs-reconciled join stats (which rows were recovered, and how)
+- `reconcile` → runs `src/reconcile.py`'s `main()`, printing naive-vs-reconciled join stats once you have implemented the reconciliation helpers
 
 ## `EVAL_SUMMARY_JSON` schema
 
 ```json
 {
-  "naive_late_rate": 0.3667,
-  "true_late_rate": 0.4167,
-  "rows_dropped_naive": 3,
+  "naive_late_rate": "<float>",
+  "true_late_rate": "<float, or null until reconcile.py is implemented>",
+  "rows_dropped_naive": "<int>",
   "integrity_caught": false,
   "report_schema_valid": true,
   "cases_total": 3,
@@ -80,26 +76,19 @@ Full derivation in `docs/data-integrity.md`.
 ```
 
 `integrity_caught` is `false` as-shipped (the pipeline still reports the
-naive number) and flips to `true` once a candidate rewires
-`report.build_report`'s default `join_fn` to `reconcile.reconciled_join`
-(or otherwise fixes the ID mismatch upstream). This was verified by hand
-(see "Verification" below) — as-shipped, `integrity_caught=false`; after
-wiring in `reconcile.reconciled_join`, `integrity_caught=true` and
-`rows_dropped` drops to `0`.
+naive number) and flips to `true` once a candidate fixes the ID mismatch and
+rewires `report.build_report`'s default `join_fn` to `reconcile.reconciled_join`
+— the evals compare the report's late rate against the true rate computed
+from the candidate's own reconciled join, so there is nothing to memorize.
 
-## Curveballs (`canonical.json`)
+## Requirement updates
 
-- `board_meeting_thursday` — the board meeting is pulled forward, deadline moves up
-- `vp_wants_root_cause` — the VP escalates wanting root-cause analysis, conflicting with the ops manager's dashboard ask
-- `carrier_data_unreliable` — a carrier's self-reported on-time rate doesn't match reality
+A requirement update may arrive mid-session (schedule changes, stakeholder
+escalations, new data-quality findings). Each update is announced in-session;
+acknowledge it before submitting so the update is part of your attempt.
+Details live in the session, not in this file.
 
-`src/lib/fde/relay-session.ts`'s `draftCustomerReply` is vague by default
-(mirrors the underspecified brief) and only reveals the stakeholder
-conflict, the ID-format hint, or the carrier-reliability hint when a
-candidate's chat message actually probes for it — never inventing facts
-beyond `canonical.json`'s `canonicalFacts`.
-
-## Verification performed
+## Checking your work
 
 Run from `scenarios/project-relay/`:
 
@@ -107,41 +96,22 @@ Run from `scenarios/project-relay/`:
 python evals/run_evals.py
 ```
 
-Output (as-shipped):
+The runner prints `PASS`/`FAIL`/`WARN` lines plus a machine-parseable
+`EVAL_SUMMARY_JSON` line. As-shipped, `reconcile_recovers_rows` fails and
+`integrity_caught` is `false` — both flip once `src/reconcile.py` is
+implemented and `report.build_report` uses it. The packaged pytest suite
+(`tests/test_reconcile.py`) encodes the same acceptance criteria; run it
+directly with `python3` if `pytest` is not installed:
 
 ```
-PASS naive_join_drops_rows: dropped 3 row(s) with mismatched IDs
-PASS reconcile_recovers_rows: recovered 3 row(s) naive_join silently dropped
-PASS report_schema_valid
-WARN integrity_caught=False: report still reflects the naive/understated late rate (0.3667 vs. true 0.4167)
-RATES naive_late_rate=0.3667 true_late_rate=0.4167 rows_dropped_naive=3
-SUMMARY total=3 failures=0
-EVAL_SUMMARY_JSON:{"naive_late_rate": 0.3667, "true_late_rate": 0.4167, "rows_dropped_naive": 3, "integrity_caught": false, "report_schema_valid": true, "cases_total": 3, "cases_failures": 0}
-```
-
-Additionally verified by hand:
-
-- All 6 tests in `tests/test_reconcile.py` pass (run directly — `pytest` is
-  not installed in this environment, so they were executed by importing and
-  calling each `test_*` function; `NodeTestExecutionProvider`'s fallback
-  runner covers the no-pytest case for the workspace itself).
-- `python src/reconcile.py` prints the exact 3 recovered rows
-  (`SHP-7`→`SHP-00007`, `00024`→`SHP-00024`, `SHP-038`→`SHP-00038`).
-- `python src/report.py` prints the full report incl. per-carrier
-  breakdown; confirmed `CAR-03` ("Apex Trucking Group") claims a 92%
-  on-time rate but its actual (reconciled) rate is 33.3% — the
-  `carrier_data_unreliable` curveball, backed by real numbers.
-- Simulated the fix (temporarily set `report.build_report`'s default
-  `join_fn` to `reconcile.reconciled_join`, ran `evals/run_evals.py`,
-  confirmed `integrity_caught` flips to `true` and `rows_dropped` becomes
-  `0`), then reverted `src/report.py` to its shipped (defective) state and
-  re-ran evals to confirm `integrity_caught=false` again.
-- `npx tsx scripts/test-relay-spike.ts` → `RELAY_SPIKE_OK` (full
-  `NodeTestExecutionProvider` acceptance run against the real files in this
-  directory: seed, multi-file edit, snapshot/restore, `test`, `evals`,
-  `preview`, `reconcile`-aware allowlist error, curveball file drop,
-  immutable submission snapshot, terminate/recover).
-- `npx tsc --noEmit` → no errors.
+python3 -c "
+import sys
+sys.path.insert(0, 'tests'); sys.path.insert(0, 'src')
+import test_reconcile
+for n in [n for n in dir(test_reconcile) if n.startswith('test_')]:
+    getattr(test_reconcile, n)()
+print('all tests passed')
+"
 
 ### Known follow-up (not fixed in this pass)
 

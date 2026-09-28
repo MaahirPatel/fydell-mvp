@@ -5,6 +5,16 @@ import {
   type ButtonLinkProps as BaseButtonLinkProps,
 } from "@/components/ui/Button";
 
+// ─── Kicker ───────────────────────────────────────────────────────────────────
+
+/**
+ * The mono label voice: kickers, eyebrows, badges. Sans speaks, mono labels.
+ * Replaces the old eyebrow-with-colored-dot pattern.
+ */
+export function Kicker({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <p className={["mkt-kicker", className].filter(Boolean).join(" ")}>{children}</p>;
+}
+
 // ─── Container ───────────────────────────────────────────────────────────────
 
 interface ContainerProps {
@@ -25,17 +35,22 @@ export function Container({ children, className = "" }: ContainerProps) {
 export function EditorialHeader({
   heading,
   description,
+  kicker,
   stageHref,
   stageLabel,
 }: {
   heading: string;
   description: string;
+  kicker?: string;
   stageHref?: string;
   stageLabel?: string;
 }) {
   return (
     <div className="grid items-start gap-8 lg:grid-cols-12 lg:gap-6">
-      <h2 className="section-heading flat-type lg:col-span-5">{heading}</h2>
+      <div className="lg:col-span-5">
+        {kicker ? <Kicker>{kicker}</Kicker> : null}
+        <h2 className="section-heading flat-type">{heading}</h2>
+      </div>
       <div className="lg:col-span-5 lg:col-start-7">
         <p className="section-desc">{description}</p>
         {stageHref && stageLabel ? (
@@ -121,7 +136,7 @@ export function TextLink({
     <Link
       href={href}
       className={[
-        "inline-flex items-center text-[14px] text-[var(--text-secondary)] underline decoration-[var(--border-strong)] underline-offset-[5px] transition-colors duration-150 hover:text-[var(--text-primary)] hover:decoration-[var(--text-primary)]",
+        "inline-flex items-center text-app-body text-[var(--text-secondary)] underline decoration-[var(--border-strong)] underline-offset-[5px] transition-colors duration-150 hover:text-[var(--text-primary)] hover:decoration-[var(--text-primary)]",
         className,
       ]
         .filter(Boolean)
@@ -138,6 +153,7 @@ export function TextLink({
 interface SectionHeadingProps {
   title: string;
   subtitle?: string;
+  kicker?: string;
   align?: "left" | "center";
   className?: string;
 }
@@ -145,12 +161,14 @@ interface SectionHeadingProps {
 export function SectionHeading({
   title,
   subtitle,
+  kicker,
   align = "left",
   className = "",
 }: SectionHeadingProps) {
   const textAlign = align === "center" ? "text-center mx-auto" : "text-left";
   return (
     <div className={["max-w-[820px]", textAlign, className].join(" ")}>
+      {kicker ? <Kicker className={align === "center" ? "justify-center" : ""}>{kicker}</Kicker> : null}
       <h2 className="section-heading flat-type">{title}</h2>
       {subtitle && <p className="section-desc mt-5">{subtitle}</p>}
     </div>

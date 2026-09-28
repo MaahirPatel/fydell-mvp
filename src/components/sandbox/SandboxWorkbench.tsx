@@ -144,7 +144,7 @@ export function SandboxWorkbench({
             <ol className="mt-2 space-y-1.5">
               {CHECKS.map(([key, label]) => (
                 <li key={key} className="flex gap-2 text-app-meta text-[var(--text-secondary)]">
-                  <span className={session.progress[key] ? "text-[var(--color-good)]" : "text-[var(--text-tertiary)]"}>
+                  <span className={session.progress[key] ? "text-[var(--fydell-good)]" : "text-[var(--text-tertiary)]"}>
                     {session.progress[key] ? "●" : "○"}
                   </span>
                   {label}
@@ -227,8 +227,8 @@ export function SandboxWorkbench({
 
           <section className="px-4 py-4">
             <h2 className="text-app-section">Proposal-only code</h2>
-            <p className="mt-1 text-app-meta text-[var(--color-changed)]">Saved for review, never executed, and does not affect metrics.</p>
-            <textarea rows={4} value={proposal} onChange={(event) => setProposal(event.target.value)} onBlur={() => onAction({ type: "save_proposal", proposalCode: proposal, idempotencyKey: `proposal:${session.revision}` })} className="mt-2 w-full resize-y border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 font-mono text-[12px] leading-5 outline-none" />
+            <p className="mt-1 text-app-meta text-[var(--fydell-changed)]">Saved for review, never executed, and does not affect metrics.</p>
+            <textarea rows={4} value={proposal} onChange={(event) => setProposal(event.target.value)} onBlur={() => onAction({ type: "save_proposal", proposalCode: proposal, idempotencyKey: `proposal:${session.revision}` })} className="mt-2 w-full resize-y border border-[var(--border-default)] bg-[var(--surface-panel)] p-2.5 font-mono text-app-meta leading-5 outline-none" />
           </section>
         </main>
 
@@ -244,7 +244,7 @@ export function SandboxWorkbench({
 
           {session.constraintDelivered ? (
             <div className="border-b border-[var(--border-default)] bg-[var(--surface-selected)] px-3 py-3">
-              <p className="text-app-meta font-medium text-[var(--color-changed)]">LATENCY_001 · released once</p>
+              <p className="text-app-meta font-medium text-[var(--fydell-changed)]">LATENCY_001 · released once</p>
               <p className="mt-1 text-app-body text-[var(--text-secondary)]">{session.fixture.changedFact.body}</p>
             </div>
           ) : null}

@@ -12,7 +12,7 @@ type SignupPath = "employer" | "fde" | "partner";
 
 function redirectForPath(path: SignupPath | null): string {
   if (path === "employer") return "/app/employer";
-  if (path === "fde") return "/app/candidate/passport";
+  if (path === "fde") return "/app/candidate/profile";
   if (path === "partner") return "/account/setup-required?reason=partner_pending";
   // No path chosen yet. This is the default signup flow. Role is chosen next.
   return "/signup/role";
@@ -149,7 +149,7 @@ export async function POST(req: Request) {
       redirectTo = "/app/employer";
     } else if (path === "fde") {
       await ensureCandidateProfile(userId);
-      redirectTo = "/app/candidate/passport";
+      redirectTo = "/app/candidate/profile";
     } else if (path === "partner") {
       redirectTo = "/account/setup-required?reason=partner_pending";
     } else {

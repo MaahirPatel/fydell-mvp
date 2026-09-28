@@ -1,5 +1,6 @@
 import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
+import { Kicker } from "@/components/marketing/ui";
 import {
   ChapterHead,
   Features,
@@ -8,6 +9,7 @@ import {
   SimulationVisual,
 } from "@/components/marketing/home/FydellHome";
 import s from "@/components/marketing/home/fydell-home.module.css";
+import { DesktopShowcase } from "@/components/marketing/home/DesktopShowcase";
 
 export const metadata = {
   title: "For developers",
@@ -55,7 +57,8 @@ export default function DevelopersPage() {
       <div className={s.page}>
         <section className={s.hero}>
           <div className={`${s.container} ${s.heroCopyIn}`}>
-            <h1 className={s.title}>Get hired for the work you have already done</h1>
+            <Kicker>For developers</Kicker>
+            <h1 className={s.heroTitle}>Get hired for <span className="t-project">the&nbsp;work</span> you&rsquo;ve already done</h1>
             <div className={s.heroRow}>
               <p className={s.lede}>
                 Turn your public repositories into an Engineering Passport. Every finding cites the exact lines, and
@@ -142,6 +145,17 @@ export default function DevelopersPage() {
           />
           <SimulationVisual />
           <Features dot="var(--brand-violet)" items={["Disclosed recording", "Real tests", "Timed scope", "Yours to share"]} />
+        </section>
+
+        <section id="desktop" className={`${s.container} ${s.chapter}`}>
+          <ChapterHead
+            index="05"
+            label="Desktop app"
+            href="/contact"
+            title="Do the simulation in a real editor, on your machine"
+            copy="The Fydell desktop client runs the whole simulation locally: your files, a real editor, recorded test runs, and one atomic submit. Nothing leaves your machine until you decide it does."
+          />
+          <DesktopShowcase />
         </section>
 
         <section className={`${s.container} ${s.chapter}`} aria-labelledby="dev-faq">
