@@ -182,7 +182,7 @@ export default async function EmployerHomePage() {
         <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
           <PanelSection
             title="Start with an open role"
-            description="Tell Fydell who you need. We will define the work and help verify the candidates worth interviewing."
+            description="Define the role. Invite candidates. Review evidence when work is submitted."
           >
             <Link
               href="/app/employer/roles"

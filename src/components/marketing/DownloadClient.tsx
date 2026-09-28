@@ -60,7 +60,7 @@ const IN_THE_APP = [
   },
   {
     title: "Submit produces a receipt",
-    body: "Finishing an attempt hands you a work receipt — your own copy of what you produced, whatever the employer decides.",
+    body: "Finishing an attempt hands you a work receipt. Your own copy of what you produced, whatever the employer decides.",
   },
   {
     title: "Sign-in that stays on your machine",
@@ -75,7 +75,7 @@ const IN_THE_APP = [
 const REQUIREMENTS: Array<[string, string]> = [
   ["Windows", "Windows 10 version 1803+, 64-bit. WebView2 (ships with Windows 11; installed on demand on Windows 10)."],
   ["macOS", "macOS 10.15 Catalina or later, Intel or Apple Silicon."],
-  ["Linux", "64-bit distribution with WebKitGTK 4.1 — current Ubuntu, Fedora, Debian, and Arch families work."],
+  ["Linux", "64-bit distribution with WebKitGTK 4.1. Current Ubuntu, Fedora, Debian, and Arch families work."],
   ["Network", "An internet connection for sign-in and submitting. Everything else runs on your machine."],
 ];
 
@@ -94,7 +94,7 @@ export default function DownloadClient() {
         actions={
           <p className={s.stateNote}>
             <MonitorDown className="h-4 w-4 shrink-0" aria-hidden />
-            Installers are not published yet — the buttons below open the GitHub Releases page, where they will appear.
+            Installers are not published yet. The buttons below open the GitHub Releases page, where they will appear.
           </p>
         }
       />
@@ -126,7 +126,7 @@ export default function DownloadClient() {
           <a href={RELEASES_URL} target="_blank" rel="noreferrer" className={s.inlineLink}>
             github.com/MaahirPatel/fydell-mvp/releases
           </a>
-          . There is no installer to download yet — this page says so plainly until there is.
+          . There is no installer to download yet. This page says so plainly until there is.
         </p>
       </section>
 

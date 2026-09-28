@@ -117,7 +117,7 @@ export default function SimulationLibrary() {
                 <td>
                   {row.released ? (
                     <Link href="/simulations" className={s.released}>
-                      Released — view it
+                      Released: view it
                     </Link>
                   ) : (
                     <span className={s.pending}>In catalog</span>

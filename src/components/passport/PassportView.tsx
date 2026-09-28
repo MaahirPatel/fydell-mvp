@@ -10,7 +10,7 @@ import type { PassportData, PassportEvidence } from "@/lib/passport/view";
 export type PassportMode = "preview" | "owner" | "shared" | "employer";
 
 const MODE_LABEL: Record<PassportMode, string> = {
-  preview: "Preview — not saved",
+  preview: "Preview: not saved",
   owner: "Private until you share it",
   shared: "Shared by the candidate",
   employer: "Shared with your workspace",
@@ -78,7 +78,7 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
             Every finding cites exact lines at a pinned commit
           </span>
-          <span className="guarantee-item">Authorship unverified — repository ownership does not prove authorship</span>
+          <span className="guarantee-item">Authorship unverified: repository ownership does not prove authorship</span>
         </div>
       </header>
 

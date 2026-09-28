@@ -88,7 +88,7 @@ export default function EditorImport({ onImported }: { onImported?: () => void }
       <div className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4">
         <p className="text-app-body font-medium text-[var(--text-primary)]">What this is</p>
         <p className="mt-1 text-app-meta leading-[1.6] text-[var(--text-secondary)]">
-          Upload a history file from your own editor and Fydell extracts a work summary — files touched, languages,
+          Upload a history file from your own editor. Fydell extracts a work summary: files touched, languages,
           active days. Only the summary is stored; the uploaded file is discarded after parsing.{" "}
           <strong className="font-medium text-[var(--text-primary)]">
             This data is self-supplied: it is labeled as such everywhere and never treated as observed work.

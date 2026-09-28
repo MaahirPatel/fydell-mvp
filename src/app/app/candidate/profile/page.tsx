@@ -83,8 +83,7 @@ export default async function CandidateProfilePage({
           <ProfileHeader profile={hub.profile} />
         </div>
         <p className="mt-3 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">
-          One profile for everything: who you are, the accounts you connect, and the evidence your work leaves behind —
-          simulations you complete, repositories you analyze, and editor history you choose to import.
+          One profile for everything: who you are, the accounts you connect, and the evidence your work leaves behind. Simulations you complete, repositories you analyze, and editor history you choose to import.
         </p>
       </div>
 
@@ -94,14 +93,14 @@ export default async function CandidateProfilePage({
 
       <div className="mt-8 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-6">
-          <Section id="profile-timeline" title="Evidence timeline" hint="Every source, newest first. Provenance is labeled on each entry — observed work, repository observations, and self-supplied imports are never mixed.">
+          <Section id="profile-timeline" title="Evidence timeline" hint="Every source, newest first. Provenance is labeled on each entry. Observed work, repository observations, and self-supplied imports are never mixed.">
             <EvidenceTimeline items={hub.timeline} />
           </Section>
 
           <Section
             id="profile-passport"
             title="Engineering passport"
-            hint="Analyze public GitHub repositories. Fydell cites what the code demonstrates, line by line — the passport lives here now, as a section of your profile."
+            hint="Analyze public GitHub repositories. Fydell cites what the code demonstrates, line by line. The passport lives here now, as a section of your profile."
           >
             <PassportConnectSection initialLogin={initialLogin} initialRepos={initialRepos} />
             {passport && passport.projects.length ? (

@@ -130,8 +130,7 @@ export default function DesktopWorkspaceMock() {
         </div>
       </div>
       <figcaption className={s.caption}>
-        <b>The Fydell desktop app.</b> Candidates work a realistic incident in a real codebase —
-        brief, editor, tests, and a disclosed recording notice. Nothing else leaves the machine.
+        <b>The Fydell desktop app.</b> Candidates work a realistic incident in a real codebase. Brief, editor, tests, and a disclosed recording notice. Nothing else leaves the machine.
       </figcaption>
     </figure>
   );

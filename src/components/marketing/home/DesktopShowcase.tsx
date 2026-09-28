@@ -24,7 +24,7 @@ export function DesktopShowcase() {
         <DesktopWorkspaceMock />
       </div>
       <p className={s.mockCaption}>
-        Illustration of the desktop workspace — file tree, editor, and recorded
+        Illustration of the desktop workspace: file tree, editor, and recorded
         test runs. Not a screenshot; installers publish with v0.1.0.
       </p>
       <Features

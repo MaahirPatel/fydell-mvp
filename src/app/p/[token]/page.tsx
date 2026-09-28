@@ -59,7 +59,7 @@ export default async function SharedProfilePage({ params }: { params: Promise<{ 
         <section className="mt-8">
           <h2 className="text-app-section font-semibold tracking-[-0.012em]">Evidence</h2>
           <p className="mt-1 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">
-            Newest first. Each entry is labeled with where it came from —{" "}
+            Newest first. Each entry is labeled with where it came from.{" "}
             <ProvenanceBadge provenance="observed-simulation" /> work verified inside Fydell simulations,{" "}
             <ProvenanceBadge provenance="repository-observation" /> code read from connected repositories,{" "}
             <ProvenanceBadge provenance="local-import" /> history the engineer supplied themselves.

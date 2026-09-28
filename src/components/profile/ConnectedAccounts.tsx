@@ -120,7 +120,7 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
         <p className="text-app-body font-medium text-[var(--text-primary)]">Connect GitHub</p>
         <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
           Enter your GitHub username, then analyze your repositories in the passport section below.
-          Full GitHub sign-in (OAuth) is coming later — today Fydell reads only the public repositories you choose.
+          Full GitHub sign-in (OAuth) is coming later. Today Fydell reads only the public repositories you choose.
         </p>
         <div className="mt-3 flex gap-2">
           <input
