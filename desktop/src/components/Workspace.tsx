@@ -174,14 +174,35 @@ export default function Workspace({
     [saveTab]
   );
 
-  const closeTab = useCallback((path: string) => {
-    if (timers.current[path]) clearTimeout(timers.current[path]);
-    setTabs((ts) => {
-      const next = ts.filter((t) => t.path !== path);
-      if (active === path) setActive(next.length ? next[next.length - 1].path : null);
-      return next;
-    });
-  }, [active]);
+  const closeTab = useCallback(
+    (path: string) => {
+      if (timers.current[path]) {
+        clearTimeout(timers.current[path]);
+        delete timers.current[path];
+      }
+      const remove = () => {
+        setTabs((ts) => {
+          const next = ts.filter((t) => t.path !== path);
+          if (active === path)
+            setActive(next.length ? next[next.length - 1].path : null);
+          return next;
+        });
+      };
+      const tab = tabsRef.current.find((t) => t.path === path);
+      if (tab && tab.dirty && !tab.saving) {
+        // Flush unsaved edits before closing — candidate work is never
+        // silently discarded. A failed save keeps the tab open with the
+        // error visible in the topbar save state.
+        void saveTab(path).then(() => {
+          const current = tabsRef.current.find((t) => t.path === path);
+          if (current && !current.dirty) remove();
+        });
+        return;
+      }
+      remove();
+    },
+    [active, saveTab]
+  );
 
   const resolveConflict = useCallback(
     async (keepMine: boolean) => {
@@ -495,7 +516,7 @@ export default function Workspace({
               <Editor
                 height="100%"
                 language={langOf(activeTab.path)}
-                theme="vs-dark"
+                theme="vs"
                 value={activeTab.content}
                 onChange={(v) => editTab(activeTab.path, v ?? "")}
                 options={{ minimap: { enabled: false }, fontSize: 13, scrollBeyondLastLine: false }}

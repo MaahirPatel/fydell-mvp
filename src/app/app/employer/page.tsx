@@ -188,7 +188,7 @@ export default async function EmployerHomePage() {
               href="/app/employer/roles"
               className="inline-flex min-h-9 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-app-body font-medium text-[var(--control-solid-ink)]"
             >
-              Create role
+              Browse roles
             </Link>
           </PanelSection>
         </Panel>

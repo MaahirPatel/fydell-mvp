@@ -101,7 +101,10 @@ function Provisioning({
             const st = steps[s.id] ?? "pending";
             return (
               <li key={s.id}>
-                <span className={st === "failed" ? "no" : st === "ok" ? "yes" : ""}>
+                <span
+                  className={`step-glyph ${st === "failed" ? "no" : st === "ok" ? "yes" : st === "started" ? "started" : ""}`}
+                  aria-hidden="true"
+                >
                   {glyph(st)}
                 </span>
                 <span>
@@ -137,17 +140,53 @@ function Provisioning({
    The signed-in candidate home. Linear-style: a quiet sidebar for
    navigation, the content area owns the information density. */
 
+function NavIcon({ kind }: { kind: "home" | "inbox" | "profile" }) {
+  const common = {
+    width: 16,
+    height: 16,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.6,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+  } as const;
+  if (kind === "home")
+    return (
+      <svg {...common} aria-hidden="true">
+        <path d="M4 11l8-7 8 7" />
+        <path d="M6 9.5V20h12V9.5" />
+        <path d="M10 20v-5h4v5" />
+      </svg>
+    );
+  if (kind === "inbox")
+    return (
+      <svg {...common} aria-hidden="true">
+        <path d="M22 12h-5l-2 3h-6l-2-3H2" />
+        <path d="M5 5h14l3 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6l3-7z" />
+      </svg>
+    );
+  return (
+    <svg {...common} aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+    </svg>
+  );
+}
+
 function Shell({
   auth,
   session,
   onSignOut,
-  onAcceptInvite,
+  onAcceptInvitationId,
+  onAcceptInviteToken,
   onContinueSession,
 }: {
   auth: SessionSummary | null;
   session: SessionInfo | null;
   onSignOut: () => void;
-  onAcceptInvite: (token: string) => void;
+  onAcceptInvitationId: (inv: InboxInvitation) => void;
+  onAcceptInviteToken: (token: string) => void;
   onContinueSession: () => void;
 }) {
   const [tab, setTab] = useState<HomeTab>("home");
@@ -180,19 +219,26 @@ function Shell({
           <BrandLockup size={24} />
         </div>
         <nav className="sidebar-nav">
+          <div className="nav-eyebrow">Workspace</div>
           <button
             className={`nav-item ${tab === "home" ? "active" : ""}`}
             onClick={() => setTab("home")}
             aria-current={tab === "home" ? "page" : undefined}
           >
-            Home
+            <span className="nav-item-label">
+              <span className="nav-icon"><NavIcon kind="home" /></span>
+              Home
+            </span>
           </button>
           <button
             className={`nav-item ${tab === "inbox" ? "active" : ""}`}
             onClick={() => setTab("inbox")}
             aria-current={tab === "inbox" ? "page" : undefined}
           >
-            <span>Inbox</span>
+            <span className="nav-item-label">
+              <span className="nav-icon"><NavIcon kind="inbox" /></span>
+              Inbox
+            </span>
             {inboxCount != null && inboxCount > 0 && (
               <span className="nav-badge">{inboxCount}</span>
             )}
@@ -202,7 +248,10 @@ function Shell({
             onClick={() => setTab("profile")}
             aria-current={tab === "profile" ? "page" : undefined}
           >
-            Profile
+            <span className="nav-item-label">
+              <span className="nav-icon"><NavIcon kind="profile" /></span>
+              Profile
+            </span>
           </button>
         </nav>
         {hasSession && (
@@ -236,7 +285,9 @@ function Shell({
             onOpenProfile={() => setTab("profile")}
           />
         )}
-        {tab === "inbox" && <Inbox onAccept={onAcceptInvite} />}
+        {tab === "inbox" && (
+          <Inbox onAcceptId={onAcceptInvitationId} onAcceptToken={onAcceptInviteToken} />
+        )}
         {tab === "profile" && <Profile />}
       </main>
     </div>
@@ -373,32 +424,40 @@ export default function App() {
     }
   }, []);
 
+  /** Shared post-accept entry: version gate, then consent or begin. */
+  const enterSession = useCallback(
+    async (s: SessionInfo) => {
+      setSession(s);
+      // DESK-19: check the version gate before anything timed starts.
+      try {
+        const gate = await api.checkClientVersion();
+        setVersionGate(gate);
+        if (gate.kind === "blocked") {
+          setScreen("update-required");
+          return;
+        }
+        if (gate.kind === "current" && gate.update_available) {
+          setUpdateNotice(versionGateMessage(gate));
+        }
+      } catch {
+        // Version check is advisory on failure: unknown gate, visible in UI.
+      }
+      if (s.consent_accepted) {
+        begin(s);
+      } else {
+        setScreen("consent");
+      }
+    },
+    [begin]
+  );
+
   const join = useCallback(
     async (token: string) => {
       setBusy(true);
       setError(null);
       try {
         const s = await api.joinSession(token);
-        setSession(s);
-        // DESK-19: check the version gate before anything timed starts.
-        try {
-          const gate = await api.checkClientVersion();
-          setVersionGate(gate);
-          if (gate.kind === "blocked") {
-            setScreen("update-required");
-            return;
-          }
-          if (gate.kind === "current" && gate.update_available) {
-            setUpdateNotice(versionGateMessage(gate));
-          }
-        } catch {
-          // Version check is advisory on failure: unknown gate, visible in UI.
-        }
-        if (s.consent_accepted) {
-          begin(s);
-        } else {
-          setScreen("consent");
-        }
+        await enterSession(s);
       } catch (e: unknown) {
         if (isAuthRequired(e)) {
           setScreen("signin");
@@ -411,7 +470,33 @@ export default function App() {
         setBusy(false);
       }
     },
-    [begin]
+    [enterSession]
+  );
+
+  const joinByInvitationId = useCallback(
+    async (inv: InboxInvitation) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const s = await api.acceptInvitationById(
+          inv.id,
+          inv.organizationName,
+          inv.simulationTitle
+        );
+        await enterSession(s);
+      } catch (e: unknown) {
+        if (isAuthRequired(e)) {
+          setScreen("signin");
+          setError("Your sign-in expired — please sign in again.");
+        } else {
+          setError(messageOf(e));
+          setScreen("home");
+        }
+      } finally {
+        setBusy(false);
+      }
+    },
+    [enterSession]
   );
 
   const continueSession = useCallback(() => {
@@ -490,7 +575,8 @@ export default function App() {
         auth={auth}
         session={session}
         onSignOut={signOut}
-        onAcceptInvite={(token) => void join(token)}
+        onAcceptInvitationId={(inv) => void joinByInvitationId(inv)}
+        onAcceptInviteToken={(token) => void join(token)}
         onContinueSession={continueSession}
       />
     );

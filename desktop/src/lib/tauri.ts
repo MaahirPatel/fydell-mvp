@@ -215,8 +215,9 @@ export interface InboxInvitation {
   candidateName: string | null;
   status: string;
   expiresAt: string;
-  /** Freshly minted token feeding the existing token-based accept flow. */
-  token: string;
+  /** Legacy token field: listings no longer mint tokens (see acceptInvitationById).
+      Absent/null on new listings; kept for backward compatibility. */
+  token?: string | null;
 }
 
 /* ---------------- Stakeholder chat ---------------- */
@@ -302,6 +303,16 @@ export const api = {
     invoke<Receipt>("submit", { handoff, externalAiDisclosed: external_ai_disclosed }),
   // Invitation inbox (src-tauri/src/inbox.rs)
   listInvitations: () => invoke<InboxInvitation[]>("list_invitations"),
+  acceptInvitationById: (
+    invitationId: string,
+    organizationName: string,
+    simulationTitle: string
+  ) =>
+    invoke<SessionInfo>("accept_invitation_by_id", {
+      invitationId,
+      organizationName,
+      simulationTitle,
+    }),
   // Stakeholder chat (src-tauri/src/chat.rs) — simulated teammates, SIM-03
   listMessages: () => invoke<ChatMessage[]>("list_messages"),
   listStakeholders: () => invoke<StakeholderView[]>("list_stakeholders"),

@@ -51,7 +51,7 @@ pub struct SessionInfo {
     pub scenario_version: Option<String>,
 }
 
-struct SessionState {
+pub(crate) struct SessionState {
     status: SessionStatus,
     platform_session_id: Option<String>,
     title: Option<String>,
@@ -85,7 +85,12 @@ impl SessionState {
         }
     }
 
-    fn info(&self) -> SessionInfo {
+    /// True when no session is in progress (already-in-progress guard).
+    pub(crate) fn is_idle(&self) -> bool {
+        self.status == SessionStatus::Idle
+    }
+
+    pub(crate) fn info(&self) -> SessionInfo {
         SessionInfo {
             status: self.status,
             platform_session_id: self.platform_session_id.clone(),
@@ -98,6 +103,29 @@ impl SessionState {
             scenario_id: self.title.clone(),
             scenario_version: None,
         }
+    }
+
+    /// Adopt a platform session after an accept (shared by `join_session` and
+    /// the inbox's `accept_invitation_by_id`). Durations, consent state, and
+    /// revision are authoritative from `fetch_session`; title/organization are
+    /// display metadata the candidate already saw.
+    pub(crate) fn adopt_platform_session(
+        &mut self,
+        session_id: String,
+        title: String,
+        organization: String,
+        full: &crate::platform::FullSession,
+    ) {
+        self.status = SessionStatus::Joined;
+        self.platform_session_id = Some(session_id);
+        self.title = Some(title);
+        self.organization = Some(organization);
+        self.duration_minutes = Some(full.session.duration_minutes);
+        self.ends_at = full.session.ends_at.clone();
+        self.started_at = full.session.started_at.clone();
+        self.consent_accepted = full.gate.consent_accepted;
+        self.consent_policy_version = Some(full.gate.consent_policy_version.clone());
+        self.server_revision = full.state.revision;
     }
 }
 
@@ -214,7 +242,7 @@ pub fn app_data_dir() -> AppResult<PathBuf> {
     APP_DATA.get().cloned().ok_or(AppError::NoSession)
 }
 
-fn session() -> &'static Mutex<SessionState> {
+pub(crate) fn session() -> &'static Mutex<SessionState> {
     SESSION.get().expect("session must be initialized in setup")
 }
 
@@ -256,7 +284,7 @@ fn require_joined() -> AppResult<()> {
     }
 }
 
-fn content_str(content: &serde_json::Value, key: &str) -> Option<String> {
+pub(crate) fn content_str(content: &serde_json::Value, key: &str) -> Option<String> {
     content
         .get(key)
         .and_then(|v| v.as_str())
@@ -316,16 +344,7 @@ pub async fn join_session(invite_token: String) -> AppResult<SessionInfo> {
 
     {
         let mut s = session().lock().unwrap();
-        s.status = SessionStatus::Joined;
-        s.platform_session_id = Some(session_id);
-        s.title = Some(title);
-        s.organization = Some(detail.organization_name.clone());
-        s.duration_minutes = Some(full.session.duration_minutes);
-        s.ends_at = full.session.ends_at.clone();
-        s.started_at = full.session.started_at.clone();
-        s.consent_accepted = full.gate.consent_accepted;
-        s.consent_policy_version = Some(full.gate.consent_policy_version.clone());
-        s.server_revision = full.state.revision;
+        s.adopt_platform_session(session_id, title, detail.organization_name.clone(), &full);
     }
 
     crate::events::log_system_event(

@@ -2,16 +2,22 @@ import { useCallback, useEffect, useState } from "react";
 import { api, InboxInvitation } from "../lib/tauri";
 import { invitationExpiryLabel, invitationUrgency } from "../lib/pure";
 import { messageOf } from "../App";
-import { EmptyState } from "./ui";
+import { EmptyState, Skeleton } from "./ui";
 
 /* ============================================================================
-   Inbox — pending hiring invitations, received in-app. Accept feeds the
-   existing join flow (the token is freshly minted per listing; accepting
-   here refreshes the emailed link, like a resend). The paste-token path
-   stays for codes shared out-of-band.
+   Inbox — pending hiring invitations, received in-app. Accepting an inbox
+   invitation goes through accept-by-id (the listing never mints tokens, so
+   emailed links stay valid). The paste-token path stays for codes shared
+   out-of-band.
    ========================================================================== */
 
-export default function Inbox({ onAccept }: { onAccept: (token: string) => void }) {
+export default function Inbox({
+  onAcceptId,
+  onAcceptToken,
+}: {
+  onAcceptId: (inv: InboxInvitation) => void;
+  onAcceptToken: (token: string) => void;
+}) {
   const [invitations, setInvitations] = useState<InboxInvitation[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -37,9 +43,9 @@ export default function Inbox({ onAccept }: { onAccept: (token: string) => void 
   const accept = useCallback(
     (inv: InboxInvitation) => {
       setAcceptingId(inv.id);
-      onAccept(inv.token);
+      onAcceptId(inv);
     },
-    [onAccept]
+    [onAcceptId]
   );
 
   return (
@@ -60,7 +66,21 @@ export default function Inbox({ onAccept }: { onAccept: (token: string) => void 
       {error && <div className="error mb-3">{error}</div>}
 
       {invitations == null ? (
-        <p className="muted">Loading invitations…</p>
+        <ul className="invite-list" aria-busy="true" aria-label="Loading invitations">
+          {[0, 1, 2].map((i) => (
+            <li key={i} className="invite-row" aria-hidden="true">
+              <div className="invite-main">
+                <Skeleton width="28%" height={10} />
+                <div className="mt-2">
+                  <Skeleton width="52%" height={14} />
+                </div>
+                <div className="mt-2">
+                  <Skeleton width="38%" height={10} />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
       ) : invitations.length === 0 ? (
         <div className="inbox-empty">
           <EmptyState
@@ -116,7 +136,7 @@ export default function Inbox({ onAccept }: { onAccept: (token: string) => void 
             value={manualToken}
             onChange={(e) => setManualToken(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && manualToken.trim()) onAccept(manualToken.trim());
+              if (e.key === "Enter" && manualToken.trim()) onAcceptToken(manualToken.trim());
             }}
             placeholder="Paste invite code"
             spellCheck={false}
@@ -125,7 +145,7 @@ export default function Inbox({ onAccept }: { onAccept: (token: string) => void 
           <button
             className="btn ghost"
             disabled={!manualToken.trim() || acceptingId != null}
-            onClick={() => onAccept(manualToken.trim())}
+            onClick={() => onAcceptToken(manualToken.trim())}
           >
             Continue
           </button>
