@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { Inter } from "next/font/google";
 import StorageMigration from "@/components/layout/StorageMigration";
 import "./globals.css";
 
@@ -11,22 +12,24 @@ export const metadata: Metadata = {
     template: "%s | Fydell",
   },
   description:
-    "The Proof of Work Network for software engineers. Developers turn real projects into an Engineering Passport; hiring teams review it alongside realistic coding simulations.",
+    "Hire software engineers on real engineering work. Candidates work a real incident in the Fydell desktop app; your team reviews cited evidence and decides.",
   applicationName: "Fydell",
   openGraph: {
     siteName: "Fydell",
     type: "website",
-    title: "Fydell: A new way to hire. A better way to get hired.",
+    title: "Fydell: Hire engineers on the work itself",
     description:
-      "Engineering Passports built from GitHub projects and realistic coding simulations, for software and AI/ML engineers and the teams hiring them.",
+      "Real codebases, a simulated team, a requirement that changes mid-task, hidden tests, and a report your team writes with every finding cited.",
   },
 };
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${inter.variable}`}>
       <body className={GeistSans.className}>
         <Script
           id="vtag-ai-js"

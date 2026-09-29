@@ -7,14 +7,15 @@ import { Menu, X } from "lucide-react";
 import FydellLogo from "@/components/brand/FydellLogo";
 
 const LINKS = [
-  { label: "Developers", href: "/developers" },
+  { label: "Product", href: "/how-it-works" },
   { label: "Employers", href: "/employers" },
-  { label: "Product", href: "/product" },
+  { label: "Developers", href: "/developers" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Download", href: "/download" },
+  { label: "Trust", href: "/trust" },
+  { label: "Contact", href: "/contact" },
 ];
 
-export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) {
+export default function SiteNav() {
   const pathname = usePathname();
   /*
    * The menu is stored as the route it was opened on rather than a boolean, so
@@ -50,17 +51,17 @@ export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) 
     <header
       className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-200 ${
         lifted || open
-          ? "border-[var(--border-subtle)] bg-[var(--nav-scrim)] backdrop-blur-[20px] backdrop-saturate-150"
+          ? "border-[var(--border-default)] bg-[var(--nav-scrim)] backdrop-blur-[20px] backdrop-saturate-150"
           : "border-transparent bg-transparent"
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-[1232px] items-center justify-between gap-6 px-5 sm:px-8">
-        <Link href="/" className="inline-flex shrink-0 items-center" aria-label="Fydell home">
-          <FydellLogo height={21} tone={tone === "ink" ? "dark" : "light"} />
+      <div className="l-container flex h-[72px] items-center justify-between gap-6">
+        <Link href="/" className="inline-flex shrink-0 items-center rounded-[6px]" aria-label="Fydell home">
+          <FydellLogo height={20} tone="dark" />
         </Link>
 
-        <div className="flex items-center gap-1">
-          <nav className="hidden items-center gap-1 min-[900px]:flex" aria-label="Primary">
+        <div className="flex items-center">
+          <nav className="hidden items-center min-[900px]:flex" aria-label="Primary">
             {LINKS.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
@@ -68,8 +69,8 @@ export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) 
                   key={item.label}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className={`rounded-[8px] px-3 py-1.5 text-app-body tracking-[-0.01em] transition-colors duration-150 ${
-                    active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  className={`rounded-[6px] px-[10px] py-1 text-[13px] transition-colors duration-100 ${
+                    active ? "text-[var(--text-primary)]" : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
                   }`}
                 >
                   {item.label}
@@ -78,18 +79,15 @@ export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) 
             })}
           </nav>
 
-          <span aria-hidden className="mx-3 hidden h-4 w-px bg-[var(--border-default)] min-[900px]:block" />
+          <span aria-hidden className="mx-3 hidden h-[18px] w-px bg-[var(--border-default)] min-[900px]:block" />
 
           <Link
             href="/login"
-            className="hidden rounded-[8px] px-3 py-1.5 text-app-body tracking-[-0.01em] text-[var(--text-secondary)] transition-colors duration-150 hover:text-[var(--text-primary)] sm:inline"
+            className="hidden rounded-[6px] px-[10px] py-1 text-[13px] text-[var(--text-tertiary)] transition-colors duration-100 hover:text-[var(--text-primary)] sm:inline"
           >
             Sign in
           </Link>
-          <Link
-            href="/get-started"
-            className="ml-1 hidden h-8 items-center rounded-full bg-[var(--control-solid)] px-3.5 text-app-body font-medium tracking-[-0.01em] text-[var(--control-solid-ink)] transition-colors duration-150 hover:bg-[var(--control-solid-hover)] sm:inline-flex"
-          >
+          <Link href="/get-started" className="l-btn l-btn-solid ml-2 hidden sm:inline-flex">
             Get started
           </Link>
           <button
@@ -97,7 +95,7 @@ export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) 
             onClick={() => setOpen(!open)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="ml-2 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-default)] text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] min-[900px]:hidden"
+            className="ml-2 flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] min-[900px]:hidden"
           >
             {open ? <X className="h-4 w-4" strokeWidth={1.7} aria-hidden /> : <Menu className="h-4 w-4" strokeWidth={1.7} aria-hidden />}
           </button>
@@ -105,23 +103,19 @@ export default function SiteNav({ tone = "light" }: { tone?: "ink" | "light" }) 
       </div>
 
       {open ? (
-        <div className="border-t border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-5 pb-6 pt-3 min-[900px]:hidden">
-          <nav className="flex flex-col" aria-label="Mobile">
+        <div className="h-[calc(100dvh-72px)] overflow-y-auto border-t border-[var(--border-default)] bg-[var(--surface-canvas)] min-[900px]:hidden">
+          <nav className="l-container flex flex-col pb-8 pt-2" aria-label="Mobile">
             {[...LINKS, { label: "Sign in", href: "/login" }].map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
                 onClick={() => setOpenedOn(null)}
-                className="border-b border-[var(--border-subtle)] py-3.5 text-app-body text-[var(--text-primary)]"
+                className="border-b border-[var(--border-default)] py-4 text-[17px] font-[510] tracking-[-0.012em] text-[var(--text-primary)]"
               >
                 {item.label}
               </Link>
             ))}
-            <Link
-              href="/get-started"
-              onClick={() => setOpenedOn(null)}
-              className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-[var(--control-solid)] text-app-body font-medium text-[var(--control-solid-ink)]"
-            >
+            <Link href="/get-started" onClick={() => setOpenedOn(null)} className="l-btn l-btn-lg l-btn-solid mt-6">
               Get started
             </Link>
           </nav>

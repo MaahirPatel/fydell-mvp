@@ -889,3 +889,353 @@ a, button { -webkit-tap-highlight-color: transparent; }
   .stage-animated { animation: none; }
 }
 
+/* ============================================================================
+   Ink theme. The public site's ground: a blue-black ink rather than neutral
+   black, so product windows read as lit objects and the brand hues (teal,
+   violet, warm) carry provenance without competing with the canvas. Re-points
+   the shared token names, so every component written against --surface-*,
+   --text-* and --border-* follows without a parallel stylesheet.
+   ========================================================================== */
+.theme-ink {
+  color-scheme: dark;
+
+  --surface-canvas: oklch(14.2% 0.008 268);
+  --surface-deep: oklch(12% 0.008 268);
+  --surface-band: oklch(15.6% 0.009 268);
+  --surface-raised: oklch(17.4% 0.01 268);
+  --surface-panel: oklch(16.2% 0.009 268);
+  --surface-hover: oklch(20.5% 0.011 268);
+  --surface-selected: oklch(23.5% 0.013 268);
+  --surface-paper: oklch(17.4% 0.01 268);
+  --surface-code: oklch(12.6% 0.008 268);
+  --surface-code-raised: oklch(15.4% 0.009 268);
+
+  --border-subtle: rgba(255, 255, 255, 0.065);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --text-primary: oklch(96.5% 0.004 268);
+  --text-secondary: oklch(72% 0.012 268);
+  --text-tertiary: oklch(61% 0.012 268);
+  --text-disabled: oklch(48% 0.01 268);
+
+  --control-solid: oklch(96.5% 0.004 268);
+  --control-solid-hover: #ffffff;
+  --control-solid-active: oklch(88% 0.006 268);
+  --control-solid-ink: oklch(14.2% 0.008 268);
+  --nav-scrim: oklch(14.2% 0.008 268 / 0.72);
+
+  --brand-teal: oklch(76% 0.12 var(--hue-evidence));
+  --brand-blue: oklch(70% 0.15 var(--hue-signal));
+  --brand-violet: oklch(70% 0.16 var(--hue-brand));
+  --brand-warm: oklch(80% 0.13 64);
+  --brand-coral: oklch(71% 0.16 18);
+  --field-teal: oklch(76% 0.12 var(--hue-evidence) / 0.12);
+  --field-blue: oklch(70% 0.15 var(--hue-signal) / 0.12);
+  --field-violet: oklch(70% 0.16 var(--hue-brand) / 0.14);
+  --field-coral: oklch(71% 0.16 18 / 0.13);
+  --field-warm: oklch(80% 0.13 64 / 0.12);
+  --ink-teal: oklch(84% 0.1 var(--hue-evidence));
+  --ink-blue: oklch(82% 0.1 var(--hue-signal));
+  --ink-violet: oklch(83% 0.11 var(--hue-brand));
+  --ink-coral: oklch(82% 0.1 18);
+  --ink-warm: oklch(86% 0.1 64);
+  --action-ink: oklch(83% 0.11 var(--hue-brand));
+  --action-ink-ring: oklch(70% 0.16 var(--hue-brand) / 0.4);
+
+  --status-positive-bg: oklch(76% 0.12 150 / 0.12);
+  --status-positive-ink: oklch(84% 0.1 150);
+  --status-positive-line: oklch(76% 0.12 150 / 0.24);
+  --status-neutral-bg: rgba(255, 255, 255, 0.06);
+  --status-neutral-ink: oklch(78% 0.01 268);
+  --status-neutral-line: rgba(255, 255, 255, 0.12);
+  --status-attention-bg: oklch(80% 0.13 72 / 0.13);
+  --status-attention-ink: oklch(86% 0.1 72);
+  --status-attention-line: oklch(80% 0.13 72 / 0.26);
+
+  --evidence-generated: oklch(80% 0.12 var(--hue-brand));
+  --evidence-observed: oklch(82% 0.1 var(--hue-evidence));
+  --evidence-support: oklch(82% 0.1 150);
+  --evidence-uncertain: oklch(84% 0.1 72);
+  --evidence-counter: oklch(76% 0.14 18);
+  --surface-intelligence: oklch(70% 0.16 var(--hue-brand) / 0.12);
+  --surface-observation: oklch(76% 0.12 var(--hue-evidence) / 0.11);
+  --surface-support: oklch(76% 0.12 150 / 0.11);
+  --surface-uncertain: oklch(80% 0.13 72 / 0.11);
+  --surface-counter: oklch(71% 0.16 18 / 0.12);
+  --fydell-evidence: oklch(76% 0.12 258);
+  --fydell-risk: oklch(74% 0.15 18);
+  --fydell-changed: oklch(82% 0.12 72);
+  --fydell-good: oklch(80% 0.12 150);
+  --fydell-verified: oklch(78% 0.12 var(--hue-brand));
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+  --shadow-3: 0 2px 4px rgba(0, 0, 0, 0.35), 0 24px 56px -20px rgba(0, 0, 0, 0.75);
+  --shadow-4: 0 40px 100px -32px rgba(0, 0, 0, 0.85);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-float: 0 2px 8px rgba(0, 0, 0, 0.4), 0 24px 60px -16px rgba(0, 0, 0, 0.7);
+  --shadow-stage: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 40px 120px -40px rgba(0, 0, 0, 0.9);
+
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+}
+
+.theme-ink ::selection {
+  background: oklch(70% 0.16 var(--hue-brand) / 0.35);
+}
+
+/* ============================================================================
+   Linear marketing layer. Applied by MarketingShell together with .theme-ink,
+   and declared after it so the neutrals, type and fonts below win. Values are
+   measured from linear.app: #08090a ground, #0f1011 panels, 8% white
+   hairlines, Inter with cv01/ss03, 64/48/24/15/13px type at weight 510/400.
+   ========================================================================== */
+.site-linear {
+  --hue-brand: 285;
+  --hue-evidence: 178;
+  --hue-signal: 258;
+  --hue-warm: 52;
+  --font-geist-sans: var(--font-inter);
+  --font-display-sans: var(--font-inter);
+
+  --l-container: 1280px;
+  --l-gutter: 32px;
+
+  --surface-canvas: #08090a;
+  --surface-deep: #050606;
+  --surface-band: #0b0c0d;
+  --surface-raised: #0f1011;
+  --surface-panel: #0f1011;
+  --surface-hover: #16171a;
+  --surface-selected: #1c1d21;
+  --surface-paper: #0f1011;
+  --surface-code: #0b0c0d;
+  --surface-code-raised: #121315;
+
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  --text-primary: #f7f8f8;
+  --text-secondary: #d0d6e0;
+  --text-tertiary: #8a8f98;
+  --text-quaternary: #62666d;
+  --text-disabled: #62666d;
+
+  --control-solid: #e5e5e6;
+  --control-solid-hover: #ffffff;
+  --control-solid-active: #d4d4d6;
+  --control-solid-ink: #08090a;
+  --nav-scrim: rgba(8, 9, 10, 0.8);
+
+  /* Fydell's own palette: electric blue for evidence and action, signal red
+     for change and failure. The gradient between them is used as light
+     (horizons, rules, one mark per illustration), never as a text fill. */
+  --fy-blue: #5b6cff;
+  --fy-blue-ink: #97a3ff;
+  --fy-blue-field: rgba(91, 108, 255, 0.12);
+  --fy-blue-line: rgba(91, 108, 255, 0.32);
+  --fy-red: #ff5a6e;
+  --fy-red-ink: #ff95a2;
+  --fy-red-field: rgba(255, 90, 110, 0.11);
+  --fy-red-line: rgba(255, 90, 110, 0.3);
+  --fy-green-ink: #7fd8a4;
+  --fy-amber-ink: #f2c46d;
+  --fy-gradient: linear-gradient(90deg, #5b6cff 0%, #9a5cff 50%, #ff5a6e 100%);
+  --l-accent: var(--fy-blue-ink);
+  --l-accent-fill: var(--fy-blue);
+
+  --brand-teal: var(--fy-blue);
+  --brand-blue: var(--fy-blue);
+  --brand-violet: var(--fy-blue);
+  --brand-coral: var(--fy-red);
+  --field-teal: var(--fy-blue-field);
+  --field-blue: var(--fy-blue-field);
+  --field-violet: var(--fy-blue-field);
+  --field-coral: var(--fy-red-field);
+  --ink-teal: var(--fy-blue-ink);
+  --ink-blue: var(--fy-blue-ink);
+  --ink-violet: var(--fy-blue-ink);
+  --ink-coral: var(--fy-red-ink);
+  --action-ink: var(--fy-blue-ink);
+  --evidence-observed: var(--fy-blue-ink);
+  --evidence-generated: var(--fy-blue-ink);
+  --evidence-counter: var(--fy-red-ink);
+  --surface-observation: var(--fy-blue-field);
+  --surface-intelligence: var(--fy-blue-field);
+  --surface-counter: var(--fy-red-field);
+  --fydell-evidence: var(--fy-blue-ink);
+  --fydell-risk: var(--fy-red-ink);
+
+  font-family: var(--font-inter), "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "cv01", "ss03";
+  font-size: 16px;
+  line-height: 1.5;
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+}
+
+.site-linear ::selection {
+  background: rgba(91, 108, 255, 0.4);
+}
+
+@media (max-width: 1023px) {
+  .site-linear { --l-gutter: 24px; }
+}
+@media (max-width: 639px) {
+  .site-linear { --l-gutter: 20px; }
+}
+
+.l-container {
+  width: 100%;
+  max-width: calc(var(--l-container) + var(--l-gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--l-gutter);
+}
+
+/* Type, at Linear's measured sizes. */
+.l-hero {
+  font-size: 64px;
+  line-height: 1.0625;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.l-h2 {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.l-cta {
+  font-size: 72px;
+  line-height: 1;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.l-lead {
+  font-size: 24px;
+  line-height: 1.33;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  color: var(--text-secondary);
+}
+.l-h3 {
+  font-size: 20px;
+  line-height: 1.33;
+  font-weight: 590;
+  letter-spacing: -0.012em;
+  color: var(--text-primary);
+}
+.l-body {
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
+.l-small {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+.l-mono {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: normal;
+}
+
+@media (max-width: 1023px) {
+  .l-hero { font-size: 52px; }
+  .l-h2 { font-size: 40px; }
+  .l-cta { font-size: 56px; }
+  .l-lead { font-size: 20px; }
+}
+@media (max-width: 639px) {
+  .l-hero { font-size: 40px; line-height: 1.08; letter-spacing: -0.02em; }
+  .l-h2 { font-size: 32px; line-height: 1.1; }
+  .l-cta { font-size: 40px; line-height: 1.05; }
+  .l-lead { font-size: 18px; line-height: 1.45; }
+}
+
+/* Controls. The 32px pill is Linear's; the 40px size is for closing CTAs. */
+.l-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding-inline: 12px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 510;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.l-btn-lg {
+  height: 40px;
+  padding-inline: 16px;
+  font-size: 14px;
+}
+.l-btn-solid {
+  background: var(--control-solid);
+  color: var(--control-solid-ink);
+}
+.l-btn-solid:hover { background: var(--control-solid-hover); }
+.l-btn-ghost {
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+}
+.l-btn-ghost:hover { background: var(--surface-hover); }
+.l-btn:focus-visible,
+.l-link:focus-visible {
+  outline: 2px solid var(--l-accent);
+  outline-offset: 2px;
+}
+.l-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  color: var(--text-primary);
+  transition: color 120ms ease;
+}
+.l-link:hover { color: var(--text-secondary); }
+.l-link .l-arrow { transition: transform 120ms ease; }
+.l-link:hover .l-arrow { transform: translateX(2px); }
+
+/* Shared marketing classes used by inner pages, retuned to the same scale. */
+.site-linear .mkt-content {
+  max-width: calc(var(--l-container) + var(--l-gutter) * 2);
+  padding-inline: var(--l-gutter);
+}
+.site-linear .page-display {
+  font-size: clamp(40px, 4.4vw, 64px);
+  line-height: 1.0625;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+}
+.site-linear .page-lead {
+  font-size: clamp(17px, 1.6vw, 20px);
+  line-height: 1.45;
+  letter-spacing: -0.012em;
+  color: var(--text-tertiary);
+}
+.site-linear .section-heading {
+  font-size: clamp(32px, 3.4vw, 48px);
+  line-height: 1.04;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+}
+.site-linear .section-desc {
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
