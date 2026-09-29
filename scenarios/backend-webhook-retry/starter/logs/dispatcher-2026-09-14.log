@@ -1,0 +1,17 @@
+2026-09-14T09:12:03.114Z INFO  dispatcher tick due=412 sent=412
+2026-09-14T09:12:03.201Z WARN  delivery=dlv_8f21 endpoint=https://shop.alder.example/hooks status=410 attempt=1 action=requeue next_in=0s
+2026-09-14T09:12:03.388Z WARN  delivery=dlv_77c0 endpoint=https://api.cobalt-goods.example/webhooks status=500 attempt=1 action=requeue next_in=0s
+2026-09-14T09:12:05.102Z INFO  dispatcher tick due=1204 sent=1204
+2026-09-14T09:12:05.140Z WARN  delivery=dlv_8f21 endpoint=https://shop.alder.example/hooks status=410 attempt=2 action=requeue next_in=0s
+2026-09-14T09:12:05.301Z WARN  delivery=dlv_77c0 endpoint=https://api.cobalt-goods.example/webhooks status=500 attempt=2 action=requeue next_in=0s
+2026-09-14T09:12:05.611Z WARN  delivery=dlv_91aa endpoint=https://hooks.birch.example/in status=429 attempt=1 action=requeue next_in=0s
+2026-09-14T09:12:07.090Z INFO  dispatcher tick due=3877 sent=3877
+2026-09-14T09:12:07.133Z WARN  delivery=dlv_8f21 endpoint=https://shop.alder.example/hooks status=410 attempt=3 action=requeue next_in=0s
+2026-09-14T09:12:07.402Z ERROR delivery=dlv_4d19 endpoint=https://pay.dune.example/wh error="connect timeout after 10s" attempt=1 action=requeue next_in=0s
+2026-09-14T09:12:09.071Z WARN  delivery=dlv_77c0 endpoint=https://api.cobalt-goods.example/webhooks status=503 attempt=4 action=requeue next_in=0s
+2026-09-14T09:12:09.220Z WARN  delivery=dlv_5e02 endpoint=https://merchant.ember.example/hook status=400 attempt=1 action=requeue next_in=0s
+2026-09-14T09:12:09.388Z INFO  delivery=dlv_91aa endpoint=https://hooks.birch.example/in status=200 attempt=3 action=delivered idempotency_key=5b7f0c2e-9d1e-4c61-a0a1-5e4b2b9c1f03
+2026-09-14T09:31:44.905Z INFO  support ticket SUP-5531 merchant=birch "we received payment.succeeded for pi_3321 twice, keys 5b7f0c2e... and 0e1d44a9..."
+2026-09-14T10:02:17.448Z WARN  delivery=dlv_8f21 endpoint=https://shop.alder.example/hooks status=410 attempt=2391 action=requeue next_in=0s
+2026-09-14T10:40:00.002Z INFO  ops paused dispatcher (manual)
+2026-09-14T10:40:12.310Z INFO  pending_total=48210 oldest_pending_age=5h12m
