@@ -1,0 +1,5 @@
+# Scenario packages are hashed and served byte-for-byte to candidates and the
+# runner. Force LF everywhere so a Windows checkout (core.autocrlf=true)
+# produces the same bytes, hashes and test behaviour as Linux and Vercel.
+scenarios/** text eol=lf
+scenarios/**/*.zip binary

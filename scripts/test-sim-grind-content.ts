@@ -47,10 +47,11 @@ class Harness {
 }
 
 // --- server-only stub: pure sim libs import "server-only"; stub it so tsx can load them ---
-declare const require: any;
-const NodeModule = require("node:module") as any;
+declare const require: (id: string) => unknown;
+type ModuleLoader = (this: unknown, request: string, ...rest: unknown[]) => unknown;
+const NodeModule = require("node:module") as { _load: ModuleLoader };
 const origLoad = NodeModule._load;
-NodeModule._load = function (request: string, ...rest: any[]) {
+NodeModule._load = function (this: unknown, request: string, ...rest: unknown[]) {
   if (request === "server-only") return {};
   return origLoad.call(this, request, ...rest);
 };
@@ -180,7 +181,7 @@ for n in [n for n in dir(test_reconcile) if n.startswith('test_')]:
         out["failed"].append({"name": n, "kind": type(e).__name__})
 print(json.dumps(out))
 `;
-    const r = spawnSync("python3", ["-c", code], { cwd: RELAY, timeout: 60000, encoding: "utf8" });
+    const r = spawnSync(process.env.FYDELL_LOCAL_PYTHON || "python3", ["-c", code], { cwd: RELAY, timeout: 60000, encoding: "utf8" });
     t.ok(r.status === 0, "scenario test harness ran", r.stderr?.slice(0, 200));
     return JSON.parse(r.stdout) as { passed: string[]; failed: { name: string; kind: string }[] };
   }
@@ -222,7 +223,7 @@ def reconciled_join(shipments, delay_rows):
     const green = runScenarioTests();
     t.eq(green.failed.length, 0, "correct implementation passes all 6 tests");
     t.eq(green.passed.length, 6, "6/6 green");
-    const evals = spawnSync("python3", ["evals/run_evals.py"], { cwd: RELAY, timeout: 60000, encoding: "utf8" });
+    const evals = spawnSync(process.env.FYDELL_LOCAL_PYTHON || "python3", ["evals/run_evals.py"], { cwd: RELAY, timeout: 60000, encoding: "utf8" });
     t.ok(evals.status === 0, "evals exit 0 with a correct implementation", evals.stderr?.slice(0, 200));
     t.ok(evals.stdout.includes("EVAL_SUMMARY_JSON"), "evals print the machine summary");
     t.ok(evals.stdout.includes('"cases_failures": 0'), "evals report zero failures");
@@ -234,7 +235,7 @@ def reconciled_join(shipments, delay_rows):
     "stub restored after green-state check"
   );
   // And the red state again after restore: evals fail with guidance, no traceback.
-  const evalsRed = spawnSync("python3", ["evals/run_evals.py"], { cwd: RELAY, timeout: 60000, encoding: "utf8" });
+  const evalsRed = spawnSync(process.env.FYDELL_LOCAL_PYTHON || "python3", ["evals/run_evals.py"], { cwd: RELAY, timeout: 60000, encoding: "utf8" });
   t.ok(evalsRed.status !== 0, "evals fail on the pristine stub");
   t.ok(!evalsRed.stdout.includes("Traceback"), "evals fail gracefully (no traceback)");
   t.ok(evalsRed.stdout.includes("not implemented yet"), "evals tell the candidate what to implement");

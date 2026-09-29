@@ -7,14 +7,58 @@ import {
   getVersionContent,
   insertMessage,
   listEvents,
+  listEventsAfter,
   recordEvent,
 } from "@/lib/simulations/db";
+import { buildReplayPage, parseCursor, parseLimit } from "@/lib/simulations/event-replay";
 import { buildSessionChatContext, toChatEvents } from "@/lib/simulations/chat-context";
 import { deliverDueProactiveMessages } from "@/lib/simulations/proactive";
 import { ALLOWED_CANDIDATE_EVENTS } from "@/lib/simulations/observed-events";
 import { pendingConnectivityExtensions } from "@/lib/simulations/timing";
 
 export const runtime = "nodejs";
+
+/**
+ * GET ?after=<seq>&limit=<n>: candidate-visible events after a server cursor,
+ * in server order. Reconnecting clients resume from the returned `cursor`.
+ * Delivery may repeat; dedupe on `seq`.
+ */
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const user = await requireUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized", code: "unauthorized" }, { status: 401 });
+
+  const after = parseCursor(req.nextUrl.searchParams.get("after"));
+  if (after === null) {
+    return NextResponse.json(
+      { error: "after must be a non-negative integer", code: "validation_failed" },
+      { status: 400 }
+    );
+  }
+  const limit = parseLimit(req.nextUrl.searchParams.get("limit"));
+
+  try {
+    await getSessionForCandidate(id, user.id);
+  } catch (err) {
+    const forbidden = err instanceof Error && err.message === "Forbidden";
+    return NextResponse.json(
+      forbidden ? { error: "Forbidden", code: "forbidden" } : { error: "Session not found", code: "not_found" },
+      { status: forbidden ? 403 : 404 }
+    );
+  }
+  try {
+    const rows = await listEventsAfter(id, after, limit + 1);
+    return NextResponse.json({ ok: true, ...buildReplayPage(rows, after, limit) });
+  } catch {
+    return NextResponse.json(
+      { error: "Could not load events", code: "retryable_provider_failure", retryable: true },
+      { status: 503 }
+    );
+  }
+}
 
 export async function POST(
   req: NextRequest,

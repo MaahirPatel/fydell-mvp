@@ -20,7 +20,7 @@ import {
   type DisclosedStakeholder,
 } from "./teammate-disclosure";
 
-export interface CandidateStakeholder extends DisclosedStakeholder {}
+export type CandidateStakeholder = DisclosedStakeholder;
 
 export interface CandidateSimulationView {
   slug: string;

@@ -44,10 +44,11 @@ class Harness {
 }
 
 // --- server-only stub: pure sim libs import "server-only"; stub it so tsx can load them ---
-declare const require: any;
-const NodeModule = require("node:module") as any;
+declare const require: (id: string) => unknown;
+type ModuleLoader = (this: unknown, request: string, ...rest: unknown[]) => unknown;
+const NodeModule = require("node:module") as { _load: ModuleLoader };
 const origLoad = NodeModule._load;
-NodeModule._load = function (request: string, ...rest: any[]) {
+NodeModule._load = function (this: unknown, request: string, ...rest: unknown[]) {
   if (request === "server-only") return {};
   return origLoad.call(this, request, ...rest);
 };
