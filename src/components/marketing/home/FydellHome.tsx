@@ -1,419 +1,193 @@
-"use client";
-
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { Fragment } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import FydellLogo from "@/components/brand/FydellLogo";
 import {
-  ArrowRight,
-  Briefcase,
-  Check,
-  FileCode2,
-  FlaskConical,
-  GitBranch,
-  Inbox,
-  Link2,
-  Lock,
-  Pause,
-  Play,
-  RotateCcw,
-  Search,
-  Share2,
-  SquarePen,
-  Users,
-  X,
-} from "lucide-react";
-import FydellMark from "@/components/brand/FydellMark";
-import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
-import { CodeBlock } from "./CodeBlock";
-import DesktopWorkspaceMock from "./DesktopWorkspaceMock";
-import { DesktopShowcase } from "./DesktopShowcase";
-import HeroSimWorkspace from "./HeroSimWorkspace";
-import ProofStrip from "@/components/marketing/ProofStrip";
-import { Kicker } from "@/components/marketing/ui";
-import { DEMO_LABEL, DEMO_TASK, EVIDENCE_RECORDS, type CodeLine } from "@/lib/marketing/demo-fixture";
-import s from "./fydell-home.module.css";
+  CtaBand,
+  Faq,
+  UnifiedFooter,
+  UnifiedNav,
+} from "@/components/marketing/unified/UnifiedChrome";
 
-/* ---------------------------------------------------------------- hooks -- */
+/* ============================================================================
+   FydellHome, marketing homepage with Linear-grade structure on the unified
+   design system (src/styles/marketing-unified.css, imported via UnifiedChrome).
 
-const REDUCED = "(prefers-reduced-motion: reduce)";
-function subscribeReduced(cb: () => void) {
-  const m = window.matchMedia(REDUCED);
-  m.addEventListener("change", cb);
-  return () => m.removeEventListener("change", cb);
-}
-function useReducedMotion() {
-  return useSyncExternalStore(
-    subscribeReduced,
-    () => window.matchMedia(REDUCED).matches,
-    () => false,
-  );
-}
+   All product visuals below are static, dense, Linear-style panels built from
+   the .u-pv / .u-ev / .u-toggle primitives. No animations, no fake stats.
 
-function useInView<T extends Element>(threshold = 0.25) {
-  const ref = useRef<T>(null);
-  const [seen, setSeen] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setSeen(true);
-          io.disconnect();
-        }
-      },
-      { threshold },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [threshold]);
-  return [ref, seen] as const;
-}
+   Legacy exports (ChapterHead, Features, IntakeVisual, SimulationVisual,
+   ReviewVisual, ShareVisual) are kept for /how-it-works and DesktopShowcase.
+   ========================================================================== */
 
-/** Counts 0..max-1 on an interval while active; loops unless told to hold. */
-function useTicker(active: boolean, ms: number, max: number, loop = true) {
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    if (!active) return;
-    const id = window.setInterval(() => {
-      setTick((v) => (v + 1 >= max ? (loop ? 0 : max - 1) : v + 1));
-    }, ms);
-    return () => window.clearInterval(id);
-  }, [active, ms, max, loop]);
-  return tick;
-}
+/* ------------------------------------------------------------ primitives -- */
 
-function Typewriter({ text, start, speed = 16 }: { text: string; start: boolean; speed?: number }) {
-  const reduced = useReducedMotion();
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!start || reduced) return;
-    const id = window.setInterval(() => {
-      setCount((c) => {
-        if (c >= text.length) {
-          window.clearInterval(id);
-          return c;
-        }
-        return c + 2;
-      });
-    }, speed);
-    return () => window.clearInterval(id);
-  }, [start, reduced, text, speed]);
-  const shown = reduced ? text.length : Math.min(count, text.length);
+type Tok = [text: string, cls: string];
+type CodeLine = { n: number; hl?: boolean; segs: Tok[] };
+
+function CodeLines({ lines }: { lines: CodeLine[] }) {
   return (
     <>
-      {text.slice(0, shown)}
-      {shown < text.length ? <span className={s.caret} aria-hidden /> : null}
+      {lines.map((l) => (
+        <span key={l.n} className={l.hl ? "ln hl" : "ln"}>
+          <span className="ln-no">{l.n}</span>
+          <span>
+            {l.segs.length ? (
+              l.segs.map(([t, c], i) => (
+                <span key={i} className={c}>
+                  {t}
+                </span>
+              ))
+            ) : (
+              " "
+            )}
+          </span>
+        </span>
+      ))}
     </>
   );
 }
 
-/* ----------------------------------------------------------------- hero -- */
-
-const FEED = [
-  { icon: Share2, tone: "var(--brand-teal)", who: "Candidate 01", what: "shared their Engineering Passport", when: "12 min ago" },
-  { icon: GitBranch, tone: "var(--brand-teal)", who: "Fydell", what: "analyzed receipts-service at 4f1c9a2 · 46 files", when: "11 min ago" },
-  { icon: FlaskConical, tone: "var(--brand-violet)", who: "Candidate 01", what: "submitted retry-safe-jobs v0.3 · 4 of 5 tests passed", when: "4 min ago" },
-  { icon: X, tone: "var(--brand-coral)", who: "Candidate 01", what: "rejected the AI-proposed patch and recorded why", when: "3 min ago" },
-] as const;
-
-const ANSWER =
-  "The claim on the receipt is taken before sending but never released when the mailer raises, so the retry exits early and nothing is sent. The candidate's fix is otherwise correct.";
-
-/** Timeline of the hero sequence, in ms from mount. */
-const BEATS = [0, 900, 1700, 2600, 3500, 4300, 5600, 7600];
-
-const SEND_EXCERPT = [
-  { n: 14, text: "if not claims.acquire(job.order_id):", mark: "cited" },
-  { n: 15, text: "    return  # already sent" },
-  { n: 16, text: "mailer.send(job.receipt)", mark: "removed" },
-  { n: 17, text: "claims.mark_sent(job.order_id)" },
-] as const satisfies readonly CodeLine[];
-
-const FAILED_TEST = EVIDENCE_RECORDS.find((r) => r.id === "ev-recovery") ?? EVIDENCE_RECORDS[0];
-
-type HeroCite = "code" | "test";
-
-export function HeroWindow() {
-  const reduced = useReducedMotion();
-  const [run, setRun] = useState(0);
-  const [beat, setBeat] = useState(0);
-  const [cite, setCite] = useState<HeroCite | null>(null);
-  useEffect(() => {
-    if (reduced) return;
-    const timers = BEATS.map((ms, i) => window.setTimeout(() => setBeat(i), ms + (run === 0 ? 900 : 200)));
-    return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [reduced, run]);
-  const step = reduced ? BEATS.length - 1 : beat;
-  const replay = () => {
-    setCite(null);
-    setBeat(0);
-    setRun((r) => r + 1);
-  };
-  const toggleCite = (next: HeroCite) => setCite((c) => (c === next ? null : next));
-
+function PvFile({ name, active }: { name: string; active?: boolean }) {
   return (
-    <div className={s.sheetWrap}>
-      <span className={`${s.crop} ${s.cropTL}`} aria-hidden />
-      <span className={`${s.crop} ${s.cropTR}`} aria-hidden />
-      <span className={`${s.crop} ${s.cropBL}`} aria-hidden />
-      <span className={`${s.crop} ${s.cropBR}`} aria-hidden />
-    <div className={`${s.window} ${s.enter}`} aria-label="Example of a Fydell hiring workspace reviewing Candidate 01" role="group">
-      <aside className={s.side} aria-hidden>
-        <div className={s.sideHead}>
-          <span className="flex items-center gap-2">
-            <FydellMark width={18} /> Hiring
-          </span>
-          <span className="flex items-center gap-2 text-[var(--text-tertiary)]">
-            <Search className="h-3.5 w-3.5" />
-            <SquarePen className="h-3.5 w-3.5" />
-          </span>
-        </div>
-        <span className={s.sideItem}><Inbox /> Inbox</span>
-        <span className={s.sideItem}><Briefcase /> Roles</span>
-        <span className={`${s.sideItem} ${s.sideItemActive}`}><Users /> Candidates</span>
-        <span className={s.sideItem}><FlaskConical /> Simulations</span>
-        <span className={s.sideLabel}>Open roles</span>
-        <span className={`${s.sideItem} ${s.sideItemActive}`}>
-          <span className={s.dot} style={{ background: "var(--brand-teal)" }} /> Backend Engineer
-        </span>
-        <span className={s.sideItem}>
-          <span className={s.dot} style={{ background: "var(--brand-violet)" }} /> ML Engineer
-        </span>
-        <span className={s.sideItem}>
-          <span className={s.dot} style={{ background: "var(--brand-warm)" }} /> Platform Engineer
-        </span>
-      </aside>
+    <span className={active ? "u-pv-file active" : "u-pv-file"}>{name}</span>
+  );
+}
 
-      <div className={s.main}>
-        <div className={s.bar}>
-          <span className={s.crumb}>
-            <span className={s.mono}>BE-014</span>
-            <b>Candidate 01</b>
-            <span className="hidden sm:inline">Backend Engineer, Python</span>
-          </span>
-          <span className="flex items-center gap-3">
-            <span className={s.example}>{DEMO_LABEL}</span>
-            <span className={`${s.mono} hidden sm:inline`}>3 / 12</span>
-          </span>
-        </div>
+/** Dark-pane test row (for .u-pv-dark). */
+function PvTest({ name, pass, dur }: { name: string; pass: boolean; dur: string }) {
+  return (
+    <div className="u-pv-test">
+      <span className={pass ? "pass" : "fail"}>{pass ? "✓" : "✗"}</span>
+      <span>{name}</span>
+      <span className="dur">{dur}</span>
+    </div>
+  );
+}
 
-        <div className={s.issue}>
-          <p className={s.issueTitle}>Candidate 01</p>
-          <p className={s.issueBody}>
-            Shared two repositories and completed <span className={s.code}>retry-safe-jobs v0.3</span>. Four of five
-            tests passed; one failure is recorded with the code behind it.
-          </p>
+/** Light-pane test row. */
+function TestRow({ name, pass, dur }: { name: string; pass: boolean; dur: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "7px 0",
+        fontSize: 13,
+        fontFamily: "var(--u-mono)",
+      }}
+    >
+      <span style={{ color: pass ? "var(--u-accent)" : "#c2410c", fontWeight: 700 }}>
+        {pass ? "✓" : "✗"}
+      </span>
+      <span style={{ color: "var(--u-muted)" }}>{name}</span>
+      <span style={{ marginLeft: "auto", color: "var(--u-faint)" }}>{dur}</span>
+    </div>
+  );
+}
 
-          <p className={s.activityHead}>Activity</p>
-          <div className={s.feed}>
-            {FEED.slice(0, Math.min(FEED.length, step + 2)).map((item) => {
-              const Icon = item.icon;
-              return (
-                <p key={item.what} className={s.feedItem}>
-                  <span className={s.feedIcon} style={{ color: item.tone }}>
-                    <Icon strokeWidth={2} />
-                  </span>
-                  <span>
-                    <b>{item.who}</b> {item.what} · {item.when}
-                  </span>
-                </p>
-              );
-            })}
-          </div>
+function Toggle({ on, label }: { on: boolean; label: string }) {
+  return (
+    <div className="u-toggle-row">
+      <span>{label}</span>
+      <span
+        className={on ? "u-toggle" : "u-toggle off"}
+        role="img"
+        aria-label={`${label}: ${on ? "on" : "off"}`}
+      />
+    </div>
+  );
+}
 
-          {step >= 3 ? (
-            <div className={s.thread}>
-              <div className={s.comment}>
-                <p className={s.who}>
-                  <span className={s.avatar} style={{ background: "var(--brand-warm)" }}>R1</span>
-                  <b>Reviewer 1</b>
-                  <span>2 min ago</span>
-                </p>
-                The retry fix is solid. I want to understand the one failing test before we advance.
-              </div>
-              {step >= 4 ? (
-                <div className={s.comment}>
-                  <p className={s.who}>
-                    <span className={s.avatar} style={{ background: "var(--brand-teal)" }}>R2</span>
-                    <b>Reviewer 2</b>
-                    <span>just now</span>
-                  </p>
-                  <span className={s.mention}>@Fydell</span> explain the failed test and cite the code.
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
+const SUBHEAD: CSSProperties = {
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: "0.1em",
+  textTransform: "uppercase",
+  color: "var(--u-faint)",
+  margin: "0 0 16px",
+};
 
-        {step >= 5 ? (
-          <div className={s.agent}>
-            <div className={s.agentHead}>
-              <span className="flex items-center gap-2">
-                <FydellMark width={16} /> Fydell analysis
-              </span>
-              <span className={s.example}>Reads the recorded run</span>
-            </div>
-            <div className={s.agentBody}>
-              <p className={s.agentPrompt}>Explain the failed test and cite the code.</p>
-              {step === 5 ? (
-                <p className={s.working}>Reading test_jobs.py and the submitted snapshot…</p>
-              ) : (
-                <>
-                  <p className={s.worked}>Worked for 6 sec</p>
-                  <p className={s.answer}>
-                    <Typewriter text={ANSWER} start={step >= 6} />
-                  </p>
-                  {step >= 7 ? (
-                    <>
-                      <div className={s.cites}>
-                        <button
-                          type="button"
-                          aria-expanded={cite === "code"}
-                          onClick={() => toggleCite("code")}
-                          className={`${s.cite} ${s.citeButton}`}
-                        >
-                          <FileCode2 className="h-3 w-3" /> send_receipt.py L14–17
-                        </button>
-                        <button
-                          type="button"
-                          aria-expanded={cite === "test"}
-                          onClick={() => toggleCite("test")}
-                          className={`${s.cite} ${s.citeButton}`}
-                          style={{ animationDelay: "90ms" }}
-                        >
-                          <X className="h-3 w-3 text-[var(--brand-coral)]" /> mailer_error_allows_retry
-                        </button>
-                      </div>
-                      {cite ? (
-                        <div key={cite} className={s.excerpt}>
-                          {cite === "code" ? (
-                            <CodeBlock path="jobs/send_receipt.py" meta="snapshot 9c2e1f0" lines={SEND_EXCERPT} compact />
-                          ) : (
-                            <CodeBlock path={FAILED_TEST.file} meta="failed in recorded run" lines={FAILED_TEST.lines} compact />
-                          )}
-                        </div>
-                      ) : (
-                        <p className="mt-2 text-app-caption text-[var(--text-tertiary)]">Open a citation to see the code it rests on.</p>
-                      )}
-                    </>
-                  ) : null}
-                </>
-              )}
-            </div>
-          </div>
+function PanelHead({ title, chip, chipTone }: { title: string; chip: string; chipTone?: "teal" | "amber" }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 16,
+        padding: "20px 24px",
+        borderBottom: "1px solid var(--u-line-soft)",
+      }}
+    >
+      <span style={{ fontWeight: 700, fontSize: 15 }}>{title}</span>
+      <span className={chipTone ? `u-chip ${chipTone}` : "u-chip"}>{chip}</span>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------- sections -- */
+
+function Section({
+  id,
+  tinted,
+  children,
+}: {
+  id?: string;
+  tinted?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <section id={id} className={tinted ? "u-section tinted" : "u-section"}>
+      <div className="u-wrap">{children}</div>
+    </section>
+  );
+}
+
+function SecHead({
+  title,
+  desc,
+  n,
+  label,
+  href,
+}: {
+  title: string;
+  desc: ReactNode;
+  n?: string;
+  label?: string;
+  href?: string;
+}) {
+  return (
+    <div className="u-sec-head">
+      <h2>{title}</h2>
+      <div className="u-sec-desc">
+        <p>{desc}</p>
+        {n && label && href ? (
+          <Link className="u-learn" href={href}>
+            <span className="u-learn-num">{n}</span>
+            {label}{" "}
+            <span className="u-learn-arrow" aria-hidden="true">
+              →
+            </span>
+          </Link>
         ) : null}
       </div>
-
-      <aside className={s.props} aria-hidden>
-        <div className={s.propGroup}>
-          <p className={s.propLabel}>Status</p>
-          <p className={s.prop}><span className={s.dot} style={{ background: "var(--brand-warm)" }} /> In review</p>
-          <p className={s.prop}><Briefcase className="h-3.5 w-3.5" /> Backend Engineer</p>
-          <p className={s.prop}><Users className="h-3.5 w-3.5" /> 2 reviewers</p>
-        </div>
-        <div className={s.propGroup}>
-          <p className={s.propLabel}>Evidence</p>
-          <p className={s.prop}><span className={s.dot} style={{ background: "var(--brand-teal)" }} /> 2 project findings</p>
-          <p className={s.prop}><span className={s.dot} style={{ background: "var(--brand-violet)" }} /> 2 simulation findings</p>
-          <p className={s.prop}><span className={s.dot} style={{ background: "var(--brand-coral)" }} /> 1 test failed</p>
-        </div>
-        <div className={s.propGroup}>
-          <p className={s.propLabel}>Projects</p>
-          <p className="flex flex-wrap gap-1.5">
-            <span className={s.chip}>receipts-service</span>
-            <span className={s.chip}>ledger-cli</span>
-          </p>
-        </div>
-        <div className={s.propGroup}>
-          <p className={s.propLabel}>Decision</p>
-          <p className={s.prop}>None recorded</p>
-        </div>
-      </aside>
-
-      <div className={`${s.titleBlock} ${s.windowFoot}`}>
-        <span>Sheet <b>0.1</b></span>
-        <span>Candidate record</span>
-        <span className="hidden sm:block">Rev <b>9c2e1f0</b></span>
-        <span className="hidden md:block">{DEMO_LABEL}</span>
-        <span className={s.titleAction}>
-          <button type="button" onClick={replay} className={s.control}>
-            <RotateCcw aria-hidden /> Replay
-          </button>
-        </span>
-      </div>
-    </div>
     </div>
   );
 }
 
-/* ----------------------------------------------------------------- figs -- */
-
-function FigSource() {
+function FeatList({ items }: { items: string[] }) {
   return (
-    <svg viewBox="0 0 220 200" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden>
-      {[0, 1, 2, 3].map((i) => (
-        <g key={i} className={i === 3 ? s.float1 : undefined} opacity={0.35 + i * 0.2}>
-          <path d={`M110 ${120 - i * 22} L190 ${80 - i * 22} L110 ${40 - i * 22} L30 ${80 - i * 22} Z`} />
-        </g>
+    <ul className="u-feat-list">
+      {items.map((f) => (
+        <li key={f}>{f}</li>
       ))}
-      <g className={s.float1}>
-        <path d="M70 34 L130 4" strokeOpacity="0.9" />
-        <path d="M78 40 L150 4" strokeOpacity="0.5" />
-        <path d="M86 46 L140 18" strokeOpacity="0.5" />
-      </g>
-      <path d="M110 120 V190" className={s.drawLoop} strokeOpacity="0.5" />
-      <circle cx="110" cy="190" r="3" fill="currentColor" className={s.pulse} />
-    </svg>
+    </ul>
   );
 }
 
-function FigObserved() {
-  const cubes: Array<[number, number, boolean]> = [
-    [70, 80, false],
-    [110, 60, false],
-    [150, 80, true],
-    [110, 100, false],
-    [70, 120, false],
-    [150, 120, false],
-  ];
-  return (
-    <svg viewBox="0 0 220 200" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden>
-      {cubes.map(([x, y, lit], i) => (
-        <g key={i} className={lit ? s.float2 : undefined} strokeOpacity={lit ? 1 : 0.45}>
-          <path d={`M${x} ${y} l28 -14 l28 14 l-28 14 Z`} fill={lit ? "var(--field-violet)" : "none"} stroke={lit ? "var(--brand-violet)" : "currentColor"} />
-          <path d={`M${x} ${y} v30 l28 14 v-30`} stroke={lit ? "var(--brand-violet)" : "currentColor"} />
-          <path d={`M${x + 56} ${y} v30 l-28 14`} stroke={lit ? "var(--brand-violet)" : "currentColor"} />
-        </g>
-      ))}
-    </svg>
-  );
-}
-
-function FigOwned() {
-  return (
-    <svg viewBox="0 0 220 200" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden>
-      {[0, 1, 2, 3, 4, 5].map((i) => (
-        <path
-          key={i}
-          d={`M${40 + i * 18} ${150 - i * 6} l0 -${70 + i * 6} l60 -30 l0 ${70 + i * 6} Z`}
-          strokeOpacity={0.25 + i * 0.13}
-          className={i === 5 ? s.float3 : undefined}
-          stroke={i === 5 ? "var(--brand-teal)" : "currentColor"}
-          fill={i === 5 ? "var(--field-teal)" : "none"}
-        />
-      ))}
-      <path d="M30 170 L200 110" strokeOpacity="0.3" className={s.drawLoop} />
-    </svg>
-  );
-}
-
-const FIGS = [
-  { label: "Ev 1.1", title: "Source-linked", body: "Every finding cites the file, lines, and commit it came from. Nothing floats free of its evidence.", Art: FigSource },
-  { label: "Ev 1.2", title: "Observed, not guessed", body: "Simulation results come from a trusted test harness, never from a model's opinion of the candidate.", Art: FigObserved },
-  { label: "Ev 1.3", title: "Owned by the engineer", body: "Candidates decide what each employer sees and can revoke access at any time.", Art: FigOwned },
-] as const;
-
-/* ------------------------------------------------------------- chapters -- */
+/* ------------------------------------------- legacy exports (how-it-works) -- */
 
 export function ChapterHead({
   index,
@@ -428,24 +202,12 @@ export function ChapterHead({
   title: string;
   copy: string;
 }) {
-  return (
-    <Reveal>
-      <div className={s.chapterHead}>
-        <h2 className={s.chapterTitle}>{title}</h2>
-        <div>
-          <p className={s.chapterCopy}>{copy}</p>
-          <Link href={href} className={s.chapterIndex}>
-            <span>{index}</span> {label} <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-          </Link>
-        </div>
-      </div>
-    </Reveal>
-  );
+  return <SecHead title={title} desc={copy} n={index} label={label} href={href} />;
 }
 
 export function Features({ items, dot }: { items: readonly string[]; dot: string }) {
   return (
-    <ul className={s.features} style={{ ["--feature-dot" as string]: dot }}>
+    <ul className="u-feat-list" style={{ ["--u-accent" as string]: dot }}>
       {items.map((f) => (
         <li key={f}>{f}</li>
       ))}
@@ -453,411 +215,104 @@ export function Features({ items, dot }: { items: readonly string[]; dot: string
   );
 }
 
-/* 1.0 Intake: repositories move through analysis on a board. */
-const REPOS = [
-  { id: "EP-101", name: "receipts-service", lang: "Python", files: 46, src: 31, tests: 9, skipped: 4 },
-  { id: "EP-102", name: "ledger-cli", lang: "Go", files: 18, src: 0, tests: 0, skipped: 18 },
-  { id: "EP-103", name: "vector-search-api", lang: "Python", files: 63, src: 44, tests: 11, skipped: 8 },
-  { id: "EP-104", name: "billing-webhooks", lang: "TypeScript", files: 38, src: 27, tests: 8, skipped: 3 },
-  { id: "EP-105", name: "infra-modules", lang: "HCL", files: 22, src: 0, tests: 0, skipped: 22 },
-] as const;
-const COLUMNS = ["Selected", "Analyzing", "Evidence ready", "Needs attention"] as const;
-const COLUMN_RULE = ["var(--line)", "var(--brand-blue)", "var(--brand-teal)", "var(--brand-warm)"] as const;
-const PHASES = ["Fetching tree", "Reading manifests", "Extracting evidence", "Writing coverage"] as const;
+/* ------------------------------------------------------------------ hero -- */
 
-function stageFor(i: number, tick: number): number {
-  const t = tick - i;
-  if (t < 0) return 0;
-  if (t < 2) return 1;
-  return REPOS[i].src === 0 ? 3 : 2;
-}
+const HERO_FILES = ["BRIEF.md", "worker.py", "test_worker.py", "requirements.txt", "README.md"];
 
-export function IntakeVisual() {
-  const [ref, seen] = useInView<HTMLDivElement>();
-  const reduced = useReducedMotion();
-  const [paused, setPaused] = useState(false);
-  const [focus, setFocus] = useState(0);
-  const tick = useTicker(seen && !reduced && !paused, 1300, 10);
-  const t = reduced ? 9 : tick;
-  const repo = REPOS[focus];
-  const stage = stageFor(focus, t);
-  const phase = stage === 0 ? -1 : stage === 1 ? Math.min(PHASES.length - 2, (t - focus) * 2) : PHASES.length - 1;
-  const pct = Math.round(((phase + 1) / PHASES.length) * 100);
-  const unsupported = repo.src === 0;
-
-  return (
-    <div ref={ref} className={s.visual}>
-      <div className={s.board}>
-        {COLUMNS.map((col, c) => {
-          const cards = REPOS.map((r, i) => ({ r, i, stage: stageFor(i, t) })).filter((x) => x.stage === c);
-          return (
-            <div key={col} className={s.column}>
-              <p className={s.columnHead}>
-                <span className={s.dot} style={{ background: COLUMN_RULE[c] }} />
-                {col} <span>{cards.length}</span>
-              </p>
-              {cards.map(({ r, i }) => (
-                <button
-                  key={`${r.id}-${c}`}
-                  type="button"
-                  aria-pressed={focus === i}
-                  onClick={() => setFocus(i)}
-                  className={`${s.card} ${s.cardButton} ${focus === i ? s.cardFocused : ""}`}
-                  style={{ ["--card-rule" as string]: COLUMN_RULE[c] }}
-                >
-                  <span className={`${s.cardId} block`}>{r.id}</span>
-                  <span className={`${s.cardTitle} block`}>{r.name}</span>
-                  <span className={s.cardMeta}>
-                    <span className={s.tag}>{r.lang}</span>
-                    {c === 2 ? <span className={s.tag}>{r.files} files · cited</span> : null}
-                    {c === 3 ? <span className={s.tag}>Structure only</span> : null}
-                    {c === 1 ? <span className={s.tag}>at 4f1c9a2</span> : null}
-                  </span>
-                </button>
-              ))}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className={s.panel} style={{ left: 0, top: 40, width: "min(380px, 100%)" }}>
-        <div className={s.panelHead}>
-          <span className="flex items-center gap-2"><GitBranch className="h-3.5 w-3.5" /> <b>Import from GitHub</b></span>
-          <button type="button" onClick={() => setPaused((p) => !p)} className={s.control} aria-pressed={paused}>
-            {paused ? <Play aria-hidden /> : <Pause aria-hidden />} {paused ? "Play" : "Pause"}
-          </button>
-        </div>
-        <div className="space-y-4 p-4">
-          <p className="rounded-[4px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-3 py-2 font-mono text-app-meta text-[var(--text-primary)]">
-            github.com/candidate-01/<Typewriter key={repo.id} text={repo.name} start={seen} speed={50} />
-          </p>
-          <div aria-live="polite">
-            <p className="flex justify-between text-app-meta text-[var(--text-secondary)]">
-              <span>{phase < 0 ? "Queued" : unsupported && stage === 3 ? `${repo.lang} analysis not supported yet` : PHASES[phase]}</span>
-              <span className="font-mono">{Math.max(0, pct)}%</span>
-            </p>
-            <div className={`${s.progress} mt-2`}>
-              <i style={{ width: `${Math.max(0, pct)}%`, background: unsupported && stage === 3 ? "var(--brand-warm)" : "var(--brand-teal)" }} />
-            </div>
-          </div>
-          <ul className="space-y-2 text-app-meta text-[var(--text-secondary)]">
-            <li className="flex justify-between"><span>Source files read</span><span className="font-mono text-[var(--text-primary)]">{stage >= 2 ? repo.src : "–"}</span></li>
-            <li className="flex justify-between"><span>Tests found</span><span className="font-mono text-[var(--text-primary)]">{stage >= 2 ? repo.tests : "–"}</span></li>
-            <li className="flex justify-between"><span>Skipped, with reasons</span><span className="font-mono text-[var(--text-primary)]">{stage >= 2 ? repo.skipped : "–"}</span></li>
-          </ul>
-          <p className="border-t border-[var(--border-subtle)] pt-3 text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
-            {DEMO_LABEL}. Pick any repository on the board. Imported code is read, never executed.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* 2.0 Simulations: a disclosed session timeline you can scrub. */
-const SEG_TONES = {
-  neutral: { field: "oklch(96.4% 0.004 258)", ink: "oklch(38% 0.02 258)" },
-  blue: { field: "oklch(95.6% 0.03 258)", ink: "oklch(45% 0.16 258)" },
-  teal: { field: "oklch(95.6% 0.035 178)", ink: "oklch(40% 0.08 178)" },
-  green: { field: "oklch(95.6% 0.04 150)", ink: "oklch(40% 0.1 150)" },
-  coral: { field: "oklch(95.6% 0.03 18)", ink: "oklch(47% 0.17 18)" },
-  violet: { field: "oklch(95.6% 0.035 285)", ink: "oklch(45% 0.2 285)" },
-} as const;
-type Seg = { at: number; w: number; text: string; note: string; tone: keyof typeof SEG_TONES };
-const TRACKS: ReadonlyArray<{ label: string; segs: readonly Seg[] }> = [
-  { label: "Brief", segs: [{ at: 0, w: 13, text: "Read brief", note: "Opened the brief and the disclosed recording notice.", tone: "neutral" }] },
-  { label: "Investigate", segs: [{ at: 10, w: 20, text: "Reproduced", note: "Reproduced the duplicate send with a timeout on the first attempt.", tone: "blue" }] },
-  { label: "Code", segs: [{ at: 28, w: 30, text: "Claim before send", note: "Added an idempotency claim on the order before calling the mailer.", tone: "teal" }] },
+const HERO_CODE: CodeLine[] = [
+  { n: 1, segs: [["import ", "tok-kw"], ["os, time", "tok-pl"]] },
   {
-    label: "Tests",
+    n: 2,
     segs: [
-      { at: 40, w: 12, text: "3 passed", note: "First test run: 3 of 5 passing.", tone: "green" },
-      { at: 64, w: 16, text: "4 of 5 passed", note: "Second run: 4 of 5 passing. mailer_error_allows_retry still fails.", tone: "green" },
+      ["from ", "tok-kw"],
+      ["mailer ", "tok-pl"],
+      ["import ", "tok-kw"],
+      ["send_receipt, MailerError", "tok-pl"],
     ],
   },
-  { label: "AI patch", segs: [{ at: 52, w: 14, text: "Rejected", note: "Rejected the AI-proposed patch: it retried inside the request and could double-send.", tone: "coral" }] },
-  { label: "Submit", segs: [{ at: 82, w: 16, text: "9c2e1f0", note: "Submitted snapshot 9c2e1f0. The record is frozen from here.", tone: "violet" }] },
+  { n: 3, segs: [] },
+  {
+    n: 4,
+    segs: [
+      ["claims ", "tok-pl"],
+      ["= ", "tok-pl"],
+      ["ClaimStore", "tok-fn"],
+      ["(ttl=", "tok-pl"],
+      ["300", "tok-num"],
+      [")", "tok-pl"],
+    ],
+  },
+  { n: 5, segs: [] },
+  { n: 6, segs: [["def ", "tok-kw"], ["process", "tok-fn"], ["(job):", "tok-pl"]] },
+  {
+    n: 7,
+    hl: true,
+    segs: [
+      ["    ", "tok-pl"],
+      ["if not ", "tok-kw"],
+      ["claims.acquire", "tok-fn"],
+      ["(job.order_id):", "tok-pl"],
+    ],
+  },
+  {
+    n: 8,
+    segs: [["        ", "tok-pl"], ["return  ", "tok-kw"], ["# already sent", "tok-cm"]],
+  },
+  { n: 9, segs: [["    ", "tok-pl"], ["try", "tok-kw"], [":", "tok-pl"]] },
+  {
+    n: 10,
+    segs: [["        ", "tok-pl"], ["send_receipt", "tok-fn"], ["(job)", "tok-pl"]],
+  },
+  {
+    n: 11,
+    segs: [["    ", "tok-pl"], ["except ", "tok-kw"], ["MailerError", "tok-pl"], [":", "tok-pl"]],
+  },
+  {
+    n: 12,
+    segs: [["        ", "tok-pl"], ["claims.release", "tok-fn"], ["(job.order_id)", "tok-pl"]],
+  },
+  { n: 13, segs: [["        ", "tok-pl"], ["raise", "tok-kw"]] },
+  {
+    n: 14,
+    segs: [["    ", "tok-pl"], ["claims.mark_sent", "tok-fn"], ["(job.order_id)", "tok-pl"]],
+  },
 ];
-const ALL_SEGS = TRACKS.flatMap((tr) => tr.segs.map((seg) => ({ ...seg, track: tr.label }))).sort((a, b) => a.at - b.at);
-const SESSION_MINUTES = 48;
 
-function clock(pos: number) {
-  const mins = Math.round((pos / 100) * SESSION_MINUTES);
-  return `0:${String(mins).padStart(2, "0")}`;
-}
+const HERO_TESTS = [
+  { name: "test_single_send", pass: true, dur: "0.21s" },
+  { name: "test_timeout_retry", pass: true, dur: "0.34s" },
+  { name: "test_concurrent_claims", pass: true, dur: "0.18s" },
+  { name: "test_mailer_error_allows_retry", pass: false, dur: "0.42s" },
+  { name: "test_double_job_idempotent", pass: true, dur: "0.29s" },
+];
 
-export function SimulationVisual() {
-  const [ref, seen] = useInView<HTMLDivElement>();
-  const reduced = useReducedMotion();
-  const [pos, setPos] = useState(0);
-  const [playing, setPlaying] = useState(true);
-  const live = seen && playing && !reduced;
-  useEffect(() => {
-    if (!live) return;
-    const id = window.setInterval(() => setPos((p) => (p >= 100 ? 0 : p + 0.5)), 45);
-    return () => window.clearInterval(id);
-  }, [live]);
-  const at = reduced && playing ? 100 : pos;
-  const current = [...ALL_SEGS].reverse().find((seg) => seg.at <= at) ?? ALL_SEGS[0];
-
+function HeroVisual() {
   return (
-    <div ref={ref} className={`${s.visual} ${s.visualFit}`}>
-      <div className={s.timeline}>
-        <div className={s.scale} aria-hidden>
-          {["0:00", "0:08", "0:16", "0:24", "0:32", "0:40"].map((t) => (
-            <span key={t}>{t}</span>
-          ))}
-        </div>
-        <div className={s.tracks}>
-          <div className={s.gridLines} aria-hidden>
-            {Array.from({ length: 6 }, (_, i) => (
-              <i key={i} />
-            ))}
-          </div>
-          {TRACKS.map((track, ti) => (
-            <div key={track.label} className={s.track} aria-hidden>
-              <span className={s.trackLabel}>{track.label}</span>
-              <div className={s.lane}>
-                {seen
-                  ? track.segs.map((seg, si) => (
-                      <span
-                        key={si}
-                        className={`${s.segment} ${seg.at > at ? s.segmentFuture : ""}`}
-                        style={{
-                          left: `${seg.at}%`,
-                          width: `${seg.w}%`,
-                          animationDelay: `${ti * 180 + si * 240}ms`,
-                          ["--seg-field" as string]: SEG_TONES[seg.tone].field,
-                          ["--seg-ink" as string]: SEG_TONES[seg.tone].ink,
-                        }}
-                      >
-                        {seg.text}
-                      </span>
-                    ))
-                  : null}
-              </div>
-            </div>
-          ))}
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={0.5}
-            value={at}
-            onChange={(e) => {
-              setPlaying(false);
-              setPos(Number(e.target.value));
-            }}
-            className={s.scrub}
-            aria-label="Session time"
-            aria-valuetext={`${clock(at)}, ${current.track}: ${current.text}`}
-          />
-          <div className={s.playWrap} aria-hidden>
-            <span className={s.playhead} style={{ left: `${at}%` }} />
-          </div>
-        </div>
-        <div className={s.scrubReadout} aria-live="polite">
-          <span className="min-w-0">
-            <span className="mr-2 font-mono text-app-meta text-[var(--text-tertiary)]">{clock(at)}</span>
-            <b>{current.track}</b> · {current.note}
+    <div className="u-hero-visual">
+      <div className="u-pv u-pv-dark">
+        <div className="u-pv-titlebar">
+          <span className="u-pv-dots" aria-hidden="true">
+            <span />
+            <span />
+            <span />
           </span>
-          <button type="button" onClick={() => setPlaying((p) => !p)} className={s.control} aria-pressed={!playing}>
-            {playing ? <Pause aria-hidden /> : <Play aria-hidden />} {playing ? "Pause" : "Play"}
-          </button>
+          <span className="u-pv-title">Fydell Simulation · retry-safe-jobs</span>
         </div>
-      </div>
-
-      <div className={s.panel} style={{ left: 0, top: 24, width: "min(360px, 100%)" }}>
-        <div className={s.panelHead}>
-          <span className="flex items-center gap-2"><FlaskConical className="h-3.5 w-3.5 text-[var(--brand-violet)]" /> <b>{DEMO_TASK.title}</b></span>
-          <span className={s.example}>{DEMO_LABEL}</span>
-        </div>
-        <div className="p-4">
-          <p className="text-app-meta leading-[1.55] text-[var(--text-secondary)]">
-            Customers receive the same receipt twice when a job is retried after a timeout. Make sending safe to retry.
-          </p>
-          <ul className="mt-4 space-y-2">
-            {DEMO_TASK.tests.map((t, i) => (
-              <li
-                key={t.name}
-                className={`${s.test} ${seen ? s.cite : ""}`}
-                style={{ animationDelay: `${600 + i * 220}ms`, border: 0, background: "none", padding: "3px 0" }}
-              >
-                {t.passed ? (
-                  <Check className="h-3.5 w-3.5 shrink-0 text-[var(--status-positive-ink)]" aria-label="passed" />
-                ) : (
-                  <X className="h-3.5 w-3.5 shrink-0 text-[var(--brand-coral)]" aria-label="failed" />
-                )}
-                <span className="truncate">{t.name.replace("test_", "")}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 border-t border-[var(--border-subtle)] pt-3 text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
-            Drag across the timeline to replay the session. Candidates see what is recorded before they start.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* 3.0 Review: open the finding, check the tests, record a decision. */
-const DECISIONS = ["Advance to interview", "Hold", "Decline"] as const;
-
-export function ReviewVisual() {
-  const [ref, seen] = useInView<HTMLDivElement>();
-  const [selected, setSelected] = useState<string>(EVIDENCE_RECORDS[0].id);
-  const [decision, setDecision] = useState<(typeof DECISIONS)[number] | null>(null);
-  const record = EVIDENCE_RECORDS.find((r) => r.id === selected) ?? EVIDENCE_RECORDS[0];
-
-  return (
-    <div ref={ref} className={`${s.visual} ${s.visualFit}`}>
-      <div className={s.review}>
-        <div className={s.reviewCol}>
-          <p className="mb-2 px-3 text-app-meta text-[var(--text-tertiary)]">Findings · {DEMO_LABEL}</p>
-          {EVIDENCE_RECORDS.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              aria-pressed={r.id === selected}
-              onClick={() => setSelected(r.id)}
-              className={`${s.finding} ${r.id === selected ? s.findingActive : ""}`}
-            >
-              <span className="flex items-center gap-2">
-                <span className={s.dot} style={{ background: r.kind === "project" ? "var(--brand-teal)" : "var(--brand-violet)" }} />
-                {r.title}
-              </span>
-              <small>{r.source} · {r.citation}</small>
-            </button>
-          ))}
-        </div>
-
-        <div className={s.reviewCol}>
-          <p className="text-app-body font-medium tracking-[-0.012em] text-[var(--text-primary)]">{record.title}</p>
-          <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">{record.language} · {record.revision}</p>
-          <div className="mt-4">
-            <CodeBlock path={record.file} lines={record.lines} compact />
-          </div>
-          <p className="mt-4 text-app-meta leading-[1.55] text-[var(--text-secondary)]">{record.shows}</p>
-          <p className="mt-2 text-app-meta leading-[1.55] text-[var(--text-tertiary)]">Limits: {record.limits}</p>
-        </div>
-
-        <div className={s.reviewCol}>
-          <p className="text-app-meta text-[var(--text-tertiary)]">Recorded test run</p>
-          <ul className="mt-2">
-            {DEMO_TASK.tests.map((t, i) => (
-              <li key={t.name} className={`${s.test} ${seen ? s.cite : ""}`} style={{ animationDelay: `${i * 160}ms`, border: 0, background: "none", padding: "4px 0" }}>
-                {t.passed ? (
-                  <Check className="h-3.5 w-3.5 shrink-0 text-[var(--status-positive-ink)]" aria-label="passed" />
-                ) : (
-                  <X className="h-3.5 w-3.5 shrink-0 text-[var(--brand-coral)]" aria-label="failed" />
-                )}
-                <span className="truncate">{t.name.replace("test_", "")}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-6 text-app-meta text-[var(--text-tertiary)]">Team decision</p>
-          {DECISIONS.map((d) => (
-            <button
-              key={d}
-              type="button"
-              aria-pressed={decision === d}
-              onClick={() => setDecision(decision === d ? null : d)}
-              className={`${s.decision} ${decision === d ? s.decisionActive : ""}`}
-            >
-              {d}
-            </button>
-          ))}
-          <p className="mt-3 text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
-            {decision ? `Logged: ${decision}. Nothing is sent to the candidate.` : "Decisions are logged for the team. Nothing is sent automatically."}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* 4.0 Sharing: scoped, previewable, revocable. */
-const SHARE_FIELDS = [
-  { key: "projects", label: "Projects and contribution statements", initial: true },
-  { key: "evidence", label: "Source-linked findings", initial: true },
-  { key: "sims", label: "Simulation results", initial: true },
-  { key: "email", label: "Email address", initial: false },
-] as const;
-
-export function ShareVisual() {
-  const [on, setOn] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(SHARE_FIELDS.map((f) => [f.key, f.initial])),
-  );
-  const [revoked, setRevoked] = useState(false);
-  const visible = SHARE_FIELDS.filter((f) => on[f.key]);
-
-  return (
-    <div className={`${s.visual} ${s.visualFit}`}>
-      <div className={s.share}>
-        <div className={s.passport}>
-          <p className="flex items-center justify-between text-app-meta text-[oklch(80%_0.05_178)]">
-            <span className="flex items-center gap-2"><FydellMark width={18} /> Engineering Passport</span>
-            <span>{DEMO_LABEL}</span>
-          </p>
-          <p className="mt-16 text-[var(--step-2)] font-[560] leading-none tracking-[-0.03em] text-white">Candidate 01</p>
-          <p className="mt-2 text-app-body text-[oklch(82%_0.03_178)]">Backend developer · Python</p>
-          <div className="mt-10 grid grid-cols-3 gap-4 border-t border-white/10 pt-5 text-app-meta text-[oklch(82%_0.03_178)]">
-            <p><span className="block font-mono text-[var(--step-1)] text-white">2</span>projects</p>
-            <p><span className="block font-mono text-[var(--step-1)] text-white">4</span>findings</p>
-            <p><span className="block font-mono text-[var(--step-1)] text-white">1</span>simulation</p>
-          </div>
-          <p className="mt-8 flex items-center gap-2 text-app-meta text-[oklch(82%_0.03_178)]">
-            <Lock className="h-3.5 w-3.5" /> Private until shared
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className="overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
-            <div className="flex items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-4 py-3">
-              <span className="flex items-center gap-2 text-app-meta text-[var(--text-primary)]">
-                <Link2 className="h-3.5 w-3.5" /> Link for Employer A
-              </span>
-              <button
-                type="button"
-                onClick={() => setRevoked(!revoked)}
-                className="rounded-full border border-[var(--border-default)] px-3 py-1 text-app-meta text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
-              >
-                {revoked ? "Restore link" : "Revoke"}
-              </button>
-            </div>
-            {SHARE_FIELDS.map((f) => (
-              <div key={f.key} className={s.shareRow}>
-                <span>{f.label}</span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={on[f.key]}
-                  aria-label={`Share ${f.label}`}
-                  onClick={() => setOn((prev) => ({ ...prev, [f.key]: !prev[f.key] }))}
-                  className={`${s.toggle} ${on[f.key] ? s.toggleOn : ""}`}
-                />
-              </div>
+        <div className="u-pv-body">
+          <div className="u-pv-side">
+            <p className="u-pv-pane-label">Workspace</p>
+            {HERO_FILES.map((f) => (
+              <PvFile key={f} name={f} active={f === "worker.py"} />
             ))}
           </div>
-
-          <div className="flex-1 rounded-[8px] border border-dashed border-[var(--border-strong)] bg-[var(--surface-canvas)] p-4">
-            <p className="text-app-meta text-[var(--text-tertiary)]">What Employer A sees</p>
-            {revoked ? (
-              <p className="mt-3 text-app-body text-[var(--text-secondary)]">This link has been revoked. The employer can no longer open the passport.</p>
-            ) : (
-              <ul className="mt-3 space-y-2">
-                {visible.length ? (
-                  visible.map((f) => (
-                    <li key={f.key} className={`${s.cite} w-fit`}>
-                      <Check className="h-3 w-3 text-[var(--brand-teal)]" /> {f.label}
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-app-body text-[var(--text-secondary)]">Nothing is shared on this link.</li>
-                )}
-              </ul>
-            )}
+          <div className="u-pv-code">
+            <CodeLines lines={HERO_CODE} />
+          </div>
+          <div className="u-pv-side right">
+            <p className="u-pv-pane-label">Test run</p>
+            {HERO_TESTS.map((t) => (
+              <PvTest key={t.name} name={t.name} pass={t.pass} dur={t.dur} />
+            ))}
           </div>
         </div>
       </div>
@@ -865,7 +320,7 @@ export function ShareVisual() {
   );
 }
 
-/* ----------------------------------------------------------------- page -- */
+/* ------------------------------------------------------- 1.0 the problem -- */
 
 const PROBLEMS = [
   {
@@ -882,247 +337,840 @@ const PROBLEMS = [
   },
 ] as const;
 
+function ProblemVisual() {
+  return (
+    <div className="u-visual">
+      <div className="u-pv u-pv-light">
+        <PanelHead title="Hiring pipeline · signal audit" chip="Weak signal" chipTone="amber" />
+        <div className="u-ev-row">
+          <div className="u-ev-col">
+            <h4>Résumé screen</h4>
+            <div className="u-ev-item">
+              <div className="t">Keyword match</div>
+              <div className="m">14 terms · 0 projects read</div>
+            </div>
+            <div className="u-ev-item">
+              <div className="t">What it misses</div>
+              <div className="m">ability, judgment, craft</div>
+            </div>
+          </div>
+          <div className="u-ev-col">
+            <h4>Take-home</h4>
+            <div className="u-ev-item">
+              <div className="t">Hours spent</div>
+              <div className="m">9 · authorship unknown</div>
+            </div>
+            <div className="u-ev-item">
+              <div className="t">What it misses</div>
+              <div className="m">who actually wrote it</div>
+            </div>
+          </div>
+          <div className="u-ev-col">
+            <h4>Whiteboard</h4>
+            <div className="u-ev-item">
+              <div className="t">What it measures</div>
+              <div className="m">recall under pressure</div>
+            </div>
+            <div className="u-ev-item">
+              <div className="t">What it misses</div>
+              <div className="m">real engineering work</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ----------------------------------------------------------- 2.0 passport -- */
+
+function PassportVisual() {
+  return (
+    <div className="u-visual">
+      <div className="u-pv u-pv-light">
+        <PanelHead title="Engineering Passport" chip="Owned by the engineer" chipTone="teal" />
+        <div className="u-cards-2" style={{ padding: 32 }}>
+          <div
+            style={{
+              border: "1px solid var(--u-line-soft)",
+              borderRadius: 16,
+              padding: 28,
+              background: "var(--u-bg)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 20,
+              }}
+            >
+              <FydellLogo height={22} />
+              <span style={{ fontSize: 12, fontFamily: "var(--u-mono)", color: "var(--u-faint)" }}>
+                v1
+              </span>
+            </div>
+            <p
+              style={{
+                fontSize: 26,
+                fontWeight: 700,
+                margin: "0 0 4px",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              Candidate 01
+            </p>
+            <p style={{ fontSize: 14, color: "var(--u-muted)", margin: "0 0 20px" }}>
+              Backend developer · Python
+            </p>
+            <div
+              style={{
+                display: "flex",
+                gap: 28,
+                padding: "16px 0",
+                borderTop: "1px solid var(--u-line-soft)",
+                borderBottom: "1px solid var(--u-line-soft)",
+                marginBottom: 16,
+              }}
+            >
+              {[
+                ["2", "projects"],
+                ["4", "findings"],
+                ["1", "simulation"],
+              ].map(([n, l]) => (
+                <div key={l}>
+                  <div style={{ fontSize: 20, fontWeight: 700 }}>{n}</div>
+                  <div style={{ fontSize: 12, color: "var(--u-faint)" }}>{l}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 13, color: "var(--u-faint)", margin: 0 }}>
+              Private until shared
+            </p>
+          </div>
+          <div>
+            <p style={SUBHEAD}>Share controls</p>
+            <div
+              style={{
+                border: "1px solid var(--u-line-soft)",
+                borderRadius: 12,
+                overflow: "hidden",
+                background: "var(--u-bg)",
+              }}
+            >
+              <Toggle on label="Projects and contribution statements" />
+              <Toggle on label="Source-linked findings" />
+              <Toggle on label="Simulation results" />
+              <Toggle on={false} label="Email address" />
+            </div>
+            <p style={{ fontSize: 13, color: "var(--u-faint)", margin: "12px 0 0" }}>
+              The engineer decides what each employer sees.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------- 3.0 simulations -- */
+
+const SESSION_SEGS = [
+  { label: "Read brief", w: 13, note: "0:00" },
+  { label: "Reproduced the bug", w: 22, note: "0:06" },
+  { label: "Claim before send", w: 30, note: "0:16" },
+  { label: "Tests · 4 of 5", w: 26, note: "0:31" },
+  { label: "AI patch rejected", w: 14, note: "0:38" },
+  { label: "Submitted", w: 16, note: "0:44" },
+];
+
+function SegBar({ label, w, note }: { label: string; w: number; note: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+      <span style={{ width: 148, fontSize: 13, color: "var(--u-muted)", flexShrink: 0 }}>
+        {label}
+      </span>
+      <span
+        style={{
+          flex: 1,
+          height: 10,
+          borderRadius: 9999,
+          background: "var(--u-bg-2)",
+          overflow: "hidden",
+        }}
+      >
+        <span
+          style={{
+            display: "block",
+            height: "100%",
+            width: `${w}%`,
+            background: "var(--u-accent)",
+            borderRadius: 9999,
+          }}
+        />
+      </span>
+      <span
+        style={{
+          width: 40,
+          fontSize: 12,
+          fontFamily: "var(--u-mono)",
+          color: "var(--u-faint)",
+          textAlign: "right",
+        }}
+      >
+        {note}
+      </span>
+    </div>
+  );
+}
+
+export function SimulationVisual() {
+  return (
+    <div className="u-visual">
+      <div className="u-pv u-pv-light">
+        <PanelHead
+          title="Incident brief · retry-safe-jobs"
+          chip="Disclosed before start"
+          chipTone="teal"
+        />
+        <div className="u-cards-2" style={{ padding: 32 }}>
+          <div>
+            <p style={SUBHEAD}>The brief</p>
+            <p style={{ fontSize: 17, lineHeight: 1.6, margin: "0 0 20px", maxWidth: "40ch" }}>
+              Customers receive the same receipt twice when a job is retried after a timeout.
+              Make sending safe to retry.
+            </p>
+            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+              {[
+                "A working codebase, not a toy problem",
+                "5 tests must stay green",
+                "An AI patch is proposed mid-session. Review it.",
+                "48 minutes on a disclosed timeline",
+              ].map((c) => (
+                <li
+                  key={c}
+                  style={{
+                    display: "flex",
+                    gap: 10,
+                    fontSize: 14,
+                    color: "var(--u-muted)",
+                    padding: "6px 0",
+                  }}
+                >
+                  <span style={{ color: "var(--u-accent)", fontWeight: 700 }}>✓</span>
+                  {c}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p style={SUBHEAD}>Recorded session · 0:48</p>
+            {SESSION_SEGS.map((s) => (
+              <SegBar key={s.label} label={s.label} w={s.w} note={s.note} />
+            ))}
+            <p style={{ fontSize: 13, color: "var(--u-faint)", margin: "16px 0 0" }}>
+              Candidates see exactly what is recorded before they start.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------- legacy intake board -- */
+
+const INTAKE_COLS = [
+  {
+    name: "Selected",
+    repos: [{ name: "billing-webhooks", meta: "EP-104 · TypeScript · 38 files" }],
+  },
+  {
+    name: "Analyzing",
+    repos: [{ name: "vector-search-api", meta: "EP-103 · Python · 63 files" }],
+  },
+  {
+    name: "Evidence ready",
+    repos: [{ name: "receipts-service", meta: "EP-101 · Python · 46 files · cited" }],
+  },
+  {
+    name: "Needs attention",
+    repos: [
+      { name: "ledger-cli", meta: "EP-102 · Go · structure only" },
+      { name: "infra-modules", meta: "EP-105 · HCL · structure only" },
+    ],
+  },
+];
+
+export function IntakeVisual() {
+  return (
+    <div className="u-visual">
+      <div className="u-pv u-pv-light">
+        <PanelHead title="Import from GitHub" chip="5 repositories" />
+        <div style={{ overflowX: "auto" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, minmax(180px, 1fr))",
+              gap: 16,
+              padding: 24,
+              minWidth: 760,
+            }}
+          >
+            {INTAKE_COLS.map((c) => (
+              <div key={c.name}>
+                <p style={{ ...SUBHEAD, marginBottom: 12 }}>{c.name}</p>
+                {c.repos.map((r) => (
+                  <div key={r.name} className="u-ev-item">
+                    <div className="t">{r.name}</div>
+                    <div className="m">{r.meta}</div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------- 4.0 review -- */
+
+const FINDINGS = [
+  { title: "Claim acquired before send", meta: "worker.py:8 · snapshot 9c2e1f0", dot: "var(--u-accent)" },
+  { title: "Mailer errors release the claim", meta: "worker.py:12-14", dot: "var(--u-amber)" },
+  { title: "AI patch rejected with reason", meta: "timeline 0:38", dot: "var(--u-ink)" },
+];
+
+const REVIEW_CODE: CodeLine[] = [
+  { n: 6, segs: [["def ", "tok-kw"], ["process", "tok-fn"], ["(job):", "tok-pl"]] },
+  { n: 7, segs: [] },
+  {
+    n: 8,
+    hl: true,
+    segs: [
+      ["    ", "tok-pl"],
+      ["if not ", "tok-kw"],
+      ["claims.acquire", "tok-fn"],
+      ["(job.order_id):", "tok-pl"],
+    ],
+  },
+  {
+    n: 9,
+    segs: [["        ", "tok-pl"], ["return  ", "tok-kw"], ["# already sent", "tok-cm"]],
+  },
+  {
+    n: 10,
+    segs: [["    ", "tok-pl"], ["claims.mark_sent", "tok-fn"], ["(job.order_id)", "tok-pl"]],
+  },
+];
+
+const REVIEW_TESTS = [
+  { name: "test_single_send", pass: true, dur: "0.21s" },
+  { name: "test_timeout_retry", pass: true, dur: "0.34s" },
+  { name: "test_concurrent_claims", pass: true, dur: "0.18s" },
+  { name: "test_mailer_error_allows_retry", pass: false, dur: "0.42s" },
+  { name: "test_double_job_idempotent", pass: true, dur: "0.29s" },
+];
+
+export function ReviewVisual() {
+  return (
+    <div className="u-visual">
+      <div className="u-pv u-pv-light">
+        <PanelHead title="Candidate 01 · evidence report" chip="In review" chipTone="amber" />
+        <div className="u-ev-row">
+          <div className="u-ev-col">
+            <h4>Findings</h4>
+            {FINDINGS.map((f) => (
+              <div key={f.title} className="u-ev-item">
+                <div
+                  className="t"
+                  style={{ display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: f.dot,
+                      flexShrink: 0,
+                    }}
+                  />
+                  {f.title}
+                </div>
+                <div className="m">{f.meta}</div>
+              </div>
+            ))}
+          </div>
+          <div className="u-ev-col">
+            <h4>Cited code</h4>
+            <div
+              className="u-pv-code"
+              style={{
+                border: "1px solid var(--u-line-soft)",
+                borderRadius: 10,
+                background: "var(--u-dark)",
+                color: "#d7dce2",
+                padding: "14px 16px",
+                fontSize: 12.5,
+              }}
+            >
+              <CodeLines lines={REVIEW_CODE} />
+            </div>
+            <p style={{ fontSize: 13, color: "var(--u-faint)", margin: "12px 0 0" }}>
+              Every claim opens to the file and lines behind it.
+            </p>
+          </div>
+          <div className="u-ev-col">
+            <h4>Recorded test run</h4>
+            {REVIEW_TESTS.map((t) => (
+              <TestRow key={t.name} name={t.name} pass={t.pass} dur={t.dur} />
+            ))}
+            <p style={{ ...SUBHEAD, margin: "20px 0 12px" }}>Team decision</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <span className="u-chip teal">Advance to interview</span>
+              <span className="u-chip">Hold</span>
+              <span className="u-chip">Decline</span>
+            </div>
+            <p style={{ fontSize: 13, color: "var(--u-faint)", margin: "12px 0 0" }}>
+              Logged for the team. Nothing is sent to the candidate.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------------- evidence chain (replaces the EV trio) -- */
+
+const CHAIN = [
+  { step: "Brief", title: "Incident described", meta: "disclosed 0:00" },
+  { step: "Diff", title: "Claim before send", meta: "+14 −3 · 9c2e1f0" },
+  { step: "Test run", title: "4 of 5 passed", meta: "recorded 0:42" },
+  { step: "Receipt", title: "Evidence frozen", meta: "rev 9c2e1f0" },
+];
+
+function EvidenceChain() {
+  return (
+    <div className="u-visual" style={{ marginTop: 24 }}>
+      <div className="u-pv u-pv-light" style={{ padding: 32 }}>
+        <p style={SUBHEAD}>Chain of custody</p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "stretch",
+            gap: 12,
+            overflowX: "auto",
+            paddingBottom: 4,
+          }}
+        >
+          {CHAIN.map((c, i) => (
+            <Fragment key={c.step}>
+              {i > 0 ? (
+                <span
+                  aria-hidden="true"
+                  style={{
+                    alignSelf: "center",
+                    color: "var(--u-faint)",
+                    fontSize: 20,
+                    flexShrink: 0,
+                  }}
+                >
+                  →
+                </span>
+              ) : null}
+              <div
+                style={{
+                  flex: "1 0 200px",
+                  border: "1px solid var(--u-line-soft)",
+                  borderRadius: 12,
+                  padding: "16px 18px",
+                  background: "var(--u-bg)",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "var(--u-accent-deep)",
+                    margin: "0 0 8px",
+                  }}
+                >
+                  {c.step}
+                </p>
+                <p style={{ fontSize: 15, fontWeight: 600, margin: "0 0 4px" }}>{c.title}</p>
+                <p
+                  style={{
+                    fontSize: 12,
+                    fontFamily: "var(--u-mono)",
+                    color: "var(--u-faint)",
+                    margin: 0,
+                  }}
+                >
+                  {c.meta}
+                </p>
+              </div>
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------- 5.0 sharing -- */
+
+export function ShareVisual() {
+  return (
+    <div className="u-visual">
+      <div className="u-pv u-pv-light">
+        <PanelHead title="Scoped links" chip="Revocable in one click" chipTone="teal" />
+        <div className="u-cards-2" style={{ padding: 32 }}>
+          <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 16,
+              }}
+            >
+              <p style={{ fontWeight: 700, margin: 0 }}>Link for Employer A</p>
+              <span className="u-chip">Revoke</span>
+            </div>
+            <div
+              style={{
+                border: "1px solid var(--u-line-soft)",
+                borderRadius: 12,
+                overflow: "hidden",
+                background: "var(--u-bg)",
+              }}
+            >
+              <Toggle on label="Projects and contribution statements" />
+              <Toggle on label="Source-linked findings" />
+              <Toggle on label="Simulation results" />
+              <Toggle on={false} label="Email address" />
+            </div>
+            <p style={{ fontSize: 13, color: "var(--u-faint)", margin: "12px 0 0" }}>
+              Scoped to one employer. Revoke any time.
+            </p>
+          </div>
+          <div>
+            <p style={SUBHEAD}>What Employer A sees</p>
+            <div
+              style={{
+                border: "1px dashed var(--u-line)",
+                borderRadius: 12,
+                padding: 20,
+                background: "var(--u-bg)",
+              }}
+            >
+              {[
+                "Projects and contribution statements",
+                "Source-linked findings",
+                "Simulation results",
+              ].map((l) => (
+                <p
+                  key={l}
+                  style={{
+                    display: "flex",
+                    gap: 10,
+                    fontSize: 14,
+                    color: "var(--u-muted)",
+                    margin: "0 0 10px",
+                  }}
+                >
+                  <span style={{ color: "var(--u-accent)", fontWeight: 700 }}>✓</span>
+                  {l}
+                </p>
+              ))}
+              <p style={{ fontSize: 13, color: "var(--u-faint)", margin: "12px 0 0" }}>
+                Email stays hidden. Nothing else is shared on this link.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------- 6.0 desktop -- */
+
+const BRIEF_LINES: CodeLine[] = [
+  { n: 1, segs: [["RETRY-SAFE JOBS", "tok-pl"]] },
+  { n: 2, segs: [] },
+  { n: 3, segs: [["Customers receive the same receipt twice", "tok-pl"]] },
+  { n: 4, segs: [["when a job is retried after a timeout.", "tok-pl"]] },
+  { n: 5, segs: [] },
+  { n: 6, segs: [["Tasks", "tok-fn"]] },
+  { n: 7, segs: [["- Reproduce the duplicate send", "tok-pl"]] },
+  { n: 8, segs: [["- Make retries safe to re-run", "tok-pl"]] },
+  { n: 9, segs: [["- Keep all 5 tests green", "tok-pl"]] },
+  { n: 10, segs: [] },
+  { n: 11, segs: [["An AI patch will be proposed at 0:31.", "tok-cm"]] },
+  { n: 12, segs: [["Review it like a teammate would.", "tok-cm"]] },
+];
+
+function DesktopVisual() {
+  return (
+    <div className="u-visual">
+      <div className="u-pv u-pv-dark">
+        <div className="u-pv-titlebar">
+          <span className="u-pv-dots" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+          <span className="u-pv-title">Fydell Desktop · retry-safe-jobs</span>
+        </div>
+        <div className="u-pv-body">
+          <div className="u-pv-side">
+            <p className="u-pv-pane-label">Project</p>
+            <PvFile name="BRIEF.md" active />
+            <PvFile name="worker.py" />
+            <PvFile name="test_worker.py" />
+            <PvFile name="timeline.log" />
+          </div>
+          <div className="u-pv-code">
+            <CodeLines lines={BRIEF_LINES} />
+          </div>
+          <div className="u-pv-side right">
+            <p className="u-pv-pane-label">Session</p>
+            {HERO_TESTS.map((t) => (
+              <PvTest key={t.name} name={t.name} pass={t.pass} dur={t.dur} />
+            ))}
+            <div style={{ marginTop: 16 }}>
+              <span className="u-chip teal">Ready to submit</span>
+            </div>
+            <p
+              style={{
+                fontSize: 12,
+                fontFamily: "var(--u-mono)",
+                color: "#5b6470",
+                margin: "12px 0 0",
+              }}
+            >
+              recorded 0:48 · rev 9c2e1f0
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------- principles -- */
+
 const PRINCIPLES = [
   {
     index: "P.1",
     title: "Record the work, not the worker.",
-    body: "Candidates see everything that is captured before they begin: files, tests, timeline. No keystroke logging. No screen recording. No spyware. The simulation is the assessment.",
+    body: "Candidates see everything that is captured before they begin. No keystroke logging. No screen recording. The simulation is the assessment.",
   },
   {
     index: "P.2",
     title: "Every claim opens to its source.",
-    body: "A finding without a file, a commit, and a line number is an opinion. Fydell links each one, so your reviewers check instead of trusting.",
+    body: "A finding without a file, a commit, and a line number is an opinion. Fydell links each one, so reviewers check instead of trusting.",
   },
   {
     index: "P.3",
     title: "Decisions stay human.",
-    body: "Fydell assembles the evidence; your team makes the call. No scores, no auto-reject, no black-box ranking.",
+    body: "Fydell assembles the evidence. Your team makes the call. No scores, no auto-reject, no black-box ranking.",
   },
 ] as const;
+
+/* -------------------------------------------------------------------- faq -- */
 
 const HOME_FAQ = [
   {
     q: "Are the examples on this page real?",
-    a: "The walkthroughs use fictional example data and are labeled as such. There is no real candidate behind them. The scenarios, prices, and controls described are real product capabilities. The demo data is illustration, not evidence.",
+    a: "The walkthroughs use fictional example data, clearly labeled. No real candidate is behind them. The scenarios, prices, and controls are real product capabilities. The demo data is illustration, not evidence.",
   },
   {
     q: "What does Fydell cost?",
-    a: "Engineers pay nothing, ever. Hiring teams pay $49 per completed simulation on Starter, or $399 a month with 10 simulations included on Team. Invitations, expired links, and abandoned attempts are never billed.",
+    a: "Engineers pay nothing, ever. Hiring teams pay $49 per completed simulation on Starter, or $399 a month with 10 simulations included on Team. Invites, expired links, and abandoned attempts are never billed.",
   },
   {
     q: "Does Fydell replace interviews?",
-    a: "No. Fydell gives your reviewers evidence to read before the interview: cited findings, recorded test runs, and questions drawn from the candidate's own work. There is no score, no ranking, and no auto-reject. Your team makes the call.",
+    a: "No. Fydell gives reviewers evidence to read before the interview: cited findings, recorded test runs, and questions drawn from the candidate's own work. No score, no ranking, no auto-reject. Your team makes the call.",
   },
   {
     q: "Is this surveillance software?",
-    a: "No. There is no keystroke logging, screen recording, or webcam. Candidates see exactly what is recorded before they start. The simulation assesses the work, not the worker.",
+    a: "No. No keystroke logging, no screen recording, no webcam. Candidates see exactly what is recorded before they start. The simulation assesses the work, not the worker.",
   },
   {
     q: "Which roles and languages are covered?",
-    a: "One evaluation is released today: the 20-minute Operations performance investigation for data analysts. The engine catalog holds 8 authored scenarios across 6 role families, and repository analysis is deepest in Python.",
+    a: "Simulations cover backend engineering today, starting with the webhook retry incident. Repository analysis is deepest in Python, with more roles and languages on the way.",
   },
   {
     q: "When can I download the desktop app?",
-    a: "Desktop installers publish with v0.1.0 and are not available yet. The download page tracks the status honestly and points at the GitHub releases where installers will appear.",
+    a: "Not yet. Installers publish with v0.1.0 and are not live. The download page tracks the status honestly.",
   },
   {
     q: "Who owns the evidence?",
-    a: "The engineer. A passport is private until shared, each share link is scoped to one employer and previewable before it is sent, and access can be revoked in one click.",
+    a: "The engineer. A passport is private until shared. Each link is scoped to one employer and previewable before it is sent. Access can be revoked in one click.",
   },
-] as const;
+];
+
+/* ------------------------------------------------------------------- page -- */
 
 export default function FydellHome() {
   return (
-    <div className={s.page}>
-      <section className={s.hero}>
-        <div className={`${s.container} ${s.heroCopyIn} ${s.heroCenter}`}>
-          <Kicker>Hiring infrastructure</Kicker>
-          <h1 className={s.heroTitle}>
-            A new way to hire.
-            <br />
-            A better way to{" "}
-            <span className="t-project">get&nbsp;hired.</span>
-          </h1>
-          <p className={s.lede}>
-            Real engineering simulations. You review the code, not the résumé.
-          </p>
-          <div className={s.heroActions}>
-            <Link href="/signup" className={s.btnSolid}>
-              Get started <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-            <Link href="/demo" className={s.btnGhost}>
-              Explore demo
-            </Link>
-          </div>
-        </div>
-        <div className={s.stage}>
-          <div className={s.stageInner}>
-            <HeroSimWorkspace />
-          </div>
-        </div>
-      </section>
-
-      <section className={`${s.container} ${s.proof}`} aria-label="Fydell in numbers">
-        <Reveal>
-          <ProofStrip />
-        </Reveal>
-      </section>
-
-      <section className={`${s.container} ${s.problem}`} aria-labelledby="problem-title">
-        <Kicker>The problem</Kicker>
-        <h2 id="problem-title" className={s.problemTitle}>
-          Hiring runs on signals nobody trusts.
-        </h2>
-        <Stagger className={s.problemGrid}>
-          {PROBLEMS.map((p) => (
-            <StaggerItem key={p.title} className={s.problemCard}>
-              <p className={s.problemHead}>{p.title}</p>
-              <p className={s.problemBody}>{p.body}</p>
-            </StaggerItem>
-          ))}
-        </Stagger>
-      </section>
-
-      <section className={`${s.container} ${s.manifesto}`} aria-labelledby="manifesto">
-        <p id="manifesto" className={s.statement}>
-          Résumés describe the work. <span className="t-project">Fydell shows it.</span>{" "}
-          <span>
-            Every claim about a candidate opens to the file, commit, or test behind it, so teams decide on evidence
-            and engineers get credit for what they actually built.
-          </span>
-        </p>
-        <div className={s.figs}>
-          {FIGS.map(({ label, title, body, Art }) => (
-            <div key={title} className={s.fig}>
-              <p className={s.figLabel}>{label}</p>
-              <div className={s.figArt}>
-                <Art />
+    <div className="u-mkt">
+      <UnifiedNav current="/" />
+      <main id="main">
+        <header className="u-hero">
+          <div className="u-wrap">
+            <div className="u-hero-grid">
+              <div>
+                <p className="u-eyebrow">Hiring infrastructure</p>
+                <h1>
+                  A new way to hire. A better way to{" "}
+                  <span className="u-teal">get hired.</span>
+                </h1>
               </div>
-              <p className={s.figTitle}>{title}</p>
-              <p className={s.figBody}>{body}</p>
+              <div className="u-hero-sub">
+                <p>Real engineering simulations. You review the code, not the résumé.</p>
+                <div className="u-hero-ctas">
+                  <Link href="/get-started" className="u-btn u-btn-dark">
+                    Get started
+                  </Link>
+                  <Link href="/demo" className="u-btn u-btn-light">
+                    Explore demo
+                  </Link>
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
+            <HeroVisual />
+          </div>
+        </header>
 
-      <section id="developers" className={`${s.container} ${s.chapter}`}>
-        <ChapterHead
-          index="1.0"
-          label="Passports"
-          href="/developers"
-          title="Turn repositories into a record of real work"
-          copy="Import public GitHub projects. Fydell pins a commit, cites every finding, and states plainly what it could not assess."
-        />
-        <Reveal delay={0.08}>
-          <IntakeVisual />
-        </Reveal>
-        <Features dot="var(--brand-teal)" items={["GitHub import", "Commit pinning", "Coverage report", "Contribution statements", "Role signals"]} />
-      </section>
-
-      <section id="product" className={`${s.container} ${s.chapter}`}>
-        <ChapterHead
-          index="2.0"
-          label="Simulations"
-          href="/demo"
-          title="See how engineers solve real problems"
-          copy="Candidates work a realistic incident in a working codebase, with tests and an AI-written patch to review. Every action lands on a disclosed timeline."
-        />
-        <div className={s.mockStage}>
-          <DesktopWorkspaceMock />
-        </div>
-        <Reveal delay={0.08}>
-          <SimulationVisual />
-        </Reveal>
-        <Features dot="var(--brand-violet)" items={["Working codebases", "Recorded test runs", "AI patch review", "Disclosed telemetry", "Timed scope"]} />
-      </section>
-
-      <section id="employers" className={`${s.container} ${s.chapter}`}>
-        <ChapterHead
-          index="3.0"
-          label="Review"
-          href="/employers"
-          title="Decide on evidence, together"
-          copy="Reviewers open each finding to the code behind it, see what the tests observed, and record a decision the whole team can audit."
-        />
-        <Reveal delay={0.08}>
-          <ReviewVisual />
-        </Reveal>
-        <Features dot="var(--brand-warm)" items={["Evidence reports", "Reviewer notes", "Decision log", "Interview prompts", "Team workspaces"]} />
-      </section>
-
-      <section id="sharing" className={`${s.container} ${s.chapter}`}>
-        <ChapterHead
-          index="4.0"
-          label="Sharing"
-          href="/trust"
-          title="Engineers stay in control of their record"
-          copy="A passport is private until shared. Each link is scoped to one employer, previewable before it is sent, and revocable in one click."
-        />
-        <Reveal delay={0.08}>
-          <ShareVisual />
-        </Reveal>
-        <Features dot="var(--brand-teal)" items={["Scoped links", "Recipient preview", "One-click revoke", "Export"]} />
-      </section>
-
-      <section id="desktop" className={`${s.container} ${s.chapter}`}>
-        <ChapterHead
-          index="5.0"
-          label="Desktop app"
-          href="/download"
-          title="The simulation, in a real editor on your machine"
-          copy="The Fydell desktop client runs the whole simulation locally: a Monaco workspace with brief, tests, timeline, and submit panels. Installers publish with v0.1.0."
-        />
-        <Reveal delay={0.08}>
-          <DesktopShowcase />
-        </Reveal>
-      </section>
-
-      <section className={`${s.container} ${s.principles}`} aria-labelledby="principles-title">
-        <Kicker>How Fydell is different</Kicker>
-        <h2 id="principles-title" className={s.problemTitle}>
-          Evidence you can <span className="t-project">inspect</span>. Nothing you can&rsquo;t.
-        </h2>
-        <Stagger className={s.problemGrid}>
-          {PRINCIPLES.map((p) => (
-            <StaggerItem key={p.index} className={s.problemCard}>
-              <p className={s.figLabel}>{p.index}</p>
-              <p className={s.problemHead}>{p.title}</p>
-              <p className={s.problemBody}>{p.body}</p>
-            </StaggerItem>
-          ))}
-        </Stagger>
-      </section>
-
-      <section className={`${s.container} ${s.chapter}`} aria-labelledby="home-faq">
-        <Reveal>
-          <h2 id="home-faq" className={s.chapterTitle}>Honest answers</h2>
-        </Reveal>
-        <Reveal delay={0.06}>
-          <div className={s.faq}>
-            {HOME_FAQ.map((item) => (
-              <details key={item.q}>
-                <summary>{item.q}</summary>
-                <p>{item.a}</p>
-              </details>
+        <Section id="problem">
+          <SecHead
+            title="Signals nobody trusts."
+            desc="Résumés describe the work. They never show it. Screens and take-homes filter for wording and weekends, not ability."
+            n="1.0"
+            label="Employers"
+            href="/employers"
+          />
+          <ProblemVisual />
+          <div className="u-cards-3" style={{ marginTop: 24 }}>
+            {PROBLEMS.map((p) => (
+              <div key={p.title} className="u-card">
+                <h3>{p.title}</h3>
+                <p>{p.body}</p>
+              </div>
             ))}
           </div>
-        </Reveal>
-      </section>
+        </Section>
 
-      <section className={`${s.container} ${s.closing}`}>
-        <h2 className={s.closingTitle}>
-          Hire for the work.
-        </h2>
-        <div className={s.closingRow}>
-          <p className={s.lede}>Free for engineers. Hiring teams pay per completed simulation.</p>
-          <div className={s.heroActions}>
-            <Link href="/signup" className={s.btnSolid}>
-              Get started <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-            <Link href="/demo" className={s.btnGhost}>Explore demo</Link>
+        <Section id="passports" tinted>
+          <SecHead
+            title="A passport you own."
+            desc="Import your GitHub repositories. Fydell pins a commit, cites every finding, and states plainly what it could not assess."
+            n="2.0"
+            label="Passport"
+            href="/passport/new"
+          />
+          <PassportVisual />
+          <FeatList
+            items={["GitHub import", "Commit pinning", "Coverage report", "Contribution statements"]}
+          />
+        </Section>
+
+        <Section id="simulations">
+          <SecHead
+            title="Real incidents. Real code."
+            desc="Candidates work a realistic incident in a working codebase, with tests and an AI-written patch to review. Every action lands on a disclosed timeline."
+            n="3.0"
+            label="Simulations"
+            href="/developers"
+          />
+          <SimulationVisual />
+          <FeatList
+            items={["Working codebases", "Recorded test runs", "AI patch review", "Disclosed timeline"]}
+          />
+        </Section>
+
+        <Section id="review" tinted>
+          <SecHead
+            title="Decide on evidence."
+            desc="Reviewers open each finding to the code behind it, read the recorded test run, and log a decision the whole team can audit."
+            n="4.0"
+            label="Review"
+            href="/product"
+          />
+          <ReviewVisual />
+          <EvidenceChain />
+          <p className="u-visual-caption">
+            One chain of custody, from brief to frozen receipt. Each step opens to its source.
+          </p>
+          <FeatList
+            items={["Source citations", "Test records", "Decision log", "Interview prompts"]}
+          />
+        </Section>
+
+        <Section id="sharing">
+          <SecHead
+            title="Stay in control."
+            desc="A passport is private until shared. Each link is scoped to one employer, previewable before it is sent, and revocable in one click."
+            n="5.0"
+            label="Sharing"
+            href="/product"
+          />
+          <ShareVisual />
+          <FeatList
+            items={["Scoped links", "Recipient preview", "One-click revoke", "Export"]}
+          />
+        </Section>
+
+        <Section id="desktop" tinted>
+          <SecHead
+            title="The simulation, on your machine."
+            desc="The Fydell desktop client runs the whole simulation locally: brief, editor, tests, and timeline in one workspace."
+            n="6.0"
+            label="Desktop app"
+            href="/download"
+          />
+          <DesktopVisual />
+          <p className="u-visual-caption">Installers publish with v0.1.0.</p>
+          <FeatList
+            items={["Local workspace", "Full editor", "Recorded timeline", "One-click submit"]}
+          />
+        </Section>
+
+        <Section id="principles">
+          <SecHead
+            title="Evidence you can inspect."
+            desc="Three rules shape what Fydell records and what it shows."
+          />
+          <div className="u-cards-3">
+            {PRINCIPLES.map((p) => (
+              <div key={p.index} className="u-card">
+                <span className="u-step">{p.index}</span>
+                <h3>{p.title}</h3>
+                <p>{p.body}</p>
+              </div>
+            ))}
           </div>
-        </div>
-      </section>
+        </Section>
+
+        <Section id="faq" tinted>
+          <SecHead
+            title="Honest answers."
+            desc="Straight answers about cost, privacy, and what Fydell records."
+          />
+          <Faq items={HOME_FAQ} />
+        </Section>
+      </main>
+      <CtaBand />
+      <UnifiedFooter />
     </div>
   );
 }

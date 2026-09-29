@@ -1,4 +1,3 @@
-import MarketingShell from "@/components/layout/MarketingShell";
 import FydellHome from "@/components/marketing/home/FydellHome";
 
 export const metadata = {
@@ -8,9 +7,8 @@ export const metadata = {
 };
 
 export default function HomePage() {
-  return (
-    <MarketingShell>
-      <FydellHome />
-    </MarketingShell>
-  );
+  // FydellHome renders its own unified nav/footer (UnifiedChrome), so the
+  // shared MarketingShell is intentionally not used here: it would render a
+  // second nav and footer.
+  return <FydellHome />;
 }

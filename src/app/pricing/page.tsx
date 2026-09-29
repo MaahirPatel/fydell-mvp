@@ -1,6 +1,5 @@
 import Link from "next/link";
-import "@/styles/marketing-v2.css";
-import { Nav, Footer, FooterCTA } from "@/components/marketing/MarketingV2";
+import { UnifiedNav, UnifiedFooter, CtaBand, Faq } from "@/components/marketing/unified/UnifiedChrome";
 import { PRICING, usd, planSignupHref } from "@/lib/marketing/pricing";
 
 export const metadata = {
@@ -22,7 +21,7 @@ const PLANS = [
     ],
     cta: "Build your passport",
     href: "/passport/new",
-    dark: false,
+    featured: false,
   },
   {
     name: "Starter",
@@ -37,7 +36,7 @@ const PLANS = [
     ],
     cta: "Start on Starter",
     href: planSignupHref("starter"),
-    dark: false,
+    featured: false,
   },
   {
     name: "Team",
@@ -53,7 +52,7 @@ const PLANS = [
     ],
     cta: "Start on Team",
     href: planSignupHref("team"),
-    dark: true,
+    featured: true,
   },
   {
     name: "Enterprise",
@@ -68,7 +67,7 @@ const PLANS = [
     ],
     cta: "Talk to us",
     href: "/contact",
-    dark: false,
+    featured: false,
   },
 ];
 
@@ -87,7 +86,7 @@ const FAQS = [
   },
   {
     q: "Do you offer discounts?",
-    a: "Enterprise plans include volume pricing for teams running 50 or more simulations a month.",
+    a: `Enterprise plans include volume pricing for teams running ${PRICING.enterpriseFrom} or more simulations a month.`,
   },
   {
     q: "What payment methods do you accept?",
@@ -106,11 +105,11 @@ const COMPARISON_ROWS: { label: string; values: [string, string, string, string]
   },
   {
     label: "Roles",
-    values: ["—", "Unlimited", "Unlimited", "Unlimited"],
+    values: ["None", "Unlimited", "Unlimited", "Unlimited"],
   },
   {
     label: "Reviewers",
-    values: ["—", "Unlimited", "Unlimited", "Unlimited"],
+    values: ["None", "Unlimited", "Unlimited", "Unlimited"],
   },
   {
     label: "Evidence reports",
@@ -118,20 +117,23 @@ const COMPARISON_ROWS: { label: string; values: [string, string, string, string]
   },
   {
     label: "Support",
-    values: ["—", "—", "Priority", "—"],
+    values: ["None", "None", "Priority", "None"],
   },
 ];
 
 const BILLING_STEPS = [
   {
+    step: "01",
     title: "Charged on submission",
     body: "You pay when a candidate submits their work. Not when you send an invite. Not when a link expires.",
   },
   {
+    step: "02",
     title: "One submission, one charge",
     body: "Each completed simulation counts once. Invites and abandoned attempts never count.",
   },
   {
+    step: "03",
     title: "No lock-in",
     body: "Starter has no monthly fee. Team renews monthly. Cancel anytime from settings.",
   },
@@ -139,108 +141,75 @@ const BILLING_STEPS = [
 
 export default function PricingPage() {
   return (
-    <div className="mk-canvas">
-      <Nav />
+    <div className="u-mkt">
+      <UnifiedNav current="/pricing" />
 
-      <div className="mk-hero" style={{ textAlign: "center" }}>
-        <h1 style={{ maxWidth: "none" }}>Pay per simulation.</h1>
-        <p className="mk-sub" style={{ maxWidth: 560, margin: "0 auto 32px" }}>
-          Free for engineers. Teams pay only when candidates finish.
-        </p>
-      </div>
+      <header className="u-hero">
+        <div className="u-wrap">
+          <div className="u-hero-grid">
+            <h1>Pay per signal.</h1>
+            <div className="u-hero-sub">
+              <p>Free for engineers. Hiring teams pay per completed simulation.</p>
+              <div className="u-hero-ctas">
+                <Link href="/get-started" className="u-btn u-btn-dark">Get started</Link>
+                <Link href="/contact" className="u-btn u-btn-light">Talk to us</Link>
+              </div>
+            </div>
+          </div>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 96px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
-          {PLANS.map((plan) => (
-            <div
-              key={plan.name}
-              style={{
-                background: plan.dark ? "var(--mk-text)" : "var(--mk-surface)",
-                color: plan.dark ? "#fff" : "var(--mk-text)",
-                border: plan.dark ? "none" : "1px solid var(--mk-border)",
-                borderRadius: 12,
-                padding: 28,
-                display: "flex",
-                flexDirection: "column",
-                position: "relative",
-              }}
-            >
-              {plan.badge && (
-                <span style={{
-                  position: "absolute", top: -12, left: 28,
-                  fontSize: 12, fontWeight: 600,
-                  background: "var(--mk-teal)", color: "#fff",
-                  padding: "4px 12px", borderRadius: 999,
-                }}>
-                  {plan.badge}
-                </span>
-              )}
-              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>{plan.name}</div>
-              <div style={{ marginBottom: 8 }}>
-                <span style={{ fontSize: 36, fontWeight: 600, letterSpacing: "-0.02em" }}>{plan.price}</span>
-                {plan.per && (
-                  <span style={{ fontSize: 14, color: plan.dark ? "#aaa" : "var(--mk-text-secondary)", marginLeft: 4 }}>
-                    {plan.per}
+          <div className="u-price-grid">
+            {PLANS.map((plan) => (
+              <div key={plan.name} className={"u-price-card" + (plan.featured ? " featured" : "")} style={{ position: "relative" }}>
+                {plan.badge && (
+                  <span className="u-chip teal" style={{ position: "absolute", top: -14, left: 32 }}>
+                    {plan.badge}
                   </span>
                 )}
+                <h3>{plan.name}</h3>
+                <div className="u-price">{plan.price}{plan.per ? <span className="u-per"> {plan.per}</span> : null}</div>
+                <div className="u-per">{plan.unit}</div>
+                <ul>
+                  {plan.features.map((f) => (
+                    <li key={f}>{f}</li>
+                  ))}
+                </ul>
+                <Link
+                  href={plan.href}
+                  className={"u-btn " + (plan.featured ? "u-btn-accent" : "u-btn-dark")}
+                  style={{ width: "100%" }}
+                >
+                  {plan.cta}
+                </Link>
               </div>
-              <div style={{ fontSize: 14, color: plan.dark ? "#aaa" : "var(--mk-text-secondary)", marginBottom: 20, lineHeight: 1.5 }}>
-                {plan.unit}
-              </div>
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", flex: 1 }}>
-                {plan.features.map((f) => (
-                  <li key={f} style={{
-                    fontSize: 14, padding: "8px 0",
-                    borderTop: `1px solid ${plan.dark ? "#333" : "var(--mk-border)"}`,
-                    color: plan.dark ? "#ddd" : "var(--mk-text-secondary)",
-                    display: "flex", gap: 8, alignItems: "center",
-                  }}>
-                    <span style={{ color: plan.dark ? "var(--mk-teal-bright)" : "var(--mk-teal)" }}>✓</span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href={plan.href}
-                className={plan.dark ? "mk-btn-light" : "mk-btn-dark"}
-                style={plan.dark ? { background: "#fff", color: "var(--mk-text)", border: "none", justifyContent: "center" } : { justifyContent: "center" }}
-              >
-                {plan.cta}
-              </Link>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
+      </header>
 
-        {/* Comparison table */}
-        <div style={{ marginTop: 96 }}>
-          <h2 style={{ fontSize: 32, fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 8px" }}>
-            What's included
-          </h2>
-          <p style={{ fontSize: 16, color: "var(--mk-text-secondary)", margin: "0 0 32px", lineHeight: 1.6 }}>
-            Every plan includes unlimited invites. You only pay for completed work.
-          </p>
-          <div style={{ overflowX: "auto", border: "1px solid var(--mk-border)", borderRadius: 12, background: "var(--mk-surface)" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, minWidth: 640 }}>
+      <section className="u-section">
+        <div className="u-wrap">
+          <div className="u-sec-head">
+            <h2>Compare plans.</h2>
+            <div className="u-sec-desc">
+              <p>Every plan includes unlimited invites. You only pay for completed work.</p>
+            </div>
+          </div>
+          <div className="u-table-wrap">
+            <table className="u-table">
               <thead>
                 <tr>
-                  <th style={{ textAlign: "left", padding: "16px 20px", fontWeight: 600, borderBottom: "1px solid var(--mk-border)", width: "28%" }}></th>
+                  <th style={{ width: "28%" }}></th>
                   {["Engineers", "Starter", "Team", "Enterprise"].map((tier) => (
-                    <th key={tier} style={{ textAlign: "left", padding: "16px 20px", fontWeight: 600, borderBottom: "1px solid var(--mk-border)" }}>
-                      {tier}
-                    </th>
+                    <th key={tier}>{tier}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {COMPARISON_ROWS.map((row, i) => (
-                  <tr key={row.label} style={{ background: i % 2 === 1 ? "var(--mk-surface-warm)" : "transparent" }}>
-                    <td style={{ padding: "14px 20px", fontWeight: 500, borderBottom: i < COMPARISON_ROWS.length - 1 ? "1px solid var(--mk-border)" : "none" }}>
-                      {row.label}
-                    </td>
+                {COMPARISON_ROWS.map((row) => (
+                  <tr key={row.label}>
+                    <th scope="row" style={{ fontWeight: 600 }}>{row.label}</th>
                     {row.values.map((v, j) => (
-                      <td key={j} style={{ padding: "14px 20px", color: "var(--mk-text-secondary)", borderBottom: i < COMPARISON_ROWS.length - 1 ? "1px solid var(--mk-border)" : "none" }}>
-                        {v}
-                      </td>
+                      <td key={j}>{v}</td>
                     ))}
                   </tr>
                 ))}
@@ -248,61 +217,56 @@ export default function PricingPage() {
             </table>
           </div>
         </div>
+      </section>
 
-        {/* How billing works */}
-        <div style={{ marginTop: 96 }}>
-          <h2 style={{ fontSize: 32, fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 32px" }}>
-            How billing works
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+      <section className="u-section tinted">
+        <div className="u-wrap">
+          <div className="u-sec-head">
+            <h2>How billing works.</h2>
+            <div className="u-sec-desc">
+              <p>Simple rules. Nothing hidden.</p>
+            </div>
+          </div>
+          <div className="u-cards-3">
             {BILLING_STEPS.map((step) => (
-              <div key={step.title} style={{
-                background: "var(--mk-surface)", border: "1px solid var(--mk-border)",
-                borderRadius: 12, padding: 24,
-              }}>
-                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{step.title}</div>
-                <div style={{ fontSize: 14, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>{step.body}</div>
+              <div key={step.title} className="u-card">
+                <span className="u-step">{step.step}</span>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
               </div>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* For engineers callout */}
-        <div style={{
-          marginTop: 96, background: "#E6F4F2", border: "1px solid var(--mk-border)",
-          borderRadius: 12, padding: 40, display: "flex",
-          alignItems: "center", justifyContent: "space-between", gap: 32, flexWrap: "wrap",
-        }}>
-          <div style={{ flex: "1 1 320px" }}>
-            <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: "-0.02em", marginBottom: 8 }}>
-              Engineers never pay.
+      <section className="u-section">
+        <div className="u-wrap">
+          <div className="u-card" style={{ display: "flex", alignItems: "center", gap: 32, flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 320px" }}>
+              <h3 style={{ fontSize: 24 }}>Engineers never pay.</h3>
+              <p style={{ fontSize: 15, color: "var(--u-muted)", lineHeight: 1.6 }}>
+                Build your passport from public repos. Share it with links you control. Accept simulation invites. Free forever.
+              </p>
             </div>
-            <div style={{ fontSize: 15, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>
-              Build your passport from public repos. Share it with links you control. Accept simulation invites. Free forever.
-            </div>
-          </div>
-          <Link href="/passport/new" className="mk-btn-dark">
-            Build your passport
-          </Link>
-        </div>
-
-        <div style={{ marginTop: 96 }}>
-          <h2 style={{ fontSize: 32, fontWeight: 500, letterSpacing: "-0.02em", margin: "0 0 32px" }}>
-            Billing questions
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 48px" }}>
-            {FAQS.map((faq) => (
-              <div key={faq.q} style={{ padding: "20px 0", borderTop: "1px solid var(--mk-border)" }}>
-                <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 8 }}>{faq.q}</div>
-                <div style={{ fontSize: 15, color: "var(--mk-text-secondary)", lineHeight: 1.6 }}>{faq.a}</div>
-              </div>
-            ))}
+            <Link href="/passport/new" className="u-btn u-btn-dark">Build your passport</Link>
           </div>
         </div>
-      </div>
+      </section>
 
-      <FooterCTA heading="Start with one role." />
-      <Footer />
+      <section className="u-section tinted">
+        <div className="u-wrap">
+          <div className="u-sec-head">
+            <h2>Billing questions.</h2>
+            <div className="u-sec-desc">
+              <p>The short answers.</p>
+            </div>
+          </div>
+          <Faq items={FAQS} />
+        </div>
+      </section>
+
+      <CtaBand />
+      <UnifiedFooter />
     </div>
   );
 }

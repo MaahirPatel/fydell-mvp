@@ -1,108 +1,141 @@
 import Link from "next/link";
-import "@/styles/marketing-v2.css";
-import { Nav, Footer, FooterCTA, SectionSplit, LearnMore } from "@/components/marketing/MarketingV2";
+import { UnifiedNav, UnifiedFooter, CtaBand, Faq } from "@/components/marketing/unified/UnifiedChrome";
 
 export const metadata = {
   title: "Product",
   description: "How Fydell works: real simulations, verified passports, and evidence reports you can inspect.",
 };
 
-/* Visual: simulation workspace: the candidate's view */
-function SimulationVisual() {
+function LearnMore({ num, label, href }: { num: string; label: string; href: string }) {
   return (
-    <div className="mk-visual" style={{ marginTop: 48 }}>
-      <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--mk-border)", display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ display: "flex", gap: 6 }}>
-          {[0, 1, 2].map((i) => (
-            <div key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: "#E8E8E6" }} />
-          ))}
-        </div>
-        <span style={{ fontSize: 13, color: "var(--mk-text-secondary)", marginLeft: 8, fontFamily: "monospace" }}>
-          harbor-webhooks / retry-safe-jobs
-        </span>
-        <span style={{
-          marginLeft: "auto", fontSize: 12, fontWeight: 500,
-          color: "var(--mk-teal)", background: "#E6F4F2",
-          padding: "4px 12px", borderRadius: 999,
-        }}>
-          42:18 left
-        </span>
+    <a className="u-learn" href={href}>
+      <span className="u-learn-num">{num}</span>
+      {label}
+      <span className="u-learn-arrow">→</span>
+    </a>
+  );
+}
+
+function SectionHead({ id, num, learnLabel, learnHref, title, children }: {
+  id: string; num: string; learnLabel: string; learnHref: string; title: string; children: React.ReactNode;
+}) {
+  return (
+    <div className="u-sec-head">
+      <h2 id={id}>{title}</h2>
+      <div className="u-sec-desc">
+        {children}
+        <LearnMore num={num} label={learnLabel} href={learnHref} />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "220px 1fr 300px", minHeight: 340 }}>
-        <div style={{ borderRight: "1px solid var(--mk-border)", padding: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--mk-text-tertiary)", marginBottom: 12, letterSpacing: "0.05em" }}>
-            SCENARIO
+    </div>
+  );
+}
+
+/* Hero visual: the candidate's simulation workspace, dark 3-pane */
+function HeroWorkspace() {
+  return (
+    <div className="u-pv u-pv-dark">
+      <div className="u-pv-titlebar">
+        <div className="u-pv-dots"><span /><span /><span /></div>
+        <span className="u-pv-title">harbor-webhooks / retry-safe-jobs</span>
+        <span className="u-chip teal" style={{ marginLeft: "auto" }}>42:18 left</span>
+      </div>
+      <div className="u-pv-body">
+        <div className="u-pv-side">
+          <p className="u-pv-pane-label">Scenario</p>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#fff", marginBottom: 4, padding: "0 8px" }}>
+            Webhook retry incident
           </div>
-          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Webhook retry incident</div>
-          <div style={{ fontSize: 12, color: "var(--mk-text-secondary)", lineHeight: 1.6, marginBottom: 16 }}>
+          <div style={{ fontSize: 12.5, color: "#9aa3ad", lineHeight: 1.6, marginBottom: 20, padding: "0 8px" }}>
             Receipts are sent twice when the worker retries. Find the bug. Fix it. Prove it.
           </div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--mk-text-tertiary)", marginBottom: 8, letterSpacing: "0.05em" }}>
-            FILES
-          </div>
-          {["worker.py", "mailer.py", "claims.py"].map((f, i) => (
-            <div key={f} style={{
-              fontSize: 13, padding: "6px 10px", borderRadius: 6,
-              background: i === 0 ? "#E6F4F2" : "transparent",
-              color: i === 0 ? "var(--mk-text)" : "var(--mk-text-secondary)",
-              fontFamily: "monospace", marginBottom: 4,
-            }}>
-              {f}
-            </div>
-          ))}
+          <p className="u-pv-pane-label">Files</p>
+          <div className="u-pv-file active">worker.py</div>
+          <div className="u-pv-file">mailer.py</div>
+          <div className="u-pv-file">claims.py</div>
         </div>
-        <div style={{ padding: 16, fontFamily: "monospace", fontSize: 13, lineHeight: 1.8 }}>
-          <div><span style={{ color: "#aaa" }}>11</span>&nbsp;&nbsp;<span style={{ color: "#6D28D9" }}>def</span> <span style={{ color: "#0B6E67" }}>process</span>(job):</div>
-          <div><span style={{ color: "#aaa" }}>12</span>&nbsp;&nbsp;&nbsp;&nbsp;<span style={{ color: "#6D28D9" }}>try</span>:</div>
-          <div style={{ background: "#FEF3C7", borderRadius: 4, padding: "0 4px" }}>
-            <span style={{ color: "#aaa" }}>13</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_receipt(job.receipt)
-          </div>
-          <div><span style={{ color: "#aaa" }}>14</span>&nbsp;&nbsp;&nbsp;&nbsp;<span style={{ color: "#6D28D9" }}>except</span> TransientError:</div>
-          <div><span style={{ color: "#aaa" }}>15</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style={{ color: "#6D28D9" }}>raise</span></div>
-          <div style={{ marginTop: 16, fontSize: 12, color: "var(--mk-text-secondary)", fontFamily: "var(--font-sans)" }}>
-            <span style={{ background: "#FEF3C7", padding: "2px 8px", borderRadius: 4, fontWeight: 500 }}>
+        <div className="u-pv-code">
+          <div className="ln"><span className="ln-no">11</span><span><span className="tok-kw">def</span> <span className="tok-fn">process</span><span className="tok-pl">(job):</span></span></div>
+          <div className="ln"><span className="ln-no">12</span><span><span className="tok-pl">    </span><span className="tok-kw">try</span><span className="tok-pl">:</span></span></div>
+          <div className="ln hl"><span className="ln-no">13</span><span><span className="tok-pl">        send_receipt(job.receipt)</span></span></div>
+          <div className="ln"><span className="ln-no">14</span><span><span className="tok-pl">    </span><span className="tok-kw">except</span><span className="tok-pl"> TransientError:</span></span></div>
+          <div className="ln"><span className="ln-no">15</span><span><span className="tok-pl">        </span><span className="tok-kw">raise</span></span></div>
+          <div style={{ marginTop: 16, fontFamily: "Arial, sans-serif", fontSize: 12, color: "#9aa3ad" }}>
+            <span style={{ background: "rgba(247,140,108,0.16)", color: "#f78c6c", padding: "4px 10px", borderRadius: 6, fontWeight: 600 }}>
               Line 13 runs before the retry guard.
             </span>
           </div>
         </div>
-        <div style={{ borderLeft: "1px solid var(--mk-border)", padding: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Conversation</div>
-          {[
-            ["Interviewer", "Walk me through what happens on retry.", "#EDE9FE", "var(--mk-violet)"],
-            ["You", "send_receipt fires, then the exception retries the whole block.", "#E6F4F2", "var(--mk-teal)"],
-          ].map(([who, text, bg, color]) => (
-            <div key={who as string} style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color, marginBottom: 4 }}>{who}</div>
-              <div style={{ fontSize: 13, background: bg, padding: "8px 12px", borderRadius: 8, lineHeight: 1.5 }}>
-                {text}
-              </div>
+        <div className="u-pv-side right">
+          <p className="u-pv-pane-label">Conversation</p>
+          <div style={{ marginBottom: 14, padding: "0 8px" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#c792ea", marginBottom: 4 }}>Interviewer</div>
+            <div style={{ fontSize: 12.5, lineHeight: 1.55, color: "#d7dce2" }}>
+              Walk me through what happens on retry.
             </div>
-          ))}
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, marginTop: 16 }}>Tests</div>
-          {[
-            ["test_no_double_send_on_retry", "0.34s", true],
-            ["test_receipt_idempotent", "0.18s", true],
-          ].map(([name, time, pass]) => (
-            <div key={name as string} style={{
-              display: "flex", alignItems: "center", gap: 8, fontSize: 12,
-              fontFamily: "monospace", padding: "8px 10px",
-              background: "var(--mk-surface-warm)", borderRadius: 6, marginBottom: 6,
-            }}>
-              <span style={{ color: pass ? "var(--mk-green)" : "var(--mk-red)" }}>{pass ? "✓" : "✗"}</span>
-              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
-              <span style={{ color: "var(--mk-text-tertiary)" }}>{time}</span>
+          </div>
+          <div style={{ marginBottom: 20, padding: "0 8px" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#14b8a6", marginBottom: 4 }}>You</div>
+            <div style={{ fontSize: 12.5, lineHeight: 1.55, color: "#d7dce2" }}>
+              send_receipt fires, then the exception retries the whole block.
             </div>
-          ))}
+          </div>
+          <p className="u-pv-pane-label">Tests</p>
+          <div className="u-pv-test"><span className="pass">✓</span><span>test_no_double_send_on_retry</span><span className="dur">0.34s</span></div>
+          <div className="u-pv-test"><span className="pass">✓</span><span>test_receipt_idempotent</span><span className="dur">0.18s</span></div>
         </div>
       </div>
     </div>
   );
 }
 
-/* Visual: passport: the engineer's verified record */
-function PassportVisual() {
+/* Section 1 visual: the client view. Editor, test output, submit. */
+function ClientVisual() {
   return (
-    <div className="mk-visual" style={{ marginTop: 48 }}>
+    <div className="u-pv u-pv-light">
+      <div className="u-pv-titlebar" style={{ borderBottom: "1px solid var(--u-line-soft)" }}>
+        <div className="u-pv-dots" style={{ filter: "invert(0.85)" }}><span /><span /><span /></div>
+        <span className="u-pv-title" style={{ color: "var(--u-muted)" }}>Fydell Simulation Client</span>
+        <span className="u-chip amber" style={{ marginLeft: "auto" }}>42:18 left</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px" }}>
+        <div style={{ padding: 20, borderRight: "1px solid var(--u-line-soft)" }}>
+          <p className="u-pv-pane-label" style={{ color: "var(--u-faint)" }}>worker.py</p>
+          <div className="u-pv-code" style={{ padding: 0, color: "var(--u-ink)" }}>
+            <div className="ln"><span className="ln-no" style={{ color: "#c4beb0" }}>11</span><span><span className="tok-kw" style={{ color: "#7c3aed" }}>def</span> <span className="tok-fn" style={{ color: "#0e7c66" }}>process</span>(job):</span></div>
+            <div className="ln"><span className="ln-no" style={{ color: "#c4beb0" }}>12</span><span>&nbsp;&nbsp;&nbsp;&nbsp;receipt = job.receipt</span></div>
+            <div className="ln"><span className="ln-no" style={{ color: "#c4beb0" }}>13</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span className="tok-kw" style={{ color: "#7c3aed" }}>if</span> <span className="tok-fn" style={{ color: "#0e7c66" }}>already_sent</span>(receipt.id):</span></div>
+            <div className="ln"><span className="ln-no" style={{ color: "#c4beb0" }}>14</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="tok-kw" style={{ color: "#7c3aed" }}>return</span></span></div>
+            <div className="ln" style={{ background: "var(--u-accent-tint)", borderRadius: 4, margin: "0 -12px", padding: "0 12px" }}><span className="ln-no" style={{ color: "#c4beb0" }}>15</span><span>&nbsp;&nbsp;&nbsp;&nbsp;send_receipt(receipt)</span></div>
+            <div className="ln"><span className="ln-no" style={{ color: "#c4beb0" }}>16</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span className="tok-kw" style={{ color: "#7c3aed" }}>except</span> TransientError:</span></div>
+            <div className="ln"><span className="ln-no" style={{ color: "#c4beb0" }}>17</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="tok-kw" style={{ color: "#7c3aed" }}>raise</span></span></div>
+          </div>
+        </div>
+        <div style={{ padding: 20 }}>
+          <p className="u-pv-pane-label" style={{ color: "var(--u-faint)" }}>Test output</p>
+          <div style={{ fontFamily: "var(--u-mono)", fontSize: 12, lineHeight: 1.9, background: "var(--u-bg)", borderRadius: 8, padding: "12px 14px", marginBottom: 16 }}>
+            <div><span style={{ color: "#15803D", fontWeight: 700 }}>PASS</span> test_no_double_send <span style={{ color: "var(--u-faint)" }}>0.34s</span></div>
+            <div><span style={{ color: "#15803D", fontWeight: 700 }}>PASS</span> test_receipt_idempotent <span style={{ color: "var(--u-faint)" }}>0.18s</span></div>
+            <div><span style={{ color: "#DC2626", fontWeight: 700 }}>FAIL</span> test_timeout_during_send <span style={{ color: "var(--u-faint)" }}>0.41s</span></div>
+            <div style={{ color: "var(--u-faint)", marginTop: 8 }}>11 passed, 1 failed</div>
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Run tests</div>
+          <div style={{ fontSize: 13, color: "var(--u-muted)", lineHeight: 1.6, marginBottom: 20 }}>
+            Tests run inside the client. Every run is recorded with its output.
+          </div>
+          <a href="/get-started" className="u-btn u-btn-dark" style={{ width: "100%" }}>Submit simulation</a>
+          <div style={{ fontSize: 12, color: "var(--u-faint)", marginTop: 10, textAlign: "center" }}>
+            One click. The recording, diff, and results go with it.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Section 2 visual: passport profile + share toggle rows */
+function PassportSharingVisual() {
+  return (
+    <div className="u-pv u-pv-light">
       <div style={{ padding: 28 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
           <div style={{
@@ -115,287 +148,111 @@ function PassportVisual() {
           </div>
           <div>
             <div style={{ fontSize: 18, fontWeight: 600 }}>Sarah Kim</div>
-            <div style={{ fontSize: 14, color: "var(--mk-text-secondary)" }}>Backend Engineer</div>
+            <div style={{ fontSize: 14, color: "var(--u-muted)" }}>Backend Engineer</div>
           </div>
-          <span style={{
-            marginLeft: "auto", fontSize: 12, fontWeight: 500,
-            color: "var(--mk-teal)", background: "#E6F4F2",
-            padding: "6px 14px", borderRadius: 999,
-          }}>
-            6 simulations verified
-          </span>
+          <span className="u-chip teal" style={{ marginLeft: "auto" }}>6 simulations verified</span>
         </div>
-        <div style={{ fontSize: 12, color: "var(--mk-text-tertiary)", marginBottom: 20, fontFamily: "monospace" }}>
+        <div style={{ fontSize: 12, color: "var(--u-faint)", marginBottom: 20, fontFamily: "var(--u-mono)" }}>
           fydell.com/p/sarah-kim
         </div>
         {[
-          ["Webhook retry incident", "harbor-webhooks · 12 tests passed · 42 min", "#0B6E67"],
-          ["API rate limiting", "gateway-api · 8 tests passed · 38 min", "#2B5CE6"],
-          ["Database migration", "user-store · 15 tests passed · 51 min", "#6D28D9"],
-        ].map(([title, meta, color]) => (
-          <div key={title} style={{
-            display: "flex", alignItems: "center", gap: 12,
-            padding: "14px 16px", border: "1px solid var(--mk-border)",
-            borderRadius: 8, marginBottom: 8, background: "var(--mk-surface)",
-          }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 500 }}>{title}</div>
-              <div style={{ fontSize: 12, color: "var(--mk-text-secondary)", fontFamily: "monospace" }}>{meta}</div>
-            </div>
-            <span style={{ fontSize: 12, color: "var(--mk-blue)", fontWeight: 500 }}>View evidence →</span>
+          ["Webhook retry incident", "harbor-webhooks · 12 tests passed · 42 min"],
+          ["API rate limiting", "gateway-api · 8 tests passed · 38 min"],
+          ["Database migration", "user-store · 15 tests passed · 51 min"],
+        ].map(([title, meta]) => (
+          <div key={title} className="u-ev-item">
+            <div className="t">{title}</div>
+            <div className="m">{meta}</div>
           </div>
         ))}
-        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-          <span style={{ fontSize: 12, fontWeight: 500, padding: "6px 14px", borderRadius: 999, background: "var(--mk-surface-warm)", color: "var(--mk-text-secondary)" }}>
-            Share link
-          </span>
-          <span style={{ fontSize: 12, fontWeight: 500, padding: "6px 14px", borderRadius: 999, background: "var(--mk-surface-warm)", color: "var(--mk-text-secondary)" }}>
-            Export JSON
-          </span>
-          <span style={{ fontSize: 12, fontWeight: 500, padding: "6px 14px", borderRadius: 999, background: "#E6F4F2", color: "var(--mk-teal)" }}>
-            Owned by Sarah
-          </span>
+        <div style={{ fontSize: 13, color: "var(--u-muted)", margin: "20px 0 4px" }}>
+          Each link is scoped to one employer. Preview it before it goes out. Revoking cuts access instantly.
         </div>
-      </div>
-    </div>
-  );
-}
-
-/* Visual: evidence report: what the hiring team sees */
-function EvidenceVisual() {
-  return (
-    <div className="mk-visual" style={{ marginTop: 48 }}>
-      <div style={{ padding: 28 }}>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
-          <div style={{ fontSize: 16, fontWeight: 600 }}>Evidence report</div>
-          <span style={{
-            marginLeft: "auto", fontSize: 12,
-            color: "var(--mk-text-secondary)", fontFamily: "monospace",
-          }}>
-            harbor-webhooks · completed 2h ago
-          </span>
-        </div>
-        {[
-          ["Fixed the double-send bug", "Moved send_receipt after the idempotency check. 12 tests pass.", "src/worker.py:13-15", "#0B6E67", "Observed"],
-          ["Explained the retry flow", "Described exactly when receipts fire during retries.", "conversation · 04:12", "#6D28D9", "Generated"],
-          ["Handled the edge case", "Covered the timeout-during-send path in tests.", "src/worker.py:28-31", "#0B6E67", "Observed"],
-        ].map(([title, desc, cite, color, tag]) => (
-          <div key={title} style={{
-            border: "1px solid var(--mk-border)", borderRadius: 8,
-            padding: "16px", marginBottom: 12,
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 999, background: color === "#0B6E67" ? "#E6F4F2" : "#EDE9FE", color }}>
-                {tag}
-              </span>
-              <span style={{ fontSize: 14, fontWeight: 500 }}>{title}</span>
-            </div>
-            <div style={{ fontSize: 14, color: "var(--mk-text-secondary)", marginBottom: 8 }}>{desc}</div>
-            <div style={{ fontSize: 12, fontFamily: "monospace", color: "var(--mk-blue)" }}>
-              ⌗ {cite}
-            </div>
-          </div>
-        ))}
-        <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", marginTop: 8 }}>
-          Every claim links to the file, line, or recording behind it.
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* Visual: desktop simulation client: editor, test output, timer, submit */
-function ClientVisual() {
-  return (
-    <div className="mk-visual" style={{ marginTop: 48 }}>
-      <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--mk-border)", display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ display: "flex", gap: 6 }}>
-          {[0, 1, 2].map((i) => (
-            <div key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: "#E8E8E6" }} />
-          ))}
-        </div>
-        <span style={{ fontSize: 13, color: "var(--mk-text-secondary)", marginLeft: 8 }}>
-          Fydell Simulation Client
-        </span>
-        <span style={{
-          marginLeft: "auto", fontSize: 12, fontWeight: 500,
-          color: "var(--mk-amber)", background: "#FEF3C7",
-          padding: "4px 12px", borderRadius: 999, fontFamily: "monospace",
-        }}>
-          42:18 left
-        </span>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px" }}>
-        <div style={{ padding: 20, fontFamily: "monospace", fontSize: 13, lineHeight: 1.9, borderRight: "1px solid var(--mk-border)" }}>
-          <div style={{ fontSize: 11, color: "var(--mk-text-tertiary)", marginBottom: 12, fontFamily: "var(--font-sans)", fontWeight: 600, letterSpacing: "0.05em" }}>
-            worker.py
-          </div>
-          <div><span style={{ color: "#aaa" }}>11</span>&nbsp;&nbsp;<span style={{ color: "#6D28D9" }}>def</span> <span style={{ color: "#0B6E67" }}>process</span>(job):</div>
-          <div><span style={{ color: "#aaa" }}>12</span>&nbsp;&nbsp;&nbsp;&nbsp;receipt = job.receipt</div>
-          <div><span style={{ color: "#aaa" }}>13</span>&nbsp;&nbsp;&nbsp;&nbsp;<span style={{ color: "#6D28D9" }}>if</span> <span style={{ color: "#0B6E67" }}>already_sent</span>(receipt.id):</div>
-          <div><span style={{ color: "#aaa" }}>14</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style={{ color: "#6D28D9" }}>return</span></div>
-          <div style={{ background: "#E6F4F2", borderRadius: 4, padding: "0 4px" }}>
-            <span style={{ color: "#aaa" }}>15</span>&nbsp;&nbsp;&nbsp;&nbsp;send_receipt(receipt)
-          </div>
-          <div><span style={{ color: "#aaa" }}>16</span>&nbsp;&nbsp;&nbsp;&nbsp;<span style={{ color: "#6D28D9" }}>except</span> TransientError:</div>
-          <div><span style={{ color: "#aaa" }}>17</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style={{ color: "#6D28D9" }}>raise</span></div>
-        </div>
-        <div style={{ padding: 20 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Test output</div>
-          <div style={{ fontFamily: "monospace", fontSize: 12, lineHeight: 1.9, background: "var(--mk-surface-warm)", borderRadius: 8, padding: "12px 14px", marginBottom: 16 }}>
-            <div><span style={{ color: "var(--mk-green)" }}>PASS</span> test_no_double_send <span style={{ color: "var(--mk-text-tertiary)" }}>0.34s</span></div>
-            <div><span style={{ color: "var(--mk-green)" }}>PASS</span> test_receipt_idempotent <span style={{ color: "var(--mk-text-tertiary)" }}>0.18s</span></div>
-            <div><span style={{ color: "var(--mk-red)" }}>FAIL</span> test_timeout_during_send <span style={{ color: "var(--mk-text-tertiary)" }}>0.41s</span></div>
-            <div style={{ color: "var(--mk-text-tertiary)", marginTop: 8 }}>11 passed, 1 failed</div>
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Run tests</div>
-          <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", lineHeight: 1.6, marginBottom: 20 }}>
-            Tests run inside the client. Every run is recorded with its output.
-          </div>
-          <button type="button" className="mk-btn-dark" style={{ width: "100%", justifyContent: "center" }}>
-            Submit simulation
-          </button>
-          <div style={{ fontSize: 12, color: "var(--mk-text-tertiary)", marginTop: 10, textAlign: "center" }}>
-            One click. The recording, diff, and results go with it.
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* Visual: passport share controls: scoped links, preview, revoke */
-function ShareVisual() {
-  return (
-    <div className="mk-visual" style={{ marginTop: 48 }}>
-      <div style={{ padding: 28 }}>
-        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Share your passport</div>
-        <div style={{ fontSize: 14, color: "var(--mk-text-secondary)", marginBottom: 20 }}>
-          Each link is scoped to one employer. Preview it before it goes out.
-        </div>
-        <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
-          <div style={{ flex: 1, border: "1px solid var(--mk-border)", borderRadius: 8, padding: "12px 16px", fontFamily: "monospace", fontSize: 13, color: "var(--mk-text-secondary)", background: "var(--mk-surface-warm)" }}>
-            fydell.com/p/sarah-kim
-          </div>
-          <span style={{ fontSize: 14, fontWeight: 500, padding: "12px 20px", borderRadius: 999, background: "var(--mk-text)", color: "#fff" }}>
-            Copy link
-          </span>
-        </div>
-        {[
-          ["Acme Corp", "Shared 2 days ago · 14 views", true],
-          ["Northwind", "Shared 1 week ago · 6 views", true],
-          ["Globex", "Revoked yesterday", false],
-        ].map(([employer, meta, active]: [string, string, boolean]) => (
-          <div key={employer} style={{
-            display: "flex", alignItems: "center", gap: 12,
-            padding: "14px 16px", border: "1px solid var(--mk-border)",
-            borderRadius: 8, marginBottom: 8,
-            opacity: active ? 1 : 0.6,
-          }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: active ? "var(--mk-green)" : "var(--mk-text-tertiary)", flexShrink: 0 }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 500 }}>{employer}</div>
-              <div style={{ fontSize: 12, color: "var(--mk-text-secondary)" }}>{meta}</div>
-            </div>
-            <span style={{
-              fontSize: 13, fontWeight: 500,
-              color: active ? "var(--mk-red)" : "var(--mk-text-tertiary)",
-            }}>
-              {active ? "Revoke" : "Revoked"}
-            </span>
-          </div>
-        ))}
-        <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", marginTop: 12 }}>
-          Revoking cuts access instantly. The employer keeps nothing.
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* Visual: employer workspace: candidate queue plus review pane */
-function WorkspaceVisual() {
-  return (
-    <div className="mk-visual" style={{ marginTop: 48 }}>
-      <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--mk-border)", display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ display: "flex", gap: 6 }}>
-          {[0, 1, 2].map((i) => (
-            <div key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: "#E8E8E6" }} />
-          ))}
-        </div>
-        <span style={{ fontSize: 13, color: "var(--mk-text-secondary)", marginLeft: 8 }}>
-          Acme · Backend Engineer
-        </span>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", minHeight: 360 }}>
-        <div style={{ borderRight: "1px solid var(--mk-border)", padding: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--mk-text-tertiary)", marginBottom: 12, letterSpacing: "0.05em" }}>
-            CANDIDATES
-          </div>
+        <div style={{ borderTop: "1px solid var(--u-line-soft)" }}>
           {[
-            ["Sarah Kim", "Evidence ready", "#0B6E67", true],
-            ["Dev Patel", "Evidence ready", "#0B6E67", false],
-            ["Maya Chen", "In simulation", "#B45309", false],
-            ["Tom Wright", "Invited", "#888888", false],
-          ].map(([name, status, color, selected]: [string, string, string, boolean]) => (
-            <div key={name as string} style={{
-              padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-              background: selected ? "#E6F4F2" : "transparent",
-            }}>
-              <div style={{ fontSize: 14, fontWeight: selected ? 600 : 400 }}>{name}</div>
-              <div style={{ fontSize: 12, color, marginTop: 2 }}>{status}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ padding: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: "50%",
-              background: "linear-gradient(135deg, #0B6E67, #2B5CE6)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#fff", fontSize: 14, fontWeight: 600, marginRight: 12,
-            }}>
-              SK
-            </div>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 600 }}>Sarah Kim</div>
-              <div style={{ fontSize: 12, color: "var(--mk-text-secondary)", fontFamily: "monospace" }}>
-                Webhook retry incident · completed 2h ago
+            ["Acme Corp", "Shared 2 days ago · 14 views", true],
+            ["Northwind", "Shared 1 week ago · 6 views", true],
+            ["Globex", "Revoked yesterday", false],
+          ].map(([employer, meta, active]: [string, string, boolean]) => (
+            <div key={employer} className="u-toggle-row" style={{ opacity: active ? 1 : 0.55 }}>
+              <div>
+                <div style={{ fontWeight: 600 }}>{employer}</div>
+                <div style={{ fontSize: 13, color: "var(--u-muted)" }}>{meta}</div>
               </div>
-            </div>
-          </div>
-          {[
-            ["Fixed the double-send bug", "src/worker.py:13-15", "#0B6E67"],
-            ["Explained the retry flow", "conversation · 04:12", "#6D28D9"],
-            ["Covered the timeout edge case", "src/worker.py:28-31", "#0B6E67"],
-          ].map(([title, cite, color]) => (
-            <div key={title} style={{
-              display: "flex", alignItems: "center", gap: 10,
-              padding: "12px 14px", border: "1px solid var(--mk-border)",
-              borderRadius: 8, marginBottom: 8,
-            }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
-              <div style={{ flex: 1, fontSize: 14 }}>{title}</div>
-              <div style={{ fontSize: 12, fontFamily: "monospace", color: "var(--mk-blue)" }}>{cite}</div>
+              <div className={"u-toggle" + (active ? "" : " off")} aria-hidden="true" />
             </div>
           ))}
-          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-            <span style={{ fontSize: 13, fontWeight: 500, padding: "10px 20px", borderRadius: 999, background: "var(--mk-text)", color: "#fff" }}>
-              Move to interview
-            </span>
-            <span style={{ fontSize: 13, fontWeight: 500, padding: "10px 20px", borderRadius: 999, background: "var(--mk-surface-warm)", border: "1px solid var(--mk-border)" }}>
-              Add note
-            </span>
-          </div>
         </div>
       </div>
     </div>
   );
 }
 
-/* Visual: recording timeline: what a session captures */
-function RecordingsVisual() {
+/* Section 3 visual: employer review. 3-col findings / code / decision. */
+function EmployerReviewVisual() {
+  return (
+    <div className="u-pv u-pv-light">
+      <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--u-line-soft)", display: "flex", alignItems: "center", gap: 8 }}>
+        <div className="u-pv-dots" style={{ filter: "invert(0.85)" }}><span /><span /><span /></div>
+        <span style={{ fontSize: 13, color: "var(--u-muted)", marginLeft: 8 }}>Acme · Backend Engineer</span>
+        <span className="u-chip" style={{ marginLeft: "auto" }}>Sarah Kim</span>
+      </div>
+      <div className="u-ev-row">
+        <div className="u-ev-col">
+          <h4>Findings</h4>
+          <div className="u-ev-item">
+            <div className="t"><span className="u-chip teal" style={{ marginRight: 8 }}>Observed</span>Fixed the double-send bug</div>
+            <div className="m">Moved send_receipt after the idempotency check. 12 tests pass.</div>
+          </div>
+          <div className="u-ev-item">
+            <div className="t"><span className="u-chip amber" style={{ marginRight: 8 }}>Generated</span>Explained the retry flow</div>
+            <div className="m">Described exactly when receipts fire during retries.</div>
+          </div>
+          <div className="u-ev-item">
+            <div className="t"><span className="u-chip teal" style={{ marginRight: 8 }}>Observed</span>Handled the edge case</div>
+            <div className="m">Covered the timeout-during-send path in tests.</div>
+          </div>
+        </div>
+        <div className="u-ev-col">
+          <h4>Code</h4>
+          <div className="u-ev-item">
+            <div className="t" style={{ fontFamily: "var(--u-mono)", fontSize: 13 }}>src/worker.py:13-15</div>
+            <div className="m">receipt = job.receipt<br />if already_sent(receipt.id): return<br />send_receipt(receipt)</div>
+          </div>
+          <div className="u-ev-item">
+            <div className="t" style={{ fontFamily: "var(--u-mono)", fontSize: 13 }}>src/worker.py:28-31</div>
+            <div className="m">Timeout-during-send path covered by test_timeout_during_send.</div>
+          </div>
+          <div className="u-ev-item">
+            <div className="t" style={{ fontFamily: "var(--u-mono)", fontSize: 13 }}>conversation · 04:12</div>
+            <div className="m">Spoke through the retry flow before touching code.</div>
+          </div>
+        </div>
+        <div className="u-ev-col">
+          <h4>Decision</h4>
+          <div className="u-ev-item">
+            <div className="t">Queue</div>
+            <div className="m">Sarah Kim · Evidence ready · 2h ago</div>
+          </div>
+          <div className="u-ev-item">
+            <div className="t">Notes</div>
+            <div className="m">Clean fix. Asked one clarifying question first.</div>
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+            <a href="/get-started" className="u-btn u-btn-dark u-btn-sm">Move to interview</a>
+            <a href="/get-started" className="u-btn u-btn-light u-btn-sm">Add note</a>
+          </div>
+        </div>
+      </div>
+      <div style={{ padding: "16px 24px", borderTop: "1px solid var(--u-line-soft)", fontSize: 13, color: "var(--u-muted)" }}>
+        Every claim links to the file, line, or recording behind it. No scores. Just evidence.
+      </div>
+    </div>
+  );
+}
+
+/* Section 4 visual: session timeline + recording scope */
+function RecordingVisual() {
   const events = [
     { at: "04:12", left: "8%", color: "#6D28D9", label: "Conversation" },
     { at: "11:47", left: "27%", color: "#0B6E67", label: "Test run · 9 passed" },
@@ -404,37 +261,34 @@ function RecordingsVisual() {
     { at: "33:55", left: "79%", color: "#0B6E67", label: "Test run · 12 passed" },
   ];
   return (
-    <div className="mk-visual" style={{ marginTop: 48 }}>
+    <div className="u-pv u-pv-light">
       <div style={{ padding: 28 }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 28 }}>
           <div style={{ fontSize: 16, fontWeight: 600 }}>Session timeline</div>
-          <span style={{ marginLeft: "auto", fontSize: 12, color: "var(--mk-text-secondary)", fontFamily: "monospace" }}>
+          <span style={{ marginLeft: "auto", fontSize: 12, color: "var(--u-muted)", fontFamily: "var(--u-mono)" }}>
             0:00 → 42:18
           </span>
         </div>
-        <div style={{ position: "relative", height: 6, background: "var(--mk-surface-warm)", borderRadius: 999, marginBottom: 40, marginTop: 48 }}>
+        <div style={{ position: "relative", height: 6, background: "var(--u-bg-2)", borderRadius: 999, marginBottom: 56, marginTop: 56 }}>
           {events.map((e) => (
             <div key={e.at} style={{ position: "absolute", left: e.left, top: "50%", transform: "translate(-50%, -50%)" }}>
-              <div style={{ width: 14, height: 14, borderRadius: "50%", background: e.color, border: "3px solid #fff", boxShadow: "0 0 0 1px var(--mk-border)" }} />
-              <div style={{ position: "absolute", top: -52, left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", textAlign: "center" }}>
+              <div style={{ width: 14, height: 14, borderRadius: "50%", background: e.color, border: "3px solid #fff", boxShadow: "0 0 0 1px var(--u-line)" }} />
+              <div style={{ position: "absolute", top: -56, left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", textAlign: "center" }}>
                 <div style={{ fontSize: 12, fontWeight: 500 }}>{e.label}</div>
-                <div style={{ fontSize: 11, color: "var(--mk-text-tertiary)", fontFamily: "monospace" }}>{e.at}</div>
+                <div style={{ fontSize: 11, color: "var(--u-faint)", fontFamily: "var(--u-mono)" }}>{e.at}</div>
               </div>
             </div>
           ))}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 24 }}>
+        <div className="u-cards-3">
           {[
-            ["Test runs", "Every run, pass or fail, with full output.", "#0B6E67"],
-            ["File diffs", "The exact changes at submit time.", "#2B5CE6"],
-            ["Timing", "When work started, paused, and shipped.", "#6D28D9"],
-          ].map(([title, desc, color]) => (
-            <div key={title} style={{ border: "1px solid var(--mk-border)", borderRadius: 8, padding: "16px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
-                <div style={{ fontSize: 14, fontWeight: 600 }}>{title}</div>
-              </div>
-              <div style={{ fontSize: 13, color: "var(--mk-text-secondary)", lineHeight: 1.5 }}>{desc}</div>
+            ["Test runs", "Every run, pass or fail, with full output."],
+            ["File diffs", "The exact changes at submit time."],
+            ["Timing", "When work started, paused, and shipped."],
+          ].map(([title, desc]) => (
+            <div key={title} className="u-card">
+              <h3>{title}</h3>
+              <p>{desc}</p>
             </div>
           ))}
         </div>
@@ -443,126 +297,127 @@ function RecordingsVisual() {
   );
 }
 
-/* Visual: privacy: never recorded plus data controls */
-function PrivacyVisual() {
-  return (
-    <div className="mk-visual" style={{ marginTop: 48 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-        <div style={{ padding: 28, borderRight: "1px solid var(--mk-border)" }}>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Never recorded</div>
-          <div style={{ fontSize: 14, color: "var(--mk-text-secondary)", marginBottom: 20 }}>
-            The client cannot see these. Ever.
-          </div>
-          {["Browsing history", "Other windows and tabs", "Keystrokes"].map((item) => (
-            <div key={item} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--mk-border)" }}>
-              <div style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid var(--mk-border-strong)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "var(--mk-text-tertiary)" }}>
-                ✕
-              </div>
-              <div style={{ fontSize: 14 }}>{item}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ padding: 28 }}>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Your controls</div>
-          <div style={{ fontSize: 14, color: "var(--mk-text-secondary)", marginBottom: 20 }}>
-            Your recordings belong to you.
-          </div>
-          {["Preview before sharing", "Revoke any share link", "Delete your recordings", "Export your data"].map((item) => (
-            <div key={item} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--mk-border)" }}>
-              <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#E6F4F2", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "var(--mk-teal)", fontWeight: 700 }}>
-                ✓
-              </div>
-              <div style={{ fontSize: 14 }}>{item}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+const PRODUCT_FAQS = [
+  {
+    q: "What is a simulation?",
+    a: "A timed engineering task in a working repo. Candidates debug a real incident, run tests, and submit a diff. Everything is recorded.",
+  },
+  {
+    q: "Who owns the passport?",
+    a: "The engineer. They control every share link and can revoke access or delete recordings at any time.",
+  },
+  {
+    q: "Do candidates need the desktop client?",
+    a: "No. The browser client runs the same simulations with the same evidence. The desktop client adds offline work.",
+  },
+  {
+    q: "What does an employer actually see?",
+    a: "An evidence report. Each finding cites the file, line, test, or conversation moment behind it. There are no scores.",
+  },
+];
 
 export default function ProductPage() {
   return (
-    <div className="mk-canvas">
-      <Nav />
+    <div className="u-mkt">
+      <UnifiedNav current="/product" />
 
-      <div className="mk-hero">
-        <h1>How Fydell works.</h1>
-        <p className="mk-sub">
-          Candidates do real work. Teams review the evidence.
-        </p>
-        <div className="mk-hero-actions">
-          <Link href="/get-started" className="mk-btn-dark">Get started →</Link>
-          <Link href="/demo" className="mk-btn-light">Explore demo</Link>
+      <header className="u-hero">
+        <div className="u-wrap">
+          <div className="u-hero-grid">
+            <h1>The whole loop.</h1>
+            <div className="u-hero-sub">
+              <p>Simulations, passports, and evidence reports in one workflow.</p>
+              <div className="u-hero-ctas">
+                <Link href="/demo" className="u-btn u-btn-dark">Explore demo</Link>
+                <Link href="/get-started" className="u-btn u-btn-light">Get started</Link>
+              </div>
+            </div>
+          </div>
+          <div className="u-hero-visual">
+            <HeroWorkspace />
+          </div>
         </div>
-      </div>
+      </header>
 
-      <SectionSplit title="Real simulations. Real code.">
-        <p className="mk-desc">
-          Candidates debug production-style incidents in working repos. Timed, tested, recorded.
-        </p>
-        <LearnMore href="/developers" />
-        <SimulationVisual />
-      </SectionSplit>
+      <section className="u-section">
+        <div className="u-wrap">
+          <SectionHead id="client" num="1.0" learnLabel="Developers" learnHref="/developers" title="Simulation client.">
+            <p>A real editor, live tests, and one submit button. The same simulation runs on desktop and in the browser.</p>
+          </SectionHead>
+          <div className="u-visual">
+            <ClientVisual />
+          </div>
+          <ul className="u-feat-list">
+            <li>A real editor</li>
+            <li>Built-in test runner</li>
+            <li>Recording indicator</li>
+            <li>One-click submit</li>
+            <li>Offline first</li>
+            <li>Invitation inbox</li>
+          </ul>
+        </div>
+      </section>
 
-      <SectionSplit title="A passport for the work.">
-        <p className="mk-desc">
-          Every simulation becomes a verified record. Engineers own it. Teams can inspect it.
-        </p>
-        <LearnMore href="/developers" />
-        <PassportVisual />
-      </SectionSplit>
+      <section className="u-section tinted">
+        <div className="u-wrap">
+          <SectionHead id="passport" num="2.0" learnLabel="Build a passport" learnHref="/passport/new" title="Passport sharing.">
+            <p>Every simulation becomes a verified record. Engineers own it. Teams can inspect it. Each link is scoped to one employer.</p>
+          </SectionHead>
+          <div className="u-visual">
+            <PassportSharingVisual />
+          </div>
+          <p className="u-visual-caption">Preview a link before it goes out. Revoke it anytime.</p>
+        </div>
+      </section>
 
-      <SectionSplit title="Reports that open to proof.">
-        <p className="mk-desc">
-          Each finding cites the file, commit, or test behind it. No scores. Just evidence.
-        </p>
-        <LearnMore href="/employers" />
-        <EvidenceVisual />
-      </SectionSplit>
+      <section className="u-section">
+        <div className="u-wrap">
+          <SectionHead id="review" num="3.0" learnLabel="Employers" learnHref="/employers" title="Employer review.">
+            <p>One queue for every candidate. Open any report to see the findings, the code, and the decision in one view.</p>
+          </SectionHead>
+          <div className="u-visual">
+            <EmployerReviewVisual />
+          </div>
+        </div>
+      </section>
 
-      <SectionSplit title="The simulation client.">
-        <p className="mk-desc">
-          A real editor, live tests, and one submit button. On desktop or in the browser.
-        </p>
-        <LearnMore href="/download" />
-        <ClientVisual />
-      </SectionSplit>
+      <section className="u-section tinted">
+        <div className="u-wrap">
+          <SectionHead id="recording" num="4.0" learnLabel="Download" learnHref="/download" title="Recording, scoped.">
+            <p>Test runs, file diffs, and timing. A timeline of the work. Nothing else is ever captured.</p>
+          </SectionHead>
+          <div className="u-visual">
+            <RecordingVisual />
+          </div>
+          <div className="u-cards-2" style={{ marginTop: 24 }}>
+            <div className="u-card">
+              <span className="u-step">Never recorded</span>
+              <h3>The client cannot see these.</h3>
+              <p>Browsing history. Other windows and tabs. Keystrokes. None of it leaves the machine.</p>
+            </div>
+            <div className="u-card">
+              <span className="u-step">Your controls</span>
+              <h3>Your recordings belong to you.</h3>
+              <p>Preview before sharing. Revoke any share link. Delete your recordings. Export your data.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <SectionSplit title="Share on your terms.">
-        <p className="mk-desc">
-          Each link is scoped to one employer. Preview it before it goes out. Revoke it anytime.
-        </p>
-        <LearnMore href="/developers" />
-        <ShareVisual />
-      </SectionSplit>
+      <section className="u-section">
+        <div className="u-wrap">
+          <div className="u-sec-head">
+            <h2>Product questions.</h2>
+            <div className="u-sec-desc">
+              <p>The short answers.</p>
+            </div>
+          </div>
+          <Faq items={PRODUCT_FAQS} />
+        </div>
+      </section>
 
-      <SectionSplit title="The employer workspace.">
-        <p className="mk-desc">
-          One queue for every candidate. Open any report to see the proof behind it.
-        </p>
-        <LearnMore href="/employers" />
-        <WorkspaceVisual />
-      </SectionSplit>
-
-      <SectionSplit title="What gets recorded.">
-        <p className="mk-desc">
-          Test runs, file diffs, and timing. A timeline of the work. Nothing else.
-        </p>
-        <LearnMore href="/developers" />
-        <RecordingsVisual />
-      </SectionSplit>
-
-      <SectionSplit title="What never gets recorded.">
-        <p className="mk-desc">
-          No browsing. No other windows. No keystrokes. Your data stays yours.
-        </p>
-        <LearnMore href="/developers" />
-        <PrivacyVisual />
-      </SectionSplit>
-
-      <FooterCTA heading="See it on real work." />
-      <Footer />
+      <CtaBand />
+      <UnifiedFooter />
     </div>
   );
 }

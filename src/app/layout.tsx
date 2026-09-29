@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import StorageMigration from "@/components/layout/StorageMigration";
 import "./globals.css";
+import "@/styles/marketing-unified.css";
 
 export const metadata: Metadata = {
   title: {
