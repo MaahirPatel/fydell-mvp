@@ -130,10 +130,11 @@ Prereq: Apple Developer Program membership ($99/yr).
   same `…/releases/latest/download/latest.json` URL by `tauri-action`
   (`uploadUpdaterJson` defaults to true). The app fetches it, compares
   `version` against its own, and installs from the per-platform URL inside.
-- `pubkey` is empty until checklist step A is done. The updater plugin is
-  initialized in `src-tauri/src/main.rs` but performs **no automatic check** —
-  the app team decides when/how to trigger update checks (a "Check for
-  updates" control and/or a startup check). If the renderer ever needs to
+- The updater plugin is **not registered** in v0.1.3. v0.1.0–v0.1.2
+  registered it with no `plugins.updater` block, and plugin init failed at
+  launch, so the installed app exited before showing a window. Add
+  `tauri-plugin-updater` back only together with the full config block above,
+  a real `pubkey` (checklist step A) and the signing secrets. If the renderer ever needs to
   trigger checks, add `updater:allow-check` to `capabilities/main.json`
   (deliberately not granted now, per DESK-17's minimal renderer boundary).
 - The JS updater API (`@tauri-apps/plugin-updater`) is not installed yet;
@@ -172,8 +173,9 @@ Not yet verified without a real tag push:
    (`--target aarch64-apple-darwin`), AppImage/deb on `ubuntu-latest`
    (webkit2gtk 4.1 deps installed by the workflow).
 4. `tauri-action` creates the draft release and uploads `latest.json`.
-5. The empty `plugins.updater.pubkey` does not fail the build
-   (config is only deserialized at app runtime; no build-time validation).
+5. Plugin config is only deserialized at app runtime, so a missing or
+   invalid plugin block passes CI and crashes on launch. Launch the built
+   installer on each OS before publishing.
 
 The workflow file itself passes `actionlint` 1.7.7 with zero findings, and
 all action versions/pins were taken from the official `tauri-action` README

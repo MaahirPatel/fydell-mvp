@@ -1,3 +1,6 @@
+// Release builds on Windows must not open a console window beside the app.
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 //! Fydell desktop simulation client.
 //!
 //! Candidates complete hiring simulations locally. The app is a client of the
@@ -42,12 +45,9 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_deep_link::init())
-        // Updater: wired so the release pipeline can ship signed update
-        // artifacts. No automatic check is performed — the app team decides
-        // when/how to trigger checks (see docs/desktop-release.md). The
-        // public key lands in `plugins.updater.pubkey` in tauri.conf.json
-        // once the founder generates the signing keypair.
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        // The updater plugin must not be registered until tauri.conf.json has
+        // a complete `plugins.updater` block (pubkey + endpoints): without it
+        // plugin init fails at launch and the app exits before any window.
         .setup(|app| {
             let app_data = app
                 .path()
