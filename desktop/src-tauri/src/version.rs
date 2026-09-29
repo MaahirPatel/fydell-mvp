@@ -89,12 +89,7 @@ pub enum VersionGate {
     Unknown,
 }
 
-fn platform_base() -> String {
-    std::env::var("FYDELL_PLATFORM_URL")
-        .unwrap_or_else(|_| "http://localhost:3000".to_string())
-        .trim_end_matches('/')
-        .to_string()
-}
+use crate::config::platform_base;
 
 async fn fetch_gate() -> VersionGate {
     let url = format!("{}/api/desktop/version", platform_base());

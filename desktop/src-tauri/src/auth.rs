@@ -73,32 +73,7 @@ fn now_secs() -> i64 {
         .unwrap_or(0)
 }
 
-fn platform_base() -> String {
-    std::env::var("FYDELL_PLATFORM_URL")
-        .unwrap_or_else(|_| "http://localhost:3000".to_string())
-        .trim_end_matches('/')
-        .to_string()
-}
-
-fn supabase_url() -> AppResult<String> {
-    std::env::var("FYDELL_SUPABASE_URL").map_err(|_| {
-        AppError::Auth(
-            "FYDELL_SUPABASE_URL is not configured; the desktop build must be \
-             configured with the platform's public Supabase URL (see ARCHITECTURE.md)"
-                .to_string(),
-        )
-    })
-}
-
-fn supabase_anon_key() -> AppResult<String> {
-    std::env::var("FYDELL_SUPABASE_ANON_KEY").map_err(|_| {
-        AppError::Auth(
-            "FYDELL_SUPABASE_ANON_KEY is not configured; the desktop build must be \
-             configured with the platform's public Supabase anon key (see ARCHITECTURE.md)"
-                .to_string(),
-        )
-    })
-}
+use crate::config::platform_base;
 
 // ---------------------------------------------------------------------------
 // Keychain persistence (best-effort: memory always works, keychain may not
@@ -360,10 +335,11 @@ struct RefreshUser {
 }
 
 async fn refresh_session(session: &StoredSession) -> AppResult<StoredSession> {
-    let url = format!("{}/auth/v1/token?grant_type=refresh_token", supabase_url()?);
+    let supa = crate::config::supabase().await?;
+    let url = format!("{}/auth/v1/token?grant_type=refresh_token", supa.url);
     let res = reqwest::Client::new()
         .post(&url)
-        .header("apikey", supabase_anon_key()?)
+        .header("apikey", supa.anon_key)
         .header("Content-Type", "application/json")
         .json(&serde_json::json!({ "refresh_token": session.refresh_token }))
         .timeout(std::time::Duration::from_secs(30))
@@ -419,7 +395,7 @@ pub(crate) async fn auth_headers() -> AppResult<(String, String)> {
     let session = { auth().lock().unwrap().session.clone() }
         .ok_or_else(|| AppError::Auth("not signed in".to_string()))?;
 
-    let supa = supabase_url()?;
+    let supa = crate::config::supabase().await?.url;
     let project_ref = Url::parse(&supa)
         .ok()
         .and_then(|u| u.host_str().map(|h| h.to_string()))

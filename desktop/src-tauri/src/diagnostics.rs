@@ -319,10 +319,7 @@ pub struct Diagnostics {
 /// bodies, or full URLs.
 #[tauri::command]
 pub fn diagnostics() -> AppResult<Diagnostics> {
-    let platform_host = std::env::var("FYDELL_PLATFORM_URL")
-        .unwrap_or_else(|_| "http://localhost:3000".to_string())
-        .trim_end_matches('/')
-        .to_string();
+    let platform_host = crate::config::platform_base();
     let platform_host = url::Url::parse(&platform_host)
         .ok()
         .and_then(|u| u.host_str().map(|h| h.to_string()))

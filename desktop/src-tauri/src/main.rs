@@ -24,6 +24,7 @@
 
 mod auth;
 mod chat;
+mod config;
 mod diagnostics;
 mod error;
 mod events;
@@ -43,6 +44,15 @@ use tauri_plugin_deep_link::DeepLinkExt;
 
 fn main() {
     tauri::Builder::default()
+        // Must be registered first: on Windows and Linux the auth deep link
+        // launches a second process, and this forwards the URL to the running
+        // window (whose pending sign-in state it must match) and exits.
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_deep_link::init())
         // The updater plugin must not be registered until tauri.conf.json has

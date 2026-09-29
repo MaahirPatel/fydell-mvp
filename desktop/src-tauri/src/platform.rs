@@ -17,7 +17,7 @@
 //! Bearer header is ignored by the web app today; it needs web addition W2
 //! (see desktop/ARCHITECTURE.md) and is sent for forward compatibility.
 //!
-//! Base URL: `FYDELL_PLATFORM_URL` (default http://localhost:3000).
+//! Base URL: `config::platform_base()` (production in release builds).
 
 use crate::auth;
 use crate::error::{AppError, AppResult};
@@ -417,10 +417,7 @@ pub struct Platform {
 
 impl Platform {
     pub fn new() -> Self {
-        let base = std::env::var("FYDELL_PLATFORM_URL")
-            .unwrap_or_else(|_| "http://localhost:3000".to_string())
-            .trim_end_matches('/')
-            .to_string();
+        let base = crate::config::platform_base();
         let http = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(60))
             .user_agent("fydell-desktop/0.1.0")

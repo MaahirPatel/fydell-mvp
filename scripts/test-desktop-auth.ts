@@ -18,6 +18,8 @@ import {
 } from "../src/lib/auth/desktop-codes";
 import { POST as exchangePOST } from "../src/app/api/auth/desktop/exchange/route";
 
+process.env.NEXTAUTH_SECRET ||= "test-only-desktop-auth-secret";
+
 let failures = 0;
 
 function check(label: string, actual: unknown, expected: unknown) {
@@ -138,6 +140,16 @@ function syncTests() {
       threw = true;
     }
     check("incomplete session throws", threw, true);
+  }
+
+  console.log("\ncode store: sealed, tamper-evident");
+  {
+    const code = mintDesktopAuthCode(makeRecord());
+    check("code does not expose the token", code.includes("access-token-value"), false);
+    const flipped = code.slice(0, 20) + (code[20] === "A" ? "B" : "A") + code.slice(21);
+    const tampered = redeemDesktopAuthCode(flipped);
+    check("tampered code fails", tampered.ok, false);
+    check("original still redeems", redeemDesktopAuthCode(code).ok, true);
   }
 
   console.log("\ncode store: uniqueness");

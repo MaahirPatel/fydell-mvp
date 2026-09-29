@@ -24,6 +24,7 @@ url = "2"
 keyring = "3"
 tauri-plugin-opener = "2"
 tauri-plugin-deep-link = "2"
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 
 # rlimit (POSIX setrlimit) is Unix-only; execution.rs already gates its use
 # behind #[cfg(unix)].

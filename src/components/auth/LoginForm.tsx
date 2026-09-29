@@ -71,6 +71,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [handedOff, setHandedOff] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -89,8 +90,12 @@ export default function LoginForm() {
       // An invited candidate returns to their invitation, not a generic
       // dashboard. Operators are always routed by the server.
       const isOperator = data.role === "platform_admin" || data.role === "admin";
-      if (!isOperator && desktopState && isValidDesktopState(desktopState)) {
-        router.push(`/auth/desktop/authorize?state=${encodeURIComponent(desktopState)}`);
+      if (desktopState && isValidDesktopState(desktopState)) {
+        // A full navigation: the authorize route answers with a redirect to the
+        // fydell:// scheme, which client-side routing cannot follow.
+        window.location.assign(`/auth/desktop/authorize?state=${encodeURIComponent(desktopState)}`);
+        setHandedOff(true);
+        setLoading(false);
         return;
       }
       if (returnPath && !isOperator) {
@@ -106,6 +111,30 @@ export default function LoginForm() {
       setError(humanizeLoginError(err instanceof Error ? err.message : "Something went wrong"));
       setLoading(false);
     }
+  }
+
+  if (handedOff && desktopState) {
+    return (
+      <div className="grid gap-4">
+        <FormSuccess>
+          You are signed in. Your browser will ask to open the Fydell app; allow it, then
+          return to the app. You can close this tab.
+        </FormSuccess>
+        <Button
+          type="button"
+          variant="secondary"
+          size="lg"
+          className="w-full"
+          onClick={() =>
+            window.location.assign(
+              `/auth/desktop/authorize?state=${encodeURIComponent(desktopState)}`,
+            )
+          }
+        >
+          Open the Fydell app again
+        </Button>
+      </div>
+    );
   }
 
   return (
