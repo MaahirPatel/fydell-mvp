@@ -7,7 +7,7 @@ import { Menu, X } from "lucide-react";
 import FydellLogo from "@/components/brand/FydellLogo";
 
 const LINKS = [
-  { label: "Product", href: "/how-it-works" },
+  { label: "Product", href: "/product" },
   { label: "Employers", href: "/employers" },
   { label: "Developers", href: "/developers" },
   { label: "Pricing", href: "/pricing" },

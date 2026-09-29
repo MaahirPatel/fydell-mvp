@@ -5,10 +5,11 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Product",
     links: [
-      { label: "How it works", href: "/how-it-works" },
+      { label: "Product", href: "/product" },
       { label: "Employers", href: "/employers" },
       { label: "Developers", href: "/developers" },
       { label: "Pricing", href: "/pricing" },
+      { label: "Download", href: "/download" },
       { label: "Demo", href: "/demo" },
     ],
   },

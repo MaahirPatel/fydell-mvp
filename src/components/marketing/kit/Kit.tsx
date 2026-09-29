@@ -239,6 +239,74 @@ export function Faq({ items }: { items: readonly { q: string; a: string }[] }) {
   );
 }
 
+export type Plan = {
+  name: string;
+  price: string;
+  per?: string;
+  note: string;
+  features: readonly string[];
+  cta: { href: string; label: string };
+  featured?: boolean;
+};
+
+export function Plans({ plans }: { plans: readonly Plan[] }) {
+  return (
+    <div className={s.plans}>
+      {plans.map((plan) => (
+        <div key={plan.name} className={cx(s.plan, plan.featured && s.planFeatured)}>
+          <p className={s.planName}>{plan.name}</p>
+          <p className={s.planPrice}>
+            {plan.price}
+            {plan.per ? <span>{plan.per}</span> : null}
+          </p>
+          <p className={s.planNote}>{plan.note}</p>
+          <Link href={plan.cta.href} className={cx("l-btn l-btn-lg", plan.featured ? "l-btn-solid" : "l-btn-ghost", s.planCta)}>
+            {plan.cta.label}
+          </Link>
+          <ul className={s.planList}>
+            {plan.features.map((f) => (
+              <li key={f}>{f}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function Table({ head, rows }: { head: readonly string[]; rows: readonly (readonly string[])[] }) {
+  return (
+    <div className={s.tableWrap}>
+      <table className={s.table}>
+        <thead>
+          <tr>
+            {head.map((h, i) => (
+              <th key={h || i} scope="col">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row[0]}>
+              {row.map((cell, i) =>
+                i === 0 ? (
+                  <th key={i} scope="row">
+                    {cell}
+                  </th>
+                ) : (
+                  <td key={i}>{cell}</td>
+                ),
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function Prose({ children }: { children: ReactNode }) {
   return <div className={s.prose}>{children}</div>;
 }

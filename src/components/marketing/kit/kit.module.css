@@ -408,6 +408,124 @@
   color: var(--text-tertiary);
 }
 
+/* ---------- Plans ---------- */
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 80px;
+  border-top: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+}
+.plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 28px 36px;
+}
+.plan:first-child {
+  padding-left: 0;
+}
+.plan + .plan {
+  border-left: 1px solid var(--border-default);
+}
+.planFeatured::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--fy-gradient);
+}
+.planName {
+  font-size: 15px;
+  font-weight: 510;
+  color: var(--text-primary);
+}
+.planPrice {
+  margin-top: 20px;
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+  color: var(--text-primary);
+}
+.planPrice span {
+  margin-left: 6px;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
+.planNote {
+  min-height: 3.2em;
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}
+.planCta {
+  justify-content: center;
+  margin-top: 24px;
+}
+.planList {
+  display: grid;
+  gap: 12px;
+  margin-top: 28px;
+}
+.planList li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.planList li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 5px;
+  width: 9px;
+  height: 5px;
+  border-left: 1.5px solid var(--fy-blue-ink);
+  border-bottom: 1.5px solid var(--fy-blue-ink);
+  transform: rotate(-45deg);
+}
+
+/* ---------- Table ---------- */
+
+.tableWrap {
+  margin-top: 64px;
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table th,
+.table td {
+  padding: 16px 16px 16px 0;
+  border-bottom: 1px solid var(--border-default);
+  text-align: left;
+  vertical-align: top;
+}
+.table thead th {
+  font-size: 13px;
+  font-weight: 510;
+  color: var(--text-primary);
+}
+.table tbody th {
+  width: 26%;
+  font-weight: 510;
+  color: var(--text-secondary);
+}
+.table td {
+  color: var(--text-tertiary);
+}
+
 /* ---------- Prose (legal, security, long reads) ---------- */
 
 .prose {
@@ -522,6 +640,16 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     row-gap: 48px;
   }
+  .plans {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .plan:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .plan:nth-child(n + 3) {
+    border-top: 1px solid var(--border-default);
+  }
   .timeline::before {
     display: none;
   }
@@ -565,6 +693,18 @@
   }
   .timeline {
     grid-template-columns: 1fr;
+  }
+  .plans {
+    grid-template-columns: 1fr;
+  }
+  .plan,
+  .plan:nth-child(3) {
+    padding: 28px 0 32px;
+    border-left: 0;
+  }
+  .plan + .plan {
+    border-left: 0;
+    border-top: 1px solid var(--border-default);
   }
   .closingRule {
     margin-bottom: 80px;
