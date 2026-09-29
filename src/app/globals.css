@@ -1236,3 +1236,254 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .theme-ink ::selection {
   background: oklch(70% 0.16 var(--hue-brand) / 0.35);
 }
+
+/* ============================================================================
+   Linear marketing layer. Applied by MarketingShell together with .theme-ink,
+   and declared after it so the neutrals, type and fonts below win. Values are
+   measured from linear.app: #08090a ground, #0f1011 panels, 8% white
+   hairlines, Inter with cv01/ss03, 64/48/24/15/13px type at weight 510/400.
+   ========================================================================== */
+.site-linear {
+  --font-geist-sans: var(--font-inter);
+  --font-display-sans: var(--font-inter);
+
+  --l-container: 1280px;
+  --l-gutter: 32px;
+
+  --surface-canvas: #08090a;
+  --surface-deep: #050606;
+  --surface-band: #0b0c0d;
+  --surface-raised: #0f1011;
+  --surface-panel: #0f1011;
+  --surface-hover: #16171a;
+  --surface-selected: #1c1d21;
+  --surface-paper: #0f1011;
+  --surface-code: #0b0c0d;
+  --surface-code-raised: #121315;
+
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  --text-primary: #f7f8f8;
+  --text-secondary: #d0d6e0;
+  --text-tertiary: #8a8f98;
+  --text-quaternary: #62666d;
+  --text-disabled: #62666d;
+
+  --control-solid: #e5e5e6;
+  --control-solid-hover: #ffffff;
+  --control-solid-active: #d4d4d6;
+  --control-solid-ink: #08090a;
+  --nav-scrim: rgba(8, 9, 10, 0.8);
+
+  /* Fydell's own palette: electric blue for evidence and action, signal red
+     for change and failure. The gradient between them is used as light
+     (horizons, rules, one mark per illustration), never as a text fill. */
+  --fy-blue: #5b6cff;
+  --fy-blue-ink: #97a3ff;
+  --fy-blue-field: rgba(91, 108, 255, 0.12);
+  --fy-blue-line: rgba(91, 108, 255, 0.32);
+  --fy-red: #ff5a6e;
+  --fy-red-ink: #ff95a2;
+  --fy-red-field: rgba(255, 90, 110, 0.11);
+  --fy-red-line: rgba(255, 90, 110, 0.3);
+  --fy-green-ink: #7fd8a4;
+  --fy-amber-ink: #f2c46d;
+  --fy-gradient: linear-gradient(90deg, #5b6cff 0%, #9a5cff 50%, #ff5a6e 100%);
+  --l-accent: var(--fy-blue-ink);
+  --l-accent-fill: var(--fy-blue);
+
+  --brand-teal: var(--fy-blue);
+  --brand-blue: var(--fy-blue);
+  --brand-violet: var(--fy-blue);
+  --brand-coral: var(--fy-red);
+  --field-teal: var(--fy-blue-field);
+  --field-blue: var(--fy-blue-field);
+  --field-violet: var(--fy-blue-field);
+  --field-coral: var(--fy-red-field);
+  --ink-teal: var(--fy-blue-ink);
+  --ink-blue: var(--fy-blue-ink);
+  --ink-violet: var(--fy-blue-ink);
+  --ink-coral: var(--fy-red-ink);
+  --action-ink: var(--fy-blue-ink);
+  --evidence-observed: var(--fy-blue-ink);
+  --evidence-generated: var(--fy-blue-ink);
+  --evidence-counter: var(--fy-red-ink);
+  --surface-observation: var(--fy-blue-field);
+  --surface-intelligence: var(--fy-blue-field);
+  --surface-counter: var(--fy-red-field);
+  --fydell-evidence: var(--fy-blue-ink);
+  --fydell-risk: var(--fy-red-ink);
+
+  font-family: var(--font-inter), "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "cv01", "ss03";
+  font-size: 16px;
+  line-height: 1.5;
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+}
+
+.site-linear ::selection {
+  background: rgba(91, 108, 255, 0.4);
+}
+
+@media (max-width: 1023px) {
+  .site-linear { --l-gutter: 24px; }
+}
+@media (max-width: 639px) {
+  .site-linear { --l-gutter: 20px; }
+}
+
+.l-container {
+  width: 100%;
+  max-width: calc(var(--l-container) + var(--l-gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--l-gutter);
+}
+
+/* Type, at Linear's measured sizes. */
+.l-hero {
+  font-size: 64px;
+  line-height: 1.0625;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.l-h2 {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.l-cta {
+  font-size: 72px;
+  line-height: 1;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.l-lead {
+  font-size: 24px;
+  line-height: 1.33;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  color: var(--text-secondary);
+}
+.l-h3 {
+  font-size: 20px;
+  line-height: 1.33;
+  font-weight: 590;
+  letter-spacing: -0.012em;
+  color: var(--text-primary);
+}
+.l-body {
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
+.l-small {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+.l-mono {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: normal;
+}
+
+@media (max-width: 1023px) {
+  .l-hero { font-size: 52px; }
+  .l-h2 { font-size: 40px; }
+  .l-cta { font-size: 56px; }
+  .l-lead { font-size: 20px; }
+}
+@media (max-width: 639px) {
+  .l-hero { font-size: 40px; line-height: 1.08; letter-spacing: -0.02em; }
+  .l-h2 { font-size: 32px; line-height: 1.1; }
+  .l-cta { font-size: 40px; line-height: 1.05; }
+  .l-lead { font-size: 18px; line-height: 1.45; }
+}
+
+/* Controls. The 32px pill is Linear's; the 40px size is for closing CTAs. */
+.l-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding-inline: 12px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 510;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.l-btn-lg {
+  height: 40px;
+  padding-inline: 16px;
+  font-size: 14px;
+}
+.l-btn-solid {
+  background: var(--control-solid);
+  color: var(--control-solid-ink);
+}
+.l-btn-solid:hover { background: var(--control-solid-hover); }
+.l-btn-ghost {
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+}
+.l-btn-ghost:hover { background: var(--surface-hover); }
+.l-btn:focus-visible,
+.l-link:focus-visible {
+  outline: 2px solid var(--l-accent);
+  outline-offset: 2px;
+}
+.l-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  color: var(--text-primary);
+  transition: color 120ms ease;
+}
+.l-link:hover { color: var(--text-secondary); }
+.l-link .l-arrow { transition: transform 120ms ease; }
+.l-link:hover .l-arrow { transform: translateX(2px); }
+
+/* Shared marketing classes used by inner pages, retuned to the same scale. */
+.site-linear .mkt-content {
+  max-width: calc(var(--l-container) + var(--l-gutter) * 2);
+  padding-inline: var(--l-gutter);
+}
+.site-linear .page-display {
+  font-size: clamp(40px, 4.4vw, 64px);
+  line-height: 1.0625;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+}
+.site-linear .page-lead {
+  font-size: clamp(17px, 1.6vw, 20px);
+  line-height: 1.45;
+  letter-spacing: -0.012em;
+  color: var(--text-tertiary);
+}
+.site-linear .section-heading {
+  font-size: clamp(32px, 3.4vw, 48px);
+  line-height: 1.04;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+}
+.site-linear .section-desc {
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
