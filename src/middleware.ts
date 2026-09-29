@@ -18,6 +18,7 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/sim/") ||
     path.startsWith("/simulations") ||
     path.startsWith("/invite/") ||
+    path.startsWith("/assess") ||
     path.startsWith("/results/")
   ) {
     res.headers.set("Cache-Control", "private, no-store, max-age=0, must-revalidate");

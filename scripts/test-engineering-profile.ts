@@ -7,7 +7,7 @@
  * file with node:sqlite and runs it through the importer. DB-backed store
  * functions (src/lib/profile/store.ts) and the upload API route are not
  * executed here (no Postgres in this environment); the migration
- * 029_engineering_profiles.sql is reviewed but not applied.
+ * 031_engineering_profiles.sql is reviewed but not applied.
  *
  * Run via `npm run test:profile`
  * (tsx --conditions react-server).

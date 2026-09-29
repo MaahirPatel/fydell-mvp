@@ -1,5 +1,6 @@
 import { randomBytes } from "crypto";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { ACTIVE_ORG_COOKIE } from "@/lib/eng/context";
 import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/auth/resolve-post-login";
 import { withNext } from "@/lib/auth/safe-next";
@@ -126,13 +127,15 @@ export default async function EmployerAppLayout({ children }: { children: React.
   let identity = memberIdentity(user.email || "", null, user.user_metadata);
   {
     const admin = createAdminSupabaseClient();
-    const { data: membership } = await admin
+    const { data: memberships } = await admin
       .from("organization_members")
       .select("organization_id, role, organizations(name)")
       .eq("user_id", user.id)
       .eq("status", "active")
-      .limit(1)
-      .maybeSingle();
+      .order("joined_at", { ascending: true, nullsFirst: false });
+    const activeOrg = (await cookies()).get(ACTIVE_ORG_COOKIE)?.value;
+    const membership =
+      (memberships ?? []).find((m) => m.organization_id === activeOrg) ?? (memberships ?? [])[0] ?? null;
 
     if (!membership?.organization_id) {
       // No org yet. Route by account type; employers (or missing type) get a

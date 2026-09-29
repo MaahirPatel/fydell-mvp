@@ -22,6 +22,8 @@ const EXCLUDED_DIR_NAMES = new Set(["node_modules", ".next", "__fixtures__"]);
 
 /** Archived fixtures under src/ that may retain legacy copy. Active UX must stay clean. */
 const EXCLUDED_FILE_GLOBS: RegExp[] = [
+  // Copied dependency assets, not authored Fydell UI or product copy.
+  /^public\/monaco\//,
   /[/\\]__fixtures__[/\\]/,
   /[/\\]legacy[/\\][^/\\]+\.(ts|tsx|md|json)$/,
 ];

@@ -99,6 +99,9 @@ export async function POST(
   }
 
   try {
+    // Authorize before reading or merging answers; submitSession's later
+    // ownership check cannot undo a write to another candidate's draft.
+    await getSessionForCandidate(id, user.id);
     const disclosure = body.answers?.["__aiDisclosure"] as { used?: boolean } | undefined;
     const disclosed =
       typeof disclosure?.used === "boolean" ? disclosure.used : Boolean(body.externalAiDisclosed);
@@ -150,11 +153,11 @@ export async function POST(
         if ("conflict" in saved) {
           const conflict = saved.conflict;
           const remerged = { ...conflict.deliverable, ...body.answers } as typeof conflict.deliverable;
-          await saveSessionState(id, conflict.revision, { deliverable: remerged });
+          const retried = await saveSessionState(id, conflict.revision, { deliverable: remerged });
+          if ("conflict" in retried) return NextResponse.json({ error: "Your work changed in another tab. Refresh and review before submitting." }, { status: 409 });
         }
       } catch {
-        // Autosave is the primary path for answers; a failed merge here must
-        // not block submission.
+        return NextResponse.json({ error: "Your final changes could not be saved. Please retry submission." }, { status: 503 });
       }
     }
 

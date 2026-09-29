@@ -1,4 +1,4 @@
--- 030: snapshot-transfer state machine + submitted-evidence immutability.
+-- 033: snapshot-transfer state machine + submitted-evidence immutability.
 --
 -- UP-03 / DESK-15 / DESK-16: server-side enforcement of the snapshot-transfer
 -- state machine
@@ -15,8 +15,6 @@
 --
 -- Additive: one table, one transition function, one trigger. Alters no
 -- existing tables, RLS policies, or triggers.
---
--- NOTE: 029 was already taken (029_engineering_profiles.sql), hence 030.
 
 -- ---------------------------------------------------------------------------
 -- Transfer-state table

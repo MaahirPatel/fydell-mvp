@@ -3,6 +3,7 @@ terminals/
 .cursor/
 .agents/
 node_modules/
+public/monaco/
 .next/
 visual-review/
 .impeccable/review/

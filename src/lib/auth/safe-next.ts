@@ -14,6 +14,7 @@
 const ALLOWED_PREFIXES = [
   "/app/",
   "/invite/",
+  "/assess/",
   "/sim/",
   "/simulations",
   "/onboarding/",
@@ -98,6 +99,7 @@ export function isCandidateDestination(next: string | null | undefined): boolean
   if (!safe) return false;
   return (
     safe.startsWith("/invite/") ||
+    safe.startsWith("/assess/") ||
     safe.startsWith("/sim/") ||
     safe.startsWith("/record/") ||
     safe.startsWith("/results/") ||

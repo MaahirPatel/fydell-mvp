@@ -19,7 +19,7 @@ function section(title: string) {
   console.log(`\n${title}`);
 }
 
-const m030 = readFileSync("supabase/migrations/030_platform_security.sql", "utf8");
+const m030 = readFileSync("supabase/migrations/032_platform_security.sql", "utf8");
 const m031 = readFileSync("supabase/migrations/031_billing_ledger.sql", "utf8");
 const m027 = readFileSync("supabase/migrations/027_organization_billing.sql", "utf8");
 
@@ -65,7 +65,7 @@ ok("031: ledger indexes for org lookups (DATA-10)", /create index if not exists 
 // ------------------------------------------------- DATA-01 coverage --------
 section("DATA-01: workflow entities modeled across migrations");
 
-const allMigrations = ["001_mvp_core.sql", "007_orgs_invitations.sql", "010_pilot_lifecycle.sql", "026_engineering_passports.sql", "027_organization_billing.sql", "028_submit_session_atomic.sql"]
+const allMigrations = ["001_mvp_core.sql", "007_orgs_invitations.sql", "010_pilot_lifecycle.sql", "026_engineering_passports.sql", "027_organization_billing.sql", "030_submit_session_atomic.sql"]
   .map((f) => { try { return readFileSync(`supabase/migrations/${f}`, "utf8"); } catch { return ""; } })
   .join("\n");
 const entityHints: [string, RegExp][] = [

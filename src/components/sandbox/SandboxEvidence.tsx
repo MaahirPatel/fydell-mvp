@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Check, CircleAlert, FileCheck2, GitBranch, MessageSquare } from "lucide-react";
 import type { SandboxSessionView } from "@/lib/sim-engine/proof/sandbox/view";
+import { ExecutionResults } from "./CodeWorkspace";
 
 type Tab = "brief" | "lineage" | "plan";
 type ReviewDecision = "approve" | "limit" | "follow_up" | "reject";
@@ -66,6 +67,7 @@ export function SandboxEvidence({
         </div>
       </div>
 
+      {session.workspace.codeExecution ? <section className="mt-5 max-w-xl rounded-lg border border-[var(--border-default)] p-5"><h2 className="text-app-section">Code execution evidence</h2><p className="mt-2 text-app-meta text-[var(--text-secondary)]">Results for the saved Python snapshot. These are separate from synthetic configuration metrics and do not establish overall engineering ability.</p><ExecutionResults result={session.workspace.codeExecution} /></section> : null}
       <div role="tablist" aria-label="Evidence views" className="mt-5 flex gap-6 border-b border-[var(--border-subtle)]">
         {tabs.map((entry) => (
           <button

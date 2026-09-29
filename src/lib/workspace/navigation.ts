@@ -1,6 +1,19 @@
+export type WorkspaceNavLabel =
+  | "Home"
+  | "Engineering tasks"
+  | "Roles"
+  | "Candidates"
+  | "Shared passports"
+  | "Work"
+  | "Evidence"
+  | "Work Receipts"
+  | "Outcomes"
+  | "Team"
+  | "Settings";
+
 export type WorkspaceNavItem = {
   href: string;
-  label: string;
+  label: WorkspaceNavLabel;
   exact?: boolean;
 };
 
@@ -21,6 +34,7 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
   {
     label: "Hiring",
     items: [
+      { href: "/app/employer/engineering", label: "Engineering tasks" },
       { href: "/app/employer/roles", label: "Roles" },
       { href: "/app/employer/candidates", label: "Candidates" },
       { href: "/app/employer/passports", label: "Shared passports" },
@@ -36,7 +50,10 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
   },
   {
     label: null,
-    items: [{ href: "/app/employer/outcomes", label: "Outcomes" }],
+    items: [
+      { href: "/app/employer/outcomes", label: "Outcomes" },
+      { href: "/app/employer/team", label: "Team" },
+    ],
   },
 ];
 

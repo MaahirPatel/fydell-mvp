@@ -1,0 +1,149 @@
+{
+  "suiteVersion": "backend-webhook-retry/suite-v1",
+  "probes": [
+    {
+      "id": "P1", "visibility": "public", "phase": "original",
+      "title": "A 2xx response marks the delivery delivered",
+      "checks": [
+        { "path": "steps.0.status", "equals": "delivered" },
+        { "path": "steps.0.attempts", "equals": 1 },
+        { "path": "requests", "equals": 1 }
+      ]
+    },
+    {
+      "id": "P2", "visibility": "public", "phase": "original",
+      "title": "A 500 schedules the first retry 60 seconds out",
+      "checks": [
+        { "path": "steps.0.status", "equals": "pending" },
+        { "path": "steps.0.attempts", "equals": 1 },
+        { "path": "steps.0.offset", "approx": 60 }
+      ]
+    },
+    {
+      "id": "P3", "visibility": "public", "phase": "original",
+      "title": "A 410 is recorded as failed and never retried",
+      "checks": [
+        { "path": "steps.1.status", "equals": "failed" },
+        { "path": "steps.1.code", "equals": 410 },
+        { "path": "requests", "equals": 1 }
+      ]
+    },
+    {
+      "id": "P4", "visibility": "public", "phase": "original",
+      "title": "Every attempt sends the delivery id as Idempotency-Key",
+      "checks": [
+        { "path": "requests", "equals": 3 },
+        { "path": "keys_match_id", "equals": true },
+        { "path": "steps.2.status", "equals": "delivered" }
+      ]
+    },
+    {
+      "id": "H1", "visibility": "hidden", "phase": "original",
+      "title": "Backoff doubles from 60s, caps at 3600s, and dead-letters after 8 attempts",
+      "checks": [
+        { "path": "steps.0.offset", "approx": 60 },
+        { "path": "steps.1.offset", "approx": 120 },
+        { "path": "steps.2.offset", "approx": 240 },
+        { "path": "steps.3.offset", "approx": 480 },
+        { "path": "steps.4.offset", "approx": 960 },
+        { "path": "steps.5.offset", "approx": 1920 },
+        { "path": "steps.6.offset", "approx": 3600 },
+        { "path": "steps.7.status", "equals": "dead_lettered" },
+        { "path": "steps.7.attempts", "equals": 8 },
+        { "path": "requests", "equals": 8 }
+      ]
+    },
+    {
+      "id": "H2", "visibility": "hidden", "phase": "original",
+      "title": "408, 429, 502, 503 and 504 are retried as temporary failures",
+      "checks": [
+        { "path": "408.status", "equals": "pending" }, { "path": "408.offset", "approx": 60 },
+        { "path": "429.status", "equals": "pending" }, { "path": "429.offset", "approx": 60 },
+        { "path": "502.status", "equals": "pending" }, { "path": "502.offset", "approx": 60 },
+        { "path": "503.status", "equals": "pending" }, { "path": "503.offset", "approx": 60 },
+        { "path": "504.status", "equals": "pending" }, { "path": "504.offset", "approx": 60 }
+      ]
+    },
+    {
+      "id": "H3", "visibility": "hidden", "phase": "original",
+      "title": "3xx and other 4xx responses end as failed without a retry",
+      "checks": [
+        { "path": "301.status", "equals": "failed" }, { "path": "301.requests", "equals": 1 },
+        { "path": "400.status", "equals": "failed" }, { "path": "400.requests", "equals": 1 },
+        { "path": "401.status", "equals": "failed" }, { "path": "401.requests", "equals": 1 },
+        { "path": "404.status", "equals": "failed" }, { "path": "404.requests", "equals": 1 },
+        { "path": "422.status", "equals": "failed" }, { "path": "422.code", "equals": 422 }
+      ]
+    },
+    {
+      "id": "H4", "visibility": "hidden", "phase": "original",
+      "title": "A transport error is retried with backoff and recorded",
+      "checks": [
+        { "path": "single.steps.0.status", "equals": "pending" },
+        { "path": "single.steps.0.offset", "approx": 60 },
+        { "path": "single.steps.0.has_error", "equals": true },
+        { "path": "recovers.steps.1.status", "equals": "delivered" },
+        { "path": "recovers.steps.1.attempts", "equals": 2 }
+      ]
+    },
+    {
+      "id": "H5", "visibility": "hidden", "phase": "original",
+      "title": "Only due deliveries are sent, and delivered ones are not resent",
+      "checks": [
+        { "path": "requests_after_first", "equals": 1 },
+        { "path": "requests_after_second", "equals": 1 },
+        { "path": "later_attempts", "equals": 0 },
+        { "path": "later_status", "equals": "pending" }
+      ]
+    },
+    {
+      "id": "H6", "visibility": "hidden", "phase": "original",
+      "title": "Mixed temporary failures, including transport errors, count toward the 8-attempt limit",
+      "checks": [
+        { "path": "steps.7.status", "equals": "dead_lettered" },
+        { "path": "steps.7.attempts", "equals": 8 },
+        { "path": "requests", "equals": 8 }
+      ]
+    },
+    {
+      "id": "U1", "visibility": "hidden", "phase": "update",
+      "title": "Retry-After longer than the backoff is honored",
+      "checks": [
+        { "path": "steps.0.status", "equals": "pending" },
+        { "path": "steps.0.offset", "approx": 900 }
+      ]
+    },
+    {
+      "id": "U2", "visibility": "hidden", "phase": "update",
+      "title": "Retry-After shorter than the backoff does not shorten it (header in lower case)",
+      "checks": [
+        { "path": "steps.0.status", "equals": "pending" },
+        { "path": "steps.0.offset", "approx": 60 }
+      ]
+    },
+    {
+      "id": "U3", "visibility": "hidden", "phase": "update",
+      "title": "Retry-After never pushes a retry beyond 3600 seconds",
+      "checks": [
+        { "path": "steps.0.status", "equals": "pending" },
+        { "path": "steps.0.offset", "approx": 3600 }
+      ]
+    },
+    {
+      "id": "U4", "visibility": "hidden", "phase": "update",
+      "title": "An unparseable Retry-After falls back to normal backoff",
+      "checks": [
+        { "path": "steps.0.status", "equals": "pending" },
+        { "path": "steps.0.offset", "approx": 60 }
+      ]
+    },
+    {
+      "id": "U5", "visibility": "hidden", "phase": "update",
+      "title": "On a later attempt, the larger of backoff and Retry-After wins",
+      "checks": [
+        { "path": "steps.3.status", "equals": "pending" },
+        { "path": "steps.3.offset", "approx": 480 }
+      ]
+    }
+  ]
+}

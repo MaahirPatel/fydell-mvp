@@ -1,4 +1,4 @@
--- 030_platform_security.sql
+-- 032_platform_security.sql
 -- Platform security, privacy and operator-audit tables for the release checklist
 -- (SEC-06/09/10, OPS-03, DEMO-05, DATA-02/03).
 --

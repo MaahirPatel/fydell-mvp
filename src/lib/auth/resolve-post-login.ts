@@ -3,8 +3,6 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import { listActiveRolesForEmail } from "@/lib/ops/platform-roles";
 import { getAdminSession } from "@/lib/auth";
-import { marketplaceRoutingEnabled } from "@/lib/auth/flags";
-
 export type PostLoginDestination =
   | { kind: "admin"; path: "/admin/overview" }
   | { kind: "dashboard"; path: "/app/employer" }
@@ -50,42 +48,40 @@ export async function resolvePostLoginDestination(
 
   const admin = createAdminSupabaseClient();
 
-  if (marketplaceRoutingEnabled()) {
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("account_type")
-      .eq("id", userId)
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("account_type")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (profile?.account_type === "unresolved") {
+    return { kind: "role_pending", path: "/signup/role" };
+  }
+
+  if (profile?.account_type === "fde") {
+    // Legacy account_type value; the destination is the candidate home.
+    return { kind: "fde", path: "/app/candidate" };
+  }
+
+  if (profile?.account_type === "partner") {
+    // No partner approval flow yet. Every partner signup lands pending.
+    return {
+      kind: "setup",
+      path: "/account/setup-required",
+      reason: "partner_pending",
+    };
+  }
+
+  if (profile?.account_type === "employer") {
+    const { data: employerMembership } = await admin
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .limit(1)
       .maybeSingle();
-
-    if (profile?.account_type === "unresolved") {
-      return { kind: "role_pending", path: "/signup/role" };
-    }
-
-    if (profile?.account_type === "fde") {
-      // Legacy account_type value; the destination is the candidate home.
-      return { kind: "fde", path: "/app/candidate" };
-    }
-
-    if (profile?.account_type === "partner") {
-      // No partner approval flow yet. Every partner signup lands pending.
-      return {
-        kind: "setup",
-        path: "/account/setup-required",
-        reason: "partner_pending",
-      };
-    }
-
-    if (profile?.account_type === "employer") {
-      const { data: employerMembership } = await admin
-        .from("organization_members")
-        .select("organization_id")
-        .eq("user_id", userId)
-        .eq("status", "active")
-        .limit(1)
-        .maybeSingle();
-      if (employerMembership?.organization_id) {
-        return { kind: "employer_app", path: "/app/employer" };
-      }
+    if (employerMembership?.organization_id) {
+      return { kind: "employer_app", path: "/app/employer" };
     }
   }
 

@@ -2,11 +2,6 @@
  * Feature flags used by the active auth and routing paths.
  */
 
-/** Marketplace-style post-login routing (profiles.account_type based). */
-export function marketplaceRoutingEnabled(): boolean {
-  return process.env.NEXT_PUBLIC_FDE_MARKETPLACE === "1";
-}
-
 /**
  * Explicit pilot/demo mode. Enables a labeled pilot workspace fallback when
  * auth secrets are missing. Never silently bypasses production authentication.
