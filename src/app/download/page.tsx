@@ -8,13 +8,13 @@ export const metadata = {
 };
 
 const RELEASES_URL = "https://github.com/MaahirPatel/fydell-mvp/releases";
-const V010 = "https://github.com/MaahirPatel/fydell-mvp/releases/download/v0.1.0";
+const V010 = "https://github.com/MaahirPatel/fydell-mvp/releases/download/v0.1.1";
 const DOWNLOADS = {
-  windowsExe: `${V010}/Fydell_0.1.0_x64-setup.exe`,
-  windowsMsi: `${V010}/Fydell_0.1.0_x64_en-US.msi`,
-  macDmg: `${V010}/Fydell_0.1.0_aarch64.dmg`,
-  linuxAppImage: `${V010}/Fydell_0.1.0_amd64.AppImage`,
-  linuxDeb: `${V010}/Fydell_0.1.0_amd64.deb`,
+  windowsExe: `${V010}/Fydell_0.1.1_x64-setup.exe`,
+  windowsMsi: `${V010}/Fydell_0.1.1_x64_en-US.msi`,
+  macDmg: `${V010}/Fydell_0.1.1_aarch64.dmg`,
+  linuxAppImage: `${V010}/Fydell_0.1.1_amd64.AppImage`,
+  linuxDeb: `${V010}/Fydell_0.1.1_amd64.deb`,
 };
 
 /* Visual: desktop app window */
