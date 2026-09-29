@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ChatMessage, Diagnostics, Receipt, SessionEvent, StakeholderView, SyncPhase, SyncView, TestRunResult } from "../lib/tauri";
 import { formatDiagnostics, mergeChatMessagesView, chatSenderName, formatChatTime, syncPhaseLabel } from "../lib/pure";
 import { messageOf } from "../App";
@@ -83,17 +83,39 @@ export function BriefPanel() {
 
 /* ---------------- tests ---------------- */
 
-export function TestsPanel({ onTestsRun }: { onTestsRun: () => void }) {
+export function TestsPanel({ onTestsRun, onStatus }: { onTestsRun: () => void; onStatus?: (s: "running" | "passed" | "failed") => void }) {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<TestRunResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Parse test output into file:line problems for the Problems view.
+  const [problems, setProblems] = useState<{ file: string; line: number; text: string }[]>([]);
+
+  const parseProblems = useCallback((stdout: string, stderr: string) => {
+    const found: { file: string; line: number; text: string }[] = [];
+    const text = stdout + "\n" + stderr;
+    // Python traceback frames: File "path", line N, in ...
+    const tbRe = /File "([^"]+)", line (\d+), in (\S+)/g;
+    let m: RegExpExecArray | null;
+    while ((m = tbRe.exec(text)) !== null) {
+      found.push({ file: m[1], line: parseInt(m[2], 10), text: `in ${m[3]}` });
+    }
+    // Assertion/error summary lines: FAILED path::test - message (pytest)
+    const failRe = /^(FAILED|ERROR)\s+(\S+)\s*-\s*(.+)$/gm;
+    while ((m = failRe.exec(text)) !== null) {
+      found.push({ file: m[2].split("::")[0], line: 0, text: m[3].slice(0, 120) });
+    }
+    return found.slice(0, 50);
+  }, []);
 
   const run = useCallback(async () => {
     setRunning(true);
     setError(null);
+    onStatus?.("running");
     try {
       const r = await api.runTests();
       setResult(r);
+      setProblems(parseProblems(r.stdout, r.stderr));
+      onStatus?.(r.failed && r.failed > 0 ? "failed" : "passed");
       try {
         await api.appendEvent("tests_run", {
           status: r.status,
@@ -105,10 +127,11 @@ export function TestsPanel({ onTestsRun }: { onTestsRun: () => void }) {
       onTestsRun();
     } catch (e) {
       setError(messageOf(e));
+      onStatus?.("failed");
     } finally {
       setRunning(false);
     }
-  }, [onTestsRun]);
+  }, [onTestsRun, onStatus, parseProblems]);
 
   return (
     <>
@@ -143,6 +166,17 @@ export function TestsPanel({ onTestsRun }: { onTestsRun: () => void }) {
             {result.status !== "completed" && <span className="fail"> · {result.status}</span>}
             <span className="muted"> · {(result.duration_ms / 1000).toFixed(1)}s</span>
           </div>
+          {problems.length > 0 && (
+            <div className="problems">
+              <div className="section-label">Problems ({problems.length})</div>
+              {problems.map((p, i) => (
+                <div key={i} className="problem-row">
+                  <span className="mono">{p.file}{p.line > 0 ? `:${p.line}` : ""}</span>
+                  <span className="muted">{p.text}</span>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="output">{result.stdout}{result.stderr ? "\n--- stderr ---\n" + result.stderr : ""}</div>
           {result.truncated && <div className="muted">Output truncated.</div>}
         </div>
@@ -169,6 +203,9 @@ export function TeamPanel() {
   const [online, setOnline] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Soft-skills surface: track the latest stakeholder message time per
+  // stakeholder so reply latency is observed evidence, not a guess.
+  const lastStakeholderMsgAt = useRef<Map<string, number>>(new Map());
   const bottomRef = useCallback((el: HTMLDivElement | null) => {
     el?.scrollIntoView({ block: "end" });
   }, []);
@@ -181,6 +218,16 @@ export function TeamPanel() {
       ]);
       setStakeholders(sts);
       setMsgs((prev) => mergeChatMessagesView(prev, messages));
+      // Record stakeholder message times for latency tracking.
+      for (const m of messages) {
+        if (m.sender !== "candidate" && m.stakeholderId) {
+          const t = new Date(m.createdAt).getTime();
+          if (Number.isFinite(t)) {
+            const prevT = lastStakeholderMsgAt.current.get(m.stakeholderId) ?? 0;
+            if (t > prevT) lastStakeholderMsgAt.current.set(m.stakeholderId, t);
+          }
+        }
+      }
       setSelectedId((prev) => prev ?? sts[0]?.id ?? null);
       setOnline(true);
       if (!quiet) setError(null);
@@ -204,12 +251,20 @@ export function TeamPanel() {
     setDraft("");
     setSending(true);
     setError(null);
+    // Soft-skills evidence: how long since this stakeholder last wrote.
+    const stakeholderLastAt = lastStakeholderMsgAt.current.get(selectedId) ?? null;
+    const replyLatencyMs =
+      stakeholderLastAt != null ? Math.max(0, Date.now() - stakeholderLastAt) : null;
     try {
       if (online) {
         const refreshed = await api.sendMessage(selectedId, text);
         setMsgs((prev) => mergeChatMessagesView(prev, refreshed));
         try {
-          await api.appendEvent("message_sent", { chars: text.length });
+          await api.appendEvent("message_sent", {
+            chars: text.length,
+            stakeholder_id: selectedId,
+            reply_latency_ms: replyLatencyMs,
+          });
         } catch {}
       } else {
         // Offline fallback: clearly labeled, local only.
@@ -336,7 +391,7 @@ export function TeamPanel() {
 
 /* ---------------- submit ---------------- */
 
-export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void }) {
+export function SubmitPanel({ onSubmitted, sessionId }: { onSubmitted: (r: Receipt) => void; sessionId: string | null }) {
   const [summary, setSummary] = useState("");
   const [approach, setApproach] = useState("");
   const [tradeoffs, setTradeoffs] = useState("");
@@ -345,6 +400,7 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [syncView, setSyncView] = useState<SyncView | null>(null);
+  const [analysisNote, setAnalysisNote] = useState<string | null>(null);
 
   // DESK-09: warn honestly when remote state is unsettled at submit time.
   useEffect(() => {
@@ -365,8 +421,34 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
   const submit = useCallback(async () => {
     setBusy(true);
     setError(null);
+    setAnalysisNote(null);
     try {
-      const receipt = await api.submit({ summary, approach, tradeoffs }, aiDisclosed);
+      // Attach the code analysis findings and the team-thread summary so the
+      // reviewer sees structured evidence alongside the files. Both are
+      // computed from real local data; failures here never block submit.
+      let analysis: unknown = null;
+      try {
+        const { runAnalysis } = await import("./AnalysisPanel");
+        analysis = await runAnalysis(sessionId);
+        setAnalysisNote("Code analysis attached.");
+      } catch {
+        setAnalysisNote("Code analysis unavailable — submitting without it.");
+      }
+      let chatSummary: unknown = null;
+      try {
+        const messages = await api.listMessages();
+        const mine = messages.filter((m) => m.sender === "candidate");
+        const theirs = messages.filter((m) => m.sender !== "candidate");
+        chatSummary = {
+          candidateMessages: mine.length,
+          stakeholderMessages: theirs.length,
+          threadFlaggedForReview: messages.length > 0,
+        };
+      } catch {}
+      const receipt = await api.submit(
+        { summary, approach, tradeoffs, analysis, chatSummary },
+        aiDisclosed
+      );
       onSubmitted(receipt);
     } catch (e) {
       // Keep the dialog open and show the error inside — never fail silently.
@@ -374,7 +456,7 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
     } finally {
       setBusy(false);
     }
-  }, [summary, approach, tradeoffs, aiDisclosed, onSubmitted]);
+  }, [summary, approach, tradeoffs, aiDisclosed, onSubmitted, sessionId]);
 
   return (
     <>
@@ -429,6 +511,9 @@ export function SubmitPanel({ onSubmitted }: { onSubmitted: (r: Receipt) => void
             and <strong>your event trail</strong> into one immutable submission with a
             SHA-256 receipt. You can't edit after submitting.
           </p>
+          {analysisNote && (
+            <p className="muted">{analysisNote}</p>
+          )}
           {syncWarning && (
             <div className="error">
               {syncWarning}

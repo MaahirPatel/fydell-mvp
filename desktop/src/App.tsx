@@ -20,6 +20,7 @@ import Workspace from "./components/Workspace";
 import Home from "./components/Home";
 import Inbox from "./components/Inbox";
 import Profile from "./components/Profile";
+import Onboarding from "./components/Onboarding";
 import { BrandLockup } from "./components/Brand";
 import { ProvenanceTag } from "./components/ui";
 
@@ -27,6 +28,7 @@ type Screen =
   | "loading"
   | "signin"
   | "signin-waiting"
+  | "onboarding"
   | "home"
   | "consent"
   | "provisioning"
@@ -305,7 +307,60 @@ export default function App() {
   const [updateNotice, setUpdateNotice] = useState<string | null>(null);
   const [lockedPid, setLockedPid] = useState<number | null>(null);
 
-  // Boot: check sign-in, then session state, then any recovery outcome.
+  // First-run onboarding: a signed-in user with no real profile gets the
+  // guided flow instead of a bare home screen. Skipped once stays skipped
+  // on this device (per account).
+  const onboardingKey = (email: string | null) => `fydell-onboarding-${email ?? "anon"}`;
+  const shouldOnboard = useCallback(async (email: string | null): Promise<boolean> => {
+    try {
+      if (localStorage.getItem(onboardingKey(email))) return false;
+    } catch {
+      return false;
+    }
+    try {
+      const p = await api.getProfile();
+      if (!p) return true;
+      // The platform creates a fallback row named after the email prefix;
+      // a blank or fallback-looking name means the profile was never built.
+      const name = (p.displayName ?? "").trim();
+      if (!name) return true;
+      if (email && name.toLowerCase() === email.split("@")[0].toLowerCase()) return true;
+      return false;
+    } catch {
+      // If the profile can't load, don't block entry — home handles it.
+      return false;
+    }
+  }, []);
+
+  const enterAfterSignIn = useCallback(
+    async (a: SessionSummary) => {
+      // DESK-11: refuse to open a session another live window holds.
+      const r: RecoveryOutcome | null = await api.recoveryStatus().catch(() => null);
+      if (r?.kind === "locked") {
+        setLockedPid(r.pid);
+        setScreen("locked");
+        return;
+      }
+      if (await shouldOnboard(a.email)) {
+        setScreen("onboarding");
+        return;
+      }
+      const s = await api.sessionStatus();
+      setSession(s);
+      setScreen(
+        s.status === "active"
+          ? "workspace"
+          : s.status === "submitted"
+            ? "submitted"
+            : s.status === "joined"
+              ? "consent"
+              : "home"
+      );
+    },
+    [shouldOnboard]
+  );
+
+  // Boot: check sign-in, then onboarding/session state.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -317,26 +372,7 @@ export default function App() {
           setScreen("signin");
           return;
         }
-        // DESK-11: refuse to open a session another live window holds.
-        const r: RecoveryOutcome | null = await api.recoveryStatus().catch(() => null);
-        if (cancelled) return;
-        if (r?.kind === "locked") {
-          setLockedPid(r.pid);
-          setScreen("locked");
-          return;
-        }
-        const s = await api.sessionStatus();
-        if (cancelled) return;
-        setSession(s);
-        setScreen(
-          s.status === "active"
-            ? "workspace"
-            : s.status === "submitted"
-              ? "submitted"
-              : s.status === "joined"
-                ? "consent"
-                : "home"
-        );
+        await enterAfterSignIn(a);
       } catch {
         if (!cancelled) setScreen("signin");
       }
@@ -344,7 +380,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enterAfterSignIn]);
 
   // Auth callback events from the deep-link handler (src-tauri/src/auth.rs).
   useEffect(() => {
@@ -353,7 +389,7 @@ export default function App() {
       setAuth(e.payload);
       if (e.payload.signed_in) {
         setError(null);
-        setScreen("home");
+        void enterAfterSignIn(e.payload);
       } else {
         setSession(null);
         setScreen("signin");
@@ -566,6 +602,23 @@ export default function App() {
           )}
         </div>
       </div>
+    );
+  }
+
+  if (screen === "onboarding") {
+    return (
+      <Onboarding
+        email={auth?.email ?? null}
+        onDone={() => {
+          setScreen("home");
+        }}
+        onSkip={() => {
+          try {
+            localStorage.setItem(onboardingKey(auth?.email ?? null), JSON.stringify({ skipped: true }));
+          } catch {}
+          setScreen("home");
+        }}
+      />
     );
   }
 

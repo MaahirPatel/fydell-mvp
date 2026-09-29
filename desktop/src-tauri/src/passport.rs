@@ -6,7 +6,44 @@
 //! passport logic of its own; it renders what the platform returns.
 
 use crate::error::{AppError, AppResult};
-use crate::platform::{PassportView, Platform};
+use crate::platform::{EngineerProfileView, PassportView, Platform};
+
+/// Load the candidate's engineering profile (identity fields).
+/// `Ok(None)` means no profile exists yet — the UI shows first-run onboarding.
+#[tauri::command]
+pub async fn get_profile() -> AppResult<Option<EngineerProfileView>> {
+    crate::auth::access_token()
+        .await
+        .map_err(|_| AppError::Auth("sign in first, then open your profile".to_string()))?;
+    Platform::new().get_profile().await
+}
+
+/// Save the candidate's engineering profile identity.
+/// Display name is required; headline and role may be empty.
+#[tauri::command]
+pub async fn update_profile(
+    display_name: String,
+    headline: String,
+    role: String,
+) -> AppResult<EngineerProfileView> {
+    crate::auth::access_token()
+        .await
+        .map_err(|_| AppError::Auth("sign in first, then edit your profile".to_string()))?;
+    let display_name = display_name.trim();
+    if display_name.is_empty() {
+        return Err(AppError::Execution(
+            "enter the name employers should see".to_string(),
+        ));
+    }
+    if display_name.len() > 80 {
+        return Err(AppError::Execution(
+            "keep your display name under 80 characters".to_string(),
+        ));
+    }
+    Platform::new()
+        .update_profile(display_name, headline.trim(), role.trim())
+        .await
+}
 
 /// Load the candidate's passport. `Ok(None)` means no passport exists yet —
 /// the UI shows the empty state (add your first repository), not an error.

@@ -37,7 +37,7 @@
   },
   "identifier": "ai.fydell.desktop",
   "productName": "Fydell",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "plugins": {
     "deep-link": {
       "desktop": {

@@ -8,10 +8,13 @@ import {
   Receipt,
   SessionInfo,
   SyncView,
+  TestRunResult,
 } from "../lib/tauri";
 import { syncPhaseLabel, syncSummary } from "../lib/pure";
 import { messageOf } from "../App";
 import { BriefPanel, TestsPanel, TeamPanel, SubmitPanel, TimelinePanel, Milestone } from "./Panels";
+import AnalysisPanel, { runAnalysis } from "./AnalysisPanel";
+import CommandPalette, { PaletteAction, fileIcon } from "./CommandPalette";
 import { Dialog, EmptyState, ProvenanceTag } from "./ui";
 import { BrandLockup } from "./Brand";
 
@@ -36,7 +39,11 @@ export default function Workspace({
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [active, setActive] = useState<string | null>(null);
-  const [panel, setPanel] = useState<"brief" | "tests" | "team" | "submit" | "timeline">("brief");
+  const [panel, setPanel] = useState<"brief" | "tests" | "team" | "analysis" | "submit" | "timeline">("brief");
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [testStatus, setTestStatus] = useState<"idle" | "running" | "passed" | "failed">("idle");
+  const [cursorPos, setCursorPos] = useState<{ line: number; col: number } | null>(null);
+  const [collapsedDirs, setCollapsedDirs] = useState<Set<string>>(new Set());
   const [elapsed, setElapsed] = useState(0);
   const [milestone, setMilestone] = useState<Milestone | null>(null);
   const [conflict, setConflict] = useState<{ path: string; server: FileContent } | null>(null);
@@ -340,6 +347,41 @@ export default function Workspace({
   }, []);
 
   const activeTab = tabs.find((t) => t.path === active) ?? null;
+
+  // Keyboard shortcuts: Cmd/Ctrl+K palette, Ctrl+S save.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      } else if (mod && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        if (active) void saveTabRef.current(active);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [active]);
+
+  // Command palette actions.
+  const paletteActions: PaletteAction[] = [
+    { id: "run-tests", label: "Run tests", hint: "public suite", run: () => setPanel("tests") },
+    { id: "open-brief", label: "Open brief", hint: "assignment", run: () => setPanel("brief") },
+    { id: "open-team", label: "Open team thread", hint: "chat", run: () => setPanel("team") },
+    { id: "open-analysis", label: "Review code analysis", hint: "findings", run: () => setPanel("analysis") },
+    { id: "open-submit", label: "Submit for review", hint: "immutable", run: () => setPanel("submit") },
+    { id: "sync", label: "Sync now", hint: "server", run: () => void manualSyncRef.current() },
+  ];
+
+  const toggleDir = useCallback((dir: string) => {
+    setCollapsedDirs((prev) => {
+      const next = new Set(prev);
+      if (next.has(dir)) next.delete(dir);
+      else next.add(dir);
+      return next;
+    });
+  }, []);
   const saveState: SaveState = !activeTab
     ? "synced"
     : activeTab.saveError
@@ -483,21 +525,34 @@ export default function Workspace({
               onAction={refreshFiles}
             />
           ) : (
-            Object.keys(tree).sort().map((dir) => (
-              <div key={dir}>
-                {dir && <div className="dir">{dir}/</div>}
-                {tree[dir].map((f) => (
-                  <button
-                    key={f.path}
-                    className={`file ${active === f.path ? "active" : ""}`}
-                    onClick={() => openFile(f.path)}
-                    title={f.path}
-                  >
-                    {f.path.split("/").pop()}
-                  </button>
-                ))}
-              </div>
-            ))
+            Object.keys(tree).sort().map((dir) => {
+              const collapsed = collapsedDirs.has(dir);
+              return (
+                <div key={dir}>
+                  {dir !== "" ? (
+                    <button
+                      className="dir dir-toggle"
+                      onClick={() => toggleDir(dir)}
+                      aria-expanded={!collapsed}
+                    >
+                      <span className="dir-arrow">{collapsed ? "▸" : "▾"}</span> {dir}/
+                    </button>
+                  ) : null}
+                  {(!collapsed || dir === "") &&
+                    tree[dir].map((f) => (
+                      <button
+                        key={f.path}
+                        className={`file ${active === f.path ? "active" : ""}`}
+                        onClick={() => openFile(f.path)}
+                        title={f.path}
+                      >
+                        <span className="file-icon">{fileIcon(f.path)}</span>
+                        {f.path.split("/").pop()}
+                      </button>
+                    ))}
+                </div>
+              );
+            })
           )}
         </div>
 
@@ -519,6 +574,13 @@ export default function Workspace({
                 theme="vs"
                 value={activeTab.content}
                 onChange={(v) => editTab(activeTab.path, v ?? "")}
+                onMount={(editor) => {
+                  editor.onDidChangeCursorPosition((e) => {
+                    setCursorPos({ line: e.position.lineNumber, col: e.position.column });
+                  });
+                  const pos = editor.getPosition();
+                  if (pos) setCursorPos({ line: pos.lineNumber, col: pos.column });
+                }}
                 options={{ minimap: { enabled: false }, fontSize: 13, scrollBeyondLastLine: false }}
               />
             ) : (
@@ -535,7 +597,7 @@ export default function Workspace({
 
         <div className="sidepanel">
           <div className="panel-tabs">
-            {(["brief", "tests", "team", "submit", "timeline"] as const).map((p) => (
+            {(["brief", "tests", "team", "analysis", "submit", "timeline"] as const).map((p) => (
               <button key={p} className={`panel-tab ${panel === p ? "active" : ""}`} onClick={() => setPanel(p)}>
                 {p[0].toUpperCase() + p.slice(1)}
               </button>
@@ -543,13 +605,57 @@ export default function Workspace({
           </div>
           <div className="panel-body">
             {panel === "brief" && <BriefPanel />}
-            {panel === "tests" && <TestsPanel onTestsRun={onTestsRun} />}
+            {panel === "tests" && <TestsPanel onTestsRun={onTestsRun} onStatus={setTestStatus} />}
             {panel === "team" && <TeamPanel />}
-            {panel === "submit" && <SubmitPanel onSubmitted={onSubmitted} />}
+            {panel === "analysis" && <AnalysisPanel sessionId={session.platform_session_id} />}
+            {panel === "submit" && <SubmitPanel onSubmitted={onSubmitted} sessionId={session.platform_session_id} />}
             {panel === "timeline" && <TimelinePanel />}
           </div>
         </div>
       </div>
+
+      {/* Status bar: timer, test status, sync state, current file. */}
+      <div className="statusbar" role="status" aria-label="Session status">
+        <span className="status-item" title="Session elapsed time">
+          <span className="status-dot" /> {fmt(elapsed)}
+        </span>
+        <span className={`status-item ${testStatus === "passed" ? "ok" : testStatus === "failed" ? "err" : ""}`} title="Last test run">
+          Tests: {testStatus === "idle" ? "not run" : testStatus === "running" ? "running…" : testStatus}
+        </span>
+        {syncView && (
+          <button
+            className={`status-item ${syncView.phase === "synced" ? "ok" : syncView.phase === "sync_failed" || syncView.phase === "conflict" ? "err" : ""}`}
+            onClick={() => void manualSync()}
+            title={syncView.last_error ?? syncPhaseLabel(syncView.phase)}
+          >
+            {syncBusy ? "Syncing…" : syncSummary(syncView.phase, syncView.dirty_paths.length, null)}
+          </button>
+        )}
+        <span className="spacer" />
+        {activeTab && (
+          <span className="status-item mono" title="Current file">
+            {activeTab.path}
+            {activeTab.dirty ? " ●" : ""}
+          </span>
+        )}
+        {cursorPos && (
+          <span className="status-item muted">
+            Ln {cursorPos.line}, Col {cursorPos.col}
+          </span>
+        )}
+        <button className="status-item status-key" onClick={() => setPaletteOpen(true)} title="Command palette (Ctrl+K)">
+          ⌘K
+        </button>
+      </div>
+
+      {paletteOpen && (
+        <CommandPalette
+          files={files}
+          actions={paletteActions}
+          onClose={() => setPaletteOpen(false)}
+          onOpenFile={(p) => void openFile(p)}
+        />
+      )}
 
       {conflict && (
         <Dialog

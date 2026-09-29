@@ -79,6 +79,8 @@ fn main() {
             passport::get_passport,
             passport::add_project,
             passport::remove_project,
+            passport::get_profile,
+            passport::update_profile,
             session::join_session,
             session::accept_consent,
             session::begin_session,

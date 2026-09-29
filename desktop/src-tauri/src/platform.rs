@@ -866,6 +866,72 @@ impl Platform {
             .await
             .map_err(|e| AppError::Platform(format!("bad remove-project response: {e}")))
     }
+
+    // -- engineer profile ---------------------------------------------------
+    // src/app/api/profile/route.ts — candidate-scoped via requireUser().
+    // GET → { hub: { profile: { displayName, headline, role, ... }, ... } }.
+    // The route creates a fallback row, so a hub is always present; a blank
+    // displayName means the candidate has not built their profile yet.
+
+    /// The candidate's engineering profile identity fields.
+    pub async fn get_profile(&self) -> AppResult<Option<EngineerProfileView>> {
+        let res = self
+            .authed(reqwest::Method::GET, "/api/profile")
+            .await?
+            .send()
+            .await
+            .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
+        if res.status() == reqwest::StatusCode::NOT_FOUND {
+            return Ok(None);
+        }
+        let res = self.check(res, "load profile").await?;
+        let body: serde_json::Value = res
+            .json()
+            .await
+            .map_err(|e| AppError::Platform(format!("bad profile response: {e}")))?;
+        match body.get("hub").and_then(|h| h.get("profile")) {
+            Some(p) => serde_json::from_value(p.clone())
+                .map(Some)
+                .map_err(|e| AppError::Platform(format!("bad profile shape: {e}"))),
+            None => Ok(None),
+        }
+    }
+
+    /// PATCH /api/profile { displayName, headline, role } → { profile }.
+    /// Empty strings are rejected client-side; the server validates too.
+    pub async fn update_profile(
+        &self,
+        display_name: &str,
+        headline: &str,
+        role: &str,
+    ) -> AppResult<EngineerProfileView> {
+        let res = self
+            .authed(reqwest::Method::PATCH, "/api/profile")
+            .await?
+            .json(&serde_json::json!({
+                "displayName": display_name,
+                "headline": headline,
+                "role": role,
+            }))
+            .send()
+            .await
+            .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
+        let res = self.check(res, "save profile").await?;
+        let body: serde_json::Value = res
+            .json()
+            .await
+            .map_err(|e| AppError::Platform(format!("bad profile response: {e}")))?;
+        body.get("profile")
+            .map(|p| {
+                serde_json::from_value(p.clone())
+                    .map_err(|e| AppError::Platform(format!("bad profile shape: {e}")))
+            })
+            .unwrap_or_else(|| {
+                Err(AppError::Platform(
+                    "profile save returned no profile".to_string(),
+                ))
+            })
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -947,6 +1013,19 @@ pub struct PassportView {
     pub projects: Vec<PassportProjectView>,
     pub capabilities: Vec<String>,
     pub role_suggestions: Vec<String>,
+}
+
+/// The candidate's engineering profile identity, as returned by
+/// GET/PATCH /api/profile. Field names are camelCase on the wire.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EngineerProfileView {
+    #[serde(default)]
+    pub display_name: String,
+    #[serde(default)]
+    pub headline: String,
+    #[serde(default)]
+    pub role: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

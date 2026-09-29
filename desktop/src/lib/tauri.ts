@@ -239,7 +239,13 @@ export interface StakeholderView {
   simulated: boolean;
 }
 
-/* ---------------- Candidate passport ---------------- */
+/* ---------------- Engineer profile (first-run onboarding) ---------------- */
+
+export interface EngineerProfileView {
+  displayName: string;
+  headline: string;
+  role: string;
+}
 
 export interface PassportProjectView {
   repository: string;
@@ -319,12 +325,19 @@ export const api = {
   sendMessage: (stakeholderId: string, text: string) =>
     invoke<ChatMessage[]>("send_message", { stakeholderId, text }),
   // Candidate passport (src-tauri/src/passport.rs)
-  getPassport: () => invoke<PassportView | null>("get_passport"),
-  addProject: (repository: string, contribution: string, githubLogin?: string | null) =>
+  getPassport: () => invoke<PassportView | null>("get_passport"),  addProject: (repository: string, contribution: string, githubLogin?: string | null) =>
     invoke<AddProjectResult>("add_project", {
       repository,
       contribution,
       githubLogin: githubLogin ?? null,
     }),
   removeProject: (repo: string) => invoke<AddProjectResult>("remove_project", { repo }),
+  // Engineer profile (src-tauri/src/passport.rs) — first-run onboarding
+  getProfile: () => invoke<EngineerProfileView | null>("get_profile"),
+  updateProfile: (displayName: string, headline: string, role: string) =>
+    invoke<EngineerProfileView>("update_profile", {
+      displayName,
+      headline,
+      role,
+    }),
 };
