@@ -302,19 +302,22 @@ async function acceptInvitationRow(
   const gate = invitationGate(inv);
   if (!gate.ok) throw new Error(gate.reason);
 
-  // Existing session → idempotent return, but only for the same candidate.
-  const { data: existing } = await db
-    .from("sim_sessions")
-    .select("*")
-    .eq("invitation_id", inv.id)
-    .maybeSingle();
+  // Open demo invitations (blank candidate_email) are reusable: every account
+  // gets its own session. Addressed invitations stay single-use.
+  const isOpen = !inv.candidate_email;
+
+  // Existing session → idempotent return. For open invitations scope to this
+  // user so each account gets its own session.
+  let existingQuery = db.from("sim_sessions").select("*").eq("invitation_id", inv.id);
+  if (isOpen) existingQuery = existingQuery.eq("candidate_user_id", userId);
+  const { data: existing } = await existingQuery.maybeSingle();
   if (existing) {
-    if (existing.candidate_user_id !== userId)
+    if (!isOpen && existing.candidate_user_id !== userId)
       throw new Error("This invitation was already accepted by another account.");
     return { session: existing as SessionRow, invitation: inv };
   }
 
-  if (inv.accepted_by && inv.accepted_by !== userId)
+  if (!isOpen && inv.accepted_by && inv.accepted_by !== userId)
     throw new Error("This invitation was already accepted by another account.");
 
   // The invitation is addressed to a specific email; enforce it.
@@ -349,10 +352,14 @@ async function acceptInvitationRow(
     throw new Error(`Could not accept invitation: ${error.message}`);
   }
 
-  await db
-    .from("sim_invitations")
-    .update({ status: "accepted", accepted_by: userId, accepted_at: new Date().toISOString() })
-    .eq("id", inv.id);
+  // Open demo invitations stay reusable: don't mark them accepted or bind
+  // them to one account. Addressed invitations lock to the first accepter.
+  if (!isOpen) {
+    await db
+      .from("sim_invitations")
+      .update({ status: "accepted", accepted_by: userId, accepted_at: new Date().toISOString() })
+      .eq("id", inv.id);
+  }
 
   await db.from("sim_session_state").insert({ session_id: session.id }).select().maybeSingle();
 
