@@ -32,8 +32,8 @@
   --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-pop: 0 8px 28px rgba(0, 0, 0, 0.5);
+  --shadow-panel: 0 1px 2px rgba(19, 32, 56, 0.05);
+  --shadow-pop: 0 1px 2px rgba(19, 32, 56, 0.06), 0 12px 32px -8px rgba(19, 32, 56, 0.16);
 }
 
 
@@ -109,19 +109,21 @@ body {
   }
 }
 
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
+@layer base {
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
 
-button {
-  cursor: pointer;
+  button {
+    cursor: pointer;
+  }
 }
 
 ::selection {
-  background: rgba(124, 58, 237, 0.2);
+  background: rgba(226, 165, 0, 0.22);
   color: inherit;
 }
 
@@ -793,35 +795,15 @@ textarea.platform-input {
   mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
 }
 
-@keyframes fydell-rise {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.reveal > *, .stagger > * { animation: fydell-rise var(--motion-reveal) var(--ease) both; }
-.reveal > *:nth-child(2), .stagger > *:nth-child(2) { animation-delay: 70ms; }
-.reveal > *:nth-child(3), .stagger > *:nth-child(3) { animation-delay: 140ms; }
-.reveal > *:nth-child(4), .stagger > *:nth-child(4) { animation-delay: 210ms; }
-.reveal > *:nth-child(n + 5), .stagger > *:nth-child(n + 5) { animation-delay: 280ms; }
+/* Pages load finished. Content never rises or fades in on navigation. */
+.reveal > *, .stagger > * { animation: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal > *, .stagger > * { animation: none; }
   .chip-link:hover { transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-}
-
-/* Sections rise into place as they enter the viewport. Scroll-driven, so
-   nothing waits on JavaScript; browsers without support show them immediately. */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .scroll-reveal {
-      animation: fydell-rise linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 28%;
-    }
-  }
 }
 
 a, button { -webkit-tap-highlight-color: transparent; }
@@ -986,88 +968,44 @@ a, button { -webkit-tap-highlight-color: transparent; }
 }
 
 /* ============================================================================
-   Linear marketing layer. Applied by MarketingShell together with .theme-ink,
-   and declared after it so the neutrals, type and fonts below win. Values are
-   measured from linear.app: #08090a ground, #0f1011 panels, 8% white
-   hairlines, Inter with cv01/ss03, 64/48/24/15/13px type at weight 510/400.
+   Marketing layer. Applied by MarketingShell on top of the shared light
+   palette in fydell-tokens.css, so the public site, sign-in and the app are
+   one surface. This layer only sets marketing type, measure and the mapping
+   of provenance colours onto Fydell blue and red.
    ========================================================================== */
 .site-linear {
-  --hue-brand: 285;
-  --hue-evidence: 178;
-  --hue-signal: 258;
-  --hue-warm: 52;
   --font-geist-sans: var(--font-inter);
   --font-display-sans: var(--font-inter);
 
-  --l-container: 1280px;
+  --l-container: 1200px;
   --l-gutter: 32px;
 
-  --surface-canvas: #08090a;
-  --surface-deep: #050606;
-  --surface-band: #0b0c0d;
-  --surface-raised: #0f1011;
-  --surface-panel: #0f1011;
-  --surface-hover: #16171a;
-  --surface-selected: #1c1d21;
-  --surface-paper: #0f1011;
-  --surface-code: #0b0c0d;
-  --surface-code-raised: #121315;
+  --fy-gradient: linear-gradient(90deg, #1a1915 0%, #6f6c62 60%, #cfcbc0 100%);
+  --fy-teal: #6f6c62;
+  --fy-violet: #1a1915;
+  --l-accent: var(--fy-accent-ink);
+  --l-accent-fill: var(--fy-accent);
 
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-default: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.12);
-
-  --text-primary: #f7f8f8;
-  --text-secondary: #d0d6e0;
-  --text-tertiary: #8a8f98;
-  --text-quaternary: #62666d;
-  --text-disabled: #62666d;
-
-  --control-solid: #e5e5e6;
-  --control-solid-hover: #ffffff;
-  --control-solid-active: #d4d4d6;
-  --control-solid-ink: #08090a;
-  --nav-scrim: rgba(8, 9, 10, 0.8);
-
-  /* Fydell's own palette: electric blue for evidence and action, signal red
-     for change and failure. The gradient between them is used as light
-     (horizons, rules, one mark per illustration), never as a text fill. */
-  --fy-blue: #5b6cff;
-  --fy-blue-ink: #97a3ff;
-  --fy-blue-field: rgba(91, 108, 255, 0.12);
-  --fy-blue-line: rgba(91, 108, 255, 0.32);
-  --fy-red: #ff5a6e;
-  --fy-red-ink: #ff95a2;
-  --fy-red-field: rgba(255, 90, 110, 0.11);
-  --fy-red-line: rgba(255, 90, 110, 0.3);
-  --fy-green-ink: #7fd8a4;
-  --fy-amber-ink: #f2c46d;
-  --fy-gradient: linear-gradient(90deg, #2dd4bf 0%, #5b6cff 35%, #a855f7 68%, #ff5a6e 100%);
-  --fy-teal: #2dd4bf;
-  --fy-violet: #a855f7;
-  --l-accent: var(--fy-blue-ink);
-  --l-accent-fill: var(--fy-blue);
-
-  --brand-teal: var(--fy-blue);
-  --brand-blue: var(--fy-blue);
-  --brand-violet: var(--fy-blue);
+  --brand-teal: var(--fy-accent);
+  --brand-blue: var(--fy-accent);
+  --brand-violet: var(--fy-accent);
   --brand-coral: var(--fy-red);
-  --field-teal: var(--fy-blue-field);
-  --field-blue: var(--fy-blue-field);
-  --field-violet: var(--fy-blue-field);
+  --field-teal: var(--fy-accent-field);
+  --field-blue: var(--fy-accent-field);
+  --field-violet: var(--fy-accent-field);
   --field-coral: var(--fy-red-field);
-  --ink-teal: var(--fy-blue-ink);
-  --ink-blue: var(--fy-blue-ink);
-  --ink-violet: var(--fy-blue-ink);
+  --ink-teal: var(--fy-accent-ink);
+  --ink-blue: var(--fy-accent-ink);
+  --ink-violet: var(--fy-accent-ink);
   --ink-coral: var(--fy-red-ink);
-  --action-ink: var(--fy-blue-ink);
-  --evidence-observed: var(--fy-blue-ink);
-  --evidence-generated: var(--fy-blue-ink);
+  --action-ink: var(--fy-accent-ink);
+  --evidence-observed: var(--fy-accent-ink);
+  --evidence-generated: var(--fy-accent-ink);
   --evidence-counter: var(--fy-red-ink);
-  --surface-observation: var(--fy-blue-field);
-  --surface-intelligence: var(--fy-blue-field);
+  --surface-observation: var(--fy-accent-field);
+  --surface-intelligence: var(--fy-accent-field);
   --surface-counter: var(--fy-red-field);
-  --fydell-evidence: var(--fy-blue-ink);
+  --fydell-evidence: var(--fy-accent-ink);
   --fydell-risk: var(--fy-red-ink);
 
   font-family: var(--font-inter), "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -1079,7 +1017,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
 }
 
 .site-linear ::selection {
-  background: rgba(91, 108, 255, 0.4);
+  background: rgba(226, 165, 0, 0.22);
 }
 
 @media (max-width: 1023px) {
@@ -1098,17 +1036,17 @@ a, button { -webkit-tap-highlight-color: transparent; }
 
 /* Type, at Linear's measured sizes. */
 .l-hero {
-  font-size: 64px;
-  line-height: 1.0625;
-  font-weight: 510;
+  font-size: 60px;
+  line-height: 1.06;
+  font-weight: 650;
   letter-spacing: -0.022em;
   color: var(--text-primary);
   text-wrap: balance;
 }
 .l-h2 {
-  font-size: 48px;
-  line-height: 1.04;
-  font-weight: 510;
+  font-size: 44px;
+  line-height: 1.06;
+  font-weight: 650;
   letter-spacing: -0.022em;
   color: var(--text-primary);
   text-wrap: balance;
@@ -1116,7 +1054,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .l-cta {
   font-size: 72px;
   line-height: 1;
-  font-weight: 510;
+  font-weight: 650;
   letter-spacing: -0.022em;
   color: var(--text-primary);
   text-wrap: balance;
@@ -1220,7 +1158,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .site-linear .page-display {
   font-size: clamp(40px, 4.4vw, 64px);
   line-height: 1.0625;
-  font-weight: 510;
+  font-weight: 650;
   letter-spacing: -0.022em;
 }
 .site-linear .page-lead {
@@ -1232,7 +1170,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .site-linear .section-heading {
   font-size: clamp(32px, 3.4vw, 48px);
   line-height: 1.04;
-  font-weight: 510;
+  font-weight: 600;
   letter-spacing: -0.022em;
 }
 .site-linear .section-desc {

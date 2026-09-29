@@ -448,22 +448,98 @@ export function ReportShot() {
   );
 }
 
+const RECEIPT_SHA = "3f9c1a07e4b2d95c81f6a3e0b7c4d218e9f5a6b3c2d1e0f9a8b7c6d5e4f3a21e";
+
+const RECEIPT_FILES = [
+  { path: "webhooks/retry_policy.py", added: 22, removed: 0 },
+  { path: "webhooks/dispatcher.py", added: 31, removed: 6 },
+  { path: "tests/test_dispatcher.py", added: 48, removed: 0 },
+];
+
+/** Bars drawn from the archive hash, so every receipt's code is its own. */
+function HashCode({ sha }: { sha: string }) {
+  return (
+    <span className={s.barcode} aria-hidden>
+      {[...sha].map((ch, i) => {
+        const v = parseInt(ch, 16);
+        return <i key={i} style={{ width: 1 + (v % 3), marginRight: 1 + (v >> 2) % 2 }} />;
+      })}
+    </span>
+  );
+}
+
 /** The receipt the candidate keeps. */
 export function ReceiptShot() {
+  const max = Math.max(...RECEIPT_FILES.map((f) => f.added + f.removed));
   return (
     <div className={`${s.app} ${s.receipt}`}>
       <div className={s.receiptCard}>
-        <p className={s.receiptKicker}>
-          <Mark /> Submission received
-        </p>
+        <div className={s.receiptTop}>
+          <p className={s.receiptKicker}>
+            <Mark /> Submission receipt
+          </p>
+          <span className={`${s.receiptNo} ${s.mono}`}>No. 0412</span>
+        </div>
         <p className={s.receiptTitle}>Webhook retry incident</p>
-        <dl className={s.kv}>
-          <div><dt>Submitted</dt><dd>14:44, 28 Sep 2026</dd></div>
-          <div><dt>Archive sha256</dt><dd className={s.mono}>3f9c1a07e4b2…c6d5e4f3a21e</dd></div>
-          <div><dt>Files</dt><dd>14 files, 3 changed</dd></div>
-          <div><dt>Handoff</dt><dd>What changed · What you tested · What remains</dd></div>
-          <div><dt>Recorded trail</dt><dd>Files, commands, test runs, timing</dd></div>
-        </dl>
+        <p className={s.receiptSub}>
+          INC-2291 · Backend Engineer · <span className={s.mono}>14:44, 28 Sep 2026</span>
+        </p>
+        <span className={s.stamp} aria-hidden>
+          <b>Sealed</b>
+          <span className={s.mono}>14:44:07</span>
+        </span>
+
+        <div className={s.receiptStats}>
+          <div>
+            <span className={s.statLabel}>Worked</span>
+            <span className={`${s.statValue} ${s.mono}`}>41m 12s</span>
+          </div>
+          <div>
+            <span className={s.statLabel}>Changed</span>
+            <span className={`${s.statValue} ${s.mono}`}>
+              <span className={s.plus}>+101</span> <span className={s.minus}>−6</span>
+            </span>
+          </div>
+          <div>
+            <span className={s.statLabel}>Checks</span>
+            <span className={`${s.statValue} ${s.mono}`}>Queued</span>
+          </div>
+        </div>
+
+        <ul className={s.receiptFiles}>
+          {RECEIPT_FILES.map((f) => (
+            <li key={f.path}>
+              <FileCode2 aria-hidden />
+              <span className={`${s.receiptPath} ${s.mono}`}>{f.path}</span>
+              <span className={s.receiptBars} aria-hidden>
+                <i className={s.barAdd} style={{ width: `${(f.added / max) * 100}%` }} />
+                <i className={s.barDel} style={{ width: `${(f.removed / max) * 100}%` }} />
+              </span>
+              <span className={`${s.receiptDiff} ${s.mono}`}>
+                <span className={s.plus}>+{f.added}</span>
+                {f.removed ? <span className={s.minus}> −{f.removed}</span> : null}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <div className={s.handoff}>
+          {["What changed", "What you tested", "What remains"].map((h) => (
+            <span key={h} className={s.handoffChip}>
+              <Check aria-hidden /> {h}
+            </span>
+          ))}
+        </div>
+
+        <div className={s.perf} aria-hidden />
+
+        <div className={s.receiptFoot}>
+          <HashCode sha={RECEIPT_SHA} />
+          <p className={`${s.receiptSha} ${s.mono}`}>
+            sha256 {RECEIPT_SHA.slice(0, 8)} {RECEIPT_SHA.slice(8, 16)} … {RECEIPT_SHA.slice(-8)}
+          </p>
+          <p className={s.receiptNote}>Keep this receipt. It proves exactly what you sent, down to the byte.</p>
+        </div>
       </div>
     </div>
   );

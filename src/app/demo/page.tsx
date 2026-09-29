@@ -17,7 +17,7 @@ export default function DemoPage() {
           <div>
             <p className="text-app-body font-medium text-[var(--text-secondary)]">Product demo · example data</p>
             <h1 className="mt-2 text-[clamp(2rem,3.6vw,2.75rem)] font-[600] leading-[1.08] tracking-[-0.025em]">
-              From a repository to a hiring decision.
+              Demo
             </h1>
             <p className="mt-3 max-w-[60ch] text-[var(--step-0)] leading-[1.6] text-[var(--text-secondary)]">
               Follow one fictional candidate through four steps. Nothing here is a real scan or a real

@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import { Panel, PanelSection } from "@/components/ui/Panel";
 import type { ScenarioDefinition } from "@/lib/eng/scenarios/types";
 import type { InvitationRow } from "@/lib/eng/types";
-import { Facts, PolicyDisclosures, StageProgress } from "./CandidateParts";
+import { CandidatePageHead } from "@/components/candidate/CandidatePageHead";
+import { Facts, JourneyRail, PolicyDisclosures } from "./CandidateParts";
 import { LocalTime } from "./LocalTime";
 
 export default function EngInvitationBrief({
@@ -17,12 +18,17 @@ export default function EngInvitationBrief({
   const snapshot = invitation.role_snapshot;
   return (
     <div className="grid gap-6">
-      <StageProgress current="Invitation" />
-      <header>
-        <p className="text-app-meta text-[var(--text-tertiary)]">{snapshot.organizationName} invited you</p>
-        <h1 className="mt-1.5 text-[26px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">{snapshot.title}</h1>
-        {snapshot.companyContext ? <p className="mt-2 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">{snapshot.companyContext}</p> : null}
-      </header>
+      <CandidatePageHead
+        eyebrow={[`${snapshot.organizationName} invited you`, "Engineering task"]}
+        title={snapshot.title}
+        lead={snapshot.companyContext || undefined}
+        meta={[
+          { label: "Effort", value: `About ${definition.targetMinutes} min` },
+          { label: "Window", value: `${invitation.allowed_minutes} min, from Start` },
+          { label: "Expires", value: <LocalTime iso={invitation.expires_at} /> },
+        ]}
+        rail={<JourneyRail at="invitation" />}
+      />
 
       <Panel>
         <PanelSection title={definition.title} description={definition.summary}>

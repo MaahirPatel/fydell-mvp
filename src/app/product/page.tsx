@@ -22,8 +22,7 @@ export default function ProductPage() {
     <MarketingShell>
       <Hero
         compact
-        title={["From invitation", "to decision"]}
-        lead="One engineering loop, the same for every candidate. Here is each step, what the candidate sees, and what your team gets."
+        title={["How it works"]}
       >
         <Section tight>
           <Timeline

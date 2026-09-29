@@ -38,7 +38,7 @@ export function Hero({
   children,
 }: {
   title: readonly string[];
-  lead: ReactNode;
+  lead?: ReactNode;
   aside?: { href: string; strong?: string; label: string };
   actions?: ReactNode;
   compact?: boolean;
@@ -47,19 +47,17 @@ export function Hero({
   return (
     <section className={compact ? s.heroCompact : s.hero}>
       <div className={cx("l-container", s.heroIn)}>
+        {aside ? (
+          <Link href={aside.href} className={s.heroAside}>
+            {aside.strong ? <b>{aside.strong}</b> : null}
+            <span>{aside.label}</span>
+            <Arrow />
+          </Link>
+        ) : null}
         <h1 className={cx("l-hero", s.heroTitle)}>
           <Lines lines={title} />
         </h1>
-        <div className={s.heroRow}>
-          <p className={s.heroLead}>{lead}</p>
-          {aside ? (
-            <Link href={aside.href} className={cx("l-link", s.heroAside)}>
-              {aside.strong ? <b>{aside.strong}</b> : null}
-              {aside.label}
-              <Arrow />
-            </Link>
-          ) : null}
-        </div>
+        {lead ? <p className={s.heroLead}>{lead}</p> : null}
         {actions ? <div className={s.heroActions}>{actions}</div> : null}
       </div>
       {children}
@@ -67,33 +65,74 @@ export function Hero({
   );
 }
 
-/** The product, shown large and lit from below. `label` names the example. */
-export function Stage({ children, label, hero = false }: { children: ReactNode; label: string; hero?: boolean }) {
+export type Art = "lake" | "coast" | "hills";
+
+const ART_CLASS: Record<Art, string> = { lake: s.artLake, coast: s.artCoast, hills: s.artHills };
+
+/** A product window on a painted ground, the way the product is seen in use. */
+function ArtCanvas({ art, title, label, children }: { art: Art; title: string; label: string; children: ReactNode }) {
+  return (
+    <div className={cx(s.canvas, ART_CLASS[art])}>
+      <InView className={s.window}>
+        <div className={s.windowBar} aria-hidden>
+          <span className={s.lights}>
+            <i />
+            <i />
+            <i />
+          </span>
+          <span className={s.windowTitle}>{title}</span>
+        </div>
+        <div role="img" aria-label={label}>
+          {children}
+        </div>
+      </InView>
+    </div>
+  );
+}
+
+/** The product, shown large on a painted ground. `label` names the example. */
+export function Stage({
+  children,
+  label,
+  title = "Fydell",
+  art = "lake",
+}: {
+  children: ReactNode;
+  label: string;
+  title?: string;
+  art?: Art;
+  hero?: boolean;
+}) {
   return (
     <div className="l-container">
-      <figure className={cx(s.stage, hero && s.stageIn)}>
-        <InView className={s.frame}>
-          <div role="img" aria-label={label}>
-            {children}
-          </div>
-        </InView>
+      <figure className={s.stage}>
+        <ArtCanvas art={art} title={title} label={label}>
+          {children}
+        </ArtCanvas>
         <figcaption className={s.caption}>{label}</figcaption>
       </figure>
     </div>
   );
 }
 
-/** A section visual: framed, dissolving into the ground at the bottom. */
-export function Visual({ children, label, fade = true }: { children: ReactNode; label: string; fade?: boolean }) {
+/** A section visual: a product window on a painted ground. */
+export function Visual({
+  children,
+  label,
+  title = "Fydell",
+  art = "coast",
+}: {
+  children: ReactNode;
+  label: string;
+  title?: string;
+  art?: Art;
+  fade?: boolean;
+}) {
   return (
     <figure className={s.headVisual}>
-      <div className={cx(fade && s.fade)}>
-        <InView className={s.frame}>
-          <div role="img" aria-label={label}>
-            {children}
-          </div>
-        </InView>
-      </div>
+      <ArtCanvas art={art} title={title} label={label}>
+        {children}
+      </ArtCanvas>
       <figcaption className={s.caption}>{label}</figcaption>
     </figure>
   );
@@ -124,7 +163,7 @@ export function SectionHead({
   id,
 }: {
   title: readonly string[];
-  lead: ReactNode;
+  lead?: ReactNode;
   link?: { href: string; label: string };
   id?: string;
 }) {
@@ -134,7 +173,7 @@ export function SectionHead({
         <Lines lines={title} />
       </h2>
       <div className={s.headLead}>
-        <p className="l-lead">{lead}</p>
+        {lead ? <p className="l-lead">{lead}</p> : null}
         {link ? (
           <Link href={link.href} className={cx("l-link", s.headLink)}>
             {link.label}
@@ -260,19 +299,19 @@ export function Plans({ plans }: { plans: readonly Plan[] }) {
       {plans.map((plan) => (
         <div key={plan.name} className={cx(s.plan, plan.featured && s.planFeatured)}>
           <p className={s.planName}>{plan.name}</p>
+          <p className={s.planNote}>{plan.note}</p>
           <p className={s.planPrice}>
             {plan.price}
             {plan.per ? <span>{plan.per}</span> : null}
           </p>
-          <p className={s.planNote}>{plan.note}</p>
-          <Link href={plan.cta.href} className={cx("l-btn l-btn-lg", plan.featured ? "l-btn-solid" : "l-btn-ghost", s.planCta)}>
-            {plan.cta.label}
-          </Link>
           <ul className={s.planList}>
             {plan.features.map((f) => (
               <li key={f}>{f}</li>
             ))}
           </ul>
+          <Link href={plan.cta.href} className={cx("l-btn", plan.featured ? "l-btn-solid" : "l-btn-ghost", s.planCta)}>
+            {plan.cta.label}
+          </Link>
         </div>
       ))}
     </div>

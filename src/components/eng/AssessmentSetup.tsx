@@ -16,8 +16,8 @@ function StepNumber({ n, done }: { n: number; done?: boolean }) {
   return (
     <span
       aria-hidden
-      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[12px] font-medium tabular-nums ${
-        done ? "bg-[var(--surface-selected)] text-[var(--text-primary)]" : "border border-[var(--border-strong)] text-[var(--text-primary)]"
+      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11.5px] tabular-nums ${
+        done ? "bg-[var(--fy-accent)] text-white" : "border border-[var(--fy-accent-line)] bg-[var(--fy-accent-field)] text-[var(--fy-accent-ink)]"
       }`}
     >
       {done ? "✓" : n}

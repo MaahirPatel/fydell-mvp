@@ -3,71 +3,85 @@
 
 /* ---------- Hero ---------- */
 
-.hero {
-  padding-top: 200px;
+.hero,
+.heroCompact {
+  position: relative;
+  isolation: isolate;
+  padding-top: 176px;
 }
 .heroCompact {
-  padding-top: 168px;
+  padding-top: 152px;
+}
+/* White porcelain with reflected blue light: an icy wash from the upper right
+   that the product sits in front of. Felt, not seen. */
+.hero::before,
+.heroCompact::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 900px;
+  background: linear-gradient(180deg, #fcfcfa 0%, var(--surface-canvas) 70%);
+  pointer-events: none;
+}
+.heroIn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 .heroTitle {
-  max-width: 13.5em;
-}
-.heroRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px 48px;
-  margin-top: 32px;
+  max-width: 16em;
+  font-weight: 650;
+  color: var(--text-primary);
 }
 .heroLead {
-  max-width: 60ch;
-  font-size: 15px;
-  line-height: 1.6;
+  max-width: 54ch;
+  margin-top: 24px;
+  font-size: 17px;
+  line-height: 1.55;
   letter-spacing: -0.011em;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
+  text-wrap: balance;
 }
 .heroAside {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
-  color: var(--text-tertiary);
-  transition: color 120ms ease;
+  height: 30px;
+  margin-bottom: 28px;
+  padding: 0 12px 0 4px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: border-color 120ms ease, color 120ms ease;
 }
 .heroAside b {
-  font-weight: 510;
-  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--surface-raised);
 }
 .heroAside:hover {
+  border-color: var(--border-strong);
   color: var(--text-primary);
 }
 .heroActions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
   margin-top: 32px;
 }
 
-.heroIn > * {
-  animation: rise 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.heroIn > *:nth-child(2) {
-  animation-delay: 80ms;
-}
-.heroIn > *:nth-child(3) {
-  animation-delay: 160ms;
-}
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
 
 /* ---------- Stage: the product shown large, lit from below ---------- */
 
@@ -83,45 +97,92 @@
   inset: auto -8% -120px;
   height: 420px;
   background:
-    radial-gradient(50% 60% at 30% 100%, rgba(91, 108, 255, 0.28), transparent 70%),
-    radial-gradient(45% 55% at 72% 100%, rgba(255, 90, 110, 0.2), transparent 70%);
+    radial-gradient(50% 60% at 30% 100%, rgba(60, 50, 30, 0.08), transparent 70%),
+    radial-gradient(45% 55% at 74% 100%, rgba(229, 72, 77, 0.06), transparent 70%);
   filter: blur(40px);
   pointer-events: none;
 }
 .stageIn {
-  animation: stageIn 1200ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
-}
-@keyframes stageIn {
-  from {
-    opacity: 0;
-    transform: translateY(32px) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  animation: none;
 }
 
 .frame {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
-  background: #0c0d0e;
+  background: var(--surface-raised);
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.6),
-    0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
-    0 48px 120px -24px rgba(0, 0, 0, 0.9);
-}
-.frame::after {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14) 30%, rgba(255, 255, 255, 0.14) 70%, transparent);
-  pointer-events: none;
+    0 1px 2px rgba(19, 32, 56, 0.04),
+    0 24px 64px -24px rgba(60, 48, 20, 0.2),
+    0 48px 120px -48px rgba(60, 48, 20, 0.16);
 }
 
+/* Product windows sit on a painted ground, as they would on a desk. */
+.canvas {
+  position: relative;
+  overflow: hidden;
+  padding: 56px;
+  border-radius: 16px;
+  background-color: #d9d4c6;
+  background-position: center;
+  background-size: cover;
+}
+.artLake {
+  background-image: url("/art/lake.webp");
+}
+.artCoast {
+  background-image: url("/art/coast.webp");
+}
+.artHills {
+  background-image: url("/art/hills.webp");
+}
+.window {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(40, 34, 20, 0.14);
+  border-radius: 12px;
+  background: var(--surface-raised);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 40px 90px -30px rgba(40, 32, 12, 0.45),
+    0 14px 30px -14px rgba(40, 32, 12, 0.25);
+}
+.windowBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-panel);
+}
+.lights {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  display: flex;
+  gap: 7px;
+  transform: translateY(-50%);
+}
+.lights i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #d8d5cc;
+  box-shadow: inset 0 0 0 0.5px rgba(40, 34, 20, 0.18);
+}
+.windowTitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+@media (max-width: 900px) {
+  .canvas {
+    padding: 20px;
+    border-radius: 12px;
+  }
+}
 /* Section visuals dissolve into the ground at the bottom, so the page reads
    as one surface rather than a stack of boxed screenshots. */
 .fade {
@@ -166,15 +227,15 @@
 
 .statement {
   max-width: 26em;
-  font-size: 48px;
-  line-height: 1.08;
-  font-weight: 510;
+  font-size: 44px;
+  line-height: 1.1;
+  font-weight: 650;
   letter-spacing: -0.022em;
   color: var(--text-tertiary);
   text-wrap: pretty;
 }
 .statement b {
-  font-weight: 510;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -200,7 +261,7 @@
   display: grid;
   place-items: center;
   height: 280px;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--text-secondary);
 }
 .trioFig > div {
   width: 100%;
@@ -208,7 +269,7 @@
 .trioTitle {
   margin-top: 40px;
   font-size: 15px;
-  font-weight: 510;
+  font-weight: 600;
   letter-spacing: -0.011em;
   color: var(--text-primary);
 }
@@ -233,7 +294,7 @@
 }
 .detailTitle {
   font-size: 15px;
-  font-weight: 510;
+  font-weight: 600;
   letter-spacing: -0.011em;
   color: var(--text-primary);
 }
@@ -274,20 +335,18 @@
   width: 11px;
   height: 11px;
   border-radius: 999px;
-  background: #2a2c31;
+  background: var(--border-strong);
   box-shadow: 0 0 0 4px var(--surface-canvas);
 }
 .tlDotBlue {
-  background: var(--fy-blue);
-  box-shadow: 0 0 0 4px var(--surface-canvas), 0 0 16px 2px rgba(91, 108, 255, 0.55);
+  background: var(--fy-accent);
 }
 .tlDotRed {
   background: var(--fy-red);
-  box-shadow: 0 0 0 4px var(--surface-canvas), 0 0 16px 2px rgba(255, 90, 110, 0.5);
 }
 .tlTitle {
   font-size: 15px;
-  font-weight: 510;
+  font-weight: 600;
   letter-spacing: -0.011em;
   color: var(--text-primary);
 }
@@ -327,14 +386,14 @@
   align-items: center;
   gap: 10px;
   font-size: 13px;
-  font-weight: 510;
+  font-weight: 600;
   color: var(--text-primary);
 }
 .ledgerHead i {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--fy-blue);
+  background: var(--fy-accent);
 }
 .ledgerColNo .ledgerHead i {
   background: var(--fy-red);
@@ -351,7 +410,7 @@
   color: var(--text-tertiary);
 }
 .ledgerList li b {
-  font-weight: 510;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -373,7 +432,7 @@
   cursor: pointer;
   list-style: none;
   font-size: 17px;
-  font-weight: 510;
+  font-weight: 600;
   letter-spacing: -0.012em;
   color: var(--text-primary);
 }
@@ -394,7 +453,7 @@
   transform: translateY(2px) rotate(-135deg);
 }
 .faq summary:focus-visible {
-  outline: 2px solid var(--fy-blue-ink);
+  outline: 2px solid var(--fy-accent-ink);
   outline-offset: 4px;
 }
 .faq details p {
@@ -411,86 +470,78 @@
 .plans {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 80px;
-  border-top: 1px solid var(--border-default);
-  border-bottom: 1px solid var(--border-default);
+  gap: 8px;
+  margin-top: 56px;
+  text-align: left;
 }
 .plan {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 32px 28px 36px;
+  min-height: 460px;
+  padding: 20px 20px 22px;
+  border-radius: 10px;
+  background: var(--surface-deep);
 }
-.plan:first-child {
-  padding-left: 0;
-}
-.plan + .plan {
-  border-left: 1px solid var(--border-default);
-}
-.planFeatured::before {
-  content: "";
-  position: absolute;
-  top: -1px;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--fy-gradient);
+.planFeatured {
+  background: var(--surface-selected);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
 }
 .planName {
-  font-size: 15px;
-  font-weight: 510;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
   color: var(--text-primary);
 }
+.planNote {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
 .planPrice {
-  margin-top: 20px;
-  font-size: 40px;
+  margin-top: 24px;
+  font-size: 34px;
   line-height: 1;
-  font-weight: 510;
+  font-weight: 600;
   letter-spacing: -0.022em;
   color: var(--text-primary);
 }
 .planPrice span {
-  margin-left: 6px;
-  font-size: 15px;
+  margin-left: 4px;
+  font-size: 13px;
   font-weight: 400;
-  letter-spacing: -0.011em;
+  letter-spacing: 0;
   color: var(--text-tertiary);
-}
-.planNote {
-  min-height: 3.2em;
-  margin-top: 12px;
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--text-tertiary);
-}
-.planCta {
-  justify-content: center;
-  margin-top: 24px;
 }
 .planList {
   display: grid;
-  gap: 12px;
-  margin-top: 28px;
+  gap: 9px;
+  margin-top: 32px;
+  margin-bottom: 28px;
 }
 .planList li {
   position: relative;
-  padding-left: 22px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text-secondary);
+  padding-left: 20px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-primary);
 }
 .planList li::before {
   content: "";
   position: absolute;
   left: 2px;
   top: 5px;
-  width: 9px;
-  height: 5px;
-  border-left: 1.5px solid var(--fy-blue-ink);
-  border-bottom: 1.5px solid var(--fy-blue-ink);
+  width: 8px;
+  height: 4px;
+  border-left: 1.5px solid var(--text-primary);
+  border-bottom: 1.5px solid var(--text-primary);
   transform: rotate(-45deg);
 }
-
+.planCta {
+  align-self: flex-start;
+  margin-top: auto;
+}
 /* ---------- Table ---------- */
 
 .tableWrap {
@@ -512,12 +563,12 @@
 }
 .table thead th {
   font-size: 13px;
-  font-weight: 510;
+  font-weight: 600;
   color: var(--text-primary);
 }
 .table tbody th {
   width: 26%;
-  font-weight: 510;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 .table td {
@@ -565,7 +616,7 @@
   text-underline-offset: 4px;
 }
 .prose strong {
-  font-weight: 510;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
@@ -641,13 +692,6 @@
   .plans {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .plan:nth-child(3) {
-    padding-left: 0;
-    border-left: 0;
-  }
-  .plan:nth-child(n + 3) {
-    border-top: 1px solid var(--border-default);
-  }
   .timeline::before {
     display: none;
   }
@@ -695,14 +739,8 @@
   .plans {
     grid-template-columns: 1fr;
   }
-  .plan,
-  .plan:nth-child(3) {
-    padding: 28px 0 32px;
-    border-left: 0;
-  }
-  .plan + .plan {
-    border-left: 0;
-    border-top: 1px solid var(--border-default);
+  .plan {
+    min-height: 0;
   }
   .closingRule {
     margin-bottom: 80px;
@@ -719,42 +757,7 @@
   }
 }
 
-/* ---------- Colour: the ring palette across the page ---------- */
-
-.hero,
-.heroCompact {
-  position: relative;
-  isolation: isolate;
-}
-.hero::before,
-.heroCompact::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 0 0 auto;
-  height: 900px;
-  background:
-    radial-gradient(40% 36% at 14% 16%, rgba(45, 212, 191, 0.3), transparent 70%),
-    radial-gradient(38% 34% at 48% 4%, rgba(91, 108, 255, 0.38), transparent 70%),
-    radial-gradient(40% 38% at 86% 16%, rgba(168, 85, 247, 0.34), transparent 70%),
-    radial-gradient(34% 30% at 72% 56%, rgba(255, 90, 110, 0.22), transparent 70%);
-  pointer-events: none;
-  animation: aurora 18s ease-in-out infinite alternate;
-}
-@keyframes aurora {
-  from { transform: translate3d(0, 0, 0) scale(1); }
-  to { transform: translate3d(-2%, 1.5%, 0) scale(1.06); }
-}
-
-.stage::before {
-  inset: auto -10% -140px;
-  height: 520px;
-  background:
-    radial-gradient(40% 60% at 22% 100%, rgba(45, 212, 191, 0.34), transparent 70%),
-    radial-gradient(42% 60% at 48% 100%, rgba(91, 108, 255, 0.4), transparent 70%),
-    radial-gradient(40% 58% at 76% 100%, rgba(255, 90, 110, 0.3), transparent 70%);
-  filter: blur(48px);
-}
+/* ---------- Light: pale blue air behind the product, never on the text ---------- */
 
 .headVisual {
   position: relative;
@@ -766,99 +769,38 @@
   z-index: -1;
   inset: 12% -6% 0;
   background:
-    radial-gradient(40% 50% at 20% 30%, rgba(91, 108, 255, 0.2), transparent 70%),
-    radial-gradient(40% 50% at 82% 60%, rgba(168, 85, 247, 0.16), transparent 70%);
+    radial-gradient(40% 50% at 20% 30%, rgba(60, 50, 30, 0.05), transparent 70%),
+    radial-gradient(40% 50% at 82% 60%, rgba(229, 72, 77, 0.05), transparent 70%);
   filter: blur(40px);
   pointer-events: none;
 }
 
-.frame {
-  border-color: rgba(255, 255, 255, 0.1);
-}
-.frame::after {
-  height: 1px;
-  background: var(--fy-gradient);
-  opacity: 0.7;
-}
-
-.statement b {
-  background: linear-gradient(90deg, #f7f8f8 0%, #f7f8f8 55%, #b9c1ff 80%, #ffb3be 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
 .tlDot {
-  background: #3a3d45;
+  background: var(--border-strong);
 }
 
-.closing {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-}
-.closing::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 30% -10% -30%;
-  background:
-    radial-gradient(35% 50% at 20% 60%, rgba(45, 212, 191, 0.18), transparent 70%),
-    radial-gradient(35% 50% at 50% 70%, rgba(91, 108, 255, 0.22), transparent 70%),
-    radial-gradient(35% 50% at 82% 60%, rgba(255, 90, 110, 0.18), transparent 70%);
-  filter: blur(30px);
-  pointer-events: none;
-}
-.closingRule {
-  opacity: 0.9;
-}
 
-.planFeatured {
-  background: linear-gradient(180deg, rgba(91, 108, 255, 0.1), transparent 70%);
-}
-
-.heroTitle,
-.headTitle {
-  background: linear-gradient(100deg, #ffffff 0%, #ffffff 45%, #c9ceff 72%, #ffc2cb 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
 
 .trioFig {
   position: relative;
   isolation: isolate;
   margin-right: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--surface-raised);
   overflow: hidden;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--text-secondary);
 }
 .trioFig::before {
   content: "";
   position: absolute;
   z-index: -1;
   inset: 0;
-  background: radial-gradient(70% 70% at 50% 40%, var(--fig-glow, rgba(91, 108, 255, 0.28)), transparent 72%);
-  transition: opacity 300ms ease;
-}
-.trioItem:nth-child(1) .trioFig {
-  --fig-glow: rgba(45, 212, 191, 0.24);
-}
-.trioItem:nth-child(2) .trioFig {
-  --fig-glow: rgba(91, 108, 255, 0.3);
+  background: radial-gradient(70% 70% at 50% 40%, var(--fig-glow, rgba(60, 50, 30, 0.05)), transparent 72%);
 }
 .trioItem:nth-child(3) .trioFig {
-  --fig-glow: rgba(255, 90, 110, 0.24);
+  --fig-glow: rgba(229, 72, 77, 0.06);
 }
 .trioItem + .trioItem {
   border-left-color: transparent;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero::before,
-  .heroCompact::before {
-    animation: none;
-  }
 }

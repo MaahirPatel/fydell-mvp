@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { BellDot, Check, FileCode2, FileText, MessagesSquare, Upload as UploadIcon, type LucideIcon } from "lucide-react";
+import { CandidatePageHead } from "@/components/candidate/CandidatePageHead";
 import { Button } from "@/components/ui/Button";
 import { Field, FormError, FormSuccess, Textarea } from "@/components/ui/Field";
 import { Panel, PanelSection } from "@/components/ui/Panel";
@@ -8,7 +10,7 @@ import { CONTACT_MAILTO } from "@/lib/contact";
 import { cn } from "@/lib/cn";
 import type { CandidateView } from "@/lib/eng/candidate-view";
 import { engFetch, formatBytes } from "./api";
-import { BulletList, Disclosure, PolicyDisclosures } from "./CandidateParts";
+import { BulletList, Disclosure, JourneyRail, PolicyDisclosures } from "./CandidateParts";
 import { CommandBlock } from "./CommandBlock";
 import { LocalTime } from "./LocalTime";
 import type { DraftKey, DraftState } from "./useDrafts";
@@ -20,6 +22,40 @@ type Message = View["messages"][number];
 const TABS = ["brief", "team", "updates", "submit"] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABEL: Record<Tab, string> = { brief: "Brief", team: "Team", updates: "Updates", submit: "Submit" };
+const TAB_HINT: Record<Tab, string> = {
+  brief: "Incident, requirements, files",
+  team: "Ask the simulated team",
+  updates: "Changes to the brief",
+  submit: "ZIP and handoff",
+};
+const TAB_ICON: Record<Tab, LucideIcon> = { brief: FileText, team: MessagesSquare, updates: BellDot, submit: UploadIcon };
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function StepTitle({ n, done, children }: { n: number; done: boolean; children: React.ReactNode }) {
+  return (
+    <span className="flex items-center gap-2.5">
+      <span
+        aria-hidden
+        className={cn(
+          "grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-[11.5px]",
+          done ? "bg-[var(--fy-accent)] text-white" : "border border-[var(--fy-accent-line)] bg-[var(--fy-accent-field)] text-[var(--fy-accent-ink)]"
+        )}
+      >
+        {done ? <Check className="h-3 w-3" strokeWidth={3} /> : n}
+      </span>
+      {children}
+      {done ? <span className="sr-only"> (done)</span> : null}
+    </span>
+  );
+}
 
 function subscribeHash(callback: () => void) {
   window.addEventListener("hashchange", callback);
@@ -58,11 +94,24 @@ function Countdown({ view, now }: { view: View; now: number }) {
   const late = now > due && now <= graceEnd;
   const closed = now > graceEnd;
   return (
-    <div role="timer" aria-live="off" className="sm:text-right">
-      <p className={cn("font-mono text-[18px] tabular-nums", late ? "text-[var(--fydell-changed)]" : closed ? "text-[var(--fydell-risk)]" : "text-[var(--text-primary)]")}>
+    <div
+      role="timer"
+      aria-live="off"
+      className={cn(
+        "min-w-[200px] rounded-[12px] border bg-[var(--surface-raised)] px-4 py-3 shadow-[0_1px_2px_rgba(19,32,56,0.04)]",
+        late ? "border-[#f0d9a8]" : closed ? "border-[var(--fy-red-line)]" : "border-[var(--border-default)]"
+      )}
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-tertiary)]">{closed ? "Closed" : late ? "Grace period" : "Time left"}</p>
+      <p
+        className={cn(
+          "mt-0.5 font-mono text-[26px] font-medium leading-tight tracking-[-0.02em] tabular-nums",
+          late ? "text-[var(--fy-amber-ink)]" : closed ? "text-[var(--fy-red-ink)]" : "text-[var(--text-primary)]"
+        )}
+      >
         {closed ? "0:00" : formatRemaining((late ? graceEnd : due) - now)}
       </p>
-      <p className="text-app-meta text-[var(--text-tertiary)]">
+      <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">
         {closed ? "Submission closed" : late ? "Late uploads still accepted" : (
           <>
             Due <LocalTime iso={view.attempt.dueAt} />
@@ -86,9 +135,12 @@ function BriefTab({ view }: { view: View }) {
         <BulletList items={s.candidateBrief} className="text-app-body text-[var(--text-secondary)]" />
       </PanelSection>
       <PanelSection title="Initial requirements" description="From INCIDENT.md. The team's update adds to these; it does not replace them.">
-        <ol className="grid list-decimal gap-1.5 pl-5 text-app-body leading-[1.6] text-[var(--text-secondary)]">
-          {s.initialRequirements.map((r) => (
-            <li key={r}>{r}</li>
+        <ol className="grid overflow-hidden rounded-[10px] border border-[var(--border-subtle)] text-app-body leading-[1.55]">
+          {s.initialRequirements.map((r, i) => (
+            <li key={r} className="grid grid-cols-[44px_minmax(0,1fr)] gap-2 border-t border-[var(--border-subtle)] px-3 py-2.5 first:border-t-0">
+              <span className="font-mono text-[12px] leading-[1.9] text-[var(--fy-accent-ink)]">R{i + 1}</span>
+              <span className="text-[var(--text-primary)]">{r}</span>
+            </li>
           ))}
         </ol>
       </PanelSection>
@@ -104,10 +156,13 @@ function BriefTab({ view }: { view: View }) {
           </a>
         }
       >
-        <ul className="grid gap-2 text-app-body">
+        <ul className="grid overflow-hidden rounded-[10px] border border-[var(--border-subtle)] text-app-body">
           {s.resources.map((r) => (
-            <li key={r.path} className="grid gap-0.5 sm:grid-cols-[260px_minmax(0,1fr)] sm:gap-4">
-              <code className="font-mono text-[12.5px] text-[var(--text-primary)]">{r.path}</code>
+            <li key={r.path} className="grid gap-1 border-t border-[var(--border-subtle)] px-3 py-2.5 first:border-t-0 sm:grid-cols-[260px_minmax(0,1fr)] sm:gap-4">
+              <code className="flex items-center gap-2 font-mono text-[12.5px] text-[var(--text-primary)]">
+                <FileCode2 aria-hidden className="h-3.5 w-3.5 shrink-0 text-[var(--text-tertiary)]" strokeWidth={1.8} />
+                {r.path}
+              </code>
               <span className="text-[var(--text-secondary)]">{r.description}</span>
             </li>
           ))}
@@ -165,10 +220,14 @@ function TeamTab({
   return (
     <Panel>
       <PanelSection title="Team thread">
-        <ul className="flex flex-wrap gap-x-6 gap-y-1 text-app-body">
+        <ul className="flex flex-wrap gap-2 text-app-meta">
           {view.scenario.teammates.map((t) => (
-            <li key={t.id}>
-              <span className="text-[var(--text-primary)]">{t.name}</span> <span className="text-[var(--text-secondary)]">· {t.title}</span>
+            <li key={t.id} className="inline-flex items-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-panel)] py-1 pl-1 pr-3">
+              <span aria-hidden className="grid h-6 w-6 place-items-center rounded-full bg-[var(--fy-accent-soft)] text-[10.5px] font-semibold text-[var(--fy-accent-ink)]">
+                {initials(t.name)}
+              </span>
+              <span className="font-medium text-[var(--text-primary)]">{t.name}</span>
+              <span className="text-[var(--text-tertiary)]">{t.title}</span>
             </li>
           ))}
         </ul>
@@ -178,23 +237,34 @@ function TeamTab({
       </PanelSection>
       <PanelSection>
         <ol className="grid max-h-[52vh] min-h-[200px] content-start gap-2 overflow-auto pr-1" aria-live="polite" aria-label="Messages">
-          {messages.map((m) => (
-            <li
-              key={m.id}
-              className={cn(
-                "max-w-[80ch] rounded-[var(--radius-panel)] px-3 py-2",
-                m.sender === "candidate" ? "ml-10 bg-[var(--surface-hover)]" : "mr-10 border border-[var(--border-subtle)]"
-              )}
-            >
-              <p className="text-app-meta">
-                <span className="font-medium text-[var(--text-primary)]">{m.sender === "candidate" ? "You" : names[m.teammate_id ?? ""] ?? "Teammate"}</span>
-                <span className="ml-2 text-[var(--text-tertiary)]">{new Date(m.created_at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</span>
-              </p>
-              <p className="mt-0.5 whitespace-pre-wrap text-app-body leading-[1.55] text-[var(--text-secondary)]">{m.body}</p>
-            </li>
-          ))}
+          {messages.map((m) => {
+            const who = m.sender === "candidate" ? "You" : names[m.teammate_id ?? ""] ?? "Teammate";
+            const mine = m.sender === "candidate";
+            return (
+              <li key={m.id} className="grid max-w-[80ch] grid-cols-[28px_minmax(0,1fr)] gap-3 rounded-[10px] px-2 py-2 hover:bg-[var(--surface-panel)]">
+                <span
+                  aria-hidden
+                  className={cn(
+                    "grid h-7 w-7 place-items-center rounded-full text-[10.5px] font-semibold",
+                    mine ? "bg-[var(--surface-selected)] text-[var(--text-secondary)]" : "bg-[var(--fy-accent-soft)] text-[var(--fy-accent-ink)]"
+                  )}
+                >
+                  {mine ? "You" : initials(who)}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-app-meta">
+                    <span className="font-medium text-[var(--text-primary)]">{who}</span>
+                    <span className="ml-2 font-mono text-[11.5px] text-[var(--text-tertiary)]">
+                      {new Date(m.created_at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
+                    </span>
+                  </p>
+                  <p className="mt-0.5 whitespace-pre-wrap text-app-body leading-[1.6] text-[var(--text-body)]">{m.body}</p>
+                </div>
+              </li>
+            );
+          })}
           {pending ? (
-            <li className="ml-10 rounded-[var(--radius-panel)] bg-[var(--surface-hover)] px-3 py-2 opacity-70">
+            <li className="ml-[42px] rounded-[10px] bg-[var(--surface-panel)] px-3 py-2 opacity-70">
               <p className="text-app-meta text-[var(--text-tertiary)]">{error ? "Not sent" : "Sending…"}</p>
               <p className="mt-0.5 whitespace-pre-wrap text-app-body text-[var(--text-secondary)]">{pending.body}</p>
             </li>
@@ -267,9 +337,17 @@ function UpdatesTab({ view, onAcknowledged }: { view: View; onAcknowledged: (at:
     );
   }
   return (
-    <Panel>
+    <Panel className="border-t-2 border-t-[var(--fy-red)]">
       <PanelSection
-        title={view.update.title}
+        title={
+          <>
+            <span className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--fy-red-ink)]">
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[var(--fy-red)]" />
+              Requirement changed
+            </span>
+            {view.update.title}
+          </>
+        }
         description={
           <>
             From {view.update.from}
@@ -477,7 +555,7 @@ function SubmitTab({
 
   return (
     <Panel>
-      <PanelSection title="1. Upload your project" description="One .zip of the whole project folder, up to 5 MB. You can replace it until you submit.">
+      <PanelSection title={<StepTitle n={1} done={Boolean(accepted)}>Upload your project</StepTitle>} description="One .zip of the whole project folder, up to 5 MB. You can replace it until you submit.">
         <div className="grid gap-4">
           {windowClosed ? (
             <FormError>The submission window has closed. Contact the employer if you need an extension; extensions appear here automatically.</FormError>
@@ -500,7 +578,7 @@ function SubmitTab({
           </div>
         </div>
       </PanelSection>
-      <PanelSection title="2. Handoff" description="Write it the way you would hand a change to a teammate. It saves as you type.">
+      <PanelSection title={<StepTitle n={2} done={!missingChange}>Write the handoff</StepTitle>} description="Write it the way you would hand a change to a teammate. It saves as you type.">
         <div className="grid gap-5">
           {view.scenario.handoffPrompts.map((p) => (
             <div key={p.field}>
@@ -523,7 +601,7 @@ function SubmitTab({
           </div>
         </div>
       </PanelSection>
-      <PanelSection title="3. Submit">
+      <PanelSection title={<StepTitle n={3} done={false}>Submit</StepTitle>} description="Seals the ZIP and handoff together. You cannot change either afterwards.">
         <div className="grid gap-3">
           {!view.update ? (
             <p className="max-w-[68ch] text-app-meta leading-[1.55] text-[var(--text-secondary)]">
@@ -631,68 +709,121 @@ export function AssessmentWorkspace({
     if (next !== tab) window.location.hash = next;
   }
 
+  const accepted = uploads.some((u) => u.status === "accepted");
+  const checklist: { label: string; done: boolean; tab: Tab }[] = [
+    { label: accepted ? "Valid ZIP uploaded" : "Upload your project ZIP", done: accepted, tab: "submit" },
+    { label: "Answer “What changed?”", done: Boolean(draftsApi.drafts.what_changed.body.trim()), tab: "submit" },
+    view.update
+      ? { label: view.attempt.updateAcknowledgedAt ? "Team update read" : "Read the team update", done: Boolean(view.attempt.updateAcknowledgedAt), tab: "updates" }
+      : { label: `Team update due ~${view.scenario.updateAfterMinutes} min in`, done: false, tab: "updates" },
+  ];
+
   return (
-    <div className="grid gap-5">
-      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
-        <div className="min-w-0">
-          <p className="text-app-meta text-[var(--text-tertiary)]">
-            {view.role.organizationName} · {view.role.title}
-          </p>
-          <h1 className="mt-1 text-[24px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">{view.scenario.title}</h1>
-          <p className="mt-1 flex items-center gap-3 text-app-meta text-[var(--text-secondary)]">
-            <span className="inline-flex items-center gap-1.5" role="status">
-              <span aria-hidden className={cn("h-1.5 w-1.5 rounded-full", online ? "bg-[var(--fydell-good)]" : "bg-[var(--fydell-risk)]")} />
-              {online ? "Connected" : "Offline: keep working locally; drafts save when you reconnect"}
-            </span>
-            <a href={CONTACT_MAILTO} className="underline underline-offset-2 hover:text-[var(--text-primary)]">
-              Support
-            </a>
-          </p>
-        </div>
-        <Countdown view={view} now={now} />
-      </header>
+    <div className="grid gap-6">
+      <CandidatePageHead
+        eyebrow={[view.role.organizationName, view.role.title]}
+        title={view.scenario.title}
+        aside={<Countdown view={view} now={now} />}
+        meta={[
+          {
+            label: "Connection",
+            value: (
+              <span role="status" className="inline-flex items-center gap-1.5">
+                <span aria-hidden className={cn("h-1.5 w-1.5 rounded-full", online ? "bg-[var(--fy-green-ink)]" : "bg-[var(--fy-red)]")} />
+                {online ? "Connected" : "Offline. Keep working; drafts save when you reconnect"}
+              </span>
+            ),
+          },
+          { label: "Team update", value: view.update ? (view.attempt.updateAcknowledgedAt ? "Read" : "Arrived, not read") : "Not yet" },
+          {
+            label: "Support",
+            value: (
+              <a href={CONTACT_MAILTO} className="text-[var(--fy-accent-ink)] hover:underline">
+                Email Fydell
+              </a>
+            ),
+          },
+        ]}
+        rail={<JourneyRail at="work" />}
+      />
 
       {updateUnread && tab !== "updates" ? (
-        <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-2.5">
-          <p className="text-app-body text-[var(--text-primary)]">
-            <span aria-hidden className="mr-2 inline-block h-2 w-2 rounded-full bg-[var(--fydell-brand-blue)]" />
-            New requirement update from {view.update?.from}.
+        <div
+          role="status"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[var(--fy-red-line)] bg-[var(--fy-red-field)] px-4 py-3"
+        >
+          <p className="flex items-center gap-2.5 text-app-body text-[var(--text-primary)]">
+            <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-[var(--fy-red)]" />
+            <span>
+              <span className="font-medium">The requirement changed.</span> {view.update?.from} posted an update to the brief.
+            </span>
           </p>
           <Button size="sm" variant="secondary" onClick={() => go("updates")}>
-            Read update
+            Read the update
           </Button>
         </div>
       ) : null}
 
-      <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)]">
-        <nav aria-label="Task" className="md:sticky md:top-5 md:self-start">
-          <ul className="flex gap-1 overflow-x-auto md:grid">
-            {TABS.map((t) => {
-              const badge = t === "team" && unreadTeam > 0 ? String(unreadTeam) : t === "updates" && updateUnread ? "New" : null;
-              return (
-                <li key={t}>
-                  <button
-                    type="button"
-                    onClick={() => go(t)}
-                    aria-current={tab === t ? "page" : undefined}
-                    className={cn(
-                      "flex h-9 w-full items-center justify-between gap-3 rounded-[var(--radius-control)] px-3 text-left text-[13.5px]",
-                      tab === t ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                    )}
-                  >
-                    {TAB_LABEL[t]}
-                    {badge ? (
-                      <span className="rounded-full bg-[var(--fydell-brand-blue)] px-1.5 text-[11px] font-medium leading-[18px] text-white">
-                        {badge}
-                        <span className="sr-only">{t === "team" ? " unread messages" : " update"}</span>
+      <div className="grid gap-6 md:grid-cols-[232px_minmax(0,1fr)]">
+        <div className="grid content-start gap-4 md:sticky md:top-[84px] md:self-start">
+          <nav aria-label="Task">
+            <ul className="flex gap-1 overflow-x-auto md:grid">
+              {TABS.map((t) => {
+                const badge = t === "team" && unreadTeam > 0 ? String(unreadTeam) : t === "updates" && updateUnread ? "New" : null;
+                const Icon = TAB_ICON[t];
+                return (
+                  <li key={t}>
+                    <button
+                      type="button"
+                      onClick={() => go(t)}
+                      aria-current={tab === t ? "page" : undefined}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-[10px] px-3 py-2 text-left transition-colors",
+                        tab === t ? "bg-[var(--surface-raised)] shadow-[0_0_0_1px_var(--border-default),0_1px_2px_rgba(19,32,56,0.05)]" : "hover:bg-[var(--surface-hover)]"
+                      )}
+                    >
+                      <Icon aria-hidden className={cn("h-4 w-4 shrink-0", tab === t ? "text-[var(--fy-accent)]" : "text-[var(--text-tertiary)]")} strokeWidth={1.8} />
+                      <span className="min-w-0 flex-1">
+                        <span className={cn("block text-[13.5px] font-medium", tab === t ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]")}>{TAB_LABEL[t]}</span>
+                        <span className="hidden text-[12px] text-[var(--text-tertiary)] md:block">{TAB_HINT[t]}</span>
                       </span>
-                    ) : null}
+                      {badge ? (
+                        <span className={cn("rounded-full px-1.5 text-[11px] font-medium leading-[18px] text-white", t === "updates" ? "bg-[var(--fy-red)]" : "bg-[var(--fy-accent)]")}>
+                          {badge}
+                          <span className="sr-only">{t === "team" ? " unread messages" : " update"}</span>
+                        </span>
+                      ) : null}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+          <div className="hidden rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4 md:block">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-tertiary)]">Before you submit</p>
+            <ul className="mt-3 grid gap-2.5">
+              {checklist.map((item) => (
+                <li key={item.label}>
+                  <button type="button" onClick={() => go(item.tab)} className="flex w-full items-start gap-2.5 text-left text-[13px] leading-[1.4]">
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "mt-px grid h-4 w-4 shrink-0 place-items-center rounded-full border",
+                        item.done ? "border-[var(--fy-accent)] bg-[var(--fy-accent)] text-white" : "border-[var(--border-strong)]"
+                      )}
+                    >
+                      {item.done ? <Check className="h-2.5 w-2.5" strokeWidth={3} /> : null}
+                    </span>
+                    <span className={item.done ? "text-[var(--text-tertiary)]" : "text-[var(--text-primary)] hover:text-[var(--fy-accent-ink)]"}>
+                      {item.label}
+                      <span className="sr-only">{item.done ? " (done)" : " (to do)"}</span>
+                    </span>
                   </button>
                 </li>
-              );
-            })}
-          </ul>
-        </nav>
+              ))}
+            </ul>
+          </div>
+        </div>
         <div className="min-w-0">
           {tab === "brief" ? <BriefTab view={view} /> : null}
           {tab === "team" ? <TeamTab view={view} messages={messages} setMessages={setMessages} disabled={windowClosed} draftsApi={draftsApi} /> : null}

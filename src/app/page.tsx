@@ -1,7 +1,7 @@
 import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
+import EvaluationShot from "@/components/marketing/kit/EvaluationShot";
 import {
-  Arrow,
   Closing,
   Details,
   Hero,
@@ -15,12 +15,12 @@ import {
   Visual,
 } from "@/components/marketing/kit/Kit";
 import { FigDecide, FigDesktop, FigIncident, FigPassport, FigReport, FigTrail } from "@/components/marketing/kit/Figs";
-import { BriefShot, DesktopShot, ReportShot, TestsShot, TrailShot } from "@/components/marketing/kit/Shots";
+import { BriefShot, ReportShot, TestsShot, TrailShot } from "@/components/marketing/kit/Shots";
 
 export const metadata = {
-  title: { absolute: "Fydell: Hire engineers on the work itself" },
+  title: { absolute: "Fydell: The hiring system built on real engineering work" },
   description:
-    "Hire software engineers on real engineering work. Candidates work a real incident in the Fydell desktop app; your team reviews cited evidence and decides.",
+    "Bring together project evidence and realistic simulations. Engineers show their skills; hiring teams review cited evidence and find their next engineer.",
   alternates: { canonical: "/" },
 };
 
@@ -28,21 +28,18 @@ export default function HomePage() {
   return (
     <MarketingShell>
       <Hero
-        title={["Hire engineers on", "the work itself"]}
-        lead="Candidates work a real incident in the Fydell desktop app. Your team reviews what they did, with every claim cited, and decides."
-        aside={{ href: "/download", strong: "New", label: "Fydell desktop for macOS and Windows" }}
+        title={["The hiring system built on", "real engineering work."]}
+        lead="Bring together project evidence and realistic simulations. Show your skills. Find your next engineer."
+        aside={{ href: "/download", strong: "New", label: "Fydell desktop 0.1.4" }}
         actions={
           <>
             <Link href="/get-started" className="l-btn l-btn-lg l-btn-solid">Get started</Link>
             <Link href="/demo" className="l-btn l-btn-lg l-btn-ghost">Explore demo</Link>
-            <Link href="/developers" className="l-link l-btn-lg">
-              For engineers <Arrow />
-            </Link>
           </>
         }
       >
-        <Stage hero label="Example: a candidate mid-simulation in the Fydell desktop app">
-          <DesktopShot />
+        <Stage hero art="lake" title="Fydell · Evaluation FYD-2048" label="Example: an evaluation in the Fydell employer workspace">
+          <EvaluationShot />
         </Stage>
       </Hero>
 
@@ -79,7 +76,7 @@ export default function HomePage() {
           lead="The candidate gets what an engineer on your team would get: an incident brief, a codebase that runs, and teammates who answer questions. Halfway through, the requirement changes."
           link={{ href: "/product#brief", label: "How a simulation runs" }}
         />
-        <Visual label="Example: the INC-2291 brief and the team thread">
+        <Visual art="coast" title="Fydell Desktop · INC-2291" label="Example: the INC-2291 brief and the team thread">
           <BriefShot />
         </Visual>
         <Details
@@ -98,7 +95,7 @@ export default function HomePage() {
           lead="The desktop app records a disclosed work trail: the files they open and change, the commands they run, their test results and when each happened. Nothing outside that list."
           link={{ href: "/trust", label: "What is and isn't recorded" }}
         />
-        <Visual label="Example: a candidate's work trail and the notice they accepted">
+        <Visual art="hills" title="Fydell Desktop · Work trail" label="Example: a candidate's work trail and the notice they accepted">
           <TrailShot />
         </Visual>
       </Section>
@@ -110,7 +107,7 @@ export default function HomePage() {
           lead="On submit, the project is sealed with a checksum and run against hidden checks in an isolated sandbox. The result is the same no matter whose laptop it was written on."
           link={{ href: "/security", label: "How submissions are handled" }}
         />
-        <Visual label="Example: hidden checks run against a submitted snapshot">
+        <Visual art="lake" title="Fydell · Hidden checks" label="Example: hidden checks run against a submitted snapshot">
           <TestsShot />
         </Visual>
       </Section>
@@ -122,7 +119,7 @@ export default function HomePage() {
           lead="Your reviewers write the findings. Each one must cite a file, a test, a message or a handoff answer before the report can be released. Observations and gaps are labelled, and there is no score."
           link={{ href: "/employers", label: "Fydell for hiring teams" }}
         />
-        <Visual label="Example: a cited report with the team's decision">
+        <Visual art="coast" title="Fydell · Report" label="Example: a cited report with the team's decision">
           <ReportShot />
         </Visual>
       </Section>

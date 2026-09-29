@@ -15,7 +15,7 @@ export default function ContactPage() {
       <div className="pb-24 pt-[132px] sm:pt-[156px]">
         <div className="mkt-content grid items-start gap-12 lg:grid-cols-12 lg:gap-20">
           <section className="lg:col-span-5">
-            <h1 className="page-display">Tell us about the role you are hiring for.</h1>
+            <h1 className="page-display">Contact</h1>
             <p className="page-lead">
               Share the stack, the level, and the work the engineer will own. We will
               reply with a pilot scope: which simulation fits, and how reviews will run.

@@ -557,9 +557,8 @@ export default function TrustPage() {
   return (
     <MarketingShell>
       <PageIntro
-        kicker="Trust center"
-        title="Evidence you can inspect. Access you can control."
-        lead="Workspace isolation, scoped invitations, frozen submissions and inspectable evidence are implemented today. Limitations stay on this page so they are not discovered in procurement, but they do not lead the product."
+        title="Trust"
+        lead="What Fydell implements today, and where its limits are."
       />
 
       {/* Lifecycle. The state token is the point: it says where the record

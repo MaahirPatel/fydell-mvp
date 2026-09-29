@@ -13,8 +13,7 @@ export default function PricingPage() {
     <MarketingShell>
       <Hero
         compact
-        title={["Pay for finished work,", "not invitations"]}
-        lead="Engineers never pay. Hiring teams are charged when a candidate submits a simulation, and never for invites, expired links or abandoned attempts."
+        title={["Pricing"]}
       >
         <div className="l-container">
           <Plans
@@ -22,7 +21,7 @@ export default function PricingPage() {
               {
                 name: "Engineers",
                 price: "Free",
-                note: "Simulations and your Engineering Passport.",
+                note: "For engineers",
                 features: ["Invited simulations", "Submission receipts", "Engineering Passport", "Share links you control"],
                 cta: { href: "/signup", label: "Create an account" },
               },
@@ -30,23 +29,23 @@ export default function PricingPage() {
                 name: "Starter",
                 price: usd(PRICING.starterPerSimulation),
                 per: "per simulation",
-                note: "No monthly fee. Charged when a candidate submits.",
-                features: ["Unlimited roles and reviewers", "Backend engineering simulation", "Cited reports", "Decision log"],
+                note: "Pay per submission",
+                features: ["No monthly fee", "Unlimited roles and reviewers", "Backend engineering simulation", "Cited reports", "Decision log"],
                 cta: { href: planSignupHref("starter"), label: "Start on Starter" },
               },
               {
                 name: "Team",
                 price: usd(PRICING.teamMonthly),
                 per: "per month",
-                note: `${PRICING.teamIncluded} simulations included, then ${usd(PRICING.teamOverage)} each.`,
-                features: ["Everything in Starter", `${PRICING.teamIncluded} simulations a month`, "Priority support", "Onboarding for your first role"],
+                note: "For hiring teams",
+                features: ["Everything in Starter", `${PRICING.teamIncluded} simulations a month`, `Then ${usd(PRICING.teamOverage)} each`, "Priority support", "Onboarding for your first role"],
                 cta: { href: planSignupHref("team"), label: "Start on Team" },
                 featured: true,
               },
               {
                 name: "Enterprise",
                 price: "Custom",
-                note: `For ${PRICING.enterpriseFrom} or more simulations a month.`,
+                note: `${PRICING.enterpriseFrom}+ simulations a month`,
                 features: ["Everything in Team", "Volume pricing", "Security review", "Invoiced billing"],
                 cta: { href: "/contact", label: "Contact sales" },
               },
@@ -59,7 +58,6 @@ export default function PricingPage() {
         <SectionHead
           id="compare-title"
           title={["Compare plans"]}
-          lead="Every plan includes unlimited invitations. You only pay for completed work."
         />
         <Table
           head={["", "Engineers", "Starter", "Team", "Enterprise"]}
@@ -76,8 +74,7 @@ export default function PricingPage() {
       <Section id="billing" labelledBy="billing-title">
         <SectionHead
           id="billing-title"
-          title={["How billing works"]}
-          lead="Charges follow the candidate's submission, and nothing else."
+          title={["Billing"]}
         />
         <Timeline
           items={[
@@ -90,7 +87,7 @@ export default function PricingPage() {
       </Section>
 
       <Section id="questions" labelledBy="questions-title">
-        <SectionHead id="questions-title" title={["Billing questions"]} lead="The short answers." link={{ href: "/contact", label: "Ask us anything else" }} />
+        <SectionHead id="questions-title" title={["Questions"]} link={{ href: "/contact", label: "Ask us anything else" }} />
         <Faq
           items={[
             { q: "Is there a free trial?", a: "There is no separate trial. Starter has no monthly fee, so you pay only when a candidate submits." },
@@ -101,7 +98,7 @@ export default function PricingPage() {
         />
       </Section>
 
-      <Closing title={["Start with one role.", "Pay when they submit."]} primary={{ href: planSignupHref("starter"), label: "Start on Starter" }} />
+      <Closing title={["Start with one role."]} primary={{ href: planSignupHref("starter"), label: "Start on Starter" }} />
     </MarketingShell>
   );
 }

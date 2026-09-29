@@ -3,16 +3,16 @@
    evidence and added code, red marks change, removal and failure. */
 
 .app {
-  --bg: #0c0d0e;
-  --bg-2: #0f1011;
-  --bg-3: #141517;
-  --bg-4: #1a1b1e;
-  --ln: rgba(255, 255, 255, 0.07);
-  --ln-2: rgba(255, 255, 255, 0.11);
-  --t1: #f7f8f8;
-  --t2: #d0d6e0;
-  --t3: #8a8f98;
-  --t4: #62666d;
+  --bg: #ffffff;
+  --bg-2: #f7faff;
+  --bg-3: #f1f5fb;
+  --bg-4: #e8eef7;
+  --ln: #e6ecf4;
+  --ln-2: #d6dfeb;
+  --t1: #132038;
+  --t2: #2b3a52;
+  --t3: #5f6e84;
+  --t4: #8a97aa;
   position: relative;
   display: grid;
   background: var(--bg);
@@ -42,7 +42,7 @@
   min-width: 0;
   padding: 10px 8px;
   border-right: 1px solid var(--ln);
-  background: #0a0b0c;
+  background: var(--bg-2);
 }
 .ws {
   display: flex;
@@ -100,7 +100,7 @@
   height: 16px;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--fy-blue);
+  background: var(--fy-accent);
   font-size: 10.5px;
   font-weight: 590;
   line-height: 16px;
@@ -150,7 +150,7 @@
   font-weight: 590;
 }
 .flagM {
-  color: var(--fy-blue-ink);
+  color: var(--fy-accent-ink);
 }
 .flagA {
   color: var(--fy-green-ink);
@@ -212,9 +212,9 @@
   color: var(--fy-red-ink);
 }
 .pillBlue {
-  border-color: var(--fy-blue-line);
-  background: var(--fy-blue-field);
-  color: var(--fy-blue-ink);
+  border-color: var(--fy-accent-line);
+  background: var(--fy-accent-field);
+  color: var(--fy-accent-ink);
 }
 .barRight {
   display: flex;
@@ -232,10 +232,10 @@
   height: 26px;
   padding: 0 11px;
   border-radius: 999px;
-  background: #e5e5e6;
+  background: var(--fy-accent);
   font-size: 12px;
   font-weight: 510;
-  color: #08090a;
+  color: #fff;
 }
 
 .body {
@@ -255,7 +255,7 @@
   display: flex;
   height: 36px;
   border-bottom: 1px solid var(--ln);
-  background: #0a0b0c;
+  background: var(--bg-2);
 }
 .tab {
   display: flex;
@@ -274,7 +274,7 @@
 .tabOn {
   background: var(--bg);
   color: var(--t1);
-  box-shadow: inset 0 1px 0 var(--fy-blue);
+  box-shadow: inset 0 1px 0 var(--fy-accent);
 }
 .code {
   flex: 1;
@@ -298,21 +298,21 @@
   color: var(--t4);
 }
 .add {
-  background: linear-gradient(90deg, rgba(91, 108, 255, 0.16), rgba(91, 108, 255, 0.05));
-  box-shadow: inset 2px 0 0 var(--fy-blue);
+  background: rgba(47, 158, 98, 0.09);
+  box-shadow: inset 2px 0 0 #3a9b66;
 }
 .add > span:nth-child(2) {
-  color: var(--fy-blue-ink);
+  color: var(--fy-green-ink);
 }
 .del {
-  background: linear-gradient(90deg, rgba(255, 90, 110, 0.14), rgba(255, 90, 110, 0.04));
+  background: rgba(229, 72, 77, 0.08);
   box-shadow: inset 2px 0 0 var(--fy-red);
 }
 .del > span:nth-child(2) {
   color: var(--fy-red-ink);
 }
 .del > span:last-child {
-  color: rgba(255, 149, 162, 0.72);
+  color: var(--fy-red-ink);
 }
 .cursor::after {
   content: "";
@@ -330,19 +330,19 @@
   }
 }
 .kw {
-  color: #a9b3ff;
+  color: #3b4fd8;
 }
 .fn {
-  color: #f7f8f8;
+  color: var(--t1);
 }
 .st {
-  color: #9fd8b8;
+  color: #1f7a4d;
 }
 .nu {
-  color: #f2c46d;
+  color: #9a5b0b;
 }
 .cm {
-  color: #62666d;
+  color: var(--t4);
 }
 
 .thread {
@@ -391,13 +391,13 @@
   color: #fff;
 }
 .avBlue {
-  background: linear-gradient(135deg, #5b6cff, #3848d8);
+  background: var(--fy-accent);
 }
 .avRed {
-  background: linear-gradient(135deg, #ff5a6e, #c93a55);
+  background: var(--fy-red);
 }
 .avYou {
-  background: #2a2c31;
+  background: var(--bg-4);
   color: var(--t2);
 }
 .who {
@@ -457,7 +457,7 @@
   gap: 14px;
   padding: 0 14px;
   border-top: 1px solid var(--ln);
-  background: #0a0b0c;
+  background: var(--bg-2);
   font-size: 11.5px;
   color: var(--t3);
   white-space: nowrap;
@@ -467,13 +467,13 @@
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: var(--fy-blue);
-  box-shadow: 0 0 0 3px rgba(91, 108, 255, 0.2);
+  background: var(--fy-accent);
+  box-shadow: 0 0 0 3px rgba(26, 25, 21, 0.2);
   animation: pulse 2.4s ease-in-out infinite;
 }
 @keyframes pulse {
   50% {
-    box-shadow: 0 0 0 5px rgba(91, 108, 255, 0.05);
+    box-shadow: 0 0 0 5px rgba(26, 25, 21, 0.05);
   }
 }
 .statusRight {
@@ -497,7 +497,7 @@
   height: 600px;
   overflow: hidden;
   background:
-    radial-gradient(60% 80% at 20% 110%, rgba(91, 108, 255, 0.12), transparent 60%),
+    radial-gradient(60% 80% at 20% 110%, rgba(26, 25, 21, 0.12), transparent 60%),
     radial-gradient(50% 70% at 90% 110%, rgba(255, 90, 110, 0.08), transparent 60%),
     var(--bg);
 }
@@ -566,8 +566,8 @@
   flex-direction: column;
   border: 1px solid var(--ln-2);
   border-radius: 12px;
-  background: rgba(17, 18, 20, 0.96);
-  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 60px -20px rgba(60, 48, 20, 0.24), 0 1px 2px rgba(19, 32, 56, 0.06);
   backdrop-filter: blur(12px);
 }
 .threadCard {
@@ -613,7 +613,7 @@
   gap: 10px;
   height: 38px;
   padding: 0 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--ln);
   white-space: nowrap;
 }
 .row svg {
@@ -642,7 +642,7 @@
   color: var(--fy-red-ink);
 }
 .rowBlue svg {
-  color: var(--fy-blue-ink);
+  color: var(--fy-accent-ink);
 }
 .consent {
   right: 32px;
@@ -675,7 +675,7 @@
 .check svg {
   width: 14px;
   height: 14px;
-  color: var(--fy-blue-ink);
+  color: var(--fy-accent-ink);
 }
 .consentFoot {
   margin-top: 14px;
@@ -742,7 +742,7 @@
   font-size: 11px;
 }
 .plus {
-  color: var(--fy-blue-ink);
+  color: var(--fy-accent-ink);
 }
 .minus {
   color: var(--fy-red-ink);
@@ -754,7 +754,7 @@
   gap: 10px;
   height: 36px;
   padding: 0 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--ln);
   white-space: nowrap;
 }
 .result svg {
@@ -791,7 +791,7 @@
 }
 .summaryBar i:first-child {
   width: 93.3%;
-  background: linear-gradient(90deg, #5b6cff, #8a96ff);
+  background: linear-gradient(90deg, #1a1915, #6f6c62);
 }
 .summaryBar i:last-child {
   width: 6.7%;
@@ -869,11 +869,11 @@
   gap: 5px;
   height: 22px;
   padding: 0 8px;
-  border: 1px solid var(--fy-blue-line);
+  border: 1px solid var(--fy-accent-line);
   border-radius: 6px;
-  background: var(--fy-blue-field);
+  background: var(--fy-accent-field);
   font-size: 11px;
-  color: var(--fy-blue-ink);
+  color: var(--fy-accent-ink);
 }
 .cite svg {
   width: 11px;
@@ -913,12 +913,12 @@
   border-radius: 999px;
 }
 .optionOn {
-  border-color: var(--fy-blue-line);
-  background: var(--fy-blue-field);
+  border-color: var(--fy-accent-line);
+  background: var(--fy-accent-field);
   color: var(--t1);
 }
 .optionOn i {
-  border: 4px solid var(--fy-blue);
+  border: 4px solid var(--fy-accent);
 }
 .gate {
   display: flex;
@@ -944,10 +944,10 @@
   height: 36px;
   margin-top: 4px;
   border-radius: 8px;
-  background: #e5e5e6;
+  background: var(--fy-accent);
   font-size: 12.5px;
   font-weight: 510;
-  color: #08090a;
+  color: #fff;
 }
 .prompt {
   margin-top: 18px;
@@ -971,59 +971,216 @@
 .receipt {
   display: grid;
   place-items: center;
-  height: 520px;
-  background:
-    radial-gradient(50% 60% at 50% 120%, rgba(91, 108, 255, 0.14), transparent 70%),
-    var(--bg);
-}
-.receiptCard {
-  width: min(460px, 86%);
-  padding: 24px;
-  border: 1px solid var(--ln-2);
-  border-radius: 12px;
+  padding: 40px 0;
   background: var(--bg-2);
 }
-.receiptKicker {
+.receiptCard {
+  position: relative;
+  width: min(480px, 90%);
+  padding: 22px 24px 20px;
+  border: 1px solid var(--ln-2);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, #fffefb 0%, #fbfaf6 100%);
+  box-shadow:
+    0 1px 0 #fff inset,
+    0 24px 50px -24px rgba(40, 32, 12, 0.35),
+    0 2px 6px rgba(40, 32, 12, 0.06);
+}
+.receiptTop {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.receiptKicker {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t1);
+}
+.receiptNo {
+  font-size: 11px;
+  color: var(--t4);
+}
+.receiptTitle {
+  margin-top: 14px;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--t1);
+}
+.receiptSub {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--t3);
+}
+.stamp {
+  position: absolute;
+  top: 44px;
+  right: 22px;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 6px 12px 5px;
+  border: 2px solid rgba(196, 50, 58, 0.75);
+  border-radius: 8px;
+  color: rgba(196, 50, 58, 0.85);
+  transform: rotate(-8deg);
+  mix-blend-mode: multiply;
+}
+.stamp b {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.stamp span {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+.receiptStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 18px;
+  border: 1px solid var(--ln);
+  border-radius: 10px;
+  background: var(--bg);
+}
+.receiptStats > div {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border-left: 1px solid var(--ln);
+}
+.receiptStats > div:first-child {
+  border-left: 0;
+}
+.statLabel {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--t4);
+}
+.statValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--t1);
+}
+.receiptFiles {
+  display: grid;
+  gap: 7px;
+  margin-top: 16px;
+}
+.receiptFiles li {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) 70px 56px;
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  font-weight: 510;
-  color: var(--fy-green-ink);
 }
-.receiptKicker svg {
-  width: 14px;
-  height: 14px;
-}
-.receiptTitle {
-  margin-top: 10px;
-  font-size: 20px;
-  font-weight: 590;
-  letter-spacing: -0.012em;
-  color: var(--t1);
-}
-.kv {
-  display: grid;
-  gap: 12px;
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid var(--ln);
-}
-.kv div {
-  display: grid;
-  grid-template-columns: 120px minmax(0, 1fr);
-  gap: 12px;
-  font-size: 12.5px;
-}
-.kv dt {
+.receiptFiles svg {
+  width: 13px;
+  height: 13px;
   color: var(--t4);
 }
-.kv dd {
+.receiptPath {
   overflow: hidden;
-  text-overflow: ellipsis;
   color: var(--t1);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-
+.receiptBars {
+  display: flex;
+  gap: 1px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--bg-3);
+}
+.barAdd {
+  background: #3a9b66;
+}
+.barDel {
+  background: var(--fy-red);
+}
+.receiptDiff {
+  font-size: 11.5px;
+  text-align: right;
+}
+.handoff {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+.handoffChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  border: 1px solid var(--ln);
+  border-radius: 999px;
+  background: var(--bg);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--t2);
+}
+.handoffChip svg {
+  width: 11px;
+  height: 11px;
+  color: var(--fy-green-ink);
+}
+.perf {
+  position: relative;
+  height: 1px;
+  margin: 20px -24px 16px;
+  background-image: linear-gradient(90deg, var(--ln-2) 50%, transparent 50%);
+  background-size: 8px 1px;
+}
+.perf::before,
+.perf::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--ln-2);
+  border-radius: 50%;
+  background: var(--bg-2);
+}
+.perf::before {
+  left: -9px;
+  clip-path: inset(0 0 0 50%);
+}
+.perf::after {
+  right: -9px;
+  clip-path: inset(0 50% 0 0);
+}
+.receiptFoot {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.barcode {
+  display: flex;
+  align-items: stretch;
+  height: 34px;
+}
+.barcode i {
+  display: block;
+  background: var(--t1);
+}
+.receiptSha {
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--t3);
+}
+.receiptNote {
+  font-size: 11.5px;
+  color: var(--t4);
+}
 /* ---------- Responsive: keep the core, drop the chrome ---------- */
 
 @media (max-width: 1023px) {
@@ -1142,26 +1299,24 @@
 .tests,
 .report {
   background:
-    radial-gradient(70% 50% at 100% 0%, rgba(168, 85, 247, 0.1), transparent 60%),
-    radial-gradient(60% 50% at 0% 100%, rgba(45, 212, 191, 0.08), transparent 60%),
     var(--bg);
 }
 .navOn {
-  background: linear-gradient(90deg, rgba(91, 108, 255, 0.22), rgba(168, 85, 247, 0.12));
+  background: var(--surface-selected);
 }
 .submit,
 .release {
-  background: linear-gradient(90deg, #5b6cff, #a855f7 55%, #ff5a6e);
-  color: #fff;
+  background: var(--control-solid);
+  color: var(--control-solid-ink);
 }
 .avBlue {
-  background: linear-gradient(135deg, #2dd4bf, #2563eb);
+  background: linear-gradient(135deg, #8a8578, #4a4740);
 }
 .avRed {
-  background: linear-gradient(135deg, #a855f7, #f43f5e);
+  background: linear-gradient(135deg, #e5484d, #b4323a);
 }
 .summaryBar i:first-child {
-  background: linear-gradient(90deg, #2dd4bf, #5b6cff 60%, #a855f7);
+  background: var(--t1);
 }
 
 /* ---------- Entrance motion (starts when the frame scrolls into view) ---------- */
@@ -1221,7 +1376,7 @@
   animation: sweep 1600ms ease 600ms both;
 }
 .optionOn {
-  box-shadow: 0 0 0 0 rgba(91, 108, 255, 0);
+  box-shadow: 0 0 0 0 rgba(26, 25, 21, 0);
 }
 :global([data-inview]) .optionOn {
   animation: blueGlow 2600ms ease-in-out 1200ms infinite;
@@ -1254,27 +1409,26 @@
   50% { box-shadow: 0 0 28px -4px rgba(255, 90, 110, 0.55); }
 }
 @keyframes blueGlow {
-  50% { box-shadow: 0 0 24px -6px rgba(91, 108, 255, 0.8); }
+  50% { box-shadow: 0 0 24px -6px rgba(26, 25, 21, 0.8); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .row,
-  .result,
-  .finding,
-  .update,
-  .threadCard,
-  .consent,
-  .receiptCard,
-  .kv div {
-    opacity: 1;
-    animation: none !important;
-  }
-  .summaryBar i {
-    transform: none;
-    animation: none !important;
-  }
-  .add,
-  .optionOn {
-    animation: none !important;
-  }
+/* Pages load finished: product frames are drawn complete, never animated in. */
+.row,
+.result,
+.finding,
+.update,
+.threadCard,
+.consent,
+.receiptCard,
+.kv div {
+  opacity: 1;
+  animation: none !important;
+}
+.summaryBar i {
+  transform: none;
+  animation: none !important;
+}
+.add,
+.optionOn {
+  animation: none !important;
 }

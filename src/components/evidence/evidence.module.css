@@ -1,0 +1,479 @@
+/* Fydell's signature evidence primitives. One stylesheet serves the homepage
+   example and the employer workspace, so the two can never drift apart.
+   Type: 11px micro-labels, 12-13px metadata, 13-14px body. Mono marks values
+   that came from a technical artifact: IDs, counts, hashes, durations. */
+
+.mono {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: normal;
+  letter-spacing: 0;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 560;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Evidence rail: source, work, verify, decide ---------- */
+
+.rail {
+  display: grid;
+  grid-template-columns: repeat(var(--steps, 4), minmax(0, 1fr));
+  max-width: 460px;
+}
+.railStep {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.railTrack {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+.railLine {
+  flex: 1;
+  height: 1px;
+  margin-right: 6px;
+  background: var(--border-strong);
+}
+.railStep:last-child .railLine {
+  visibility: hidden;
+}
+.railStepDone .railLine {
+  background: var(--fy-accent-line);
+}
+.railValue {
+  overflow: hidden;
+  font-size: 12.5px;
+  font-weight: 510;
+  color: var(--text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.railNode {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--surface-raised);
+}
+.railNodeDone {
+  border-color: var(--fy-accent);
+  background: var(--fy-accent);
+}
+.railNodeCurrent {
+  border-color: var(--fy-accent);
+  box-shadow: inset 0 0 0 3px var(--surface-raised);
+  background: var(--fy-accent);
+}
+
+/* ---------- Evidence timeline ---------- */
+
+.timeline {
+  position: relative;
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tlItem {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 14px minmax(0, 1fr);
+  column-gap: 10px;
+  padding-bottom: 14px;
+}
+.tlItem:last-child {
+  padding-bottom: 0;
+}
+.tlTime {
+  padding-top: 1px;
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  text-align: right;
+}
+.tlRail {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+.tlRail::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: -14px;
+  left: 50%;
+  width: 1px;
+  background: var(--border-default);
+}
+.tlItem:last-child .tlRail::after {
+  display: none;
+}
+.tlDot {
+  position: relative;
+  z-index: 1;
+  width: 7px;
+  height: 7px;
+  margin-top: 5px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-raised);
+}
+.tlDotKey {
+  border-color: var(--fy-accent);
+  background: var(--fy-accent);
+}
+.tlDotChange {
+  border-color: var(--fy-red);
+  background: var(--fy-red);
+}
+.tlTitle {
+  font-size: 13px;
+  font-weight: 510;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+.tlDetail {
+  margin-top: 1px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+/* ---------- Work receipt ---------- */
+
+.receipt {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--surface-raised);
+  box-shadow: 0 1px 2px rgba(40, 34, 20, 0.04);
+}
+.receipt::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, var(--text-primary), var(--border-strong) 60%, transparent);
+}
+.receiptHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 0;
+}
+.receiptMark {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.receiptGlyph {
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--fy-accent);
+  transform: rotate(45deg);
+}
+.verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 510;
+  color: var(--fy-accent-ink);
+}
+.unverified {
+  color: var(--text-tertiary);
+}
+.receiptBody {
+  padding: 10px 16px 14px;
+}
+.receiptTitle {
+  font-size: 15px;
+  font-weight: 590;
+  letter-spacing: -0.012em;
+  color: var(--text-primary);
+}
+.receiptSub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.receiptRows {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+.receiptRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12.5px;
+  color: var(--text-body);
+}
+.receiptRow span:last-child {
+  color: var(--text-primary);
+}
+.plus {
+  color: var(--fy-green-ink);
+}
+.minus {
+  color: var(--fy-red-ink);
+}
+.checks {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-body);
+}
+.checkIcon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+}
+.checkPass {
+  color: var(--fy-accent);
+}
+.checkFail {
+  color: var(--fy-red);
+}
+.checkNote {
+  color: var(--text-tertiary);
+}
+.receiptFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-panel);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.receiptFoot a,
+.receiptLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 510;
+  color: var(--fy-accent-ink);
+  white-space: nowrap;
+}
+.receiptFoot a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.ref {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Decision brief ---------- */
+
+.brief {
+  display: grid;
+  gap: 0;
+}
+.briefHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  font-size: 13px;
+  font-weight: 590;
+  color: var(--text-primary);
+}
+.briefSummary {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-body);
+}
+.briefBlock {
+  padding: 14px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+.briefBlock:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+.verdict {
+  margin-top: 8px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.verdictAdvance {
+  color: var(--fy-accent-ink);
+}
+.verdictHold {
+  color: var(--fy-amber-ink);
+}
+.verdictDecline {
+  color: var(--fy-red-ink);
+}
+.verdictNone {
+  color: var(--text-tertiary);
+  font-size: 15px;
+  font-weight: 510;
+}
+.verdictNote {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.list {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.concern {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--fy-red-line);
+  border-radius: 8px;
+  background: var(--fy-red-field);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-body);
+}
+.concern + .concern {
+  margin-top: 6px;
+}
+.concernIcon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  color: var(--fy-red);
+}
+.proof {
+  display: grid;
+  margin-top: 6px;
+}
+.proofRow {
+  border-bottom: 1px solid var(--border-subtle);
+}
+.proofRow:last-child {
+  border-bottom: 0;
+}
+.proofSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 12.5px;
+  color: var(--text-body);
+  list-style: none;
+}
+.proofSummary::-webkit-details-marker {
+  display: none;
+}
+details.proofRow > .proofSummary {
+  cursor: pointer;
+}
+details.proofRow > .proofSummary:hover .proofName {
+  color: var(--text-primary);
+}
+.proofName {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 120ms ease;
+}
+.proofChevron {
+  width: 12px;
+  height: 12px;
+  color: var(--text-quaternary);
+  transition: transform 150ms ease;
+}
+details[open] > .proofSummary .proofChevron {
+  transform: rotate(90deg);
+}
+.proofValue {
+  font-weight: 510;
+  color: var(--text-primary);
+}
+.levelStrong {
+  color: var(--fy-accent-ink);
+}
+.levelWeak {
+  color: var(--fy-red-ink);
+}
+.levelNone {
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+.proofDetail {
+  display: grid;
+  gap: 6px;
+  padding: 0 0 10px 18px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.proofSupport {
+  font-weight: 510;
+  color: var(--text-primary);
+}
+.proofDetail ui {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.proofDetail li {
+  position: relative;
+  padding-left: 12px;
+}
+.proofDetail li::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 0;
+  width: 5px;
+  height: 1px;
+  background: var(--fy-accent);
+}
+.briefActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}

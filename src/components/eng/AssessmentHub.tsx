@@ -9,7 +9,9 @@ import type { CandidateView } from "@/lib/eng/candidate-view";
 import { engFetch, formatBytes } from "./api";
 import { ConsentStep, SetupStep, StartStep } from "./AssessmentSetup";
 import { AssessmentWorkspace } from "./AssessmentWorkspace";
-import { StageProgress } from "./CandidateParts";
+import { CandidatePageHead } from "@/components/candidate/CandidatePageHead";
+import { Mono, WorkReceipt } from "@/components/evidence/Evidence";
+import { BulletList, JourneyRail } from "./CandidateParts";
 import { LocalTime } from "./LocalTime";
 import { useDrafts, type DraftKey } from "./useDrafts";
 
@@ -61,62 +63,73 @@ function ReceiptPanel({ view }: { view: View }) {
   const r = view.receipt;
   if (!r) return null;
   const progress = receiptProgress(r.processing);
+  const reviewed = r.processing === "ready";
+  const checked = r.processing === "ready" || r.processing === "human_review";
   return (
     <div className="grid gap-6">
-      <header>
-        <p className="text-app-meta text-[var(--text-tertiary)]">
-          {view.role.organizationName} · {view.role.title}
-        </p>
-        <h1 className="mt-1.5 text-[26px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">Submitted</h1>
-        <p className="mt-2 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">{view.scenario.title}. Keep this receipt; it identifies exactly what you sent.</p>
-      </header>
-      <Panel>
-        <PanelSection>
-          <ol aria-label="Submission progress" className="grid gap-2 sm:grid-cols-5">
-            {RECEIPT_STAGES.map((stage, i) => {
-              const done = i < progress.index || (i === 4 && progress.index === 4);
-              const current = i === progress.index && !done;
-              return (
-                <li key={stage} aria-current={current ? "step" : undefined} className="grid gap-1.5">
-                  <span
-                    className={cn(
-                      "h-1 rounded-full",
-                      done ? "bg-[var(--fydell-brand-blue)]" : current ? (progress.delayed ? "bg-[var(--fydell-changed)]" : "bg-[var(--fydell-evidence)] opacity-60") : "bg-[var(--surface-selected)]"
-                    )}
-                  />
-                  <span className={cn("text-app-meta", done || current ? "text-[var(--text-primary)]" : "text-[var(--text-tertiary)]")}>{stage}</span>
-                </li>
-              );
-            })}
-          </ol>
-          <p role="status" className="mt-3 text-app-body text-[var(--text-secondary)]">
-            {progress.note}
-          </p>
-        </PanelSection>
-        <PanelSection>
-          <dl className="grid gap-x-8 gap-y-3 text-app-body sm:grid-cols-2">
-            <div>
-              <dt className="text-app-meta text-[var(--text-tertiary)]">Submitted</dt>
-              <dd className="mt-0.5 flex flex-wrap items-center gap-2 text-[var(--text-primary)]">
-                <LocalTime iso={r.submittedAt} /> {r.late ? <StatusTag tone="changed">Late</StatusTag> : null}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-app-meta text-[var(--text-tertiary)]">Submission reference</dt>
-              <dd className="mt-0.5 break-all font-mono text-[12.5px] text-[var(--text-primary)]">{r.submissionId}</dd>
-            </div>
-            <div className="sm:col-span-2">
-              <dt className="text-app-meta text-[var(--text-tertiary)]">Accepted ZIP ({formatBytes(r.archiveBytes)}), SHA-256</dt>
-              <dd className="mt-0.5 break-all font-mono text-[12.5px] text-[var(--text-primary)]">{r.archiveSha256}</dd>
-            </div>
-          </dl>
-        </PanelSection>
-        <PanelSection>
-          <p className="max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">
-            Next: the hiring team reviews the test results, your code, the team thread and your handoff. The employer decides what happens next and contacts you directly. Nothing more is needed from you.
-          </p>
-        </PanelSection>
-      </Panel>
+      <CandidatePageHead
+        eyebrow={[view.role.organizationName, view.role.title]}
+        title="Submitted. Nothing more is needed from you."
+        lead={`${view.scenario.title}. Keep this receipt: it identifies exactly what you sent, down to the byte.`}
+        rail={<JourneyRail at="review" complete={reviewed} value={checked ? "With the team" : "Checks running"} />}
+      />
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <Panel>
+          <PanelSection title="Where your submission is" description={<span role="status">{progress.note}</span>}>
+            <ol aria-label="Submission progress" className="grid gap-3 sm:grid-cols-5">
+              {RECEIPT_STAGES.map((stage, i) => {
+                const done = i < progress.index || (i === 4 && progress.index === 4);
+                const current = i === progress.index && !done;
+                return (
+                  <li key={stage} aria-current={current ? "step" : undefined} className="grid gap-2">
+                    <span
+                      className={cn(
+                        "h-1 rounded-full",
+                        done ? "bg-[var(--fy-accent)]" : current ? (progress.delayed ? "bg-[var(--fy-red)]" : "bg-[var(--fy-accent-line)]") : "bg-[var(--border-default)]"
+                      )}
+                    />
+                    <span className={cn("text-app-meta", done || current ? "font-medium text-[var(--text-primary)]" : "text-[var(--text-tertiary)]")}>{stage}</span>
+                  </li>
+                );
+              })}
+            </ol>
+          </PanelSection>
+          <PanelSection title="What happens next">
+            <BulletList
+              className="text-app-body text-[var(--text-secondary)]"
+              items={[
+                "Fydell runs the public tests and its own hidden checks against your ZIP in an isolated environment.",
+                "The hiring team reads the results alongside your code, the team thread and your handoff.",
+                "The employer decides what happens next and contacts you directly.",
+              ]}
+            />
+          </PanelSection>
+          <PanelSection title="Fingerprint" description="The SHA-256 of the accepted ZIP. If anyone asks what you submitted, this proves it.">
+            <p className="break-all rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-[12.5px] leading-[1.6] text-[var(--text-primary)]">
+              {r.archiveSha256}
+            </p>
+          </PanelSection>
+        </Panel>
+
+        <WorkReceipt
+          title={view.scenario.title}
+          subtitle={`${view.role.organizationName} · ${view.role.title}`}
+          verified={checked}
+          rows={[
+            { label: "Submitted", value: <LocalTime iso={r.submittedAt} /> },
+            { label: "Archive", value: <Mono>{formatBytes(r.archiveBytes)}</Mono> },
+            { label: "On time", value: r.late ? <StatusTag tone="changed">Late</StatusTag> : "Yes" },
+          ]}
+          checks={[
+            { label: "ZIP validated and sealed", state: "pass" },
+            { label: "Handoff recorded", state: "pass" },
+            { label: checked ? "Checks finished" : "Checks running", state: checked ? "pass" : "note" },
+            { label: reviewed ? "Reviewed by the hiring team" : "Awaiting team review", state: reviewed ? "pass" : "note" },
+          ]}
+          reference={<>ref {r.submissionId.slice(0, 8)} · sha256:{r.archiveSha256.slice(0, 10)}</>}
+        />
+      </div>
     </div>
   );
 }
@@ -205,12 +218,11 @@ export default function AssessmentHub({ initial }: { initial: View }) {
 
   if (status === "withdrawn" || status === "expired") {
     return (
-      <Panel>
-        <PanelSection
-          title={status === "withdrawn" ? "The employer withdrew this invitation" : "This attempt has expired"}
-          description="Nothing more is needed from you. Contact the employer if you think this is a mistake."
-        />
-      </Panel>
+      <CandidatePageHead
+        eyebrow={[view.role.organizationName, view.role.title]}
+        title={status === "withdrawn" ? "The employer withdrew this task" : "This task has expired"}
+        lead="Nothing more is needed from you. If you think this is a mistake, contact the employer directly."
+      />
     );
   }
 
@@ -235,16 +247,26 @@ export default function AssessmentHub({ initial }: { initial: View }) {
     );
   }
 
+  const minutes = view.attempt.allowedMinutes + view.attempt.extensionMinutes;
   return (
     <div className="grid gap-6">
-      <StageProgress current={status === "preflight_passed" ? "Start" : "Setup"} />
-      <header>
-        <p className="text-app-meta text-[var(--text-tertiary)]">
-          {view.role.organizationName} · {view.role.title}
-        </p>
-        <h1 className="mt-1.5 text-[26px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">{view.scenario.title}</h1>
-        <p className="mt-2 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">{view.scenario.summary}</p>
-      </header>
+      <CandidatePageHead
+        eyebrow={[view.role.organizationName, view.role.title]}
+        title={view.scenario.title}
+        lead={view.scenario.summary}
+        meta={[
+          { label: "Step", value: status === "preflight_passed" ? "Ready to start" : view.attempt.consentedAt ? "Setup check" : "Ground rules" },
+          { label: "Window", value: `${minutes} min, from Start` },
+          { label: "Effort", value: `About ${view.scenario.targetMinutes} min` },
+        ]}
+        rail={
+          status === "preflight_passed" ? (
+            <JourneyRail at="work" value="Ready to start" />
+          ) : (
+            <JourneyRail at="setup" value={view.attempt.consentedAt ? "Setup check" : "Ground rules"} />
+          )
+        }
+      />
       {!online ? (
         <p role="status" className="text-app-body text-[var(--fydell-risk)]">
           You are offline. Reconnect to continue setup.

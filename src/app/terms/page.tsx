@@ -40,8 +40,8 @@ export default function TermsPage() {
   return (
     <MarketingShell>
       <PageIntro
-        title="Terms."
-        lead="Effective 14 August 2026. Standard terms of use have not been published yet. Rather than post boilerplate that says nothing, this page states what currently governs use of Fydell and how to get a copy of it."
+        title="Terms"
+        lead="Effective 14 August 2026."
       />
 
       <section className="mkt-section border-t border-[var(--border-subtle)] pb-24">

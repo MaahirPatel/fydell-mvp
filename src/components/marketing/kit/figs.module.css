@@ -129,7 +129,7 @@
     filter: none;
   }
   50% {
-    filter: drop-shadow(0 0 6px rgba(91, 108, 255, 0.8));
+    filter: drop-shadow(0 0 6px rgba(26, 25, 21, 0.8));
   }
 }
 @keyframes flow {
@@ -143,18 +143,22 @@
   }
 }
 
+.step,
+.cell,
+.late {
+  opacity: 1;
+  animation: none !important;
+}
+.draw,
+.grow,
+.type {
+  stroke-dashoffset: 0;
+  animation: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .step,
-  .cell,
-  .late,
   .caret {
     opacity: 1;
-    animation: none !important;
-  }
-  .draw,
-  .grow,
-  .type {
-    stroke-dashoffset: 0;
     animation: none !important;
   }
   .pulse {

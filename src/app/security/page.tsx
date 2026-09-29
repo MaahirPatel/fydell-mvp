@@ -40,8 +40,8 @@ export default function SecurityPage() {
   return (
     <MarketingShell>
       <PageIntro
-        title="Security."
-        lead="Effective 14 August 2026. The controls below are implemented today. Fydell holds no third-party security certification, and does not imply one."
+        title="Security"
+        lead="Effective 14 August 2026. Fydell holds no third-party security certification."
       />
 
       <section className="mkt-section border-t border-[var(--border-subtle)] pb-24">

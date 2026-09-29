@@ -17,8 +17,8 @@ export default async function NewPassportPage() {
     <MarketingShell>
       <Hero
         compact
-        title={["Build your", "Engineering Passport"]}
-        lead="Paste your GitHub profile. Fydell reads the public repositories you choose at a pinned commit and shows what the code demonstrates, citing the exact lines. Try it without an account; sign up to save and share it."
+        title={["Engineering Passport"]}
+        lead="Paste your GitHub profile. Fydell cites what your public code demonstrates, line by line."
       >
         <div className="l-container" style={{ marginTop: 56, paddingBottom: 120 }}>
           <PassportBuilder signedIn={false} />

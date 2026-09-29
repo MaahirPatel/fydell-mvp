@@ -24,21 +24,26 @@ export default function AuthShell({
   width?: "narrow" | "wide";
 }) {
   return (
-    <div className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-[var(--surface-canvas)]">
-      {/* Ambient brand wash: a whisper of violet-blue along the top edge,
-          dissolving into the warm canvas. Present, not noticeable. */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-[-340px] h-[600px] w-[min(920px,120vw)] -translate-x-1/2 rounded-[100%] bg-[radial-gradient(closest-side,rgba(86,98,255,0.10),rgba(122,79,160,0.05),transparent)]" />
-      </div>
+    <div className="site-linear relative flex min-h-[100dvh] flex-col overflow-hidden bg-[var(--surface-canvas)]">
+      {/* The same porcelain-and-blue light as the homepage hero, so signing in
+          never feels like leaving the site. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[900px] bg-[radial-gradient(60%_55%_at_88%_0%,#efede6_0%,rgba(239,237,230,0.5)_38%,transparent_72%),radial-gradient(50%_45%_at_10%_38%,rgba(244,243,239,0.9)_0%,transparent_70%),linear-gradient(180deg,#ffffff_0%,var(--surface-canvas)_70%)]"
+      />
 
-      <header className="relative z-10 flex h-16 shrink-0 items-center px-6 sm:px-10">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2.5 rounded-[6px]"
-          aria-label="Fydell home"
-        >
-          <FydellLogo height={22} />
-        </Link>
+      <header className="relative z-10 shrink-0">
+        <div className="l-container flex h-16 items-center justify-between">
+          <Link href="/" className="inline-flex items-center rounded-[6px]" aria-label="Fydell home">
+            <FydellLogo height={20} />
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex h-8 items-center rounded-[6px] px-[10px] text-[13px] text-[var(--text-secondary)] transition-colors duration-100 hover:text-[var(--text-primary)]"
+          >
+            Back to fydell.com
+          </Link>
+        </div>
       </header>
 
       <main

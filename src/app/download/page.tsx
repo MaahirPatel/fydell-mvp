@@ -22,8 +22,8 @@ export default function DownloadPage() {
     <MarketingShell>
       <Hero
         compact
-        title={["Fydell for", "macOS and Windows"]}
-        lead={`The app candidates use to work a simulation: it sets up the project, runs the setup check, keeps the brief and team beside the code, and records only the disclosed work trail. Version ${VERSION}, beta.`}
+        title={["Download"]}
+        lead={`Fydell desktop ${VERSION} for macOS and Windows. Beta.`}
         aside={{ href: RELEASES_URL, label: "Release notes and other builds" }}
         actions={
           <>

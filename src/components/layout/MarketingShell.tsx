@@ -5,9 +5,9 @@ import SiteFooter from "@/components/layout/SiteFooter";
 export type MarketingTone = "ink" | "light";
 
 /**
- * Shared shell for every public page: the dark Linear ground, the fixed nav
- * and the footer. `.theme-ink` supplies the dark brand and state tones;
- * `.site-linear` pins neutrals, type and fonts, so the site has one theme.
+ * Shared shell for every public page: the light porcelain ground, the fixed
+ * nav and the footer. `.site-linear` sets marketing type and measure on top of
+ * the shared palette, so the site, sign-in and the app read as one product.
  * `tone` is accepted for existing call sites and no longer changes the ground.
  */
 export default function MarketingShell({
@@ -18,7 +18,7 @@ export default function MarketingShell({
 }) {
   return (
     <LenisProvider>
-      <div className="theme-ink site-linear fydell-page relative min-h-screen overflow-x-clip">
+      <div className="site-linear fydell-page relative min-h-screen overflow-x-clip">
         <a href="#main" className="skip-link">
           Skip to content
         </a>

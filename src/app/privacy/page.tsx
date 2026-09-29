@@ -45,8 +45,8 @@ export default function PrivacyPage() {
   return (
     <MarketingShell>
       <PageIntro
-        title="Privacy."
-        lead="A plain summary of what Fydell holds and why. Effective 14 August 2026. A full policy will replace this page; until then, this describes actual practice rather than boilerplate."
+        title="Privacy"
+        lead="Effective 14 August 2026. What Fydell holds and why."
       />
 
       <section className="mkt-section border-t border-[var(--border-subtle)] pb-24">

@@ -1,11 +1,13 @@
 import Link from "next/link";
 import FydellLogo from "@/components/brand/FydellLogo";
 import SignOutButton from "@/components/employer/SignOutButton";
+import { CONTACT_MAILTO } from "@/lib/contact";
+import s from "./candidate.module.css";
 
 /** The header-right sign-out. Quiet, text-only: leaving is a utility, not a CTA. */
 function CandidateSignOut() {
   return (
-    <SignOutButton className="inline-flex h-8 shrink-0 items-center rounded-[var(--radius-control)] px-2.5 text-app-meta font-medium text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:opacity-50" />
+    <SignOutButton className="inline-flex h-8 shrink-0 items-center rounded-[8px] px-2.5 text-[13px] font-medium text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:opacity-50" />
   );
 }
 
@@ -25,39 +27,40 @@ export function CandidateShell({
   action?: React.ReactNode;
   current?: "profile" | "assessments";
 }) {
-  const max = width === "narrow" ? "max-w-[620px]" : width === "wide" ? "max-w-[1160px]" : "max-w-[860px]";
   const links = [
+    { key: "assessments", label: "Evaluations", href: "/app/candidate" },
     { key: "profile", label: "Profile", href: "/app/candidate/profile" },
-    { key: "assessments", label: "Assessments", href: "/app/candidate" },
   ] as const;
 
   return (
-    <div className="min-h-screen bg-[var(--surface-canvas)] text-[var(--text-primary)]">
-      <header className="border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)]">
-        <div className={`mx-auto flex h-14 items-center justify-between gap-4 px-5 sm:px-6 ${max}`}>
-          <div className="flex items-center gap-6">
+    <div className={s.shell}>
+      <header className={s.header}>
+        <div className={s.headerInner}>
+          <div className={s.headerLeft}>
             <Link href="/" aria-label="Fydell home" className="inline-flex items-center">
               <FydellLogo height={20} />
             </Link>
             {current ? (
-              <nav aria-label="Candidate" className="hidden items-center gap-5 sm:flex">
+              <nav aria-label="Candidate" className={s.nav}>
                 {links.map((l) => (
-                  <Link
-                    key={l.key}
-                    href={l.href}
-                    aria-current={current === l.key ? "page" : undefined}
-                    className={`text-app-body font-medium ${current === l.key ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
-                  >
+                  <Link key={l.key} href={l.href} aria-current={current === l.key ? "page" : undefined} className={s.navLink}>
                     {l.label}
                   </Link>
                 ))}
               </nav>
             ) : null}
           </div>
-          {action ?? <CandidateSignOut />}
+          <div className={s.headerRight}>
+            {current ? (
+              <a href={CONTACT_MAILTO} className={s.help}>
+                Help
+              </a>
+            ) : null}
+            {action ?? <CandidateSignOut />}
+          </div>
         </div>
       </header>
-      <main className={`mx-auto px-5 py-9 sm:px-6 ${max}`}>{children}</main>
+      <main className={`${s.main} ${s[width]}`}>{children}</main>
     </div>
   );
 }
