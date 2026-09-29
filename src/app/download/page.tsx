@@ -7,7 +7,7 @@ export const metadata = {
   description: "Download the Fydell desktop app for macOS and Windows. Candidates use it to work engineering simulations.",
 };
 
-const VERSION = "0.1.3";
+const VERSION = "0.1.4";
 const RELEASES_URL = "https://github.com/MaahirPatel/fydell-mvp/releases";
 const BASE = `${RELEASES_URL}/download/v${VERSION}`;
 const DOWNLOADS = {
