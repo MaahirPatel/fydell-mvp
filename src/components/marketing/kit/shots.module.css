@@ -52,12 +52,18 @@
   color: var(--t1);
   font-weight: 510;
 }
-.wsMark {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  background: var(--fy-gradient);
+.mark {
+  display: inline-block;
   flex-shrink: 0;
+  height: auto;
+  vertical-align: -3px;
+  object-fit: contain;
+}
+.wordmark {
+  font-size: 15px;
+  font-weight: 590;
+  letter-spacing: -0.02em;
+  color: var(--t1);
 }
 .wsSub {
   margin-left: auto;
@@ -1114,5 +1120,161 @@
   .cursor::after,
   .rec {
     animation: none;
+  }
+}
+
+/* ---------- Brand alignment ---------- */
+
+.consentTitle,
+.reportTitle,
+.receiptKicker,
+.panelHead,
+.docMeta,
+.threadHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- Colour: the ring palette inside the product ---------- */
+
+.desktop,
+.tests,
+.report {
+  background:
+    radial-gradient(70% 50% at 100% 0%, rgba(168, 85, 247, 0.1), transparent 60%),
+    radial-gradient(60% 50% at 0% 100%, rgba(45, 212, 191, 0.08), transparent 60%),
+    var(--bg);
+}
+.navOn {
+  background: linear-gradient(90deg, rgba(91, 108, 255, 0.22), rgba(168, 85, 247, 0.12));
+}
+.submit,
+.release {
+  background: linear-gradient(90deg, #5b6cff, #a855f7 55%, #ff5a6e);
+  color: #fff;
+}
+.avBlue {
+  background: linear-gradient(135deg, #2dd4bf, #2563eb);
+}
+.avRed {
+  background: linear-gradient(135deg, #a855f7, #f43f5e);
+}
+.summaryBar i:first-child {
+  background: linear-gradient(90deg, #2dd4bf, #5b6cff 60%, #a855f7);
+}
+
+/* ---------- Entrance motion (starts when the frame scrolls into view) ---------- */
+
+.row,
+.result,
+.finding,
+.update,
+.threadCard,
+.consent,
+.receiptCard,
+.kv div {
+  opacity: 0;
+}
+:global([data-inview]) .row,
+:global([data-inview]) .result,
+:global([data-inview]) .finding {
+  animation: rowIn 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 90ms + 150ms);
+}
+:global([data-inview]) .update {
+  animation: updateIn 900ms cubic-bezier(0.16, 1, 0.3, 1) 900ms both, redGlow 2400ms ease-in-out 1800ms 2;
+}
+:global([data-inview]) .threadCard {
+  animation: slideRight 900ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both;
+}
+:global([data-inview]) .consent {
+  animation: slideLeft 900ms cubic-bezier(0.16, 1, 0.3, 1) 700ms both;
+}
+:global([data-inview]) .receiptCard {
+  animation: rowIn 800ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
+}
+:global([data-inview]) .kv div {
+  animation: rowIn 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+:global([data-inview]) .kv div:nth-child(1) { animation-delay: 500ms; }
+:global([data-inview]) .kv div:nth-child(2) { animation-delay: 600ms; }
+:global([data-inview]) .kv div:nth-child(3) { animation-delay: 700ms; }
+:global([data-inview]) .kv div:nth-child(4) { animation-delay: 800ms; }
+:global([data-inview]) .kv div:nth-child(5) { animation-delay: 900ms; }
+
+.summaryBar i {
+  transform-origin: left;
+  transform: scaleX(0);
+}
+:global([data-inview]) .summaryBar i:first-child {
+  animation: fill 1400ms cubic-bezier(0.65, 0, 0.35, 1) 400ms both;
+}
+:global([data-inview]) .summaryBar i:last-child {
+  animation: fill 300ms ease 1800ms both;
+}
+
+.add {
+  background-size: 200% 100%;
+}
+:global([data-inview]) .add {
+  animation: sweep 1600ms ease 600ms both;
+}
+.optionOn {
+  box-shadow: 0 0 0 0 rgba(91, 108, 255, 0);
+}
+:global([data-inview]) .optionOn {
+  animation: blueGlow 2600ms ease-in-out 1200ms infinite;
+}
+
+@keyframes rowIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes updateIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slideLeft {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fill {
+  to { transform: scaleX(1); }
+}
+@keyframes sweep {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
+@keyframes redGlow {
+  50% { box-shadow: 0 0 28px -4px rgba(255, 90, 110, 0.55); }
+}
+@keyframes blueGlow {
+  50% { box-shadow: 0 0 24px -6px rgba(91, 108, 255, 0.8); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row,
+  .result,
+  .finding,
+  .update,
+  .threadCard,
+  .consent,
+  .receiptCard,
+  .kv div {
+    opacity: 1;
+    animation: none !important;
+  }
+  .summaryBar i {
+    transform: none;
+    animation: none !important;
+  }
+  .add,
+  .optionOn {
+    animation: none !important;
   }
 }

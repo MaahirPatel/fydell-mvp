@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import {
   Bell,
   Check,
@@ -27,6 +27,19 @@ import s from "./shots.module.css";
 
 type Tok = string | [keyof typeof TOK, string];
 const TOK = { kw: s.kw, fn: s.fn, st: s.st, nu: s.nu, cm: s.cm } as const;
+
+/** Entrance order for rows that animate in one after another. */
+function stagger(i: number): CSSProperties {
+  return { ["--i" as string]: i };
+}
+
+/** The Fydell ring mark, as it appears in the product chrome. */
+function Mark({ size = 16 }: { size?: number }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/brand/fydell-mark.png" alt="" aria-hidden width={Math.round(size * 1.44)} height={size} className={s.mark} draggable={false} />
+  );
+}
 
 function Line({ n, kind, cursor, toks }: { n: number; kind?: "add" | "del"; cursor?: boolean; toks: Tok[] }) {
   return (
@@ -75,13 +88,13 @@ function TeamMessages({ compact = false }: { compact?: boolean }) {
       <Msg av="Y" tone="you" who="You" time="14:02">
         Which failures should count as temporary?
       </Msg>
-      <Msg av="PR" tone="blue" who="Priya Raman" role="Engineering lead" time="14:02">
+      <Msg av="AM" tone="blue" who="Alex Morgan" role="Engineering lead" time="14:02">
         Treat any 5xx, 408 and 429 as temporary, and connection failures too. Everything else, including other 4xx, is
         permanent.
       </Msg>
       <RetryAfterUpdate />
       {compact ? null : (
-        <Msg av="MB" tone="red" who="Marcus Bell" role="Partner support" time="14:21">
+        <Msg av="JH" tone="red" who="Jordan Hayes" role="Partner support" time="14:21">
           Only whole seconds. If a partner sends a date instead, treat it as unparseable and fall back to the normal
           backoff.
         </Msg>
@@ -96,8 +109,8 @@ export function DesktopShot() {
     <div className={`${s.app} ${s.desktop}`}>
       <aside className={s.side}>
         <div className={s.ws}>
-          <span className={s.wsMark} aria-hidden />
-          Fydell
+          <Mark size={15} />
+          <span className={s.wordmark}>fydell</span>
           <span className={s.wsSub}>INC-2291</span>
         </div>
         <span className={s.nav}><FileText aria-hidden /> Brief</span>
@@ -167,7 +180,7 @@ export function DesktopShot() {
 
           <div className={s.thread}>
             <div className={s.threadHead}>
-              <MessageSquare size={14} aria-hidden /> Team <span>Priya, Marcus</span>
+              <MessageSquare size={14} aria-hidden /> Team <span>Alex, Jordan</span>
             </div>
             <TeamMessages compact />
             <div className={s.compose}>Message the team…</div>
@@ -194,7 +207,7 @@ export function BriefShot() {
     <div className={`${s.app} ${s.layered}`}>
       <div className={s.doc}>
         <p className={s.docMeta}>
-          <FileText size={13} aria-hidden /> INCIDENT.md · opened by Priya Raman
+          <Mark size={14} /> INCIDENT.md · opened by Alex Morgan
         </p>
         <p className={s.docTitle}>INC-2291: webhook retry storm</p>
         <p className={s.docH}>What happened</p>
@@ -214,7 +227,7 @@ export function BriefShot() {
 
       <div className={`${s.card} ${s.threadCard}`}>
         <div className={s.threadHead}>
-          <MessageSquare size={14} aria-hidden /> Team <span>#inc-2291</span>
+          <Mark /> Team <span>#inc-2291</span>
         </div>
         <TeamMessages />
         <div className={s.compose}>Message the team…</div>
@@ -233,7 +246,7 @@ const TRAIL: { group: string; rows: { t: string; icon: ReactNode; what: ReactNod
     rows: [
       { t: "14:00", icon: <FileText aria-hidden />, what: <>Opened <em>INCIDENT.md</em></>, meta: "" },
       { t: "14:01", icon: <FileText aria-hidden />, what: <>Opened <em>logs/dispatcher-2026-09-14.log</em></>, meta: "" },
-      { t: "14:02", icon: <MessageSquare aria-hidden />, what: <>Asked Priya which failures are temporary</>, meta: "Team thread", tone: "blue" },
+      { t: "14:02", icon: <MessageSquare aria-hidden />, what: <>Asked Alex which failures are temporary</>, meta: "Team thread", tone: "blue" },
       { t: "14:05", icon: <FlaskConical aria-hidden />, what: <>Ran <em>pytest -q</em></>, meta: "4 passed · 7 failed" },
     ],
   },
@@ -257,13 +270,13 @@ export function TrailShot() {
   return (
     <div className={`${s.app} ${s.trail}`}>
       <div className={s.list}>
-        {TRAIL.map((g) => (
+        {TRAIL.map((g, gi) => (
           <div key={g.group}>
             <div className={s.listHead}>
               {g.group} <span>{g.rows.length}</span>
             </div>
-            {g.rows.map((r) => (
-              <div key={r.t + r.meta} className={`${s.row} ${r.tone === "red" ? s.rowRed : r.tone === "blue" ? s.rowBlue : ""}`}>
+            {g.rows.map((r, ri) => (
+              <div key={r.t + r.meta} style={stagger(TRAIL.slice(0, gi).reduce((n, x) => n + x.rows.length, 0) + ri)} className={`${s.row} ${r.tone === "red" ? s.rowRed : r.tone === "blue" ? s.rowBlue : ""}`}>
                 <span className={`${s.time} ${s.mono}`}>{r.t}</span>
                 {r.icon}
                 <span className={s.what}>{r.what}</span>
@@ -275,7 +288,7 @@ export function TrailShot() {
       </div>
 
       <div className={`${s.card} ${s.consent}`}>
-        <p className={s.consentTitle}>What this simulation records</p>
+        <p className={s.consentTitle}><Mark /> What this simulation records</p>
         <p className={s.consentSub}>Shown before you start.</p>
         <div className={s.checks}>
           {["File changes in the project", "Commands you run", "Test runs and results", "Timing of each step", "Team messages and your handoff"].map((c) => (
@@ -306,7 +319,7 @@ export function TestsShot() {
   return (
     <div className={`${s.app} ${s.tests}`}>
       <div className={s.col}>
-        <div className={s.panelHead}>Submission</div>
+        <div className={s.panelHead}><Mark /> Submission</div>
         <div className={`${s.hash} ${s.mono}`}>
           <b>Archive sha256</b>3f9c1a07e4b2d95c81f6a3e0b7c4d218e9f5a6b3c2d1e0f9a8b7c6d5e4f3a21e
         </div>
@@ -341,8 +354,8 @@ export function TestsShot() {
         <div className={s.panelHead}>
           Hidden checks <span>isolated sandbox</span>
         </div>
-        {CHECKS.map((c) => (
-          <div key={c.name} className={`${s.result} ${c.ok ? s.pass : s.fail}`}>
+        {CHECKS.map((c, i) => (
+          <div key={c.name} style={stagger(i)} className={`${s.result} ${c.ok ? s.pass : s.fail}`}>
             {c.ok ? <Check aria-hidden /> : <X aria-hidden />}
             <span className={`${s.name} ${s.mono}`}>{c.name}</span>
             <span className={`${s.meta} ${s.mono}`}>{c.ok ? "pass" : "fail"}</span>
@@ -375,10 +388,10 @@ export function ReportShot() {
   return (
     <div className={`${s.app} ${s.report}`}>
       <div className={s.reportBody}>
-        <p className={s.reportTitle}>Candidate 04 · Webhook retry incident</p>
+        <p className={s.reportTitle}><Mark size={18} /> Candidate 04 · Webhook retry incident</p>
         <p className={s.reportMeta}>Draft by your team · 3 findings · every finding cites evidence</p>
 
-        <div className={s.finding}>
+        <div className={s.finding} style={stagger(0)}>
           <div className={s.findingTop}>
             <span className={s.findingTitle}>Retries use capped exponential backoff</span>
             <span className={s.kind}>Observation</span>
@@ -390,7 +403,7 @@ export function ReportShot() {
           </div>
         </div>
 
-        <div className={s.finding}>
+        <div className={s.finding} style={stagger(1)}>
           <div className={s.findingTop}>
             <span className={s.findingTitle}>Asked before assuming which failures are temporary</span>
             <span className={s.kind}>Observation</span>
@@ -402,7 +415,7 @@ export function ReportShot() {
           </div>
         </div>
 
-        <div className={s.finding}>
+        <div className={s.finding} style={stagger(2)}>
           <div className={s.findingTop}>
             <span className={s.findingTitle}>Retry-After is only read in one letter case</span>
             <span className={s.kind}>Gap</span>
@@ -441,7 +454,7 @@ export function ReceiptShot() {
     <div className={`${s.app} ${s.receipt}`}>
       <div className={s.receiptCard}>
         <p className={s.receiptKicker}>
-          <CheckCircle2 aria-hidden /> Submission received
+          <Mark /> Submission received
         </p>
         <p className={s.receiptTitle}>Webhook retry incident</p>
         <dl className={s.kv}>

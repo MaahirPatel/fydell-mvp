@@ -8,7 +8,7 @@ Do not explain the product first. Sit with 3–5 hiring managers who hire analys
 2. Identify what Fydell sells, in their own words.
 3. Request a pilot or sign in, then invite a candidate to DA-01.
 4. Open the resulting report and interpret it.
-5. Explain why this is more useful than a résumé plus interview.
+5. Explain why this is more useful than a resume plus interview.
 6. Say whether they would run a paid pilot.
 
 ## Watch, do not prompt

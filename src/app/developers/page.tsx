@@ -13,7 +13,7 @@ import {
   Trio,
   Visual,
 } from "@/components/marketing/kit/Kit";
-import { FigDesktop, FigIncident, FigPassport } from "@/components/marketing/kit/Figs";
+import { FigConsent, FigDesktop, FigIncident, FigPassport, FigReport } from "@/components/marketing/kit/Figs";
 import { BriefShot, ReceiptShot, TrailShot } from "@/components/marketing/kit/Shots";
 
 export const metadata = {
@@ -31,8 +31,8 @@ export default function DevelopersPage() {
         aside={{ href: "/download", strong: "Download", label: "Fydell for macOS and Windows" }}
         actions={
           <>
-            <Link href="/signup" className="l-btn l-btn-lg l-btn-solid">Create an account</Link>
-            <Link href="/trust" className="l-btn l-btn-lg l-btn-ghost">What is recorded</Link>
+            <Link href="/passport/new" className="l-btn l-btn-lg l-btn-solid">Build your passport</Link>
+            <Link href="/signup" className="l-btn l-btn-lg l-btn-ghost">Create an account</Link>
           </>
         }
       >
@@ -84,6 +84,22 @@ export default function DevelopersPage() {
         </Visual>
       </Section>
 
+      <Section id="passport" labelledBy="passport-title">
+        <SectionHead
+          id="passport-title"
+          title={["An Engineering", "Passport you own"]}
+          lead="Paste your GitHub profile and pick up to three public repositories. Fydell reads them at a pinned commit and lists what the code shows, each finding linked to the exact lines. You decide who sees it, and you can revoke a link at any time."
+          link={{ href: "/passport/new", label: "Build your passport, no account needed" }}
+        />
+        <Trio
+          items={[
+            { fig: <FigPassport />, title: "From code you already wrote", body: "Public repositories, read at a pinned commit so every finding refers to the same code." },
+            { fig: <FigReport />, title: "Every finding cites its lines", body: "What the code demonstrates, linked to files and line ranges. Unassessed areas are listed, not guessed." },
+            { fig: <FigConsent />, title: "Shared on your terms", body: "Each link is scoped to one employer. Preview what they will see, and revoke it in one click." },
+          ]}
+        />
+      </Section>
+
       <Section id="boundaries" labelledBy="boundaries-title">
         <SectionHead
           id="boundaries-title"
@@ -127,7 +143,7 @@ export default function DevelopersPage() {
 
       <Closing
         title={["Show the work.", "Keep the receipt."]}
-        primary={{ href: "/signup", label: "Create an account" }}
+        primary={{ href: "/passport/new", label: "Build your passport" }}
         secondary={{ href: "/download", label: "Download the app" }}
       />
     </MarketingShell>

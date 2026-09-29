@@ -1,0 +1,169 @@
+/* Motion for the feature illustrations. Nothing moves until the figure's
+   InView wrapper sets data-inview; looping accents are slow and small. */
+
+.svg {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.step,
+.cell,
+.late {
+  opacity: 0;
+}
+.draw,
+.grow,
+.type {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+:global([data-inview]) .step {
+  animation: fadeUp 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+:global([data-inview]) .cell {
+  animation: cellIn 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+:global([data-inview]) .late {
+  animation: fadeUp 500ms ease 1300ms both;
+}
+:global([data-inview]) .draw {
+  animation: draw 600ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+:global([data-inview]) .grow {
+  animation: draw 1400ms cubic-bezier(0.65, 0, 0.35, 1) 200ms both;
+}
+:global([data-inview]) .type {
+  animation: draw 700ms steps(14, end) both;
+}
+
+.pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+}
+:global([data-inview]) .pulse {
+  animation: ripple 2800ms cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+:global([data-inview]) .pulseLate {
+  animation-delay: 1400ms;
+}
+
+.core {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+:global([data-inview]) .core {
+  animation: breathe 2800ms ease-in-out infinite;
+}
+
+:global([data-inview]) .chosen {
+  animation: glow 3200ms ease-in-out 900ms infinite;
+}
+
+.flow {
+  stroke-dasharray: 4 5;
+}
+:global([data-inview]) .flow {
+  animation: flow 1600ms linear infinite;
+}
+
+.caret {
+  opacity: 0;
+}
+:global([data-inview]) .caret {
+  animation: caret 1100ms steps(1) 1300ms infinite;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes cellIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.cell {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes ripple {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3.4);
+  }
+}
+@keyframes breathe {
+  50% {
+    transform: scale(1.18);
+  }
+}
+@keyframes glow {
+  0%,
+  100% {
+    filter: none;
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(91, 108, 255, 0.8));
+  }
+}
+@keyframes flow {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+@keyframes caret {
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step,
+  .cell,
+  .late,
+  .caret {
+    opacity: 1;
+    animation: none !important;
+  }
+  .draw,
+  .grow,
+  .type {
+    stroke-dashoffset: 0;
+    animation: none !important;
+  }
+  .pulse {
+    opacity: 0.5;
+    animation: none !important;
+  }
+  .core,
+  .chosen,
+  .flow {
+    animation: none !important;
+  }
+}

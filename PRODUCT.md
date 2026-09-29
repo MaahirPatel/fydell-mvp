@@ -6,7 +6,7 @@
 ## What Fydell is
 Fydell hires software engineers on real engineering work. An employer publishes an engineering role and invites candidates. Each candidate opens the Fydell desktop app, works in a real codebase against a real incident, talks to a simulated team, and handles a requirement that changes partway through. Fydell runs hidden tests in an isolated sandbox. The employer's own team reads the evidence, writes a report where every finding cites a file, line, test, message or handoff answer, and records Advance, Hold or Decline.
 
-The product is judged on one question: did the hiring team learn something about how this engineer works that a résumé, a LeetCode screen or an unverifiable take-home would not have shown them, and did it change the next interview?
+The product is judged on one question: did the hiring team learn something about how this engineer works that a resume, a LeetCode screen or an unverifiable take-home would not have shown them, and did it change the next interview?
 
 ## The engineering loop
 1. **Role.** The employer creates an engineering role, picks a versioned simulation and publishes it.

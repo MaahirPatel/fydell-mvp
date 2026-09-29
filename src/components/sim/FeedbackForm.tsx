@@ -105,7 +105,7 @@ export function FeedbackForm({ sessionId }: { sessionId: string }) {
         {/* 2 reveals */}
         <div>
           <p className="text-app-body font-medium text-[var(--text-primary)]">
-            2. Did this reveal anything a résumé or interview might miss?
+            2. Did this reveal anything a resume or interview might miss?
           </p>
           <div className="mt-2 flex gap-2">
             {[

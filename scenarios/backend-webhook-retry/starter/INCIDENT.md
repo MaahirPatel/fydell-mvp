@@ -1,6 +1,6 @@
 # INC-2291: webhook retry storm
 
-Opened 2026-09-14 by Priya Raman (engineering lead, Payments Platform).
+Opened 2026-09-14 by Alex Morgan (engineering lead, Payments Platform).
 
 ## What happened
 

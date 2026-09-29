@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import InView from "./InView";
 import s from "./kit.module.css";
 
 function cx(...parts: (string | false | null | undefined)[]) {
@@ -71,9 +72,11 @@ export function Stage({ children, label, hero = false }: { children: ReactNode; 
   return (
     <div className="l-container">
       <figure className={cx(s.stage, hero && s.stageIn)}>
-        <div className={s.frame} role="img" aria-label={label}>
-          {children}
-        </div>
+        <InView className={s.frame}>
+          <div role="img" aria-label={label}>
+            {children}
+          </div>
+        </InView>
         <figcaption className={s.caption}>{label}</figcaption>
       </figure>
     </div>
@@ -85,9 +88,11 @@ export function Visual({ children, label, fade = true }: { children: ReactNode; 
   return (
     <figure className={s.headVisual}>
       <div className={cx(fade && s.fade)}>
-        <div className={s.frame} role="img" aria-label={label}>
-          {children}
-        </div>
+        <InView className={s.frame}>
+          <div role="img" aria-label={label}>
+            {children}
+          </div>
+        </InView>
       </div>
       <figcaption className={s.caption}>{label}</figcaption>
     </figure>
@@ -155,9 +160,9 @@ export function Trio({ items }: { items: readonly { fig: ReactNode; title: strin
     <div className={s.trio}>
       {items.map((item) => (
         <div key={item.title} className={s.trioItem}>
-          <div className={s.trioFig} aria-hidden>
-            {item.fig}
-          </div>
+          <InView className={s.trioFig}>
+            <div aria-hidden>{item.fig}</div>
+          </InView>
           <h3 className={s.trioTitle}>{item.title}</h3>
           <p className={s.trioBody}>{item.body}</p>
         </div>

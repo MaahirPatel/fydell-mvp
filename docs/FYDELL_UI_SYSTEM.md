@@ -423,7 +423,7 @@ looks.
 | AS-9 | No named synthetic people anywhere in the product, in documentation, in fixtures, or in screenshots. |
 | AS-10 | Demo identities are `Candidate 01` through `Candidate 04` only. Exactly four. |
 | AS-11 | No synthetic portraits or generated avatars. Initials or a neutral glyph only. |
-| AS-12 | No synthetic biography, résumé, tenure, location, or personal detail attached to a demo identity. |
+| AS-12 | No synthetic biography, resume, tenure, location, or personal detail attached to a demo identity. |
 
 ### 6.3 Interface honesty
 

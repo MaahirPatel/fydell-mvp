@@ -111,7 +111,7 @@ Four. No more, no fewer. These are labels, not people.
    of real companies.
 4. No synthetic email address that resembles a real person. Where an address is
    structurally required, it is derived deterministically from the label.
-5. No biography, no résumé, no location, no tenure, no pronouns. A demo identity
+5. No biography, no resume, no location, no tenure, no pronouns. A demo identity
    has a label and a state, and nothing else.
 
 **Test SB-ID1.** Grep across every Sandbox fixture, every Sandbox-rendered

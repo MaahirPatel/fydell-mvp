@@ -78,15 +78,15 @@ export const BACKEND_WEBHOOK_RETRY_V1: ScenarioDefinition = {
   setupCodePrefix: "HWR",
   supportedRuntimes: ["3.11", "3.12", "3.13"],
   teammates: [
-    { id: "priya", name: "Priya Raman", title: "Engineering lead" },
-    { id: "marcus", name: "Marcus Bell", title: "Partner support" },
+    { id: "priya", name: "Alex Morgan", title: "Engineering lead" },
+    { id: "marcus", name: "Jordan Hayes", title: "Partner support" },
   ],
   fallbackRuleId: "fallback",
   clarificationRules: [
     {
       id: "identity",
       teammateId: "priya",
-      signals: [["real", "bot", "ai", "human", "person", "automated", "scripted", "simulated"], ["you", "priya", "marcus", "are", "is"]],
+      signals: [["real", "bot", "ai", "human", "person", "automated", "scripted", "simulated"], ["you", "alex", "jordan", "priya", "marcus", "are", "is"]],
       minGroups: 2,
       availability: "always",
       answer:

@@ -1042,7 +1042,9 @@ a, button { -webkit-tap-highlight-color: transparent; }
   --fy-red-line: rgba(255, 90, 110, 0.3);
   --fy-green-ink: #7fd8a4;
   --fy-amber-ink: #f2c46d;
-  --fy-gradient: linear-gradient(90deg, #5b6cff 0%, #9a5cff 50%, #ff5a6e 100%);
+  --fy-gradient: linear-gradient(90deg, #2dd4bf 0%, #5b6cff 35%, #a855f7 68%, #ff5a6e 100%);
+  --fy-teal: #2dd4bf;
+  --fy-violet: #a855f7;
   --l-accent: var(--fy-blue-ink);
   --l-accent-fill: var(--fy-blue);
 

@@ -14,7 +14,7 @@ import {
   Trio,
   Visual,
 } from "@/components/marketing/kit/Kit";
-import { FigDecide, FigIncident, FigTrail } from "@/components/marketing/kit/Figs";
+import { FigDecide, FigDesktop, FigIncident, FigPassport, FigReport, FigTrail } from "@/components/marketing/kit/Figs";
 import { BriefShot, DesktopShot, ReportShot, TestsShot, TrailShot } from "@/components/marketing/kit/Shots";
 
 export const metadata = {
@@ -47,7 +47,7 @@ export default function HomePage() {
 
       <Section>
         <Statement
-          lead="A résumé tells you where someone has worked."
+          lead="A resume tells you where someone has worked."
           rest="Fydell shows you how they work: what they ask, what they change, how they test it, and what they do when the requirement moves."
         />
         <Trio
@@ -139,6 +139,22 @@ export default function HomePage() {
             { title: "Work the incident", body: "In the desktop app, with one requirement update along the way.", meta: "About an hour", tone: "red" },
             { title: "Submit and hand off", body: "Three short answers and a receipt the candidate keeps.", meta: "Candidate" },
             { title: "Review and decide", body: "A cited report, then Advance, Hold or Decline.", meta: "Your team", tone: "blue" },
+          ]}
+        />
+      </Section>
+
+      <Section id="passport" labelledBy="passport-title">
+        <SectionHead
+          id="passport-title"
+          title={["Engineers keep", "their work"]}
+          lead="Every engineer gets a receipt for what they submitted, and can build an Engineering Passport from their own public repositories: findings linked to the exact lines, shared only with the employers they choose."
+          link={{ href: "/passport/new", label: "Build your passport" }}
+        />
+        <Trio
+          items={[
+            { fig: <FigPassport />, title: "A passport you own", body: "Built from your public repositories at a pinned commit. Free for engineers." },
+            { fig: <FigReport />, title: "Findings with line citations", body: "What the code demonstrates, linked to files and line ranges." },
+            { fig: <FigDesktop />, title: "Simulations on your machine", body: "The Fydell desktop app for macOS and Windows sets up each project." },
           ]}
         />
       </Section>

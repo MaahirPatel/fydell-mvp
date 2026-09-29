@@ -131,7 +131,7 @@ the two are generated from the same run.
 | Never contains | — | Employer-private notes, internal ranking, interview feedback, integrity telemetry |
 
 A Work Receipt is a **verified record of specific work and what it demonstrated**.
-It is not a badge, a score, a certificate, or a résumé replacement. Its
+It is not a badge, a score, a certificate, or a resume replacement. Its
 **limitations** section is not a disclaimer to be minimised; it is the reason
 anyone would trust the rest of it.
 
