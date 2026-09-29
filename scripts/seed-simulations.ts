@@ -6,7 +6,7 @@
  * current_version_id at it; unchanged content is left alone. Existing
  * sessions keep their pinned versions.
  *
- * Usage: npx tsx scripts/seed-simulations.ts
+ * Usage: npx tsx scripts/seed-simulations.ts [--only <slug>]
  */
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
@@ -45,8 +45,16 @@ async function main() {
   }
   const db = createClient(url, serviceKey, { auth: { persistSession: false } });
 
+  const onlyIdx = process.argv.indexOf("--only");
+  const only = onlyIdx >= 0 ? process.argv[onlyIdx + 1] : undefined;
+  const selected = only ? ALL_SIMULATIONS.filter((s) => s.slug === only) : ALL_SIMULATIONS;
+  if (only && selected.length === 0) {
+    console.error(`No authored simulation has slug "${only}"`);
+    process.exit(1);
+  }
+
   let failures = 0;
-  for (const content of ALL_SIMULATIONS) {
+  for (const content of selected) {
     const errors = validateMicroSim(content);
     if (errors.length) {
       console.error(`✗ ${content.slug}: validation failed`);

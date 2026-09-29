@@ -1,8 +1,9 @@
 import "server-only";
 /**
- * Builds the employer-facing catalog. Wave 1 shows only DA-01
- * (`ops-yield-investigation`). Other authored micros stay out of the default
- * production list. Preview data is candidate-safe.
+ * Builds the employer-facing catalog: the published templates listed in
+ * EMPLOYER_INVITABLE_SLUGS (the desktop engineering simulation and DA-01).
+ * Other authored micros stay out of the production list. Preview data is
+ * candidate-safe.
  */
 import { ROLES } from "@/lib/simulations/roles";
 import { SIMULATION_BY_SLUG } from "@/lib/simulations/content";
@@ -10,7 +11,7 @@ import { toMicroCandidateView } from "@/lib/simulations/candidate-view";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import type { CatalogRole, CatalogSim } from "@/components/employer/catalog-types";
 import { isPreviewMode, PREVIEW_TEMPLATE } from "@/lib/dev/preview";
-import { WAVE1_EVALUATION_SLUG } from "@/lib/contracts/roles";
+import { EMPLOYER_INVITABLE_SLUGS } from "@/lib/contracts/roles";
 
 export async function getEmployerCatalog(): Promise<CatalogRole[]> {
   const idBySlug = new Map<string, string>();
@@ -64,7 +65,7 @@ export async function getEmployerCatalog(): Promise<CatalogRole[]> {
     .map((role) => ({
       ...role,
       sims: role.sims.filter(
-        (s) => s.templateId && s.slug === WAVE1_EVALUATION_SLUG,
+        (s) => s.templateId && EMPLOYER_INVITABLE_SLUGS.includes(s.slug),
       ),
     }))
     .filter((role) => role.sims.length > 0);
