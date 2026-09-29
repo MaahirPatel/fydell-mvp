@@ -1,0 +1,582 @@
+/* One page grammar for every public page, measured from linear.app and
+   carried in Fydell's blue/red palette. Spacing values are reused, not local. */
+
+/* ---------- Hero ---------- */
+
+.hero {
+  padding-top: 200px;
+}
+.heroCompact {
+  padding-top: 168px;
+}
+.heroTitle {
+  max-width: 13.5em;
+}
+.heroRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px 48px;
+  margin-top: 32px;
+}
+.heroLead {
+  max-width: 60ch;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
+.heroAside {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--text-tertiary);
+  transition: color 120ms ease;
+}
+.heroAside b {
+  font-weight: 510;
+  color: var(--text-primary);
+}
+.heroAside:hover {
+  color: var(--text-primary);
+}
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.heroIn > * {
+  animation: rise 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.heroIn > *:nth-child(2) {
+  animation-delay: 80ms;
+}
+.heroIn > *:nth-child(3) {
+  animation-delay: 160ms;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Stage: the product shown large, lit from below ---------- */
+
+.stage {
+  position: relative;
+  margin-top: 80px;
+  isolation: isolate;
+}
+.stage::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: auto -8% -120px;
+  height: 420px;
+  background:
+    radial-gradient(50% 60% at 30% 100%, rgba(91, 108, 255, 0.28), transparent 70%),
+    radial-gradient(45% 55% at 72% 100%, rgba(255, 90, 110, 0.2), transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+.stageIn {
+  animation: stageIn 1200ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
+}
+@keyframes stageIn {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: #0c0d0e;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
+    0 48px 120px -24px rgba(0, 0, 0, 0.9);
+}
+.frame::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14) 30%, rgba(255, 255, 255, 0.14) 70%, transparent);
+  pointer-events: none;
+}
+
+/* Section visuals dissolve into the ground at the bottom, so the page reads
+   as one surface rather than a stack of boxed screenshots. */
+.fade {
+  mask-image: linear-gradient(180deg, #000 72%, transparent 100%);
+}
+
+.caption {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-quaternary);
+}
+
+/* ---------- Sections ---------- */
+
+.section {
+  padding-top: 176px;
+  scroll-margin-top: 72px;
+}
+.sectionTight {
+  padding-top: 128px;
+}
+
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px 64px;
+  align-items: start;
+}
+.headTitle {
+  max-width: 11em;
+}
+.headLead {
+  max-width: 566px;
+  padding-top: 4px;
+}
+.headLink {
+  margin-top: 28px;
+}
+.headVisual {
+  margin-top: 80px;
+}
+
+.statement {
+  max-width: 26em;
+  font-size: 48px;
+  line-height: 1.08;
+  font-weight: 510;
+  letter-spacing: -0.022em;
+  color: var(--text-tertiary);
+  text-wrap: pretty;
+}
+.statement b {
+  font-weight: 510;
+  color: var(--text-primary);
+}
+
+/* ---------- Feature trio: illustration, title, one sentence ---------- */
+
+.trio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 112px;
+}
+.trioItem {
+  display: flex;
+  flex-direction: column;
+  padding: 0 32px;
+}
+.trioItem:first-child {
+  padding-left: 0;
+}
+.trioItem + .trioItem {
+  border-left: 1px solid var(--border-default);
+}
+.trioFig {
+  display: grid;
+  place-items: center;
+  height: 280px;
+  color: rgba(255, 255, 255, 0.22);
+}
+.trioFig svg {
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+}
+.trioTitle {
+  margin-top: 40px;
+  font-size: 15px;
+  font-weight: 510;
+  letter-spacing: -0.011em;
+  color: var(--text-primary);
+}
+.trioBody {
+  margin-top: 8px;
+  max-width: 34ch;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Detail row under a section visual ---------- */
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  margin-top: 56px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border-default);
+}
+.detailTitle {
+  font-size: 15px;
+  font-weight: 510;
+  letter-spacing: -0.011em;
+  color: var(--text-primary);
+}
+.detailBody {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Timeline row (the loop, in order) ---------- */
+
+.timeline {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  gap: 32px;
+  margin-top: 72px;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border-default);
+}
+.tlItem {
+  position: relative;
+  padding-top: 40px;
+}
+.tlDot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: #2a2c31;
+  box-shadow: 0 0 0 4px var(--surface-canvas);
+}
+.tlDotBlue {
+  background: var(--fy-blue);
+  box-shadow: 0 0 0 4px var(--surface-canvas), 0 0 16px 2px rgba(91, 108, 255, 0.55);
+}
+.tlDotRed {
+  background: var(--fy-red);
+  box-shadow: 0 0 0 4px var(--surface-canvas), 0 0 16px 2px rgba(255, 90, 110, 0.5);
+}
+.tlTitle {
+  font-size: 15px;
+  font-weight: 510;
+  letter-spacing: -0.011em;
+  color: var(--text-primary);
+}
+.tlBody {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
+.tlMeta {
+  margin-top: 16px;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-quaternary);
+}
+
+/* ---------- Two-column ledger (does / does not) ---------- */
+
+.ledger {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 72px;
+  border-top: 1px solid var(--border-default);
+}
+.ledgerCol {
+  padding: 32px 32px 0 0;
+}
+.ledgerCol + .ledgerCol {
+  padding: 32px 0 0 32px;
+  border-left: 1px solid var(--border-default);
+}
+.ledgerHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 510;
+  color: var(--text-primary);
+}
+.ledgerHead i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--fy-blue);
+}
+.ledgerColNo .ledgerHead i {
+  background: var(--fy-red);
+}
+.ledgerList {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+.ledgerList li {
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
+.ledgerList li b {
+  font-weight: 510;
+  color: var(--text-primary);
+}
+
+/* ---------- FAQ ---------- */
+
+.faq {
+  margin-top: 64px;
+  border-top: 1px solid var(--border-default);
+}
+.faq details {
+  border-bottom: 1px solid var(--border-default);
+}
+.faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 0;
+  cursor: pointer;
+  list-style: none;
+  font-size: 17px;
+  font-weight: 510;
+  letter-spacing: -0.012em;
+  color: var(--text-primary);
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq summary::after {
+  content: "";
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid var(--text-tertiary);
+  border-bottom: 1.5px solid var(--text-tertiary);
+  transform: translateY(-3px) rotate(45deg);
+  transition: transform 200ms ease;
+}
+.faq details[open] summary::after {
+  transform: translateY(2px) rotate(-135deg);
+}
+.faq summary:focus-visible {
+  outline: 2px solid var(--fy-blue-ink);
+  outline-offset: 4px;
+}
+.faq details p {
+  max-width: 68ch;
+  padding-bottom: 24px;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Prose (legal, security, long reads) ---------- */
+
+.prose {
+  max-width: 720px;
+}
+.prose h2 {
+  margin-top: 56px;
+  font-size: 20px;
+  line-height: 1.33;
+  font-weight: 590;
+  letter-spacing: -0.012em;
+  color: var(--text-primary);
+}
+.prose h3 {
+  margin-top: 32px;
+  font-size: 15px;
+  font-weight: 590;
+  color: var(--text-primary);
+}
+.prose p,
+.prose li {
+  margin-top: 16px;
+  font-size: 15px;
+  line-height: 1.7;
+  letter-spacing: -0.011em;
+  color: var(--text-tertiary);
+}
+.prose ul {
+  padding-left: 18px;
+  list-style: disc;
+}
+.prose li::marker {
+  color: var(--text-quaternary);
+}
+.prose a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 4px;
+}
+.prose strong {
+  font-weight: 510;
+  color: var(--text-secondary);
+}
+
+/* ---------- Closing ---------- */
+
+.closing {
+  padding-block: 200px 160px;
+}
+.closingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+.closingTitle {
+  max-width: 11em;
+}
+.closingActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.closingRule {
+  height: 1px;
+  margin-bottom: 120px;
+  background: var(--fy-gradient);
+  opacity: 0.5;
+  mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1023px) {
+  .hero {
+    padding-top: 152px;
+  }
+  .heroCompact {
+    padding-top: 136px;
+  }
+  .section {
+    padding-top: 136px;
+  }
+  .statement {
+    font-size: 36px;
+  }
+  .head {
+    grid-template-columns: 1fr;
+  }
+  .headVisual {
+    margin-top: 56px;
+  }
+  .trio {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+  .trioItem,
+  .trioItem:first-child {
+    padding: 0;
+  }
+  .trioItem + .trioItem {
+    border-left: 0;
+    padding-top: 56px;
+    border-top: 1px solid var(--border-default);
+  }
+  .trioFig {
+    height: 220px;
+  }
+  .timeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 48px;
+  }
+  .timeline::before {
+    display: none;
+  }
+  .closing {
+    padding-block: 152px 120px;
+  }
+}
+
+@media (max-width: 639px) {
+  .hero {
+    padding-top: 128px;
+  }
+  .heroCompact {
+    padding-top: 120px;
+  }
+  .heroRow {
+    margin-top: 20px;
+  }
+  .stage {
+    margin-top: 48px;
+  }
+  .section {
+    padding-top: 112px;
+  }
+  .statement {
+    font-size: 26px;
+    line-height: 1.2;
+  }
+  .details,
+  .ledger {
+    grid-template-columns: 1fr;
+  }
+  .ledgerCol,
+  .ledgerCol + .ledgerCol {
+    padding: 28px 0 0;
+    border-left: 0;
+  }
+  .ledgerCol + .ledgerCol {
+    margin-top: 28px;
+    border-top: 1px solid var(--border-default);
+  }
+  .timeline {
+    grid-template-columns: 1fr;
+  }
+  .closingRule {
+    margin-bottom: 80px;
+  }
+  .closing {
+    padding-block: 120px 96px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroIn > *,
+  .stageIn {
+    animation: none;
+  }
+}
