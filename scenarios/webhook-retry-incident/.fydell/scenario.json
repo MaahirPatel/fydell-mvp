@@ -1,0 +1,27 @@
+{
+  "id": "webhook-retry-incident",
+  "version": "1.0.0",
+  "label": "Kestrel Ledger — Webhook retry incident (INC-2291)",
+  "description": "Backend engineering incident: after release 2.14 the outbound webhook dispatcher retries permanent 4xx responses (hammering a merchant's 410 endpoint) and creates a second delivery when the at-least-once event bus republishes an event (a merchant shipped an order twice). The candidate fixes both in a small Python service, adapts to a mid-session Retry-After requirement, and writes a reviewer handoff.",
+  "execution": "remote",
+  "files": [
+    "README.md",
+    "INCIDENT.md",
+    "CHANGELOG.md",
+    "docs/runbook-webhooks.md",
+    "logs/delivery-worker.log",
+    "webhooks/__init__.py",
+    "webhooks/clock.py",
+    "webhooks/dispatcher.py",
+    "webhooks/models.py",
+    "webhooks/retry.py",
+    "webhooks/signing.py",
+    "webhooks/store.py",
+    "webhooks/transport.py",
+    "tests/__init__.py",
+    "tests/fakes.py",
+    "tests/test_dispatcher.py",
+    "tests/test_signing.py"
+  ],
+  "testCommand": ["pytest", "-q"]
+}

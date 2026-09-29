@@ -80,6 +80,23 @@ export interface MicroCurveball {
   requiredAdaptation: string;
 }
 
+/**
+ * Engineering scenarios run on a real code workspace (`scenarios/<slug>`):
+ * the desktop materializes the versioned file package, and correctness
+ * evidence comes from the scenario's trusted tests run in an isolated runner
+ * (src/lib/engineering). The questions collect the reviewer handoff.
+ */
+export interface MicroEngineeringConfig {
+  /** Must equal the content slug (the scenario directory name). */
+  scenarioId: string;
+  /** Must equal the pinned version in scenarios/<slug>/.fydell/scenario.json. */
+  scenarioVersion: string;
+  /** Minutes after start when the requirement update becomes eligible. */
+  updateAfterMinutes?: number;
+  /** Candidate-facing statement of permitted tools and assistance (SCEN-07). */
+  toolsPolicy: string;
+}
+
 export interface MicroSimContent {
   format: "micro";
   schemaVersion: 1;
@@ -118,6 +135,8 @@ export interface MicroSimContent {
   coverageWeights?: MicroCoverageWeights;
   /** Optional mid-session change (October pilot and similar). */
   curveball?: MicroCurveball;
+  /** Present on engineering scenarios backed by a code workspace. */
+  engineering?: MicroEngineeringConfig;
 }
 
 export function isMicroContent(content: unknown): content is MicroSimContent {
@@ -128,7 +147,16 @@ export function validateMicroSim(sim: MicroSimContent): string[] {
   const errors: string[] = [];
   if (!sim.slug) errors.push("Missing slug");
   if (!sim.mission) errors.push("Missing mission");
-  if (sim.durationMinutes < 5 || sim.durationMinutes > 25)
+  if (sim.engineering) {
+    if (sim.durationMinutes < 30 || sim.durationMinutes > 90)
+      errors.push("Engineering scenarios must be 30-90 minutes");
+    if (sim.engineering.scenarioId !== sim.slug)
+      errors.push("engineering.scenarioId must equal the slug (scenario directory)");
+    if (!sim.engineering.toolsPolicy) errors.push("engineering.toolsPolicy required");
+    const at = sim.engineering.updateAfterMinutes;
+    if (sim.curveball && (!at || at <= 0 || at >= sim.durationMinutes - 10))
+      errors.push("engineering.updateAfterMinutes must leave at least 10 minutes to respond");
+  } else if (sim.durationMinutes < 5 || sim.durationMinutes > 25)
     errors.push("Micro sims must be 5-25 minutes");
   if (sim.resources.length < 2 || sim.resources.length > 6)
     errors.push(`Expected 2-6 resources, got ${sim.resources.length}`);

@@ -26,6 +26,7 @@ const NAV_GROUPS = [
       { href: "/admin/shadow", label: "Shadow-pilot audit" },
       { href: "/admin/proof", label: "Proof review" },
       { href: "/admin/engineering", label: "Engineering review" },
+      { href: "/admin/reviews", label: "Report reviews" },
     ],
   },
   {

@@ -6,9 +6,17 @@ items BUY-01..BUY-07. Claims here match implemented features only.
 
 ## Supported role and assessment family (BUY-01)
 
-- **First supported role:** Backend Engineer — webhook/integration
-  reliability work (the "Webhook retry incident" assessment family,
-  scenario v1.0.0, demo invite code `FYDELL-DEMO`).
+- **First supported role:** Backend Engineer, incident and reliability work
+  on a small Python service: the "Webhook retry incident" scenario
+  (`scenarios/webhook-retry-incident`, v1.0.0, catalog slug
+  `webhook-retry-incident`). Candidates work in the Fydell desktop app; tests
+  run on Fydell's isolated runner, not on the candidate's machine.
+- **Scenario release status:** the scenario, its hidden tests and its
+  rubric have been validated mechanically (reference, two alternative and
+  five defective solutions; `npm run validate:scenario`), but **no qualified
+  engineer outside the author has reviewed them yet** (SCEN-09, recorded as
+  `humanReview.status: pending` in `.fydell/rubric.json`). That review is a
+  precondition for the first paid use.
 - **Hiring step this replaces:** the take-home / work-sample screen that
   currently happens after resume review and before the technical interview
   loop. Fydell does not replace interviews, reference checks, or the final
@@ -19,9 +27,10 @@ items BUY-01..BUY-07. Claims here match implemented features only.
 
 ## Service promise (BUY-02)
 
-- **Candidate time:** ~90 minutes of focused assessment work, plus workspace
-  setup and submission. The expected effort is shown to the candidate before
-  they start.
+- **Candidate time:** 60 minutes of assessed work, plus desktop install,
+  preflight and submission, which happen before the timer starts. The
+  expected effort is shown to the candidate before they start. A mid-session
+  requirement update always leaves at least 10 minutes to respond.
 - **Report turnaround:** the evidence report is released after analysis
   completes and any consequential findings pass human review. There is no
   fixed SLA in v1; the employer dashboard shows the live status of every
@@ -30,16 +39,20 @@ items BUY-01..BUY-07. Claims here match implemented features only.
 - **Included volume:** per purchased package (see Billable event). Unused
   invitations that never reach "submitted" do not consume a completed
   evaluation.
-- **Support contact:** the employer writes to the support address shown in
-  the billing portal; candidate issues go through the employer, who can
-  resend, revoke, or extend any invitation from the dashboard.
+- **Support contact:** a named support address must be set in the contract
+  before the first paid pilot (not yet configured in the product; see
+  OPS-02). Candidate issues go through the employer, who can resend, revoke,
+  or extend any invitation from the dashboard.
 - **Deliverables:** per completed evaluation — the decision brief
   (strengths, gaps, evidence limitations, interview follow-ups), the
   categorized evidence report with source links, and the candidate's
   portable evidence summary.
-- **Limits:** one assessment family in v1 (backend engineering); reports
-  describe observed evidence only; no predictions about future job
-  performance.
+- **Limits:** one assessment in v1 (backend incident work in Python). It
+  does not measure ML engineering, infrastructure, frontend or system-design
+  skills. Reports describe observed evidence only; no predictions about
+  future job performance. Test runs require an isolated runner to be
+  configured for the deployment (`FYDELL_EXECUTION_PROVIDER`); without one,
+  reports say plainly that the code was not evaluated.
 
 ## Billable event (BUY-03)
 
@@ -56,9 +69,12 @@ items BUY-01..BUY-07. Claims here match implemented features only.
 
 ## Review usefulness (BUY-04) — MANUAL-OK
 
-Before a paid pilot, a hiring manager reviews the sample report
-(`rep-example-1`, labeled sample data) with this checklist, without
-founder interpretation:
+Before a paid pilot, run the internal rehearsal: complete one attempt with
+the reference solution and one with `partial_no_update` (both in
+`.hidden/solutions/`), then have a hiring manager who has not seen the
+scenario review the two resulting reports with this checklist, without
+founder interpretation. No backend sample report exists yet; it is produced
+by this rehearsal.
 
 1. Can you name two demonstrated strengths, each with its evidence link?
 2. Can you name one material gap, each with its evidence link?

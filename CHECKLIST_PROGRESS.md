@@ -1,5 +1,8 @@
 # Checklist progress — feature/desktop-sim-client
 
+> Consolidated status per checklist ID, including which rows are rules-only
+> libraries not yet wired into the product: see docs/RELEASE_TRACKER.md.
+
 Authoritative checklist: ~/workspace/fydell/RELEASE_CHECKLIST.md (222 requirements, 28 E2E journeys).
 Started: 2026-09-27. Worker: subagent grind (8 parallel chunks).
 

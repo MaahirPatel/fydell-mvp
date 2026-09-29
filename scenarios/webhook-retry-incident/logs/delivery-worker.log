@@ -1,0 +1,23 @@
+2026-09-21T14:02:11Z INFO  consumer  enqueue event=evt_7QK2 type=invoice.paid endpoint=ep_tidewater_main delivery=dlv_8811
+2026-09-21T14:02:11Z INFO  worker    attempt delivery=dlv_8811 n=1 status=200 ms=412
+2026-09-21T14:02:14Z WARN  bus       publish ack timeout event=evt_7QK2 after=3000ms, republishing
+2026-09-21T14:02:14Z INFO  consumer  enqueue event=evt_7QK2 type=invoice.paid endpoint=ep_tidewater_main delivery=dlv_8812
+2026-09-21T14:02:15Z INFO  worker    attempt delivery=dlv_8812 n=1 status=200 ms=388
+2026-09-21T14:02:15Z INFO  consumer  enqueue event=evt_7QK2 type=invoice.paid endpoint=ep_tidewater_audit delivery=dlv_8813
+2026-09-21T14:02:16Z INFO  worker    attempt delivery=dlv_8813 n=1 status=204 ms=97
+2026-09-21T14:05:40Z INFO  consumer  enqueue event=evt_7QM9 type=charge.refunded endpoint=ep_harborpine_legacy delivery=dlv_8820
+2026-09-21T14:05:40Z INFO  worker    attempt delivery=dlv_8820 n=1 status=410 ms=41
+2026-09-21T14:06:10Z INFO  worker    attempt delivery=dlv_8820 n=2 status=410 ms=39
+2026-09-21T14:07:10Z INFO  worker    attempt delivery=dlv_8820 n=3 status=410 ms=44
+2026-09-21T14:09:10Z INFO  worker    attempt delivery=dlv_8820 n=4 status=410 ms=40
+2026-09-21T14:13:10Z INFO  worker    attempt delivery=dlv_8820 n=5 status=410 ms=38
+2026-09-21T14:21:10Z INFO  worker    attempt delivery=dlv_8820 n=6 status=410 ms=42
+2026-09-21T14:37:10Z INFO  worker    attempt delivery=dlv_8820 n=7 status=410 ms=40
+2026-09-21T15:09:10Z WARN  worker    attempt delivery=dlv_8820 n=8 status=410 ms=37 giving_up=attempts_exhausted
+2026-09-21T15:09:12Z INFO  metrics   endpoint=ep_harborpine_legacy requests_last_hour=2014 deliveries_in_flight=251 status_410_ratio=1.00
+2026-09-21T15:11:02Z INFO  worker    attempt delivery=dlv_8847 n=1 status=503 ms=1204
+2026-09-21T15:11:32Z INFO  worker    attempt delivery=dlv_8847 n=2 status=200 ms=233
+2026-09-21T15:12:40Z INFO  worker    attempt delivery=dlv_8851 n=1 status=error error="connection refused" ms=3
+2026-09-21T15:13:10Z INFO  worker    attempt delivery=dlv_8851 n=2 status=200 ms=180
+2026-09-21T15:20:05Z INFO  worker    attempt delivery=dlv_8860 n=1 status=404 ms=51
+2026-09-21T15:20:35Z INFO  worker    attempt delivery=dlv_8860 n=2 status=200 ms=212

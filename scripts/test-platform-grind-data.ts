@@ -20,7 +20,7 @@ function section(title: string) {
 }
 
 const m030 = readFileSync("supabase/migrations/032_platform_security.sql", "utf8");
-const m031 = readFileSync("supabase/migrations/031_billing_ledger.sql", "utf8");
+const m031 = readFileSync("supabase/migrations/034_billing_ledger.sql", "utf8");
 const m027 = readFileSync("supabase/migrations/027_organization_billing.sql", "utf8");
 
 function hasTable(sql: string, table: string): boolean {

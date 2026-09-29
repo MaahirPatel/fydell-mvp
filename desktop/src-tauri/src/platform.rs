@@ -22,6 +22,7 @@
 use crate::auth;
 use crate::error::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 // ---------------------------------------------------------------------------
 // Invitation preview — src/app/api/sim/invitations/[token]/route.ts
@@ -149,6 +150,10 @@ pub struct FilePackage {
     pub label: String,
     #[serde(default)]
     pub test_command: Vec<String>,
+    /// "remote": tests run on the platform's isolated runner (nothing to
+    /// install locally). "local" or absent: the legacy local runner.
+    #[serde(default)]
+    pub execution: Option<String>,
     pub files: std::collections::HashMap<String, String>,
     pub manifest: std::collections::HashMap<String, String>,
 }
@@ -332,6 +337,76 @@ struct SubmitResponse {
 }
 
 // ---------------------------------------------------------------------------
+// Test runs — src/app/api/sim/sessions/[id]/runs/route.ts
+// POST { files: { path: content }, clientRunId } →
+//   { ok, runId, reused, status, run: { status, statusReason,
+//     candidateSnapshotHash, suiteVersion, environmentVersion,
+//     tests: [{ id, origin, outcome, message? }], summary, restoredTrusted,
+//     ignored: [{ path, reason }], output, outputTruncated } | null }
+// The platform runs the scenario's tests on its isolated runner against
+// exactly these files; nothing executes on this machine.
+// ---------------------------------------------------------------------------
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RemoteTestCase {
+    pub id: String,
+    pub origin: String,
+    pub outcome: String,
+    #[serde(default)]
+    pub message: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+pub struct RemoteSummary {
+    pub passed: u32,
+    pub failed: u32,
+    pub errors: u32,
+    pub skipped: u32,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct RemoteIgnored {
+    pub path: String,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RemoteRun {
+    pub status: String,
+    #[serde(default)]
+    pub status_reason: Option<String>,
+    pub candidate_snapshot_hash: String,
+    pub suite_version: String,
+    #[serde(default)]
+    pub environment_version: String,
+    #[serde(default)]
+    pub tests: Vec<RemoteTestCase>,
+    #[serde(default)]
+    pub summary: RemoteSummary,
+    #[serde(default)]
+    pub restored_trusted: Vec<String>,
+    #[serde(default)]
+    pub ignored: Vec<RemoteIgnored>,
+    #[serde(default)]
+    pub output: String,
+    #[serde(default)]
+    pub output_truncated: bool,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RemoteRunResponse {
+    pub run_id: String,
+    #[serde(default)]
+    pub reused: bool,
+    pub status: String,
+    #[serde(default)]
+    pub run: Option<RemoteRun>,
+}
+
+// ---------------------------------------------------------------------------
 // Client
 // ---------------------------------------------------------------------------
 
@@ -453,6 +528,35 @@ impl Platform {
             .await
             .map_err(|e| AppError::Platform(format!("bad accept response: {e}")))?;
         Ok(body.session_id)
+    }
+
+    // -- test runs ----------------------------------------------------------
+
+    /// Run the scenario's tests on the platform's isolated runner against
+    /// exactly `files`. `client_run_id` makes a retried request return the
+    /// same run instead of running twice.
+    pub async fn run_tests(
+        &self,
+        session_id: &str,
+        files: &HashMap<String, String>,
+        client_run_id: &str,
+    ) -> AppResult<RemoteRunResponse> {
+        let res = self
+            .authed(
+                reqwest::Method::POST,
+                &format!("/api/sim/sessions/{}/runs", session_id),
+            )
+            .await?
+            .json(&serde_json::json!({ "files": files, "clientRunId": client_run_id }))
+            // An isolated run can take longer than the client's default timeout.
+            .timeout(std::time::Duration::from_secs(200))
+            .send()
+            .await
+            .map_err(|e| AppError::Platform(format!("could not reach the test runner: {e}")))?;
+        let res = self.check(res, "run tests").await?;
+        res.json()
+            .await
+            .map_err(|e| AppError::Platform(format!("bad test run response: {e}")))
     }
 
     // -- session ------------------------------------------------------------

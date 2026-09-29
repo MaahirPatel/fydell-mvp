@@ -24,6 +24,13 @@ const ALASQL_BROWSER_BUILD = "./node_modules/alasql/dist/alasql.min.js";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Scenario packages (candidate files) and their server-only evaluation
+  // material are read from disk by the session, run and analysis routes.
+  // Serverless output tracing cannot see dynamic fs reads, so bundle them
+  // explicitly; without this, filePackage is null and runs cannot evaluate.
+  outputFileTracingIncludes: {
+    "/api/sim/**/*": ["./scenarios/**/*"],
+  },
   turbopack: {
     resolveAlias: {
       alasql: ALASQL_BROWSER_BUILD,

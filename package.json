@@ -24,7 +24,7 @@
     "test:proof:live": "tsx scripts/test-sandbox-live.ts && tsx scripts/test-proof-database.ts && tsx --conditions react-server scripts/test-golden-path-persistence.ts",
     "test:proof:database": "tsx scripts/test-proof-database.ts",
     "test:golden-path-persistence": "tsx --conditions react-server scripts/test-golden-path-persistence.ts",
-    "test:unit": "tsx scripts/test-pilot-validation.ts && tsx scripts/test-pilot-lifecycle.ts && tsx scripts/test-safe-next.ts && tsx scripts/test-state-machines.ts && tsx scripts/test-disclosure-boundary.ts && tsx scripts/test-wave1-contract.ts && tsx scripts/test-workspace-navigation.ts && tsx scripts/test-db-security-contract.ts && tsx scripts/test-project-guard.ts && tsx scripts/test-workspace-identity.ts && tsx scripts/test-workspace-availability.ts && npm run test:desktop-auth && npm run test:file-package && npm run test:sim-chat && npm run test:sim-chat-api && npm run test:eng && npm run test:proof",
+    "test:unit": "tsx scripts/test-pilot-validation.ts && tsx scripts/test-pilot-lifecycle.ts && tsx scripts/test-safe-next.ts && tsx scripts/test-state-machines.ts && tsx scripts/test-disclosure-boundary.ts && tsx scripts/test-wave1-contract.ts && tsx scripts/test-workspace-navigation.ts && tsx scripts/test-db-security-contract.ts && tsx scripts/test-project-guard.ts && tsx scripts/test-workspace-identity.ts && tsx scripts/test-workspace-availability.ts && npm run test:desktop-auth && npm run test:file-package && npm run test:sim-chat && npm run test:sim-chat-api && npm run test:eng && npm run test:proof && npm run test:engineering",
     "test:identity": "tsx scripts/test-workspace-identity.ts",
     "test:availability": "tsx scripts/test-workspace-availability.ts",
     "test:wave1": "tsx scripts/test-wave1-contract.ts",
@@ -78,7 +78,10 @@
     "prebuild": "node scripts/prepare-monaco.mjs",
     "test:execution": "node --test services/code-execution/runner.test.mjs",
     "test:eng": "tsx scripts/test-eng-units.ts && node scripts/validate-eng-scenario.mjs",
-    "test:eng:staging": "tsx --env-file=.env.local --conditions react-server scripts/test-eng-staging.ts"
+    "test:eng:staging": "tsx --env-file=.env.local --conditions react-server scripts/test-eng-staging.ts",
+    "test:engineering": "tsx --conditions react-server scripts/test-engineering-runner.ts && tsx --conditions react-server scripts/test-engineering-runs.ts && tsx scripts/test-engineering-review.ts && node --test services/engineering-runner/runner.test.mjs",
+    "validate:scenario": "tsx --conditions react-server scripts/validate-engineering-scenario.ts",
+    "engineering:snapshot": "node --env-file=.env.local scripts/create-engineering-runtime-snapshot.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

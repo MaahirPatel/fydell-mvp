@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ChatMessage, Diagnostics, Receipt, SessionEvent, StakeholderView, SyncPhase, SyncView, TestRunResult } from "../lib/tauri";
-import { formatDiagnostics, mergeChatMessagesView, chatSenderName, formatChatTime, syncPhaseLabel } from "../lib/pure";
+import {
+  formatDiagnostics,
+  mergeChatMessagesView,
+  chatSenderName,
+  formatChatTime,
+  syncPhaseLabel,
+  testRunIntro,
+  testRunHeadline,
+  isStaleResult,
+  STALE_RESULTS_LABEL,
+} from "../lib/pure";
 import { messageOf } from "../App";
 import { Dialog, EmptyState, ProvenanceTag } from "./ui";
 
@@ -106,24 +116,20 @@ export function TestsPanel({ onTestsRun, onStatus }: { onTestsRun: () => void; o
     }
     return found.slice(0, 50);
   }, []);
+  const [stale, setStale] = useState(false);
 
   const run = useCallback(async () => {
     setRunning(true);
     setError(null);
     onStatus?.("running");
     try {
+      // The run is recorded server-side (remote) or by the Rust command
+      // (local); the panel does not post a second event.
       const r = await api.runTests();
       setResult(r);
       setProblems(parseProblems(r.stdout, r.stderr));
-      onStatus?.(r.failed && r.failed > 0 ? "failed" : "passed");
-      try {
-        await api.appendEvent("tests_run", {
-          status: r.status,
-          passed: r.passed,
-          failed: r.failed,
-          duration_ms: r.duration_ms,
-        });
-      } catch {}
+      setStale(false);
+      onStatus?.(r.status === "completed" && (r.failed ?? 0) === 0 && (r.errors ?? 0) === 0 ? "passed" : "failed");
       onTestsRun();
     } catch (e) {
       setError(messageOf(e));
@@ -133,38 +139,116 @@ export function TestsPanel({ onTestsRun, onStatus }: { onTestsRun: () => void; o
     }
   }, [onTestsRun, onStatus, parseProblems]);
 
+  // DESK-12: once the saved files differ from the ones the tests ran
+  // against, say so instead of presenting old results as current.
+  useEffect(() => {
+    if (!result?.workspace_fingerprint) return;
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const current = await api.workspaceFingerprint();
+        if (!cancelled) setStale(isStaleResult(result.workspace_fingerprint, current));
+      } catch {
+        /* workspace unavailable: keep the last known label */
+      }
+    };
+    void check();
+    const t = setInterval(() => void check(), 3000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, [result]);
+
+  const headline = result ? testRunHeadline(result) : null;
+  const provided = result?.tests.filter((t) => t.origin === "provided") ?? [];
+  const own = result?.tests.filter((t) => t.origin === "candidate") ?? [];
+
   return (
     <>
       <h3>
-        Public test suite <ProvenanceTag kind="observed" />
+        Tests <ProvenanceTag kind="observed" />
       </h3>
-      <p className="muted">Runs locally on your machine. The hidden evaluation runs on submit.</p>
+      <p className="muted">
+        {testRunIntro(result?.mode ?? "remote")} After you submit, your reviewer also runs additional tests you cannot see.
+      </p>
       <button className="btn" onClick={run} disabled={running}>
         {running ? "Running…" : "Run tests"}
       </button>
-      {error && <div className="error mt-3">{error}</div>}
+      {error && (
+        <div className="error mt-3" role="alert">
+          {error} Your work is saved.
+        </div>
+      )}
       {!result && !running && !error && (
         <EmptyState
           icon="flask"
           title="No runs yet"
-          body="Run the public test suite to see real results from your workspace. Results are linked to the exact revision you ran."
+          body="Run the tests to see real results for the files you have saved. Each result is linked to the exact version it ran against."
           actionLabel="Run tests"
           onAction={run}
         />
       )}
       {running && (
-        <div className="muted mt-3">
-          Running tests against the current revision…
+        <div className="muted mt-3" role="status">
+          Running tests against your saved files…
         </div>
       )}
-      {result && (
-        <div className="mt-3">
+      {result && headline && (
+        <section className="mt-3" aria-label="Test output" aria-live="polite">
+          {stale && (
+            <div className="muted" role="status">
+              {STALE_RESULTS_LABEL}
+            </div>
+          )}
           <div className="summary-line">
-            {result.passed != null && <span className="pass">{result.passed} passed</span>}
-            {result.passed != null && result.failed != null && " · "}
-            {result.failed != null && <span className="fail">{result.failed} failed</span>}
-            {result.status !== "completed" && <span className="fail"> · {result.status}</span>}
+            <span className={headline.tone === "ok" ? "pass" : headline.tone === "fail" ? "fail" : undefined}>
+              {headline.text}
+            </span>
             <span className="muted"> · {(result.duration_ms / 1000).toFixed(1)}s</span>
+            {result.snapshot_hash && (
+              <span className="muted" title={result.snapshot_hash}>
+                {" "}
+                · version {result.snapshot_hash.slice(0, 8)}
+              </span>
+            )}
+          </div>
+          {result.status_reason && headline.text !== result.status_reason && (
+            <p className="muted">{result.status_reason}</p>
+          )}
+          {result.restored_trusted.length > 0 && (
+            <p className="muted">
+              You changed {result.restored_trusted.join(", ")}. The original provided tests were used; put new
+              checks in your own test file instead.
+            </p>
+          )}
+          {result.ignored.some((i) => i.reason === "runner_config_not_used") && (
+            <p className="muted">
+              Not used by the runner: {result.ignored.filter((i) => i.reason === "runner_config_not_used").map((i) => i.path).join(", ")}.
+            </p>
+          )}
+          {[
+            ["Provided tests", provided],
+            ["Your tests", own],
+          ].map(([label, list]) =>
+            (list as typeof provided).length > 0 ? (
+              <div key={label as string} className="mt-3">
+                <div className="muted">{label as string}</div>
+                {(list as typeof provided).map((t) => (
+                  <div key={t.id} className="test-row">
+                    <span className={t.outcome === "passed" ? "pass" : t.outcome === "skipped" ? undefined : "fail"}>
+                      {t.outcome}
+                    </span>
+                    <span>{t.id}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null
+          )}
+          <h4 className="mt-3">Test output</h4>
+          <div className="output">
+            {result.stdout || "(no output)"}
+            {result.stderr ? "\n--- stderr ---\n" + result.stderr : ""}
           </div>
           {problems.length > 0 && (
             <div className="problems">
@@ -177,9 +261,8 @@ export function TestsPanel({ onTestsRun, onStatus }: { onTestsRun: () => void; o
               ))}
             </div>
           )}
-          <div className="output">{result.stdout}{result.stderr ? "\n--- stderr ---\n" + result.stderr : ""}</div>
           {result.truncated && <div className="muted">Output truncated.</div>}
-        </div>
+        </section>
       )}
     </>
   );

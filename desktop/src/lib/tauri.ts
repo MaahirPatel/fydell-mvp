@@ -37,8 +37,22 @@ export interface FileContent {
   rev: number;
 }
 
+export interface RunTestCase {
+  id: string;
+  /** "provided" (the scenario's tests) or "candidate" (tests you added). */
+  origin: "provided" | "candidate" | "hidden";
+  outcome: "passed" | "failed" | "error" | "skipped";
+  message?: string | null;
+}
+
 export interface TestRunResult {
-  status: "completed" | "timeout" | "output_limit" | "runtime_error";
+  /** "remote": Fydell's isolated runner. "local": legacy on-device runner. */
+  mode: "remote" | "local";
+  /**
+   * Remote: completed | indeterminate | infrastructure_error | not_configured.
+   * Local: completed | timeout | output_limit | runtime_error.
+   */
+  status: string;
   exit_code: number | null;
   passed: number | null;
   failed: number | null;
@@ -47,6 +61,15 @@ export interface TestRunResult {
   stdout: string;
   stderr: string;
   truncated: boolean;
+  status_reason: string | null;
+  run_id: string | null;
+  snapshot_hash: string | null;
+  workspace_fingerprint: string | null;
+  suite_version: string | null;
+  tests: RunTestCase[];
+  errors: number | null;
+  restored_trusted: string[];
+  ignored: { path: string; reason: string }[];
 }
 
 export interface SessionEvent {
@@ -300,6 +323,8 @@ export const api = {
     invoke<FileContent>("write_file", { req: { path, content, rev } }),
   // Execution (src-tauri/src/execution.rs)
   runTests: () => invoke<TestRunResult>("run_tests"),
+  /** Fingerprint of the saved workspace files; compare with a result's to spot stale results. */
+  workspaceFingerprint: () => invoke<string>("workspace_fingerprint"),
   // Events (src-tauri/src/events.rs)
   appendEvent: (kind: string, payload: Record<string, unknown>) =>
     invoke<number>("append_event", { event: { kind, payload } }),

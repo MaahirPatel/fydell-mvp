@@ -1,5 +1,7 @@
+import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
 import {
+  Arrow,
   Closing,
   Details,
   Hero,
@@ -28,6 +30,15 @@ export default function HomePage() {
         title={["Hire engineers on", "the work itself"]}
         lead="Candidates work a real incident in the Fydell desktop app. Your team reviews what they did, with every claim cited, and decides."
         aside={{ href: "/download", strong: "New", label: "Fydell desktop for macOS and Windows" }}
+        actions={
+          <>
+            <Link href="/get-started" className="l-btn l-btn-lg l-btn-solid">Get started</Link>
+            <Link href="/demo" className="l-btn l-btn-lg l-btn-ghost">Explore demo</Link>
+            <Link href="/developers" className="l-link l-btn-lg">
+              For engineers <Arrow />
+            </Link>
+          </>
+        }
       >
         <Stage hero label="Example: a candidate mid-simulation in the Fydell desktop app">
           <DesktopShot />
@@ -153,8 +164,8 @@ export default function HomePage() {
             title: "What Fydell never does",
             items: [
               { strong: "Score or rank people.", rest: "There is no overall rating, percentile or fit score." },
-              { strong: "Predict job performance.", rest: "The report describes this work, not future work." },
-              { strong: "Claim to detect AI or cheating.", rest: "Candidates describe any AI assistance in their own words." },
+              { strong: "Forecast future performance.", rest: "The report describes this work and nothing beyond it." },
+              { strong: "Police AI use.", rest: "Fydell can't see AI tools. Candidates describe any AI help in their own words." },
               { strong: "Record outside the list.", rest: "No screen, webcam, microphone, browsing or keystrokes." },
             ],
           }}

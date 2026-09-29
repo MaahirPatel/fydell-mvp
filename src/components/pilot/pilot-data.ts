@@ -10,8 +10,12 @@ export interface PilotSim {
   title: string;
 }
 
-/** Roles backed by the protected production pilot content. */
-export type PilotRoleKey = Exclude<RoleKey, "applied_ai_engineer">;
+/**
+ * Roles backed by the protected production pilot content. Backend Engineer is
+ * a 60-minute desktop assessment, not a five-minute web pilot, so it is not
+ * part of the guided tester path.
+ */
+export type PilotRoleKey = Exclude<RoleKey, "applied_ai_engineer" | "backend_engineer">;
 
 /** Recommended pilot simulation per role. */
 export const PILOT_SIMS: Record<PilotRoleKey, PilotSim> = {

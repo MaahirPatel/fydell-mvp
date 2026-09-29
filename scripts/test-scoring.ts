@@ -182,7 +182,7 @@ test("critical competency below 0.40 caps recommendation", () => {
   assert.equal(summary.cappedByCritical, "tech");
 });
 
-test("strong evidence across the board recommends advance", () => {
+test("strong evidence across the board resolves to human review, never auto-advance", () => {
   const specs: CompetencySpec[] = [
     { key: "a", label: "A", weight: 0.5, targetEvidenceWeight: 1, critical: true },
     { key: "b", label: "B", weight: 0.5, targetEvidenceWeight: 1 },
@@ -191,7 +191,10 @@ test("strong evidence across the board recommends advance", () => {
     item({ id: "1", competencyKey: "a", quality: 0.9 }),
     item({ id: "2", competencyKey: "b", quality: 0.85 }),
   ]);
-  assert.equal(summary.recommendation, "advance");
+  // No automatic hiring decisions (EMP-08 / WORK-07): strong evidence still
+  // resolves to "review" so a human makes the call.
+  assert.equal(summary.recommendation, "review");
+  assert.equal(summary.cappedByCritical, null);
 });
 
 test("rubric validator rejects entries without evidence references", () => {

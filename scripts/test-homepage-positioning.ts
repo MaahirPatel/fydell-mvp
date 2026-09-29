@@ -17,30 +17,39 @@ function ok(name: string, condition: boolean): void {
 }
 
 const page = read("src/app/page.tsx");
-const home = read("src/components/marketing/home/FydellHome.tsx");
+const kit = read("src/components/marketing/kit/Kit.tsx");
+const shots = read("src/components/marketing/kit/Shots.tsx");
+const shell = read("src/components/layout/MarketingShell.tsx");
 const workspace = read("src/components/marketing/home/EvidenceWorkspace.tsx");
-const sharing = read("src/components/marketing/home/SharingPreview.tsx");
 const stage = read("src/components/marketing/home/ProductStage.tsx");
-const fixture = read("src/lib/marketing/demo-fixture.ts");
 const nav = read("src/components/layout/SiteNav.tsx");
 const footer = read("src/components/layout/SiteFooter.tsx");
 const pricing = read("src/app/pricing/page.tsx");
 const layout = read("src/app/layout.tsx");
 const getStarted = read("src/app/get-started/page.tsx");
 const signup = read("src/app/signup/page.tsx");
-const active = [page, home, workspace, sharing, stage, fixture, nav, footer, pricing, layout, getStarted, signup].join("\n");
+const publicPages = ["employers", "developers", "product", "pricing", "download"].map((p) => read(`src/app/${p}/page.tsx`));
+const active = [page, shots, nav, footer, pricing, layout, getStarted, signup, ...publicPages].join("\n");
 
 console.log("\nFydell homepage contract");
 
-ok("homepage mounts the Fydell composition", page.includes("FydellHome"));
+ok("homepage renders inside the shared marketing shell", /<MarketingShell>/.test(page));
 ok(
-  "hero headline and supporting copy",
-  home.includes("Hiring infrastructure built on real engineering work") &&
-    /Engineering Passports from real repositories\./.test(home),
+  "every rebuilt public page uses the same shell and kit",
+  publicPages.every((p) => /<MarketingShell>/.test(p) && /marketing\/kit\/Kit/.test(p)) && /<SiteNav \/>/.test(shell) && /<SiteFooter \/>/.test(shell),
 );
+ok("the retired second marketing system is gone", !existsSync(resolve("src/components/marketing/MarketingV2.tsx")) && !existsSync(resolve("src/styles/marketing-v2.css")));
+
+// Page contract (release checklist, Landing): a clear proposition for both
+// audiences, and "Get started" and "Explore demo" both work.
+const hero = page.slice(page.indexOf("<Hero"), page.indexOf("<Stage"));
+ok("hero speaks to hiring teams and candidates", /Candidates/.test(hero) && /team/i.test(hero));
 ok(
-  "hero actions route employers to signup and developers to the passport builder",
-  /href="\/signup\?as=employer"[^>]*>Start hiring/.test(home) && /href="\/passport\/new"/.test(home),
+  "hero actions: Get started, Explore demo, and an engineer path",
+  /href="\/get-started"[^>]*>\s*Get started/.test(hero) &&
+    /href="\/demo"[^>]*>\s*Explore demo/.test(hero) &&
+    /href="\/developers"/.test(hero) &&
+    ["src/app/get-started/page.tsx", "src/app/demo/page.tsx", "src/app/developers/page.tsx"].every((f) => existsSync(resolve(f))),
 );
 ok(
   "audience choice offers developer and employer paths into signup",
@@ -50,32 +59,22 @@ ok(
     /\/signup\?as=employer/.test(getStarted) &&
     /as === "developer"/.test(signup),
 );
-ok(
-  "four product chapters with anchors used by the nav",
-  ["Turn repositories into a record of real work", "See how engineers solve real problems", "Decide on evidence, together", "Engineers stay in control of their record"].every((h) => home.includes(h)) &&
-    /id="developers"/.test(home) &&
-    /id="employers"/.test(home),
-);
+ok("no statistics band on the homepage", !/stats|Stat(s)?Band|\d+%\s/.test(page));
+ok("product imagery is labelled as an example", (page.match(/label="Example:/g) ?? []).length >= 4 && /role="img"/.test(kit) && /figcaption/.test(kit));
 ok("shared evidence interface still backs the demo", /aria-pressed=\{active\}/.test(workspace) && /Evidence limits/.test(workspace));
-ok("sharing preview shows the recipient view", /What Employer A sees/.test(sharing) && /What Employer A sees/.test(home));
-ok("homepage decisions never message candidates", /Nothing is sent to the candidate/.test(home));
 ok("employer decision does not send anything", /nothing is sent to the candidate/.test(workspace));
 ok("demo has four steps with skip and reset", /Skip to the report/.test(stage) && /Reset demo/.test(stage) && /"passport"/.test(stage) && /EvidenceWorkspace/.test(stage));
 ok("official lockup is used in the site header", /FydellLogo/.test(nav) && /FydellLogo/.test(footer));
 ok(
-  "navigation order and labels",
-  /Developers[\s\S]*Employers[\s\S]*Product[\s\S]*Pricing/.test(nav) && /Sign in/.test(nav) && /Get started/.test(nav),
-);
-ok("example data is labelled", /DEMO_LABEL/.test(workspace) && /DEMO_LABEL/.test(sharing) && /DEMO_LABEL/.test(home) && /Example data/.test(fixture));
-ok(
-  "internal rules are not rendered as homepage sections",
-  !/What Fydell will not do|Coverage is stated plainly|never recorded as a candidate result/.test(home),
+  "navigation labels",
+  /Product[\s\S]*Employers[\s\S]*Developers[\s\S]*Pricing/.test(nav) && /Sign in/.test(nav) && /Get started/.test(nav),
 );
 ok(
   "no retired positioning in active public surfaces",
   !/Solutions Engineer|worth interviewing|worth meeting|Run a pilot|Start a hiring pilot|Request a pilot|placement fee|15%|\$250|\$2,500|Data Analyst|quality_events|Acme|SSO review|oral defense/i.test(active),
 );
 ok("no invented social proof or unsupported claims", !/testimonial|trusted by|SOC 2 certified|predicts? job performance|industry standard/i.test(active));
+ok("no claim to detect AI or cheating", !/Fydell (detects|catches|flags) (AI|cheat)|detects cheating|cheat(ing)? detection/i.test(active));
 ok("pricing states the billing unit without mixing plan types", /completed simulation/i.test(pricing) && !/Annual plan/.test(pricing));
 ok(
   "site icons are generated from the official Fydell mark",

@@ -40,6 +40,12 @@ export type SimulationCapability =
   | "workflow_rules";
 
 export const ROLE_DISPLAY: Record<RoleKey, RoleDisplayMetadata> = {
+  backend_engineer: {
+    roleKey: "backend_engineer",
+    label: "Backend Engineer",
+    shortLabel: "BE",
+    pathwayLabel: "Software Engineering",
+  },
   data_analyst: {
     roleKey: "data_analyst",
     label: "Data Analyst",
