@@ -154,7 +154,7 @@ async function main() {
     console.error(`\n${failures} template(s) failed`);
     process.exit(1);
   }
-  console.log(`\nSeed complete: ${ALL_SIMULATIONS.length} template(s) processed.`);
+  console.log(`\nSeed complete: ${selected.length} template(s) processed.`);
 }
 
 main().catch((err) => {
