@@ -6,6 +6,7 @@ export const metadata = {
   title: "Contact",
   description:
     "Tell Fydell about the engineering role you are hiring for.",
+  alternates: { canonical: "/contact" },
 };
 
 export default function ContactPage() {

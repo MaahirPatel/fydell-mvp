@@ -38,6 +38,7 @@
     "test:disclosure": "tsx scripts/test-disclosure-boundary.ts",
     "test:auth": "tsx scripts/test-safe-next.ts",
     "test:desktop-auth": "tsx --conditions react-server scripts/test-desktop-auth.ts",
+    "check:seo": "tsx scripts/check-seo.ts",
     "test:file-package": "tsx --conditions react-server scripts/test-file-package.ts",
     "test:auth-flows": "tsx scripts/test-auth-flows.ts",
     "test:sims": "tsx --conditions react-server scripts/test-micro-scoring.ts",

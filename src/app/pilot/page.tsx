@@ -3,7 +3,7 @@ import { Container } from "@/components/marketing/ui";
 import { Reveal } from "@/components/motion/Reveal";
 
 export const metadata = {
-  title: "Welcome to Fydell · Pilot Testing",
+  title: "Welcome to pilot testing",
 };
 
 const YOU_MAY = [

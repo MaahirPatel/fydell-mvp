@@ -20,6 +20,7 @@ export const metadata = {
   title: "For hiring teams",
   description:
     "Invite candidates to a real engineering incident. Your team reviews the recorded work, writes a cited report and decides.",
+  alternates: { canonical: "/employers" },
 };
 
 export default function EmployersPage() {

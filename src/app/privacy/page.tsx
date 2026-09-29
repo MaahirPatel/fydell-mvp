@@ -7,6 +7,7 @@ export const metadata = {
   title: "Privacy",
   description:
     "What data Fydell collects, why, who can see it, and how a candidate controls their own record.",
+  alternates: { canonical: "/privacy" },
 };
 
 const FACTS: Array<[string, string]> = [

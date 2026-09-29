@@ -14,6 +14,7 @@ export const metadata = {
   title: "Product",
   description:
     "How a Fydell engineering simulation runs, from the invitation to the team's decision: the desktop app, the disclosed work trail, hidden checks and the cited report.",
+  alternates: { canonical: "/product" },
 };
 
 export default function ProductPage() {

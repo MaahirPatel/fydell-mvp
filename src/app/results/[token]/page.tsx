@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
 import { Surface } from "@/components/ui/Surface";
 
-export const metadata = { title: "This link has been retired | Fydell" };
+export const metadata = { title: "This link has been retired" };
 
 /*
  * Retired disclosure path.

@@ -44,6 +44,7 @@ export const metadata = {
   title: "Trust",
   description:
     "The lifecycle of an evaluation, who can read each artifact, how a claim is tied to its source, and what Fydell does not have yet.",
+  alternates: { canonical: "/trust" },
 };
 
 const SECTION = "border-t border-[var(--border-subtle)] mkt-section-chapter";

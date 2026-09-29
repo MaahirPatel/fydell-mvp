@@ -5,6 +5,7 @@ import AuthShell from "@/components/auth/AuthShell";
 export const metadata = {
   title: "Get started",
   description: "Create an Engineering Passport as a developer, or set up a hiring workspace for your team.",
+  alternates: { canonical: "/get-started" },
 };
 
 const PATHS = [

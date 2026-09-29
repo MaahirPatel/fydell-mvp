@@ -5,6 +5,7 @@ import { DesktopShot } from "@/components/marketing/kit/Shots";
 export const metadata = {
   title: "Download",
   description: "Download the Fydell desktop app for macOS and Windows. Candidates use it to work engineering simulations.",
+  alternates: { canonical: "/download" },
 };
 
 const VERSION = "0.1.4";

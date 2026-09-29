@@ -6,6 +6,7 @@ export const metadata = {
   title: "Demo",
   description:
     "Walk through an example Engineering Passport, a Python / FastAPI simulation, and the evidence report an employer reviews. Example data only.",
+  alternates: { canonical: "/demo" },
 };
 
 export default function DemoPage() {

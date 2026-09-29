@@ -20,6 +20,7 @@ export const metadata = {
   title: "For engineers",
   description:
     "Show how you work on a real engineering incident. You see what is recorded before you start and keep a receipt of what you submitted. Free for engineers.",
+  alternates: { canonical: "/developers" },
 };
 
 export default function DevelopersPage() {

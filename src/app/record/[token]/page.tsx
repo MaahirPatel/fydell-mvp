@@ -7,7 +7,7 @@ import { isV2PersistedResult, type V2PersistedResult } from "@/lib/simulations/v
 import { CandidateShell } from "@/components/candidate/CandidateShell";
 import { Surface } from "@/components/ui/Surface";
 
-export const metadata = { title: "Work Receipt | Fydell" };
+export const metadata = { title: "Work Receipt" };
 export const dynamic = "force-dynamic";
 
 const ROLE_TITLES: Record<string, string> = {

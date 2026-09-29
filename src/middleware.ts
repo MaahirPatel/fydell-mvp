@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
+import { isPrivatePath } from "@/lib/seo/site";
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -23,11 +24,14 @@ export async function middleware(request: NextRequest) {
   ) {
     res.headers.set("Cache-Control", "private, no-store, max-age=0, must-revalidate");
   }
+  if (isPrivatePath(path)) {
+    res.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
   return res;
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|brand/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|brand/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

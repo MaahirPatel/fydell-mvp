@@ -5,6 +5,7 @@ import { PRICING, planSignupHref, usd } from "@/lib/marketing/pricing";
 export const metadata = {
   title: "Pricing",
   description: `Free for engineers. Hiring teams pay ${usd(PRICING.starterPerSimulation)} per completed simulation, or ${usd(PRICING.teamMonthly)} a month with ${PRICING.teamIncluded} included.`,
+  alternates: { canonical: "/pricing" },
 };
 
 export default function PricingPage() {

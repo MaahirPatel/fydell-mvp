@@ -5,6 +5,7 @@ import { ContactLink } from "@/components/ui/ContactLink";
 export const metadata = {
   title: "Terms",
   description: "Fydell terms of use.",
+  alternates: { canonical: "/terms" },
 };
 
 /**
