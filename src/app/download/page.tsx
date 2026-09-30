@@ -8,7 +8,7 @@ export const metadata = {
   alternates: { canonical: "/download" },
 };
 
-const VERSION = "0.1.4";
+const VERSION = "0.1.5";
 const RELEASES_URL = "https://github.com/MaahirPatel/fydell-mvp/releases";
 const BASE = `${RELEASES_URL}/download/v${VERSION}`;
 const DOWNLOADS = {

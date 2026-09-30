@@ -30,7 +30,7 @@ export default function HomePage() {
       <Hero
         title={["The hiring system built on", "real engineering work."]}
         lead="Bring together project evidence and realistic simulations. Show your skills. Find your next engineer."
-        aside={{ href: "/download", strong: "New", label: "Fydell desktop 0.1.4" }}
+        aside={{ href: "/download", strong: "New", label: "Fydell desktop 0.1.5" }}
         actions={
           <>
             <Link href="/get-started" className="l-btn l-btn-lg l-btn-solid">Get started</Link>
