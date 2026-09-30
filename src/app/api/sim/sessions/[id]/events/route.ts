@@ -54,7 +54,7 @@ export async function GET(
     return NextResponse.json({ ok: true, ...buildReplayPage(rows, after, limit) });
   } catch {
     return NextResponse.json(
-      { error: "Could not load events", code: "retryable_provider_failure", retryable: true },
+      { error: "Could not load session events. Try again.", code: "retryable_provider_failure", retryable: true },
       { status: 503 }
     );
   }

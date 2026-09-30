@@ -30,7 +30,7 @@ export async function GET() {
   const user = await requireUser();
   if (!user) return error(401, "unauthorized", "Sign in to continue.");
   const org = await requireOrgMember(user.id);
-  if (!org) return error(403, "forbidden", "No active organization membership.");
+  if (!org) return error(403, "forbidden", "You are not a member of an active hiring workspace.");
   return NextResponse.json({ ok: true, families: CATALOG.map(summarize) });
 }
 
@@ -38,9 +38,9 @@ export async function POST(req: NextRequest) {
   const user = await requireUser();
   if (!user) return error(401, "unauthorized", "Sign in to continue.");
   const org = await requireOrgMember(user.id);
-  if (!org) return error(403, "forbidden", "No active organization membership.");
+  if (!org) return error(403, "forbidden", "You are not a member of an active hiring workspace.");
   if (!isOrgRole(org.role) || !roleCan(org.role, "manage_roles")) {
-    return error(403, "forbidden", "Your role cannot create hiring roles.");
+    return error(403, "forbidden", "Your workspace role cannot create hiring roles. Ask a workspace admin.");
   }
 
   const idempotencyKey = req.headers.get("idempotency-key");
@@ -58,9 +58,9 @@ export async function POST(req: NextRequest) {
   const outcome = processIntake(body);
   if (outcome.ok === false) {
     if (outcome.code === "validation_failed") {
-      return error(400, "validation_failed", "The intake is incomplete or invalid.", { issues: outcome.issues });
+      return error(400, "validation_failed", "Some fields are missing or invalid. Fix them and submit again.", { issues: outcome.issues });
     }
-    return error(422, "criteria_rejected", "Some criteria cannot be used in an assessment. Revise them and resubmit.", {
+    return error(422, "criteria_rejected", "Some criteria cannot be assessed. Each one below says why and what to write instead.", {
       screening: outcome.screening,
     });
   }
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       replayed = true;
     } else {
       console.error("[role-intake] insert failed:", inserted.error.message);
-      return error(503, "retryable_provider_failure", "Could not save the intake. Try again.", { retryable: true });
+      return error(503, "retryable_provider_failure", "We could not save this role. Try again in a moment.", { retryable: true });
     }
   }
 

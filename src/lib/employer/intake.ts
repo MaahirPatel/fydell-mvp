@@ -210,7 +210,7 @@ export function matchScenarios(intake: RoleIntake, catalog: CatalogEntry[] = CAT
           family: intake.family,
           title: intake.title,
           reason: "stack_unsupported",
-          detail: `Requested stack (${intake.stack.join(", ")}) is not covered; the scenario uses ${entry.initialScenario.stackTags.join(", ")}.`,
+          detail: `This scenario uses ${entry.initialScenario.stackTags.join(", ")}. It does not cover ${intake.stack.join(", ")} yet.`,
         }
       : null,
   };
