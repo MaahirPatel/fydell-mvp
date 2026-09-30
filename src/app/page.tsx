@@ -1,21 +1,16 @@
 import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
-import EvaluationShot from "@/components/marketing/kit/EvaluationShot";
+import { Closing, Hero, Ledger, Section, SectionHead, Statement, Timeline, Trio } from "@/components/marketing/kit/Kit";
+import { FigDecide, FigIncident, FigTrail } from "@/components/marketing/kit/Figs";
 import {
-  Closing,
-  Details,
-  Hero,
-  Ledger,
-  Section,
-  SectionHead,
-  Stage,
-  Statement,
-  Timeline,
-  Trio,
-  Visual,
-} from "@/components/marketing/kit/Kit";
-import { FigDecide, FigDesktop, FigIncident, FigPassport, FigReport, FigTrail } from "@/components/marketing/kit/Figs";
-import { BriefShot, ReportShot, TestsShot, TrailShot } from "@/components/marketing/kit/Shots";
+  BriefPicture,
+  ChecksPicture,
+  Feature,
+  HeroFlow,
+  PassportPicture,
+  ReportPicture,
+  TrailPicture,
+} from "@/components/marketing/kit/Plain";
 
 export const metadata = {
   title: { absolute: "Fydell: The hiring system built on real engineering work" },
@@ -38,9 +33,7 @@ export default function HomePage() {
           </>
         }
       >
-        <Stage hero art="lake" title="Fydell · Evaluation FYD-2048" label="Example: an evaluation in the Fydell employer workspace">
-          <EvaluationShot />
-        </Stage>
+        <HeroFlow />
       </Hero>
 
       <Section>
@@ -69,60 +62,48 @@ export default function HomePage() {
         />
       </Section>
 
-      <Section id="brief" labelledBy="brief-title">
-        <SectionHead
-          id="brief-title"
-          title={["Start from a real", "incident"]}
-          lead="The candidate gets what an engineer on your team would get: an incident brief, a codebase that runs, and teammates who answer questions. Halfway through, the requirement changes."
-          link={{ href: "/product#brief", label: "How a simulation runs" }}
-        />
-        <Visual art="coast" title="Fydell Desktop · INC-2291" label="Example: the INC-2291 brief and the team thread">
-          <BriefShot />
-        </Visual>
-        <Details
-          items={[
-            { title: "Working code", body: "A small service with a real bug, real tests, and a setup check that runs first." },
-            { title: "Teammates who answer", body: "Written answers, the same for every candidate. Asking is optional and never penalised." },
-            { title: "One requirement update", body: "Posted by the team partway through, the way scope actually moves at work." },
-          ]}
-        />
-      </Section>
+      <Feature
+        id="brief"
+        title="Start from a real incident"
+        lead="The candidate gets what an engineer on your team would get: a brief, a codebase that runs, and teammates who answer questions. Halfway through, the requirement changes."
+        points={[
+          "A small service with a real bug and real tests",
+          "Teammates who answer, the same way for everyone",
+          "One requirement update, the way scope moves at work",
+        ]}
+        link={{ href: "/product#brief", label: "How a simulation runs" }}
+      >
+        <BriefPicture />
+      </Feature>
 
-      <Section id="trail" labelledBy="trail-title">
-        <SectionHead
-          id="trail-title"
-          title={["Every step,", "on the record"]}
-          lead="The desktop app records a disclosed work trail: the files they open and change, the commands they run, their test results and when each happened. Nothing outside that list."
-          link={{ href: "/trust", label: "What is and isn't recorded" }}
-        />
-        <Visual art="hills" title="Fydell Desktop · Work trail" label="Example: a candidate's work trail and the notice they accepted">
-          <TrailShot />
-        </Visual>
-      </Section>
+      <Feature
+        id="trail"
+        flip
+        title="Every step, on the record"
+        lead="The desktop app keeps a work trail: the files they open and change, the commands they run, their tests, and when each happened. The candidate sees the list before they start."
+        link={{ href: "/trust", label: "What is and isn't recorded" }}
+      >
+        <TrailPicture />
+      </Feature>
 
-      <Section id="checks" labelledBy="checks-title">
-        <SectionHead
-          id="checks-title"
-          title={["Checked on the code", "they submitted"]}
-          lead="On submit, the project is sealed with a checksum and run against hidden checks in an isolated sandbox. The result is the same no matter whose laptop it was written on."
-          link={{ href: "/security", label: "How submissions are handled" }}
-        />
-        <Visual art="lake" title="Fydell · Hidden checks" label="Example: hidden checks run against a submitted snapshot">
-          <TestsShot />
-        </Visual>
-      </Section>
+      <Feature
+        id="checks"
+        title="Checked on the code they sent"
+        lead="When the candidate sends their work, it is sealed and run against hidden checks in a clean sandbox. The result is the same no matter whose laptop it was written on."
+        link={{ href: "/security", label: "How submissions are handled" }}
+      >
+        <ChecksPicture />
+      </Feature>
 
-      <Section id="report" labelledBy="report-title">
-        <SectionHead
-          id="report-title"
-          title={["A report your team", "can stand behind"]}
-          lead="Your reviewers write the findings. Each one must cite a file, a test, a message or a handoff answer before the report can be released. Observations and gaps are labelled, and there is no score."
-          link={{ href: "/employers", label: "Fydell for hiring teams" }}
-        />
-        <Visual art="coast" title="Fydell · Report" label="Example: a cited report with the team's decision">
-          <ReportShot />
-        </Visual>
-      </Section>
+      <Feature
+        id="report"
+        flip
+        title="A report your team can stand behind"
+        lead="Your reviewers write the findings, and each one must point to a file, a test or a message before the report can be released. There is no score."
+        link={{ href: "/employers", label: "Fydell for hiring teams" }}
+      >
+        <ReportPicture />
+      </Feature>
 
       <Section id="loop" labelledBy="loop-title">
         <SectionHead
@@ -141,21 +122,15 @@ export default function HomePage() {
         />
       </Section>
 
-      <Section id="passport" labelledBy="passport-title">
-        <SectionHead
-          id="passport-title"
-          title={["Engineers keep", "their work"]}
-          lead="Every engineer gets a receipt for what they submitted, and can build an Engineering Passport from their own public repositories: findings linked to the exact lines, shared only with the employers they choose."
-          link={{ href: "/passport/new", label: "Build your passport" }}
-        />
-        <Trio
-          items={[
-            { fig: <FigPassport />, title: "A passport you own", body: "Built from your public repositories at a pinned commit. Free for engineers." },
-            { fig: <FigReport />, title: "Findings with line citations", body: "What the code demonstrates, linked to files and line ranges." },
-            { fig: <FigDesktop />, title: "Simulations on your machine", body: "The Fydell desktop app for macOS and Windows sets up each project." },
-          ]}
-        />
-      </Section>
+      <Feature
+        id="passport"
+        title="Engineers keep their work"
+        lead="Every engineer gets a receipt for what they sent. They can also build an Engineering Passport from their own public code: findings linked to the exact lines, private until they share a link."
+        points={["Free for engineers", "Built from public GitHub projects", "You choose who sees it, and can turn a link off"]}
+        link={{ href: "/passport/new", label: "Build your passport" }}
+      >
+        <PassportPicture />
+      </Feature>
 
       <Section id="boundaries" labelledBy="boundaries-title">
         <SectionHead
