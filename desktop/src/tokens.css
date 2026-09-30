@@ -7,24 +7,12 @@
    tuned for a dense native-feeling workbench — in LIGHT mode, per the
    founder direction ("Fydell Light").
 
-   Light-first. The desktop mirrors the web app: warm ivory canvas, white
-   raised surfaces, brand blue primary action, and the semantic hues at the
-   exact contract values: teal still means observed evidence, violet still
-   means generated evidence, amber still means needs attention, green is a
-   real completed state, red is destructive/failed.
-
-   Token-name → web-value mapping (verbatim contract aliases unless noted):
-     --ev-observed/ink/field   #0b6e67 / #0b5e58 / #e3f2ef  (contract alias)
-     --ev-generated/ink/field  #6d28d9 / #5b21b6 / #efe7fb  (contract alias)
-     --ev-attention/ink/field  #a9752a / #80520c / #fbf3e2  (contract alias)
-     --ev-success/ink/field    #3f7d5c / #2f6b4a / #e9f4ee  (contract alias)
-     --ev-error/ink/field      #c2405a / #a83248 / #fbe9ed  (contract alias)
-     --action / --action-hover #5662ff / #6872ff            (spec §1 brand blue)
-     --action-ink              #4a5bd4                     (contract alias)
-     --text-on-solid           #ffffff                     (contract alias)
-     --field-blue / --ink-blue #ebf0fd / #1d4ed8           (contract field)
-   The --ev-*-line tokens (solid hairline variants of the inks) exist only
-   in the desktop file — the web contract inlines them per component.
+   Light-first. The desktop mirrors the website: warm off-white canvas,
+   near-white raised surfaces, ink text and a solid ink primary action.
+   Evidence keeps its meanings with quieter hues: observed evidence is ink,
+   generated evidence is stone, attention is a small yellow, green is a real
+   completed state, red is destructive or failed. Colour never carries
+   meaning alone; every state also has a label or icon.
 
    Desktop keeps its own opinions (unchanged by the retheme):
    - Denser type. Desktop body text is 13px (vs 14px web); the focal level
@@ -87,48 +75,48 @@
   --radius-frame: 14px;
 
   /* ---- Borders: hairlines only (ink #17212B per spec) ----------------------- */
-  --border-subtle: rgb(23 33 43 / 0.08);
-  --border-default: rgb(23 33 43 / 0.13);
-  --border-strong: rgb(23 33 43 / 0.22);
+  --border-subtle: #ebe9e3;
+  --border-default: #e1ded6;
+  --border-strong: #cfcbc0;
 
   /* ---- Surfaces (warm ivory canvas, white raised — never dark) -------------- */
-  --surface-canvas: #fafaf8;      /* app ground: warm ivory */
-  --surface-deep: #f3f2ed;        /* sunken wells: output, inputs */
-  --surface-band: #f8f8f5;
-  --surface-raised: #ffffff;      /* topbar, rails, cards */
-  --surface-panel: #f9f9f7;       /* side panels */
-  --surface-hover: #f1f1ed;       /* hovered rows/files */
-  --surface-selected: #ecebe7;    /* selected file / active tab track */
+  --surface-canvas: #f7f7f4;      /* app ground: warm off-white */
+  --surface-deep: #efeee9;        /* sunken wells: output, inputs */
+  --surface-band: #f2f1ec;
+  --surface-raised: #fcfcfa;      /* topbar, rails, cards */
+  --surface-panel: #f4f3ef;       /* side panels */
+  --surface-hover: #edece6;       /* hovered rows/files */
+  --surface-selected: #e9e7df;    /* selected file / active tab track */
 
   /* ---- Editor surfaces (Monaco light "vs" family) ----------------------------
      Kept as tokens so the editor host, file tree, and tab bar read as one
      surface instead of three ad-hoc grays. */
   --surface-editor: #ffffff;         /* Monaco vs ground */
   --surface-editor-gutter: #ffffff;
-  --surface-tabbar: #f4f3ef;
+  --surface-tabbar: #f2f1ec;
   --surface-tab-active: #ffffff;     /* active tab matches editor */
-  --surface-tab-inactive: #f4f3ef;
-  --surface-filetree: #f7f6f3;
+  --surface-tab-inactive: #f2f1ec;
+  --surface-filetree: #f4f3ef;
 
   /* ---- Accent fields (contract surface tints) -------------------------------- */
-  --field-blue: #ebf0fd;
-  --ink-blue: #1d4ed8;
-  --ink-blue-line: rgb(29 78 216 / 0.20);
+  --field-blue: #ebe9e2;
+  --ink-blue: #1a1915;
+  --ink-blue-line: rgb(26 25 21 / 0.20);
 
   /* ---- Text (solid colors, never opacity) ------------------------------------ */
-  --text-primary: #17212b;
-  --text-body: #2c3642;
-  --text-secondary: #4b5563;
-  --text-tertiary: #6b7480;
-  --text-disabled: #8e959e;
-  --text-on-solid: #ffffff;
+  --text-primary: #1a1915;
+  --text-body: #34322b;
+  --text-secondary: #5e5b52;
+  --text-tertiary: #6f6c62;
+  --text-disabled: #aeaa9f;
+  --text-on-solid: #fcfcfa;
 
   /* ---- The one inverted control (spec §5: solid ink primary, white text) -------
      Desktop primary is brand blue per spec §1; hover/active stay in-family. */
-  --control-solid: #17212b;
-  --control-solid-hover: #2a3542;
+  --control-solid: #1a1915;
+  --control-solid-hover: #34322b;
   --control-solid-active: #000000;
-  --control-solid-ink: #ffffff;
+  --control-solid-ink: #fcfcfa;
 
   /* ---- Evidence semantics: IDENTICAL meanings to the shared contract ---------
      teal    = observed / project evidence
@@ -138,49 +126,49 @@
      red     = unsupported / destructive
      Values are the web contract aliases verbatim (light theme). The
      --ev-*-line tokens are solid hairline variants of the inks, desktop-only. */
-  --ev-observed: #0b6e67;
-  --ev-observed-ink: #0b5e58;
-  --ev-observed-field: #e3f2ef;
-  --ev-observed-line: rgb(11 110 103 / 0.32);
-  --ev-generated: #6d28d9;
-  --ev-generated-ink: #5b21b6;
-  --ev-generated-field: #efe7fb;
-  --ev-generated-line: rgb(93 33 182 / 0.30);
-  --ev-attention: #a9752a;
-  --ev-attention-ink: #80520c;
-  --ev-attention-field: #fbf3e2;
-  --ev-attention-line: rgb(128 82 12 / 0.32);
+  --ev-observed: #34322b;
+  --ev-observed-ink: #1a1915;
+  --ev-observed-field: #efeee9;
+  --ev-observed-line: rgb(26 25 21 / 0.28);
+  --ev-generated: #6f6c62;
+  --ev-generated-ink: #5e5b52;
+  --ev-generated-field: #f2f1ec;
+  --ev-generated-line: rgb(94 91 82 / 0.30);
+  --ev-attention: #b88400;
+  --ev-attention-ink: #7a5700;
+  --ev-attention-field: #fbf3dc;
+  --ev-attention-line: rgb(122 87 0 / 0.30);
   --ev-success: #3f7d5c;
   --ev-success-ink: #2f6b4a;
   --ev-success-field: #e9f4ee;
   --ev-success-line: rgb(47 107 74 / 0.32);
-  --ev-error: #c2405a;
-  --ev-error-ink: #a83248;
-  --ev-error-field: #fbe9ed;
-  --ev-error-line: rgb(168 50 72 / 0.32);
+  --ev-error: #d13b40;
+  --ev-error-ink: #b3272c;
+  --ev-error-field: #fbe9e8;
+  --ev-error-line: rgb(179 39 44 / 0.30);
 
-  /* ---- Action: brand blue (spec §1) ------------------------------------------ */
-  --action: #5662ff;
-  --action-hover: #6872ff;
-  --action-ink: #4a5bd4;
-  --action-ink-ring: rgb(86 98 255 / 0.30);
+  /* ---- Action: solid ink, matching the website ---------------------------------- */
+  --action: #1a1915;
+  --action-hover: #34322b;
+  --action-ink: #1a1915;
+  --action-ink-ring: rgb(26 25 21 / 0.30);
 
   /* ---- Focus ------------------------------------------------------------------- */
   --focus-ring: 2px solid var(--action-ink);
   --focus-ring-offset: 2px;
 
   /* ---- Shadows (light: hairlines carry depth first; soft, low-contrast) -------- */
-  --shadow-1: 0 1px 2px rgb(15 17 23 / 0.04), 0 2px 6px rgb(15 17 23 / 0.03);
-  --shadow-2: 0 1px 2px rgb(15 17 23 / 0.05), 0 8px 20px -8px rgb(15 17 23 / 0.12);
-  --shadow-3: 0 2px 4px rgb(15 17 23 / 0.04), 0 20px 44px -16px rgb(15 17 23 / 0.18);
-  --shadow-card: 0 1px 2px rgb(15 17 23 / 0.05), 0 4px 14px rgb(15 17 23 / 0.05);
-  --shadow-float: 0 2px 8px rgb(15 17 23 / 0.06), 0 20px 48px rgb(15 17 23 / 0.10);
+  --shadow-1: 0 1px 2px rgb(40 34 20 / 0.04), 0 2px 6px rgb(40 34 20 / 0.03);
+  --shadow-2: 0 1px 2px rgb(40 34 20 / 0.05), 0 8px 20px -8px rgb(40 34 20 / 0.12);
+  --shadow-3: 0 2px 4px rgb(40 34 20 / 0.04), 0 20px 44px -16px rgb(40 34 20 / 0.18);
+  --shadow-card: 0 1px 2px rgb(40 34 20 / 0.05), 0 4px 14px rgb(40 34 20 / 0.05);
+  --shadow-float: 0 2px 8px rgb(40 34 20 / 0.06), 0 20px 48px rgb(40 34 20 / 0.10);
 
   /* ---- Screen wash: a faint brand glow behind centered screens ------------------ */
   --screen-wash: radial-gradient(
     120% 80% at 50% -10%,
-    rgb(86 98 255 / 0.07) 0%,
-    rgb(86 98 255 / 0.02) 38%,
+    rgb(40 34 20 / 0.035) 0%,
+    rgb(40 34 20 / 0.01) 38%,
     transparent 70%
   );
 
@@ -229,25 +217,25 @@ button { cursor: pointer; }
 }
 
 ::selection {
-  background: rgb(86 98 255 / 0.18);
+  background: rgb(226 165 0 / 0.22);
   color: inherit;
 }
 
 /* Scrollbars: thin, quiet, part of the design. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(23 33 43 / 0.18) transparent;
+  scrollbar-color: rgb(26 25 21 / 0.18) transparent;
 }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: 999px;
-  background: rgb(23 33 43 / 0.18);
+  background: rgb(26 25 21 / 0.18);
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(23 33 43 / 0.30);
+  background: rgb(26 25 21 / 0.30);
   background-clip: content-box;
 }
 
