@@ -1,0 +1,180 @@
+/* ============================================================================
+   Fydell motion. Purposeful and quiet: things arrive once, in reading order.
+
+   Easing   cubic-bezier(0.16, 1, 0.3, 1) everywhere (var(--ease)).
+   Timing   200ms UI · 600-900ms entrances · 1200ms hero product image.
+   Trigger  Hero plays on load. Everything else plays once when its <Reveal>
+            is ~15% into the viewport (see src/components/site/Reveal.tsx).
+
+   Hidden initial states only apply under html.fy-js, which the site shell
+   sets before first paint, so the page is fully visible without JavaScript.
+   ========================================================================== */
+
+/* ---- Hero: on load -------------------------------------------------------- */
+
+.fy-js [data-hero] {
+  animation: fy-rise 800ms var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 80ms + 60ms);
+}
+
+.fy-js [data-hero-visual] {
+  animation: fy-rise-visual 1200ms var(--ease) both;
+  animation-delay: 320ms;
+}
+
+@keyframes fy-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fy-rise-visual {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 32px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- Scroll reveals ------------------------------------------------------- */
+
+.fy-js [data-r] {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 700ms var(--ease),
+    transform 700ms var(--ease);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+
+.fy-js [data-r="row"] {
+  transform: translate3d(0, 8px, 0);
+  transition-duration: 600ms;
+}
+
+.fy-js [data-r="visual"] {
+  transform: translate3d(0, 24px, 0) scale(0.99);
+  transition-duration: 900ms;
+}
+
+.fy-js .fy-in [data-r],
+.fy-js .fy-in[data-r] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Line illustrations draw their strokes. Paths carry pathLength="1". */
+.fy-js .fy-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1100ms var(--ease);
+  transition-delay: calc(var(--d, 0) * 120ms + 150ms);
+}
+
+.fy-js .fy-in .fy-draw {
+  stroke-dashoffset: 0;
+}
+
+/* Fills arrive after the strokes. */
+.fy-js .fy-fill {
+  opacity: 0;
+  transition: opacity 600ms var(--ease) 700ms;
+}
+
+.fy-js .fy-in .fy-fill {
+  opacity: 1;
+}
+
+/* Summary bars fill from the left. */
+.fy-js .fy-bar {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 900ms var(--ease);
+  transition-delay: calc(var(--i, 0) * 40ms + 300ms);
+}
+
+.fy-js .fy-in .fy-bar {
+  transform: none;
+}
+
+/* The requirement update arrives with a brief red glow, then settles. */
+.fy-js .fy-in .fy-glow-red {
+  animation: fy-glow-red 1800ms var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 90ms + 500ms);
+}
+
+@keyframes fy-glow-red {
+  0% {
+    box-shadow: 0 0 0 1px rgba(255, 90, 110, 0.28), 0 0 0 0 rgba(255, 90, 110, 0);
+  }
+  30% {
+    box-shadow: 0 0 0 1px rgba(255, 90, 110, 0.5), 0 0 0 6px rgba(255, 90, 110, 0.14), 0 8px 28px -6px rgba(255, 90, 110, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 1px rgba(255, 90, 110, 0.28), 0 0 0 0 rgba(255, 90, 110, 0);
+  }
+}
+
+/* The selected decision keeps a soft blue glow. */
+.fy-js .fy-glow-blue {
+  transition: box-shadow 900ms var(--ease) 700ms;
+}
+
+.fy-in .fy-glow-blue,
+html:not(.fy-js) .fy-glow-blue {
+  box-shadow: 0 0 0 1px rgba(91, 108, 255, 0.55), 0 0 0 4px rgba(91, 108, 255, 0.12), 0 6px 18px -6px rgba(91, 108, 255, 0.45);
+}
+
+/* A cursor blink for "live" UI such as the thread composer. */
+.fy-caret {
+  display: inline-block;
+  width: 1px;
+  height: 1.1em;
+  margin-left: 1px;
+  vertical-align: -0.15em;
+  background: var(--fy-blue);
+  animation: fy-blink 1.1s steps(1) infinite;
+}
+
+@keyframes fy-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ---- Reduced motion: everything visible and still ------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fy-js [data-hero],
+  .fy-js [data-hero-visual],
+  .fy-js [data-r],
+  .fy-js .fy-fill {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  .fy-js .fy-draw {
+    stroke-dashoffset: 0 !important;
+    transition: none !important;
+  }
+  .fy-js .fy-bar {
+    transform: none !important;
+    transition: none !important;
+  }
+  .fy-js .fy-in .fy-glow-red,
+  .fy-caret {
+    animation: none !important;
+  }
+  .fy-glow-blue {
+    box-shadow: 0 0 0 1px rgba(91, 108, 255, 0.55), 0 0 0 4px rgba(91, 108, 255, 0.12) !important;
+  }
+}

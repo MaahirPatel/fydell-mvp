@@ -1,11 +1,11 @@
 import Link from "next/link";
-import FydellLogo from "@/components/brand/FydellLogo";
+import { Lockup } from "@/components/site/Mark";
 
 /**
  * The single frame for every authentication screen.
  *
  * One centered column on a quiet canvas: wordmark, heading, form, footer.
- * Signup and login are trust surfaces — a product scene beside credential
+ * Signup and login are trust surfaces: a product scene beside credential
  * fields reads as a pitch, not reassurance, so the shell takes no aside.
  * Screens that need more room (role select, onboarding) use the wide
  * measure; the composition stays the same.
@@ -25,19 +25,19 @@ export default function AuthShell({
 }) {
   return (
     <div className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-[var(--surface-canvas)]">
-      {/* Ambient brand wash: a whisper of violet-blue along the top edge,
-          dissolving into the warm canvas. Present, not noticeable. */}
+      {/* Ambient ring-palette wash along the top edge, fading into the
+          canvas. Present, not noticeable. */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-[-340px] h-[600px] w-[min(920px,120vw)] -translate-x-1/2 rounded-[100%] bg-[radial-gradient(closest-side,rgba(86,98,255,0.10),rgba(122,79,160,0.05),transparent)]" />
+        <div className="absolute inset-x-0 top-0 h-[720px] bg-[radial-gradient(30%_36%_at_14%_10%,rgba(45,212,191,0.12),transparent_70%),radial-gradient(36%_40%_at_44%_0%,rgba(91,108,255,0.13),transparent_72%),radial-gradient(30%_36%_at_76%_8%,rgba(168,85,247,0.09),transparent_72%),radial-gradient(28%_32%_at_96%_28%,rgba(255,90,110,0.08),transparent_72%)]" />
       </div>
 
       <header className="relative z-10 flex h-16 shrink-0 items-center px-6 sm:px-10">
         <Link
           href="/"
           className="inline-flex items-center gap-2.5 rounded-[6px]"
-          aria-label="Fydell home"
+          aria-label="fydell home"
         >
-          <FydellLogo height={22} />
+          <Lockup size={19} />
         </Link>
       </header>
 

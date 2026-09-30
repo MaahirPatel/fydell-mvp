@@ -33,18 +33,21 @@
   --hue-signal: 258;
   --hue-warm: 52;
 
-  /* ---- Surfaces ---- */
-  --surface-canvas: oklch(99.3% 0.002 var(--hue-signal));
-  --surface-deep: oklch(96.4% 0.004 var(--hue-signal));
-  --surface-band: oklch(97.8% 0.003 var(--hue-signal));
+  /* ---- Surfaces: a cool tonal ladder, lightest to deepest ----
+     Depth comes from these steps, not from borders. Neighbouring steps stay
+     far enough apart to read on an ordinary laptop panel. */
   --surface-raised: #ffffff;
-  --surface-panel: oklch(98.6% 0.003 var(--hue-signal));
-  --surface-hover: oklch(96.8% 0.005 var(--hue-signal));
-  --surface-selected: oklch(94.6% 0.008 var(--hue-signal));
+  --surface-canvas: #fafbfc;
+  --surface-band: #f4f6fa;
+  --surface-panel: #f0f2f7;
+  --surface-deep: #e9ecf2;
+  --surface-hover: #ebeef5;
+  --surface-selected: #e4e8f3;
+  --surface-editor: #f7f8fb;
   --surface-paper: #ffffff;
   --surface-0: var(--surface-raised);
-  --surface-code: oklch(19% 0.02 var(--hue-signal));
-  --surface-code-raised: oklch(23% 0.022 var(--hue-signal));
+  --surface-code: #10131c;
+  --surface-code-raised: #171b26;
   --wash-sage: oklch(95.5% 0.02 var(--hue-evidence));
   --surface-intelligence: #f3eefe;
   --surface-observation: #e8f7f4;
@@ -52,17 +55,59 @@
   --surface-uncertain: #fbf3e4;
   --surface-counter: #fdedf0;
 
-  /* ---- Borders ---- */
-  --border-subtle: oklch(20% 0.02 var(--hue-signal) / 0.08);
-  --border-default: oklch(20% 0.02 var(--hue-signal) / 0.13);
-  --border-strong: oklch(20% 0.02 var(--hue-signal) / 0.22);
+  /* ---- Borders: hairlines, only where structure needs them ---- */
+  --border-subtle: rgba(16, 24, 56, 0.06);
+  --border-default: rgba(16, 24, 56, 0.1);
+  --border-strong: rgba(16, 24, 56, 0.17);
 
-  /* ---- Text ---- */
-  --text-primary: oklch(17% 0.015 var(--hue-signal));
-  --text-body: oklch(30% 0.016 var(--hue-signal));
-  --text-secondary: oklch(42% 0.018 var(--hue-signal));
-  --text-tertiary: oklch(51% 0.016 var(--hue-signal));
-  --text-disabled: oklch(58% 0.012 var(--hue-signal));
+  /* ---- Text: four solid steps, each AA on every surface above ---- */
+  --text-primary: #0e1117;
+  --text-body: #2b313d;
+  --text-secondary: #3a4150;
+  --text-tertiary: #535b6b;
+  --text-quaternary: #5e6676;
+  --text-disabled: #8a91a0;
+
+  /* ---- Ring palette: the only accent colours ----
+     blue = primary and interactive, red = requirement changes and failures,
+     teal = passed and healthy, violet = only inside gradients. The -ink
+     forms are the text-safe versions (AA on every surface). */
+  --fy-blue: #5b6cff;
+  --fy-violet: #a855f7;
+  --fy-red: #ff5a6e;
+  --fy-teal: #2dd4bf;
+  --fy-blue-ink: #3f4fe6;
+  --fy-violet-ink: #7b2fd1;
+  --fy-red-ink: #bd2340;
+  --fy-teal-ink: #0a7064;
+  --fy-blue-soft: rgba(91, 108, 255, 0.1);
+  --fy-red-soft: rgba(255, 90, 110, 0.1);
+  --fy-teal-soft: rgba(45, 212, 191, 0.14);
+  --fy-violet-soft: rgba(168, 85, 247, 0.1);
+  --fy-gradient: linear-gradient(90deg, #2dd4bf 0%, #5b6cff 36%, #a855f7 68%, #ff5a6e 100%);
+  --fy-focus: #3f4fe6;
+
+  /* Colour enters as light: washes behind the hero, the main product image
+     and the closing CTA, plus two tinted bands for page rhythm. */
+  --wash-teal: rgba(45, 212, 191, 0.16);
+  --wash-blue: rgba(91, 108, 255, 0.15);
+  --wash-violet: rgba(168, 85, 247, 0.11);
+  --wash-red: rgba(255, 90, 110, 0.11);
+  --band-lavender: #eff1fc;
+  --band-rose: #fcf2f4;
+
+  /* Soft, layered, cool shadows. */
+  --shadow-xs: 0 1px 2px rgba(16, 24, 56, 0.05);
+  --shadow-sm: 0 1px 2px rgba(16, 24, 56, 0.05), 0 2px 6px -2px rgba(16, 24, 56, 0.06);
+  --shadow-md: 0 1px 2px rgba(16, 24, 56, 0.04), 0 6px 16px -6px rgba(16, 24, 56, 0.1);
+  --shadow-lg: 0 1px 2px rgba(16, 24, 56, 0.04), 0 12px 32px -12px rgba(16, 24, 56, 0.14), 0 32px 64px -32px rgba(40, 52, 120, 0.16);
+  --shadow-frame: 0 0 0 1px rgba(16, 24, 56, 0.06), 0 2px 4px rgba(16, 24, 56, 0.03), 0 24px 48px -20px rgba(30, 42, 110, 0.16), 0 64px 120px -48px rgba(60, 60, 150, 0.2);
+
+  /* ---- Radii ---- */
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-12: 12px;
+  --radius-16: 16px;
 
   /* ---- Controls ---- */
   --control-solid: oklch(17% 0.015 var(--hue-signal));
@@ -279,26 +324,50 @@
    component written against --surface-*, --text-* and --border-* follows
    without a parallel stylesheet.
    ========================================================================== */
-.theme-ink {
+.theme-ink,
+[data-theme="dark"] {
   color-scheme: dark;
 
-  --surface-canvas: oklch(14.2% 0.008 268);
-  --surface-deep: oklch(12% 0.008 268);
-  --surface-band: oklch(15.6% 0.009 268);
-  --surface-raised: oklch(17.4% 0.01 268);
-  --surface-panel: oklch(16.2% 0.009 268);
-  --surface-hover: oklch(20.5% 0.011 268);
-  --surface-selected: oklch(23.5% 0.013 268);
-  --surface-paper: oklch(17.4% 0.01 268);
-  --surface-code: oklch(12.6% 0.008 268);
-  --surface-code-raised: oklch(15.4% 0.009 268);
-  --border-subtle: rgba(255, 255, 255, 0.065);
+  --surface-deep: #08090c;
+  --surface-canvas: #0b0c10;
+  --surface-band: #101217;
+  --surface-panel: #13151b;
+  --surface-raised: #16181f;
+  --surface-hover: #1c1f27;
+  --surface-selected: #232733;
+  --surface-editor: #0f1116;
+  --surface-paper: #16181f;
+  --surface-code: #0a0b0f;
+  --surface-code-raised: #12141a;
+  --border-subtle: rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.1);
   --border-strong: rgba(255, 255, 255, 0.16);
-  --text-primary: oklch(96.5% 0.004 268);
-  --text-secondary: oklch(72% 0.012 268);
-  --text-tertiary: oklch(61% 0.012 268);
-  --text-disabled: oklch(48% 0.01 268);
+  --text-primary: #f2f4f8;
+  --text-body: #d5d9e1;
+  --text-secondary: #c1c6d1;
+  --text-tertiary: #9aa1af;
+  --text-quaternary: #8d94a2;
+  --text-disabled: #5d6370;
+  --fy-blue-ink: #8f9bff;
+  --fy-violet-ink: #c69bff;
+  --fy-red-ink: #ff8a99;
+  --fy-teal-ink: #5ee6d2;
+  --fy-blue-soft: rgba(91, 108, 255, 0.16);
+  --fy-red-soft: rgba(255, 90, 110, 0.14);
+  --fy-teal-soft: rgba(45, 212, 191, 0.13);
+  --fy-violet-soft: rgba(168, 85, 247, 0.15);
+  --fy-focus: #8f9bff;
+  --wash-teal: rgba(45, 212, 191, 0.1);
+  --wash-blue: rgba(91, 108, 255, 0.14);
+  --wash-violet: rgba(168, 85, 247, 0.1);
+  --wash-red: rgba(255, 90, 110, 0.08);
+  --band-lavender: #11131c;
+  --band-rose: #151014;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 20px -8px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.35), 0 24px 56px -20px rgba(0, 0, 0, 0.75);
+  --shadow-frame: 0 0 0 1px rgba(255, 255, 255, 0.07), 0 40px 120px -40px rgba(0, 0, 0, 0.9);
   --control-solid: oklch(96.5% 0.004 268);
   --control-solid-hover: #ffffff;
   --control-solid-active: oklch(88% 0.006 268);

@@ -1,16 +1,16 @@
-import MarketingShell from "@/components/layout/MarketingShell";
-import FydellHome from "@/components/marketing/home/FydellHome";
+import SiteShell from "@/components/site/SiteShell";
+import HomePage from "@/components/site/pages/HomePage";
 
 export const metadata = {
-  title: { absolute: "Fydell: Hire engineers for the work they've done" },
+  title: { absolute: "Fydell: Hire engineers on the work itself" },
   description:
-    "Fydell runs real engineering simulations. You review the code, not the résumé.",
+    "Candidates work a real incident in a real codebase. Your team reviews what they changed, ran and asked, and decides on evidence it can cite.",
 };
 
-export default function HomePage() {
+export default function Page() {
   return (
-    <MarketingShell>
-      <FydellHome />
-    </MarketingShell>
+    <SiteShell>
+      <HomePage />
+    </SiteShell>
   );
 }
