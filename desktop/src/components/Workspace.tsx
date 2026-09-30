@@ -596,10 +596,16 @@ export default function Workspace({
         </div>
 
         <div className="sidepanel">
-          <div className="panel-tabs">
-            {(["brief", "tests", "team", "analysis", "submit", "timeline"] as const).map((p) => (
-              <button key={p} className={`panel-tab ${panel === p ? "active" : ""}`} onClick={() => setPanel(p)}>
-                {p[0].toUpperCase() + p.slice(1)}
+          <div className="panel-tabs" role="tablist" aria-label="Task panels">
+            {PANEL_TABS.map(([p, label]) => (
+              <button
+                key={p}
+                role="tab"
+                aria-selected={panel === p}
+                className={`panel-tab ${panel === p ? "active" : ""} ${p === "submit" ? "send-tab" : ""}`}
+                onClick={() => setPanel(p)}
+              >
+                {label}
               </button>
             ))}
           </div>
@@ -708,6 +714,16 @@ export default function Workspace({
     </div>
   );
 }
+
+/** Side-panel tabs with the words a candidate would use for each one. */
+const PANEL_TABS = [
+  ["brief", "Brief"],
+  ["team", "Team"],
+  ["tests", "Tests"],
+  ["analysis", "Code check"],
+  ["timeline", "History"],
+  ["submit", "Send work"],
+] as const;
 
 function langOf(path: string): string {
   if (path.endsWith(".py")) return "python";
