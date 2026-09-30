@@ -18,8 +18,8 @@ function Closed({ title, detail }: { title: string; detail: string }) {
       <h1 className="text-[22px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">{title}</h1>
       <p className="mt-3 text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">{detail}</p>
       <div className="mt-6">
-        <ButtonLink href="/app/candidate" variant="secondary" size="lg">
-          Back to your evaluations
+        <ButtonLink href="/app/candidate/simulations" variant="secondary" size="lg">
+          Back to my simulations
         </ButtonLink>
       </div>
     </CandidateShell>

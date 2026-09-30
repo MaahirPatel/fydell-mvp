@@ -4,16 +4,23 @@ import SignOutButton from "@/components/employer/SignOutButton";
 import { CONTACT_MAILTO } from "@/lib/contact";
 import s from "./candidate.module.css";
 
-/** The header-right sign-out. Quiet, text-only: leaving is a utility, not a CTA. */
-function CandidateSignOut() {
-  return (
-    <SignOutButton className="inline-flex h-8 shrink-0 items-center rounded-[8px] px-2.5 text-[13px] font-medium text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:opacity-50" />
-  );
-}
+export type CandidateSection = "home" | "passport" | "simulations";
+
+/** Older callers name the sections they had before the three-part nav. */
+type LegacySection = "profile" | "assessments";
+
+const LEGACY: Record<LegacySection, CandidateSection> = { profile: "passport", assessments: "simulations" };
+
+const LINKS: readonly { key: CandidateSection; label: string; href: string }[] = [
+  { key: "home", label: "Home", href: "/app/candidate" },
+  { key: "passport", label: "My passport", href: "/app/candidate/passport" },
+  { key: "simulations", label: "My simulations", href: "/app/candidate/simulations" },
+];
 
 /**
- * Chrome for every candidate page except the workbench itself: the profile,
- * invitations, results, and shared receipts all sit inside the same header.
+ * Chrome for every candidate page except the workbench itself. Anything a
+ * candidate can click is at least 44px tall and says where it goes; the page
+ * they are on is filled, so "where am I" never needs working out.
  */
 export function CandidateShell({
   children,
@@ -21,48 +28,57 @@ export function CandidateShell({
   /** Shown at the right of the header. A sign-out control, usually. */
   action,
   current,
+  userName,
 }: {
   children: React.ReactNode;
   width?: "default" | "narrow" | "wide";
   action?: React.ReactNode;
-  current?: "profile" | "assessments";
+  current?: CandidateSection | LegacySection;
+  /** Shown as initials beside sign-out, so the candidate knows whose account this is. */
+  userName?: string;
 }) {
-  const links = [
-    { key: "assessments", label: "Evaluations", href: "/app/candidate" },
-    { key: "profile", label: "Profile", href: "/app/candidate/profile" },
-  ] as const;
+  const section = current ? (current in LEGACY ? LEGACY[current as LegacySection] : (current as CandidateSection)) : null;
 
   return (
     <div className={s.shell}>
       <header className={s.header}>
         <div className={s.headerInner}>
-          <div className={s.headerLeft}>
-            <Link href="/" aria-label="Fydell home" className="inline-flex items-center">
-              <FydellLogo height={20} />
-            </Link>
-            {current ? (
-              <nav aria-label="Candidate" className={s.nav}>
-                {links.map((l) => (
-                  <Link key={l.key} href={l.href} aria-current={current === l.key ? "page" : undefined} className={s.navLink}>
-                    {l.label}
-                  </Link>
-                ))}
-              </nav>
-            ) : null}
-          </div>
-          <div className={s.headerRight}>
-            {current ? (
-              <a href={CONTACT_MAILTO} className={s.help}>
+          <Link href={section ? "/app/candidate" : "/"} aria-label="Fydell home" className={s.logo}>
+            <FydellLogo height={22} />
+          </Link>
+          {section ? (
+            <nav aria-label="Candidate" className={s.nav}>
+              {LINKS.map((l) => (
+                <Link key={l.key} href={l.href} aria-current={section === l.key ? "page" : undefined} className={s.navLink}>
+                  {l.label}
+                </Link>
+              ))}
+              <a href={CONTACT_MAILTO} className={s.navLink}>
                 Help
               </a>
+            </nav>
+          ) : null}
+          <div className={s.headerRight}>
+            {userName ? (
+              <span className={s.who} title={userName}>
+                <span aria-hidden className={s.whoInitials}>
+                  {initialsOf(userName)}
+                </span>
+                <span className={s.whoName}>{userName.split(/\s+/)[0]}</span>
+              </span>
             ) : null}
-            {action ?? <CandidateSignOut />}
+            {action ?? <SignOutButton className={s.signOut} />}
           </div>
         </div>
       </header>
       <main className={`${s.main} ${s[width]}`}>{children}</main>
     </div>
   );
+}
+
+function initialsOf(name: string) {
+  const parts = name.trim().split(/[\s._-]+/).filter(Boolean);
+  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
 }
 
 export default CandidateShell;

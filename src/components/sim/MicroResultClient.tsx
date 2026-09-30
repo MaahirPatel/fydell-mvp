@@ -139,8 +139,8 @@ export function MicroResultClient({ sessionId }: { sessionId: string }) {
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <ButtonLink href="/app/candidate" variant="secondary">
-          Back to your evaluations
+        <ButtonLink href="/app/candidate/simulations" variant="secondary">
+          Back to my simulations
         </ButtonLink>
         <Button
           variant="quiet"
