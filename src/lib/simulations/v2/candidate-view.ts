@@ -14,7 +14,7 @@ import {
   type DisclosedStakeholder,
 } from "../teammate-disclosure";
 
-export interface CandidateStakeholderV2 extends DisclosedStakeholder {}
+export type CandidateStakeholderV2 = DisclosedStakeholder;
 
 export type CandidateModuleV2 =
   | Exclude<

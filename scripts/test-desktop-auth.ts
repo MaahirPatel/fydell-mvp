@@ -41,7 +41,7 @@ function makeRecord(state = "9f2c4a1b-7d3e-4a5f-8b6c-1d2e3f4a5b6c"): DesktopAuth
   };
 }
 
-async function exchangeCall(body: unknown, ip?: string): Promise<{ status: number; json: any }> {
+async function exchangeCall(body: unknown, ip?: string): Promise<{ status: number; json: Record<string, unknown> }> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (ip) headers["x-forwarded-for"] = ip;
   const res = await exchangePOST(

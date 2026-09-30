@@ -684,6 +684,24 @@ export async function listEvents(
   return data || [];
 }
 
+/** Events with seq > after, oldest first, at most `limit` rows (for cursor replay). */
+export async function listEventsAfter(
+  sessionId: string,
+  after: number,
+  limit: number
+): Promise<{ seq: number; event_type: string; actor: string; payload: Record<string, unknown> | null; created_at: string }[]> {
+  const db = createAdminSupabaseClient();
+  const { data, error } = await db
+    .from("sim_session_events")
+    .select("seq, event_type, actor, payload, created_at")
+    .eq("session_id", sessionId)
+    .gt("seq", after)
+    .order("seq")
+    .limit(limit);
+  if (error) throw new Error(`Could not load events: ${error.message}`);
+  return (data || []).map((r) => ({ ...r, seq: Number(r.seq) }));
+}
+
 // ---------------------------------------------------------------------------
 // Messages
 // ---------------------------------------------------------------------------
