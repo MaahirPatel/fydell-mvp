@@ -1,6 +1,6 @@
 import MarketingShell from "@/components/layout/MarketingShell";
-import { Closing, Details, Faq, Hero, Section, SectionHead, Stage, Table } from "@/components/marketing/kit/Kit";
-import { DesktopShot } from "@/components/marketing/kit/Shots";
+import { Details, Faq, Hero, Section, SectionHead, Table } from "@/components/marketing/kit/Kit";
+import { ClosingPanel } from "@/components/marketing/kit/Calm";
 
 export const metadata = {
   title: "Download",
@@ -32,9 +32,6 @@ export default function DownloadPage() {
           </>
         }
       >
-        <Stage hero label="Example: a simulation in the Fydell desktop app">
-          <DesktopShot />
-        </Stage>
       </Hero>
 
       <Section id="requirements" labelledBy="requirements-title">
@@ -82,7 +79,7 @@ export default function DownloadPage() {
         />
       </Section>
 
-      <Closing
+      <ClosingPanel
         title={["Invited to a simulation?", "Start here."]}
         primary={{ href: "/login", label: "Sign in" }}
         secondary={{ href: "/developers", label: "What to expect" }}

@@ -1,20 +1,18 @@
 import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
 import {
-  Closing,
   Details,
   Faq,
   Hero,
   Ledger,
   Section,
   SectionHead,
-  Stage,
   Statement,
   Trio,
-  Visual,
 } from "@/components/marketing/kit/Kit";
 import { FigConsent, FigDesktop, FigIncident, FigPassport, FigReport } from "@/components/marketing/kit/Figs";
-import { BriefShot, ReceiptShot, TrailShot } from "@/components/marketing/kit/Shots";
+import { Bento, ClosingPanel } from "@/components/marketing/kit/Calm";
+import { BriefFragment, CitationFragment, ReceiptFragment, TeamFragment } from "@/components/marketing/kit/Fragments";
 
 export const metadata = {
   title: "For engineers",
@@ -37,9 +35,6 @@ export default function DevelopersPage() {
           </>
         }
       >
-        <Stage hero label="Example: the work trail and the notice shown before you start">
-          <TrailShot />
-        </Stage>
       </Hero>
 
       <Section>
@@ -62,9 +57,27 @@ export default function DevelopersPage() {
           title={["What a simulation", "is like"]}
           lead="You get an incident brief, a repository that runs, and two teammates. Ask them anything; their answers are written in advance, so every candidate gets the same information. About twenty minutes in, the team posts one requirement update."
         />
-        <Visual label="Example: the incident brief and the team thread">
-          <BriefShot />
-        </Visual>
+        <div style={{ marginTop: 56 }}>
+          <Bento
+            items={[
+              {
+                wide: true,
+                tone: "teal",
+                title: "A brief from the team",
+                body: "What happened, what they need, and what is out of scope.",
+                label: "An incident brief listing three things to do.",
+                visual: <BriefFragment />,
+              },
+              {
+                tone: "violet",
+                title: "Ask anything",
+                body: "Everyone gets the same written answers.",
+                label: "A candidate asks which failures are temporary and the engineering lead answers.",
+                visual: <TeamFragment />,
+              },
+            ]}
+          />
+        </div>
         <Details
           items={[
             { title: "Asking is optional", body: "Not asking is never counted against you. If you assume, say so in your handoff." },
@@ -80,9 +93,27 @@ export default function DevelopersPage() {
           title={["A receipt for", "what you sent"]}
           lead="When you submit, your project is sealed with a checksum. You keep a receipt with that checksum, so you always know exactly what the employer reviewed."
         />
-        <Visual label="Example: a submission receipt" fade={false}>
-          <ReceiptShot />
-        </Visual>
+        <div style={{ marginTop: 56 }}>
+          <Bento
+            items={[
+              {
+                wide: true,
+                tone: "teal",
+                title: "Sealed with a checksum",
+                body: "Your receipt carries the same checksum the employer's copy has.",
+                label: "A receipt showing the work was sent, with its checksum.",
+                visual: <ReceiptFragment />,
+              },
+              {
+                tone: "coral",
+                title: "Cited, not guessed",
+                body: "The report can only point to what you sent.",
+                label: "A finding linked to retry_policy.py, lines 6 to 7.",
+                visual: <CitationFragment />,
+              },
+            ]}
+          />
+        </div>
       </Section>
 
       <Section id="passport" labelledBy="passport-title">
@@ -142,7 +173,7 @@ export default function DevelopersPage() {
         />
       </Section>
 
-      <Closing
+      <ClosingPanel
         title={["Show the work.", "Keep the receipt."]}
         primary={{ href: "/passport/new", label: "Build your passport" }}
         secondary={{ href: "/download", label: "Download the app" }}

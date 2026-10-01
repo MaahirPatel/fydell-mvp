@@ -1,14 +1,6 @@
 import MarketingShell from "@/components/layout/MarketingShell";
-import {
-  Closing,
-  Details,
-  Hero,
-  Section,
-  SectionHead,
-  Timeline,
-  Visual,
-} from "@/components/marketing/kit/Kit";
-import { BriefShot, DesktopShot, ReceiptShot, ReportShot, TestsShot, TrailShot } from "@/components/marketing/kit/Shots";
+import { Hero, Section, Timeline } from "@/components/marketing/kit/Kit";
+import { Chapters, ClosingPanel } from "@/components/marketing/kit/Calm";
 
 export const metadata = {
   title: "Product",
@@ -37,83 +29,55 @@ export default function ProductPage() {
         </Section>
       </Hero>
 
-      <Section id="brief" labelledBy="brief-title">
-        <SectionHead
-          id="brief-title"
-          title={["1. The brief and", "the team"]}
-          lead="Every simulation opens on an incident written by the team that owns the service: what happened, what they need, and what is out of scope. Two simulated teammates answer questions from a fixed set of written answers, and say so if asked."
-        />
-        <Visual label="Example: the INC-2291 brief with the team thread">
-          <BriefShot />
-        </Visual>
-      </Section>
-
-      <Section id="work" labelledBy="work-title">
-        <SectionHead
-          id="work-title"
-          title={["2. The work, in", "the desktop app"]}
-          lead="The Fydell app for macOS and Windows sets up the project, runs the setup check, and keeps the brief, the team thread and the timer beside the code. Candidates can edit in whichever editor they prefer."
-          link={{ href: "/download", label: "Download Fydell" }}
-        />
-        <Visual label="Example: a candidate mid-simulation in the Fydell desktop app">
-          <DesktopShot />
-        </Visual>
-        <Details
+      <Section>
+        <Chapters
           items={[
-            { title: "Setup check first", body: "Confirms the project runs before any work starts." },
-            { title: "Brief, team and timer", body: "Always one click away from the code." },
-            { title: "Disclosed recording", body: "A persistent indicator while the trail is being recorded." },
+            {
+              id: "brief",
+              title: "The brief and the team",
+              body: "Every simulation opens on an incident written by the team that owns the service: what happened, what they need, and what is out of scope.",
+              points: [
+                "Two simulated teammates answer from a fixed set of written answers, and say so if asked",
+                "Every candidate gets the same information",
+              ],
+            },
+            {
+              id: "work",
+              title: "The work, in the desktop app",
+              body: "The Fydell app for macOS and Windows sets up the project, runs the setup check, and keeps the brief, the team thread and the timer beside the code.",
+              points: ["Setup check first, before any work starts", "Edit in whichever editor you prefer", "A persistent indicator while the trail is recorded"],
+              link: { href: "/download", label: "Download Fydell" },
+            },
+            {
+              id: "update",
+              title: "One requirement changes",
+              body: "Partway through, the team posts one requirement update in the thread and under Updates. It is the same update, at the same point, for every candidate.",
+              points: ["The work trail shows what they did next"],
+            },
+            {
+              id: "submit",
+              title: "Submit, hand off, keep a receipt",
+              body: "On submit the project is packaged and hashed. The candidate answers short handoff questions and gets a receipt with the checksum.",
+              points: ["What changed, how it was tested, what is still unsure, what comes next", "The receipt matches the copy the employer reviews"],
+            },
+            {
+              id: "checks",
+              title: "Hidden checks, then the report",
+              body: "Fydell runs hidden checks against the sealed submission in an isolated sandbox. Reviewers then see the diff, the results and the trail together.",
+              link: { href: "/security", label: "How the sandbox works" },
+            },
+            {
+              id: "report",
+              title: "Your team writes it and decides",
+              body: "Reviewers write findings, each one citing its evidence, and label observations separately from gaps. Then the team records Advance, Hold or Decline.",
+              points: ["The report cannot be released until every finding is cited", "There is no score"],
+              link: { href: "/employers", label: "Fydell for hiring teams" },
+            },
           ]}
         />
       </Section>
 
-      <Section id="update" labelledBy="update-title">
-        <SectionHead
-          id="update-title"
-          title={["3. One requirement", "changes"]}
-          lead="Partway through, the team posts one requirement update in the thread and under Updates. It is the same update, at the same point, for every candidate. The trail shows what they did next."
-        />
-        <Visual label="Example: the work trail, including the requirement update">
-          <TrailShot />
-        </Visual>
-      </Section>
-
-      <Section id="submit" labelledBy="submit-title">
-        <SectionHead
-          id="submit-title"
-          title={["4. Submit, hand off,", "keep a receipt"]}
-          lead="On submit the project is packaged and hashed. The candidate answers three questions (what changed, what they tested, what remains unresolved) and gets a receipt with the checksum."
-        />
-        <Visual label="Example: a submission receipt" fade={false}>
-          <ReceiptShot />
-        </Visual>
-      </Section>
-
-      <Section id="checks" labelledBy="checks-title">
-        <SectionHead
-          id="checks-title"
-          title={["5. Hidden checks,", "then the report"]}
-          lead="Fydell runs hidden checks against the sealed submission in an isolated sandbox, through the public interface described in the brief. Your reviewers then see the diff, the results and the trail together."
-          link={{ href: "/security", label: "How the sandbox works" }}
-        />
-        <Visual label="Example: hidden checks against a submitted snapshot">
-          <TestsShot />
-        </Visual>
-      </Section>
-
-      <Section id="report" labelledBy="report-title">
-        <SectionHead
-          id="report-title"
-          title={["6. Your team writes", "it and decides"]}
-          lead="Reviewers write findings, each one citing its evidence, and label observations separately from gaps. The report cannot be released until every finding is cited. Then the team records Advance, Hold or Decline."
-          link={{ href: "/employers", label: "Fydell for hiring teams" }}
-        />
-        <Visual label="Example: a cited report with the team's decision">
-          <ReportShot />
-        </Visual>
-      </Section>
-
-      <Closing title={["See it on", "a real role."]} secondary={{ href: "/demo", label: "Open the demo" }} />
+      <ClosingPanel title={["See it on", "a real role."]} secondary={{ href: "/demo", label: "Open the demo" }} />
     </MarketingShell>
   );
 }

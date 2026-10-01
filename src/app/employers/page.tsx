@@ -1,19 +1,17 @@
 import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
 import {
-  Closing,
   Details,
   Faq,
   Hero,
   Section,
   SectionHead,
-  Stage,
   Statement,
   Trio,
-  Visual,
 } from "@/components/marketing/kit/Kit";
 import { FigChecks, FigConsent, FigReport } from "@/components/marketing/kit/Figs";
-import { ReportShot, TestsShot, TrailShot } from "@/components/marketing/kit/Shots";
+import { Bento, ClosingPanel } from "@/components/marketing/kit/Calm";
+import { BriefFragment, TeamFragment, UpdateFragment } from "@/components/marketing/kit/Fragments";
 import { PRICING, usd } from "@/lib/marketing/pricing";
 
 export const metadata = {
@@ -37,9 +35,6 @@ export default function EmployersPage() {
           </>
         }
       >
-        <Stage hero label="Example: a cited report and the team's decision">
-          <ReportShot />
-        </Stage>
       </Hero>
 
       <Section>
@@ -62,9 +57,6 @@ export default function EmployersPage() {
           title={["Review the work,", "not a summary of it"]}
           lead="Open the submitted diff next to the hidden check results. Every run is tied to the exact archive the candidate submitted, identified by its checksum."
         />
-        <Visual label="Example: hidden checks against a submitted snapshot">
-          <TestsShot />
-        </Visual>
         <Details
           items={[
             { title: "Sealed submissions", body: "The archive is hashed on submit. The report can only cite what is in it." },
@@ -80,9 +72,33 @@ export default function EmployersPage() {
           title={["See how they", "got there"]}
           lead="The work trail shows the order things happened: what they read first, when they asked, how often they tested, and what they did after the requirement changed."
         />
-        <Visual label="Example: a candidate's work trail">
-          <TrailShot />
-        </Visual>
+        <div style={{ marginTop: 56 }}>
+          <Bento
+            items={[
+              {
+                tone: "teal",
+                title: "What they read first",
+                body: "Whether they started with the brief, the logs or the code.",
+                label: "An incident brief listing three things to do.",
+                visual: <BriefFragment />,
+              },
+              {
+                tone: "violet",
+                title: "When they asked",
+                body: "Which questions they asked the team, and when.",
+                label: "A candidate asks which failures are temporary and the engineering lead answers.",
+                visual: <TeamFragment />,
+              },
+              {
+                tone: "amber",
+                title: "What they did after the change",
+                body: "How they handled the one requirement update.",
+                label: "A new request posted at 14:18.",
+                visual: <UpdateFragment />,
+              },
+            ]}
+          />
+        </div>
       </Section>
 
       <Section id="questions" labelledBy="questions-title">
@@ -103,7 +119,7 @@ export default function EmployersPage() {
         />
       </Section>
 
-      <Closing
+      <ClosingPanel
         title={["Bring one open role.", "Decide on the work."]}
         primary={{ href: "/signup?as=employer", label: "Create a role" }}
       />
