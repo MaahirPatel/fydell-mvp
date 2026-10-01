@@ -474,10 +474,22 @@ export function TeamPanel() {
 
 /* ---------------- submit ---------------- */
 
+/**
+ * The handoff questions, in plain words, keyed to the platform's handoff
+ * contract (src/lib/simulations/handoff.ts: whatChanged, testing,
+ * remainingRisks, nextSteps) so reviewers' completeness checks see them.
+ */
+const HANDOFF_QUESTIONS = [
+  { key: "whatChanged", label: "What did you change?", help: "Which files, and why that fixes the problem.", rows: 4 },
+  { key: "testing", label: "How did you test it?", help: "Which tests you ran or added. We compare this with your real test runs.", rows: 3 },
+  { key: "remainingRisks", label: "What is still unsure or unfinished?", help: "Saying what you did not finish is a good thing. It is not a penalty.", rows: 3 },
+  { key: "nextSteps", label: "What should the team do next?", help: "Follow-ups, monitoring or cleanup. One line is fine.", rows: 2 },
+] as const;
+
+type HandoffKey = (typeof HANDOFF_QUESTIONS)[number]["key"];
+
 export function SubmitPanel({ onSubmitted, sessionId }: { onSubmitted: (r: Receipt) => void; sessionId: string | null }) {
-  const [summary, setSummary] = useState("");
-  const [approach, setApproach] = useState("");
-  const [tradeoffs, setTradeoffs] = useState("");
+  const [answers, setAnswers] = useState<Record<HandoffKey, string>>({ whatChanged: "", testing: "", remainingRisks: "", nextSteps: "" });
   const [aiDisclosed, setAiDisclosed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -494,12 +506,15 @@ export function SubmitPanel({ onSubmitted, sessionId }: { onSubmitted: (r: Recei
     syncView == null
       ? null
       : syncView.phase === "conflict"
-        ? "A sync conflict is unresolved: another session changed this assignment on the server. Your local work submits as-is; resolve the conflict if the server version matters."
+        ? "Someone else changed this task on the server. Your work on this computer is what gets sent."
         : syncView.phase === "sync_failed"
-          ? "Remote sync failed — the server may not have your latest files. They are saved on this device; submitting now packages your local work."
+          ? "Your latest files are saved on this computer but did not reach Fydell yet. Sending now uses the files on this computer."
           : syncView.dirty_paths.length > 0
-            ? `${syncView.dirty_paths.length} file${syncView.dirty_paths.length === 1 ? " is" : "s are"} saved on this device but not yet acknowledged by the server. Submitting now packages your local work.`
+            ? `${syncView.dirty_paths.length} file${syncView.dirty_paths.length === 1 ? " is" : "s are"} saved on this computer but not yet confirmed by Fydell. Sending now uses the files on this computer.`
             : null;
+
+  const answered = HANDOFF_QUESTIONS.filter((q) => answers[q.key].trim().length > 0).length;
+  const total = HANDOFF_QUESTIONS.length;
 
   const submit = useCallback(async () => {
     setBusy(true);
@@ -515,7 +530,7 @@ export function SubmitPanel({ onSubmitted, sessionId }: { onSubmitted: (r: Recei
         analysis = await runAnalysis(sessionId);
         setAnalysisNote("Code analysis attached.");
       } catch {
-        setAnalysisNote("Code analysis unavailable — submitting without it.");
+        setAnalysisNote("Code analysis unavailable — sending without it.");
       }
       let chatSummary: unknown = null;
       try {
@@ -528,10 +543,9 @@ export function SubmitPanel({ onSubmitted, sessionId }: { onSubmitted: (r: Recei
           threadFlaggedForReview: messages.length > 0,
         };
       } catch {}
-      const receipt = await api.submit(
-        { summary, approach, tradeoffs, analysis, chatSummary },
-        aiDisclosed
-      );
+      // `summary` stays for the legacy submit path, which carries it as the
+      // session notes (src-tauri/src/submission.rs).
+      const receipt = await api.submit({ ...answers, summary: answers.whatChanged, analysis, chatSummary }, aiDisclosed);
       onSubmitted(receipt);
     } catch (e) {
       // Keep the dialog open and show the error inside — never fail silently.
@@ -539,77 +553,95 @@ export function SubmitPanel({ onSubmitted, sessionId }: { onSubmitted: (r: Recei
     } finally {
       setBusy(false);
     }
-  }, [summary, approach, tradeoffs, aiDisclosed, onSubmitted, sessionId]);
+  }, [answers, aiDisclosed, onSubmitted, sessionId]);
 
   return (
-    <>
-      <h3>
-        Submit for review <ProvenanceTag kind="observed" />
-      </h3>
-      <p className="muted">
-        Submission is immutable. Your files, test record, and event trail are
-        packaged with a SHA-256 receipt. A human reviews every submission.
-      </p>
+    <div className="send">
+      <h2 className="send-title">Before you send your work</h2>
+      <p className="send-lead">Tell the next engineer what you did. Short and honest is best. There are no trick questions.</p>
+
+      <ul className="send-checks" aria-label="Quick check">
+        {syncView == null ? null : syncWarning ? (
+          <li className="send-check warn">
+            <span aria-hidden>!</span>
+            {syncWarning}
+          </li>
+        ) : (
+          <li className="send-check ok">
+            <span aria-hidden>✓</span>
+            Your latest code is saved
+          </li>
+        )}
+        <li className={`send-check ${answered === total ? "ok" : "todo"}`}>
+          <span aria-hidden>{answered === total ? "✓" : answered}</span>
+          {answered === total ? `All ${total} questions answered` : `${answered} of ${total} questions answered`}
+        </li>
+      </ul>
+
       {error && !confirming && <div className="error">{error}</div>}
-      <div className="field">
-        <label htmlFor="submit-summary">What did you change, in one paragraph?</label>
-        <textarea id="submit-summary" className="textarea" value={summary} onChange={(e) => setSummary(e.target.value)} />
-      </div>
-      <div className="field">
-        <label htmlFor="submit-approach">Approach & key decisions</label>
-        <textarea id="submit-approach" className="textarea" value={approach} onChange={(e) => setApproach(e.target.value)} />
-      </div>
-      <div className="field">
-        <label htmlFor="submit-tradeoffs">Tradeoffs / what you'd do with more time</label>
-        <textarea id="submit-tradeoffs" className="textarea" value={tradeoffs} onChange={(e) => setTradeoffs(e.target.value)} />
-      </div>
-      <div className="field">
-        <label className="checkbox-row" htmlFor="submit-ai">
-          <input
-            id="submit-ai"
-            type="checkbox"
-            checked={aiDisclosed}
-            onChange={(e) => setAiDisclosed(e.target.checked)}
+
+      {HANDOFF_QUESTIONS.map((q, i) => (
+        <div className="send-field" key={q.key}>
+          <label htmlFor={`handoff-${q.key}`}>
+            {i + 1}. {q.label}
+          </label>
+          <span className="send-help" id={`handoff-${q.key}-help`}>
+            {q.help}
+          </span>
+          <textarea
+            id={`handoff-${q.key}`}
+            className="textarea"
+            rows={q.rows}
+            aria-describedby={`handoff-${q.key}-help`}
+            value={answers[q.key]}
+            onChange={(e) => setAnswers((a) => ({ ...a, [q.key]: e.target.value }))}
           />
-          <span>I used external AI assistance during this simulation</span>
+        </div>
+      ))}
+
+      <details className="send-ai">
+        <summary>Did you use an AI tool outside Fydell? (optional)</summary>
+        <p className="send-help">You can say so here. We cannot see tools outside the app and never guess. Using one is never held against you.</p>
+        <label className="checkbox-row" htmlFor="submit-ai">
+          <input id="submit-ai" type="checkbox" checked={aiDisclosed} onChange={(e) => setAiDisclosed(e.target.checked)} />
+          <span>Yes, I used an AI tool outside Fydell</span>
         </label>
-        <p className="muted">Disclosed honestly; permitted tool use is never penalized.</p>
+      </details>
+
+      <div className="send-box">
+        <p>
+          When you send, your work is locked and a <strong>receipt</strong> is made. If your internet drops, you get the same receipt
+          when it comes back. Nothing is sent twice.
+        </p>
+        <button className="btn send-btn" disabled={busy} onClick={() => { setError(null); setConfirming(true); }}>
+          Send my work
+        </button>
       </div>
-      <button className="btn" disabled={busy} onClick={() => { setError(null); setConfirming(true); }}>
-        Review & submit
-      </button>
 
       {confirming && (
         <Dialog
-          title="Submit for review?"
+          title="Send your work now?"
           onClose={() => { if (!busy) setConfirming(false); }}
           actions={[
             { label: "Keep working", kind: "ghost", onClick: () => setConfirming(false), disabled: busy },
-            { label: "Submit work", kind: "primary", onClick: submit, disabled: busy, busyLabel: "Submitting…" },
+            { label: "Send my work", kind: "primary", onClick: submit, disabled: busy, busyLabel: "Sending…" },
           ]}
         >
           {error && <div className="error">{error}</div>}
           <p>
-            This packages <strong>your files</strong>, <strong>your test record</strong>,
-            and <strong>your event trail</strong> into one immutable submission with a
-            SHA-256 receipt. You can't edit after submitting.
+            We send <strong>your files</strong>, <strong>your test runs</strong> and <strong>your answers</strong> together, and give you
+            a receipt. You cannot change them after this.
           </p>
-          {analysisNote && (
-            <p className="muted">{analysisNote}</p>
+          {answered < total && (
+            <p>
+              You answered {answered} of {total} questions. You can still send, but the hiring team will see which ones are empty.
+            </p>
           )}
-          {syncWarning && (
-            <div className="error">
-              {syncWarning}
-            </div>
-          )}
-          <p>
-            {aiDisclosed
-              ? "Your AI-assistance disclosure will be attached — permitted tool use is never penalized."
-              : "You haven't disclosed external AI assistance. If you used any, go back and disclose it — honesty here is part of the assessment."}
-          </p>
+          {analysisNote && <p className="muted">{analysisNote}</p>}
+          {syncWarning && <div className="error">{syncWarning}</div>}
         </Dialog>
       )}
-    </>
+    </div>
   );
 }
 

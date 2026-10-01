@@ -63,9 +63,9 @@ export default async function CandidateProfilePage({
       key: "simulation",
       label: "Simulation result",
       present: hub.timeline.some((item) => item.kind === "simulation"),
-      // Results come from invitations on the candidate home, not from an
+      // Results come from invitations under My simulations, not from an
       // in-page section, so a missing item links out instead of anchoring.
-      anchor: "/app/candidate",
+      anchor: "/app/candidate/simulations",
     },
     {
       key: "editor",

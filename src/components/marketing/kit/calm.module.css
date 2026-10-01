@@ -1,0 +1,763 @@
+/* Text-first marketing sections. Ink on warm paper, hairlines, one filled
+   button per block; painted art only as atmosphere. */
+
+
+/* ---- Hero paths ------------------------------------------------------- */
+
+.pathsWrap {
+  margin-top: 40px;
+}
+.paths {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 840px;
+  margin: 0 auto;
+  text-align: left;
+}
+.path {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px;
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  background: #ffffff;
+  color: var(--text-primary);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+.path:hover {
+  border-color: var(--text-primary);
+  box-shadow: 0 18px 40px -24px rgba(40, 32, 12, 0.35);
+  transform: translateY(-1px);
+}
+.path:focus-visible,
+.pill:focus-visible,
+.textLink:focus-visible,
+.qaList summary:focus-visible {
+  outline: 3px solid var(--text-primary);
+  outline-offset: 3px;
+}
+.pathEyebrow {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.pathTitle {
+  font-size: 23px;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.pathCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.path:hover :global(.l-arrow) {
+  transform: translateX(3px);
+}
+.pathCta :global(.l-arrow) {
+  transition: transform 160ms ease;
+}
+
+/* ---- Sections and headings -------------------------------------------- */
+
+.section {
+  padding-top: 152px;
+  scroll-margin-top: 72px;
+}
+.sectionIn {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px 64px;
+  align-items: end;
+}
+.h2 {
+  margin: 0;
+  font-size: 48px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.headLead {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+}
+.headLead p {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 5px;
+}
+.textLink:hover {
+  text-decoration-color: var(--text-primary);
+}
+
+/* ---- Steps ------------------------------------------------------------ */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+  gap: 40px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 28px;
+  border-top: 1px solid var(--text-primary);
+}
+.stepNum {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.stepTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+.stepBody {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--text-body);
+}
+
+/* ---- Feature grid ----------------------------------------------------- */
+
+.feats {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+  border-top: 1px solid var(--border-default);
+  border-left: 1px solid var(--border-default);
+}
+.feat {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 32px;
+  border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+  transition: background-color 160ms ease;
+}
+.feat:hover {
+  background: #ffffff;
+}
+.featIcon {
+  display: inline-flex;
+  color: var(--text-primary);
+}
+.featIcon svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.8;
+}
+.featTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 650;
+  color: var(--text-primary);
+}
+.featBody {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* ---- Audience --------------------------------------------------------- */
+
+.audience {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 48px;
+  border-radius: 24px;
+  scroll-margin-top: 96px;
+}
+.panelDark {
+  background: var(--text-primary);
+  color: #f7f7f4;
+}
+.panelLight {
+  border: 1px solid var(--border-default);
+  background: #ffffff;
+  color: var(--text-primary);
+}
+.panelEyebrow {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.panelDark .panelEyebrow {
+  color: #bdb8aa;
+}
+.panelTitle {
+  margin: 0;
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.panelDark .panelTitle {
+  color: #ffffff;
+}
+.panelList {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.panelList li,
+.chapterBody li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+.panelLight .panelList li,
+.chapterBody li {
+  color: var(--text-body);
+}
+.panelDark .panelList li {
+  color: #e9e6df;
+}
+.panelCheck {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 3px;
+  stroke-width: 2.4;
+}
+.panelActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 600;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+.pillLg {
+  height: 52px;
+  padding: 0 26px;
+  font-size: 17px;
+}
+.pillSolid {
+  background: var(--text-primary);
+  color: #ffffff;
+}
+.pillSolid:hover {
+  background: #33312b;
+  color: #ffffff;
+}
+.pillGhost {
+  border: 1px solid var(--border-strong);
+  background: #ffffff;
+  color: var(--text-primary);
+}
+.pillGhost:hover {
+  border-color: var(--text-primary);
+}
+.pillOnDark {
+  background: #ffffff;
+  color: var(--text-primary);
+}
+.pillOnDark:hover {
+  background: #e9e6df;
+  color: var(--text-primary);
+}
+.pillGhostDark {
+  border: 1px solid #5e5b52;
+  color: #ffffff;
+}
+.pillGhostDark:hover {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+/* ---- Trust ------------------------------------------------------------ */
+
+.trust {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 64px;
+  border-top: 1px solid var(--border-default);
+}
+.trust ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.trust li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.trust b {
+  font-weight: 650;
+  color: var(--text-primary);
+}
+.yes,
+.no {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 3px;
+  stroke-width: 2.6;
+}
+.yes {
+  color: #1f7a4d;
+}
+.no {
+  color: #c4323a;
+}
+
+/* ---- Questions -------------------------------------------------------- */
+
+.qa {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 32px 64px;
+  align-items: start;
+}
+.qaHead {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+}
+.qaList {
+  border-top: 1px solid var(--border-default);
+}
+.qaList details {
+  border-bottom: 1px solid var(--border-default);
+}
+.qaList summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 64px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  list-style: none;
+}
+.qaList summary::-webkit-details-marker {
+  display: none;
+}
+.qaList p {
+  margin: 0 0 22px;
+  max-width: 60ch;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.plus {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: transform 160ms ease;
+}
+.qaList details[open] .plus {
+  transform: rotate(45deg);
+}
+
+/* ---- Chapters --------------------------------------------------------- */
+
+.chapters {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--text-primary);
+}
+.chapter {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 20px 64px;
+  padding: 48px 0;
+  border-bottom: 1px solid var(--border-default);
+  scroll-margin-top: 72px;
+}
+.chapterHead {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+.chapterTitle {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.chapterBody {
+  display: grid;
+  justify-items: start;
+  gap: 18px;
+}
+.chapterBody > p {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.chapterBody ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---- Closing ---------------------------------------------------------- */
+
+.closing {
+  padding: 152px 0 96px;
+}
+.closingIn {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 28px 48px;
+  padding: 88px 56px;
+  border-radius: 24px;
+  background: oklch(27% 0.11 285);
+}
+.closingTitle {
+  margin: 0;
+  font-size: 56px;
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  color: #ffffff;
+}
+.closingActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ---- Bento ------------------------------------------------------------- */
+
+.bento {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.bentoCard {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--c-field, #f1efe9);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.bentoCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 50px -32px var(--c-mid, rgba(26, 25, 21, 0.4));
+}
+.bentoWide {
+  grid-column: span 2;
+}
+.bentoArt {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  padding: 32px 28px 8px;
+}
+.bentoText {
+  display: grid;
+  gap: 8px;
+  padding: 20px 28px 28px;
+}
+.bentoCard .featBody {
+  color: var(--text-body);
+}
+.bentoArt > * {
+  transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 700ms ease;
+}
+.bentoCard:not([data-inview]) .bentoArt > * {
+  opacity: 0;
+  transform: translateY(14px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bentoCard:not([data-inview]) .bentoArt > * {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- Responsive ------------------------------------------------------- */
+
+@media (max-width: 1023px) {
+  .section {
+    padding-top: 120px;
+  }
+  .head,
+  .qa,
+  .chapter,
+  .audience,
+  .trust,
+  .closingIn {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .steps,
+  .feats,
+  .bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .h2 {
+    font-size: 40px;
+  }
+  .closingTitle {
+    font-size: 44px;
+  }
+  .closing {
+    padding-top: 120px;
+  }
+}
+@media (max-width: 639px) {
+  .section {
+    padding-top: 96px;
+  }
+  .sectionIn {
+    gap: 40px;
+  }
+  .paths,
+  .steps,
+  .feats,
+  .bento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bentoWide {
+    grid-column: auto;
+  }
+  .bentoArt {
+    min-height: 200px;
+    padding: 24px 18px 4px;
+  }
+  .bentoText {
+    padding: 16px 20px 22px;
+  }
+  .path,
+  .panel {
+    padding: 24px;
+  }
+  .h2 {
+    font-size: 32px;
+  }
+  .feat {
+    padding: 24px;
+  }
+  .panelTitle {
+    font-size: 28px;
+  }
+  .chapter {
+    padding: 36px 0;
+  }
+  .chapterTitle {
+    font-size: 26px;
+  }
+  .closingIn {
+    padding: 48px 22px;
+  }
+  .closingTitle {
+    font-size: 34px;
+  }
+}
+
+/* ---- Colour ------------------------------------------------------------
+   The Fydell ring palette (fydell-tokens.css: teal 178, violet 285,
+   coral 18, warm 52, signal blue 258). The marketing layer maps the brand
+   tokens to ink, so the values are set here. Each tone has an ink for
+   text and icons (4.5:1 on its field and on white), a mid for marks, and a
+   pale field for tiles. */
+
+.tTeal {
+  --c-ink: #0b5e58;
+  --c-mid: oklch(64% 0.12 178);
+  --c-field: oklch(94.5% 0.045 178);
+}
+.tViolet {
+  --c-ink: #5b21b6;
+  --c-mid: oklch(54% 0.24 285);
+  --c-field: oklch(94.5% 0.045 285);
+}
+.tCoral {
+  --c-ink: #b4213f;
+  --c-mid: oklch(62% 0.2 18);
+  --c-field: oklch(95% 0.04 18);
+}
+.tAmber {
+  --c-ink: oklch(45% 0.12 60);
+  --c-mid: oklch(74% 0.16 70);
+  --c-field: oklch(95.5% 0.05 80);
+}
+.tBlue {
+  --c-ink: oklch(45% 0.18 258);
+  --c-mid: oklch(58% 0.19 258);
+  --c-field: oklch(95% 0.035 258);
+}
+
+.tile {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--c-field, #f1efe9);
+  color: var(--c-ink, var(--text-primary));
+}
+.tile svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.9;
+}
+
+/* Paths: a tinted icon tile, eyebrow in the tone, border takes the tone on hover. */
+.pathTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.path .pathEyebrow {
+  color: var(--c-ink, var(--text-secondary));
+}
+.path:hover {
+  border-color: var(--c-mid, var(--text-primary));
+  box-shadow: 0 22px 44px -26px var(--c-mid, rgba(40, 32, 12, 0.35));
+}
+.path .pathCta {
+  color: var(--c-ink, var(--text-primary));
+}
+
+/* Steps and chapters: the rule and the number take the tone. */
+.step,
+.chapter .chapterHead {
+  border-top-color: var(--c-mid, var(--text-primary));
+}
+.step {
+  border-top-width: 3px;
+}
+.stepDot {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--c-field, #f1efe9);
+  color: var(--c-ink, var(--text-secondary));
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Feature grid: tinted tiles, and a wash of the tone on hover. */
+.feat:hover {
+  background: color-mix(in oklch, var(--c-field, #ffffff) 45%, #ffffff);
+}
+
+/* Audience: hiring teams on deep violet, engineers on pale teal. */
+.panelDark {
+  background: oklch(27% 0.11 285);
+}
+.panelDark .panelEyebrow {
+  color: oklch(84% 0.08 285);
+}
+.panelDark .panelCheck {
+  color: oklch(82% 0.12 178);
+}
+.panelLight {
+  border-color: oklch(86% 0.06 178);
+  background: oklch(95.5% 0.035 178);
+}
+.panelLight .panelEyebrow {
+  color: #0b5e58;
+}
+.panelLight .panelCheck {
+  color: #0b5e58;
+}
+.panelLight .pillSolid {
+  background: #0b5e58;
+}
+.panelLight .pillSolid:hover {
+  background: #084a45;
+}
+.pillGhostDark {
+  border-color: oklch(55% 0.1 285);
+}
+
+/* Questions: the open one is marked in violet. */
+.qaList details[open] summary {
+  color: #5b21b6;
+}
+.qaList details[open] .plus {
+  color: #5b21b6;
+}

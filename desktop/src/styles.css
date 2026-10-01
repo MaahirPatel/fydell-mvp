@@ -510,21 +510,31 @@ button.save-state:disabled { cursor: default; }
   flex-direction: column;
   min-height: 0;
 }
-.panel-tabs { display: flex; border-bottom: 1px solid var(--border-default); }
+/* Side-panel tabs: 44px targets with plain labels, wrapping into two rows
+   rather than shrinking the text. The selected tab is filled. */
+.panel-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border-default);
+}
 .panel-tab {
-  flex: 1;
+  min-height: 44px;
+  padding: 0 6px;
   background: none;
   border: 0;
-  border-bottom: 2px solid transparent;
-  color: var(--text-secondary);
-  font-size: var(--type-app-meta);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 15px;
   font-weight: 600;
-  padding: var(--space-3) var(--space-1);
   cursor: pointer;
-  transition: color var(--motion-fast) var(--ease);
+  transition: background var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
 }
-.panel-tab:hover { color: var(--text-primary); }
-.panel-tab.active { color: var(--text-primary); border-bottom-color: var(--action-ink); }
+.panel-tab:hover { background: var(--surface-hover); }
+.panel-tab.active { background: var(--action); color: var(--text-on-solid); }
+.panel-tab:focus-visible { outline: 3px solid var(--action-ink); outline-offset: 1px; }
+.panel-tab.send-tab:not(.active) { box-shadow: inset 0 0 0 2px var(--action); }
 .panel-body { flex: 1; overflow-y: auto; padding: var(--space-4); min-height: 0; }
 .panel-body h3 {
   font-size: var(--type-app-meta);
@@ -1790,3 +1800,66 @@ button.status-item:hover { background: var(--surface-hover); }
 .analysis-file-body {
   padding: var(--space-2) 0 var(--space-3) var(--space-4);
 }
+
+/* ---------------- send work (handoff) ---------------------------------------
+   "Before you send your work": four plain questions, a quick check, and one
+   filled button. Larger type than the rest of the side panel on purpose. */
+.send { display: grid; gap: 18px; }
+.send-title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+.send-lead { margin: 0; font-size: 15px; line-height: 1.55; color: var(--text-body); }
+.send-checks { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.send-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-primary);
+  background: var(--surface-deep);
+}
+.send-check > span {
+  display: inline-flex;
+  flex: 0 0 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--surface-hover);
+}
+.send-check.ok > span { background: #e8f1e9; color: #1f7a4d; }
+.send-check.warn > span { background: #fbf1dc; color: #7a4f00; }
+.send-field { display: grid; gap: 6px; }
+.send-field > label { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.send-help { font-size: 13.5px; line-height: 1.45; color: var(--text-secondary); }
+.send-field .textarea { min-height: 0; font-size: 14.5px; }
+.send-ai summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.send-ai .send-help { margin: 0 0 10px; }
+.send-box {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 2px solid var(--action);
+  border-radius: 14px;
+  background: var(--surface-raised, #fff);
+}
+.send-box p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-body); }
+.send-btn { min-height: 52px; font-size: 17px; border-radius: 12px; }

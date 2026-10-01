@@ -1,26 +1,30 @@
-import Link from "next/link";
+import { BriefcaseBusiness, Code2 } from "lucide-react";
 import MarketingShell from "@/components/layout/MarketingShell";
-import EvaluationShot from "@/components/marketing/kit/EvaluationShot";
+import { Hero } from "@/components/marketing/kit/Kit";
 import {
-  Closing,
-  Details,
-  Hero,
-  Ledger,
-  Section,
-  SectionHead,
-  Stage,
-  Statement,
-  Timeline,
-  Trio,
-  Visual,
-} from "@/components/marketing/kit/Kit";
-import { FigDecide, FigDesktop, FigIncident, FigPassport, FigReport, FigTrail } from "@/components/marketing/kit/Figs";
-import { BriefShot, ReportShot, TestsShot, TrailShot } from "@/components/marketing/kit/Shots";
+  Audience,
+  Bento,
+  CalmHead,
+  CalmSection,
+  ClosingPanel,
+  PathCards,
+  Questions,
+  Steps,
+  TrustList,
+} from "@/components/marketing/kit/Calm";
+import {
+  BriefFragment,
+  ChecksFragment,
+  CitationFragment,
+  DecisionFragment,
+  TeamFragment,
+  UpdateFragment,
+} from "@/components/marketing/kit/Fragments";
 
 export const metadata = {
-  title: { absolute: "Fydell: The hiring system built on real engineering work" },
+  title: { absolute: "Fydell: Hire on the work, not the résumé" },
   description:
-    "Bring together project evidence and realistic simulations. Engineers show their skills; hiring teams review cited evidence and find their next engineer.",
+    "Candidates spend about an hour fixing a realistic problem in a real codebase. Your team reviews exactly what they did, and decides.",
   alternates: { canonical: "/" },
 };
 
@@ -28,165 +32,180 @@ export default function HomePage() {
   return (
     <MarketingShell>
       <Hero
-        title={["The hiring system built on", "real engineering work."]}
-        lead="Bring together project evidence and realistic simulations. Show your skills. Find your next engineer."
-        aside={{ href: "/download", strong: "New", label: "Fydell desktop 0.1.5" }}
-        actions={
-          <>
-            <Link href="/get-started" className="l-btn l-btn-lg l-btn-solid">Get started</Link>
-            <Link href="/demo" className="l-btn l-btn-lg l-btn-ghost">Explore demo</Link>
-          </>
-        }
+        title={["Hire on the work,", "not the résumé."]}
+        lead="Candidates spend about an hour fixing a realistic problem in a real codebase. Your team reviews exactly what they did, and decides."
+        aside={{ href: "/download", strong: "New", label: "Fydell desktop 0.1.5 for Windows and Mac" }}
       >
-        <Stage hero art="lake" title="Fydell · Evaluation FYD-2048" label="Example: an evaluation in the Fydell employer workspace">
-          <EvaluationShot />
-        </Stage>
+        <PathCards
+          items={[
+            {
+              eyebrow: "I am hiring",
+              title: "See how a candidate works before you interview them",
+              cta: "Start with one role",
+              href: "/employers",
+              icon: <BriefcaseBusiness />,
+              tone: "violet",
+            },
+            {
+              eyebrow: "I am an engineer",
+              title: "Show employers code you wrote, linked to the exact lines",
+              cta: "Build my passport, free",
+              href: "/passport/new",
+              icon: <Code2 />,
+              tone: "teal",
+            },
+          ]}
+        />
       </Hero>
 
-      <Section>
-        <Statement
-          lead="A resume tells you where someone has worked."
-          rest="Fydell shows you how they work: what they ask, what they change, how they test it, and what they do when the requirement moves."
+      <CalmSection id="inside" labelledBy="inside-title">
+        <CalmHead
+          id="inside-title"
+          title={["Closer to a first week", "than a quiz."]}
+          lead="A résumé tells you where someone has worked. A Fydell simulation shows how they work, with the same kind of problem your team handles on a normal day."
         />
-        <Trio
+        <Bento
           items={[
             {
-              fig: <FigIncident />,
-              title: "A real incident, not a puzzle",
-              body: "A working repository with a production-style failure and a brief from the team that owns it.",
+              wide: true,
+              tone: "teal",
+              title: "A real problem",
+              body: "A small service with a real bug, real tests, and a brief from the team that owns it.",
+              label: "An incident brief listing three things to do.",
+              visual: <BriefFragment />,
             },
             {
-              fig: <FigTrail />,
-              title: "Every step on the record",
-              body: "Files, commands, test runs and timing, disclosed to the candidate before they begin.",
+              tone: "violet",
+              title: "Teammates who answer",
+              body: "The same written answers for everyone. Asking is optional.",
+              label: "A candidate asks which failures are temporary and the engineering lead answers.",
+              visual: <TeamFragment />,
             },
             {
-              fig: <FigDecide />,
-              title: "Your team makes the call",
-              body: "Fydell never scores the person. Your reviewers write the report and record the decision.",
+              tone: "amber",
+              title: "The requirement moves",
+              body: "One update arrives partway through, the way scope changes at work.",
+              label: "A new request posted at 14:18.",
+              visual: <UpdateFragment />,
+            },
+            {
+              wide: true,
+              tone: "blue",
+              title: "Checked on what they sent",
+              body: "The submission is sealed and run against hidden checks in a clean sandbox, not on their laptop.",
+              label: "14 of 15 hidden checks passed, with one failure named in plain words.",
+              visual: <ChecksFragment />,
+            },
+            {
+              wide: true,
+              tone: "coral",
+              title: "Every point cites the work",
+              body: "A finding without a file, a test or a message behind it cannot be released.",
+              label: "A finding linked to retry_policy.py, lines 6 to 7.",
+              visual: <CitationFragment />,
+            },
+            {
+              tone: "violet",
+              title: "Your team decides",
+              body: "Advance, Hold or Decline. Fydell never scores the person.",
+              label: "Advance, Hold and Decline, with Advance chosen.",
+              visual: <DecisionFragment />,
             },
           ]}
         />
-      </Section>
+      </CalmSection>
 
-      <Section id="brief" labelledBy="brief-title">
-        <SectionHead
-          id="brief-title"
-          title={["Start from a real", "incident"]}
-          lead="The candidate gets what an engineer on your team would get: an incident brief, a codebase that runs, and teammates who answer questions. Halfway through, the requirement changes."
-          link={{ href: "/product#brief", label: "How a simulation runs" }}
+      <CalmSection id="how" labelledBy="how-title">
+        <CalmHead
+          id="how-title"
+          title={["Three steps.", "Nothing hidden."]}
+          lead="Candidates always know what comes next, and your team always knows why a decision was made."
+          link={{ href: "/product", label: "The full walkthrough" }}
         />
-        <Visual art="coast" title="Fydell Desktop · INC-2291" label="Example: the INC-2291 brief and the team thread">
-          <BriefShot />
-        </Visual>
-        <Details
+        <Steps
           items={[
-            { title: "Working code", body: "A small service with a real bug, real tests, and a setup check that runs first." },
-            { title: "Teammates who answer", body: "Written answers, the same for every candidate. Asking is optional and never penalised." },
-            { title: "One requirement update", body: "Posted by the team partway through, the way scope actually moves at work." },
+            {
+              title: "Invite",
+              body: "Pick the simulation that fits the role and invite candidates by email. They read exactly what is recorded before anything starts.",
+            },
+            {
+              title: "They do the work",
+              body: "About an hour on a real codebase in the Fydell desktop app, with teammates who answer questions and one requirement change along the way.",
+            },
+            {
+              title: "You decide",
+              body: "Your team reads a report where every point cites the work, then records Advance, Hold or Decline. Fydell never scores the person.",
+            },
           ]}
         />
-      </Section>
+      </CalmSection>
 
-      <Section id="trail" labelledBy="trail-title">
-        <SectionHead
-          id="trail-title"
-          title={["Every step,", "on the record"]}
-          lead="The desktop app records a disclosed work trail: the files they open and change, the commands they run, their test results and when each happened. Nothing outside that list."
-          link={{ href: "/trust", label: "What is and isn't recorded" }}
+      <CalmSection label="Who Fydell is for">
+        <Audience
+          dark={{
+            id: "teams",
+            eyebrow: "For hiring teams",
+            title: "Interview the people who already showed you.",
+            points: [
+              "A simulation matched to the role you are hiring for",
+              "A report your reviewers write, with every point cited",
+              "Advance, Hold or Decline, recorded with the reason",
+            ],
+            primary: { href: "/signup?as=employer", label: "Start with one role" },
+            secondary: { href: "/demo", label: "Explore the demo" },
+          }}
+          light={{
+            id: "engineers",
+            eyebrow: "For engineers",
+            title: "Keep proof of what you can do.",
+            points: [
+              "A free passport built from your public GitHub projects",
+              "A receipt for every simulation you send",
+              "Private until you share a link, and you can turn it off",
+            ],
+            primary: { href: "/passport/new", label: "Build my passport" },
+            secondary: { href: "/download", label: "Get the desktop app" },
+          }}
         />
-        <Visual art="hills" title="Fydell Desktop · Work trail" label="Example: a candidate's work trail and the notice they accepted">
-          <TrailShot />
-        </Visual>
-      </Section>
+      </CalmSection>
 
-      <Section id="checks" labelledBy="checks-title">
-        <SectionHead
-          id="checks-title"
-          title={["Checked on the code", "they submitted"]}
-          lead="On submit, the project is sealed with a checksum and run against hidden checks in an isolated sandbox. The result is the same no matter whose laptop it was written on."
-          link={{ href: "/security", label: "How submissions are handled" }}
-        />
-        <Visual art="lake" title="Fydell · Hidden checks" label="Example: hidden checks run against a submitted snapshot">
-          <TestsShot />
-        </Visual>
-      </Section>
-
-      <Section id="report" labelledBy="report-title">
-        <SectionHead
-          id="report-title"
-          title={["A report your team", "can stand behind"]}
-          lead="Your reviewers write the findings. Each one must cite a file, a test, a message or a handoff answer before the report can be released. Observations and gaps are labelled, and there is no score."
-          link={{ href: "/employers", label: "Fydell for hiring teams" }}
-        />
-        <Visual art="coast" title="Fydell · Report" label="Example: a cited report with the team's decision">
-          <ReportShot />
-        </Visual>
-      </Section>
-
-      <Section id="loop" labelledBy="loop-title">
-        <SectionHead
-          id="loop-title"
-          title={["One loop, from role", "to decision"]}
-          lead="The whole process is five steps. Candidates always know what comes next, and your team always knows why a decision was made."
-        />
-        <Timeline
-          items={[
-            { title: "Create a role", body: "Pick the simulation that fits the job and invite candidates by email.", meta: "Your team" },
-            { title: "Consent", body: "The candidate reads what is recorded and agrees before anything starts.", meta: "Candidate", tone: "blue" },
-            { title: "Work the incident", body: "In the desktop app, with one requirement update along the way.", meta: "About an hour", tone: "red" },
-            { title: "Submit and hand off", body: "Three short answers and a receipt the candidate keeps.", meta: "Candidate" },
-            { title: "Review and decide", body: "A cited report, then Advance, Hold or Decline.", meta: "Your team", tone: "blue" },
-          ]}
-        />
-      </Section>
-
-      <Section id="passport" labelledBy="passport-title">
-        <SectionHead
-          id="passport-title"
-          title={["Engineers keep", "their work"]}
-          lead="Every engineer gets a receipt for what they submitted, and can build an Engineering Passport from their own public repositories: findings linked to the exact lines, shared only with the employers they choose."
-          link={{ href: "/passport/new", label: "Build your passport" }}
-        />
-        <Trio
-          items={[
-            { fig: <FigPassport />, title: "A passport you own", body: "Built from your public repositories at a pinned commit. Free for engineers." },
-            { fig: <FigReport />, title: "Findings with line citations", body: "What the code demonstrates, linked to files and line ranges." },
-            { fig: <FigDesktop />, title: "Simulations on your machine", body: "The Fydell desktop app for macOS and Windows sets up each project." },
-          ]}
-        />
-      </Section>
-
-      <Section id="boundaries" labelledBy="boundaries-title">
-        <SectionHead
-          id="boundaries-title"
-          title={["Clear about what", "it will not do"]}
+      <CalmSection labelledBy="trust-title">
+        <CalmHead
+          id="trust-title"
+          title={["Clear about what", "it will not do."]}
           lead="Hiring is a decision about a person. Fydell gives your team evidence and stays out of the judgement."
           link={{ href: "/trust", label: "Read the trust page" }}
         />
-        <Ledger
-          yes={{
-            title: "What Fydell does",
-            items: [
-              { strong: "Records a disclosed trail.", rest: "Files, commands, test runs and timing, listed before the candidate starts." },
-              { strong: "Runs hidden checks.", rest: "On the submitted snapshot, in an isolated sandbox." },
-              { strong: "Requires citations.", rest: "A finding without evidence cannot be released." },
-              { strong: "Gives the candidate a receipt.", rest: "With a checksum of exactly what they submitted." },
-            ],
-          }}
-          no={{
-            title: "What Fydell never does",
-            items: [
-              { strong: "Score or rank people.", rest: "There is no overall rating, percentile or fit score." },
-              { strong: "Forecast future performance.", rest: "The report describes this work and nothing beyond it." },
-              { strong: "Police AI use.", rest: "Fydell can't see AI tools. Candidates describe any AI help in their own words." },
-              { strong: "Record outside the list.", rest: "No screen, webcam, microphone, browsing or keystrokes." },
-            ],
-          }}
+        <TrustList
+          yes={[
+            { strong: "Shows the list first.", rest: "Files, commands, tests and timing, before anything starts." },
+            { strong: "Requires citations.", rest: "A finding without evidence cannot be released." },
+            { strong: "Gives a receipt.", rest: "With a checksum of exactly what was sent." },
+          ]}
+          no={[
+            { strong: "Never scores or ranks people.", rest: "No rating, percentile or fit score." },
+            { strong: "Never polices AI use.", rest: "Candidates describe any AI help in their own words." },
+            { strong: "Never records outside the list.", rest: "No screen, webcam, microphone or keystrokes." },
+          ]}
         />
-      </Section>
+      </CalmSection>
 
-      <Closing title={["Hire on the work.", "Start with one role."]} />
+      <Questions
+        id="faq"
+        link={{ href: "/contact", label: "Ask us something else" }}
+        items={[
+          { q: "How long does a simulation take?", a: "About an hour once the candidate presses Start. Setup comes first and is untimed." },
+          {
+            q: "Do candidates need to install anything?",
+            a: "The Fydell desktop app for Windows or Mac. It sets up the project, and a setup check says if anything else is needed before the clock starts.",
+          },
+          { q: "Does Fydell score candidates?", a: "No. Your reviewers write the findings and record the decision. Fydell checks that every finding cites the work." },
+          { q: "Can candidates use AI tools?", a: "Fydell cannot see tools outside the app and never guesses. Candidates can describe any AI help in their own words." },
+          { q: "Who can see an engineer's passport?", a: "Only employers the engineer sends a link to. Each link can be turned off at any time." },
+        ]}
+      />
+
+      <ClosingPanel title={["Hire on the work.", "Start with one role."]} />
     </MarketingShell>
   );
 }

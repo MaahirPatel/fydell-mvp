@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import MarketingShell from "@/components/layout/MarketingShell";
 import { Hero } from "@/components/marketing/kit/Kit";
-import PassportBuilder from "@/components/passport/PassportBuilder";
+import PassportWizard from "@/components/candidate/PassportWizard";
 import { requireUser } from "@/lib/simulations/auth";
 
 export const metadata = {
@@ -12,16 +12,16 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function NewPassportPage() {
-  if (await requireUser()) redirect("/app/candidate/profile");
+  if (await requireUser()) redirect("/app/candidate/passport/build");
   return (
     <MarketingShell>
       <Hero
         compact
         title={["Engineering Passport"]}
-        lead="Paste your GitHub profile. Fydell cites what your public code demonstrates, line by line."
+        lead="Type your GitHub username and pick up to three projects. We point to the exact lines that show what you can do."
       >
-        <div className="l-container" style={{ marginTop: 56, paddingBottom: 120 }}>
-          <PassportBuilder signedIn={false} />
+        <div className="l-container" style={{ marginTop: 56, paddingBottom: 120, textAlign: "left" }}>
+          <PassportWizard signedIn={false} />
         </div>
       </Hero>
     </MarketingShell>

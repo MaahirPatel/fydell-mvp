@@ -20,7 +20,7 @@
   position: absolute;
   z-index: -1;
   inset: 0 0 auto;
-  height: 900px;
+  height: min(900px, 100%);
   background: linear-gradient(180deg, #fcfcfa 0%, var(--surface-canvas) 70%);
   pointer-events: none;
 }
