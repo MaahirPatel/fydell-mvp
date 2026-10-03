@@ -31,8 +31,6 @@ export const metadata: Metadata = {
   },
 };
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
