@@ -104,10 +104,10 @@ export default function HomePage() {
         <SectionHead
           id="checks-title"
           title={["Checked on the code", "they submitted"]}
-          lead="On submit, the project is sealed with a checksum and run against hidden checks in an isolated sandbox. The result is the same no matter whose laptop it was written on."
+          lead="On submit, the project is sealed with a checksum. Simulations run on the candidate's own machine; results are candidate-submitted evidence, not independently verified."
           link={{ href: "/security", label: "How submissions are handled" }}
         />
-        <Visual art="lake" title="Fydell · Hidden checks" label="Example: hidden checks run against a submitted snapshot">
+        <Visual art="lake" title="Fydell · Candidate-submitted checks" label="Example: checks run locally, results submitted by the candidate">
           <TestsShot />
         </Visual>
       </Section>
@@ -169,7 +169,7 @@ export default function HomePage() {
             title: "What Fydell does",
             items: [
               { strong: "Records a disclosed trail.", rest: "Files, commands, test runs and timing, listed before the candidate starts." },
-              { strong: "Runs hidden checks.", rest: "On the submitted snapshot, in an isolated sandbox." },
+              { strong: "Runs checks locally.", rest: "On the candidate's machine. Results are candidate-submitted, not independently verified." },
               { strong: "Requires citations.", rest: "A finding without evidence cannot be released." },
               { strong: "Gives the candidate a receipt.", rest: "With a checksum of exactly what they submitted." },
             ],

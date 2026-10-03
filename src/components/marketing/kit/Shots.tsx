@@ -352,7 +352,7 @@ export function TestsShot() {
 
       <div className={s.col}>
         <div className={s.panelHead}>
-          Hidden checks <span>isolated sandbox</span>
+          Submitted checks <span>candidate-submitted</span>
         </div>
         {CHECKS.map((c, i) => (
           <div key={c.name} style={stagger(i)} className={`${s.result} ${c.ok ? s.pass : s.fail}`}>

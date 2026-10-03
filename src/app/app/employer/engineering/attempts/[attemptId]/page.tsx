@@ -192,7 +192,7 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
                         : []),
                       ...(view.submission.late ? [{ label: "Submitted after the deadline", state: "note" as const }] : []),
                     ]
-                  : [{ label: "Hidden checks run in an isolated sandbox after submission", state: "note" as const }]
+                  : [{ label: "Checks run on the candidate's machine; results are candidate-submitted", state: "note" as const }]
               }
               reference={`sha256:${view.submission.archive_sha256.slice(0, 16)}`}
               action={view.report ? <a href="#report">View report →</a> : undefined}

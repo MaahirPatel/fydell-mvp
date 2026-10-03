@@ -92,9 +92,9 @@ export default function ProductPage() {
       <Section id="checks" labelledBy="checks-title">
         <SectionHead
           id="checks-title"
-          title={["5. Hidden checks,", "then the report"]}
-          lead="Fydell runs hidden checks against the sealed submission in an isolated sandbox, through the public interface described in the brief. Your reviewers then see the diff, the results and the trail together."
-          link={{ href: "/security", label: "How the sandbox works" }}
+          title={["5. Candidate-submitted checks,", "then the report"]}
+          lead="Simulations run on the candidate's machine. Results are candidate-submitted evidence, shown with that limitation stated. Your reviewers see the diff, the results and the trail together."
+          link={{ href: "/security", label: "How submissions are handled" }}
         />
         <Visual label="Example: hidden checks against a submitted snapshot">
           <TestsShot />
