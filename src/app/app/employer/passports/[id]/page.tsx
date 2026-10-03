@@ -4,6 +4,7 @@ import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { getReview } from "@/lib/passport/store";
 import PassportView from "@/components/passport/PassportView";
 import PassportDecisionPanel from "@/components/employer/PassportDecisionPanel";
+import RoleReviewSection from "@/components/employer/RoleReviewSection";
 
 export const metadata = { title: "Passport review" };
 export const dynamic = "force-dynamic";
@@ -17,6 +18,11 @@ export default async function EmployerPassportReviewPage({ params }: { params: P
   if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
   const review = await getReview(org.organizationId, id);
   if (!review) notFound();
+
+  // Flatten evidence across projects for the requirement-evidence review (H06).
+  const allEvidence = (review.passport?.projects ?? []).flatMap((p) => p.evidence);
+  const candidateName =
+    review.passport?.displayName || review.passport?.githubLogin || "Candidate";
 
   return (
     <div>
@@ -34,6 +40,13 @@ export default async function EmployerPassportReviewPage({ params }: { params: P
                 Their passport is no longer visible to your workspace. Your decision and notes are kept here.
               </p>
             </div>
+          )}
+          {review.passport && (
+            <RoleReviewSection
+              shareId={review.shareId}
+              candidateName={candidateName}
+              evidence={allEvidence}
+            />
           )}
         </div>
         <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">

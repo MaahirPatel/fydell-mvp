@@ -444,6 +444,7 @@ export async function getReview(organizationId: string, reviewId: string) {
   const passport = row.passport_shares ? await projectedShare(row.passport_shares) : null;
   return {
     id: row.id,
+    shareId: row.share_id,
     roleTitle: row.role_title,
     decision: row.decision,
     decidedAt: row.decided_at,
