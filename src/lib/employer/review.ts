@@ -223,3 +223,44 @@ export async function answerQuestion(
   if (error) throw new Error(`Could not save response: ${error.message}`);
   return toQuestion(data as QuestionRow);
 }
+
+export interface CandidateQuestion extends ReviewQuestion {
+  organizationName: string;
+  roleTitle: string;
+}
+
+/**
+ * List open questions addressed to a candidate across all their shares.
+ * Joins through passport_shares -> passports to scope by owner.
+ */
+export async function listQuestionsForCandidate(ownerId: string): Promise<CandidateQuestion[]> {
+  const db = createAdminSupabaseClient();
+  // Find the candidate's passport and its shares
+  const { data: passport } = await db
+    .from("passports")
+    .select("id")
+    .eq("owner_id", ownerId)
+    .maybeSingle();
+  if (!passport) return [];
+  const { data: shares } = await db
+    .from("passport_shares")
+    .select("id")
+    .eq("passport_id", (passport as { id: string }).id);
+  const shareIds = ((shares ?? []) as Array<{ id: string }>).map((s) => s.id);
+  if (shareIds.length === 0) return [];
+
+  const { data: questions, error } = await db
+    .from("review_questions")
+    .select("*, organizations(name), hiring_roles(title)")
+    .in("share_id", shareIds)
+    .eq("status", "open")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(`Could not load questions: ${error.message}`);
+  return ((questions ?? []) as Array<QuestionRow & { organizations: { name: string } | null; hiring_roles: { title: string } | null }>).map(
+    (r) => ({
+      ...toQuestion(r),
+      organizationName: r.organizations?.name ?? "An employer",
+      roleTitle: r.hiring_roles?.title ?? "Role",
+    })
+  );
+}

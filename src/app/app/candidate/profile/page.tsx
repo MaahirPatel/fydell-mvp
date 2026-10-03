@@ -12,6 +12,7 @@ import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import EditorImport from "@/components/profile/EditorImport";
 import EvidenceTimeline from "@/components/profile/EvidenceTimeline";
 import PassportConnectSection from "@/components/profile/PassportConnectSection";
+import CandidateQuestions from "@/components/candidate/CandidateQuestions";
 
 export const metadata = { title: "Engineering Profile" };
 export const dynamic = "force-dynamic";
@@ -116,6 +117,14 @@ export default async function CandidateProfilePage({
             hint="Import work summaries from VS Code or Cursor running on your own machine. Only the summary is stored; the file is discarded after parsing."
           >
             <EditorImport />
+          </Section>
+
+          <Section
+            id="profile-questions"
+            title="Employer questions"
+            hint="Follow-up questions from hiring teams reviewing your shared work. Respond here; your answer goes back to the employer attached to the requirement."
+          >
+            <CandidateQuestions />
           </Section>
         </div>
 
