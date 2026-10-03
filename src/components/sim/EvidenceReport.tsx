@@ -249,6 +249,15 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
         <h1 className="mt-2 text-app-page font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
           {candidate?.name || candidate?.email}
         </h1>
+        {/* SIM02 trust disclosure: desktop-local results are candidate-submitted */}
+        <div className="mt-3 rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3">
+          <p className="text-app-meta leading-[1.6] text-[var(--text-secondary)]">
+            <span className="font-medium text-[var(--text-primary)]">Candidate-submitted evidence.</span>{" "}
+            This simulation ran on the candidate&apos;s own machine. Results were submitted by the
+            candidate, not independently verified by Fydell. Do not use this report for verified
+            badges or automatic hiring decisions.
+          </p>
+        </div>
         <p className="mt-1.5 text-app-body text-[var(--text-secondary)]">
           {simulation.title} · submitted{" "}
           {session?.submittedAt
@@ -436,7 +445,7 @@ export function EvidenceReport({ sessionId }: { sessionId: string }) {
                     </p>
                     <span className="text-app-meta text-[var(--text-tertiary)]">
                       {e.source === "deterministic"
-                        ? "verified check"
+                        ? "candidate-submitted check"
                         : e.source === "ai_rubric"
                           ? "rubric evaluation"
                           : "authored rule"}
