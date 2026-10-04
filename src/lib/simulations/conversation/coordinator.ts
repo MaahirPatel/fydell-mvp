@@ -1,0 +1,254 @@
+/**
+ * Conversation coordinator.
+ *
+ * Decides whether a coworker should speak, who speaks, and what new
+ * information the message provides. "No message" is always valid.
+ *
+ * Decision process:
+ * 1. What happened? (classify the event/message)
+ * 2. Is a response useful? (check against memory)
+ * 3. Which coworker owns the response? (by topic ownership)
+ * 4. What new information should it provide? (not already revealed)
+ * 5. Has this already been addressed? (check topics/questions)
+ */
+import type {
+  ClassifiedMessage,
+  ConversationState,
+  MessageIntent,
+  SpeakingDecision,
+} from "./types";
+import { isTopicAddressed } from "./memory";
+
+export interface CoworkerInfo {
+  id: string;
+  /** Topic IDs this coworker owns. */
+  ownsTopics: string[];
+  /** Whether this coworker can answer help requests. */
+  canHelp: boolean;
+}
+
+export interface CoordinatorContext {
+  state: ConversationState;
+  classified: ClassifiedMessage;
+  messageText: string;
+  /** Available coworkers and their topic ownership. */
+  coworkers: CoworkerInfo[];
+  /** Time since last coworker message (ms). For cooldown. */
+  msSinceLastCoworkerMsg: number;
+  /** Minimum ms between unsolicited coworker messages. */
+  unsolicitedCooldownMs: number;
+}
+
+/**
+ * Main entry: decide whether/how to respond to a candidate message.
+ */
+export function decideResponse(ctx: CoordinatorContext): SpeakingDecision {
+  const { state, classified, coworkers } = ctx;
+
+  // --- Step 1: Check intent — some intents never need a response ---
+  if (classified.intent === "acknowledgment") {
+    return {
+      shouldSpeak: false,
+      silenceReason: "Acknowledgment requires no response",
+    };
+  }
+
+  if (classified.intent === "off_topic") {
+    return {
+      shouldSpeak: false,
+      silenceReason: "Off-topic message, no useful response available",
+    };
+  }
+
+  // --- Step 2: Handle plan sharing — acknowledge only if useful ---
+  if (classified.intent === "sharing_plan") {
+    // If the candidate just stated a plan, we record it but don't need to
+    // ask "what's your plan?" again. A brief acknowledgment is useful only
+    // if we can add something (e.g., a relevant constraint).
+    // For now: silent, plan is recorded in memory.
+    return {
+      shouldSpeak: false,
+      silenceReason: "Plan recorded, no new information to add",
+    };
+  }
+
+  // --- Step 3: Handle diagnosis/result sharing ---
+  if (
+    classified.intent === "sharing_diagnosis" ||
+    classified.intent === "sharing_result" ||
+    classified.intent === "sharing_explanation"
+  ) {
+    // Check if this contradicts an earlier statement
+    // (handled by the response generator, not here)
+    // Default: silent unless there's a specific reason to respond.
+    // The coordinator can be extended to flag contradictions.
+    return {
+      shouldSpeak: false,
+      silenceReason: "Candidate sharing work progress, no response needed",
+    };
+  }
+
+  // --- Step 4: Handle questions ---
+  const questionIntents: MessageIntent[] = [
+    "question_requirement",
+    "question_reproduction",
+    "question_constraint",
+    "question_help",
+  ];
+
+  if (questionIntents.includes(classified.intent)) {
+    // Check if all topics in this question have already been addressed
+    if (
+      classified.topicIds.length > 0 &&
+      classified.topicIds.every((t) => isTopicAddressed(state, t))
+    ) {
+      return {
+        shouldSpeak: false,
+        silenceReason: "All topics in this question already addressed",
+      };
+    }
+
+    // Find the right coworker (owns the most relevant topic)
+    const speaker = selectSpeaker(classified.topicIds, coworkers, state);
+    if (!speaker) {
+      return {
+        shouldSpeak: false,
+        silenceReason: "No coworker owns these topics",
+      };
+    }
+
+    // Check if this exact question was already answered
+    const alreadyAnswered = state.openQuestions.some(
+      (q) =>
+        q.answered &&
+        q.topicIds.length > 0 &&
+        classified.topicIds.length > 0 &&
+        q.topicIds.some((t) => classified.topicIds.includes(t))
+    );
+    if (alreadyAnswered) {
+      return {
+        shouldSpeak: false,
+        silenceReason: "Question already answered (by topic)",
+      };
+    }
+
+    return {
+      shouldSpeak: true,
+      speakerId: speaker.id,
+      purpose: `Answer question about ${classified.topicIds.join(", ") || "general"}`,
+      topicId: classified.topicIds[0],
+    };
+  }
+
+  // --- Step 5: Unclear intent ---
+  if (classified.intent === "unclear") {
+    // Don't guess. If confidence is very low, stay silent rather than
+    // firing the generic fallback question.
+    if (classified.confidence < 0.5) {
+      return {
+        shouldSpeak: false,
+        silenceReason: "Intent unclear, avoiding generic fallback",
+      };
+    }
+    // Medium confidence: let the topic-based routing try
+    if (classified.topicIds.length > 0) {
+      const speaker = selectSpeaker(classified.topicIds, coworkers, state);
+      if (speaker && !classified.topicIds.every((t) => isTopicAddressed(state, t))) {
+        return {
+          shouldSpeak: true,
+          speakerId: speaker.id,
+          purpose: `Address topics: ${classified.topicIds.join(", ")}`,
+          topicId: classified.topicIds[0],
+        };
+      }
+    }
+    return {
+      shouldSpeak: false,
+      silenceReason: "Unclear intent, no confident topic match",
+    };
+  }
+
+  return {
+    shouldSpeak: false,
+    silenceReason: "No useful response identified",
+  };
+}
+
+/**
+ * Select which coworker should respond, based on topic ownership.
+ * Prefers the coworker who owns the most relevant topics.
+ * Falls back to the first available coworker.
+ */
+function selectSpeaker(
+  topicIds: string[],
+  coworkers: CoworkerInfo[],
+  state: ConversationState
+): CoworkerInfo | null {
+  if (coworkers.length === 0) return null;
+  if (coworkers.length === 1) return coworkers[0];
+
+  // Score by topic ownership
+  let best: CoworkerInfo | null = null;
+  let bestScore = -1;
+
+  for (const cw of coworkers) {
+    let score = 0;
+    for (const topicId of topicIds) {
+      if (cw.ownsTopics.includes(topicId)) score += 2;
+      // Bonus if this coworker already owns the topic in conversation state
+      const topic = state.topics.find((t) => t.id === topicId);
+      if (topic && topic.ownerId === cw.id) score += 1;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = cw;
+    }
+  }
+
+  // If no one owns these topics, use the first coworker
+  // (they can say "I don't know" or redirect)
+  return best || coworkers[0];
+}
+
+/**
+ * Decide whether a proactive (unsolicited) message should be sent.
+ * Much stricter than the old time-based system.
+ */
+export function decideProactive(
+  state: ConversationState,
+  trigger: {
+    kind: "milestone" | "stuck" | "phase_change";
+    detail: string;
+  },
+  msSinceLastCoworkerMsg: number,
+  cooldownMs: number
+): SpeakingDecision {
+  // Never interrupt during active work phases without a good reason
+  if (msSinceLastCoworkerMsg < cooldownMs) {
+    return {
+      shouldSpeak: false,
+      silenceReason: "Cooldown active",
+    };
+  }
+
+  // Don't send "any updates?" messages
+  if (trigger.kind === "stuck") {
+    return {
+      shouldSpeak: false,
+      silenceReason: "No status-demand messages",
+    };
+  }
+
+  // Milestone acknowledgments are the only proactive messages we send
+  if (trigger.kind === "milestone") {
+    return {
+      shouldSpeak: true,
+      purpose: `Acknowledge milestone: ${trigger.detail}`,
+    };
+  }
+
+  return {
+    shouldSpeak: false,
+    silenceReason: "No proactive message warranted",
+  };
+}

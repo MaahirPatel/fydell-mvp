@@ -20,6 +20,12 @@ import {
   evaluateOutage,
   outageIsOpen,
 } from "@/lib/simulations/outage-policy";
+// Conversation coordinator: decides whether a coworker should respond,
+// preventing repeated questions and tracking what's been discussed.
+import { classifyMessage } from "@/lib/simulations/conversation/intent";
+import { decideResponse } from "@/lib/simulations/conversation/coordinator";
+import { buildStateFromMessages } from "@/lib/simulations/conversation/state-builder";
+import { recordCandidateMessage } from "@/lib/simulations/conversation/memory";
 
 export const runtime = "nodejs";
 
@@ -146,6 +152,68 @@ export async function POST(
       completedTaskIds: state.completed_task_ids || [],
       events: toChatEvents(events),
     });
+
+    // Conversation coordinator: build state from message history, classify
+    // the new message, and decide whether a response is useful.
+    // This prevents the old behavior of replying to every message with
+    // a generic fallback question.
+    const priorMessages = await listMessages(id);
+    let convState = buildStateFromMessages(
+      id,
+      session.template_version_id,
+      "v1",
+      priorMessages
+        .filter((m) => m.thread === "stakeholder")
+        .map((m) => ({
+          id: m.id,
+          sender: m.sender as "candidate" | "stakeholder",
+          stakeholderId: m.stakeholder_id,
+          body: m.body,
+          created_at: m.created_at,
+        }))
+    );
+    const classified = classifyMessage(text);
+    convState = recordCandidateMessage(convState, message.id, text, classified);
+
+    // Build coworker info from scenario stakeholders
+    const content2 = content as unknown as {
+      stakeholders?: Array<{ id: string }>;
+    };
+    const coworkers = (content2.stakeholders || []).map((s) => ({
+      id: s.id,
+      ownsTopics: [] as string[], // TODO: derive from stakeholder knowledge areas
+      canHelp: true,
+    }));
+
+    const decision = decideResponse({
+      state: convState,
+      classified,
+      messageText: text,
+      coworkers,
+      msSinceLastCoworkerMsg: 0, // TODO: track from message timestamps
+      unsolicitedCooldownMs: 5 * 60 * 1000, // 5 minutes
+    });
+
+    // If the coordinator says silence is better, don't reply.
+    // The candidate's message is recorded; no generic fallback question.
+    if (!decision.shouldSpeak) {
+      await recordEvent(id, {
+        eventType: "message_no_reply",
+        actor: "system",
+        payload: {
+          stakeholderId: stakeholder.id,
+          reason: decision.silenceReason,
+          intent: classified.intent,
+        },
+        clientEventId: body.clientMsgId ? `noreply_${body.clientMsgId}` : undefined,
+      });
+      return NextResponse.json({
+        ok: true,
+        candidateMessage: message,
+        reply: null,
+        noReplyReason: decision.silenceReason,
+      });
+    }
 
     const drafted = await draftReply(stakeholder, text, {
       curveballPresented: chatCtx.curveballPresented,
