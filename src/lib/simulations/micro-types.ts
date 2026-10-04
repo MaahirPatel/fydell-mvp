@@ -137,6 +137,16 @@ export interface MicroSimContent {
   curveball?: MicroCurveball;
   /** Present on engineering scenarios backed by a code workspace. */
   engineering?: MicroEngineeringConfig;
+  /**
+   * Assistance policy for coworker chat. Versioned with the scenario.
+   * Controls hint limits, solution disclosure, and blocked topics.
+   */
+  assistancePolicy?: {
+    version: string;
+    maxHints: number;
+    allowSolution: boolean;
+    hintBlockedTopics: string[];
+  };
 }
 
 export function isMicroContent(content: unknown): content is MicroSimContent {

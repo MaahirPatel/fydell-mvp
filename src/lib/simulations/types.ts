@@ -158,14 +158,15 @@ export interface SimulationStakeholder {
   /**
    * Topic IDs this stakeholder owns for routing. When a candidate asks about
    * these topics, this coworker is preferred. Defined in versioned scenario
-   * config, not hardcoded in the route.
+   * config, not hardcoded in the route. Optional for backward compatibility.
    */
-  ownsTopics: string[];
+  ownsTopics?: string[];
   /**
    * Responsibilities: what this coworker does and why they participate.
    * Used for routing and for the model's understanding of role boundaries.
+   * Optional for backward compatibility.
    */
-  responsibilities: string[];
+  responsibilities?: string[];
   responseRules: StakeholderResponseRule[];
   /** Used when no rule matches. Should ask a useful clarifying question back. */
   fallbackReply: string;
