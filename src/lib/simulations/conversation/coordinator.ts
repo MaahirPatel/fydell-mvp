@@ -132,16 +132,17 @@ export function decideResponse(ctx: CoordinatorContext): SpeakingDecision & {
       };
     }
 
-    // Check if all topics in this question have already been addressed
-    if (
-      classified.topicIds.length > 0 &&
-      classified.topicIds.every((t) => isTopicAddressed(state, t))
-    ) {
-      return {
-        shouldSpeak: false,
-        silenceReason: "All topics in this question already addressed",
-      };
-    }
+    // Direct questions ALWAYS get a response (answer, "I don't know", or
+    // clarification). Never silently discard a question because its topic
+    // was discussed before. The LLM generator has the conversation history
+    // and can reference prior answers, be concise, or add new detail.
+    // Only suppress if this is an exact duplicate still being processed
+    // (handled by idempotency, not here).
+    //
+    // The old "already addressed → silent" logic was too blunt. A candidate
+    // may legitimately ask for clarification, forget a detail, or revisit
+    // after new evidence. The model decides how to handle the repeat
+    // given the full context.
 
     // Find the right coworker (owns the most relevant topic)
     const speaker = selectSpeaker(classified.topicIds, coworkers, state);

@@ -100,7 +100,7 @@ check("question about unaddressed topic gets reply", () => {
   assertTrue(decision.speakerId === "maya", `speaker: ${decision.speakerId}`);
 });
 
-check("question about addressed topic gets no reply", () => {
+check("question about addressed topic gets reply (not silent)", () => {
   let state = createInitialState("s1", "sc1", "v1");
   // Simulate: question asked, coworker answered
   const q1 = classifyMessage("What is the expected retry behavior?");
@@ -110,8 +110,10 @@ check("question about addressed topic gets no reply", () => {
   });
   assertTrue(isTopicAddressed(state, "retry_backoff"), "topic should be addressed");
 
+  // New behavior: explicit re-ask gets a reply (LLM references prior answer).
+  // Never silently discard a direct question.
   const decision = decideResponse(baseCtx(state, "Can you tell me about retry behavior again?"));
-  assertTrue(!decision.shouldSpeak, "should not re-answer addressed topic");
+  assertTrue(decision.shouldSpeak, "should speak on explicit re-ask");
 });
 
 check("unclear intent with low confidence gets no reply", () => {

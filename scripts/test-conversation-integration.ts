@@ -73,9 +73,10 @@ check("full conversation stays coherent", () => {
   assertTrue(getActivePlan(r.newState)?.plan.includes("retry logic"), "plan recorded");
   state = r.newState;
 
-  // 3. Candidate asks paraphrased question (should be suppressed)
+  // 3. Candidate asks paraphrased question (gets reply; LLM sees prior answer
+  // in history and can reference it concisely instead of repeating verbatim)
   r = decide(state, "Can you explain how retries should work?");
-  assertTrue(!r.decision.shouldSpeak, "paraphrase should be suppressed");
+  assertTrue(r.decision.shouldSpeak, "paraphrase should get reply (LLM handles context)");
   state = r.newState;
 
   // 4. Candidate asks Priya's topic

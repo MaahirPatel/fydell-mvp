@@ -11,6 +11,8 @@ import {
   recordEvent,
 } from "@/lib/simulations/db";
 import { draftReply, findStakeholder } from "@/lib/simulations/stakeholder";
+import { generateResponse } from "@/lib/simulations/conversation/generator";
+import { DEFAULT_POLICY } from "@/lib/simulations/conversation/assistance";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 import { maybePresentCurveball } from "@/lib/simulations/curveball-present";
 import { buildSessionChatContext, toChatEvents } from "@/lib/simulations/chat-context";
@@ -170,7 +172,13 @@ export async function POST(
           stakeholderId: m.stakeholder_id,
           body: m.body,
           created_at: m.created_at,
-        }))
+        })),
+      // Pass events so the builder can use stored model memory updates
+      events.map((e) => ({
+        event_type: e.event_type,
+        payload: (e.payload || {}) as Record<string, unknown>,
+        created_at: e.created_at,
+      }))
     );
     const classified = classifyMessage(text);
     convState = recordCandidateMessage(convState, message.id, text, classified);
@@ -231,11 +239,93 @@ export async function POST(
       });
     }
 
-    const drafted = await draftReply(stakeholder, text, {
-      curveballPresented: chatCtx.curveballPresented,
-      usedRuleIds: chatCtx.usedRuleIds,
-      chat: chatCtx,
+    // Generate a grounded response using the LLM with permitted context only.
+    // The coordinator already decided a response is warranted; the generator
+    // interprets the message and composes a context-specific reply.
+    const recentMsgs = priorMessages
+      .filter((m) => m.thread === "stakeholder")
+      .slice(-10)
+      .map((m) => ({
+        from: (m.sender === "candidate" ? "candidate" : "coworker") as "candidate" | "coworker",
+        coworkerId: m.stakeholder_id || undefined,
+        text: m.body,
+      }));
+
+    const generated = await generateResponse({
+      stakeholder,
+      state: convState,
+      candidateMessage: text,
+      recentMessages: recentMsgs,
+      policy: DEFAULT_POLICY,
     });
+
+    let replyText: string;
+    let factIds: string[] = [];
+    let assistanceCategory: string = "clarification";
+    let generationStatus: string;
+    let memoryUpdates: Record<string, unknown> | null = null;
+
+    if (generated.status === "generated") {
+      const g = generated.generation;
+      // If the model says no response needed, respect it (even though
+      // the coordinator said to speak — the model has more context)
+      if (g.response.no_response_needed) {
+        await recordEvent(id, {
+          eventType: "message_no_reply",
+          actor: "system",
+          payload: {
+            stakeholderId: stakeholder.id,
+            reason: g.response.silence_reason || "Model determined no response needed",
+            modelInterpretation: g.interpretation.summary,
+          },
+          clientEventId: body.clientMsgId ? `noreply_${body.clientMsgId}` : undefined,
+        });
+        return NextResponse.json({
+          ok: true,
+          candidateMessage: message,
+          reply: null,
+          noReplyReason: g.response.silence_reason,
+        });
+      }
+      replyText = g.response.text;
+      factIds = generated.factIds;
+      assistanceCategory = g.response.assistance_category;
+      generationStatus = "generated";
+
+      // Store model's memory updates in the event for exact rebuild.
+      // The state-builder uses these instead of re-inferring from text.
+      memoryUpdates = {
+        interpretation: g.interpretation,
+        topicsAddressed: g.memory_updates.topics_addressed,
+        planStated: g.memory_updates.plan_stated,
+        diagnosisShared: g.memory_updates.diagnosis_shared,
+        questionsResolved: g.memory_updates.questions_resolved,
+      };
+    } else if (generated.status === "unavailable") {
+      // Honest unavailable state — do not masquerade as dynamic
+      await recordEvent(id, {
+        eventType: "teammate_unavailable",
+        actor: "system",
+        payload: { stakeholderId: stakeholder.id, reason: generated.reason },
+        clientEventId: body.clientMsgId ? `unavail_${body.clientMsgId}` : undefined,
+      });
+      return NextResponse.json({
+        ok: true,
+        candidateMessage: message,
+        reply: null,
+        teammateUnavailable: true,
+        unavailableReason: "The simulated teammate service is temporarily unavailable. Your message is saved. Try again in a moment.",
+      });
+    } else {
+      // Invalid output — fall back to authored rules (honest limited fallback)
+      generationStatus = "fallback_authored";
+      const fallback = await draftReply(stakeholder, text, {
+        curveballPresented: chatCtx.curveballPresented,
+        usedRuleIds: chatCtx.usedRuleIds,
+        chat: chatCtx,
+      });
+      replyText = fallback.reply;
+    }
 
     // Stale-response check: if the candidate sent another message while we
     // were generating this reply, the reply may reference outdated context.
@@ -263,7 +353,12 @@ export async function POST(
             stakeholderId: m.stakeholder_id,
             body: m.body,
             created_at: m.created_at,
-          }))
+          })),
+        events.map((e) => ({
+          event_type: e.event_type,
+          payload: (e.payload || {}) as Record<string, unknown>,
+          created_at: e.created_at,
+        }))
       );
       const recheck = decideResponse({
         state: freshState,
@@ -298,7 +393,7 @@ export async function POST(
       thread: "stakeholder",
       stakeholderId: stakeholder.id,
       sender: "stakeholder",
-      body: drafted.reply,
+      body: replyText,
       clientMsgId: body.clientMsgId ? `reply_${body.clientMsgId}` : undefined,
     });
     await recordEvent(id, {
@@ -306,8 +401,11 @@ export async function POST(
       actor: "stakeholder",
       payload: {
         stakeholderId: stakeholder.id,
-        ruleId: drafted.ruleId,
-        source: drafted.source,
+        generationStatus,
+        factIds,
+        assistanceCategory,
+        // Model's memory updates for exact state rebuild
+        ...(memoryUpdates ? { memoryUpdates } : {}),
         // Assistance tracking: record help level for fair reviewer interpretation
         ...(decision.helpLevel ? {
           helpLevel: decision.helpLevel,
@@ -318,15 +416,14 @@ export async function POST(
       clientEventId: body.clientMsgId ? `recv_${body.clientMsgId}` : undefined,
     });
 
-    // SIM-07: teammate-service outage handling. When an LLM redraft is
-    // configured and it failed (authored fallback served instead), record the
-    // degradation. Sustained failure declares an outage and pauses/extends
-    // the attempt per policy — the candidate never loses time to our outage.
+    // SIM-07: teammate-service outage handling. When generation fails or
+    // falls back to authored content, record the degradation. Sustained
+    // failure declares an outage and pauses/extends the attempt per policy.
     // Best-effort: never fails the reply.
     let outageDeclared = false;
     try {
-      const aiConfigured = Boolean(process.env.OPENAI_API_KEY && stakeholder.aiPersona);
-      const degraded = aiConfigured && drafted.source === "authored";
+      const aiConfigured = Boolean(process.env.OPENAI_API_KEY);
+      const degraded = aiConfigured && generationStatus !== "generated";
       const outageEvents = (await listEvents(id)).map((e) => ({
         event_type: e.event_type,
         created_at: e.created_at,

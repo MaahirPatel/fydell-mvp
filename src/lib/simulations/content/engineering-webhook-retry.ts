@@ -70,7 +70,6 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
       responseRules: [
         {
           id: "rel_404",
-          onceOnly: true,
           priority: 5,
           anyKeywords: ["404", "not found", "deploy", "dlv_8860", "rfc-12", "rfc 12"],
           reply:
@@ -78,7 +77,6 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
         },
         {
           id: "rel_dedupe_scope",
-          onceOnly: true,
           priority: 4,
           anyKeywords: ["per endpoint", "fan out", "fan-out", "fanout", "each endpoint", "per event", "event id", "dedup", "deduplicat", "idempot"],
           reply:
@@ -86,7 +84,6 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
         },
         {
           id: "rel_failed_republish",
-          onceOnly: true,
           priority: 4,
           anyKeywords: ["already failed", "failed delivery", "after it failed", "replay", "resend", "redeliver", "republish"],
           reply:
@@ -94,7 +91,6 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
         },
         {
           id: "rel_scope",
-          onceOnly: true,
           priority: 3,
           anyKeywords: ["refactor", "rewrite", "schema", "store", "database", "postgres", "scope", "hotfix", "how big"],
           reply:
@@ -102,7 +98,6 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
         },
         {
           id: "rel_retry_after_details",
-          onceOnly: true,
           priority: 6,
           requiresCurveball: true,
           anyKeywords: ["retry-after", "retry after", "header", "http-date", "http date", "seconds", "cap", "negative"],
@@ -156,7 +151,6 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
         {
           id: "priya_impact",
           priority: 5,
-          onceOnly: true,
           anyKeywords: ["impact", "affected", "merchants", "users", "who", "how many"],
           reply:
             "Three merchants reported duplicates starting 09:14 UTC. Two saw duplicate order notifications, one saw duplicate inventory updates. No data loss — duplicates are the only symptom.",
@@ -164,7 +158,6 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
         {
           id: "priya_timeline",
           priority: 4,
-          onceOnly: true,
           anyKeywords: ["when", "started", "timeline", "first report"],
           reply:
             "First report came in at 09:14 UTC. All three reports arrived within 20 minutes of each other.",
@@ -172,7 +165,6 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
         {
           id: "priya_replay",
           priority: 4,
-          onceOnly: true,
           anyKeywords: ["replay", "dashboard", "manual"],
           reply:
             "Merchants can replay from the dashboard themselves. We don't do manual replays from support — point them to the dashboard if they ask.",

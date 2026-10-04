@@ -996,7 +996,12 @@ export function WorkbenchRunner({ sessionId }: { sessionId: string }) {
         const additions = [data.candidateMessage, data.reply].filter(Boolean) as Message[];
         return [...rest, ...additions];
       });
-      setChatDelivered(true);
+      // Honest teammate-unavailable state: show why there's no reply
+      if (data.teammateUnavailable) {
+        setChatError(data.unavailableReason || "Teammate service unavailable. Your message was saved.");
+      } else {
+        setChatDelivered(true);
+      }
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
       setChatDraft(text);
