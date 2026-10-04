@@ -16,7 +16,6 @@ const PRODUCT_MENU = [
 const LINKS = [
   { label: "For Engineers", href: "/candidates" },
   { label: "For Employers", href: "/employers" },
-  { label: "Example profile", href: "/example-profile" },
   { label: "Pricing", href: "/pricing" },
 ] as const;
 

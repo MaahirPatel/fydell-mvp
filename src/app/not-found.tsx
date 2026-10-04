@@ -24,12 +24,6 @@ export default function NotFound() {
           >
             Back to home
           </Link>
-          <Link
-            href="/example-profile"
-            className="inline-flex h-11 items-center rounded-full border border-[var(--border-strong)] px-5 text-app-body font-medium hover:bg-[var(--surface-hover)]"
-          >
-            See an example profile
-          </Link>
         </div>
       </div>
     </MarketingShell>
