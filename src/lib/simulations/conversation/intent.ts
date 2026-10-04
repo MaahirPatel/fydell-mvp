@@ -111,6 +111,8 @@ const TOPIC_KEYWORDS: Record<string, string[]> = {
   scope: ["scope", "hotfix", "refactor", "rewrite", "how big", "size"],
   testing: ["test", "pytest", "coverage", "regression"],
   runbook: ["runbook", "deploy", "operation", "alert"],
+  user_impact: ["impact", "affected", "merchant", "users", "customer", "report"],
+  timeline: ["when", "started", "timeline", "first", "utc"],
 };
 
 /**

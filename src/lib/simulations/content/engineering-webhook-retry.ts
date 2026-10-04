@@ -70,6 +70,7 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
       responseRules: [
         {
           id: "rel_404",
+          onceOnly: true,
           priority: 5,
           anyKeywords: ["404", "not found", "deploy", "dlv_8860", "rfc-12", "rfc 12"],
           reply:
@@ -77,6 +78,7 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
         },
         {
           id: "rel_dedupe_scope",
+          onceOnly: true,
           priority: 4,
           anyKeywords: ["per endpoint", "fan out", "fan-out", "fanout", "each endpoint", "per event", "event id", "dedup", "deduplicat", "idempot"],
           reply:
@@ -84,6 +86,7 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
         },
         {
           id: "rel_failed_republish",
+          onceOnly: true,
           priority: 4,
           anyKeywords: ["already failed", "failed delivery", "after it failed", "replay", "resend", "redeliver", "republish"],
           reply:
@@ -91,6 +94,7 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
         },
         {
           id: "rel_scope",
+          onceOnly: true,
           priority: 3,
           anyKeywords: ["refactor", "rewrite", "schema", "store", "database", "postgres", "scope", "hotfix", "how big"],
           reply:
@@ -98,6 +102,7 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
         },
         {
           id: "rel_retry_after_details",
+          onceOnly: true,
           priority: 6,
           requiresCurveball: true,
           anyKeywords: ["retry-after", "retry after", "header", "http-date", "http date", "seconds", "cap", "negative"],
@@ -112,8 +117,6 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
             "Use Run tests in the workspace. It runs on Fydell's runner against your saved files, so you do not need anything installed. Add your own test file under tests/ if you want to cover a new case.",
         },
       ],
-      fallbackReply:
-        "I can clarify the delivery promise, the incident, or how big the change should be. What do you need to know?",
       proactiveMessages: [
         {
           id: "welcome",
@@ -128,6 +131,56 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
             "Time check: about 12 minutes left. Whatever state the fix is in, make sure the handoff says what you tested and what is still risky.",
         },
       ],
+      // Maya answers each distinct question once. Repeats are handled by the
+      // conversation coordinator (no generic fallback question).
+      fallbackReply:
+        "I've covered what I know about the delivery promise and incident scope. Check INCIDENT.md and the runbook for details I haven't mentioned.",
+    },
+    {
+      id: "priya",
+      name: "Priya Sharma",
+      role: "Support engineer (simulated teammate)",
+      blurb: "Handles merchant reports and knows the user impact. Replies are scripted for this simulation.",
+      knowledge: [
+        "Merchants reported duplicate webhook deliveries starting at 09:14 UTC.",
+        "Three merchants affected: two saw duplicate order notifications, one saw duplicate inventory updates.",
+        "No data loss reported; duplicates are the only symptom.",
+        "Merchants can replay from the dashboard themselves; support does not manually replay.",
+      ],
+      withholds: [
+        "The contents of the additional reviewer tests.",
+        "A complete implementation of the fix.",
+        "Internal incident severity classification.",
+      ],
+      responseRules: [
+        {
+          id: "priya_impact",
+          priority: 5,
+          onceOnly: true,
+          anyKeywords: ["impact", "affected", "merchants", "users", "who", "how many"],
+          reply:
+            "Three merchants reported duplicates starting 09:14 UTC. Two saw duplicate order notifications, one saw duplicate inventory updates. No data loss — duplicates are the only symptom.",
+        },
+        {
+          id: "priya_timeline",
+          priority: 4,
+          onceOnly: true,
+          anyKeywords: ["when", "started", "timeline", "first report"],
+          reply:
+            "First report came in at 09:14 UTC. All three reports arrived within 20 minutes of each other.",
+        },
+        {
+          id: "priya_replay",
+          priority: 4,
+          onceOnly: true,
+          anyKeywords: ["replay", "dashboard", "manual"],
+          reply:
+            "Merchants can replay from the dashboard themselves. We don't do manual replays from support — point them to the dashboard if they ask.",
+        },
+      ],
+      fallbackReply:
+        "I handle the merchant-facing side — who reported what, and when. For the technical fix itself, Maya's your person.",
+      proactiveMessages: [],
     },
   ],
   curveball: {

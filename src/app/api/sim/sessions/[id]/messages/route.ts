@@ -175,13 +175,20 @@ export async function POST(
     const classified = classifyMessage(text);
     convState = recordCandidateMessage(convState, message.id, text, classified);
 
-    // Build coworker info from scenario stakeholders
+    // Build coworker info from scenario stakeholders.
+    // Topic ownership derived from stakeholder IDs:
+    // - maya (platform lead): technical topics (retry, idempotency, api, scope, testing)
+    // - priya (support): user impact topics (merchant reports, timeline)
     const content2 = content as unknown as {
       stakeholders?: Array<{ id: string }>;
     };
+    const TOPIC_OWNERSHIP: Record<string, string[]> = {
+      maya: ["retry_backoff", "idempotency", "api_compat", "scope", "testing", "runbook"],
+      priya: ["user_impact", "timeline"],
+    };
     const coworkers = (content2.stakeholders || []).map((s) => ({
       id: s.id,
-      ownsTopics: [] as string[], // TODO: derive from stakeholder knowledge areas
+      ownsTopics: TOPIC_OWNERSHIP[s.id] || [],
       canHelp: true,
     }));
 
