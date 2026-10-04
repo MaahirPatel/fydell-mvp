@@ -4,57 +4,17 @@ import { PRICING, planSignupHref, usd } from "@/lib/marketing/pricing";
 
 export const metadata = {
   title: "Pricing",
-  description:
-    "Start with a $750 assisted pilot: one backend opening, up to ten applicants, requirement mapping, human-reviewed evidence briefs, and a results discussion.",
+  description: `Free for engineers. Hiring teams pay ${usd(PRICING.starterPerSimulation)} per completed simulation, or ${usd(PRICING.teamMonthly)} a month with ${PRICING.teamIncluded} included.`,
   alternates: { canonical: "/pricing" },
 };
 
 export default function PricingPage() {
   return (
     <MarketingShell>
-      <Hero compact title={["Start with an assisted pilot."]}>
-        <div className="l-container">
-          <p style={{ maxWidth: "62ch", margin: "0 auto 32px", textAlign: "center" }}>
-            One opening, ten applicants, and a human-reviewed evidence brief. We do the setup
-            with you, then walk through the results together. $750, one-time, no subscription.
-          </p>
-          <Plans
-            plans={[
-              {
-                name: "Assisted pilot",
-                price: "$750",
-                per: "one-time",
-                note: "For hiring teams",
-                features: [
-                  "One backend or API opening",
-                  "Up to ten applicants reviewed",
-                  "Requirement mapping to evidence",
-                  "Human-reviewed briefs with citations",
-                  "Results discussion with our team",
-                ],
-                cta: { href: "/contact?interest=pilot", label: "Discuss your opening" },
-                featured: true,
-              },
-            ]}
-          />
-          <p style={{ maxWidth: "62ch", margin: "24px auto 0", textAlign: "center", fontSize: 14, opacity: 0.7 }}>
-            We confirm scope and turnaround with you before anything is billed. Invoiced or paid
-            by payment link. We don&apos;t promise unlimited simulations or guaranteed hires.
-          </p>
-        </div>
-      </Hero>
-
-      <Section id="self-serve" labelledBy="self-serve-title">
-        <SectionHead id="self-serve-title" title={["Self-serve plans"]} />
-        <div className="l-container">
-          <p style={{ maxWidth: "62ch", marginBottom: 24 }}>
-            A separate service for teams running simulations on their own. These plans remain
-            available for existing commitments.
-          </p>
-        </div>
-      </Section>
-
-      <Hero compact title={["Pricing"]}>
+      <Hero
+        compact
+        title={["Pricing"]}
+      >
         <div className="l-container">
           <Plans
             plans={[
