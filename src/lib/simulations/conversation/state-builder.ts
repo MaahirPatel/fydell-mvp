@@ -42,10 +42,12 @@ export function buildStateFromMessages(
       const classified = classifyMessage(msg.body);
       state = recordCandidateMessage(state, msg.id, msg.body, classified);
     } else if (msg.sender === "stakeholder" && msg.stakeholderId) {
-      // For historical messages, we don't know what question they answered.
-      // We infer: if the previous candidate message was a question about
-      // topics, mark those as addressed.
-      state = recordCoworkerMessage(state, msg.id, msg.stakeholderId, msg.body);
+      // Infer topics from the coworker message body so ownership is tracked
+      // in rebuilt state.
+      const classified = classifyMessage(msg.body);
+      state = recordCoworkerMessage(state, msg.id, msg.stakeholderId, msg.body, {
+        topicId: classified.topicIds[0],
+      });
     }
     state.lastSequence++;
   }

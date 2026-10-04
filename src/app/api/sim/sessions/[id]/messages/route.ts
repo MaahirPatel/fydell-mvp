@@ -192,12 +192,21 @@ export async function POST(
       canHelp: true,
     }));
 
+    // Compute time since last coworker message for cooldown
+    const coworkerMsgs = priorMessages.filter(
+      (m) => m.thread === "stakeholder" && m.sender === "stakeholder"
+    );
+    const lastCoworkerAt = coworkerMsgs.length > 0
+      ? Math.max(...coworkerMsgs.map((m) => new Date(m.created_at).getTime()))
+      : 0;
+    const msSinceLastCoworkerMsg = lastCoworkerAt > 0 ? Date.now() - lastCoworkerAt : Infinity;
+
     const decision = decideResponse({
       state: convState,
       classified,
       messageText: text,
       coworkers,
-      msSinceLastCoworkerMsg: 0, // TODO: track from message timestamps
+      msSinceLastCoworkerMsg,
       unsolicitedCooldownMs: 5 * 60 * 1000, // 5 minutes
     });
 
@@ -228,6 +237,62 @@ export async function POST(
       chat: chatCtx,
     });
 
+    // Stale-response check: if the candidate sent another message while we
+    // were generating this reply, the reply may reference outdated context.
+    // Re-run the coordinator with fresh state; if it now says silence,
+    // skip the reply rather than sending something stale.
+    const freshMessages = await listMessages(id);
+    const newerCandidateMsgs = freshMessages.filter(
+      (m) =>
+        m.thread === "stakeholder" &&
+        m.sender === "candidate" &&
+        m.id !== message.id &&
+        new Date(m.created_at).getTime() > new Date(message.created_at).getTime()
+    );
+    if (newerCandidateMsgs.length > 0) {
+      // Rebuild state with the newer messages and re-decide
+      const freshState = buildStateFromMessages(
+        id,
+        session.template_version_id,
+        "v1",
+        freshMessages
+          .filter((m) => m.thread === "stakeholder")
+          .map((m) => ({
+            id: m.id,
+            sender: m.sender as "candidate" | "stakeholder",
+            stakeholderId: m.stakeholder_id,
+            body: m.body,
+            created_at: m.created_at,
+          }))
+      );
+      const recheck = decideResponse({
+        state: freshState,
+        classified,
+        messageText: text,
+        coworkers,
+        msSinceLastCoworkerMsg: 0,
+        unsolicitedCooldownMs: 5 * 60 * 1000,
+      });
+      if (!recheck.shouldSpeak) {
+        await recordEvent(id, {
+          eventType: "message_reply_suppressed_stale",
+          actor: "system",
+          payload: {
+            stakeholderId: stakeholder.id,
+            reason: recheck.silenceReason,
+            newerMessages: newerCandidateMsgs.length,
+          },
+          clientEventId: body.clientMsgId ? `stale_${body.clientMsgId}` : undefined,
+        });
+        return NextResponse.json({
+          ok: true,
+          candidateMessage: message,
+          reply: null,
+          noReplyReason: `Suppressed stale reply: ${recheck.silenceReason}`,
+        });
+      }
+    }
+
     const { message: replyMessage } = await insertMessage({
       sessionId: id,
       thread: "stakeholder",
@@ -239,7 +304,17 @@ export async function POST(
     await recordEvent(id, {
       eventType: "message_received",
       actor: "stakeholder",
-      payload: { stakeholderId: stakeholder.id, ruleId: drafted.ruleId, source: drafted.source },
+      payload: {
+        stakeholderId: stakeholder.id,
+        ruleId: drafted.ruleId,
+        source: drafted.source,
+        // Assistance tracking: record help level for fair reviewer interpretation
+        ...(decision.helpLevel ? {
+          helpLevel: decision.helpLevel,
+          helpAllowed: decision.helpAllowed,
+          helpReason: decision.helpReason,
+        } : {}),
+      },
       clientEventId: body.clientMsgId ? `recv_${body.clientMsgId}` : undefined,
     });
 

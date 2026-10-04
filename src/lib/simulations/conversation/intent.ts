@@ -58,7 +58,7 @@ const INTENT_PATTERNS: IntentPattern[] = [
   {
     intent: "sharing_plan",
     patterns: [
-      /\b(i('m|'ll| am| will)|going to|planning to)\b.*\b(check|look|inspect|investigate|try|test|fix|change|implement)\b/i,
+      /\b(i('m|'ll| am| will)|going to|planning to)\b.*\b(check|look|inspect|investigate|try|test|fix|change|implement|start|begin)\b/i,
       /\bmy (plan|approach|strategy) is\b/i,
       /\bi('ll| will) (start|begin) (by|with)\b/i,
     ],

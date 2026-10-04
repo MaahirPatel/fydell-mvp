@@ -18,6 +18,7 @@ import type {
   SpeakingDecision,
 } from "./types";
 import { isTopicAddressed } from "./memory";
+import { classifyHelpRequest, type AssistancePolicy, DEFAULT_POLICY } from "./assistance";
 
 export interface CoworkerInfo {
   id: string;
@@ -37,13 +38,20 @@ export interface CoordinatorContext {
   msSinceLastCoworkerMsg: number;
   /** Minimum ms between unsolicited coworker messages. */
   unsolicitedCooldownMs: number;
+  /** Assistance policy for this scenario. */
+  assistancePolicy?: AssistancePolicy;
 }
 
 /**
  * Main entry: decide whether/how to respond to a candidate message.
  */
-export function decideResponse(ctx: CoordinatorContext): SpeakingDecision {
+export function decideResponse(ctx: CoordinatorContext): SpeakingDecision & {
+  helpLevel?: import("./types").HelpLevel;
+  helpAllowed?: boolean;
+  helpReason?: string;
+} {
   const { state, classified, coworkers } = ctx;
+  const policy = ctx.assistancePolicy || DEFAULT_POLICY;
 
   // --- Step 1: Check intent — some intents never need a response ---
   if (classified.intent === "acknowledgment") {
@@ -97,6 +105,33 @@ export function decideResponse(ctx: CoordinatorContext): SpeakingDecision {
   ];
 
   if (questionIntents.includes(classified.intent)) {
+    // Special handling for explicit help requests: check assistance policy
+    if (classified.intent === "question_help") {
+      const help = classifyHelpRequest(ctx.messageText, state, policy);
+      if (!help.allowed) {
+        return {
+          shouldSpeak: true, // Still respond, but to decline politely
+          speakerId: selectSpeaker(classified.topicIds, coworkers, state)?.id,
+          purpose: `Decline ${help.level} (policy): ${help.reason}`,
+          topicId: classified.topicIds[0],
+          helpLevel: help.level,
+          helpAllowed: false,
+          helpReason: help.reason,
+        };
+      }
+      // Help allowed — route to appropriate coworker with level info
+      const speaker = selectSpeaker(classified.topicIds, coworkers, state);
+      return {
+        shouldSpeak: true,
+        speakerId: speaker?.id,
+        purpose: `Provide ${help.level}: ${help.reason}`,
+        topicId: classified.topicIds[0],
+        helpLevel: help.level,
+        helpAllowed: true,
+        helpReason: help.reason,
+      };
+    }
+
     // Check if all topics in this question have already been addressed
     if (
       classified.topicIds.length > 0 &&
