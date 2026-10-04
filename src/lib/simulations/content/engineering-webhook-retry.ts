@@ -57,6 +57,12 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
       name: "Maya Chen",
       role: "Platform lead (simulated teammate)",
       blurb: "Owns the webhook service and the delivery promise. Replies are scripted for this simulation.",
+      ownsTopics: ["retry_backoff", "idempotency", "api_compat", "scope", "testing", "runbook"],
+      responsibilities: [
+        "Owns the webhook delivery service and its reliability guarantees",
+        "Defines the scope of the hotfix (what's in, what's out)",
+        "Clarifies API compatibility constraints and runbook procedures",
+      ],
       knowledge: [
         "404 stays permanent for this hotfix, as the runbook says; deploy-time 404s are tracked in RFC-12 and belong in the handoff as a risk.",
         "Deduplication is per event and endpoint: one event fans out to each subscribed endpoint.",
@@ -136,6 +142,12 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
       name: "Priya Sharma",
       role: "Support engineer (simulated teammate)",
       blurb: "Handles merchant reports and knows the user impact. Replies are scripted for this simulation.",
+      ownsTopics: ["user_impact", "timeline"],
+      responsibilities: [
+        "Tracks merchant-reported incidents and user impact",
+        "Knows the timeline of reports and affected parties",
+        "Clarifies what merchants can do themselves (dashboard replay)",
+      ],
       knowledge: [
         "Merchants reported duplicate webhook deliveries starting at 09:14 UTC.",
         "Three merchants affected: two saw duplicate order notifications, one saw duplicate inventory updates.",

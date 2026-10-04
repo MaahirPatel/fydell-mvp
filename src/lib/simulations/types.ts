@@ -155,6 +155,17 @@ export interface SimulationStakeholder {
   knowledge: string[];
   /** What this stakeholder must never reveal (hidden answers). */
   withholds: string[];
+  /**
+   * Topic IDs this stakeholder owns for routing. When a candidate asks about
+   * these topics, this coworker is preferred. Defined in versioned scenario
+   * config, not hardcoded in the route.
+   */
+  ownsTopics: string[];
+  /**
+   * Responsibilities: what this coworker does and why they participate.
+   * Used for routing and for the model's understanding of role boundaries.
+   */
+  responsibilities: string[];
   responseRules: StakeholderResponseRule[];
   /** Used when no rule matches. Should ask a useful clarifying question back. */
   fallbackReply: string;

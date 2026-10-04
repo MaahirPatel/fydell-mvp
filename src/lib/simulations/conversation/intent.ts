@@ -157,7 +157,11 @@ export function classifyMessage(text: string): ClassifiedMessage {
   }
 
   // Confidence: high if strong pattern match, medium if keyword-only
-  const confidence = bestScore >= 3 ? 0.85 : bestScore >= 1 ? 0.6 : 0.3;
+  // Exact acknowledgment matches get highest confidence (they're unambiguous)
+  let confidence = bestScore >= 3 ? 0.85 : bestScore >= 1 ? 0.6 : 0.3;
+  if (bestIntent === "acknowledgment" && bestScore >= 2) {
+    confidence = 0.9; // Pure acks like "thanks!" are unambiguous
+  }
 
   return {
     intent: bestScore > 0 ? bestIntent : "unclear",

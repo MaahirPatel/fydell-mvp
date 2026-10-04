@@ -5,12 +5,13 @@
  * exact rebuild, falling back to inference only when updates are absent
  * (e.g., legacy messages or fallback-authored replies).
  */
-import type { ConversationState } from "./types";
+import type { ConversationState, HelpLevel } from "./types";
 import { classifyMessage } from "./intent";
 import {
   createInitialState,
   recordCandidateMessage,
   recordCoworkerMessage,
+  recordHelp,
 } from "./memory";
 
 export interface PersistedMessage {
@@ -64,23 +65,26 @@ export function buildStateFromMessages(
         return Math.abs(eventTime - msgTime) < 60000; // Within 1 minute
       });
 
-      const memUpdates = event?.payload?.memoryUpdates as
-        | {
-            topicsAddressed?: string[];
-            planStated?: string;
-            diagnosisShared?: string;
-            questionsResolved?: string[];
-            interpretation?: { summary?: string; topics?: string[] };
-          }
-        | undefined;
+      const payload = (event?.payload || {}) as {
+        memoryUpdates?: {
+          topicsAddressed?: string[];
+          planStated?: string;
+          diagnosisShared?: string;
+          questionsResolved?: string[];
+          interpretation?: { summary?: string; topics?: string[] };
+        };
+        helpLevel?: string;
+        assistanceCategory?: string;
+      };
+
+      const memUpdates = payload.memoryUpdates;
 
       if (memUpdates) {
         // Exact rebuild from stored model output
         state = recordCoworkerMessage(state, msg.id, msg.stakeholderId, msg.body, {
           topicId: memUpdates.topicsAddressed?.[0],
-          revealsFacts: [], // Fact IDs are in the event; text is in scenario
+          revealsFacts: [],
         });
-        // Mark topics as addressed
         for (const topicId of memUpdates.topicsAddressed || []) {
           const topic = state.topics.find((t) => t.id === topicId);
           if (topic && topic.status === "raised") {
@@ -93,6 +97,19 @@ export function buildStateFromMessages(
         state = recordCoworkerMessage(state, msg.id, msg.stakeholderId, msg.body, {
           topicId: classified.topicIds[0],
         });
+      }
+
+      // Reconstruct help records from event payload.
+      // Critical: hint budgets must survive across requests.
+      // Only record if the message was actually persisted (it was, since
+      // we're rebuilding from persisted messages).
+      const helpLevel = (payload.helpLevel || payload.assistanceCategory) as HelpLevel | undefined;
+      if (helpLevel && helpLevel !== "none" && helpLevel !== "clarification") {
+        // Avoid duplicates: check if this message ID already has a help record
+        const alreadyRecorded = state.helpGiven.some((h) => h.messageId === msg.id);
+        if (!alreadyRecorded) {
+          state = recordHelp(state, helpLevel, memUpdates?.topicsAddressed?.[0] || "general", msg.id, "Rebuilt from event");
+        }
       }
     }
     state.lastSequence++;

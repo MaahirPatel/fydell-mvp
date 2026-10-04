@@ -852,9 +852,22 @@ impl Platform {
             .send()
             .await
             .map_err(|e| AppError::Platform(format!("could not reach platform: {e}")))?;
-        // Check status for a clean error; the body is intentionally not
-        // parsed (see doc comment) — the GET below is the source of truth.
-        let _ = self.check(res, "send message").await?;
+        // Check status for a clean error. We parse the body ONLY for the
+        // teammate-unavailable flag — the GET below remains the source of
+        // truth for messages.
+        let res = self.check(res, "send message").await?;
+        // Try to detect teammate-unavailable from the response body.
+        // If present, surface it as an error so the UI can show the state.
+        // Best-effort: if parsing fails, fall through to the GET.
+        if let Ok(body) = res.json::<serde_json::Value>().await {
+            if body.get("teammateUnavailable").and_then(|v| v.as_bool()).unwrap_or(false) {
+                let reason = body
+                    .get("unavailableReason")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Teammate service unavailable");
+                return Err(AppError::Platform(format!("teammate_unavailable: {reason}")));
+            }
+        }
         self.list_messages(session_id).await
     }
 

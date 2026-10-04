@@ -53,48 +53,40 @@ export function decideResponse(ctx: CoordinatorContext): SpeakingDecision & {
   const { state, classified, coworkers } = ctx;
   const policy = ctx.assistancePolicy || DEFAULT_POLICY;
 
-  // --- Step 1: Check intent — some intents never need a response ---
-  if (classified.intent === "acknowledgment") {
-    return {
-      shouldSpeak: false,
-      silenceReason: "Acknowledgment requires no response",
-    };
-  }
+  // --- Step 1: Silence gate (CONSERVATIVE) ---
+  // Only suppress messages we are HIGHLY confident need no response.
+  // Everything else goes to the model for interpretation — a good generation
+  // engine cannot answer a question it never receives.
+  //
+  // The model itself can return no_response_needed with full context.
+  // This gate only handles the clearest cases to save unnecessary API calls.
 
-  if (classified.intent === "off_topic") {
-    return {
-      shouldSpeak: false,
-      silenceReason: "Off-topic message, no useful response available",
-    };
-  }
-
-  // --- Step 2: Handle plan sharing — acknowledge only if useful ---
-  if (classified.intent === "sharing_plan") {
-    // If the candidate just stated a plan, we record it but don't need to
-    // ask "what's your plan?" again. A brief acknowledgment is useful only
-    // if we can add something (e.g., a relevant constraint).
-    // For now: silent, plan is recorded in memory.
-    return {
-      shouldSpeak: false,
-      silenceReason: "Plan recorded, no new information to add",
-    };
-  }
-
-  // --- Step 3: Handle diagnosis/result sharing ---
+  // Pure acknowledgments with high confidence: "thanks", "got it", "ok"
+  // Must be short, match acknowledgment patterns, and have no question marks,
+  // no topic keywords, and no help/diagnosis indicators.
   if (
-    classified.intent === "sharing_diagnosis" ||
-    classified.intent === "sharing_result" ||
-    classified.intent === "sharing_explanation"
+    classified.intent === "acknowledgment" &&
+    classified.confidence >= 0.85 &&
+    ctx.messageText.length < 50 &&
+    !ctx.messageText.includes("?") &&
+    classified.topicIds.length === 0
   ) {
-    // Check if this contradicts an earlier statement
-    // (handled by the response generator, not here)
-    // Default: silent unless there's a specific reason to respond.
-    // The coordinator can be extended to flag contradictions.
     return {
       shouldSpeak: false,
-      silenceReason: "Candidate sharing work progress, no response needed",
+      silenceReason: "High-confidence acknowledgment",
     };
   }
+
+  // Everything else — including uncertain classifications, implicit questions
+  // ("I can't tell whether retries should reuse the original ID"),
+  // mixed statements/questions, plan sharing, and diagnosis sharing —
+  // goes to the model. The model has the full conversation context and can
+  // decide no_response_needed if truly nothing is useful to say.
+  //
+  // Rationale: silencing a plan that reveals a misunderstanding, or a
+  // diagnosis that is wrong, loses the chance for useful coworker input.
+  // The cost of an unnecessary model call is lower than the cost of a
+  // missed opportunity to help.
 
   // --- Step 4: Handle questions ---
   const questionIntents: MessageIntent[] = [

@@ -116,10 +116,25 @@ check("question about addressed topic gets reply (not silent)", () => {
   assertTrue(decision.shouldSpeak, "should speak on explicit re-ask");
 });
 
-check("unclear intent with low confidence gets no reply", () => {
+check("implicit question without question mark reaches model", () => {
   const state = createInitialState("s1", "sc1", "v1");
-  const decision = decideResponse(baseCtx(state, "hmm interesting"));
-  assertTrue(!decision.shouldSpeak, "should not speak on unclear low-confidence");
+  // "I can't tell whether retries should reuse the original ID."
+  // No question mark, but clearly seeking guidance. Must NOT be silenced.
+  const decision = decideResponse(baseCtx(state, "I can't tell whether retries should reuse the original ID."));
+  assertTrue(decision.shouldSpeak, "implicit question must reach interpretation");
+});
+
+check("plan sharing reaches model (may reveal misunderstanding)", () => {
+  const state = createInitialState("s1", "sc1", "v1");
+  // Plans are no longer auto-silenced — the model might spot a problem.
+  const decision = decideResponse(baseCtx(state, "I'm going to rewrite the whole retry module from scratch"));
+  assertTrue(decision.shouldSpeak, "plan should reach model for evaluation");
+});
+
+check("pure acknowledgment still silenced", () => {
+  const state = createInitialState("s1", "sc1", "v1");
+  const decision = decideResponse(baseCtx(state, "thanks!"));
+  assertTrue(!decision.shouldSpeak, "clear ack should be silenced");
 });
 
 // --- Memory ---

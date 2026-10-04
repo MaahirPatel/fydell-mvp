@@ -28,6 +28,8 @@ import {
   GENERATION_SCHEMA,
   type StructuredGeneration,
 } from "./structured-output";
+import { verifyGrounding, checkContradiction } from "./grounding";
+import { validateAssistance } from "./assistance-guard";
 
 export interface GenerateInput {
   stakeholder: SimulationStakeholder;
@@ -151,6 +153,44 @@ export async function generateResponse(input: GenerateInput): Promise<GenerateRe
     const withheld = containsWithheld(validated.response.text, input.stakeholder.withholds || []);
     if (withheld) {
       return { status: "invalid", reason: `Response contained withheld content` };
+    }
+
+    // Verify grounding: specific claims must be supported by cited facts.
+    // A valid fact ID is not enough — the claim must actually appear in the fact.
+    const permittedFacts = getPermittedFacts(input.stakeholder);
+    const grounding = verifyGrounding(
+      validated.response.text,
+      validated.response.fact_ids,
+      permittedFacts
+    );
+    if (!grounding.supported) {
+      return {
+        status: "invalid",
+        reason: `Unsupported claims: ${grounding.issues.map((i) => i.detail).join("; ")}`,
+      };
+    }
+
+    // Check for contradictions with cited facts
+    const contradiction = checkContradiction(
+      validated.response.text,
+      validated.response.fact_ids,
+      permittedFacts
+    );
+    if (contradiction) {
+      return { status: "invalid", reason: contradiction };
+    }
+
+    // Validate assistance: check for mislabeled solution content,
+    // hint budget, and cumulative reveal across turns
+    const assistanceCheck = validateAssistance(
+      validated.response.text,
+      validated.response.assistance_category,
+      input.state,
+      input.policy.maxHints,
+      input.policy.allowSolution
+    );
+    if (!assistanceCheck.valid) {
+      return { status: "invalid", reason: `Assistance policy: ${assistanceCheck.reason}` };
     }
 
     // Check assistance policy: hint limit
