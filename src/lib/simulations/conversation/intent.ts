@@ -18,12 +18,13 @@ const INTENT_PATTERNS: IntentPattern[] = [
   {
     intent: "question_requirement",
     patterns: [
-      /\b(what|how)\b.*\b(expected|supposed|should)\b/i,
+      /\b(what|how|which|who|when)\b.*\b(expected|supposed|should|affected|impact|behavior|requirement)\b/i,
       /\bwhat('s| is) the\b.*\b(behavior|requirement|spec)\b/i,
       /\bcan i\b.*\b(change|modify|use)\b/i,
       /\bis it (ok|okay|allowed)\b/i,
+      /\bwhich\b.*\b(affected|impacted|involved)\b/i,
     ],
-    keywords: ["requirement", "expected", "should", "allowed", "spec", "behavior"],
+    keywords: ["requirement", "expected", "should", "allowed", "spec", "behavior", "which", "who"],
   },
   {
     intent: "question_reproduction",
