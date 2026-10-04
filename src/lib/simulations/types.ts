@@ -328,6 +328,16 @@ export interface SimulationContent {
   answerKey: AnswerKey;
   /** Instructions for the in-product AI assistant (never reveals answer key). */
   aiAssistantInstructions: string;
+  /**
+   * Assistance policy for coworker chat. Versioned with the scenario.
+   * Controls hint limits, solution disclosure, and blocked topics.
+   */
+  assistancePolicy?: {
+    version: string;
+    maxHints: number;
+    allowSolution: boolean;
+    hintBlockedTopics: string[];
+  };
 }
 
 // ---------------------------------------------------------------------------

@@ -315,4 +315,10 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
       "Useful risks here include deploy-time 404s now failing permanently (RFC-12), duplicates already delivered before the fix, and dedupe needing a unique constraint in Postgres.",
     nextSteps: "Name concrete follow-ups, for example a unique (event, endpoint) constraint, alerting, and notifying affected merchants.",
   },
+  assistancePolicy: {
+    version: "webhook-retry-v1",
+    maxHints: 2,
+    allowSolution: false,
+    hintBlockedTopics: ["idempotency"],
+  },
 };

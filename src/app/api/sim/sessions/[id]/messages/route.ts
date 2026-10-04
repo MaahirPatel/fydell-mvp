@@ -159,6 +159,19 @@ export async function POST(
     // the new message, and decide whether a response is useful.
     // This prevents the old behavior of replying to every message with
     // a generic fallback question.
+
+    // Extract scenario's versioned assistance policy early — both the
+    // coordinator and generator need it.
+    const scenarioPolicy = (content as unknown as {
+      assistancePolicy?: {
+        version: string;
+        maxHints: number;
+        allowSolution: boolean;
+        hintBlockedTopics: string[];
+      };
+    }).assistancePolicy;
+    const policy = scenarioPolicy || DEFAULT_POLICY;
+
     const priorMessages = await listMessages(id);
     let convState = buildStateFromMessages(
       id,
@@ -211,6 +224,7 @@ export async function POST(
       coworkers,
       msSinceLastCoworkerMsg,
       unsolicitedCooldownMs: 5 * 60 * 1000, // 5 minutes
+      assistancePolicy: policy,
     });
 
     // If the coordinator says silence is better, don't reply.
@@ -237,6 +251,7 @@ export async function POST(
     // Generate a grounded response using the LLM with permitted context only.
     // The coordinator already decided a response is warranted; the generator
     // interprets the message and composes a context-specific reply.
+    // Uses the scenario's versioned policy extracted above.
     const recentMsgs = priorMessages
       .filter((m) => m.thread === "stakeholder")
       .slice(-10)
@@ -246,12 +261,13 @@ export async function POST(
         text: m.body,
       }));
 
+    // Use the scenario's versioned assistance policy extracted earlier.
     const generated = await generateResponse({
       stakeholder,
       state: convState,
       candidateMessage: text,
       recentMessages: recentMsgs,
-      policy: DEFAULT_POLICY,
+      policy,
     });
 
     let replyText: string;
