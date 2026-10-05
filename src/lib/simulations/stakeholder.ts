@@ -1,11 +1,12 @@
 import "server-only";
+import { getProviderConfig, postChatCompletion } from "@/lib/ai/provider";
 /**
  * Deterministic stakeholder response engine.
  *
  * Every simulation ships an authored response map so the conversation works
- * with no AI provider. When OPENAI_API_KEY is configured the matched reply
- * can be lightly redrafted by a model, but the authored reply is always the
- * fallback and the model never sees answer keys or rubrics.
+ * with no AI provider. When a model provider is configured (MODEL_PROVIDER)
+ * the matched reply can be lightly redrafted by a model, but the authored
+ * reply is always the fallback and the model never sees answer keys or rubrics.
  *
  * Replies are session-aware: rules can require observable session conditions
  * (time elapsed, questions answered, resources opened) and the AI redraft
@@ -120,35 +121,23 @@ export async function draftReply(
   ctx: ReplyContext
 ): Promise<{ reply: string; ruleId: string | null; source: "authored" | "ai_redraft" }> {
   const authored = selectAuthoredReply(stakeholder, candidateMessage, ctx);
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey || !stakeholder.aiPersona) return { ...authored, source: "authored" };
+  const config = getProviderConfig();
+  if (!config || !stakeholder.aiPersona) return { ...authored, source: "authored" };
 
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        max_tokens: 220,
-        temperature: 0.4,
-        messages: [
+    const drafted = (
+      await postChatCompletion(
+        config,
+        [
           {
             role: "system",
             content: buildRedraftSystemPrompt(stakeholder, authored.reply, ctx.chat),
           },
           { role: "user", content: candidateMessage.slice(0, 1000) },
         ],
-      }),
-    });
-    clearTimeout(timer);
-    if (!res.ok) return { ...authored, source: "authored" };
-    const data = (await res.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    const drafted = data.choices?.[0]?.message?.content?.trim();
+        { maxTokens: 220, temperature: 0.4 }
+      )
+    ).trim();
     if (!drafted || drafted.length < 10) return { ...authored, source: "authored" };
     return { reply: drafted, ruleId: authored.ruleId, source: "ai_redraft" };
   } catch {

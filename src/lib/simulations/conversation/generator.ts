@@ -28,6 +28,11 @@ import {
   GENERATION_SCHEMA,
   type StructuredGeneration,
 } from "./structured-output";
+import {
+  getProviderConfig,
+  postChatCompletion,
+  type ChatMessage,
+} from "@/lib/ai/provider";
 import { verifyGrounding, checkContradiction } from "./grounding";
 import { validateAssistance } from "./assistance-guard";
 
@@ -75,9 +80,9 @@ function containsWithheld(text: string, withholds: string[]): string | null {
  * Generate a grounded coworker response.
  */
 export async function generateResponse(input: GenerateInput): Promise<GenerateResult> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    return { status: "unavailable", reason: "Model not configured (no API key)" };
+  const config = getProviderConfig();
+  if (!config) {
+    return { status: "unavailable", reason: "Model not configured (set MODEL_PROVIDER and its credentials)" };
   }
 
   const ctx = buildGenerationContext({
@@ -91,52 +96,38 @@ export async function generateResponse(input: GenerateInput): Promise<GenerateRe
   const permittedIds = new Set(getPermittedFacts(input.stakeholder).map((f) => f.id));
   const systemPrompt = formatContextForPrompt(ctx);
 
+  // For providers without native JSON-schema enforcement (Ollama), describe
+  // the exact shape in the prompt. Validation below is the real enforcement
+  // for every provider.
+  const schemaHint = config.supportsJsonSchema
+    ? ""
+    : `\n\nRespond with ONLY a JSON object matching this shape (no markdown fences, no commentary):\n${JSON.stringify(GENERATION_SCHEMA, null, 1)}`;
+
+  const messages: ChatMessage[] = [
+    { role: "system", content: systemPrompt + schemaHint },
+    {
+      role: "user",
+      content: `Candidate message: "${input.candidateMessage.slice(0, 1000)}"\n\nAnalyze this message and compose your response as JSON.`,
+    },
+  ];
+
+  let content: string;
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15000); // 15s timeout
-
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        temperature: 0.3, // Low temperature for consistency
-        max_tokens: 800,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "coworker_response",
-            strict: true,
-            schema: GENERATION_SCHEMA,
-          },
-        },
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: `Candidate message: "${input.candidateMessage.slice(0, 1000)}"\n\nAnalyze this message and compose your response as JSON.`,
-          },
-        ],
-      }),
+    content = await postChatCompletion(config, messages, {
+      schema: GENERATION_SCHEMA as Record<string, unknown>,
+      schemaName: "coworker_response",
+      temperature: 0.3,
+      maxTokens: 800,
     });
-    clearTimeout(timer);
-
-    if (!res.ok) {
-      return { status: "unavailable", reason: `Model API error: ${res.status}` };
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : "unknown";
+    if (/timed out/i.test(reason)) {
+      return { status: "unavailable", reason: "Model request timed out" };
     }
+    return { status: "unavailable", reason: `Model error: ${reason}` };
+  }
 
-    const data = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) {
-      return { status: "invalid", reason: "Empty model response" };
-    }
-
+  try {
     let parsed: unknown;
     try {
       parsed = JSON.parse(content);

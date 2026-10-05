@@ -3,11 +3,12 @@
  *
  * analyzeSource: extract AST facts per file, run deterministic detectors,
  * deduplicate, attach summaries. LLM layer is a clean seam: it is only
- * consulted when OPENAI_API_KEY is configured, and it never invents
- * findings — it can only re-rank or explain deterministic findings.
+ * consulted when a model provider is configured (MODEL_PROVIDER), and it never
+ * invents findings — it can only re-rank or explain deterministic findings.
  */
 import { extractFacts, type ExtractionResult } from "./pythonAst";
 import { runDetectors, type FileModel } from "./detectors";
+import { getProviderConfig } from "@/lib/ai/provider";
 import type {
   AnalysisReport,
   Confidence,
@@ -46,16 +47,17 @@ function dedupeFindings(findings: Finding[]): Finding[] {
 }
 
 function llmLayer(): LlmLayer {
-  if (process.env.OPENAI_API_KEY) {
+  const config = getProviderConfig();
+  if (config) {
     return {
       kind: "enabled",
-      model: process.env.OPENAI_ANALYSIS_MODEL ?? "gpt-4o-mini",
+      model: config.model,
       note: "LLM reranking/explanation is configured but not implemented in this prototype — deterministic findings only.",
     };
   }
   return {
     kind: "unavailable",
-    note: "No OPENAI_API_KEY configured. All findings below are deterministic AST-pattern detections; nothing was generated or paraphrased by a language model.",
+    note: "No model provider configured. All findings below are deterministic AST-pattern detections; nothing was generated or paraphrased by a language model.",
   };
 }
 

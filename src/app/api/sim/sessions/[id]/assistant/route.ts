@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
+import { getProviderConfig, postChatCompletion } from "@/lib/ai/provider";
 import {
   getSessionForCandidate,
   getSessionState,
@@ -27,8 +28,8 @@ export async function POST(
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey)
+  const config = getProviderConfig();
+  if (!config)
     return NextResponse.json(
       { error: "The in-product assistant is not available in this environment." },
       { status: 503 }
@@ -59,44 +60,26 @@ export async function POST(
       .map((r) => `--- ${r.filename} ---\n${(r.content || "").slice(0, 4000)}`)
       .join("\n\n");
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 25000);
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        max_tokens: 700,
-        temperature: 0.3,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a work assistant inside a candidate assessment workspace. Help the candidate think through THEIR problem using the provided materials. " +
-              "You must not invent facts about the scenario, must not claim knowledge of any 'correct answer', and must not do the whole task for them - help them reason. " +
-              `Simulation-specific instructions: ${content.aiAssistantInstructions}`,
-          },
-          {
-            role: "user",
-            content:
-              (contextBlock ? `MATERIALS THE CANDIDATE ATTACHED:\n${contextBlock}\n\n` : "") +
-              (state.notes ? `CANDIDATE'S CURRENT NOTES:\n${state.notes.slice(0, 2000)}\n\n` : "") +
-              `QUESTION:\n${prompt}`,
-          },
-        ],
-      }),
-    });
-    clearTimeout(timer);
-
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: "The assistant is temporarily unavailable. Your work is unaffected." },
-        { status: 502 }
-      );
-    }
-    const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    const answer = data.choices?.[0]?.message?.content?.trim() || "";
+    const answer = await postChatCompletion(
+      config,
+      [
+        {
+          role: "system",
+          content:
+            "You are a work assistant inside a candidate assessment workspace. Help the candidate think through THEIR problem using the provided materials. " +
+            "You must not invent facts about the scenario, must not claim knowledge of any 'correct answer', and must not do the whole task for them - help them reason. " +
+            `Simulation-specific instructions: ${content.aiAssistantInstructions}`,
+        },
+        {
+          role: "user",
+          content:
+            (contextBlock ? `MATERIALS THE CANDIDATE ATTACHED:\n${contextBlock}\n\n` : "") +
+            (state.notes ? `CANDIDATE'S CURRENT NOTES:\n${state.notes.slice(0, 2000)}\n\n` : "") +
+            `QUESTION:\n${prompt}`,
+        },
+      ],
+      { maxTokens: 700, temperature: 0.3 }
+    ).then((s) => s.trim()).catch(() => "");
     if (!answer)
       return NextResponse.json(
         { error: "The assistant returned an empty response. Try rephrasing." },

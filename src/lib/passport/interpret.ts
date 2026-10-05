@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { RoleSuggestion } from "./github/types";
 import { notShown, ruleSummary } from "./rules";
 import type { CapabilitySummary, PassportEvidence } from "./view";
+import { getProviderConfig, postChatCompletion, type ProviderConfig } from "@/lib/ai/provider";
 
 const ModelOutput = z.object({
   capabilities: z
@@ -19,29 +20,20 @@ const SYSTEM = [
   "If the evidence does not support a statement, leave it out.",
 ].join(" ");
 
-async function modelSummary(evidence: PassportEvidence[], roles: RoleSuggestion[], apiKey: string): Promise<CapabilitySummary> {
-  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+async function modelSummary(evidence: PassportEvidence[], roles: RoleSuggestion[], config: ProviderConfig): Promise<CapabilitySummary> {
   const input = evidence
     .filter((e) => e.basis === "repository_observation")
     .slice(0, 30)
     .map((e) => ({ id: e.id, repo: e.repo, finding: e.finding, path: e.path, lines: `${e.startLine}-${e.endLine}`, excerpt: e.excerpt.slice(0, 6).join("\n").slice(0, 600) }));
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    signal: AbortSignal.timeout(20_000),
-    body: JSON.stringify({
-      model,
-      temperature: 0,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: `${SYSTEM} Respond with JSON: {"capabilities":[{"statement":string,"evidence_ids":string[]}]}.` },
-        { role: "user", content: JSON.stringify({ evidence: input }) },
-      ],
-    }),
-  });
-  if (!res.ok) throw new Error(`model request failed: ${res.status}`);
-  const body = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  const parsed = ModelOutput.safeParse(JSON.parse(body.choices?.[0]?.message?.content ?? "{}"));
+  const content = await postChatCompletion(
+    config,
+    [
+      { role: "system", content: `${SYSTEM} Respond with JSON: {"capabilities":[{"statement":string,"evidence_ids":string[]}]}.` },
+      { role: "user", content: JSON.stringify({ evidence: input }) },
+    ],
+    { temperature: 0, schema: { type: "object" }, schemaName: "capabilities" }
+  );
+  const parsed = ModelOutput.safeParse(JSON.parse(content));
   if (!parsed.success) throw new Error("model output did not match the schema");
 
   const known = new Set(input.map((e) => e.id));
@@ -49,14 +41,14 @@ async function modelSummary(evidence: PassportEvidence[], roles: RoleSuggestion[
     .map((c) => ({ statement: c.statement.trim(), evidenceIds: c.evidence_ids.filter((id) => known.has(id)) }))
     .filter((c) => c.evidenceIds.length > 0 && !/\b(senior|junior|expert|\d+%|score|rank)/i.test(c.statement));
   if (capabilities.length === 0) throw new Error("model produced no supported statements");
-  return { source: "model", model, capabilities, notShown: notShown(roles) };
+  return { source: "model", model: config.model, capabilities, notShown: notShown(roles) };
 }
 
 export async function summariseCapabilities(evidence: PassportEvidence[], roles: RoleSuggestion[]): Promise<CapabilitySummary> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return ruleSummary(evidence, roles, "AI review is not configured, so this summary is built by rules from the verified findings.");
+  const config = getProviderConfig();
+  if (!config) return ruleSummary(evidence, roles, "AI review is not configured, so this summary is built by rules from the verified findings.");
   try {
-    return await modelSummary(evidence, roles, apiKey);
+    return await modelSummary(evidence, roles, config);
   } catch {
     return ruleSummary(evidence, roles, "AI review was unavailable, so this summary is built by rules from the verified findings.");
   }
