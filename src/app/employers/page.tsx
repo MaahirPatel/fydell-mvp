@@ -50,7 +50,7 @@ export default function EmployersPage() {
         <Trio
           items={[
             { fig: <FigConsent />, title: "Candidates consent first", body: "They see exactly what is recorded before they start, and get a receipt when they finish." },
-            { fig: <FigChecks />, title: "Checks on the candidate's machine", body: "Checks run in the Fydell desktop app on the candidate's machine. The submission is sealed when finished, and every result is candidate-submitted evidence for your team to verify." },
+            { fig: <FigChecks />, title: "Checks on the sealed code", body: "Hidden checks run on the sealed submission in an isolated sandbox, never on the candidate's machine." },
             { fig: <FigReport />, title: "Findings with sources", body: "Every finding links to a file, a test, a message or a handoff answer. No citation, no release." },
           ]}
         />
@@ -59,7 +59,6 @@ export default function EmployersPage() {
       <Section id="review" labelledBy="review-title">
         <SectionHead
           id="review-title"
-          eyebrow="Review"
           title={["Review the work,", "not a summary of it"]}
           lead="Open the submitted diff next to the hidden check results. Every run is tied to the exact archive the candidate submitted, identified by its checksum."
         />
@@ -78,7 +77,6 @@ export default function EmployersPage() {
       <Section id="process" labelledBy="process-title">
         <SectionHead
           id="process-title"
-          eyebrow="Work trail"
           title={["See how they", "got there"]}
           lead="The work trail shows the order things happened: what they read first, when they asked, how often they tested, and what they did after the requirement changed."
         />
@@ -90,8 +88,6 @@ export default function EmployersPage() {
       <Section id="questions" labelledBy="questions-title">
         <SectionHead
           id="questions-title"
-          eyebrow="FAQ"
-          small
           title={["Questions from", "hiring teams"]}
           lead="The short answers. For anything else, talk to us."
           link={{ href: "/contact", label: "Contact sales" }}

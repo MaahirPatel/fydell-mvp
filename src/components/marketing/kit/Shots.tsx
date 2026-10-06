@@ -88,13 +88,13 @@ function TeamMessages({ compact = false }: { compact?: boolean }) {
       <Msg av="Y" tone="you" who="You" time="14:02">
         Which failures should count as temporary?
       </Msg>
-      <Msg av="EL" tone="blue" who="Engineering lead" time="14:02">
+      <Msg av="AM" tone="blue" who="Alex Morgan" role="Engineering lead" time="14:02">
         Treat any 5xx, 408 and 429 as temporary, and connection failures too. Everything else, including other 4xx, is
         permanent.
       </Msg>
       <RetryAfterUpdate />
       {compact ? null : (
-        <Msg av="PS" tone="red" who="Partner support" time="14:21">
+        <Msg av="JH" tone="red" who="Jordan Hayes" role="Partner support" time="14:21">
           Only whole seconds. If a partner sends a date instead, treat it as unparseable and fall back to the normal
           backoff.
         </Msg>
@@ -180,7 +180,7 @@ export function DesktopShot() {
 
           <div className={s.thread}>
             <div className={s.threadHead}>
-              <MessageSquare size={14} aria-hidden /> Team <span>Engineering, Support</span>
+              <MessageSquare size={14} aria-hidden /> Team <span>Alex, Jordan</span>
             </div>
             <TeamMessages compact />
             <div className={s.compose}>Message the team…</div>
@@ -207,7 +207,7 @@ export function BriefShot() {
     <div className={`${s.app} ${s.layered}`}>
       <div className={s.doc}>
         <p className={s.docMeta}>
-          <Mark size={14} /> INCIDENT.md · opened by the engineering lead
+          <Mark size={14} /> INCIDENT.md · opened by Alex Morgan
         </p>
         <p className={s.docTitle}>INC-2291: webhook retry storm</p>
         <p className={s.docH}>What happened</p>
@@ -246,7 +246,7 @@ const TRAIL: { group: string; rows: { t: string; icon: ReactNode; what: ReactNod
     rows: [
       { t: "14:00", icon: <FileText aria-hidden />, what: <>Opened <em>INCIDENT.md</em></>, meta: "" },
       { t: "14:01", icon: <FileText aria-hidden />, what: <>Opened <em>logs/dispatcher-2026-09-14.log</em></>, meta: "" },
-      { t: "14:02", icon: <MessageSquare aria-hidden />, what: <>Asked the engineering lead which failures are temporary</>, meta: "Team thread", tone: "blue" },
+      { t: "14:02", icon: <MessageSquare aria-hidden />, what: <>Asked Alex which failures are temporary</>, meta: "Team thread", tone: "blue" },
       { t: "14:05", icon: <FlaskConical aria-hidden />, what: <>Ran <em>pytest -q</em></>, meta: "4 passed · 7 failed" },
     ],
   },

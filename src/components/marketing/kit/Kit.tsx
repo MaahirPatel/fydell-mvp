@@ -35,7 +35,6 @@ export function Hero({
   aside,
   actions,
   compact = false,
-  eyebrow,
   children,
 }: {
   title: readonly string[];
@@ -43,7 +42,6 @@ export function Hero({
   aside?: { href: string; strong?: string; label: string };
   actions?: ReactNode;
   compact?: boolean;
-  eyebrow?: string;
   children?: ReactNode;
 }) {
   return (
@@ -56,7 +54,6 @@ export function Hero({
             <Arrow />
           </Link>
         ) : null}
-        {eyebrow ? <p className={s.heroEyebrow}>{eyebrow}</p> : null}
         <h1 className={cx("l-hero", s.heroTitle)}>
           <Lines lines={title} />
         </h1>
@@ -68,11 +65,11 @@ export function Hero({
   );
 }
 
-export type Art = "lake" | "coast" | "hills" | "plain";
+export type Art = "lake" | "coast" | "hills";
 
-const ART_CLASS: Record<Art, string> = { lake: s.artLake, coast: s.artCoast, hills: s.artHills, plain: s.artPlain };
+const ART_CLASS: Record<Art, string> = { lake: s.artLake, coast: s.artCoast, hills: s.artHills };
 
-/** A product window on a painted ground, the way the product is seen in use. Use "plain" for a clean light surface without landscape imagery. */
+/** A product window on a painted ground, the way the product is seen in use. */
 function ArtCanvas({ art, title, label, children }: { art: Art; title: string; label: string; children: ReactNode }) {
   return (
     <div className={cx(s.canvas, ART_CLASS[art])}>
@@ -99,14 +96,12 @@ export function Stage({
   label,
   title = "Fydell",
   art = "lake",
-  fig,
 }: {
   children: ReactNode;
   label: string;
   title?: string;
   art?: Art;
   hero?: boolean;
-  fig?: string;
 }) {
   return (
     <div className="l-container">
@@ -114,10 +109,7 @@ export function Stage({
         <ArtCanvas art={art} title={title} label={label}>
           {children}
         </ArtCanvas>
-        <figcaption className={s.caption}>
-          {fig ? <span className={s.figNum}>{fig}</span> : null}
-          {label}
-        </figcaption>
+        <figcaption className={s.caption}>{label}</figcaption>
       </figure>
     </div>
   );
@@ -129,24 +121,19 @@ export function Visual({
   label,
   title = "Fydell",
   art = "coast",
-  fig,
 }: {
   children: ReactNode;
   label: string;
   title?: string;
   art?: Art;
   fade?: boolean;
-  fig?: string;
 }) {
   return (
     <figure className={s.headVisual}>
       <ArtCanvas art={art} title={title} label={label}>
         {children}
       </ArtCanvas>
-      <figcaption className={s.caption}>
-        {fig ? <span className={s.figNum}>{fig}</span> : null}
-        {label}
-      </figcaption>
+      <figcaption className={s.caption}>{label}</figcaption>
     </figure>
   );
 }
@@ -174,24 +161,17 @@ export function SectionHead({
   lead,
   link,
   id,
-  eyebrow,
-  small = false,
 }: {
   title: readonly string[];
   lead?: ReactNode;
   link?: { href: string; label: string };
   id?: string;
-  eyebrow?: string;
-  small?: boolean;
 }) {
   return (
     <div className={s.head}>
-      <div>
-        {eyebrow ? <p className={s.eyebrow}>{eyebrow}</p> : null}
-        <h2 id={id} className={cx(small ? s.headTitleSmall : "l-h2", !small && s.headTitle)}>
-          <Lines lines={title} />
-        </h2>
-      </div>
+      <h2 id={id} className={cx("l-h2", s.headTitle)}>
+        <Lines lines={title} />
+      </h2>
       <div className={s.headLead}>
         {lead ? <p className="l-lead">{lead}</p> : null}
         {link ? (

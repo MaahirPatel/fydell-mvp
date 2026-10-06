@@ -40,7 +40,6 @@ export default function DownloadPage() {
       <Section id="requirements" labelledBy="requirements-title">
         <SectionHead
           id="requirements-title"
-          eyebrow="Requirements"
           title={["System requirements"]}
           lead="Native builds for each platform. Candidates need the language runtime named in their simulation brief; the setup check confirms it before work starts."
         />
@@ -58,7 +57,6 @@ export default function DownloadPage() {
       <Section id="beta" labelledBy="beta-title">
         <SectionHead
           id="beta-title"
-          eyebrow="Beta"
           title={["What beta means", "right now"]}
           lead="We would rather tell you the limits than have you find them mid-simulation."
         />

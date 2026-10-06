@@ -11,7 +11,6 @@ import {
   SHAREABLE_FIELDS,
   projectForShare,
   type CapabilitySummary,
-  type ManualProject,
   type PassportData,
   type PassportEvidence,
   type PassportProject,
@@ -37,7 +36,8 @@ type PassportRow = {
   updated_at: string;
 };
 
-type ProjectRow = {  id: string;
+type ProjectRow = {
+  id: string;
   repo_full_name: string;
   html_url: string;
   commit_sha: string;
@@ -63,22 +63,6 @@ type ProjectRow = {  id: string;
   }>;
 };
 
-type ManualProjectRow = {
-  id: string;
-  title: string;
-  description: string;
-  contribution_statement: string;
-  tech_stack: string[] | null;
-  links: Array<{ label?: string; url?: string }> | null;
-  checked_at: string | null;
-  limitations: string | null;
-  review_state: string | null;
-  freshness_status: string | null;
-  version: number | null;
-  created_at: string;
-  updated_at: string;
-};
-
 async function loadPassport(passportId: string): Promise<PassportData | null> {
   const admin = createAdminSupabaseClient();
   const { data: passport } = await admin.from("passports").select("*").eq("id", passportId).maybeSingle();
@@ -91,32 +75,6 @@ async function loadPassport(passportId: string): Promise<PassportData | null> {
     .order("analyzed_at", { ascending: false });
   const projectRows = (projects ?? []) as ProjectRow[];
   const summary = row.capability_summary as CapabilitySummary;
-  const { data: manualRows } = await admin
-    .from("passport_manual_projects")
-    .select("*")
-    .eq("passport_id", passportId)
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
-  const manualProjects: ManualProject[] = ((manualRows ?? []) as ManualProjectRow[]).map((m) => ({
-    id: m.id,
-    title: m.title,
-    description: m.description,
-    contributionStatement: m.contribution_statement,
-    techStack: m.tech_stack ?? [],
-    links: (Array.isArray(m.links) ? m.links : [])
-      .filter((l): l is { label: string; url: string } => typeof l?.url === "string" && !!l.url)
-      .map((l) => ({ label: typeof l.label === "string" && l.label ? l.label : l.url, url: l.url })),
-    evidenceBasis: "self_reported" as const,
-    claimCategory: "candidate_stated" as const,
-    method: "self_report" as const,
-    checkedAt: m.checked_at ?? m.updated_at,
-    limitations: m.limitations ?? "Self-reported. Not verified against source code, employer records, or independent observation.",
-    reviewState: (m.review_state as ManualProject["reviewState"]) ?? "published",
-    freshnessStatus: (m.freshness_status as ManualProject["freshnessStatus"]) ?? "current",
-    version: m.version ?? 1,
-    createdAt: m.created_at,
-    updatedAt: m.updated_at,
-  }));
   const projectList: PassportProject[] = projectRows.map((p) => ({
     repoFullName: p.repo_full_name,
     htmlUrl: p.html_url,
@@ -162,7 +120,6 @@ async function loadPassport(passportId: string): Promise<PassportData | null> {
     // Older snapshots of a reimported repository are marked stale so they
     // keep provenance without feeding new summaries or shares (GH-10).
     projects: markSuperseded(projectList),
-    manualProjects,
   };
 }
 
@@ -293,115 +250,6 @@ export async function removeProject(ownerId: string, repoFullName: string): Prom
   const admin = createAdminSupabaseClient();
   await admin.from("passport_projects").delete().eq("passport_id", passportId).eq("repo_full_name", repoFullName);
   return refreshSummary(passportId);
-}
-
-export type ManualProjectInput = {
-  title: string;
-  description: string;
-  contributionStatement: string;
-  techStack?: string[];
-  links?: { label: string; url: string }[];
-};
-
-function validateManualProject(input: ManualProjectInput): string | null {
-  if (!input.title.trim() || input.title.length > 120) return "Give the project a title (1-120 characters).";
-  if (!input.description.trim() || input.description.length > 2000) return "Describe the project (1-2000 characters).";
-  if (!input.contributionStatement.trim() || input.contributionStatement.length > 1000)
-    return "Say what you personally built (1-1000 characters).";
-  if (input.techStack && input.techStack.length > 20) return "List at most 20 technologies.";
-  if (input.links) {
-    if (input.links.length > 10) return "Add at most 10 links.";
-    for (const l of input.links) {
-      if (!/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(l.url)) return `Link "${l.label || l.url}" is not a valid http(s) URL.`;
-      if ((l.label || "").length > 60) return "Link labels must be under 60 characters.";
-    }
-  }
-  return null;
-}
-
-async function ensurePassportFor(owner: { id: string; displayName: string }): Promise<string> {
-  const admin = createAdminSupabaseClient();
-  let passportId = await passportIdFor(owner.id);
-  if (!passportId) {
-    const { data, error } = await admin
-      .from("passports")
-      .insert({ owner_id: owner.id, display_name: owner.displayName })
-      .select("id")
-      .single();
-    if (error || !data) throw new Error("Could not create the passport.");
-    passportId = (data as { id: string }).id;
-  }
-  return passportId;
-}
-
-/**
- * Save a self-reported project. No code analysis runs — the project is
- * labeled "self-reported" everywhere it appears. Returns the refreshed
- * passport.
- */
-export async function saveManualProject(
-  owner: { id: string; displayName: string },
-  input: ManualProjectInput,
-): Promise<PassportData> {
-  const problem = validateManualProject(input);
-  if (problem) throw new Error(problem);
-  const passportId = await ensurePassportFor(owner);
-  const admin = createAdminSupabaseClient();
-  const { error } = await admin.from("passport_manual_projects").insert({
-    passport_id: passportId,
-    title: input.title.trim(),
-    description: input.description.trim(),
-    contribution_statement: input.contributionStatement.trim(),
-    tech_stack: (input.techStack ?? []).map((t) => t.trim()).filter(Boolean).slice(0, 20),
-    links: (input.links ?? []).map((l) => ({ label: l.label.trim() || l.url, url: l.url.trim() })).slice(0, 10),
-  });
-  if (error) throw new Error("Could not save the project.");
-  const refreshed = await loadPassport(passportId);
-  if (!refreshed) throw new Error("Could not load the saved passport.");
-  return refreshed;
-}
-
-export async function updateManualProject(
-  ownerId: string,
-  projectId: string,
-  input: ManualProjectInput,
-): Promise<PassportData> {
-  const problem = validateManualProject(input);
-  if (problem) throw new Error(problem);
-  const passportId = await passportIdFor(ownerId);
-  if (!passportId) throw new Error("No passport yet.");
-  const admin = createAdminSupabaseClient();
-  const { error, count } = await admin
-    .from("passport_manual_projects")
-    .update(
-      {
-        title: input.title.trim(),
-        description: input.description.trim(),
-        contribution_statement: input.contributionStatement.trim(),
-        tech_stack: (input.techStack ?? []).map((t) => t.trim()).filter(Boolean).slice(0, 20),
-        links: (input.links ?? []).map((l) => ({ label: l.label.trim() || l.url, url: l.url.trim() })).slice(0, 10),
-        updated_at: new Date().toISOString(),
-        checked_at: new Date().toISOString(),
-        freshness_status: "current",
-      },
-      { count: "exact" },
-    )
-    .eq("id", projectId)
-    .eq("passport_id", passportId);
-  if (error || !count) throw new Error("Project not found.");
-  // Corrections create a new version, not a silent rewrite (§10 claim metadata).
-  await admin.rpc("bump_manual_project_version", { project_id: projectId });
-  const refreshed = await loadPassport(passportId);
-  if (!refreshed) throw new Error("Could not load the saved passport.");
-  return refreshed;
-}
-
-export async function removeManualProject(ownerId: string, projectId: string): Promise<PassportData | null> {
-  const passportId = await passportIdFor(ownerId);
-  if (!passportId) return null;
-  const admin = createAdminSupabaseClient();
-  await admin.from("passport_manual_projects").delete().eq("id", projectId).eq("passport_id", passportId);
-  return loadPassport(passportId);
 }
 
 export type ShareSummary = { id: string; label: string; fields: ShareField[]; createdAt: string; expiresAt: string | null; revokedAt: string | null; lastAccessedAt: string | null };

@@ -6,7 +6,6 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
 import type { RoleKey } from "@/lib/simulations/types";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
-import VerificationInbox from "@/components/candidate/VerificationInbox";
 import { CandidatePageHead } from "@/components/candidate/CandidatePageHead";
 import { ButtonLink } from "@/components/ui/Button";
 import { CONTACT_EMAIL, CONTACT_MAILTO } from "@/lib/contact";
@@ -353,12 +352,6 @@ export default async function CandidateHomePage() {
                 })}
               </Table>
             ) : null}
-            <section className={s.section}>
-              <div className={s.sectionHead}>
-                <h2 className={s.sectionTitle}>Verification requests</h2>
-              </div>
-              <VerificationInbox />
-            </section>
           </div>
 
           <aside className={s.side}>

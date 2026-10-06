@@ -41,14 +41,9 @@ export default function SiteFooter() {
     <footer className="border-t border-[var(--border-subtle)] pb-10 pt-16">
       <div className="l-container">
         <div className="grid gap-12 md:grid-cols-[1fr_auto]">
-          <div>
-            <Link href="/" className="inline-flex h-fit items-center rounded-[6px]" aria-label="Fydell home">
-              <FydellLogo height={20} />
-            </Link>
-            <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-[var(--text-tertiary)]">
-              Fydell is building the Proof of Work Network for engineers and hiring teams.
-            </p>
-          </div>
+          <Link href="/" className="inline-flex h-fit items-center rounded-[6px]" aria-label="Fydell home">
+            <FydellLogo height={20} />
+          </Link>
 
           <div className="grid grid-cols-2 gap-x-16 gap-y-10 sm:grid-cols-4 md:gap-x-20">
             {COLUMNS.map((col) => (

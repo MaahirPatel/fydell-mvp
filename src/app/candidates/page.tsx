@@ -57,7 +57,6 @@ export default function CandidatesPage() {
       <Section id="session" labelledBy="session-title">
         <SectionHead
           id="session-title"
-          eyebrow="The session"
           title={["Your path", "through a session"]}
           lead="You get an incident brief, a repository that runs, and two teammates. Ask them anything; their answers are written in advance, so every candidate gets the same information. About twenty minutes in, the team posts one requirement update."
         />
@@ -75,7 +74,6 @@ export default function CandidatesPage() {
       <Section id="control" labelledBy="control-title">
         <SectionHead
           id="control-title"
-          eyebrow="Privacy"
           title={["You control", "what you share"]}
           lead="Your portable record is yours. Employers only see attempts for simulations they ran."
           link={{ href: "/trust", label: "Read the trust page" }}
@@ -90,7 +88,7 @@ export default function CandidatesPage() {
       </Section>
 
       <Section id="questions" labelledBy="questions-title">
-        <SectionHead id="questions-title" eyebrow="FAQ" small title={["Questions from", "engineers"]} lead="The short answers." />
+        <SectionHead id="questions-title" title={["Questions from", "engineers"]} lead="The short answers." />
         <Faq
           items={[
             { q: "Do I pay anything?", a: "No. Simulations and your Engineering Passport are free for engineers. Employers pay." },

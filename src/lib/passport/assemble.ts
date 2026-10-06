@@ -54,7 +54,5 @@ export async function assemblePassport(
   const evidence = current.flatMap((p) => p.evidence);
   const roleSuggestions = suggestRoles(evidence);
   const capabilities = await summariseCapabilities(evidence, roleSuggestions);
-  // Manual projects are self-reported: they never feed capability summaries
-  // or role suggestions, which are built from verified findings only.
-  return { ...meta, projects, manualProjects: [], roleSuggestions, capabilities };
+  return { ...meta, projects, roleSuggestions, capabilities };
 }

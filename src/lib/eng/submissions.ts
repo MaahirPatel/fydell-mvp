@@ -112,27 +112,6 @@ export async function submitAttempt(
   }
   const submission = data as SubmissionRow;
   await db.from("eng_attempts").update({ status: "submitted", submitted_at: submission.submitted_at }).eq("id", attempt.id).eq("status", "in_progress");
-  // §18: wrap the submission in an artifact envelope.
-  // Resolve the org so employer reviewers can see the envelope under RLS.
-  const { data: invRow } = await db
-    .from("eng_invitations")
-    .select("organization_id")
-    .eq("id", attempt.invitation_id)
-    .maybeSingle();
-  const envelopeOrgId = (invRow as { organization_id?: string } | null)?.organization_id ?? null;
-  const { envelopeArtifact } = await import("@/lib/artifacts/envelope");
-  await envelopeArtifact({
-    kind: "submission",
-    subject: `Submission for attempt ${attempt.id.slice(0, 8)}`,
-    sourceTable: "eng_submissions",
-    sourceId: submission.id,
-    contentDigest: submission.archive_sha256,
-    permissionClass: "private",
-    createdBy: userId,
-    organizationId: envelopeOrgId,
-  }).catch(() => {
-    // Envelope failure must not break submission; the submission itself is durable.
-  });
   await recordEngEvent(db, attempt.id, {
     type: "submission_accepted",
     actor: "candidate",

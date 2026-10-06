@@ -63,7 +63,7 @@ create policy req_evidence_mappings_org on public.requirement_evidence_mappings
   for all using (
     organization_id in (
       select organization_id from public.organization_members
-      where user_id = auth.uid() and status = 'active'
+      where user_id = auth.uid() and membership_state = 'active'
     )
   );
 
@@ -72,6 +72,6 @@ create policy review_questions_org on public.review_questions
   for all using (
     organization_id in (
       select organization_id from public.organization_members
-      where user_id = auth.uid() and status = 'active'
+      where user_id = auth.uid() and membership_state = 'active'
     )
   );

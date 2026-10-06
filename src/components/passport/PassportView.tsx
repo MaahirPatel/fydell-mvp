@@ -122,62 +122,6 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
         </section>
       ) : null}
 
-      {passport.manualProjects.length > 0 ? (
-        <section aria-labelledby="manual-projects-heading" className="pp-section">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 id="manual-projects-heading" className="pp-title">
-              Self-reported projects
-            </h3>
-            <p className="text-app-meta text-[var(--text-tertiary)]">
-              Added by the engineer. Not verified by code analysis.
-            </p>
-          </div>
-          <ul className="pp-rows mt-4">
-            {passport.manualProjects.map((m) => (
-              <li key={m.id} className="p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-app-body font-semibold text-[var(--text-primary)]">{m.title}</p>
-                  <span className="badge badge-neutral">Self-reported</span>
-                  {m.reviewState === "disputed" ? (
-                    <span className="badge badge-warning">Disputed</span>
-                  ) : null}
-                  {m.freshnessStatus === "stale" ? (
-                    <span className="badge badge-neutral">May be outdated</span>
-                  ) : null}
-                </div>
-                {m.techStack.length > 0 ? (
-                  <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">{m.techStack.join(" · ")}</p>
-                ) : null}
-                <p className="mt-2 text-app-body leading-[1.5] text-[var(--text-secondary)]">{m.description}</p>
-                <div className="mt-3 border-t border-[var(--border-subtle)] pt-3">
-                  <p className="text-app-meta font-medium text-[var(--text-primary)]">What they built</p>
-                  <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">{m.contributionStatement}</p>
-                </div>
-                {m.links.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {m.links.map((l) => (
-                      <a
-                        key={l.url}
-                        href={l.url}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="chip-link"
-                      >
-                        <ArrowUpRight className="h-3 w-3" aria-hidden />
-                        {l.label}
-                      </a>
-                    ))}
-                  </div>
-                ) : null}
-                <p className="mt-3 text-app-meta leading-[1.55] text-[var(--text-tertiary)]">
-                  {m.limitations}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
       {evidence.length > 0 && selected ? (
         <section ref={browserRef} aria-label="Evidence" className="grid scroll-mt-24 grid-cols-1 border-b border-[var(--border-subtle)] lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
           <div className="border-b border-[var(--border-subtle)] p-4 sm:p-5 lg:border-b-0 lg:border-r">

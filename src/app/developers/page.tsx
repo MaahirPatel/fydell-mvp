@@ -59,7 +59,6 @@ export default function DevelopersPage() {
       <Section id="simulation" labelledBy="simulation-title">
         <SectionHead
           id="simulation-title"
-          eyebrow="The simulation"
           title={["What a simulation", "is like"]}
           lead="You get an incident brief, a repository that runs, and two teammates. Ask them anything; their answers are written in advance, so every candidate gets the same information. About twenty minutes in, the team posts one requirement update."
         />
@@ -78,7 +77,6 @@ export default function DevelopersPage() {
       <Section id="receipt" labelledBy="receipt-title">
         <SectionHead
           id="receipt-title"
-          eyebrow="Submission"
           title={["A receipt for", "what you sent"]}
           lead="When you submit, your project is sealed with a checksum. You keep a receipt with that checksum, so you always know exactly what the employer reviewed."
         />
@@ -90,7 +88,6 @@ export default function DevelopersPage() {
       <Section id="passport" labelledBy="passport-title">
         <SectionHead
           id="passport-title"
-          eyebrow="Engineering passport"
           title={["An Engineering", "Passport you own"]}
           lead="Paste your GitHub profile and pick up to three public repositories. Fydell reads them at a pinned commit and lists what the code shows, each finding linked to the exact lines. You decide who sees it, and you can revoke a link at any time."
           link={{ href: "/passport/new", label: "Build your passport, no account needed" }}
@@ -107,7 +104,6 @@ export default function DevelopersPage() {
       <Section id="boundaries" labelledBy="boundaries-title">
         <SectionHead
           id="boundaries-title"
-          eyebrow="Recording"
           title={["What is recorded,", "and what never is"]}
           lead="The list is shown before you start and is the same for every candidate. The employer's report can only cite what is on it."
           link={{ href: "/trust", label: "Read the trust page" }}
@@ -135,7 +131,7 @@ export default function DevelopersPage() {
       </Section>
 
       <Section id="questions" labelledBy="questions-title">
-        <SectionHead id="questions-title" eyebrow="FAQ" small title={["Questions from", "engineers"]} lead="The short answers." />
+        <SectionHead id="questions-title" title={["Questions from", "engineers"]} lead="The short answers." />
         <Faq
           items={[
             { q: "Do I pay anything?", a: "No. Simulations and your Engineering Passport are free for engineers. Employers pay." },

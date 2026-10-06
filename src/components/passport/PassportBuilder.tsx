@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Check, GitFork, Loader2, RotateCcw } from "lucide-react";
 import PassportView from "./PassportView";
-import ManualProjectForm from "./ManualProjectForm";
 import "./passport.css";
 import { ruleSummary, suggestRoles } from "@/lib/passport/rules";
 import type { ExtractionResult } from "@/lib/passport/github/types";
@@ -150,7 +149,6 @@ export default function PassportBuilder({
       headline: "",
       githubLogin: login,
       projects,
-      manualProjects: [],
       roleSuggestions,
       capabilities: ruleSummary(evidence, roleSuggestions, "Preview: built by rules from verified findings. Saved passports can add an AI interpretation."),
       updatedAt: null,
@@ -161,46 +159,9 @@ export default function PassportBuilder({
     `/app/candidate/profile?github=${login ?? ""}&repos=${selected.join(",")}`,
   )}`;
 
-  const [entryMode, setEntryMode] = useState<"github" | "manual">("github");
-
   return (
     <div className="space-y-8">
       {phase === "input" || phase === "select" ? (
-        <div className="flex gap-1 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-1 w-fit" role="tablist" aria-label="How to add projects">
-          {(["github", "manual"] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              role="tab"
-              aria-selected={entryMode === m}
-              onClick={() => setEntryMode(m)}
-              className={`rounded-full px-4 py-1.5 text-app-meta font-medium ${entryMode === m ? "bg-[var(--control-solid)] text-[var(--control-solid-ink)]" : "text-[var(--text-secondary)]"}`}
-            >
-              {m === "github" ? "From GitHub" : "Add manually"}
-            </button>
-          ))}
-        </div>
-      ) : null}
-
-      {entryMode === "manual" && (phase === "input" || phase === "select") ? (
-        <section aria-label="Add a project manually" className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-2)] sm:p-6">
-          <ManualProjectForm
-            onSaved={(passport) => {
-              setSavedPassport(passport);
-              // No GitHub connection to register for manual projects.
-            }}
-          />
-          {savedPassport ? (
-            <div className="mt-6 border-t border-[var(--border-subtle)] pt-4">
-              <Link href="/app/candidate/profile" className="inline-flex h-10 items-center rounded-full bg-[var(--control-solid)] px-5 text-app-body font-medium text-[var(--control-solid-ink)]">
-                Saved · view your passport
-              </Link>
-            </div>
-          ) : null}
-        </section>
-      ) : null}
-
-      {entryMode === "github" && (phase === "input" || phase === "select") ? (
         <form onSubmit={findRepositories} className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-2)] sm:p-6">
           <label htmlFor="github-input" className="text-app-body font-medium">
             GitHub profile or public repository

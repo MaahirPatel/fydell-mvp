@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { ROLES } from "@/lib/simulations/roles";
 import ReportsList from "@/components/employer/ReportsList";
-import ReceiptAcceptance from "@/components/employer/ReceiptAcceptance";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
 import { AppliedAiDemoModule } from "@/components/employer/AppliedAiDemoModule";
@@ -54,9 +53,6 @@ export default async function EmployerEvidencePage({
         )}
       </div>
       {records.length === 0 ? <AppliedAiDemoModule className="mt-6" /> : null}
-      <div className="mt-7">
-        <ReceiptAcceptance />
-      </div>
     </div>
   );
 }

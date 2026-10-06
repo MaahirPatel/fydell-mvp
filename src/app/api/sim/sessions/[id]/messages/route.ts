@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
-import { rateLimit } from "@/lib/security/rate-limit";
-import { csrfGuard } from "@/lib/security/csrf";
 import {
   extendSessionEndsAt,
   getSessionForCandidate,
@@ -87,14 +85,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const blocked = await csrfGuard(req);
-  if (blocked) return blocked;
   const { id } = await params;
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // AI generation is expensive: 30 messages per hour per user.
-  const rl = rateLimit(`sim-chat:${user.id}`, 30, 60 * 60 * 1000);
-  if (!rl.ok) return NextResponse.json({ error: "Slow down. Try again in a bit." }, { status: 429 });
 
   let body: { stakeholderId?: string; text?: string; clientMsgId?: string };
   try {
