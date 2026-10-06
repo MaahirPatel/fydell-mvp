@@ -32,8 +32,17 @@
 }
 .heroTitle {
   max-width: 16em;
-  font-weight: 650;
+  font-weight: 600;
   color: var(--text-primary);
+}
+.heroEyebrow {
+  margin: 0 0 20px;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #2457d6;
 }
 .heroLead {
   max-width: 54ch;
@@ -95,11 +104,10 @@
   position: absolute;
   z-index: -1;
   inset: auto -8% -120px;
-  height: 420px;
+  height: 460px;
   background:
-    radial-gradient(50% 60% at 30% 100%, rgba(60, 50, 30, 0.08), transparent 70%),
-    radial-gradient(45% 55% at 74% 100%, rgba(229, 72, 77, 0.06), transparent 70%);
-  filter: blur(40px);
+    radial-gradient(55% 65% at 50% 100%, rgba(36, 87, 214, 0.07), transparent 70%);
+  filter: blur(48px);
   pointer-events: none;
 }
 .stageIn {
@@ -112,10 +120,10 @@
   border: 1px solid var(--border-default);
   border-radius: 12px;
   background: var(--surface-raised);
+  /* Hairline + one soft shadow. Flat and engineered, not floating. */
   box-shadow:
-    0 1px 2px rgba(19, 32, 56, 0.04),
-    0 24px 64px -24px rgba(60, 48, 20, 0.2),
-    0 48px 120px -48px rgba(60, 48, 20, 0.16);
+    0 1px 2px rgba(19, 32, 56, 0.05),
+    0 16px 40px -24px rgba(19, 32, 56, 0.18);
 }
 
 /* Product windows sit on a painted ground, as they would on a desk. */
@@ -136,6 +144,10 @@
 }
 .artHills {
   background-image: url("/art/hills.webp");
+}
+.artPlain {
+  background-image: none;
+  background-color: #f2f5f9;
 }
 .window {
   position: relative;
@@ -194,6 +206,14 @@
   font-size: 12px;
   color: var(--text-quaternary);
 }
+.figNum {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-right: 12px;
+}
 
 /* ---------- Sections ---------- */
 
@@ -211,8 +231,27 @@
   gap: 24px 64px;
   align-items: start;
 }
+/* Eyebrow micro-label: the engineering voice. Mono, uppercase, wide tracking.
+   Reads like a spec-sheet label, not a marketing kicker. */
+.eyebrow {
+  margin: 0 0 16px;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
 .headTitle {
   max-width: 11em;
+}
+/* Smaller H2 for minor sections (FAQ, secondary content). Size encodes importance. */
+.headTitleSmall {
+  max-width: 14em;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 .headLead {
   max-width: 566px;
@@ -229,7 +268,7 @@
   max-width: 26em;
   font-size: 44px;
   line-height: 1.1;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.022em;
   color: var(--text-tertiary);
   text-wrap: pretty;
@@ -534,8 +573,9 @@
   top: 5px;
   width: 8px;
   height: 4px;
-  border-left: 1.5px solid var(--text-primary);
-  border-bottom: 1.5px solid var(--text-primary);
+  /* Muted, not shouting. Confirms without celebrating. */
+  border-left: 1.5px solid var(--text-tertiary);
+  border-bottom: 1.5px solid var(--text-tertiary);
   transform: rotate(-45deg);
 }
 .planCta {
@@ -584,14 +624,14 @@
   margin-top: 56px;
   font-size: 20px;
   line-height: 1.33;
-  font-weight: 590;
+  font-weight: 600;
   letter-spacing: -0.012em;
   color: var(--text-primary);
 }
 .prose h3 {
   margin-top: 32px;
   font-size: 15px;
-  font-weight: 590;
+  font-weight: 600;
   color: var(--text-primary);
 }
 .prose p,

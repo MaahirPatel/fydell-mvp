@@ -40,6 +40,7 @@ export default function ProductPage() {
       <Section id="brief" labelledBy="brief-title">
         <SectionHead
           id="brief-title"
+          eyebrow="Step 1"
           title={["1. The brief and", "the team"]}
           lead="Every simulation opens on an incident written by the team that owns the service: what happened, what they need, and what is out of scope. Two simulated teammates answer questions from a fixed set of written answers, and say so if asked."
         />
@@ -51,6 +52,7 @@ export default function ProductPage() {
       <Section id="work" labelledBy="work-title">
         <SectionHead
           id="work-title"
+          eyebrow="Step 2"
           title={["2. The work, in", "the desktop app"]}
           lead="The Fydell app for macOS and Windows sets up the project, runs the setup check, and keeps the brief, the team thread and the timer beside the code. Candidates can edit in whichever editor they prefer."
           link={{ href: "/download", label: "Download Fydell" }}
@@ -70,6 +72,7 @@ export default function ProductPage() {
       <Section id="update" labelledBy="update-title">
         <SectionHead
           id="update-title"
+          eyebrow="Step 3"
           title={["3. One requirement", "changes"]}
           lead="Partway through, the team posts one requirement update in the thread and under Updates. It is the same update, at the same point, for every candidate. The trail shows what they did next."
         />
@@ -81,6 +84,7 @@ export default function ProductPage() {
       <Section id="submit" labelledBy="submit-title">
         <SectionHead
           id="submit-title"
+          eyebrow="Step 4"
           title={["4. Submit, hand off,", "keep a receipt"]}
           lead="On submit the project is packaged and hashed. The candidate answers three questions (what changed, what they tested, what remains unresolved) and gets a receipt with the checksum."
         />
@@ -92,6 +96,7 @@ export default function ProductPage() {
       <Section id="checks" labelledBy="checks-title">
         <SectionHead
           id="checks-title"
+          eyebrow="Step 5"
           title={["5. Candidate-submitted checks,", "then the report"]}
           lead="Simulations run on the candidate's machine. Results are candidate-submitted evidence, shown with that limitation stated. Your reviewers see the diff, the results and the trail together."
           link={{ href: "/security", label: "How submissions are handled" }}
@@ -104,6 +109,7 @@ export default function ProductPage() {
       <Section id="report" labelledBy="report-title">
         <SectionHead
           id="report-title"
+          eyebrow="Step 6"
           title={["6. Your team writes", "it and decides"]}
           lead="Reviewers write findings, each one citing its evidence, and label observations separately from gaps. The report cannot be released until every finding is cited. Then the team records Advance, Hold or Decline."
           link={{ href: "/employers", label: "Fydell for hiring teams" }}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { PassportEvidence } from "@/lib/passport/view";
 import type { EvidenceMapping, ReviewQuestion, MappingStatus } from "@/lib/employer/review";
+import VerificationRequestPanel from "./VerificationRequestPanel";
 
 /**
  * H06 — Requirement-to-evidence review screen.
@@ -477,6 +478,16 @@ export default function RequirementEvidenceReview({
               ))}
             </div>
           )}
+
+          {/* Targeted verification */}
+          <div style={{ marginTop: 20, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+            <VerificationRequestPanel
+              roleId={roleId}
+              shareId={shareId}
+              mappingId={current?.id ?? null}
+              candidateName={candidateName}
+            />
+          </div>
         </div>
       </div>
 

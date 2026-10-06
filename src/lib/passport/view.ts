@@ -42,6 +42,32 @@ export type PassportProject = {
 
 export type Capability = { statement: string; evidenceIds: string[] };
 
+/**
+ * A self-reported project, entered manually by the developer.
+ * Unlike GitHub-imported projects, these carry no code-analysis evidence.
+ * They are always labeled "self-reported" wherever they appear.
+ */
+export type ManualProject = {
+  id: string;
+  title: string;
+  description: string;
+  contributionStatement: string;
+  techStack: string[];
+  links: { label: string; url: string }[];
+  /** Always "self_reported" — the trust basis for manual projects. */
+  evidenceBasis: "self_reported";
+  /** §10 claim metadata. */
+  claimCategory: "candidate_stated";
+  method: "self_report";
+  checkedAt: string;
+  limitations: string;
+  reviewState: "draft" | "published" | "disputed";
+  freshnessStatus: "current" | "stale";
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CapabilitySummary = {
   source: "model" | "rules";
   model?: string;
@@ -55,6 +81,8 @@ export type PassportData = {
   headline: string;
   githubLogin: string | null;
   projects: PassportProject[];
+  /** Self-reported projects (no code analysis). Always labeled as such. */
+  manualProjects: ManualProject[];
   roleSuggestions: RoleSuggestion[];
   capabilities: CapabilitySummary;
   updatedAt: string | null;
@@ -78,6 +106,9 @@ export function projectForShare(passport: PassportData, fields: readonly ShareFi
     projects: allow.has("projects")
       ? current.map((p) => ({ ...p, evidence: allow.has("evidence") ? p.evidence : [] }))
       : [],
+    // Manual projects are self-reported. They share under the "projects"
+    // field but keep their evidenceBasis so the label survives projection.
+    manualProjects: allow.has("projects") ? passport.manualProjects : [],
     roleSuggestions: allow.has("roles") ? passport.roleSuggestions : [],
     capabilities: allow.has("capabilities") && allow.has("evidence")
       ? passport.capabilities

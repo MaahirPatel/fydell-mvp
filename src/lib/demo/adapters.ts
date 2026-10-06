@@ -87,6 +87,7 @@ export function adaptDemoPassport(): PassportData {
       notShown: [],
       note: SAMPLE_DATA_LABEL,
     },
+    manualProjects: [],
     updatedAt: null,
   };
 }

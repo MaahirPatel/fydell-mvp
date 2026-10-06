@@ -1,26 +1,17 @@
 import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
-import EvaluationShot from "@/components/marketing/kit/EvaluationShot";
+import ReportHero from "@/components/marketing/kit/ReportHero";
 import {
-  Closing,
   Details,
   Hero,
-  Ledger,
   Section,
   SectionHead,
-  Stage,
-  Statement,
-  Timeline,
-  Trio,
-  Visual,
 } from "@/components/marketing/kit/Kit";
-import { FigDecide, FigDesktop, FigIncident, FigPassport, FigReport, FigTrail } from "@/components/marketing/kit/Figs";
-import { BriefShot, ReportShot, TestsShot, TrailShot } from "@/components/marketing/kit/Shots";
 
 export const metadata = {
-  title: { absolute: "Fydell: The hiring system built on real engineering work" },
+  title: "The Proof of Work Network for engineers",
   description:
-    "Bring together project evidence and realistic simulations. Engineers show their skills; hiring teams review cited evidence and find their next engineer.",
+    "Turn selected projects into a source-linked work record. Review the findings, choose what to share, and give hiring teams a closer look at your work.",
   alternates: { canonical: "/" },
 };
 
@@ -28,165 +19,118 @@ export default function HomePage() {
   return (
     <MarketingShell>
       <Hero
-        title={["The hiring system built on", "real engineering work."]}
-        lead="Bring together project evidence and realistic simulations. Show your skills. Find your next engineer."
-        aside={{ href: "/download", strong: "New", label: "Fydell desktop 0.1.5" }}
+        title={["The Proof of Work Network", "for engineers."]}
+        lead="Turn selected projects into a source-linked work record. Review the findings, choose what to share, and give hiring teams a closer look at your work."
         actions={
           <>
-            <Link href="/get-started" className="l-btn l-btn-lg l-btn-solid">Get started</Link>
-            <Link href="/demo" className="l-btn l-btn-lg l-btn-ghost">Explore demo</Link>
+            <Link href="/passport/new" className="l-btn l-btn-lg l-btn-solid">Build your profile</Link>
+            <Link href="/demo" className="l-btn l-btn-lg l-btn-ghost">Explore the demo</Link>
           </>
         }
       >
-        <Stage hero art="lake" title="Fydell · Evaluation FYD-2048" label="Example: an evaluation in the Fydell employer workspace">
-          <EvaluationShot />
-        </Stage>
+        <div className="l-container" style={{ marginTop: 48 }}>
+          <ReportHero />
+          <p style={{ textAlign: "center", marginTop: 16, fontSize: 13, color: "#526175" }}>
+            A Builder Report connects findings about your project to the code behind them.
+          </p>
+        </div>
       </Hero>
 
-      <Section>
-        <Statement
-          lead="A resume tells you where someone has worked."
-          rest="Fydell shows you how they work: what they ask, what they change, how they test it, and what they do when the requirement moves."
-        />
-        <Trio
-          items={[
-            {
-              fig: <FigIncident />,
-              title: "A real incident, not a puzzle",
-              body: "A working repository with a production-style failure and a brief from the team that owns it.",
-            },
-            {
-              fig: <FigTrail />,
-              title: "Every step on the record",
-              body: "Files, commands, test runs and timing, disclosed to the candidate before they begin.",
-            },
-            {
-              fig: <FigDecide />,
-              title: "Your team makes the call",
-              body: "Fydell never scores the person. Your reviewers write the report and record the decision.",
-            },
-          ]}
-        />
-      </Section>
-
-      <Section id="brief" labelledBy="brief-title">
+      <Section id="start" labelledBy="start-title">
         <SectionHead
-          id="brief-title"
-          title={["Start from a real", "incident"]}
-          lead="The candidate gets what an engineer on your team would get: an incident brief, a codebase that runs, and teammates who answer questions. Halfway through, the requirement changes."
-          link={{ href: "/product#brief", label: "How a simulation runs" }}
+          id="start-title"
+          title={["Start with work", "you've already done."]}
+          lead="Choose a project and the version you want to share. Keep the review focused on the work that matters."
         />
-        <Visual art="coast" title="Fydell Desktop · INC-2291" label="Example: the INC-2291 brief and the team thread">
-          <BriefShot />
-        </Visual>
         <Details
           items={[
-            { title: "Working code", body: "A small service with a real bug, real tests, and a setup check that runs first." },
-            { title: "Teammates who answer", body: "Written answers, the same for every candidate. Asking is optional and never penalised." },
-            { title: "One requirement update", body: "Posted by the team partway through, the way scope actually moves at work." },
+            { title: "Import selected GitHub projects", body: "Choose the repositories you want to include." },
+            { title: "Explain your contribution", body: "Add context about your role, the problem, and the work you completed." },
+            { title: "Review the findings", body: "Inspect the sources and correct the context before sharing." },
           ]}
         />
       </Section>
 
-      <Section id="trail" labelledBy="trail-title">
+      <Section id="supports" labelledBy="supports-title">
         <SectionHead
-          id="trail-title"
-          title={["Every step,", "on the record"]}
-          lead="The desktop app records a disclosed work trail: the files they open and change, the commands they run, their test results and when each happened. Nothing outside that list."
-          link={{ href: "/trust", label: "What is and isn't recorded" }}
+          id="supports-title"
+          title={["See what the", "work supports."]}
+          lead="Inspect each finding alongside its source. See what was reviewed, what remains uncertain, and where more context is needed."
         />
-        <Visual art="hills" title="Fydell Desktop · Work trail" label="Example: a candidate's work trail and the notice they accepted">
-          <TrailShot />
-        </Visual>
+        <p style={{ fontSize: 15, color: "#526175", maxWidth: "60ch" }}>
+          Read the finding. Open the source. Understand the limits.
+        </p>
+        <p style={{ marginTop: 16 }}>
+          <Link href="/demo" className="l-btn l-btn-lg l-btn-ghost">Explore a sample report</Link>
+        </p>
       </Section>
 
-      <Section id="checks" labelledBy="checks-title">
+      <Section id="record" labelledBy="record-title">
         <SectionHead
-          id="checks-title"
-          title={["Checked on the code", "they submitted"]}
-          lead="On submit, the project is sealed with a checksum. Simulations run on the candidate's own machine; results are candidate-submitted evidence, not independently verified."
-          link={{ href: "/security", label: "How submissions are handled" }}
+          id="record-title"
+          title={["Build a record", "you can keep using."]}
+          lead="Bring selected projects and work samples together in one profile."
         />
-        <Visual art="lake" title="Fydell · Candidate-submitted checks" label="Example: checks run locally, results submitted by the candidate">
-          <TestsShot />
-        </Visual>
-      </Section>
-
-      <Section id="report" labelledBy="report-title">
-        <SectionHead
-          id="report-title"
-          title={["A report your team", "can stand behind"]}
-          lead="Your reviewers write the findings. Each one must cite a file, a test, a message or a handoff answer before the report can be released. Observations and gaps are labelled, and there is no score."
-          link={{ href: "/employers", label: "Fydell for hiring teams" }}
-        />
-        <Visual art="coast" title="Fydell · Report" label="Example: a cited report with the team's decision">
-          <ReportShot />
-        </Visual>
-      </Section>
-
-      <Section id="loop" labelledBy="loop-title">
-        <SectionHead
-          id="loop-title"
-          title={["One loop, from role", "to decision"]}
-          lead="The whole process is five steps. Candidates always know what comes next, and your team always knows why a decision was made."
-        />
-        <Timeline
+        <Details
           items={[
-            { title: "Create a role", body: "Pick the simulation that fits the job and invite candidates by email.", meta: "Your team" },
-            { title: "Consent", body: "The candidate reads what is recorded and agrees before anything starts.", meta: "Candidate", tone: "blue" },
-            { title: "Work the incident", body: "In the desktop app, with one requirement update along the way.", meta: "About an hour", tone: "red" },
-            { title: "Submit and hand off", body: "Three short answers and a receipt the candidate keeps.", meta: "Candidate" },
-            { title: "Review and decide", body: "A cited report, then Advance, Hold or Decline.", meta: "Your team", tone: "blue" },
+            { title: "Choose what you share", body: "Include the projects and findings relevant to the opportunity." },
+            { title: "Keep the source attached", body: "Let a reviewer move from a finding to its supporting evidence." },
+            { title: "Control access", body: "Preview your shared profile and revoke the link when you need to." },
           ]}
         />
       </Section>
 
-      <Section id="passport" labelledBy="passport-title">
+      <Section id="share" labelledBy="share-title">
         <SectionHead
-          id="passport-title"
-          title={["Engineers keep", "their work"]}
-          lead="Every engineer gets a receipt for what they submitted, and can build an Engineering Passport from their own public repositories: findings linked to the exact lines, shared only with the employers they choose."
-          link={{ href: "/passport/new", label: "Build your passport" }}
-        />
-        <Trio
-          items={[
-            { fig: <FigPassport />, title: "A passport you own", body: "Built from your public repositories at a pinned commit. Free for engineers." },
-            { fig: <FigReport />, title: "Findings with line citations", body: "What the code demonstrates, linked to files and line ranges." },
-            { fig: <FigDesktop />, title: "Simulations on your machine", body: "The Fydell desktop app for macOS and Windows sets up each project." },
-          ]}
+          id="share-title"
+          title={["Choose", "what to share."]}
+          lead="Review the shared view before sending your profile to a hiring team."
         />
       </Section>
 
-      <Section id="boundaries" labelledBy="boundaries-title">
+      <Section id="simulations" labelledBy="simulations-title">
         <SectionHead
-          id="boundaries-title"
-          title={["Clear about what", "it will not do"]}
+          id="simulations-title"
+          title={["Show more through", "a realistic task."]}
+          lead="Work through an engineering problem and add the resulting code, tests and handoff to your record."
+          link={{ href: "/product", label: "Explore a simulation" }}
+        />
+      </Section>
+
+      <Section id="hiring-teams" labelledBy="hiring-teams-title">
+        <SectionHead
+          id="hiring-teams-title"
+          eyebrow="For hiring teams"
+          title={["Follow", "the evidence."]}
+          lead="Review relevant work, open its sources, and identify what to ask next."
+        />
+        <p style={{ marginTop: 16 }}>
+          <Link href="/employers" className="l-btn l-btn-lg l-btn-ghost">Explore Fydell for hiring teams</Link>
+        </p>
+      </Section>
+
+      <Section id="trust" labelledBy="trust-title">
+        <SectionHead
+          id="trust-title"
+          title={["Clear about what", "it will not do."]}
           lead="Hiring is a decision about a person. Fydell gives your team evidence and stays out of the judgement."
           link={{ href: "/trust", label: "Read the trust page" }}
         />
-        <Ledger
-          yes={{
-            title: "What Fydell does",
-            items: [
-              { strong: "Records a disclosed trail.", rest: "Files, commands, test runs and timing, listed before the candidate starts." },
-              { strong: "Runs checks locally.", rest: "On the candidate's machine. Results are candidate-submitted, not independently verified." },
-              { strong: "Requires citations.", rest: "A finding without evidence cannot be released." },
-              { strong: "Gives the candidate a receipt.", rest: "With a checksum of exactly what they submitted." },
-            ],
-          }}
-          no={{
-            title: "What Fydell never does",
-            items: [
-              { strong: "Score or rank people.", rest: "There is no overall rating, percentile or fit score." },
-              { strong: "Forecast future performance.", rest: "The report describes this work and nothing beyond it." },
-              { strong: "Police AI use.", rest: "Fydell can't see AI tools. Candidates describe any AI help in their own words." },
-              { strong: "Record outside the list.", rest: "No screen, webcam, microphone, browsing or keystrokes." },
-            ],
-          }}
-        />
       </Section>
 
-      <Closing title={["Hire on the work.", "Start with one role."]} />
+      <div className="l-container" style={{ textAlign: "center", paddingBottom: 96, paddingTop: 48 }}>
+        <h2 style={{ fontSize: 36, fontWeight: 600, letterSpacing: "-0.02em", color: "#142033", marginBottom: 16 }}>
+          Put your work on the record.
+        </h2>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 24 }}>
+          <Link href="/passport/new" className="l-btn l-btn-lg l-btn-solid">Build your profile</Link>
+        </div>
+        <p style={{ marginTop: 16 }}>
+          <Link href="/employers" className="l-link" style={{ fontSize: 14 }}>
+            Explore Fydell for hiring teams
+          </Link>
+        </p>
+      </div>
     </MarketingShell>
   );
 }

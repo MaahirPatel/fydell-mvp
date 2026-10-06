@@ -74,5 +74,14 @@ export function exportPassport(passport: PassportData, corrections: Correction[]
     roleSuggestions: passport.roleSuggestions,
     capabilities: passport.capabilities,
     correctionsFiled: corrections.length,
+    manualProjects: passport.manualProjects.map((m) => ({
+      title: m.title,
+      description: m.description,
+      contributionStatement: m.contributionStatement,
+      techStack: m.techStack,
+      links: m.links,
+      evidenceBasis: "self_reported" as const,
+      createdAt: m.createdAt,
+    })),
   };
 }

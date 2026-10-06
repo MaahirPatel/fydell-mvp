@@ -24,10 +24,10 @@ const DIFF: DiffLine[] = [
 ];
 
 const EVALUATIONS = [
-  { name: "Daniel Carter", role: "Backend", tone: "active" },
-  { name: "Emily Brooks", role: "Backend", tone: "change" },
-  { name: "James Walker", role: "Platform", tone: "idle" },
-  { name: "Olivia Hart", role: "Backend", tone: "idle" },
+  { name: "Candidate 01", role: "Backend", tone: "active" },
+  { name: "Candidate 02", role: "Backend", tone: "change" },
+  { name: "Candidate 03", role: "Platform", tone: "idle" },
+  { name: "Candidate 04", role: "Backend", tone: "idle" },
 ] as const;
 
 /**
@@ -86,7 +86,7 @@ export default function EvaluationShot() {
       <div className={s.main}>
         <div className={s.topbar}>
           <Mono className={s.topId}>FYD-2048</Mono>
-          <span className={s.topTitle}>Daniel Carter · Backend Engineer</span>
+          <span className={s.topTitle}>Candidate 01 · Backend Engineer</span>
           <span className={s.topRight}>
             <span className={s.status}>Evaluation complete</span>
             <Mono>3 / 12</Mono>
@@ -110,7 +110,7 @@ export default function EvaluationShot() {
         <div className={s.body}>
           <div className={s.titleRow}>
             <div className="min-w-0">
-              <p className={s.name}>Daniel Carter</p>
+              <p className={s.name}>Candidate 01</p>
               <p className={s.objective}>
                 Stop a webhook dispatcher from retrying into a storm, then honour Retry-After when the partner asks partway through.
               </p>
@@ -161,7 +161,7 @@ export default function EvaluationShot() {
                   { id: "repro", time: "14:11", title: "Reproduced the storm", detail: "1,204 retries in 60s on a 503" },
                   { id: "update", time: "14:18", title: "Requirement changed", detail: "Honour Retry-After on 429 and 503", tone: "change" },
                   { id: "seal", time: "14:43", title: "Submission sealed", detail: <>3 files · <DiffStat added={41} removed={17} /></>, tone: "key" },
-                  { id: "checks", time: "14:44", title: "Hidden checks finished", detail: <><Mono>18 / 18</Mono> passed in the sandbox</>, tone: "key" },
+                  { id: "checks", time: "14:44", title: "Hidden checks finished", detail: <><Mono>18 / 18</Mono> passed on the candidate's machine</>, tone: "key" },
                 ]}
               />
             </div>
@@ -204,7 +204,7 @@ export default function EvaluationShot() {
             <span className={s.avatar}>PN</span>
             <div className="min-w-0">
               <p className={s.msgHead}>
-                <b>Priya Nair</b> Engineering lead <Mono>14:18</Mono>
+                <b>Engineering lead</b> <Mono>14:18</Mono>
                 <span className={s.msgTag}>Requirement update</span>
               </p>
               <p className={s.msgBody}>

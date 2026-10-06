@@ -5,8 +5,6 @@ import { getProfileHub } from "@/lib/profile/store";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
 import PassportView from "@/components/passport/PassportView";
 import SharePanel from "@/components/passport/SharePanel";
-import ProfileHeader from "@/components/profile/ProfileHeader";
-import ProfileCompleteness, { type PresenceItem } from "@/components/profile/ProfileCompleteness";
 import ProfileIdentityForm from "@/components/profile/ProfileIdentityForm";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import EditorImport from "@/components/profile/EditorImport";
@@ -45,51 +43,20 @@ export default async function CandidateProfilePage({
   const initialRepos = (params.repos ?? "").split(",").filter((r) => /^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/.test(r)).slice(0, 3);
   const initialLogin = /^[A-Za-z0-9-]{1,39}$/.test(params.github ?? "") ? (params.github as string) : (passport?.githubLogin ?? "");
 
-  // Data-presence completeness: what the engineer has actually added, never a
-  // quality score. The anchors below must match the Section ids further down.
-  const presence: PresenceItem[] = [
-    {
-      key: "identity",
-      label: "Identity",
-      present: hub.profile.displayName.trim().length > 0,
-      anchor: "#profile-identity",
-    },
-    {
-      key: "github",
-      label: "GitHub evidence",
-      present: hub.hasGithubEvidence,
-      anchor: "#profile-passport",
-    },
-    {
-      key: "simulation",
-      label: "Simulation result",
-      present: hub.timeline.some((item) => item.kind === "simulation"),
-      // Results come from invitations on the candidate home, not from an
-      // in-page section, so a missing item links out instead of anchoring.
-      anchor: "/app/candidate",
-    },
-    {
-      key: "editor",
-      label: "Editor history",
-      present: hub.editorImports.length > 0,
-      anchor: "#profile-editor",
-    },
-  ];
-
   return (
     <CandidateShell width="wide" current="profile">
       <div className="reveal">
-        <p className="text-app-meta font-medium text-[var(--text-secondary)]">Engineering Profile</p>
-        <div className="mt-3">
-          <ProfileHeader profile={hub.profile} />
-        </div>
-        <p className="mt-3 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">
-          One profile for everything: who you are, the accounts you connect, and the evidence your work leaves behind. Simulations you complete, repositories you analyze, and editor history you choose to import.
+        <h1 className="text-app-title font-semibold tracking-[-0.02em]">Your work record</h1>
+        <p className="mt-2 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">
+          Projects you've added, their analysis state, and what you've shared. Add a project to begin.
         </p>
-      </div>
-
-      <div className="mt-7">
-        <ProfileCompleteness items={presence} />
+        {!passport || !passport.projects.length ? (
+          <div className="mt-4">
+            <a href="#profile-passport" className="l-btn l-btn-lg l-btn-solid">
+              Add a project
+            </a>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-8 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">

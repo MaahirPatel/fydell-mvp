@@ -57,6 +57,7 @@ export default function PricingPage() {
       <Section id="compare" labelledBy="compare-title">
         <SectionHead
           id="compare-title"
+          eyebrow="Plans"
           title={["Compare plans"]}
         />
         <Table
@@ -74,6 +75,7 @@ export default function PricingPage() {
       <Section id="billing" labelledBy="billing-title">
         <SectionHead
           id="billing-title"
+          eyebrow="How billing works"
           title={["Billing"]}
         />
         <Timeline
@@ -87,7 +89,7 @@ export default function PricingPage() {
       </Section>
 
       <Section id="questions" labelledBy="questions-title">
-        <SectionHead id="questions-title" title={["Questions"]} link={{ href: "/contact", label: "Ask us anything else" }} />
+        <SectionHead id="questions-title" eyebrow="FAQ" small title={["Questions"]} link={{ href: "/contact", label: "Ask us anything else" }} />
         <Faq
           items={[
             { q: "Is there a free trial?", a: "There is no separate trial. Starter has no monthly fee, so you pay only when a candidate submits." },
