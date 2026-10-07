@@ -58,8 +58,8 @@ export async function resolvePostLoginDestination(
     return { kind: "role_pending", path: "/signup/role" };
   }
 
-  if (profile?.account_type === "fde") {
-    // Legacy account_type value; the destination is the candidate home.
+  if (profile?.account_type === "fde" || profile?.account_type === "candidate") {
+    // Legacy account_type values; the destination is the candidate home.
     return { kind: "fde", path: "/app/candidate" };
   }
 

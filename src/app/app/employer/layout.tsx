@@ -142,24 +142,27 @@ export default async function EmployerAppLayout({ children }: { children: React.
       // default workspace instead of a missing onboarding route.
       const { data: profile } = await admin
         .from("profiles")
-        .select("account_type, full_name, display_name, avatar_url")
+        // "*" so an optional column missing from one environment cannot fail
+        // the read and silently erase the account type used for routing.
+        .select("*")
         .eq("id", user.id)
         .maybeSingle();
 
       const accountType = profile?.account_type as string | null | undefined;
       identity = memberIdentity(user.email || "", profile, user.user_metadata);
 
-      if (accountType === "unresolved") {
-        redirect("/signup/role");
-      }
-      if (accountType === "fde") {
-        redirect("/app/candidate");
+      if (accountType === "fde" || accountType === "candidate") {
+        redirect("/app/candidate/work-record");
       }
       if (accountType === "partner") {
         redirect("/account/setup-required?reason=partner_pending");
       }
-
-      // employer, missing, or unknown → create a default organization and continue
+      // Only an account that chose hiring gets a workspace created for it.
+      // Anyone else (unresolved, missing or unknown type) picks a role first,
+      // so an engineer who opens an employer link never gains a workspace.
+      if (accountType !== "employer") {
+        redirect("/signup/role");
+      }
       const createdName = await ensureDefaultOrganization(
         admin,
         user.id,
@@ -175,7 +178,7 @@ export default async function EmployerAppLayout({ children }: { children: React.
 
       const { data: profile } = await admin
         .from("profiles")
-        .select("full_name, display_name, avatar_url")
+        .select("*")
         .eq("id", user.id)
         .maybeSingle();
       identity = memberIdentity(user.email || "", profile, user.user_metadata);

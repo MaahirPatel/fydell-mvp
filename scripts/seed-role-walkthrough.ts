@@ -59,6 +59,8 @@ async function main() {
       await admin.from("organizations").delete().eq("id", o.id);
     }
     for (const u of users) {
+      const { data: owned } = await admin.from("organizations").select("id").eq("owner_id", u.id);
+      for (const o of (owned ?? []) as Array<{ id: string }>) await admin.from("organizations").delete().eq("id", o.id);
       await admin.from("passports").delete().eq("owner_id", u.id);
       await admin.from("user_notifications").delete().eq("user_id", u.id);
       await admin.auth.admin.deleteUser(u.id);
@@ -76,6 +78,14 @@ async function main() {
   };
   const employerId = await mk("employer");
   const engineerId = await mk("engineer");
+  for (const row of [
+    { id: employerId, email: `employer+walk-${tag}@example.com`, account_type: "employer", full_name: "Jordan Avery", display_name: "Jordan Avery", onboarding_state: "completed" },
+    { id: engineerId, email: `engineer+walk-${tag}@example.com`, account_type: "fde", full_name: "Riley Chen", display_name: "Riley Chen", onboarding_state: "completed" },
+  ]) {
+    const { error: profileError } = await admin.from("profiles").upsert(row);
+    if (profileError) throw new Error(`Could not write profiles: ${profileError.message}`);
+  }
+  await admin.from("engineer_profiles").upsert({ owner_id: engineerId, display_name: "Riley Chen", headline: "Backend engineer focused on reliable delivery" }, { onConflict: "owner_id" });
   const orgId = randomUUID();
   await admin.from("organizations").insert({ id: orgId, name: `Walkthrough ${tag}`, status: "active", pilot_stage: "setup" });
   await admin.from("organization_members").insert({ organization_id: orgId, user_id: employerId, role: "owner", status: "active", joined_at: new Date().toISOString() });

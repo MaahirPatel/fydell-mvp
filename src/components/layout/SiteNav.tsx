@@ -9,7 +9,7 @@ import { PRIMARY_LINKS, PRODUCT_ITEMS, RESOURCE_ITEMS } from "@/components/marke
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const linkClass = (active: boolean) =>
-  `h-9 items-center gap-1 rounded-[8px] px-3 text-[15px] font-normal tracking-[-0.008em] text-[var(--text-primary)] transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
+  `h-9 items-center gap-1 rounded-[8px] px-3 text-[14.5px] font-medium tracking-[-0.01em] text-[var(--text-primary)] transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
     active ? "bg-[var(--surface-selected)]" : "hover:bg-[var(--surface-hover)]"
   }`;
 
@@ -174,7 +174,7 @@ export default function SiteNav() {
                           aria-current={isActive(pathname, item.href) ? "page" : undefined}
                           className="block rounded-[8px] px-3 py-2.5 transition-colors hover:bg-[var(--surface-hover)] focus-visible:bg-[var(--surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
                         >
-                          <span className="block text-[14.5px] font-medium text-[var(--text-primary)]">{item.label}</span>
+                          <span className="block text-[14.5px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">{item.label}</span>
                           <span className="mt-0.5 block text-[13px] leading-[1.45] text-[var(--text-secondary)]">{item.description}</span>
                         </Link>
                       </li>
@@ -189,7 +189,7 @@ export default function SiteNav() {
                         <Link
                           href={item.href}
                           onClick={() => setProductOn(null)}
-                          className="block rounded-[8px] px-3 py-2 text-[14px] text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] focus-visible:bg-[var(--surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
+                          className="block rounded-[8px] px-3 py-2 text-[14px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] focus-visible:bg-[var(--surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
                         >
                           {item.label}
                         </Link>
@@ -248,7 +248,7 @@ export default function SiteNav() {
               {PRODUCT_ITEMS.map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} onClick={() => setMobileOn(null)} className="block py-2.5">
-                    <span className="block text-[16px] font-medium text-[var(--text-primary)]">{item.label}</span>
+                    <span className="block text-[16px] font-semibold text-[var(--text-primary)]">{item.label}</span>
                     <span className="block text-[14px] leading-[1.45] text-[var(--text-secondary)]">{item.description}</span>
                   </Link>
                 </li>
