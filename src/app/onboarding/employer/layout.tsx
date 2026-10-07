@@ -7,8 +7,8 @@ import { withNext } from "@/lib/auth/safe-next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Create your workspace",
-  description: "Name your Fydell workspace and open your first evaluation.",
+  title: "Set up hiring",
+  description: "Create your Fydell workspace, your first engineering role and your first candidate invitation.",
   robots: { index: false, follow: false },
 };
 

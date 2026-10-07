@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { csrfGuard } from "@/lib/security/csrf";
 import { getOwnerPassport } from "@/lib/passport/store";
+import { accountDisplayName } from "@/lib/auth/account-name";
 import { parsePresentationInput } from "@/lib/passport/presentation";
 import {
   arrangePresentations,
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
   const input = parsePresentationInput(b?.presentation);
   if (input.ok === false) return NextResponse.json({ error: input.error }, { status: 400 });
   const result = await createManualProject(
-    { id: auth.user.id, displayName: auth.user.email.split("@")[0] },
+    { id: auth.user.id, displayName: await accountDisplayName(auth.user.id, auth.user.email) },
     input.value,
     typeof b?.clientRequestId === "string" ? b.clientRequestId : "",
     b?.confirmDuplicate === true,

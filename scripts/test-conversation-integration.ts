@@ -106,7 +106,7 @@ check("corrected plan supersedes prior", () => {
 
 check("help requests tracked for report", () => {
   let state = createInitialState("s1", "sc1", "v1");
-  let r = decide(state, "Can I get a hint on the retry logic?");
+  const r = decide(state, "Can I get a hint on the retry logic?");
   assertTrue(r.decision.helpLevel === "hint", `level: ${r.decision.helpLevel}`);
   state = recordHelp(r.newState, "hint", "retry_backoff", "r1", "Candidate requested hint");
   const summary = summarizeHelp(state);

@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import { completeEmployerOnboarding } from "@/lib/pilot/lifecycle";
 import { ensureCandidateProfile, audit } from "@/lib/auth/signup-helpers";
+import { seedEngineerProfileName } from "@/lib/auth/account-name";
 import { isReservedOrganizationName } from "@/lib/org/reserved";
 import { publicErrorMessage } from "@/lib/security/public-error";
 export const dynamic = "force-dynamic";
@@ -140,6 +141,7 @@ export async function POST(req: Request) {
       redirectTo = "/app/employer";
     } else if (path === "fde") {
       await ensureCandidateProfile(userId);
+      await seedEngineerProfileName(userId, email, name);
       redirectTo = "/app/candidate/profile";
     } else if (path === "partner") {
       redirectTo = "/account/setup-required?reason=partner_pending";

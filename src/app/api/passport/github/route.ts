@@ -5,7 +5,8 @@ import { extractRepository, previewRepository } from "@/lib/passport/github/extr
 import { parseGithubInput } from "@/lib/passport/github/parse";
 import { INTAKE_SCOPE } from "@/lib/passport/github/types";
 import { projectFromResult } from "@/lib/passport/assemble";
-import { disconnectGithub } from "@/lib/passport/store";
+import { disconnectGithub, setGithubLogin } from "@/lib/passport/store";
+import { csrfGuard } from "@/lib/security/csrf";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -82,8 +83,23 @@ export async function POST(req: Request) {
   return NextResponse.json({ kind: "repository", result, project: projectFromResult(result, ""), intake: INTAKE_SCOPE });
 }
 
+/** Change the GitHub username on the profile. Body: { login }. It is a label, not a verified link. */
+export async function PUT(req: Request) {
+  const blocked = csrfGuard(req);
+  if (blocked) return blocked;
+  const user = await requireUser();
+  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  const body = (await req.json().catch(() => null)) as { login?: unknown } | null;
+  if (typeof body?.login !== "string") return NextResponse.json({ error: "Enter a GitHub username." }, { status: 400 });
+  const result = await setGithubLogin(user.id, user.email, body.login);
+  if (result.ok === false) return NextResponse.json({ error: result.error }, { status: 400 });
+  return NextResponse.json({ githubLogin: result.githubLogin });
+}
+
 /** Disconnect GitHub from the passport (GH-11): removes the linked login and stops future association. */
-export async function DELETE() {
+export async function DELETE(req: Request) {
+  const blocked = csrfGuard(req);
+  if (blocked) return blocked;
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   return NextResponse.json(await disconnectGithub(user.id));

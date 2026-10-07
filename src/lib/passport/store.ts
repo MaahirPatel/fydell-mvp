@@ -6,6 +6,7 @@ import { listContributions, listDecisionsForPassport } from "./context-store";
 import { validateCorrectionReason, type Correction, type CorrectionStatus } from "./corrections";
 import { ANALYSIS_VERSION, IMPORTER_VERSION, type ExtractionResult, type ManifestEntry } from "./github/types";
 import { githubDisconnectExplanation } from "./removal";
+import { accountDisplayName } from "@/lib/auth/account-name";
 import { UPLOAD_IMPORTER_VERSION } from "./upload";
 import { shareState, validateExpiryInput } from "./sharing";
 import { currentSnapshots, markSuperseded } from "./snapshots";
@@ -36,6 +37,7 @@ function skipReasonCounts(skipped: Array<{ reason: string }>): Record<string, nu
 
 type PassportRow = {
   id: string;
+  owner_id: string;
   display_name: string;
   headline: string;
   github_login: string | null;
@@ -94,6 +96,7 @@ async function loadPassportCore(passportId: string): Promise<PassportData | null
     .eq("passport_id", passportId)
     .order("analyzed_at", { ascending: false });
   const projectRows = (projects ?? []) as ProjectRow[];
+  const profileName = await profileDisplayName(row.owner_id);
   const summary = row.capability_summary as CapabilitySummary;
   const projectList: PassportProject[] = projectRows.map((p) => ({
     id: p.id,
@@ -137,7 +140,7 @@ async function loadPassportCore(passportId: string): Promise<PassportData | null
       })),
   }));
   return {
-    displayName: row.display_name,
+    displayName: profileName || row.display_name,
     headline: row.headline,
     githubLogin: row.github_login,
     updatedAt: row.updated_at,
@@ -286,8 +289,10 @@ export async function saveProject(
       .single();
     if (error || !data) throw new Error("Could not create the passport.");
     passportId = (data as { id: string }).id;
+    if (githubLogin) await syncGithubAccount(owner.id, githubLogin);
   } else if (githubLogin) {
-    await admin.from("passports").update({ github_login: githubLogin }).eq("id", passportId);
+    const { data: linked } = await admin.from("passports").update({ github_login: githubLogin }).eq("id", passportId).is("github_login", null).select("id");
+    if ((linked ?? []).length) await syncGithubAccount(owner.id, githubLogin);
   }
 
   if (!contributionStatement.trim()) {
@@ -935,8 +940,56 @@ export async function withdrawCorrection(ownerId: string, correctionId: string):
  */
 export async function disconnectGithub(ownerId: string): Promise<{ disconnected: boolean; explanation: string }> {
   const passportId = await passportIdFor(ownerId);
+  await syncGithubAccount(ownerId, null);
   if (!passportId) return { disconnected: false, explanation: githubDisconnectExplanation() };
   const admin = createAdminSupabaseClient();
   await admin.from("passports").update({ github_login: null }).eq("id", passportId);
   return { disconnected: true, explanation: githubDisconnectExplanation() };
+}
+
+export const GITHUB_LOGIN_PATTERN = /^[A-Za-z0-9-]{1,39}$/;
+
+/**
+ * Sets the GitHub username shown on the profile. It only labels the profile
+ * and links to github.com/<login>; Fydell does not verify the account is the
+ * engineer's. Creates the passport row if the engineer has none yet.
+ */
+export async function setGithubLogin(ownerId: string, email: string, login: string): Promise<{ ok: true; githubLogin: string } | { ok: false; error: string }> {
+  const clean = login.trim().replace(/^@/, "");
+  if (!GITHUB_LOGIN_PATTERN.test(clean) || clean.startsWith("-") || clean.endsWith("-")) {
+    return { ok: false, error: "Use a GitHub username: up to 39 letters, numbers or single hyphens, not starting or ending with a hyphen." };
+  }
+  const admin = createAdminSupabaseClient();
+  const passportId = await passportIdFor(ownerId);
+  if (passportId) {
+    const { error } = await admin.from("passports").update({ github_login: clean }).eq("id", passportId);
+    if (error) return { ok: false, error: "Could not save the username. Try again." };
+  } else {
+    const { error } = await admin.from("passports").insert({ owner_id: ownerId, display_name: await accountDisplayName(ownerId, email), github_login: clean });
+    if (error && error.code !== "23505") return { ok: false, error: "Could not save the username. Try again." };
+    if (error) await admin.from("passports").update({ github_login: clean }).eq("owner_id", ownerId);
+  }
+  await syncGithubAccount(ownerId, clean);
+  return { ok: true, githubLogin: clean };
+}
+
+/** Keeps exactly one GitHub connected-account row, matching the passport's login. */
+async function syncGithubAccount(ownerId: string, login: string | null): Promise<void> {
+  const admin = createAdminSupabaseClient();
+  await admin.from("profile_connected_accounts").delete().eq("owner_id", ownerId).eq("provider", "github");
+  if (!login) return;
+  await admin.from("profile_connected_accounts").insert({
+    owner_id: ownerId,
+    provider: "github",
+    label: login,
+    status: "connected",
+    last_synced_at: new Date().toISOString(),
+    meta: { login, verified: false },
+  });
+}
+
+async function profileDisplayName(ownerId: string): Promise<string> {
+  const admin = createAdminSupabaseClient();
+  const { data } = await admin.from("engineer_profiles").select("display_name").eq("owner_id", ownerId).maybeSingle();
+  return ((data as { display_name: string | null } | null)?.display_name ?? "").trim();
 }

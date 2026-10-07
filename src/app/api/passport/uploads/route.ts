@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/simulations/auth";
 import { ZIP_LIMITS } from "@/lib/eng/zip";
 import { analyzeUpload } from "@/lib/passport/upload";
 import { saveProjectVersion } from "@/lib/passport/store";
+import { accountDisplayName } from "@/lib/auth/account-name";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -79,7 +80,7 @@ export async function POST(req: Request) {
   }
   try {
     const saved = await saveProjectVersion(
-      { id: user.id, displayName: user.email.split("@")[0] },
+      { id: user.id, displayName: await accountDisplayName(user.id, user.email) },
       null,
       result,
       "",

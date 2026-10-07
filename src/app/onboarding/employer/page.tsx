@@ -1,229 +1,181 @@
-"use client";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { requireUser } from "@/lib/simulations/auth";
+import { isEmployerDestination, safeNext, withNext } from "@/lib/auth/safe-next";
+import { engAdmin, resolveMembership } from "@/lib/eng/context";
+import { roleCan } from "@/lib/eng/permissions";
+import { FOCUS_OPTIONS } from "@/lib/eng/roles";
+import { CURRENT_SCENARIO } from "@/lib/eng/scenarios";
+import type { RoleRow } from "@/lib/eng/types";
+import OnboardingShell from "@/components/onboarding/OnboardingShell";
+import Checklist, { type ChecklistItem } from "@/components/onboarding/Checklist";
+import { CreateRoleStep, PublishRole, WorkspaceForm } from "@/components/onboarding/EmployerSteps";
+import { InviteCandidateForm } from "@/components/eng/RoleControls";
+import { ButtonLink } from "@/components/ui/Button";
 
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Check } from "lucide-react";
-import AuthShell from "@/components/auth/AuthShell";
-import { Button, ButtonLink } from "@/components/ui/Button";
-import { Field, FormError, Input } from "@/components/ui/Field";
-import { StatusTag } from "@/components/ui/StatusTag";
-import { safeNext } from "@/lib/auth/safe-next";
+export const dynamic = "force-dynamic";
+
+const linkCls = "font-medium text-[var(--text-primary)] underline underline-offset-4 hover:text-[var(--text-secondary)]";
 
 /**
- * Real workspace creation.
- *
- * This route was a five-line `redirect("/app/employer")` stub, so a company
- * that signed up had no screen on which to name its workspace even though
- * self-serve signup and `completeEmployerOnboarding()` were both live.
- *
- * The organization write itself is unchanged: this posts to the existing
- * `/api/auth/role` employer path.
+ * First run for a hiring team: workspace, then an engineering role, then the
+ * first candidate. Every step's state is read from the database on each
+ * render, so a refresh, a second tab or a half-finished setup all show the
+ * truth, and each step's controls call the same endpoints as the workspace.
  */
+export default async function OnboardingEmployerPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const user = await requireUser();
+  if (!user) redirect(withNext("/login", "/onboarding/employer"));
+  const rawNext = safeNext((await searchParams).next);
+  const next = rawNext && isEmployerDestination(rawNext) ? rawNext : null;
 
-function humanizeWorkspaceError(raw: string): string {
-  const lower = raw.toLowerCase();
-  if (lower.includes("reserved")) {
-    return "That name is reserved. Choose a different workspace name.";
-  }
-  if (lower.includes("unauthorized") || lower.includes("401")) {
-    return "Your session expired. Sign in again to finish setting up your workspace.";
-  }
-  if (lower.includes("not configured") || lower.includes("503")) {
-    return "Workspace creation is temporarily unavailable. Try again shortly.";
-  }
-  if (lower.includes("network") || lower.includes("fetch")) {
-    return "We could not reach Fydell. Check your connection and try again.";
-  }
-  if (raw.length > 160 || lower.includes("json") || lower.includes("stack")) {
-    return "We could not create your workspace. Try again.";
-  }
-  return raw;
-}
-
-function OnboardingContent() {
-  const router = useRouter();
-  const next = safeNext(useSearchParams().get("next"));
-
-  const [step, setStep] = useState<"workspace" | "evaluation">("workspace");
-  const [companyName, setCompanyName] = useState("");
-  const [companyWebsite, setCompanyWebsite] = useState("");
-  const [fieldError, setFieldError] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  async function createWorkspace(e: React.FormEvent) {
-    e.preventDefault();
-    if (loading) return;
-    const name = companyName.trim();
-    if (!name) {
-      setFieldError("Enter your company name.");
-      return;
-    }
-    setFieldError(null);
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/auth/role", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          role: "employer",
-          companyName: name,
-          companyWebsite: companyWebsite.trim() || undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Request failed");
-      setStep("evaluation");
-    } catch (err) {
-      setError(humanizeWorkspaceError(err instanceof Error ? err.message : "Something went wrong"));
-    } finally {
-      setLoading(false);
-    }
+  const member = await resolveMembership(user.id, user.email);
+  const db = engAdmin();
+  let roles: RoleRow[] = [];
+  let invited = 0;
+  let suggestedName = "";
+  if (member) {
+    const [rolesRes, invitesRes] = await Promise.all([
+      db.from("eng_roles").select("*").eq("organization_id", member.organizationId).neq("status", "archived").order("created_at", { ascending: false }),
+      db.from("eng_invitations").select("id", { count: "exact", head: true }).eq("organization_id", member.organizationId).neq("status", "withdrawn"),
+    ]);
+    roles = (rolesRes.data ?? []) as RoleRow[];
+    invited = invitesRes.count ?? 0;
+  } else {
+    const { data } = await db.from("profiles").select("company_name").eq("id", user.id).maybeSingle();
+    suggestedName = ((data as { company_name?: string | null } | null)?.company_name ?? "").trim();
   }
 
-  if (step === "evaluation") {
-    return (
-      <AuthShell
-        title="Your workspace is ready"
-        description={`${companyName.trim()} is set up. One evaluation is available to you now.`}
-        width="wide"
-      >
-        <div className="rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <h2 className="text-app-body font-medium text-[var(--text-primary)]">
-                Operations performance investigation
-              </h2>
-              <p className="mt-1.5 text-app-body leading-[1.6] text-[var(--text-secondary)]">
-                Reported yield fell last period. The candidate separates a
-                measurement change from real production risk and defends the
-                conclusion with evidence you can open.
-              </p>
-            </div>
-            <StatusTag tone="good">Ready</StatusTag>
+  const published = roles.find((r) => r.status === "published") ?? null;
+  const draft = published ? null : (roles.find((r) => r.status === "draft") ?? null);
+  const role = published ?? draft;
+  const canManage = member ? roleCan(member.role, "manage_roles") : false;
+  const canInvite = member ? roleCan(member.role, "invite_candidates") : false;
+  const scenario = CURRENT_SCENARIO;
+  const roleHref = role ? `/app/employer/engineering/roles/${role.id}` : "/app/employer/engineering";
+
+  const roleItem: ChecklistItem = !member
+    ? {
+        key: "role",
+        title: "Create an engineering role",
+        state: "todo",
+        detail: `Candidates get ${scenario.title}: about ${scenario.targetMinutes} minutes of practical backend work in their own editor.`,
+      }
+    : published
+      ? {
+          key: "role",
+          title: "Create an engineering role",
+          state: "done",
+          detail: (
+            <>
+              <Link href={roleHref} className={linkCls}>
+                {published.title}
+              </Link>{" "}
+              is published. Every candidate gets {scenario.title}, version {scenario.version}.
+            </>
+          ),
+        }
+      : draft
+        ? {
+            key: "role",
+            title: "Publish your engineering role",
+            state: "working",
+            detail: (
+              <>
+                <Link href={roleHref} className={linkCls}>
+                  {draft.title}
+                </Link>{" "}
+                is a draft. Preview the task or edit it on the role page, then publish to start inviting.
+              </>
+            ),
+            children: canManage ? <PublishRole roleId={draft.id} /> : null,
+          }
+        : {
+            key: "role",
+            title: "Create an engineering role",
+            state: "current",
+            detail: canManage
+              ? `Candidates get ${scenario.title}: about ${scenario.targetMinutes} minutes of practical backend work in their own editor, with one requirement change part-way through.`
+              : "An owner, admin or hiring manager in your workspace creates roles.",
+            children: canManage ? <CreateRoleStep focusOptions={FOCUS_OPTIONS} /> : null,
+          };
+
+  const items: ChecklistItem[] = [
+    {
+      key: "workspace",
+      title: "Create your workspace",
+      state: member ? "done" : "current",
+      detail: member
+        ? `${member.organizationName}. Only people you add can see its roles, candidates and reports.`
+        : "Your workspace holds your roles, candidates and reports. Only people you add can see it.",
+      children: member ? null : <WorkspaceForm initialName={suggestedName} />,
+    },
+    roleItem,
+    {
+      key: "invite",
+      title: "Invite your first candidate",
+      state: invited > 0 ? "done" : published ? "current" : "todo",
+      detail:
+        invited > 0
+          ? `${invited} candidate${invited === 1 ? "" : "s"} invited. Track them and read released reports from the role page.`
+          : published
+            ? canInvite
+              ? "By their Fydell @handle, or by email. You get a link to share yourself as well."
+              : "Your role in this workspace cannot invite candidates. Ask an owner or hiring manager."
+            : "Available once a role is published.",
+      children: published && canInvite ? <InviteCandidateForm roleId={published.id} /> : null,
+    },
+  ];
+
+  const doneCount = items.filter((i) => i.state === "done").length;
+  const finished = doneCount === items.length;
+  const exitHref = next ?? (role ? roleHref : "/app/employer");
+
+  return (
+    <OnboardingShell
+      title={finished ? "Your workspace is ready" : "Set up hiring on Fydell"}
+      lead={
+        finished
+          ? "Your candidate has the invitation. When they submit, your team reviews the evidence and releases the report."
+          : "Three steps to your first evidence report: a workspace, a role with a fixed task, and a candidate."
+      }
+      meta={
+        <p className="text-app-meta tabular-nums text-[var(--text-tertiary)]" aria-live="polite">
+          {doneCount} of {items.length} done
+        </p>
+      }
+      skipHref={member ? exitHref : "/app/employer"}
+      skipLabel={finished ? "Go to your workspace" : "Skip for now"}
+    >
+      <div className="grid items-start gap-x-14 gap-y-10 lg:grid-cols-[minmax(0,760px)_minmax(0,1fr)]">
+        <Checklist label="Workspace setup" items={items} />
+
+        <aside className="grid gap-6 border-t border-[var(--border-subtle)] pt-6 text-app-meta leading-[1.6] text-[var(--text-secondary)] lg:sticky lg:top-8 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-1">
+          <div>
+            <h2 className="text-app-body font-medium text-[var(--text-primary)]">The task</h2>
+            <p className="mt-1">{scenario.summary}</p>
+            <dl className="mt-3 grid grid-cols-2 gap-3">
+              <div>
+                <dt className="text-[var(--text-tertiary)]">Target effort</dt>
+                <dd className="text-[var(--text-primary)]">About {scenario.targetMinutes} minutes</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--text-tertiary)]">Window</dt>
+                <dd className="text-[var(--text-primary)]">{scenario.defaultAllowedMinutes} minutes after Start</dd>
+              </div>
+            </dl>
           </div>
-
-          <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-t border-[var(--border-subtle)] pt-4">
-            <div>
-              <dt className="text-app-meta text-[var(--text-tertiary)]">Duration</dt>
-              <dd className="mt-0.5 text-app-body tabular-nums text-[var(--text-primary)]">
-                20 minutes
-              </dd>
-            </div>
-            <div>
-              <dt className="text-app-meta text-[var(--text-tertiary)]">Discipline</dt>
-              <dd className="mt-0.5 text-app-body text-[var(--text-primary)]">
-                Data analysis
-              </dd>
-            </div>
-            <div>
-              <dt className="text-app-meta text-[var(--text-tertiary)]">Produces</dt>
-              <dd className="mt-0.5 text-app-body text-[var(--text-primary)]">
-                Evidence report
-              </dd>
-            </div>
-          </dl>
-        </div>
-
-        <ul className="mt-5 grid gap-2.5">
-          {[
-            "Invite a candidate by email from your workspace.",
-            "They complete the evaluation in one sitting.",
-            "You read the conclusion and open the evidence behind each claim.",
-          ].map((line) => (
-            <li
-              key={line}
-              className="flex items-start gap-2.5 text-app-body leading-[1.6] text-[var(--text-secondary)]"
-            >
-              <Check
-                className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[var(--fydell-good)]"
-                strokeWidth={2}
-                aria-hidden
-              />
-              {line}
-            </li>
-          ))}
-        </ul>
-
-        <div className="mt-7">
-          <ButtonLink
-            href={next ?? "/app/employer"}
-            variant="primary"
-            size="lg"
-            className="w-full"
-          >
-            Go to your workspace
-          </ButtonLink>
-        </div>
-      </AuthShell>
-    );
-  }
-
-  return (
-    <AuthShell
-      title="Create your workspace"
-      description="Your workspace holds your evaluations, candidates and reports. Only people you invite can see it."
-    >
-      <form onSubmit={createWorkspace} className="grid gap-4">
-        <Field
-          label="Company name"
-          htmlFor="workspace-name"
-          error={fieldError}
-          help="This is what your team and your candidates will see."
-        >
-          <Input
-            id="workspace-name"
-            name="organization"
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            autoComplete="organization"
-            invalid={Boolean(fieldError)}
-            autoFocus
-            required
-          />
-        </Field>
-
-        <Field label="Company website" htmlFor="workspace-website" optional>
-          <Input
-            id="workspace-website"
-            name="url"
-            value={companyWebsite}
-            onChange={(e) => setCompanyWebsite(e.target.value)}
-            autoComplete="url"
-          />
-        </Field>
-
-        {error ? <FormError>{error}</FormError> : null}
-
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          loading={loading}
-          className="mt-1 w-full"
-        >
-          {loading ? "Creating workspace" : "Create workspace"}
-        </Button>
-
-        <button
-          type="button"
-          onClick={() => router.push("/app/employer")}
-          className="mt-1 justify-self-center text-app-meta text-[var(--text-secondary)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline"
-        >
-          Skip for now
-        </button>
-      </form>
-    </AuthShell>
-  );
-}
-
-export default function OnboardingEmployerPage() {
-  return (
-    <Suspense
-      fallback={<div className="min-h-[100dvh] bg-[var(--surface-canvas)]" />}
-    >
-      <OnboardingContent />
-    </Suspense>
+          <div>
+            <h2 className="text-app-body font-medium text-[var(--text-primary)]">What you get back</h2>
+            <p className="mt-1">A report your team reviews before release, where each finding cites the code, test, message or handoff behind it.</p>
+          </div>
+          {member ? (
+            <ButtonLink href={exitHref} variant={finished ? "primary" : "secondary"} size="md" className="justify-self-start">
+              {next ? "Continue" : finished ? "Go to the role" : "Go to your workspace"}
+            </ButtonLink>
+          ) : null}
+        </aside>
+      </div>
+    </OnboardingShell>
   );
 }

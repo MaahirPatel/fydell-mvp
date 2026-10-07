@@ -17,6 +17,12 @@ import { parseApplicationInput, parseRoleInput } from "@/lib/hiring/role-contrac
 import { createRole, transitionRole } from "@/lib/hiring/roles";
 import { submitApplication } from "@/lib/hiring/applications";
 import { confirmPhraseMatches, deleteEngineerAccount } from "@/lib/account/delete";
+import { parsePresentationInput } from "@/lib/passport/presentation";
+import { IMAGE_BUCKET, createManualProject, setPresentationImage } from "@/lib/passport/presentation-store";
+
+const PNG = Uint8Array.from(
+  Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64"),
+);
 
 let failures = 0;
 function check(label: string, ok: boolean, detail = "") {
@@ -102,6 +108,17 @@ async function main() {
     const { data: passportRow } = await admin.from("passports").select("id").eq("owner_id", engineer.id).single();
     const passportId = (passportRow as { id: string }).id;
 
+    const presentationInput = parsePresentationInput({ title: "Ledger sync", summary: "Keeps two ledgers in step." });
+    if (!presentationInput.ok) throw new Error(presentationInput.error);
+    const manual = await createManualProject({ id: engineer.id, displayName: "Delete Test" }, presentationInput.value, `req-${randomUUID()}`, false);
+    if (!manual.ok) throw new Error(manual.error);
+    const withImage = await setPresentationImage(engineer.id, manual.value.projectKey, PNG, "Ledger screenshot");
+    if (!withImage.ok) throw new Error(withImage.error);
+    const { data: imageRow } = await admin.from("passport_project_presentations").select("id,image_path").eq("passport_id", passportId).single();
+    const { id: presentationId, image_path: imagePath } = imageRow as { id: string; image_path: string };
+    const orphanPath = `${engineer.id}/${presentationId}/orphan-${tag}.png`;
+    await admin.storage.from(IMAGE_BUCKET).upload(orphanPath, PNG, { contentType: "image/png" });
+
     console.log("guards");
     check("confirmation phrase is required", !confirmPhraseMatches("delete") && confirmPhraseMatches("  Delete My Account "));
     const refused = await deleteEngineerAccount(reviewer.id);
@@ -116,6 +133,9 @@ async function main() {
       return n ?? 0;
     };
     check("projects and findings are erased", (await count("passport_projects", "passport_id", passportId)) === 0);
+    check("project presentations are erased", (await count("passport_project_presentations", "passport_id", passportId)) === 0);
+    const gone = async (path: string) => (await admin.storage.from(IMAGE_BUCKET).download(path)).error !== null;
+    check("project image files are erased, including unreferenced ones", (await gone(imagePath)) && (await gone(orphanPath)));
     check("profile is erased", (await count("engineer_profiles", "owner_id", engineer.id)) === 0);
     check("notifications are erased", (await count("user_notifications", "user_id", engineer.id)) === 0);
     const { data: tomb } = await admin.from("passports").select("display_name,github_login").eq("id", passportId).single();
@@ -147,6 +167,11 @@ async function main() {
     const d = dsr as { status: string; checklist: string[] } | null;
     check("deletion is recorded as fulfilled", d?.status === "fulfilled" && d.checklist.includes("sign-in disabled"));
   } finally {
+    const { data: folders } = await admin.storage.from(IMAGE_BUCKET).list(engineer.id);
+    for (const folder of folders ?? []) {
+      const { data: files } = await admin.storage.from(IMAGE_BUCKET).list(`${engineer.id}/${folder.name}`);
+      if (files?.length) await admin.storage.from(IMAGE_BUCKET).remove(files.map((f) => `${engineer.id}/${folder.name}/${f.name}`));
+    }
     await admin.from("role_applications").delete().eq("organization_id", orgId);
     await admin.from("organizations").delete().eq("id", orgId);
     await admin.from("passports").delete().eq("owner_id", engineer.id);

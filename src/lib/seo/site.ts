@@ -7,12 +7,19 @@ export const SITE_URL = "https://www.fydell.com";
 /**
  * Public, indexable pages. Each one must render for anonymous visitors, export
  * a title and description, and declare a canonical equal to its path.
- * Redirecting routes (/how-it-works, /security, /simulations, ...) and auth
+ * Redirecting routes (/product, /how-it-works, /security, /simulations, ...) and auth
  * forms (which carry noindex) do not belong here.
  */
 export const INDEXABLE_PATHS = [
   "/",
-  "/product",
+  "/products",
+  "/products/builder-profiles",
+  "/products/engineering-passport",
+  "/products/builder-reports",
+  "/products/hiring-workspace",
+  "/products/simulations",
+  "/products/desktop",
+  "/changelog",
   "/employers",
   "/developers",
   "/pricing",

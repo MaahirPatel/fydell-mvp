@@ -21,11 +21,14 @@ export default function CreateRoleForm({
   initial,
   roleId,
   onDone,
+  onCreated,
 }: {
   focusOptions: { key: FocusKey; label: string }[];
   initial?: RoleFormValues;
   roleId?: string;
   onDone?: () => void;
+  /** Replaces the default navigation to the new role's page. */
+  onCreated?: (roleId: string) => void;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -57,6 +60,9 @@ export default function CreateRoleForm({
     }
     if (roleId) {
       onDone?.();
+      router.refresh();
+    } else if (onCreated) {
+      onCreated(res.data.role.id);
       router.refresh();
     } else {
       router.push(`/app/employer/engineering/roles/${res.data.role.id}`);

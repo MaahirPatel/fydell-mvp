@@ -1,6 +1,7 @@
 import "server-only";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { adminNotificationEmail } from "@/lib/ops/platform-roles";
+import { PRO_WAITLIST_COMPANY } from "@/lib/marketing/pricing";
 
 export type OutboxInsert = {
   eventType: string;
@@ -112,15 +113,26 @@ export function renderEmailTemplate(
   const actionUrl = escapeHtml(String(payload.actionUrl || `${siteUrl}/login`));
   const extra = escapeHtml(String(payload.message || payload.body || ""));
 
+  const proWaitlist = String(payload.companyName || "") === PRO_WAITLIST_COMPANY;
+
   const templates: Record<string, { subject: string; html: string }> = {
-    pilot_request_received: {
-      subject: "We received your Fydell pilot request",
-      html: shell(
-        `${h1("Request received")}${p(`Hi ${name},`)}${p(
-          `We received your pilot request for <strong style="color:#F4F5F7">${company}</strong> (${role}). Reference: <strong style="color:#F4F5F7">${reference}</strong>.`
-        )}${p("A member of the Fydell team will reply within one business day.")}${link(siteUrl, "Visit fydell.com")}`
-      ),
-    },
+    pilot_request_received: proWaitlist
+      ? {
+          subject: "You're on the Fydell Pro waitlist",
+          html: shell(
+            `${h1("You're on the waitlist")}${p(`Hi ${name},`)}${p(
+              "Thanks for joining the Fydell Pro waitlist. Paid subscriptions are not available yet, and nothing has been charged. We'll email you once Pro opens, with the final price and what it includes."
+            )}${p("Your free account keeps working as it does today.")}${link(siteUrl, "Visit fydell.com")}`
+          ),
+        }
+      : {
+          subject: "We received your Fydell pilot request",
+          html: shell(
+            `${h1("Request received")}${p(`Hi ${name},`)}${p(
+              `We received your pilot request for <strong style="color:#F4F5F7">${company}</strong> (${role}). Reference: <strong style="color:#F4F5F7">${reference}</strong>.`
+            )}${p("A member of the Fydell team will reply within one business day.")}${link(siteUrl, "Visit fydell.com")}`
+          ),
+        },
     admin_new_pilot_request: {
       subject: `New pilot request: ${company} - ${role}`,
       html: shell(

@@ -1,0 +1,198 @@
+.container {
+  width: 100%;
+  max-width: calc(1200px + var(--l-gutter, 32px) * 2);
+  margin-inline: auto;
+  padding-inline: var(--l-gutter, 32px);
+}
+.section {
+  padding-top: 112px;
+}
+.h2 {
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.028em;
+  color: var(--text-primary);
+}
+.sectionLead {
+  max-width: 62ch;
+  margin-top: 12px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.engineerGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  margin-top: 36px;
+}
+.hiringGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 36px;
+}
+.plan,
+.planPreview {
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--surface-raised);
+}
+.planPreview {
+  border-style: dashed;
+  border-color: var(--border-strong);
+  background: var(--surface-panel);
+}
+.planHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.planName {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--text-primary);
+}
+.price {
+  margin-top: 14px;
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+.per {
+  display: block;
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-tertiary);
+}
+.summary {
+  margin-top: 12px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.summary strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-block: 20px 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+.features li {
+  position: relative;
+  padding-left: 20px;
+}
+.features li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.45em;
+  width: 9px;
+  height: 5px;
+  border-left: 1.6px solid var(--status-positive-ink);
+  border-bottom: 1.6px solid var(--status-positive-ink);
+  transform: rotate(-45deg);
+}
+.limitNote {
+  margin-top: auto;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-tertiary);
+}
+.waitlist {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+}
+.tableWrap {
+  margin-top: 28px;
+  overflow-x: auto;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--surface-raised);
+}
+.tableWrap:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.table th,
+.table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+  vertical-align: top;
+}
+.table thead th {
+  background: var(--surface-panel);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.table tbody th {
+  width: 22%;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.table td {
+  color: var(--text-secondary);
+}
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.tableNote {
+  max-width: 76ch;
+  margin-top: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 1100px) {
+  .hiringGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .section {
+    padding-top: 80px;
+  }
+  .h2 {
+    font-size: 30px;
+  }
+  .engineerGrid,
+  .hiringGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .plan,
+  .planPreview {
+    padding: 22px 20px;
+  }
+}

@@ -27,6 +27,7 @@ function LoginContent() {
     <AuthShell
       title="Sign in to Fydell"
       description={description}
+      showcase={isEmployerDestination(next) ? "employer" : "engineer"}
       headerAction={
         <Link
           href={withNext("/signup", next)}

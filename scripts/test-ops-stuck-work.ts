@@ -8,9 +8,11 @@
  * Engineering uploads, submissions and attempt events are append-only by
  * database trigger, and evaluation runs need a submission. The engineering
  * checks therefore reuse one labelled dev fixture ("Ops test fixture (dev
- * only)", created on first run and left in place with its runs cancelled);
- * runs, reports, responses, import jobs and the disposable import owner are
- * deleted at the end. ops_actions and audit_logs rows are append-only and stay.
+ * only)": one user, org, draft role, invitation, submitted attempt, two
+ * uploads and one submission), created on first run and left in place.
+ * Runs, reports, responses, import jobs and the disposable import owner are
+ * deleted at the end. ops_actions, audit_logs and attempt events are
+ * append-only and stay.
  *
  * Run: npx tsx --conditions react-server --env-file=.env.local scripts/test-ops-stuck-work.ts
  */
@@ -416,17 +418,12 @@ async function live() {
   } finally {
     if (createdResponseIds.length) await db.from("eng_report_responses").delete().in("id", createdResponseIds);
     if (createdReportIds.length) await db.from("eng_reports").delete().in("id", createdReportIds);
-    const keepParked = createdRunIds[0];
-    const toDelete = createdRunIds.filter((id) => id !== keepParked);
-    if (toDelete.length) await db.from("eng_evaluation_runs").delete().in("id", toDelete);
-    if (keepParked) {
-      const { data: parked } = await db.from("eng_evaluation_runs").select("status").eq("id", keepParked).maybeSingle();
-      if (parked && parked.status !== "canceled") await db.from("eng_evaluation_runs").delete().eq("id", keepParked);
-    }
+    if (createdRunIds.length) await db.from("eng_evaluation_runs").delete().in("id", createdRunIds);
     if (createdJobIds.length) await db.from("durable_jobs").delete().in("id", createdJobIds);
     for (const id of createdUserIds) await db.auth.admin.deleteUser(id);
     const { count: leftJobs } = await db.from("durable_jobs").select("id", { count: "exact", head: true }).like("idempotency_key", `ops-test:${tag}:%`);
-    console.log(`Cleanup: deleted ${createdResponseIds.length} responses, ${createdReportIds.length} reports, ${toDelete.length} runs, ${createdJobIds.length} import jobs (${leftJobs ?? 0} left), ${createdUserIds.length} users. Kept: the labelled dev fixture with its cancelled run; append-only ops_actions, audit_logs and attempt events.`);
+    const { count: leftRuns } = await db.from("eng_evaluation_runs").select("id", { count: "exact", head: true }).in("id", createdRunIds.length ? createdRunIds : [randomUUID()]);
+    console.log(`Cleanup: deleted ${createdResponseIds.length} responses, ${createdReportIds.length} reports, ${createdRunIds.length} runs (${leftRuns ?? 0} left), ${createdJobIds.length} import jobs (${leftJobs ?? 0} left), ${createdUserIds.length} users. Kept: the labelled dev fixture; append-only ops_actions, audit_logs and attempt events.`);
   }
 }
 

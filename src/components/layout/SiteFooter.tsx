@@ -1,37 +1,32 @@
 import Link from "next/link";
 import FydellLogo from "@/components/brand/FydellLogo";
+import { PRODUCT_ITEMS } from "@/components/marketing/site/nav-data";
 
-const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
-  {
-    title: "Product",
-    links: [
-      { label: "How it works", href: "/how-it-works" },
-      { label: "Build your Passport", href: "/passport/new" },
-      { label: "Pricing", href: "/pricing" },
-      { label: "Download", href: "/download" },
-      { label: "Demo", href: "/demo" },
-    ],
-  },
+const COLUMNS: { title: string; links: readonly { label: string; href: string }[] }[] = [
+  { title: "Product", links: PRODUCT_ITEMS },
   {
     title: "Solutions",
     links: [
-      { label: "For engineers", href: "/candidates" },
-      { label: "For employers", href: "/employers" },
+      { label: "For Engineers", href: "/developers" },
+      { label: "For Employers", href: "/employers" },
+      { label: "Pricing", href: "/pricing" },
+      { label: "Download", href: "/download" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Interactive demo", href: "/demo" },
+      { label: "Changelog", href: "/changelog" },
+      { label: "Trust and privacy", href: "/trust" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "Trust", href: "/trust" },
-      { label: "Security", href: "/security" },
       { label: "Contact", href: "/contact" },
-    ],
-  },
-  {
-    title: "Account",
-    links: [
       { label: "Log in", href: "/login" },
-      { label: "Get started", href: "/get-started" },
+      { label: "Sign up", href: "/signup" },
     ],
   },
 ];
@@ -45,11 +40,11 @@ export default function SiteFooter() {
             <FydellLogo height={20} />
           </Link>
 
-          <div className="grid grid-cols-2 gap-x-16 gap-y-10 sm:grid-cols-4 md:gap-x-20">
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-16 gap-y-10 sm:grid-cols-4 md:gap-x-20">
             {COLUMNS.map((col) => (
               <div key={col.title}>
-                <h3 className="text-[13px] font-semibold text-[var(--text-primary)]">{col.title}</h3>
-                <ul className="mt-4 space-y-2.5">
+                <p id={`footer-${col.title.toLowerCase()}`} className="text-[13px] font-semibold text-[var(--text-primary)]">{col.title}</p>
+                <ul aria-labelledby={`footer-${col.title.toLowerCase()}`} className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
                     <li key={link.label}>
                       <Link
@@ -63,10 +58,10 @@ export default function SiteFooter() {
                 </ul>
               </div>
             ))}
-          </div>
+          </nav>
         </div>
 
-        <div className="mt-20 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-[var(--text-quaternary)]">
+        <div className="mt-20 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-[var(--text-tertiary)]">
           <span>© 2026 Fydell</span>
           <Link href="/privacy" className="hover:text-[var(--text-primary)]">Privacy</Link>
           <Link href="/terms" className="hover:text-[var(--text-primary)]">Terms</Link>

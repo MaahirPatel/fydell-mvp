@@ -40,13 +40,13 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/profile/accounts", {
-        method: "POST",
+      const res = await fetch("/api/passport/github", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider: "github", label, meta: { login: label } }),
+        body: JSON.stringify({ login: label }),
       });
-      const data = (await res.json()) as { account?: ConnectedAccount; error?: string };
-      if (!res.ok || !data.account) {
+      const data = (await res.json().catch(() => ({}))) as { githubLogin?: string; error?: string };
+      if (!res.ok || !data.githubLogin) {
         setError(data.error ?? "Could not connect GitHub.");
       } else {
         setLogin("");
@@ -64,11 +64,16 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
     setBusy(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ provider });
-      if (label) params.set("label", label);
-      const res = await fetch(`/api/profile/accounts?${params.toString()}`, { method: "DELETE" });
-      const data = (await res.json()) as { removed?: boolean };
-      if (!res.ok || !data.removed) {
+      let ok: boolean;
+      if (provider === "github") {
+        ok = (await fetch("/api/passport/github", { method: "DELETE" })).ok;
+      } else {
+        const params = new URLSearchParams({ provider });
+        if (label) params.set("label", label);
+        const res = await fetch(`/api/profile/accounts?${params.toString()}`, { method: "DELETE" });
+        ok = res.ok && ((await res.json().catch(() => ({}))) as { removed?: boolean }).removed === true;
+      }
+      if (!ok) {
         setError("Could not disconnect the account.");
       } else {
         await refresh();
@@ -97,6 +102,7 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
             <p className="text-app-body font-medium text-[var(--text-primary)]">
               {PROVIDER_LABELS[a.provider]}
               <span className="ml-2 font-normal text-[var(--text-secondary)]">{a.label}</span>
+              {a.provider === "github" ? <span className="ml-2 text-app-meta font-normal text-[var(--text-tertiary)]">not verified</span> : null}
             </p>
             <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">
               Connected {formatDate(a.connectedAt)}
@@ -117,7 +123,7 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
       {accounts.some((a) => a.provider === "github") ? null : (
       <form onSubmit={connectGithub}>
         <p className="text-[14px] font-medium text-[var(--text-primary)]">Connect GitHub</p>
-        <p className="mt-0.5 text-[13px] text-[var(--text-secondary)]">Your username. Fydell reads only the public repositories you choose.</p>
+        <p className="mt-0.5 text-[13px] text-[var(--text-secondary)]">Shown on your profile with a link to github.com. Fydell reads only the public repositories you choose and does not verify the account is yours.</p>
         <div className="mt-2.5 flex gap-2">
           <input
             className={inputClass}

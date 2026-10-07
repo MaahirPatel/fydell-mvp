@@ -1,6 +1,21 @@
 import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { requireOrgMember } from "@/lib/simulations/auth";
+import { IMAGE_BUCKET } from "@/lib/passport/presentation-store";
+
+type AdminClient = ReturnType<typeof createAdminSupabaseClient>;
+
+/** Every file under `<userId>/<presentationId>/`, including any no row points to. */
+async function storedImagePaths(admin: AdminClient, userId: string): Promise<string[]> {
+  const bucket = admin.storage.from(IMAGE_BUCKET);
+  const { data: folders } = await bucket.list(userId, { limit: 1000 });
+  const paths: string[] = [];
+  for (const folder of folders ?? []) {
+    const { data: files } = await bucket.list(`${userId}/${folder.name}`, { limit: 1000 });
+    for (const file of files ?? []) paths.push(`${userId}/${folder.name}/${file.name}`);
+  }
+  return paths;
+}
 
 export type DeletionResult = { ok: true } | { ok: false; status: number; error: string };
 
@@ -13,9 +28,9 @@ export function confirmPhraseMatches(input: unknown): boolean {
 /**
  * Deletes an engineer's account.
  *
- * The engineer's own content is erased: projects, findings, notes, contribution
- * context, profile, connected accounts, editor imports, notifications and import
- * jobs. Share links are revoked and open applications withdrawn, so employers
+ * The engineer's own content is erased: projects, project presentations and
+ * their images, findings, notes, contribution context, profile, connected
+ * accounts, editor imports, notifications and import jobs. Share links are revoked and open applications withdrawn, so employers
  * lose access to the evidence.
  *
  * Employer-owned records stay: decisions, private notes, requirement reviews and
@@ -51,7 +66,13 @@ export async function deleteEngineerAccount(userId: string): Promise<DeletionRes
       if (projectIds.length) {
         await step("review links detached", () => admin.from("requirement_evidence_mappings").update({ evidence_project_id: null }).in("evidence_project_id", projectIds));
       }
-      for (const table of ["passport_corrections", "passport_contribution_revisions", "passport_contributions", "passport_decisions", "passport_projects"] as const) {
+      const { data: imageRows } = await admin.from("passport_project_presentations").select("image_path").eq("passport_id", passportId).not("image_path", "is", null);
+      const imagePaths = new Set(((imageRows ?? []) as { image_path: string }[]).map((r) => r.image_path));
+      for (const path of await storedImagePaths(admin, userId)) imagePaths.add(path);
+      if (imagePaths.size) {
+        await step("project images deleted", () => admin.storage.from(IMAGE_BUCKET).remove([...imagePaths]));
+      }
+      for (const table of ["passport_project_presentations", "passport_corrections", "passport_contribution_revisions", "passport_contributions", "passport_decisions", "passport_projects"] as const) {
         await step(`${table} deleted`, () => admin.from(table).delete().eq("passport_id", passportId));
       }
       await step("passport cleared", () =>

@@ -66,9 +66,9 @@ function Basis({ basis }: { basis: EvidenceBasis }) {
 
 function RailHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-app-meta font-medium text-[var(--text-tertiary)]">
+    <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
       {children}
-    </h3>
+    </p>
   );
 }
 

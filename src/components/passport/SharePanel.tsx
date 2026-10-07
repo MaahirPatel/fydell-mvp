@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Copy, Eye, Link2 } from "lucide-react";
 import type { ShareField, VersionPolicy } from "@/lib/passport/view";
+import { Button } from "@/components/ui/Button";
 
 type Share = {
   id: string;
@@ -37,6 +38,10 @@ function shortDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+function expiryFromNow(days: number): string {
+  return new Date(Date.now() + days * 86400000).toISOString();
+}
+
 function shareStatus(s: Share): "active" | "revoked" | "expired" {
   if (s.revokedAt) return "revoked";
   if (s.expiresAt && Date.parse(s.expiresAt) <= Date.now()) return "expired";
@@ -47,11 +52,17 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
   const [shares, setShares] = useState(initialShares);
   const [label, setLabel] = useState("");
   const [fields, setFields] = useState<ShareField[]>(["projects", "evidence", "roles", "capabilities"]);
-  const [repos, setRepos] = useState<string[]>(projects.map((p) => p.repo));
+  // Tracks what the engineer unticked, so projects added or made shareable
+  // after the page loaded are included without a reload.
+  const [excluded, setExcluded] = useState<string[]>([]);
+  const repos = projects.map((p) => p.repo).filter((r) => !excluded.includes(r));
   const [policy, setPolicy] = useState<VersionPolicy>("pinned");
   const [expiryDays, setExpiryDays] = useState<string>("");
   const [created, setCreated] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
+  const [confirming, setConfirming] = useState<string | null>(null);
+  const [revoking, setRevoking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -68,7 +79,7 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
     if (repos.length === 0) return setError("Choose at least one project to include.");
     setBusy(true);
     setError(null);
-    const expiresAt = expiryDays ? new Date(Date.now() + Number(expiryDays) * 86400000).toISOString() : undefined;
+    const expiresAt = expiryDays ? expiryFromNow(Number(expiryDays)) : undefined;
     try {
       const res = await fetch("/api/passport/shares", {
         method: "POST",
@@ -92,18 +103,22 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
   }
 
   async function revoke(id: string) {
-    if (!window.confirm("Revoke this link? Anyone using it loses access immediately, including employers reviewing it. Copies they already saved cannot be recalled.")) return;
+    setRevoking(true);
+    setError(null);
     try {
       const res = await fetch(`/api/passport/shares/${id}`, { method: "DELETE" });
       const data = (await res.json().catch(() => ({}))) as { shares?: Share[]; error?: string };
       if (!res.ok) return setError(data.error ?? "Could not revoke the link. Try again.");
       setShares(data.shares ?? shares);
+      setConfirming(null);
     } catch {
       setError("Fydell could not be reached. The link is still active; try again.");
+    } finally {
+      setRevoking(false);
     }
   }
 
-  const toggleRepo = (repo: string) => setRepos((cur) => (cur.includes(repo) ? cur.filter((r) => r !== repo) : [...cur, repo]));
+  const toggleRepo = (repo: string) => setExcluded((cur) => (cur.includes(repo) ? cur.filter((r) => r !== repo) : [...cur, repo]));
 
   return (
     <section id="share" aria-labelledby="sharing-heading" className="scroll-mt-24 rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
@@ -198,7 +213,7 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
           Revoking stops the page and any employer review built on it; copies someone already saved cannot be recalled.
         </p>
 
-        {error ? <p role="alert" className="text-app-meta text-[var(--evidence-counter)]">{error}</p> : null}
+        {error && !confirming ? <p role="alert" className="text-app-meta text-[var(--evidence-counter)]">{error}</p> : null}
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="submit"
@@ -223,13 +238,21 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
             <code className="min-w-0 flex-1 truncate font-mono text-[13px] text-[var(--accent-ink)]">{created}</code>
             <button
               type="button"
-              onClick={() => void navigator.clipboard.writeText(created).then(() => setCopied(true))}
-              className="inline-flex items-center gap-1.5 rounded-[8px] bg-white px-3 py-1.5 text-app-meta font-medium"
+              onClick={() => {
+                setCopyFailed(false);
+                navigator.clipboard.writeText(created).then(
+                  () => setCopied(true),
+                  () => setCopyFailed(true),
+                );
+              }}
+              className="inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-app-meta font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
             >
               {copied ? <Check className="h-3.5 w-3.5" aria-hidden /> : <Copy className="h-3.5 w-3.5" aria-hidden />}
               {copied ? "Copied" : "Copy link"}
             </button>
-            <p className="w-full text-[13px] text-[var(--accent-ink)]">Copy it now. The full link is shown only once.</p>
+            <p role="status" className="w-full text-[13px] text-[var(--accent-ink)]">
+              {copyFailed ? "Your browser blocked copying. Select the link above and copy it." : "Copy it now. The full link is shown only once."}
+            </p>
           </div>
         ) : null}
       </form>
@@ -254,13 +277,29 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
                     {s.lastAccessedAt ? ` · last opened ${shortDate(s.lastAccessedAt)}` : " · not opened yet"}
                   </span>
                 </span>
-                {status === "active" ? (
-                  <button type="button" onClick={() => void revoke(s.id)} className="text-app-meta font-medium text-[var(--evidence-counter)] underline underline-offset-4">
-                    Revoke
-                  </button>
-                ) : (
+                {status !== "active" ? (
                   <span className="text-app-meta text-[var(--text-tertiary)]">{status === "revoked" ? "Revoked" : "Expired"}</span>
+                ) : confirming === s.id ? null : (
+                  <Button size="sm" variant="quiet" aria-label={`Revoke ${s.label || "untitled link"}`} onClick={() => setConfirming(s.id)}>
+                    Revoke
+                  </Button>
                 )}
+                {status === "active" && confirming === s.id ? (
+                  <div className="w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] px-3.5 py-3">
+                    <p className="text-app-meta leading-[1.5] text-[var(--text-primary)]">
+                      Anyone using this link loses access immediately, including employers reviewing it. Copies they already saved cannot be recalled.
+                    </p>
+                    {error ? <p role="alert" className="mt-1.5 text-app-meta text-[var(--evidence-counter)]">{error}</p> : null}
+                    <div className="mt-2.5 flex gap-2">
+                      <Button size="sm" variant="destructive" loading={revoking} onClick={() => void revoke(s.id)}>
+                        Revoke link
+                      </Button>
+                      <Button size="sm" variant="quiet" disabled={revoking} onClick={() => setConfirming(null)}>
+                        Keep it
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
               </li>
             );
           })}

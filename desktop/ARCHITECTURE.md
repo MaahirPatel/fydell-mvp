@@ -1,8 +1,12 @@
 # Fydell Desktop — Architecture
 
-**Status:** draft (2026-09-27, reworked). V1 scope: a desktop simulation client
-for candidates. No workplace surveillance — the app runs hiring simulations,
-nothing else.
+**Status:** draft (2026-09-27, reworked; updated 2026-10-07 for v0.1.6). V1
+scope: a desktop client for candidates that runs two kinds of hiring work —
+simulation sessions (`/api/sim/*`, §1–§12) and engineering assessments
+(`/api/eng/*`, §4a). No workplace surveillance — the app runs hiring work,
+nothing else. The engineering assessment client is **in progress and not
+released**: it builds and its unit tests pass, but it has not run against a
+live platform (§15).
 
 > **What this build does NOT claim.** It does not prevent AI use, prove
 > authorship, or proctor the candidate. For engineering scenarios
@@ -136,6 +140,70 @@ local test runner. Without a package, `state.workspace.files`
 (`{ path: content }`) is materialized as the editable file set when present;
 `state.workspace.testCommand` (argv) is stored for the local test runner.
 
+## 4a. Engineering assessments (`eng.rs`, `eng_package.rs`)
+
+A second, separate client for the web's `/assess/[attemptId]` flow. It
+reuses the platform client's auth (`Platform::authed`: cookie + Bearer,
+tokens stay in Rust) and error mapping, and shares nothing else with the
+simulation session code. Every shape in `eng.rs` cites its route.
+
+| Step | Route | Desktop command |
+|---|---|---|
+| List my tasks | `GET /api/eng/attempts` (candidate-scoped: own attempts + still-open invitations to the signed-in email, display fields only) | `eng_list_tasks` |
+| Accept invitation | `POST /api/eng/invitations/accept` | `eng_accept_invitation` |
+| Candidate view | `GET /api/eng/attempts/{id}` | `eng_open_attempt` |
+| Consent | `POST …/consent` | `eng_record_consent` |
+| Starter download | `GET …/starter` | `eng_prepare_workspace` |
+| Setup check | `POST …/preflight` (code the candidate pastes from their own terminal) | `eng_confirm_setup` |
+| Start (server clock) | `POST …/start` | `eng_start` |
+| Team thread | `POST …/messages` (replies composed server-side) | `eng_send_message` |
+| Requirement update | `POST …/acknowledge-update` | `eng_acknowledge_update` |
+| Handoff drafts | `PUT …/drafts` (revision-fenced; 409 returns the server copy) | `eng_save_draft` |
+| Package + upload | `POST …/uploads` → signed Storage URL → `POST …/uploads/{uploadId}/finalize` | `eng_package_preview`, `eng_upload_package` |
+| Submit | `POST …/submit` | `eng_submit` |
+| Released report | `GET …/report` (`null` until released) | `eng_get_report` |
+
+All fourteen routes exist in `src/app/api/eng/`. `GET /api/eng/attempts`
+was added for this client; the rest are the web flow's routes, unchanged.
+
+**What runs where.** The desktop never executes candidate code and never
+calls a model provider. The candidate works in their own editor and
+terminal; the app creates the project folder, opens it (`eng_open_workspace`,
+via the opener plugin from Rust, path taken from the local record and checked
+to sit inside the workspace root), and packages it.
+
+**Starter extraction** (`eng_package::extract_starter`): the ZIP is
+hash-verified, every entry name is validated (no traversal, absolute paths,
+or entries outside the declared root; entry/byte caps), and an existing
+project folder is never overwritten. A failure writes nothing. Projects go
+under `Documents/Fydell/engineering-<id prefix>/<root>` (app data when the OS
+reports no Documents folder). Attempt ids must be UUIDs before they reach a
+URL or a path.
+
+**Packaging** (`plan_package` / `build_archive`) mirrors the server's archive
+inspection (`src/lib/eng/zip.ts`): caches, VCS and dependency folders are
+skipped; credential files (`.env`, keys, `credentials.json`) and nested
+archives are refused; the same size/count/path-length limits apply. The
+preview lists what will be sent and what changed versus the starter before
+anything uploads. The archive is deterministic and rooted. The server
+re-validates everything; local checks only surface problems earlier.
+
+**Upload safety.** The signed upload URL is used once, never logged or
+returned to the renderer, and only accepted if it targets this deployment's
+Supabase Storage signed-upload endpoint for the `eng-submissions` bucket
+(`signed_upload_url_allowed`, unit-tested).
+
+**Local bookkeeping.** `app_data/eng/<attemptId>.json` (atomic
+write-then-rename) records the project path, starter hash and file list, the
+last package and its upload status, and the receipt. It never lives inside
+the project folder. The draft handoff answers are server-side
+(`PUT …/drafts`); there is no local sync journal for this flow.
+
+**Frontend.** An "Engineering" tab (`EngTasks` → `EngAssessment` →
+`EngWork` / `EngResult`), with presentation logic in `lib/eng.ts`, which is
+unit-tested in `lib/eng.test.ts`. While an engineering attempt is open the
+update prompt is held (§11).
+
 ## 5. Layout
 
 ```
@@ -168,10 +236,16 @@ desktop/
                              # contract (§11)
     src/diagnostics.rs       # scoped, redacted diagnostics + error ring (§12)
     src/error.rs             # stable error codes FYDELL-E1001…E1012 (§12)
+    src/eng.rs               # engineering assessment client for
+                             # src/app/api/eng/* (§4a)
+    src/eng_package.rs       # starter extraction + submission packaging (§4a)
   src/                       # frontend (Vite + React + TypeScript)
     App.tsx                  # sign-in → invite → consent → provisioning →
                              # workspace → submitted; version gate (§11);
-                             # locked screen (§9)
+                             # locked screen (§9); Engineering tab (§4a)
+    components/UpdatePrompt.tsx # signed self-update prompt (§11)
+    components/Eng*.tsx      # engineering task list, assessment, work, result
+    lib/eng.ts               # engineering presentation logic (eng.test.ts)
     components/Workspace.tsx # editor shell; separate local-save / remote-sync
                              # indicators; conflict banner; exit warning (§7, §8)
     components/Panels.tsx    # brief, tests, team, submit (AI disclosure, sync
@@ -283,8 +357,11 @@ across machines:
   with the holder's PID. `begin_session` (and boot assessment) refuse with
   `session_locked` when the lock belongs to a live process; on Linux liveness
   is verified via `/proc`, so a stale lock after a crash is treated as stale
-  and the session can be re-entered. The frontend shows a dedicated "Already
-  open" screen naming the holding process, with a check-again path.
+  and the session can be re-entered. On Windows and macOS liveness is not
+  checked (locks are treated as stale by policy); there,
+  `tauri-plugin-single-instance` is what prevents a second app process.
+  The frontend shows a dedicated "Already open" screen naming the holding
+  process, with a check-again path.
 - **Across machines:** every server write is fenced by `baseRevision`; a 409
   is a real signal, not retried away silently. After one optimistic retry, a
   repeated 409 becomes the sticky `conflict` phase (§7) requiring an explicit
@@ -302,9 +379,12 @@ The renderer is deliberately weak; the Rust backend is deliberately narrow:
   timeout, output caps, and Unix rlimits; this is crash/hang containment on
   the candidate's own machine, **not a sandbox** (§5).
 - `capabilities/main.json` grants the renderer only
-  `core:event:allow-listen`, `core:event:allow-unlisten`, and
-  `core:window:allow-close`. No shell, fs, dialog, or opener renderer
-  permission exists. File I/O happens exclusively through the narrow
+  `core:event:allow-listen`, `core:event:allow-unlisten`,
+  `core:window:allow-close`, `updater:allow-check`,
+  `updater:allow-download-and-install` and `process:allow-restart` (§11).
+  The updater only talks to the one endpoint in `tauri.conf.json` and only
+  installs packages signed with the embedded public key. No shell, fs,
+  dialog, or opener renderer permission exists. File I/O happens exclusively through the narrow
   `read_file`/`write_file`/`list_files` commands, scoped to the session
   workspace directory.
 - CSP (`tauri.conf.json`) allows only `connect-src ipc: http://ipc.localhost`
@@ -322,20 +402,33 @@ The renderer is deliberately weak; the Rust backend is deliberately narrow:
 What exists, honestly:
 
 - `version.rs` parses and compares `major.minor.patch` versions.
-- A proposed server contract: `GET /api/desktop/version` returning
-  `{ minimum, latest, download_url }`. **The endpoint does not exist on the
-  platform today**, so the gate fails open to `unknown` (visible, never
-  silently assumed current).
+- `GET /api/desktop/version` exists on the platform
+  (`src/app/api/desktop/version/route.ts`, policy in
+  `src/lib/desktop/version-policy.ts`). If it is unreachable or invalid the
+  gate fails open to `unknown` (visible, never silently assumed current).
 - A blocked client (below `minimum`) is refused **before** the assessment
   starts, with an explicit "Update required" screen; nothing timed has begun.
 - An available-but-not-required update is an advisory notice on the consent
   screen — the candidate may finish the assessment first.
+- **Signed self-update (v0.1.6).** `tauri-plugin-updater` checks
+  `https://github.com/MaahirPatel/fydell-mvp/releases/latest/download/latest.json`
+  8 s after launch and every 6 h (`UpdatePrompt.tsx`). It only installs a
+  package whose minisign signature matches the public key in
+  `tauri.conf.json`; Windows installs run in NSIS `passive` mode, then the
+  app restarts (`tauri-plugin-process`). The prompt is held while a timed
+  simulation or an open engineering attempt is on screen, so an install
+  never interrupts timed work.
+- `createUpdaterArtifacts` is on, so every bundle build needs
+  `TAURI_SIGNING_PRIVATE_KEY` (+ password). The release workflow
+  (`.github/workflows/release-desktop.yml`) now passes both secrets; whether
+  they are set in the repository has not been verified from here.
 
-What does **not** exist (and is therefore not claimed): no auto-updater, no
-installer authenticity verification, no rollback mechanism. Updating is a
-manual install; a manual install cannot restart an in-progress assessment
-automatically — the durable session record (§8) is what resumes it. Because
-authenticity/rollback are absent, this requirement is only partially met.
+What does **not** exist (and is therefore not claimed): no Windows
+Authenticode or macOS code signing/notarization (the updater signature
+proves the package came from our release key; it does not satisfy
+SmartScreen or Gatekeeper), and no rollback mechanism. The self-update path
+has not been exercised end to end: no signed `latest.json` has been
+published and installed by a previous version.
 
 ## 12. Diagnostics (DESK-20)
 
@@ -356,18 +449,27 @@ counts, and a capped in-memory ring of recent errors.
   versions, sync state, counts, error references — never code, tokens, or
   message bodies.
 
-**Distribution honesty.** Only the Linux distribution path has reported
-built artifacts (`.deb`, `.rpm`, `.AppImage`). On Windows the Rust backend
-compiles (`cargo check`) and its unit tests pass (`cargo test`, 29 tests,
-x86_64-pc-windows-gnu, 2026-09-28), but no Windows installer has been built,
-signed or tested on a clean machine. macOS is not built. No distribution
-claim is made beyond Linux, and the single-writer liveness check is
-Linux-only (other platforms treat locks as stale by policy).
+**Distribution honesty.** Linux artifacts (`.deb`, `.rpm`, `.AppImage`)
+were reported built earlier and were not re-verified since. On Windows
+(2026-10-07, v0.1.6, `stable-x86_64-pc-windows-msvc`, rustc 1.99.0, tauri-cli
+2.12.0): `cargo check` is clean with no warnings, `cargo test` passes 42
+tests, and `npx tauri build` compiled the release binary and produced both
+installers, `Fydell_0.1.6_x64_en-US.msi` (WiX 3.14) and
+`Fydell_0.1.6_x64-setup.exe` (NSIS). The command then exited 1: "A public key
+has been found, but no private key. Make sure to set
+`TAURI_SIGNING_PRIVATE_KEY` environment variable." So no updater signatures
+were produced for these installers (the `.sig` files in the bundle folder are
+from an earlier build and do not match them). The installers are also not
+Authenticode-signed (`NotSigned`), and none has been installed or run on a
+clean Windows machine. macOS is not built. The single-writer liveness check
+is Linux-only (§9).
 
 ## 13. Web platform additions required (not built)
 
-The desktop changes nothing outside `desktop/`. These small web-side additions
-are required for the full loop; each is specified as a contract, not a mandate
+The original simulation client changed nothing outside `desktop/`; the
+engineering client added one candidate-scoped read route,
+`GET /api/eng/attempts` (§4a). These small web-side additions are required
+for the simulation loop; each is specified as a contract, not a mandate
 for a specific URL (suggested shapes in parentheses).
 
 - **W1 — Desktop auth callback (required for sign-in).** After the candidate
@@ -414,9 +516,11 @@ for a specific URL (suggested shapes in parentheses).
 No Supabase dashboard changes are needed (the callback is issued by the web
 app, not by Supabase's hosted authorize endpoint).
 
-Desktop build configuration required: `FYDELL_PLATFORM_URL` (default
-`http://localhost:3000`; production builds must set the real URL),
-`FYDELL_SUPABASE_URL`, `FYDELL_SUPABASE_ANON_KEY` (public values).
+Desktop configuration (`config.rs`): `FYDELL_PLATFORM_URL` (runtime or
+compile time) overrides the platform; otherwise debug builds use
+`http://localhost:3000` and release builds `https://www.fydell.com`. The
+public Supabase URL and anon key come from `GET /api/desktop/config`;
+`FYDELL_SUPABASE_URL` + `FYDELL_SUPABASE_ANON_KEY` override them.
 
 ## 14. Phased integrity (explicit, not silent)
 
@@ -432,13 +536,18 @@ We will not claim proctoring we do not perform.
 
 ## 15. What remains unbuilt / unverified
 
-- `cargo check --offline` and `cargo test --offline` pass for the Rust backend
-  in this VM; the desktop TypeScript project type-checks and `vite build`
-  succeeds. A full `tauri build` (real binary + system WebKit/GTK linkage)
-  was not run here — Linux installers (`.deb`, `.rpm`, `.AppImage`) were
-  reported built earlier, but that was not re-verified in this session.
-- No signing, notarization, or auto-update; updates are manual installs
-  (§11). macOS and Windows are not built, signed, or distribution-tested.
+- Verified on Windows, 2026-10-07: the desktop TypeScript project
+  type-checks and `vite build` succeeds; `lib/eng.test.ts` passes; `cargo
+  check` is clean; `cargo test` passes 42 tests; `tauri build` produces
+  unsigned MSI and NSIS installers and then fails at updater signing without
+  `TAURI_SIGNING_PRIVATE_KEY` (§12). Linux installers were not re-verified.
+- No Authenticode or Apple signing/notarization. The signed updater (§11)
+  is wired but has never delivered an update. macOS is not built; no
+  installer has been tested on a clean machine.
+- The engineering assessment client (§4a) has never run against a live
+  platform: invitation accept, starter download and extraction, setup
+  check, the team thread, signed upload + finalize, submit, and report
+  loading are unit-tested on the desktop side only. It is not released.
 - W3–W4 are implemented on this branch but the `submit_session_atomic`
   transaction has not run against a live Postgres (no database in this
   environment); its logic is reviewed but unexecuted. The in-process unit
@@ -448,8 +557,8 @@ We will not claim proctoring we do not perform.
   report) has never run against a live platform. In particular, the sync
   conflict path (fencing, 409 → sticky conflict → explicit resolution) is
   unit-tested as a state machine but has not been exercised against the real
-  API, and the `GET /api/desktop/version` contract (§11) does not exist
-  server-side.
+  API. `GET /api/desktop/version` now exists server-side (§11) but the gate
+  has not been exercised against it from an installed build.
 - The file-package builder reads `<repo>/scenarios` from `process.cwd()`:
   serverless deployments must bundle the scenarios directory or `filePackage`
   will be null (logged server-side; the desktop falls back to

@@ -8,9 +8,20 @@
  *
  *   PLAYWRIGHT_BASE_URL=http://127.0.0.1:3017 npx tsx scripts/test-auth-flows.ts
  */
+import { existsSync } from "node:fs";
 import { chromium, type Page } from "@playwright/test";
+import { isPlausibleServiceRoleKey } from "../src/lib/supabase/project-guard";
 
 const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:3000";
+
+if (existsSync(".env.local")) process.loadEnvFile(".env.local");
+
+/** Mirrors isSupabaseConfigured(): whether the server can create Auth users. Never logs the key. */
+function hasServiceRoleKey(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+  return Boolean(url && isPlausibleServiceRoleKey(key));
+}
 
 let failures = 0;
 
@@ -199,28 +210,54 @@ async function main() {
     fail("login with unknown credentials returns 401", `HTTP ${badLogin.status} ${badLogin.error ?? ""}`);
   }
 
-  const signupBlocked = await jsonPost("/api/auth/signup", {
-    path: "employer",
-    name: "Auth Probe",
-    email: "auth-probe@example.invalid",
-    password: "probe-password-0001",
-    companyName: "Auth Probe Co",
-  });
-  if (signupBlocked.status === 503) {
-    pass(
-      "employer signup refuses to create an Auth user without a real service-role key",
-      "HTTP 503"
+  if (hasServiceRoleKey()) {
+    // A well-formed request would create a real Auth user, profile and
+    // workspace. Only requests the route rejects before createUser() are sent.
+    console.log(
+      "SKIP employer signup end-to-end — a service-role key is configured, so a valid request would create a real account. Checking validation only."
     );
-  } else if (signupBlocked.status === 200 && signupBlocked.ok) {
-    fail(
-      "employer signup end-to-end",
-      "unexpected success: this environment was not supposed to have a live service-role key"
-    );
+    const weak = await jsonPost("/api/auth/signup", {
+      path: "employer",
+      name: "Auth Probe",
+      email: "auth-probe@example.invalid",
+      password: "short",
+      companyName: "Auth Probe Co",
+    });
+    if (weak.status === 400) {
+      pass("signup rejects a short password before creating an account", "HTTP 400");
+    } else {
+      fail("signup rejects a short password", `HTTP ${weak.status} ${weak.error ?? ""}`);
+    }
+    const noCompany = await jsonPost("/api/auth/signup", {
+      path: "employer",
+      name: "Auth Probe",
+      email: "auth-probe@example.invalid",
+      password: "probe-password-0001",
+    });
+    if (noCompany.status === 400) {
+      pass("employer signup requires a company name", "HTTP 400");
+    } else {
+      fail("employer signup requires a company name", `HTTP ${noCompany.status} ${noCompany.error ?? ""}`);
+    }
   } else {
-    fail(
-      "employer signup without service-role key",
-      `HTTP ${signupBlocked.status} ${signupBlocked.error ?? ""}`
-    );
+    const signupBlocked = await jsonPost("/api/auth/signup", {
+      path: "employer",
+      name: "Auth Probe",
+      email: "auth-probe@example.invalid",
+      password: "probe-password-0001",
+      companyName: "Auth Probe Co",
+    });
+    if (signupBlocked.status === 503) {
+      pass(
+        "employer signup refuses to create an Auth user without a real service-role key",
+        "HTTP 503"
+      );
+    } else {
+      fail(
+        "employer signup without service-role key",
+        `HTTP ${signupBlocked.status} ${signupBlocked.error ?? ""}`
+      );
+    }
   }
 
   const forgot = await jsonPost("/api/platform/forgot-password", {

@@ -12,7 +12,7 @@
   --t1: #132038;
   --t2: #2b3a52;
   --t3: #5f6e84;
-  --t4: #8a97aa;
+  --t4: #5f6b7d;
   position: relative;
   display: grid;
   background: var(--bg);
@@ -67,7 +67,7 @@
 }
 .wsSub {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--t4);
 }
@@ -101,7 +101,7 @@
   padding: 0 5px;
   border-radius: 999px;
   background: var(--fy-accent);
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 590;
   line-height: 16px;
   text-align: center;
@@ -146,7 +146,7 @@
 }
 .flag {
   margin-left: auto;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 590;
 }
 .flagM {
@@ -386,7 +386,7 @@
   width: 24px;
   height: 24px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 590;
   color: #fff;
 }
@@ -430,7 +430,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 510;
   letter-spacing: 0.02em;
   color: var(--fy-red-ink);
@@ -739,7 +739,7 @@
 }
 .diffStat {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 12px;
 }
 .plus {
   color: var(--fy-accent-ink);
@@ -848,7 +848,7 @@
 }
 .kind {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--t4);
 }
 .findingText {
@@ -872,7 +872,7 @@
   border: 1px solid var(--fy-accent-line);
   border-radius: 6px;
   background: var(--fy-accent-field);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--fy-accent-ink);
 }
 .cite svg {
@@ -961,7 +961,7 @@
 .prompt b {
   display: block;
   margin-bottom: 2px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 510;
   color: var(--fy-red-ink);
 }
@@ -998,7 +998,7 @@
   color: var(--t1);
 }
 .receiptNo {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--t4);
 }
 .receiptTitle {
@@ -1023,7 +1023,7 @@
   padding: 6px 12px 5px;
   border: 2px solid rgba(196, 50, 58, 0.75);
   border-radius: 8px;
-  color: rgba(196, 50, 58, 0.85);
+  color: #c4323a;
   transform: rotate(-8deg);
   mix-blend-mode: multiply;
 }
@@ -1034,7 +1034,7 @@
   text-transform: uppercase;
 }
 .stamp span {
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.04em;
 }
 .receiptStats {
@@ -1055,7 +1055,7 @@
   border-left: 0;
 }
 .statLabel {
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1173,7 +1173,7 @@
   background: var(--t1);
 }
 .receiptSha {
-  font-size: 10.5px;
+  font-size: 12px;
   letter-spacing: 0.04em;
   color: var(--t3);
 }
@@ -1310,10 +1310,10 @@
   color: var(--control-solid-ink);
 }
 .avBlue {
-  background: linear-gradient(135deg, #8a8578, #4a4740);
+  background: #4a4740 linear-gradient(135deg, #6b665b, #4a4740);
 }
 .avRed {
-  background: linear-gradient(135deg, #e5484d, #b4323a);
+  background: #b4323a linear-gradient(135deg, #c4323a, #9e2a31);
 }
 .summaryBar i:first-child {
   background: var(--t1);

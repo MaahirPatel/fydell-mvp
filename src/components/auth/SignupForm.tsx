@@ -14,7 +14,7 @@ const MIN_PASSWORD = 8;
 
 /** Where a new account goes when no destination was carried in. */
 export const FIRST_RUN: Record<SignupPath, string | null> = {
-  fde: "/app/candidate/work-record",
+  fde: "/onboarding/engineer",
   employer: "/onboarding/employer",
   partner: null,
 };

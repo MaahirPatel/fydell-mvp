@@ -68,7 +68,7 @@ export default function BuilderReportDemo() {
 
         <div aria-live="polite" className="min-w-0 p-5 sm:p-6">
           <p className="text-[13px] text-[var(--text-tertiary)]">Observed in the code · authorship not checked</p>
-          <h3 className="mt-2 text-[18px] font-semibold leading-[1.35] tracking-[-0.012em] text-[var(--text-primary)]">{selected.finding}</h3>
+          <p className="mt-2 text-[18px] font-semibold leading-[1.35] tracking-[-0.012em] text-[var(--text-primary)]">{selected.finding}</p>
           <div className="mt-4">
             <CodeBlock
               path={selected.path}

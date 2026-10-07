@@ -69,13 +69,13 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
   const browserRef = useRef<HTMLDivElement>(null);
   const selected = evidence.find((e) => e.id === selectedId) ?? evidence[0] ?? null;
   const selectedProject = passport.projects.find((p) => p.repoFullName === selected?.repo) ?? null;
-  const author = passport.displayName || passport.githubLogin || "the engineer";
+  const author = passport.displayName || "the engineer";
   const notesForSelected = (passport.engineerNotes ?? []).filter((n) => n.findingId === selected?.id);
   const contributions = (passport.contributions ?? []).filter((c) => hasContribution(c));
   const decisions = passport.decisions ?? [];
 
   const metaParts: string[] = [];
-  if (passport.githubLogin) metaParts.push(`github.com/${passport.githubLogin}`);
+  if (passport.githubLogin) metaParts.push(`github.com/${passport.githubLogin} (not verified)`);
   metaParts.push(`${passport.projects.length} project${passport.projects.length === 1 ? "" : "s"}`);
   if (evidence.length > 0) metaParts.push(`${evidence.length} finding${evidence.length === 1 ? "" : "s"} cited to source lines`);
   const updated = formatDate(passport.updatedAt);
@@ -96,7 +96,7 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
           </p>
           <span className={`badge ${MODE_BADGE[mode]}`}>{MODE_LABEL[mode]}</span>
         </div>
-        <h2 className="pp-name">{passport.displayName || passport.githubLogin || "Your passport"}</h2>
+        <h2 className="pp-name">{passport.displayName || (mode === "shared" ? "Engineer" : "Your passport")}</h2>
         {passport.headline ? <p className="pp-headline">{passport.headline}</p> : null}
         <p className="pp-meta">{metaParts.join(" · ")}</p>
         <div className="pp-trust">

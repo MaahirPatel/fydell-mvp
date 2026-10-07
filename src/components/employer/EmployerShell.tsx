@@ -495,6 +495,7 @@ export default function EmployerShell({
           <aside className="sticky top-8 hidden h-[calc(100vh-32px)] w-[224px] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2.5 py-2.5 md:flex">
             <Link
               href="/app/employer"
+              aria-label="Fydell home"
               className="flex h-9 items-center gap-2.5 rounded-[6px] px-2 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
             >
               <FydellLogo height={20} />

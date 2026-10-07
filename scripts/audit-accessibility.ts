@@ -1,14 +1,20 @@
 /**
- * Contrast, heading order and accessible-name audit for the public routes.
+ * Contrast, heading order and accessible-name audit for the public routes,
+ * and for the signed-in candidate and employer app when credentials are given.
  *
- * Usage: npx tsx scripts/audit-accessibility.ts [baseUrl]
+ * Usage: npx tsx scripts/audit-accessibility.ts [baseUrl] [route,route,...]
+ *
+ * Signed-in routes are audited only when these are set (dev accounts only):
+ *   A11Y_CANDIDATE_EMAIL / A11Y_CANDIDATE_PASSWORD
+ *   A11Y_EMPLOYER_EMAIL / A11Y_EMPLOYER_PASSWORD
  *
  * Contrast is computed from the rendered pixels' declared colours: the text
  * colour against the nearest ancestor with a non-transparent background. That
  * catches the failure this codebase actually had, which was low-alpha text on
  * near-black, without needing a full axe harness.
  */
-import { chromium } from "playwright";
+import { chromium, type Browser, type Page } from "playwright";
+import { PRODUCT_ITEMS } from "../src/components/marketing/site/nav-data";
 
 const BASE = process.argv[2] || "http://localhost:3000";
 
@@ -20,21 +26,57 @@ const ROUTE_OVERRIDE = (process.argv[3] || "")
 
 const PUBLIC_ROUTES = [
   "/",
-  "/product",
-  "/simulations",
-  "/trust",
+  "/products",
+  ...PRODUCT_ITEMS.map((item) => item.href),
+  "/developers",
+  "/employers",
+  "/candidates",
   "/pricing",
-  "/request-pilot",
+  "/download",
+  "/changelog",
+  "/trust",
+  "/security",
+  "/contact",
+  "/demo",
+  "/get-started",
   "/privacy",
   "/terms",
-  "/security",
   "/login",
   "/signup",
   "/forgot-password",
   "/reset-password",
 ];
 
-const ROUTES = ROUTE_OVERRIDE.length > 0 ? ROUTE_OVERRIDE : PUBLIC_ROUTES;
+const CANDIDATE_ROUTES = [
+  "/app/candidate",
+  "/app/candidate/profile",
+  "/app/candidate/work-record",
+  "/app/candidate/applications",
+  "/app/candidate/settings",
+];
+
+const EMPLOYER_ROUTES = [
+  "/app/employer",
+  "/app/employer/engineering",
+  "/app/employer/settings",
+];
+
+type Session = { label: string; routes: string[]; email?: string; password?: string };
+
+function sessions(): Session[] {
+  if (ROUTE_OVERRIDE.length > 0) return [{ label: "routes", routes: ROUTE_OVERRIDE }];
+  const list: Session[] = [{ label: "public", routes: PUBLIC_ROUTES }];
+  const env = process.env;
+  if (env.A11Y_CANDIDATE_EMAIL && env.A11Y_CANDIDATE_PASSWORD) {
+    list.push({ label: "candidate", routes: CANDIDATE_ROUTES, email: env.A11Y_CANDIDATE_EMAIL, password: env.A11Y_CANDIDATE_PASSWORD });
+  }
+  if (env.A11Y_EMPLOYER_EMAIL && env.A11Y_EMPLOYER_PASSWORD) {
+    list.push({ label: "employer", routes: EMPLOYER_ROUTES, email: env.A11Y_EMPLOYER_EMAIL, password: env.A11Y_EMPLOYER_PASSWORD });
+  }
+  return list;
+}
+
+const NAV_TIMEOUT = 120000;
 
 type Finding = {
   kind: "contrast" | "heading" | "name" | "alt";
@@ -94,6 +136,8 @@ const AUDIT = `() => {
     const style = getComputedStyle(el);
     if (style.visibility === "hidden" || style.display === "none") return;
     if (parseFloat(style.opacity) < 0.5) return;
+    // WCAG 1.4.3 exempts text in inactive (disabled) user interface components.
+    if (el.closest(":disabled, [aria-disabled='true']")) return;
     const rect = el.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
 
@@ -170,19 +214,31 @@ const AUDIT = `() => {
   return findings;
 }`;
 
-async function main() {
-  const browser = await chromium.launch();
+async function signIn(page: Page, email: string, password: string) {
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle", timeout: NAV_TIMEOUT });
+  await page.fill("#login-email", email);
+  await page.fill("#login-password", password);
+  await Promise.all([
+    page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: NAV_TIMEOUT }),
+    page.click('form button[type="submit"]'),
+  ]);
+}
+
+async function audit(browser: Browser, session: Session): Promise<number> {
+  const ROUTES = session.routes;
+  console.log(`\n=== ${session.label} routes`);
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 },
     colorScheme: "dark",
     reducedMotion: "reduce",
   });
   const page = await context.newPage();
+  if (session.email && session.password) await signIn(page, session.email, session.password);
 
   let total = 0;
 
   for (const route of ROUTES) {
-    await page.goto(`${BASE}${route}`, { waitUntil: "networkidle", timeout: 30000 });
+    await page.goto(`${BASE}${route}`, { waitUntil: "networkidle", timeout: NAV_TIMEOUT });
     await page.waitForTimeout(250);
     const findings = (await page.evaluate(`(${AUDIT})()`)) as Finding[];
     if (findings.length === 0) {
@@ -199,7 +255,7 @@ async function main() {
   // resolves the way it does for a keyboard user.
   console.log("\nKeyboard focus visibility");
   for (const route of ROUTES) {
-    await page.goto(`${BASE}${route}`, { waitUntil: "networkidle", timeout: 30000 });
+    await page.goto(`${BASE}${route}`, { waitUntil: "networkidle", timeout: NAV_TIMEOUT });
     await page.waitForTimeout(200);
     const invisible: string[] = [];
     let stops = 0;
@@ -260,10 +316,12 @@ async function main() {
     viewport: { width: 640, height: 800 },
     colorScheme: "dark",
     reducedMotion: "reduce",
+    storageState: await context.storageState(),
   });
+  await context.close();
   const zoomPage = await zoomed.newPage();
   for (const route of ROUTES) {
-    await zoomPage.goto(`${BASE}${route}`, { waitUntil: "networkidle", timeout: 30000 });
+    await zoomPage.goto(`${BASE}${route}`, { waitUntil: "networkidle", timeout: NAV_TIMEOUT });
     await zoomPage.waitForTimeout(200);
     const overflow = await zoomPage.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -276,7 +334,13 @@ async function main() {
     }
   }
   await zoomed.close();
+  return total;
+}
 
+async function main() {
+  const browser = await chromium.launch();
+  let total = 0;
+  for (const session of sessions()) total += await audit(browser, session);
   await browser.close();
   console.log(`\n${total} finding(s).`);
   if (total > 0) process.exitCode = 1;

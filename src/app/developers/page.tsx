@@ -1,151 +1,103 @@
-import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
-import {
-  Closing,
-  Details,
-  Faq,
-  Hero,
-  Ledger,
-  Section,
-  SectionHead,
-  Stage,
-  Statement,
-  Trio,
-  Visual,
-} from "@/components/marketing/kit/Kit";
-import { FigConsent, FigDesktop, FigIncident, FigPassport, FigReport } from "@/components/marketing/kit/Figs";
-import { BriefShot, ReceiptShot, TrailShot } from "@/components/marketing/kit/Shots";
+import PassportView from "@/components/passport/PassportView";
+import ProductFrame from "@/components/marketing/site/ProductFrame";
+import ProfileWorkspace from "@/components/marketing/site/ProfileWorkspace";
+import SimulationWorkspace from "@/components/marketing/site/SimulationWorkspace";
+import { Feature, SiteClosing, SiteFaq, SiteHero } from "@/components/marketing/site/Sections";
+import { BACKEND_WEBHOOK_RETRY_V1 as SCENARIO } from "@/lib/eng/scenarios/backend-webhook-retry/definition";
+import { SAMPLE_PASSPORT } from "@/lib/marketing/sample-passport";
 
 export const metadata = {
-  title: "For engineers",
-  description:
-    "Show how you work on a real engineering incident. You see what is recorded before you start and keep a receipt of what you submitted. Free for engineers.",
+  title: "For Engineers",
+  description: "Present your projects with the evidence behind them, share exactly what you choose, and apply to roles with your work. Free for engineers.",
   alternates: { canonical: "/developers" },
 };
 
 export default function DevelopersPage() {
   return (
     <MarketingShell>
-      <Hero
-        title={["Show how you work,", "not how you interview"]}
-        lead="Work a real incident in your own time, with your own tools. You see exactly what is recorded before you start, and you keep a receipt of what you submitted. Fydell is free for engineers."
-        aside={{ href: "/download", strong: "Download", label: "Fydell for macOS and Windows" }}
-        actions={
+      <SiteHero
+        title={["Show the work", "behind your résumé."]}
+        lead="Present the projects you're proud of, with what you contributed and what the code shows. Share exactly what you choose, and apply to roles with it. Free for engineers."
+        primary={{ href: "/signup", label: "Sign up" }}
+        secondary={{ href: "/demo", label: "Explore the platform" }}
+        supporting={{ href: "/download", label: "Download Fydell" }}
+      >
+        <ProductFrame size="hero" interactive title="Fydell · Passport" label="An engineer's projects, the open project's contribution, and one finding with its cited lines. Select a project or a finding.">
+          <ProfileWorkspace />
+        </ProductFrame>
+      </SiteHero>
+
+      <Feature
+        id="projects"
+        layout="text"
+        title="Start with the work you already have."
+        body="Add a project in a minute. Fydell reads public and uploaded code at a fixed revision and links every finding to its lines. Work you can't share can still be described, clearly labelled as your description."
+        link={{ href: "/products/builder-profiles", label: "About Builder Profiles" }}
+        points={[
+          { title: "Import from GitHub", body: "Up to three public repositories at a time, each read at a commit you can see." },
+          { title: "Upload a ZIP", body: "For code you're allowed to share privately. No public link to the source." },
+          { title: "Describe it", body: "For employer or confidential work. What you built and what changed, in your words." },
+        ]}
+      />
+
+      <Feature
+        id="sharing"
+        layout="split"
+        title="Share on your terms."
+        body={
           <>
-            <Link href="/passport/new" className="l-btn l-btn-lg l-btn-solid">Build your passport</Link>
-            <Link href="/signup" className="l-btn l-btn-lg l-btn-ghost">Create an account</Link>
+            <p>Nothing leaves your account until you create a link or apply. Each link includes only the projects you tick, at the versions you pin.</p>
+            <p>Preview what the recipient sees, set an expiry, and revoke the link whenever you like.</p>
           </>
         }
+        link={{ href: "/products/engineering-passport", label: "About the Engineering Passport" }}
       >
-        <Stage hero label="Example: the work trail and the notice shown before you start">
-          <TrailShot />
-        </Stage>
-      </Hero>
+        <ProductFrame interactive title="Recipient preview" label="A Passport as a recipient sees it. Fictional engineer and project.">
+          <div className="max-h-[560px] overflow-y-auto">
+            <PassportView passport={SAMPLE_PASSPORT} mode="sample" />
+          </div>
+        </ProductFrame>
+      </Feature>
 
-      <Section>
-        <Statement
-          lead="No whiteboard, no trick questions, no one watching."
-          rest="Just a codebase with a real problem, a team that answers when you ask, and an hour to do what you would do at work."
-        />
-        <Trio
-          items={[
-            { fig: <FigIncident />, title: "A problem worth solving", body: "Production-style incidents in small, working services. Read the brief, find the cause, fix it properly." },
-            { fig: <FigDesktop />, title: "Your machine, your tools", body: "The desktop app sets up the project. Edit in the editor you already use." },
-            { fig: <FigPassport />, title: "Work you can point to", body: "Build an Engineering Passport from your own repositories and share it on your terms." },
-          ]}
-        />
-      </Section>
+      <Feature
+        id="applying"
+        layout="text"
+        title="Apply with your work, not just a résumé."
+        body="When a hiring team shares a role link, apply by choosing which projects to include. The team reads them against the role's requirements. If something isn't covered, they can ask you a question tied to that requirement or invite you to a simulation."
+        points={[
+          { title: "Your choice of projects", body: "Each application carries only the projects you select for it." },
+          { title: "No hidden score", body: "There is no overall rating or rank. Reviewers record their own reading." },
+          { title: "Always free", body: "Applying, invitations and simulations never cost engineers anything." },
+        ]}
+      />
 
-      <Section id="simulation" labelledBy="simulation-title">
-        <SectionHead
-          id="simulation-title"
-          title={["What a simulation", "is like"]}
-          lead="You get an incident brief, a repository that runs, and two teammates. Ask them anything; they reply to what you write, and every candidate gets the same decisions from them. About twenty minutes in, the team posts one requirement update."
-        />
-        <Visual label="Example: the incident brief and the team thread">
-          <BriefShot />
-        </Visual>
-        <Details
-          items={[
-            { title: "Asking is optional", body: "Not asking is never counted against you. If you assume, say so in your handoff." },
-            { title: "Setup comes first", body: "A setup check runs before the clock matters. Setup problems are not held against you." },
-            { title: "Three short answers", body: "What changed, what you tested, and what remains unresolved. Short and accurate beats long." },
-          ]}
-        />
-      </Section>
+      <Feature
+        id="simulations"
+        title="Simulations, disclosed up front."
+        body={`If you're invited to a simulation, you see the brief, the time (${SCENARIO.defaultAllowedMinutes} minutes for about ${SCENARIO.targetMinutes} of work), the AI tool policy and what is recorded before anything starts. Setup time doesn't count, and asking the team questions is optional.`}
+        link={{ href: "/products/simulations", label: "About Simulations" }}
+      >
+        <ProductFrame tag="Preview" title="Simulation · Webhook retry incident" label="A candidate's simulation: the brief and requirements, the project files, a public test run, and the team thread docked beside the brief.">
+          <SimulationWorkspace />
+        </ProductFrame>
+      </Feature>
 
-      <Section id="receipt" labelledBy="receipt-title">
-        <SectionHead
-          id="receipt-title"
-          title={["A receipt for", "what you sent"]}
-          lead="When you submit, your project is sealed with a checksum. You keep a receipt with that checksum, so you always know exactly what the employer reviewed."
-        />
-        <Visual label="Example: a submission receipt" fade={false}>
-          <ReceiptShot />
-        </Visual>
-      </Section>
+      <SiteFaq
+        title="Questions from engineers"
+        items={[
+          { q: "Do I pay anything?", a: "No. Your profile, Passport, reports, applications and simulations are free. A Pro plan is in preview and will never be required to apply." },
+          { q: "Can I use AI tools in a simulation?", a: "Yes, the same way you would at work, unless the brief says otherwise. Fydell cannot see your tools and does not try to detect them. You describe any AI help in your own words." },
+          { q: "What if a finding about my code is wrong?", a: "Flag it, add context, or propose a different reading. Your note is attributed to you and shown next to the finding; the original stays visible." },
+          { q: "Do I need the desktop app?", a: "No. Everything works in the browser. The desktop app is an option for working simulations in a local workspace." },
+        ]}
+      />
 
-      <Section id="passport" labelledBy="passport-title">
-        <SectionHead
-          id="passport-title"
-          title={["An Engineering", "Passport you own"]}
-          lead="Paste your GitHub profile and pick up to three public repositories. Fydell reads them at a pinned commit and lists what the code shows, each finding linked to the exact lines. You decide who sees it, and you can revoke a link at any time."
-          link={{ href: "/passport/new", label: "Build your passport, no account needed" }}
-        />
-        <Trio
-          items={[
-            { fig: <FigPassport />, title: "From code you already wrote", body: "Public repositories, read at a pinned commit so every finding refers to the same code." },
-            { fig: <FigReport />, title: "Every finding cites its lines", body: "What the code demonstrates, linked to files and line ranges. Unassessed areas are listed, not guessed." },
-            { fig: <FigConsent />, title: "Shared on your terms", body: "Each link is scoped to one employer. Preview what they will see, and revoke it in one click." },
-          ]}
-        />
-      </Section>
-
-      <Section id="boundaries" labelledBy="boundaries-title">
-        <SectionHead
-          id="boundaries-title"
-          title={["What is recorded,", "and what never is"]}
-          lead="The list is shown before you start and is the same for every candidate. The employer's report can only cite what is on it."
-          link={{ href: "/trust", label: "Read the trust page" }}
-        />
-        <Ledger
-          yes={{
-            title: "Recorded during a simulation",
-            items: [
-              { strong: "File changes", rest: "in the simulation project folder." },
-              { strong: "Commands and test runs", rest: "you start from the app, with their results." },
-              { strong: "Timing", rest: "of each step, so the order of your work is clear." },
-              { strong: "Team messages and your handoff", rest: "exactly as you wrote them." },
-            ],
-          }}
-          no={{
-            title: "Never recorded",
-            items: [
-              { strong: "Your screen, webcam or microphone.", rest: "Nothing is captured visually or by audio." },
-              { strong: "Keystrokes.", rest: "Only saved file changes, never typing." },
-              { strong: "Other apps and files.", rest: "Nothing outside the simulation folder." },
-              { strong: "Anything outside a session.", rest: "Recording starts when you begin and stops when you submit." },
-            ],
-          }}
-        />
-      </Section>
-
-      <Section id="questions" labelledBy="questions-title">
-        <SectionHead id="questions-title" title={["Questions from", "engineers"]} lead="The short answers." />
-        <Faq
-          items={[
-            { q: "Do I pay anything?", a: "No. Simulations and your Engineering Passport are free for engineers. Employers pay." },
-            { q: "Can I use AI tools?", a: "Fydell cannot see them and does not try to detect them. At the end you describe any AI help in your own words, and the report labels that as your statement." },
-            { q: "Do I get feedback?", a: "You keep your receipt. Whether the employer shares their report with you is up to them." },
-            { q: "What if something breaks?", a: "Use the Support link shown during the simulation. Problems outside your control are not held against you." },
-          ]}
-        />
-      </Section>
-
-      <Closing
-        title={["Show the work.", "Keep the receipt."]}
-        primary={{ href: "/passport/new", label: "Build your passport" }}
-        secondary={{ href: "/download", label: "Download the app" }}
+      <SiteClosing
+        title="Put your work where it can be seen."
+        body="Create your profile and add your first project."
+        primary={{ href: "/signup", label: "Sign up" }}
+        secondary={{ href: "/demo", label: "Explore the platform" }}
       />
     </MarketingShell>
   );

@@ -36,12 +36,16 @@ export default async function SharedProfilePage({ params }: { params: Promise<{ 
   }
 
   const { profile, accounts, timeline, passport } = shared.public;
+  const shownAccounts = [
+    ...accounts.filter((a) => a.provider !== "github"),
+    ...(passport.githubLogin ? [{ provider: "github" as const, label: passport.githubLogin }] : []),
+  ];
 
   return (
     <CandidateShell width="wide">
       <ProfileOverview
         profile={profile}
-        accounts={accounts}
+        accounts={shownAccounts}
         projects={passport.projects.filter((p) => p.status !== "stale")}
         presentations={passport.presentations}
         capabilities={passport.capabilities}

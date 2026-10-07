@@ -2,6 +2,7 @@ import { after, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { csrfGuard } from "@/lib/security/csrf";
 import { enqueueImport, listImportJobs, runImportJob } from "@/lib/passport/import-store";
+import { accountDisplayName } from "@/lib/auth/account-name";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
 
   const result = await enqueueImport({
     ownerId: user.id,
-    displayName: githubLogin ?? user.email.split("@")[0],
+    displayName: await accountDisplayName(user.id, user.email),
     repository: str(body?.repository),
     commitSha: str(body?.commitSha),
     revisionRef: str(body?.revisionRef),

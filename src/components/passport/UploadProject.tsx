@@ -27,13 +27,14 @@ function formatBytes(n: number): string {
  * GitHub repository. The engineer reviews exactly which files will be read
  * before anything is saved.
  */
-export default function UploadProject() {
+export default function UploadProject({ onSaved }: { onSaved?: (projectId: string, name: string) => void } = {}) {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
   const [preview, setPreview] = useState<Preview | null>(null);
   const [busy, setBusy] = useState<"preview" | "save" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
 
   function chooseFile(next: File | null) {
     setFile(next);
@@ -60,7 +61,18 @@ export default function UploadProject() {
         return;
       }
       if (intent === "preview" && data.preview) setPreview(data.preview);
-      if (intent === "save" && data.projectId) router.push(`/app/candidate/projects/${data.projectId}`);
+      if (intent === "save" && data.projectId) {
+        if (onSaved) {
+          onSaved(data.projectId, preview?.name ?? name);
+          setFile(null);
+          setFileInputKey((k) => k + 1);
+          setName("");
+          setPreview(null);
+          router.refresh();
+        } else {
+          router.push(`/app/candidate/projects/${data.projectId}`);
+        }
+      }
     } catch {
       setError("Fydell could not be reached. Your file is still selected; try again.");
     } finally {
@@ -82,6 +94,7 @@ export default function UploadProject() {
         <label className="block">
           <span className="mb-1 block text-app-meta font-medium text-[var(--text-secondary)]">Project archive (.zip)</span>
           <input
+            key={fileInputKey}
             type="file"
             accept=".zip,application/zip"
             onChange={(e) => chooseFile(e.target.files?.[0] ?? null)}

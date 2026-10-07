@@ -336,7 +336,7 @@
 .ln {
   padding-right: 6px;
   text-align: right;
-  color: var(--text-quaternary);
+  color: var(--text-tertiary);
 }
 .sign {
   color: var(--text-tertiary);

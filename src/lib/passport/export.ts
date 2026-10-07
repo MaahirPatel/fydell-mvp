@@ -36,7 +36,7 @@ export function exportPassport(passport: PassportData, corrections: Correction[]
       githubLogin: passport.githubLogin,
     },
     privacy: [
-      "This export contains only your own passport data: projects you added, the findings extracted from them, and corrections you filed.",
+      "This export contains only your own data: your profile details, projects you added, the findings extracted from them, and corrections you filed.",
       "It never contains employer-private notes, hidden assessment material, or anyone else's data.",
     ],
     projects: passport.projects.map((p) => ({

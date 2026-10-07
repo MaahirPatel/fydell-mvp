@@ -25,34 +25,28 @@ const COPY: Record<SignupAudience, { title: string; description: string }> = {
 
 /**
  * Signup with the role choice on the form itself, so a new account lands in
- * the right first-run flow without an extra screen. The aside follows the
- * choice: an engineer sees how a project is added, a hiring team sees the
- * task their candidates receive.
+ * the right first-run flow without an extra screen. The product panel follows
+ * the choice: a Builder Profile for engineers, applicant review for hiring.
  */
 export default function SignupView({
   audience,
   initialPath,
   next,
   partnerEnabled,
-  engineerAside,
-  employerAside,
 }: {
   audience: SignupAudience;
   initialPath: SignupPath | null;
   next: string | null;
   partnerEnabled: boolean;
-  engineerAside: React.ReactNode;
-  employerAside: React.ReactNode;
 }) {
   const [path, setPath] = useState<SignupPath | null>(initialPath);
   const chooseRole = audience === "open";
-  const aside = path === "employer" ? employerAside : path === "partner" ? null : engineerAside;
 
   return (
     <AuthShell
       title={COPY[audience].title}
       description={COPY[audience].description}
-      aside={aside ?? undefined}
+      showcase={path === "employer" ? "employer" : "engineer"}
       headerAction={
         <Link
           href={withNext("/login", next)}

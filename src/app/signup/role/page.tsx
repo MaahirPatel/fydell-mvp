@@ -38,7 +38,7 @@ function SignupRoleContent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Request failed");
       if (role === "fde") {
-        router.push(next ?? "/app/candidate/work-record");
+        router.push(next ?? "/onboarding/engineer");
         return;
       }
       router.push(data.redirectTo || "/");

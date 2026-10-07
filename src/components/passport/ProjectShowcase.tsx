@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, ImagePlus, Plus, Star } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field, FormError, Input, Select, Textarea } from "@/components/ui/Field";
@@ -225,6 +226,7 @@ const newRequestId = () => (typeof crypto !== "undefined" && "randomUUID" in cry
  * stay private. Analysis results are never edited here.
  */
 export default function ProjectShowcase({ initial }: { initial: ProjectPresentation[] }) {
+  const router = useRouter();
   const [items, setItems] = useState(initial);
   const [mode, setMode] = useState<Mode | null>(null);
   const [draft, setDraft] = useState<Draft>(toDraft(null));
@@ -235,6 +237,11 @@ export default function ProjectShowcase({ initial }: { initial: ProjectPresentat
   const [arranging, setArranging] = useState(false);
 
   const featuredCount = useMemo(() => items.filter((i) => i.featured).length, [items]);
+  const previewHref = `/app/candidate/work-record/preview?${new URLSearchParams({
+    fields: "projects,evidence,roles,capabilities",
+    repos: items.filter((i) => i.visibility === "shareable").map((i) => i.projectKey).join(","),
+    policy: "pinned",
+  }).toString()}`;
 
   const arrange = useCallback(
     async (next: ProjectPresentation[]) => {
@@ -250,8 +257,9 @@ export default function ProjectShowcase({ initial }: { initial: ProjectPresentat
         return;
       }
       setItems(next.map((i, idx) => ({ ...i, sortOrder: idx + 1 })));
+      router.refresh();
     },
-    [items],
+    [items, router],
   );
 
   const move = (index: number, delta: -1 | 1) => {
@@ -287,10 +295,17 @@ export default function ProjectShowcase({ initial }: { initial: ProjectPresentat
     setBusy(true);
     setError(null);
     const payload = toPayload(draft);
-    const res =
-      mode.kind === "create"
-        ? await call("POST", { clientRequestId: mode.requestId, confirmDuplicate, presentation: payload })
-        : await call("PUT", { projectKey: mode.item.projectKey, expectedVersion: mode.item.version, presentation: payload });
+    let res;
+    if (mode.kind === "create") {
+      res = await call("POST", { clientRequestId: mode.requestId, confirmDuplicate, presentation: payload });
+    } else {
+      const put = (version: number) => call("PUT", { projectKey: mode.item.projectKey, expectedVersion: version, presentation: payload });
+      res = await put(mode.item.version);
+      // Arranging stores an unconfirmed draft as a row, which bumps its version
+      // without anyone editing the text. That is not a real conflict.
+      const current = res.data.current as ProjectPresentation | undefined;
+      if (res.status === 409 && current && !mode.item.confirmedAt && !current.confirmedAt) res = await put(current.version);
+    }
     setBusy(false);
     const saved = res.data.presentation as ProjectPresentation | undefined;
     if (res.ok && saved) {
@@ -301,6 +316,7 @@ export default function ProjectShowcase({ initial }: { initial: ProjectPresentat
         return [...featured, ...updated.filter((i) => !i.featured)];
       });
       setMode(null);
+      router.refresh();
       return;
     }
     if (res.status === 409 && res.data.duplicateOf) {
@@ -325,6 +341,7 @@ export default function ProjectShowcase({ initial }: { initial: ProjectPresentat
     }
     setItems((prev) => prev.filter((i) => i.projectKey !== mode.item.projectKey));
     setMode(null);
+    router.refresh();
   };
 
   const imageChanged = (saved: ProjectPresentation) => {
@@ -402,7 +419,7 @@ export default function ProjectShowcase({ initial }: { initial: ProjectPresentat
         <p className="mt-4 text-[14px] text-[var(--text-secondary)]">No projects yet. Add a repository below, or describe a project that has no shareable source.</p>
       )}
       <p className="mt-3 text-[13px] leading-[1.55] text-[var(--text-tertiary)]">
-        <Link href="/app/candidate/work-record/preview" className="font-medium text-[var(--text-secondary)] underline-offset-4 hover:underline">
+        <Link href={previewHref} className="font-medium text-[var(--text-secondary)] underline-offset-4 hover:underline">
           Preview what a recipient sees
         </Link>
         . Private projects never appear in a share link.

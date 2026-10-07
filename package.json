@@ -65,6 +65,8 @@
     "test:share-brief": "tsx --conditions react-server --env-file=.env.local scripts/test-share-brief.ts",
     "test:role-applications": "tsx --conditions react-server --env-file=.env.local scripts/test-role-applications.ts",
     "test:presentations": "tsx --conditions react-server --env-file=.env.local scripts/test-project-presentations.ts",
+    "test:ops": "tsx --conditions react-server --env-file=.env.local scripts/test-ops-stuck-work.ts",
+    "test:desktop-http": "tsx --conditions react-server --env-file=.env.local scripts/test-desktop-eng-http.ts",
     "test:passport-upload": "tsx --conditions react-server --env-file=.env.local scripts/test-passport-upload.ts",
     "test:account-deletion": "tsx --conditions react-server --env-file=.env.local scripts/test-account-deletion.ts",
     "test:analysis-modules": "tsx scripts/test-analysis-modules.ts",

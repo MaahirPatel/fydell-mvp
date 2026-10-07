@@ -7,39 +7,66 @@
  * committed light theme uses large white focal planes on an ivory canvas.
  *
  * Usage: npx tsx scripts/audit-responsive.ts [baseUrl]
- * Authenticated and candidate routes need the preview server.
+ *
+ * Signed-in routes are swept only when these are set (dev accounts only):
+ *   A11Y_CANDIDATE_EMAIL / A11Y_CANDIDATE_PASSWORD
+ *   A11Y_EMPLOYER_EMAIL / A11Y_EMPLOYER_PASSWORD
  */
-import { chromium } from "playwright";
+import { chromium, type Browser, type Page } from "playwright";
+import { PRODUCT_ITEMS } from "../src/components/marketing/site/nav-data";
 
 const BASE = process.argv[2] || "http://localhost:3000";
 const WIDTHS = [390, 768, 1280, 1440];
+const NAV_TIMEOUT = 120000;
 
-const ROUTES = [
+const PUBLIC_ROUTES = [
   "/",
-  "/how-it-works",
-  "/contact",
-  "/product",
-  "/simulations",
-  "/trust",
+  "/products",
+  ...PRODUCT_ITEMS.map((item) => item.href),
+  "/developers",
+  "/employers",
   "/pricing",
-  "/request-pilot",
-  "/privacy",
-  "/terms",
+  "/download",
+  "/changelog",
+  "/demo",
+  "/trust",
   "/security",
+  "/contact",
   "/login",
   "/signup",
-  "/sandbox/roles",
-  "/sandbox/work",
-  "/sandbox/evidence",
-  "/sandbox/receipts",
-  "/app/employer",
-  "/app/employer/assessments",
-  "/app/employer/candidates",
-  "/app/employer/reports",
-  "/app/employer/settings",
-  "/app/employer/assessments/report/sess-s6",
-  "/sim/sess-s6/result",
 ];
+
+const CANDIDATE_ROUTES = [
+  "/app/candidate",
+  "/app/candidate/profile",
+  "/app/candidate/work-record",
+  "/app/candidate/applications",
+  "/app/candidate/settings",
+];
+
+const EMPLOYER_ROUTES = [
+  "/app/employer",
+  "/app/employer/engineering",
+  "/app/employer/settings",
+];
+
+type Session = { label: string; routes: string[]; email?: string; password?: string };
+
+function sessions(): Session[] {
+  const list: Session[] = [{ label: "public", routes: PUBLIC_ROUTES }];
+  const env = process.env;
+  if (env.A11Y_CANDIDATE_EMAIL && env.A11Y_CANDIDATE_PASSWORD) {
+    list.push({ label: "candidate", routes: CANDIDATE_ROUTES, email: env.A11Y_CANDIDATE_EMAIL, password: env.A11Y_CANDIDATE_PASSWORD });
+  } else {
+    console.log("Skipping candidate routes: set A11Y_CANDIDATE_EMAIL and A11Y_CANDIDATE_PASSWORD to sweep them.");
+  }
+  if (env.A11Y_EMPLOYER_EMAIL && env.A11Y_EMPLOYER_PASSWORD) {
+    list.push({ label: "employer", routes: EMPLOYER_ROUTES, email: env.A11Y_EMPLOYER_EMAIL, password: env.A11Y_EMPLOYER_PASSWORD });
+  } else {
+    console.log("Skipping employer routes: set A11Y_EMPLOYER_EMAIL and A11Y_EMPLOYER_PASSWORD to sweep them.");
+  }
+  return list;
+}
 
 // An IIFE, not a bare arrow: evaluate() treats a string as an expression to
 // evaluate rather than a function to call.
@@ -63,23 +90,36 @@ const PROBE = `(() => {
   return { overflow, wide, tiny };
 })()`;
 
-async function main() {
-  const browser = await chromium.launch();
+async function signIn(page: Page, email: string, password: string) {
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle", timeout: NAV_TIMEOUT });
+  await page.fill("#login-email", email);
+  await page.fill("#login-password", password);
+  await Promise.all([
+    page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: NAV_TIMEOUT }),
+    page.click('form button[type="submit"]'),
+  ]);
+}
+
+async function sweep(browser: Browser, session: Session): Promise<{ checked: number; defects: number }> {
+  console.log(`\n=== ${session.label} routes`);
   let defects = 0;
   let checked = 0;
 
   for (const width of WIDTHS) {
-    const page = await browser.newPage({ viewport: { width, height: 900 } });
+    const context = await browser.newContext({ viewport: { width, height: 900 } });
+    const page = await context.newPage();
+    if (session.email && session.password) await signIn(page, session.email, session.password);
+
     const errors: string[] = [];
     page.on("console", (m) => {
       if (m.type() === "error") errors.push(m.text());
     });
 
-    for (const route of ROUTES) {
+    for (const route of session.routes) {
       errors.length = 0;
       let status = 0;
       try {
-        const res = await page.goto(`${BASE}${route}`, { waitUntil: "networkidle" });
+        const res = await page.goto(`${BASE}${route}`, { waitUntil: "networkidle", timeout: NAV_TIMEOUT });
         status = res?.status() ?? 0;
       } catch (err) {
         console.log(`FAIL ${width} ${route}: ${(err as Error).message}`);
@@ -106,9 +146,20 @@ async function main() {
         console.log(`${String(width).padEnd(5)} ${route.padEnd(44)} ${problems.join(" | ")}`);
       }
     }
-    await page.close();
+    await context.close();
   }
+  return { checked, defects };
+}
 
+async function main() {
+  const browser = await chromium.launch();
+  let defects = 0;
+  let checked = 0;
+  for (const session of sessions()) {
+    const result = await sweep(browser, session);
+    defects += result.defects;
+    checked += result.checked;
+  }
   await browser.close();
   console.log(
     `\n${checked} page renders checked across ${WIDTHS.join("/")}. ${defects} defect(s).`

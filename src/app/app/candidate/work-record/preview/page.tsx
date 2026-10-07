@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/simulations/auth";
 import { getSharePreview } from "@/lib/profile/store";
+import { SHAREABLE_FIELDS } from "@/lib/passport/view";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
 import PassportView from "@/components/passport/PassportView";
 import ProfileOverview from "@/components/profile/ProfileOverview";
@@ -29,8 +30,9 @@ export default async function SharePreviewPage({
   const user = await requireUser();
   if (!user) redirect(`/login?next=${encodeURIComponent("/app/candidate/work-record")}`);
   const params = await searchParams;
-  const fields = list(params.fields);
-  const repos = list(params.repos);
+  // Opened without settings, preview the default share: every shareable project with all sections.
+  const fields = params.fields === undefined ? [...SHAREABLE_FIELDS] : list(params.fields);
+  const repos = params.repos === undefined ? undefined : list(params.repos);
   const preview = await getSharePreview(user.id, fields.includes("projects") ? fields : ["projects", ...fields], {
     repos,
     versionPolicy: params.policy === "follow" ? "follow" : "pinned",

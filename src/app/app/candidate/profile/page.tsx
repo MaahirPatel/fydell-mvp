@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/simulations/auth";
+import { accountDisplayName } from "@/lib/auth/account-name";
 import { getOwnerPassport, listShares } from "@/lib/passport/store";
 import { getProfileHub } from "@/lib/profile/store";
 import { getPresentations } from "@/lib/passport/presentation-store";
@@ -29,7 +30,7 @@ export default async function CandidateProfilePage({ searchParams }: { searchPar
   if (!user) redirect(`/login?next=${encodeURIComponent("/app/candidate/profile")}`);
 
   const [hub, passport, shares, simulations] = await Promise.all([
-    getProfileHub(user.id, user.email.split("@")[0]),
+    getProfileHub(user.id, await accountDisplayName(user.id, user.email)),
     getOwnerPassport(user.id),
     listShares(user.id),
     listProfileSimulations(user.id),
@@ -37,12 +38,17 @@ export default async function CandidateProfilePage({ searchParams }: { searchPar
   const projects = (passport?.projects ?? []).filter((p) => p.status !== "stale");
   const presentations = await getPresentations(user.id, passport?.projects ?? []);
   const liveShares = shares.filter((s) => !s.revokedAt).length;
+  const githubLogin = passport?.githubLogin ?? null;
+  const accounts = [
+    ...hub.accounts.filter((a) => a.provider !== "github").map((a) => ({ provider: a.provider, label: a.label })),
+    ...(githubLogin ? [{ provider: "github" as const, label: githubLogin }] : []),
+  ];
 
   return (
     <CandidateShell width="wide" current="profile">
       <ProfileOverview
         profile={hub.profile}
-        accounts={hub.accounts.map((a) => ({ provider: a.provider, label: a.label }))}
+        accounts={accounts}
         projects={projects}
         presentations={presentations}
         capabilities={passport?.capabilities ?? null}
@@ -52,7 +58,7 @@ export default async function CandidateProfilePage({ searchParams }: { searchPar
         mode="owner"
         actions={
           <>
-            <ProfileIdentityForm initial={hub.profile} />
+            <ProfileIdentityForm initial={hub.profile} githubLogin={githubLogin} />
             <Link
               href="/app/candidate/work-record#share"
               className="inline-flex h-9 items-center rounded-[8px] bg-[var(--control-solid)] px-4 text-[14px] font-medium text-white shadow-[0_1px_2px_rgba(16,24,40,0.12)] hover:bg-[var(--control-solid-hover)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--accent-line)]"

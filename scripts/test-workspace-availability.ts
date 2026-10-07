@@ -133,15 +133,14 @@ async function main(): Promise<void> {
 
   const nextConfig = readFileSync(join(process.cwd(), "next.config.ts"), "utf8");
 
-  check("the onboarding catch-all does not swallow /onboarding/employer", () => {
+  check("the onboarding catch-all does not swallow /onboarding/employer or /onboarding/engineer", () => {
     assertTrue(
       !nextConfig.includes('source: "/onboarding/:path*"'),
-      "/onboarding/:path* redirects /onboarding/employer away from the live " +
-        "workspace-naming route; exclude employer from the catch-all"
+      "/onboarding/:path* redirects the live first-run routes away; exclude them from the catch-all"
     );
     assertTrue(
-      nextConfig.includes("(?!employer$)"),
-      "expected the onboarding redirect to exclude the employer segment"
+      /\(\?!(employer\$\|engineer\$|engineer\$\|employer\$)\)/.test(nextConfig),
+      "expected the onboarding redirect to exclude both the employer and engineer segments"
     );
   });
 

@@ -1,4 +1,7 @@
 /** Published employer pricing, in US dollars. Engineers never pay. */
+/** Company value the Pro waitlist form submits; the confirmation email keys off it. */
+export const PRO_WAITLIST_COMPANY = "Fydell Pro waitlist";
+
 export const PRICING = {
   starterPerSimulation: 49,
   teamMonthly: 399,

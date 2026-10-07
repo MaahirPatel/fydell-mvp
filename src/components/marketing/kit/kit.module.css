@@ -392,7 +392,7 @@
   margin-top: 16px;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-size: 13px;
-  color: var(--text-quaternary);
+  color: var(--text-tertiary);
 }
 
 /* ---------- Two-column ledger (does / does not) ---------- */
@@ -636,7 +636,7 @@
   list-style: disc;
 }
 .prose li::marker {
-  color: var(--text-quaternary);
+  color: var(--text-tertiary);
 }
 .prose a {
   color: var(--text-primary);

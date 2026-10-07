@@ -1,111 +1,90 @@
-import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
-import {
-  Closing,
-  Details,
-  Faq,
-  Hero,
-  Section,
-  SectionHead,
-  Stage,
-  Statement,
-  Trio,
-  Visual,
-} from "@/components/marketing/kit/Kit";
-import { FigChecks, FigConsent, FigReport } from "@/components/marketing/kit/Figs";
-import { ReportShot, TestsShot, TrailShot } from "@/components/marketing/kit/Shots";
+import BuilderReportDemo from "@/components/marketing/home/BuilderReportDemo";
+import ProductFrame from "@/components/marketing/site/ProductFrame";
+import ApplicantReview from "@/components/marketing/site/ApplicantReview";
+import SimulationWorkspace from "@/components/marketing/site/SimulationWorkspace";
+import { Feature, SiteClosing, SiteFaq, SiteHero } from "@/components/marketing/site/Sections";
+import { BACKEND_WEBHOOK_RETRY_V1 as SCENARIO } from "@/lib/eng/scenarios/backend-webhook-retry/definition";
 import { PRICING, usd } from "@/lib/marketing/pricing";
 
 export const metadata = {
-  title: "For hiring teams",
-  description:
-    "Invite candidates to a real engineering incident. Your team reviews the recorded work, writes a cited report and decides.",
+  title: "For Employers",
+  description: "Publish a role, receive applications with the engineering work candidates chose to share, and review it requirement by requirement.",
   alternates: { canonical: "/employers" },
 };
 
 export default function EmployersPage() {
   return (
     <MarketingShell>
-      <Hero
-        title={["Decide on evidence", "your team can check"]}
-        lead="Invite candidates to a real engineering incident. Review the code they submitted, the checks it passed and how they worked, then record a decision the whole team can trace."
-        aside={{ href: "/pricing", strong: usd(PRICING.starterPerSimulation), label: "per completed simulation" }}
-        actions={
+      <SiteHero
+        title={["Hire on the work", "engineers have done."]}
+        lead="Publish a role with its requirements. Applicants share the projects they choose, and your team reads that evidence requirement by requirement, then decides."
+        primary={{ href: "/signup?as=employer", label: "Create a role" }}
+        secondary={{ href: "/contact", label: "Contact sales" }}
+        supporting={{ href: "/pricing", label: "See pricing" }}
+      >
+        <ProductFrame size="hero" interactive title="Hiring Workspace · Applicants" label="A hiring team's review of one applicant against the role's requirements. Select a requirement to see the evidence.">
+          <ApplicantReview />
+        </ProductFrame>
+      </SiteHero>
+
+      <Feature
+        id="roles"
+        layout="text"
+        title="One role. One link. Every application in one place."
+        body="Write the requirements once. Share the role link wherever you recruit. Applications arrive with the projects each engineer chose, pinned to the versions they shared."
+        link={{ href: "/products/hiring-workspace", label: "About the Hiring Workspace" }}
+        points={[
+          { title: "Requirements first", body: "Each application is read against the same list, so reviews stay comparable." },
+          { title: "Pinned evidence", body: "What you review doesn't change underneath you after the applicant applies." },
+          { title: "Your decision", body: "Advance, hold or decline is recorded by your team and is not sent to the applicant." },
+        ]}
+      />
+
+      <Feature
+        id="evidence"
+        layout="split"
+        flip
+        title="Check the evidence yourself."
+        body={
           <>
-            <Link href="/signup?as=employer" className="l-btn l-btn-lg l-btn-solid">Create a role</Link>
-            <Link href="/demo" className="l-btn l-btn-lg l-btn-ghost">See an example report</Link>
+            <p>Every finding opens the exact lines it cites, the revision it was read at, and what it can&apos;t tell you.</p>
+            <p>Engineers&apos; statements and your reviewers&apos; judgments are labelled separately from what was read in the code.</p>
           </>
         }
+        link={{ href: "/products/builder-reports", label: "About Builder Reports" }}
       >
-        <Stage hero label="Example: a cited report and the team's decision">
-          <ReportShot />
-        </Stage>
-      </Hero>
+        <ProductFrame interactive title="Builder Report" label="A Builder Report for a fictional project. Select a finding to see the lines it cites and its limits.">
+          <BuilderReportDemo />
+        </ProductFrame>
+      </Feature>
 
-      <Section>
-        <Statement
-          lead="Interviews test how people talk about work."
-          rest="A simulation shows the work: an unfamiliar codebase, a vague requirement, a teammate to ask, and a change of scope halfway through."
-        />
-        <Trio
-          items={[
-            { fig: <FigConsent />, title: "Candidates consent first", body: "They see exactly what is recorded before they start, and get a receipt when they finish." },
-            { fig: <FigChecks />, title: "Checks on the sealed code", body: "Hidden checks run on the sealed submission in an isolated sandbox, never on the candidate's machine." },
-            { fig: <FigReport />, title: "Findings with sources", body: "Every finding links to a file, a test, a message or a handoff answer. No citation, no release." },
-          ]}
-        />
-      </Section>
+      <Feature
+        id="simulations"
+        title="Fill the gaps with a short simulation."
+        body={`When shared work doesn't cover a requirement, invite the applicant to a simulation. Today's scenario is the ${SCENARIO.title}: a small Python service, a brief, simulated teammates and a requirement update partway through, about ${SCENARIO.targetMinutes} minutes of work.`}
+        link={{ href: "/products/simulations", label: "About Simulations" }}
+      >
+        <ProductFrame tag="Preview" title="Simulation · Webhook retry incident" label="A candidate's simulation: the brief and requirements, the project files, a public test run, and the team thread docked beside the brief.">
+          <SimulationWorkspace />
+        </ProductFrame>
+      </Feature>
 
-      <Section id="review" labelledBy="review-title">
-        <SectionHead
-          id="review-title"
-          title={["Review the work,", "not a summary of it"]}
-          lead="Open the submitted diff next to the hidden check results. Every run is tied to the exact archive the candidate submitted, identified by its checksum."
-        />
-        <Visual label="Example: hidden checks against a submitted snapshot">
-          <TestsShot />
-        </Visual>
-        <Details
-          items={[
-            { title: "Sealed submissions", body: "The archive is hashed on submit. The report can only cite what is in it." },
-            { title: "Same checks for everyone", body: "Every candidate for a role gets the same scenario, teammates and update." },
-            { title: "Setup is not held against them", body: "A setup check runs first. If something outside their control slows them down, support is one click away." },
-          ]}
-        />
-      </Section>
+      <SiteFaq
+        title="Questions from hiring teams"
+        items={[
+          { q: "Does Fydell score or rank candidates?", a: "No. Fydell organizes the evidence and runs the simulation checks. Your reviewers read it against your requirements and make the decision." },
+          { q: "What roles does Fydell cover?", a: "Applications work for any engineering role. Simulations start with one backend scenario in Python; more are in development and are not listed until they are ready." },
+          { q: "Can candidates use AI tools?", a: "Fydell cannot observe AI tools and does not claim to detect them. Candidates describe any AI help in their own words, and that is labelled as their statement." },
+          { q: "What does it cost?", a: `Applications are never billed. Simulations are ${usd(PRICING.starterPerSimulation)} per completed simulation on Starter, or ${usd(PRICING.teamMonthly)} a month with ${PRICING.teamIncluded} included on Team. Card checkout is not open yet; contact sales to activate a plan.` },
+        ]}
+      />
 
-      <Section id="process" labelledBy="process-title">
-        <SectionHead
-          id="process-title"
-          title={["See how they", "got there"]}
-          lead="The work trail shows the order things happened: what they read first, when they asked, how often they tested, and what they did after the requirement changed."
-        />
-        <Visual label="Example: a candidate's work trail">
-          <TrailShot />
-        </Visual>
-      </Section>
-
-      <Section id="questions" labelledBy="questions-title">
-        <SectionHead
-          id="questions-title"
-          title={["Questions from", "hiring teams"]}
-          lead="The short answers. For anything else, talk to us."
-          link={{ href: "/contact", label: "Contact sales" }}
-        />
-        <Faq
-          items={[
-            { q: "What roles does Fydell cover today?", a: "Backend engineering, starting with a Python webhook-retry incident. More engineering scenarios are in development; we will not list a role until its simulation is ready." },
-            { q: "How long does a simulation take?", a: "About an hour of focused work. Candidates get a deadline when they accept the invitation and can start whenever suits them before it." },
-            { q: "Does Fydell score or rank candidates?", a: "No. Fydell records the work and runs the checks. Your reviewers write the findings and make the decision. There is no overall score." },
-            { q: "Can candidates use AI tools?", a: "Fydell cannot observe AI tools and does not claim to detect them. Candidates describe any AI assistance in their own words, and the report labels that as their statement." },
-            { q: "When are we charged?", a: `When a candidate submits. Invitations, expired links and abandoned attempts are never billed. Starter is ${usd(PRICING.starterPerSimulation)} per completed simulation.` },
-          ]}
-        />
-      </Section>
-
-      <Closing
-        title={["Bring one open role.", "Decide on the work."]}
+      <SiteClosing
+        title="Bring one open role."
+        body="Create a workspace, publish the role and share its link."
         primary={{ href: "/signup?as=employer", label: "Create a role" }}
+        secondary={{ href: "/contact", label: "Contact sales" }}
       />
     </MarketingShell>
   );

@@ -24,6 +24,11 @@ function withEnv(env: Record<string, string | undefined>, fn: () => void) {
   }
 }
 
+type ResponseFormat = { type?: string; json_schema?: { strict?: boolean } };
+function responseFormat(body: unknown): ResponseFormat | undefined {
+  return (body as { response_format?: ResponseFormat }).response_format;
+}
+
 console.log("no provider configured -> null (fail closed)");
 withEnv({ MODEL_PROVIDER: undefined, OPENAI_API_KEY: undefined }, () => {
   check("returns null", getProviderConfig() === null);
@@ -87,14 +92,14 @@ console.log("request body shape per provider");
 withEnv({ MODEL_PROVIDER: undefined, OPENAI_API_KEY: "sk-test" }, () => {
   const c = getProviderConfig()!;
   const body = buildChatBody(c, [{ role: "user", content: "hi" }], { schema: { type: "object" }, schemaName: "r" });
-  const rf = (body as any).response_format;
+  const rf = responseFormat(body);
   check("openai uses json_schema strict", rf?.type === "json_schema" && rf.json_schema?.strict === true);
 });
 withEnv({ MODEL_PROVIDER: "ollama" }, () => {
   const c = getProviderConfig()!;
   const body = buildChatBody(c, [{ role: "user", content: "hi" }], { schema: { type: "object" } });
-  check("ollama uses json_object", (body as any).response_format?.type === "json_object");
-  check("no schema leaked into body for ollama", !("json_schema" in ((body as any).response_format ?? {})));
+  check("ollama uses json_object", responseFormat(body)?.type === "json_object");
+  check("no schema leaked into body for ollama", !("json_schema" in (responseFormat(body) ?? {})));
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

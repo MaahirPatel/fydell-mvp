@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import { completeEmployerOnboarding } from "@/lib/pilot/lifecycle";
 import { ensureCandidateProfile, audit } from "@/lib/auth/signup-helpers";
+import { accountDisplayName, seedEngineerProfileName } from "@/lib/auth/account-name";
 import { isReservedOrganizationName } from "@/lib/org/reserved";
 import { partnerSignupEnabled } from "@/lib/auth/flags";
 import { publicErrorMessage } from "@/lib/security/public-error";
@@ -65,6 +66,7 @@ export async function POST(req: Request) {
       redirectTo = "/app/employer";
     } else if (role === "fde") {
       await ensureCandidateProfile(userId);
+      await seedEngineerProfileName(userId, email, await accountDisplayName(userId, email));
       await admin
         .from("profiles")
         .update({ account_type: "fde", onboarding_state: "completed" })

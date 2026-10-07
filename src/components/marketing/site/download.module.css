@@ -1,0 +1,139 @@
+.picker {
+  max-width: 880px;
+  margin-inline: auto;
+  text-align: left;
+}
+.tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--surface-panel);
+}
+.tab,
+.tabOn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding-inline: 14px;
+  border-radius: 7px;
+  font-size: 15px;
+  color: var(--text-secondary);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.tab:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+.tabOn {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(17, 18, 20, 0.08);
+}
+.tab:focus-visible,
+.tabOn:focus-visible,
+.sideLink:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.tabNote {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--status-positive-ink);
+}
+.panel {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  margin-top: 16px;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--surface-raised);
+  box-shadow: 0 1px 2px rgba(17, 18, 20, 0.04), 0 24px 48px -32px rgba(17, 18, 20, 0.2);
+  overflow: hidden;
+}
+.panelMain {
+  padding: 28px;
+}
+.panelTitle {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  color: var(--text-primary);
+}
+.panelMeta {
+  margin-top: 4px;
+  font-size: 15px;
+  color: var(--text-tertiary);
+}
+.unavailable {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.panelSide {
+  padding: 28px;
+  border-left: 1px solid var(--border-subtle);
+  background: var(--surface-panel);
+}
+.sideHeading {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.sideList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+.sideList li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sideLink {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 4px;
+  border-radius: 3px;
+}
+.sideLink:hover {
+  text-decoration-color: var(--text-primary);
+}
+.sideNote {
+  font-size: 13.5px;
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 767px) {
+  .tabs {
+    display: flex;
+  }
+  .tab,
+  .tabOn {
+    flex: 1;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0 6px;
+    height: auto;
+    min-height: 40px;
+    padding: 6px 8px;
+  }
+  .panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .panelMain,
+  .panelSide {
+    padding: 22px 20px;
+  }
+  .panelSide {
+    border-left: 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+}

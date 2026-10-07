@@ -63,7 +63,7 @@ export function CodeBlock({
               key={line.n}
               className={`flex min-w-max pr-4 ${line.mark ? MARK[line.mark] : ""}`}
             >
-              <span aria-hidden className={`shrink-0 select-none pr-3 text-right text-[var(--text-disabled)] ${compact ? "w-8" : "w-11"}`}>
+              <span aria-hidden className={`shrink-0 select-none pr-3 text-right text-[var(--text-tertiary)] ${compact ? "w-8" : "w-11"}`}>
                 {line.n}
               </span>
               {line.mark === "added" ? (

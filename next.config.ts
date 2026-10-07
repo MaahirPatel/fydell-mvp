@@ -41,12 +41,12 @@ const nextConfig: NextConfig = {
     // Legacy product surfaces. Old URLs must never 404 or render retired UI.
     return [
       // Old candidate flows
-      { source: "/s/:path*", destination: "/simulations", permanent: true },
-      { source: "/apply/:path*", destination: "/simulations", permanent: true },
-      { source: "/c/:path*", destination: "/simulations", permanent: true },
-      { source: "/workroom/:path*", destination: "/simulations", permanent: true },
-      { source: "/session/:path*", destination: "/simulations", permanent: true },
-      { source: "/preview/:path*", destination: "/simulations", permanent: true },
+      { source: "/s/:path*", destination: "/products/simulations", permanent: true },
+      { source: "/apply/:path*", destination: "/products/simulations", permanent: true },
+      { source: "/c/:path*", destination: "/products/simulations", permanent: true },
+      { source: "/workroom/:path*", destination: "/products/simulations", permanent: true },
+      { source: "/session/:path*", destination: "/products/simulations", permanent: true },
+      { source: "/preview/:path*", destination: "/products/simulations", permanent: true },
       { source: "/candidate/:path*", destination: "/app/candidate", permanent: true },
       // Old share links
       { source: "/r/:path*", destination: "/", permanent: true },
@@ -54,31 +54,29 @@ const nextConfig: NextConfig = {
       { source: "/employer/:path*", destination: "/login", permanent: true },
       { source: "/dashboard/:path*", destination: "/app/employer", permanent: true },
       { source: "/platform/:path*", destination: "/app/employer", permanent: true },
-      // /onboarding/employer is a live route, not a retired one: it names the
-      // workspace for people who picked "I am hiring" after signing up without
-      // a company. The catch-all used to swallow it, so that step never ran and
-      // the layout silently named the workspace after their email domain. Only
-      // the other legacy onboarding URLs redirect.
+      // /onboarding/employer and /onboarding/engineer are the live first-run
+      // routes for each kind of account. The catch-all used to swallow them, so
+      // those steps never ran. Only the other legacy onboarding URLs redirect.
       { source: "/onboarding", destination: "/app/employer", permanent: true },
       {
-        source: "/onboarding/:path((?!employer$).*)",
+        source: "/onboarding/:path((?!employer$|engineer$).*)",
         destination: "/app/employer",
         permanent: true,
       },
       // Old internal ops
       { source: "/ops/:path*", destination: "/admin", permanent: true },
       // Old marketing pages
-      { source: "/simulation", destination: "/how-it-works", permanent: true },
-      { source: "/simulations", destination: "/how-it-works", permanent: true },
-      { source: "/evidence-report", destination: "/how-it-works", permanent: true },
+      { source: "/simulation", destination: "/products/simulations", permanent: true },
+      { source: "/simulations", destination: "/products/simulations", permanent: true },
+      { source: "/evidence-report", destination: "/products", permanent: true },
       { source: "/request-pilot", destination: "/contact", permanent: true },
       { source: "/security", destination: "/trust", permanent: true },
-      { source: "/sample-report", destination: "/how-it-works", permanent: true },
-      { source: "/work-receipts", destination: "/how-it-works", permanent: true },
-      { source: "/for-finance", destination: "/how-it-works", permanent: true },
-      { source: "/solutions", destination: "/how-it-works", permanent: true },
-      { source: "/resources", destination: "/how-it-works", permanent: true },
-      { source: "/network", destination: "/how-it-works", permanent: true },
+      { source: "/sample-report", destination: "/products", permanent: true },
+      { source: "/work-receipts", destination: "/products", permanent: true },
+      { source: "/for-finance", destination: "/products", permanent: true },
+      { source: "/solutions", destination: "/products", permanent: true },
+      { source: "/resources", destination: "/products", permanent: true },
+      { source: "/network", destination: "/products", permanent: true },
       { source: "/company", destination: "/contact", permanent: true },
       // Old app areas
       { source: "/app/fde/:path*", destination: "/app/candidate", permanent: true },

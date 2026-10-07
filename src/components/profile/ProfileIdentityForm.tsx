@@ -6,6 +6,7 @@ import { Camera, Instagram, Linkedin, Plus, Twitter, X } from "lucide-react";
 import { Sheet } from "@/components/ui/Sheet";
 import { Notice } from "@/components/ui/report";
 import Avatar from "@/components/profile/Avatar";
+import GithubUsernameControl from "@/components/profile/GithubUsernameControl";
 import {
   OPEN_TO,
   OPEN_TO_LABEL,
@@ -44,26 +45,36 @@ function Field({ id, label, hint, children }: { id: string; label: string; hint?
 }
 
 /** "Edit profile" button plus the sheet that edits everything a visitor sees at the top of the profile. */
-export default function ProfileIdentityForm({ initial, label = "Edit profile" }: { initial: EngineerProfile; label?: string }) {
+function formFrom(initial: EngineerProfile) {
+  // A LinkedIn address saved as a plain link before the dedicated field
+  // existed moves into the LinkedIn field the next time the form opens.
+  const legacy = initial.social.linkedin ? -1 : initial.links.findIndex((l) => /linkedin\.com\//i.test(l.url));
+  return {
+    displayName: initial.displayName,
+    handle: initial.handle,
+    headline: initial.headline,
+    role: initial.role,
+    location: initial.location,
+    bio: initial.bio,
+    website: initial.website,
+    openTo: initial.openTo,
+    social: { ...initial.social, ...(legacy >= 0 ? { linkedin: initial.links[legacy].url } : {}) } as SocialProfiles,
+    links: initial.links.filter((_, i) => i !== legacy) as ProfileLink[],
+  };
+}
+
+export default function ProfileIdentityForm({
+  initial,
+  githubLogin,
+  label = "Edit profile",
+}: {
+  initial: EngineerProfile;
+  githubLogin?: string | null;
+  label?: string;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState(() => {
-    // A LinkedIn address saved as a plain link before the dedicated field
-    // existed moves into the LinkedIn field the next time the form opens.
-    const legacy = initial.social.linkedin ? -1 : initial.links.findIndex((l) => /linkedin\.com\//i.test(l.url));
-    return {
-      displayName: initial.displayName,
-      handle: initial.handle,
-      headline: initial.headline,
-      role: initial.role,
-      location: initial.location,
-      bio: initial.bio,
-      website: initial.website,
-      openTo: initial.openTo,
-      social: { ...initial.social, ...(legacy >= 0 ? { linkedin: initial.links[legacy].url } : {}) } as SocialProfiles,
-      links: initial.links.filter((_, i) => i !== legacy) as ProfileLink[],
-    };
-  });
+  const [form, setForm] = useState(() => formFrom(initial));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [photo, setPhoto] = useState(initial.avatarUrl);
@@ -143,7 +154,17 @@ export default function ProfileIdentityForm({ initial, label = "Edit profile" }:
 
   return (
     <>
-      <button type="button" className={quietClass} onClick={() => setOpen(true)}>
+      <button
+        type="button"
+        className={quietClass}
+        onClick={() => {
+          setForm(formFrom(initial));
+          setPhoto(initial.avatarUrl);
+          setError(null);
+          setPhotoError(null);
+          setOpen(true);
+        }}
+      >
         {label}
       </button>
       <Sheet
@@ -193,7 +214,7 @@ export default function ProfileIdentityForm({ initial, label = "Edit profile" }:
                   {photoBusy ? "Uploading…" : photo ? "Replace photo" : "Upload photo"}
                 </button>
                 {photo ? (
-                  <button type="button" className="inline-flex h-9 items-center rounded-[8px] px-3 text-[14px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]" disabled={photoBusy} onClick={() => void removePhoto()}>
+                  <button type="button" aria-label="Remove photo" className="inline-flex h-9 items-center rounded-[8px] px-3 text-[14px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]" disabled={photoBusy} onClick={() => void removePhoto()}>
                     Remove
                   </button>
                 ) : null}
@@ -272,6 +293,11 @@ export default function ProfileIdentityForm({ initial, label = "Edit profile" }:
             ))}
             <p className="text-app-meta text-[var(--text-tertiary)]">Paste the profile address or type your handle. Leave a field empty to hide it.</p>
           </fieldset>
+          {githubLogin !== undefined ? (
+            <div className="border-y border-[var(--border-subtle)] py-4">
+              <GithubUsernameControl initial={githubLogin} />
+            </div>
+          ) : null}
           <Field id="profile-website" label="Website">
             <input id="profile-website" className={inputClass} value={form.website} onChange={(e) => set("website", e.target.value)} maxLength={200} placeholder="https://example.com" inputMode="url" autoComplete="url" />
           </Field>
