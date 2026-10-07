@@ -5,14 +5,24 @@ import { Button } from "@/components/ui/Button";
 import { PanelLabel } from "@/components/ui/Panel";
 import { StatusTag, type StatusTone } from "@/components/ui/StatusTag";
 import { engFetch } from "./api";
+import { observedSentence, STATE_LABEL } from "@/lib/eng/criteria";
 import type { Citation, Finding, ProbeResult, ReportBrief } from "@/lib/eng/types";
 
-const LEVEL: Record<ReportBrief["dimensions"][number]["level"], { label: string; tone: StatusTone }> = {
-  strong: { label: "Strong", tone: "good" },
-  adequate: { label: "Adequate", tone: "active" },
-  weak: { label: "Weak", tone: "risk" },
-  insufficient_evidence: { label: "Insufficient evidence", tone: "neutral" },
+const TONE: Record<ReportBrief["dimensions"][number]["level"], StatusTone> = {
+  strong: "good",
+  adequate: "active",
+  weak: "risk",
+  insufficient_evidence: "neutral",
+  demonstrated_additional: "good",
+  demonstrated: "good",
+  partially_demonstrated: "active",
+  concern_observed: "risk",
+  not_assessed: "neutral",
 };
+
+const LEVEL = Object.fromEntries(
+  (Object.keys(TONE) as ReportBrief["dimensions"][number]["level"][]).map((k) => [k, { label: STATE_LABEL[k], tone: TONE[k] }])
+) as Record<ReportBrief["dimensions"][number]["level"], { label: string; tone: StatusTone }>;
 
 const DIMENSION_LABEL: Record<Finding["dimension"], string> = {
   correctness: "Correctness",
@@ -59,7 +69,7 @@ export function FileViewer({ endpoint, target, onClose }: { endpoint: string; ta
   return (
     <div className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-deep)]">
       <div className="flex items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-3 py-2">
-        <p className="truncate font-mono text-[12.5px] text-[var(--text-primary)]">
+        <p className="truncate font-mono text-[13px] text-[var(--text-primary)]">
           {target.path}
           {target.lineStart ? `:${target.lineStart}${target.lineEnd && target.lineEnd !== target.lineStart ? `-${target.lineEnd}` : ""}` : ""}
         </p>
@@ -75,7 +85,7 @@ export function FileViewer({ endpoint, target, onClose }: { endpoint: string; ta
         ) : state.file?.binary ? (
           <p className="px-3 py-3 text-app-meta text-[var(--text-secondary)]">Binary file, not shown.</p>
         ) : (
-          <pre className="py-2 font-mono text-[12px] leading-[1.55]">
+          <pre className="py-2 font-mono text-[13px] leading-[1.55]">
             {lines.map((line, i) => {
               const n = i + 1;
               const hit = target.lineStart !== undefined && n >= target.lineStart && n <= (target.lineEnd ?? target.lineStart);
@@ -106,7 +116,7 @@ export function CitationChip({ citation, onOpen }: { citation: Citation; onOpen:
     <button
       type="button"
       onClick={() => onOpen(citation)}
-      className="rounded-[var(--radius-tag)] border border-[var(--border-default)] px-1.5 py-0.5 font-mono text-[11.5px] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+      className="rounded-[var(--radius-tag)] border border-[var(--border-default)] px-1.5 py-0.5 font-mono text-[13px] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
     >
       {citationLabel(citation)}
     </button>
@@ -128,7 +138,7 @@ export function ProbeTable({ results, highlight }: { results: ProbeResult[]; hig
           {results.map((r) => (
             <tr key={r.id} id={`probe-${r.id}`} className={`border-b border-[var(--border-subtle)] last:border-b-0 ${highlight === r.id ? "bg-[rgba(107,140,255,0.1)]" : ""}`}>
               <td className="px-3 py-2 align-top text-app-body text-[var(--text-primary)]">
-                <span className="font-mono text-[12px] text-[var(--text-tertiary)]">{r.id}</span> {r.title}
+                <span className="font-mono text-[13px] text-[var(--text-tertiary)]">{r.id}</span> {r.title}
                 {r.outcome !== "passed" && (r.detail || r.failedChecks.length) ? (
                   <span className="mt-1 block text-app-meta text-[var(--text-secondary)]">
                     {r.detail ??
@@ -212,6 +222,28 @@ export function ReportView({
           ))}
         </div>
       </section>
+
+      {brief.criteria?.length ? (
+        <section>
+          <PanelLabel>Criteria for this task</PanelLabel>
+          <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
+            Each state describes this submission against a defined criterion. Not assessed means there was no opportunity to judge, not a low result. There is no overall score.
+          </p>
+          <ul className="mt-2 divide-y divide-[var(--border-subtle)] rounded-[var(--radius-panel)] border border-[var(--border-subtle)]">
+            {brief.criteria.map((c) => (
+              <li key={c.id} className="grid gap-1 px-3 py-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-app-body font-medium text-[var(--text-primary)]">{c.label}</p>
+                  <StatusTag tone={LEVEL[c.state].tone}>{LEVEL[c.state].label}</StatusTag>
+                </div>
+                {c.observed ? <p className="text-app-meta text-[var(--text-secondary)]">{observedSentence(c.observed)}.</p> : null}
+                {c.rationale ? <p className="text-app-meta leading-[1.55] text-[var(--text-secondary)]">{c.rationale}</p> : null}
+                <p className="text-app-meta text-[var(--text-tertiary)]">Not covered: {c.notCovered}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="grid gap-5 sm:grid-cols-2">
         {(

@@ -64,23 +64,85 @@ async function main() {
   console.log(`\nPassport flow against ${BASE}`);
 
   const anon = new Session();
-  const anonSave = await anon.json("/api/passport/projects", { method: "POST", body: JSON.stringify({ repository: REPO }) });
-  ok("saving requires sign-in", anonSave.status === 401);
+  const anonImport = await anon.json("/api/passport/imports", { method: "POST", body: JSON.stringify({ repository: REPO }) });
+  ok("importing requires sign-in", anonImport.status === 401);
+  const retired = await anon.json<{ code?: string }>("/api/passport/projects", { method: "POST", body: JSON.stringify({ repository: REPO }) });
+  ok("inline save endpoint is retired", retired.status === 410 && retired.body.code === "use_imports");
 
   const dev = new Session();
   const devSignup = await signup(dev, "fde", "dev");
   ok("developer account created without a workspace", devSignup.status === 200, JSON.stringify(devSignup.body));
 
-  const saved = await dev.json<{ passport?: { projects: Array<{ evidence: unknown[] }>; capabilities: { source: string; capabilities: unknown[] } }; error?: string }>(
-    "/api/passport/projects",
-    { method: "POST", body: JSON.stringify({ repository: REPO, contribution: "E2E: I built the backend routes.", githubLogin: REPO.split("/")[0] }) },
-  );
-  const evidenceCount = saved.body.passport?.projects.reduce((n, p) => n + p.evidence.length, 0) ?? 0;
-  ok("repository analyzed and saved with evidence", saved.status === 200 && evidenceCount > 0, `${saved.status} ${saved.body.error ?? ""}`);
-  ok("capability summary produced with provenance", Boolean(saved.body.passport?.capabilities.source) && (saved.body.passport?.capabilities.capabilities.length ?? 0) > 0);
+  type Job = { id: string; state: string; stage: string; error: string | null; result: { projectId: string; findings: number } | null };
+  const scope = await dev.json<{ preview?: { commitSha: string; revisionRef: string; selectedFiles: unknown[] }; error?: string }>("/api/passport/github", {
+    method: "POST",
+    body: JSON.stringify({ input: REPO, preview: true }),
+  });
+  ok("scope preview pins a commit and lists files", scope.status === 200 && /^[0-9a-f]{40}$/.test(scope.body.preview?.commitSha ?? "") && (scope.body.preview?.selectedFiles.length ?? 0) > 0, scope.body.error);
+  const importBody = JSON.stringify({
+    repository: REPO,
+    commitSha: scope.body.preview?.commitSha,
+    revisionRef: scope.body.preview?.revisionRef,
+    contribution: "E2E: I built the backend routes.",
+    githubLogin: REPO.split("/")[0],
+  });
 
-  const again = await dev.json<{ passport?: { projects: unknown[] } }>("/api/passport/projects", { method: "POST", body: JSON.stringify({ repository: REPO }) });
-  ok("re-importing the same commit does not duplicate the project", again.body.passport?.projects.length === 1);
+  const crossSite = await dev.json("/api/passport/imports", { method: "POST", body: importBody, headers: { Origin: "https://evil.example" } });
+  ok("cross-site import request is blocked", crossSite.status === 403);
+
+  const started = await dev.json<{ job?: Job; created?: boolean; error?: string }>("/api/passport/imports", { method: "POST", body: importBody });
+  ok("import accepted as a durable job", started.status === 201 && started.body.created === true && Boolean(started.body.job?.id), `${started.status} ${started.body.error ?? ""}`);
+  const jobId = started.body.job?.id ?? "";
+
+  const duplicate = await dev.json<{ job?: Job; created?: boolean }>("/api/passport/imports", { method: "POST", body: importBody });
+  ok("submitting the same revision again reuses the job", duplicate.body.created === false && duplicate.body.job?.id === jobId);
+
+  let job: Job | undefined = started.body.job;
+  const stagesSeen = new Set<string>();
+  const deadline = Date.now() + 180_000;
+  while (job && !["succeeded", "failed", "cancelled"].includes(job.state) && Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 2000));
+    job = (await dev.json<{ job?: Job }>(`/api/passport/imports/${jobId}`)).body.job;
+    if (job) stagesSeen.add(job.stage);
+  }
+  ok("import finishes with a report", job?.state === "succeeded" && Boolean(job.result?.projectId), `${job?.state} ${job?.error ?? ""}`);
+  ok("progress reported real stages", stagesSeen.size >= 1, [...stagesSeen].join(","));
+  const projectId = job?.result?.projectId ?? "";
+  ok("report has findings", (job?.result?.findings ?? 0) > 0);
+
+  const reportHtml = await (await dev.fetch(`/app/candidate/projects/${projectId}`)).text();
+  ok("Builder Report page renders the snapshot", reportHtml.includes(REPO) && reportHtml.includes("What was analyzed") && reportHtml.includes("Versions"));
+
+  const { data: ev } = await admin.from("passport_evidence").select("id").eq("project_id", projectId).limit(1);
+  const findingId = (ev?.[0] as { id: string } | undefined)?.id ?? "";
+  const deepHtml = await (await dev.fetch(`/app/candidate/projects/${projectId}?finding=${encodeURIComponent(findingId)}`)).text();
+  ok("finding deep link renders", deepHtml.includes("Open these lines on GitHub"));
+  const note = await dev.json<{ correction?: { id: string; kind: string }; error?: string }>("/api/passport/corrections", {
+    method: "POST",
+    body: JSON.stringify({ repo: REPO, findingId, projectId, kind: "context", reason: "E2E: pairing with a teammate on this module." }),
+  });
+  ok("engineer adds context to a finding", note.status === 200 && note.body.correction?.kind === "context", note.body.error);
+  const { data: unchanged } = await admin.from("passport_evidence").select("id").eq("project_id", projectId).eq("id", findingId);
+  ok("the finding itself is unchanged", (unchanged ?? []).length === 1);
+
+  const intruder = new Session();
+  await signup(intruder, "fde", "intruder");
+  const theirJob = await intruder.json(`/api/passport/imports/${jobId}`);
+  ok("another engineer cannot see this import", theirJob.status === 404);
+  const theirReport = await intruder.fetch(`/app/candidate/projects/${projectId}`);
+  const theirHtml = await theirReport.text();
+  ok("another engineer cannot open this report", theirReport.status === 404 && !theirHtml.includes("What was analyzed"));
+
+  const after = await dev.json<{ job?: Job; created?: boolean }>("/api/passport/imports", { method: "POST", body: importBody });
+  ok("re-importing the finished revision does not create a duplicate", after.body.created === false);
+  const { data: owning } = await admin.from("passport_projects").select("passport_id").eq("id", projectId).maybeSingle();
+  const { data: snapshots } = await admin
+    .from("passport_projects")
+    .select("id")
+    .eq("passport_id", (owning as { passport_id: string } | null)?.passport_id ?? "")
+    .eq("repo_full_name", REPO)
+    .eq("commit_sha", scope.body.preview?.commitSha ?? "");
+  ok("exactly one snapshot exists for this revision", (snapshots ?? []).length === 1);
 
   const share = await dev.json<{ url?: string; shares?: Array<{ id: string }> }>("/api/passport/shares", {
     method: "POST",

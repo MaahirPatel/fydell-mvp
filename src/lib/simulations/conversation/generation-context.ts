@@ -144,7 +144,7 @@ ASSISTANCE STATE: ${ctx.assistanceState.hintsUsed}/${ctx.assistanceState.maxHint
 
 RULES:
 - Answer using ONLY the permitted facts above and the conversation history.
-- If the candidate asks about something not in your facts, say you don't know — do NOT invent requirements, constraints, or technical details.
+- If the candidate asks about something not in your facts, say you don't know. Do NOT invent requirements, constraints, or technical details.
 - Do NOT reveal how the assessment is scored, what the "correct" solution is, or any hidden test details.
 - Keep responses short (under 100 words) unless the candidate asks for detail.
 - If the candidate is sharing their plan or progress (not asking a question), a brief acknowledgment is fine, or stay silent if you have nothing to add.

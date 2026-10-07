@@ -3,7 +3,9 @@ import type { Admin } from "./context";
 import { lineCount, validateForRelease, type EvidenceIndex } from "./citations";
 import { recordEngEvent } from "./events";
 import { scenarioForVersionId } from "./scenario-versions";
-import type { AttemptRow, Finding, ReportBrief, ReportRow, RunRow, SubmissionRow, UploadRow } from "./types";
+import { criteriaOf, criterionProblems, levelsFor, observedFor, STATE_LABEL } from "./criteria";
+import type { ScenarioDefinition } from "./scenarios/types";
+import type { AttemptRow, CriterionAssessment, Finding, ProbeResult, ReportBrief, ReportRow, RunRow, SubmissionRow, UploadRow } from "./types";
 import { loadAcceptedArchive } from "./uploads";
 
 export class ReportError extends Error {
@@ -56,6 +58,37 @@ export async function buildEvidenceIndex(db: Admin, attempt: AttemptRow, run: Ru
   };
 }
 
+/**
+ * Fills each criterion's label, dimension and observed counts from the
+ * scenario and the evaluation run, dropping ids the rubric does not define.
+ * The browser only chooses states and writes rationales.
+ */
+export function normalizeBrief(definition: ScenarioDefinition, brief: ReportBrief, results: ProbeResult[]): { brief: ReportBrief; problems: string[] } {
+  const problems: string[] = [];
+  for (const d of brief.dimensions) {
+    const dim = definition.rubric.find((r) => r.key === d.key);
+    if (dim && !levelsFor(dim).includes(d.level)) problems.push(`${dim.label}: "${STATE_LABEL[d.level]}" is not on this rubric's scale.`);
+  }
+  const defs = criteriaOf(definition.rubric);
+  if (defs.length === 0) return { brief: { ...brief, criteria: undefined }, problems };
+  const given = new Map((brief.criteria ?? []).map((c) => [c.id, c]));
+  const criteria: CriterionAssessment[] = [];
+  for (const def of defs) {
+    const c = given.get(def.id);
+    if (!c) continue;
+    criteria.push({
+      id: def.id,
+      dimension: def.dimension,
+      label: def.label,
+      state: c.state,
+      rationale: c.rationale,
+      observed: observedFor(def, results),
+      notCovered: def.notCovered,
+    });
+  }
+  return { brief: { ...brief, criteria }, problems };
+}
+
 /** Creates or updates the single working draft for an attempt. */
 export async function saveReportDraft(
   db: Admin,
@@ -67,11 +100,13 @@ export async function saveReportDraft(
   if (!run || (run.status !== "human_review" && run.status !== "ready")) {
     throw new ReportError("Reports can be written only after the evaluation has finished.", [], 409);
   }
-  const { row } = await scenarioForVersionId(db, attempt.scenario_version_id);
+  const { row, definition } = await scenarioForVersionId(db, attempt.scenario_version_id);
+  const normalized = normalizeBrief(definition, input.brief, run.results ?? []);
+  if (normalized.problems.length) throw new ReportError("Some rubric levels are not valid for this scenario.", normalized.problems);
   const reports = await listReports(db, attempt.id);
   const draft = reports.find((r) => r.status === "draft");
   const patch = {
-    brief: input.brief,
+    brief: normalized.brief,
     findings: input.findings,
     reviewer_email: reviewerEmail,
     change_reason: input.changeReason,
@@ -110,7 +145,13 @@ export async function releaseReport(db: Admin, attempt: AttemptRow, reviewerEmai
     throw new ReportError("Explain what changed in this corrected version before releasing it.", ["A change reason is required for corrections."]);
   }
   const { index } = await buildEvidenceIndex(db, attempt, run);
-  const problems = validateForRelease(draft.brief, draft.findings, index);
+  const { definition } = await scenarioForVersionId(db, attempt.scenario_version_id);
+  const normalized = normalizeBrief(definition, draft.brief, run.results ?? []);
+  const problems = [
+    ...normalized.problems,
+    ...validateForRelease(draft.brief, draft.findings, index),
+    ...criterionProblems(criteriaOf(definition.rubric), normalized.brief.criteria),
+  ];
   if (problems.length > 0) throw new ReportError("The report cannot be released yet.", problems, 422);
 
   const { error } = await db.rpc("eng_release_report", { p_report_id: draft.id });

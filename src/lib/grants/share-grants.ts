@@ -1,5 +1,5 @@
 /**
- * Accounts chunk — candidate-directed share grants (NET-01..NET-08).
+ * Accounts chunk - candidate-directed share grants (NET-01..NET-08).
  *
  * The network model, enforced server-side:
  *
@@ -15,7 +15,7 @@
  *   when responding to a role invitation; the employer sees exactly the
  *   authorized snapshot for that application.
  * - NET-04 private/portable separation: evidence has a visibility
- *   classification. `createShareGrant` only accepts `portable` items —
+ *   classification. `createShareGrant` only accepts `portable` items - 
  *   private notes, employer-confidential material and hidden tests are
  *   rejected by construction (the error lists what was excluded).
  * - NET-05 pre-share disclosure: `preShareDisclosure` reports recipient,
@@ -44,7 +44,7 @@ export type EvidenceStatus = "current" | "superseded";
 export interface EvidenceItem {
   id: string;
   ownerUserId: string;
-  /** NET-02 provenance — all required. */
+  /** NET-02 provenance - all required. */
   evidenceType: string;
   source: string;
   sourceVersion: string;
@@ -296,7 +296,7 @@ export function reevaluateEvidence(
 }
 
 /**
- * NET-06: a correction to a material finding is traceable — the old version
+ * NET-06: a correction to a material finding is traceable - the old version
  * keeps the corrected finding, actor and reason; affected authorized grants
  * are notified with a recorded status.
  */
@@ -378,11 +378,11 @@ export interface CreateGrantInput {
  * Mint a candidate-directed scoped grant. Excludes non-portable material by
  * construction: any selected item that is not `portable` (employer notes,
  * employer-confidential artifacts, hidden tests, private items) fails the
- * whole grant with the offending ids listed. Nothing is silently dropped —
+ * whole grant with the offending ids listed. Nothing is silently dropped - 
  * the candidate must make a deliberate, valid selection.
  *
  * `ownerUserId` MUST be the authenticated session user id (from requireUser),
- * never a value taken from the request body — that is what stops an employer
+ * never a value taken from the request body - that is what stops an employer
  * minting grants over a candidate's passport.
  */
 export function createShareGrant(
@@ -459,7 +459,7 @@ export function preShareDisclosure(
       opts?.retentionPolicy ??
       "An application snapshot built from this grant is retained for the hiring process plus 12 months, then deleted. The grant itself expires as stated.",
     revocation:
-      "You can revoke hosted access at any time; revocation is immediate for hosted views. Copies the recipient already downloaded cannot be retracted — only further hosted access is cut off.",
+      "You can revoke hosted access at any time; revocation is immediate for hosted views. Copies the recipient already downloaded cannot be retracted. Only further hosted access is cut off.",
     downloadLimits:
       "Recipients may view the authorized fields while the grant is live. Export/download, where offered, is limited to the same authorized scope and is logged.",
   };
@@ -546,7 +546,7 @@ export function createRoleInvitation(
  * The candidate responds to a role invitation by deliberately selecting
  * eligible evidence. This mints a grant scoped to that org/role and an
  * application snapshot pinned to exact evidence versions. Evidence the
- * candidate did not select stays private — it never enters the snapshot.
+ * candidate did not select stays private - it never enters the snapshot.
  */
 export function respondToRoleInvitation(
   store: GrantStore,

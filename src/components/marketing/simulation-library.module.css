@@ -27,7 +27,7 @@
   padding: 14px 18px;
   border-bottom: 1px solid var(--lib-line-soft);
   text-align: left;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--lib-dim);
   caption-side: top;
 }
@@ -36,10 +36,9 @@
   padding: 10px 18px;
   border-bottom: 1px solid var(--lib-line-soft);
   text-align: left;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.02em;
-  text-transform: uppercase;
   color: var(--lib-dim);
 }
 
@@ -75,7 +74,7 @@
 .company {
   display: block;
   margin-top: 2px;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 400;
   color: var(--lib-dim);
 }
@@ -91,7 +90,7 @@
   gap: 6px;
   padding: 3px 10px;
   border-radius: 999px;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -125,7 +124,7 @@
 }
 
 .pending {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--lib-dim);
 }
 

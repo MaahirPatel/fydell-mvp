@@ -7,7 +7,15 @@
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 import { inspectArchive, ZIP_LIMITS } from "../src/lib/eng/zip";
 import { buildStarterArchive, starterFileList } from "../src/lib/eng/starter";
-import { selectReply, tokenize } from "../src/lib/eng/teammate";
+import {
+  authoredReply,
+  availableFacts,
+  buildTeammatePrompt,
+  selectReply,
+  tokenize,
+  assembleReply,
+  type ThreadTurn,
+} from "../src/lib/eng/teammate";
 import { CURRENT_SCENARIO, expectedSetupCodes, verifySetupCode } from "../src/lib/eng/scenarios";
 import { effectiveDueAt, operationalState, submissionWindow } from "../src/lib/eng/state";
 import { validateForRelease, parseFindings, parseBrief, type EvidenceIndex } from "../src/lib/eng/citations";
@@ -126,10 +134,11 @@ console.log("\nReviewed starter archive");
 
 console.log("\nSetup code");
 {
-  ok("Python 3.12 code matches preflight output", verifySetupCode(CURRENT_SCENARIO, "HWR-C491D692") === "3.12");
-  ok("code check is case and whitespace tolerant", verifySetupCode(CURRENT_SCENARIO, "  hwr-c491d692 ") === "3.12");
+  ok("Python 3.12 code matches preflight output", verifySetupCode(CURRENT_SCENARIO, "HWR-3411820B") === "3.12");
+  ok("code check is case and whitespace tolerant", verifySetupCode(CURRENT_SCENARIO, "  hwr-3411820b ") === "3.12");
   ok("unknown code is refused", verifySetupCode(CURRENT_SCENARIO, "HWR-00000000") === null);
-  ok("the whole printed line is accepted", verifySetupCode(CURRENT_SCENARIO, "Setup code: HWR-C491D692") === "3.12");
+  ok("the whole printed line is accepted", verifySetupCode(CURRENT_SCENARIO, "Setup code: HWR-3411820B") === "3.12");
+  ok("the old v1 code is refused on the current version", verifySetupCode(CURRENT_SCENARIO, "HWR-C491D692") === null);
   ok("text without a code is refused", verifySetupCode(CURRENT_SCENARIO, "Python 3.12 OK. Public tests ran") === null);
   ok("one code per supported runtime", expectedSetupCodes(CURRENT_SCENARIO).size === CURRENT_SCENARIO.supportedRuntimes.length);
 }
@@ -175,6 +184,66 @@ console.log("\nTeammate policy");
   ok("unrelated question falls back", selectReply(s, "What is your favourite colour?", { updateReleased: false }).ruleId === "fallback");
   const leaks = s.clarificationRules.filter((r) => /H\d|U\d|harness|expectation/i.test(r.answer));
   ok("no authored answer names a hidden probe", leaks.length === 0, leaks.map((r) => r.id));
+}
+
+console.log("\nAdaptive teammate replies");
+{
+  const s = CURRENT_SCENARIO;
+  const q = "What is your favourite colour?";
+  const t1 = authoredReply(s, q, [], false);
+  const thread: ThreadTurn[] = [{ sender: "candidate", teammateId: null, body: q }, { sender: "teammate", teammateId: t1.teammateId, body: t1.body }];
+  const t2 = authoredReply(s, q, thread, false);
+  ok("the not-covered answer is not repeated word for word", t1.body !== t2.body);
+  const b1 = authoredReply(s, "What backoff delay should I use?", [], false);
+  const b2 = authoredReply(s, "What backoff delay should I use?", [{ sender: "teammate", teammateId: "priya", body: b1.body }], false);
+  ok("a repeated fact refers back instead of repeating", b2.body.startsWith("Same as I said earlier"));
+
+  const early = availableFacts(s, false);
+  const late = availableFacts(s, true);
+  ok("partner Retry-After policy is not a fact before the update", !early.some((f) => f.id === "retry_after_policy"));
+  ok("partner Retry-After policy is a fact after the update", late.some((f) => f.id === "retry_after_policy"));
+  ok("the fallback is never a fact", !late.some((f) => f.id === s.fallbackRuleId));
+  ok("every teammate has a persona", s.teammates.every((t) => s.personas[t.id]));
+  ok("kickoff comes from a teammate on the roster", s.teammates.some((t) => t.id === s.kickoff.teammateId));
+
+  const prompt = buildTeammatePrompt(s, { facts: early, thread: [], question: "hi", updateReleased: false, hintRuleId: null });
+  const system = prompt[0].content;
+  ok("prompt withholds the update before release", !system.includes(s.requirementUpdate.body) && !system.includes("Treat it as whole seconds"));
+  ok("prompt names the roster", s.teammates.every((t) => system.includes(t.name)));
+  ok("prompt ends with the candidate message", prompt[prompt.length - 1].content === "hi");
+
+  const ctx = { facts: early, thread: [] as ThreadTurn[] };
+  const backoff = early.find((f) => f.id === "backoff")!.text;
+  const good = assembleReply({ teammateId: "priya", factIds: ["backoff"], opening: "Good question.", closing: "" }, s, ctx);
+  ok("facts are inserted in their authored wording", good.ok === true && good.value.reply === `Good question. ${backoff}`);
+  const endorse = assembleReply({ teammateId: "priya", factIds: ["temporary_vs_permanent"], opening: "Correct, timeouts are permanent.", closing: "" }, s, ctx);
+  ok("an opening that endorses or states policy is dropped", endorse.ok === true && endorse.value.dropped.includes("opening") && !/timeouts are permanent/.test(endorse.value.reply));
+  const invented = assembleReply({ teammateId: "priya", factIds: [], opening: "Give up after 5 attempts.", closing: "" }, s, ctx);
+  ok("a factless reply that states policy falls back", invented.ok === false && invented.reason === "no_content");
+  const leaked = assembleReply({ teammateId: "marcus", factIds: ["retry_after_policy"], opening: "Sure thing.", closing: "" }, s, ctx);
+  ok("citing a fact not yet available is rejected", leaked.ok === false && leaked.reason === "unavailable_fact");
+  const stranger = assembleReply({ teammateId: "ceo", factIds: [], opening: "Hello there.", closing: "" }, s, ctx);
+  ok("an unknown teammate is rejected", stranger.ok === false);
+  const routed = assembleReply({ teammateId: "priya", factIds: ["retry_after_dates"], opening: "Good catch.", closing: "" }, s, { facts: late, thread: [] });
+  ok("the fact owner speaks", routed.ok === true && routed.value.teammateId === "marcus");
+  const thanks = assembleReply({ teammateId: "priya", factIds: [], opening: "Glad it helped, shout if anything else comes up.", closing: "" }, s, ctx);
+  ok("thanks gets a short conversational reply", thanks.ok === true && thanks.value.factIds.length === 0);
+  const tpp = early.find((f) => f.id === "temporary_vs_permanent")!.text;
+  const again = assembleReply({ teammateId: "priya", factIds: ["temporary_vs_permanent"], opening: "Like I said earlier,", closing: "" }, s, {
+    facts: early,
+    thread: [{ sender: "teammate", teammateId: "priya", body: tpp }],
+  });
+  ok("a fact already given is shortened, not repeated in full", again.ok === true && again.value.reply.length < tpp.length + 25);
+  const evasive = assembleReply({ teammateId: "priya", factIds: [], opening: "Not today, but I'm here to help.", closing: "" }, s, { ...ctx, question: "Are you a real person?", hintRuleId: "identity" });
+  ok("the identity disclosure cannot be skipped", evasive.ok === true && evasive.value.factIds[0] === "identity" && !evasive.value.reply.includes("Not today"));
+  const ack = assembleReply({ teammateId: "marcus", factIds: [], opening: "Happy to help.", closing: "" }, s, {
+    ...ctx,
+    question: "Thanks!",
+    thread: [{ sender: "teammate", teammateId: "priya", body: "No jitter for now." }],
+  });
+  ok("a factless reply comes from whoever was talking", ack.ok === true && ack.value.teammateId === "priya");
+  const named = assembleReply({ teammateId: "priya", factIds: [], opening: "Happy to help.", closing: "" }, s, { ...ctx, question: "Thanks Jordan!" });
+  ok("a factless reply comes from the person addressed", named.ok === true && named.value.teammateId === "marcus");
 }
 
 console.log("\nDerived employer state");

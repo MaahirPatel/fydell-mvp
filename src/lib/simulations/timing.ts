@@ -204,8 +204,8 @@ export interface PendingConnectivityExtension {
  * deadline extension. Idempotent: an interruption is pending only when no
  * `deadline_extended` event carrying its extensionKey exists yet.
  *
- * Teammate-outage pauses are excluded — the messages route extends the
- * deadline at outage-declaration time, not here — and candidate-caused
+ * Teammate-outage pauses are excluded - the messages route extends the
+ * deadline at outage-declaration time, not here - and candidate-caused
  * pauses never extend the deadline.
  */
 export function pendingConnectivityExtensions(

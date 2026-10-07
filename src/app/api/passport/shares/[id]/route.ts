@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { shareRevocationExplanation } from "@/lib/passport/removal";
 import { listShares, revokeShare } from "@/lib/passport/store";
+import { csrfGuard } from "@/lib/security/csrf";
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const blocked = csrfGuard(req);
+  if (blocked) return blocked;
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   const { id } = await params;

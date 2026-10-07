@@ -6,6 +6,16 @@ import { formatBytes } from "./api";
 import { FileViewer, ProbeTable, type FileTarget, type ThreadMessage } from "./EvidenceViews";
 import type { ProbeResult } from "@/lib/eng/types";
 
+/** How a teammate message was produced, in words a reviewer can use. */
+function replySource(ruleId: string): string {
+  if (ruleId === "kickoff") return "Kickoff brief";
+  if (ruleId.startsWith("update:")) return "Requirement update";
+  if (ruleId === "gen:conversation") return "Conversational reply, no policy stated";
+  if (ruleId.startsWith("gen:")) return "Written for this message, using the team's decided wording";
+  if (ruleId === "fallback") return "Not covered by the team's decisions";
+  return "The team's decided wording";
+}
+
 export default function ReviewerEvidence({
   apiBase,
   results,
@@ -41,7 +51,7 @@ export default function ReviewerEvidence({
                 <button
                   type="button"
                   onClick={() => setFile({ path: f.path })}
-                  className={`w-full truncate rounded-[var(--radius-control)] px-2 py-1 text-left font-mono text-[12px] ${
+                  className={`w-full truncate rounded-[var(--radius-control)] px-2 py-1 text-left font-mono text-[13px] ${
                     file?.path === f.path ? "bg-[var(--surface-selected)] text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
                   }`}
                   title={`${f.path} (${formatBytes(f.size)})`}
@@ -83,7 +93,11 @@ export default function ReviewerEvidence({
               <li key={m.id} className={`rounded-[var(--radius-control)] px-2.5 py-2 text-app-meta leading-[1.55] ${m.sender === "candidate" ? "bg-[var(--surface-hover)]" : ""}`}>
                 <span className="font-medium text-[var(--text-primary)]">{m.sender === "candidate" ? "Candidate" : teammates[m.teammate_id ?? ""] ?? "Teammate"}</span>
                 <span className="ml-2 text-[var(--text-tertiary)]">{new Date(m.created_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</span>
-                {m.rule_id ? <span className="ml-2 font-mono text-[11px] text-[var(--text-tertiary)]">{m.rule_id}</span> : null}
+                {m.sender === "teammate" && m.rule_id ? (
+                  <span className="ml-2 text-[var(--text-tertiary)]" title={m.rule_id}>
+                    {replySource(m.rule_id)}
+                  </span>
+                ) : null}
                 <p className="mt-0.5 whitespace-pre-wrap text-[var(--text-secondary)]">{m.body}</p>
               </li>
             ))}

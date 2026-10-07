@@ -2,7 +2,7 @@
  * Comparability protection (WORK-09).
  *
  * Candidates in the same role/cohort must face the same validated core task
- * and rubric — or a documented equivalent form. Invitations pin the exact
+ * and rubric - or a documented equivalent form. Invitations pin the exact
  * template version, so later edits can never silently alter an in-progress
  * attempt or a previous grade.
  *
@@ -16,7 +16,7 @@ export interface AttemptFormInput {
   templateVersionId: string;
   /** Cohort the attempt belongs to (null = ungrouped/self-serve). */
   cohortId: string | null;
-  /** Candidate id — included to detect, not to vary, the form. */
+  /** Candidate id - included to detect, not to vary, the form. */
   candidateUserId: string;
 }
 
@@ -63,7 +63,7 @@ export function checkComparable(a: AttemptFormInput, b: AttemptFormInput): Compa
 /**
  * WORK-09 personalization guard: authored content must not vary difficulty
  * by candidate. Response-rule context conditions (`requires`) may only gate
- * on OBSERVED session facts (time, messages, events, opened resources) —
+ * on OBSERVED session facts (time, messages, events, opened resources) - 
  * never on candidate identity, passport data, or inferred traits.
  *
  * Any content field whose name suggests per-candidate difficulty is rejected.

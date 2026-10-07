@@ -1,9 +1,9 @@
 /**
- * AI-10 — Evaluator versions and override recording.
+ * AI-10 - Evaluator versions and override recording.
  *
  * Every report carries provenance: which evaluator, rubric, prompt, and model
  * produced it, and hashes pinning the exact inputs. Reviewer edits are
- * recorded as overrides with a reason — never silent. Revised reports keep
+ * recorded as overrides with a reason - never silent. Revised reports keep
  * their history: the current report plus every superseded version's
  * provenance and override list.
  */
@@ -61,7 +61,7 @@ export function newProvenance(input: {
   };
 }
 
-/** Record a reviewer edit. The edit is appended — history is never rewritten. */
+/** Record a reviewer edit. The edit is appended - history is never rewritten. */
 export function recordOverride(
   provenance: EvaluationProvenance,
   editor: string,
@@ -69,7 +69,7 @@ export function recordOverride(
   reason: string,
 ): EvaluationProvenance {
   if (!editor || !change || !reason) {
-    throw new Error("AI-10: overrides require editor, change, and reason — silent edits are not allowed.");
+    throw new Error("AI-10: overrides require editor, change, and reason. Silent edits are not allowed.");
   }
   overrideSeq += 1;
   return {

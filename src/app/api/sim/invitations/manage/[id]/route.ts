@@ -6,6 +6,7 @@ import { fydellEmailShell, isResendConfigured, sendResendHtml } from "@/lib/emai
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { appUrl } from "@/lib/app-url";
 import { escapeHtml } from "@/lib/simulations/submission-files";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -58,7 +59,7 @@ export async function POST(
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Action failed" },
+      { error: publicErrorMessage(err, "Action failed") },
       { status: 400 }
     );
   }

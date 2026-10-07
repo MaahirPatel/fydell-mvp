@@ -45,7 +45,7 @@ function StepTitle({ n, done, children }: { n: number; done: boolean; children: 
       <span
         aria-hidden
         className={cn(
-          "grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-[11.5px]",
+          "grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-[13px]",
           done ? "bg-[var(--fy-accent)] text-white" : "border border-[var(--fy-accent-line)] bg-[var(--fy-accent-field)] text-[var(--fy-accent-ink)]"
         )}
       >
@@ -102,7 +102,7 @@ function Countdown({ view, now }: { view: View; now: number }) {
         late ? "border-[#f0d9a8]" : closed ? "border-[var(--fy-red-line)]" : "border-[var(--border-default)]"
       )}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-tertiary)]">{closed ? "Closed" : late ? "Grace period" : "Time left"}</p>
+      <p className="text-[13px] font-medium text-[var(--text-tertiary)]">{closed ? "Closed" : late ? "Grace period" : "Time left"}</p>
       <p
         className={cn(
           "mt-0.5 font-mono text-[26px] font-medium leading-tight tracking-[-0.02em] tabular-nums",
@@ -134,11 +134,27 @@ function BriefTab({ view }: { view: View }) {
       <PanelSection title="Incident" description={s.summary}>
         <BulletList items={s.candidateBrief} className="text-app-body text-[var(--text-secondary)]" />
       </PanelSection>
+      <PanelSection title="How the task runs">
+        <ol className="grid border-y border-[var(--border-subtle)] text-app-body">
+          {[
+            { when: "At start", what: `${s.kickoffFrom} posts the kickoff in Team.`, done: Boolean(view.attempt.startedAt) },
+            { when: `About ${s.updateAfterMinutes} min in`, what: "The team posts one requirement update. It adds to the requirements below.", done: Boolean(view.attempt.updateReleasedAt) },
+            { when: "Any time", what: `Ask ${s.teammates.map((t) => t.name.split(" ")[0]).join(" or ")} in Team. Write down any call you make yourself in the handoff.`, done: false },
+            { when: "By the deadline", what: `Upload a ZIP of the project and answer: ${s.handoffPrompts.map((p) => p.label).join(" ")}`, done: Boolean(view.attempt.submittedAt) },
+          ].map((step) => (
+            <li key={step.when} className="grid grid-cols-[130px_minmax(0,1fr)_20px] items-baseline gap-3 border-t border-[var(--border-subtle)] py-2.5 first:border-t-0">
+              <span className="text-app-meta text-[var(--text-tertiary)]">{step.when}</span>
+              <span className="text-[var(--text-primary)]">{step.what}</span>
+              {step.done ? <Check aria-label="Done" className="h-4 w-4 text-[var(--fy-accent-ink)]" strokeWidth={2} /> : <span />}
+            </li>
+          ))}
+        </ol>
+      </PanelSection>
       <PanelSection title="Initial requirements" description="From INCIDENT.md. The team's update adds to these; it does not replace them.">
         <ol className="grid overflow-hidden rounded-[10px] border border-[var(--border-subtle)] text-app-body leading-[1.55]">
           {s.initialRequirements.map((r, i) => (
             <li key={r} className="grid grid-cols-[44px_minmax(0,1fr)] gap-2 border-t border-[var(--border-subtle)] px-3 py-2.5 first:border-t-0">
-              <span className="font-mono text-[12px] leading-[1.9] text-[var(--fy-accent-ink)]">R{i + 1}</span>
+              <span className="font-mono text-[13px] leading-[1.9] text-[var(--fy-accent-ink)]">R{i + 1}</span>
               <span className="text-[var(--text-primary)]">{r}</span>
             </li>
           ))}
@@ -159,7 +175,7 @@ function BriefTab({ view }: { view: View }) {
         <ul className="grid overflow-hidden rounded-[10px] border border-[var(--border-subtle)] text-app-body">
           {s.resources.map((r) => (
             <li key={r.path} className="grid gap-1 border-t border-[var(--border-subtle)] px-3 py-2.5 first:border-t-0 sm:grid-cols-[260px_minmax(0,1fr)] sm:gap-4">
-              <code className="flex items-center gap-2 font-mono text-[12.5px] text-[var(--text-primary)]">
+              <code className="flex items-center gap-2 font-mono text-[13px] text-[var(--text-primary)]">
                 <FileCode2 aria-hidden className="h-3.5 w-3.5 shrink-0 text-[var(--text-tertiary)]" strokeWidth={1.8} />
                 {r.path}
               </code>
@@ -220,19 +236,23 @@ function TeamTab({
   return (
     <Panel>
       <PanelSection title="Team thread">
-        <ul className="flex flex-wrap gap-2 text-app-meta">
+        <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
           {view.scenario.teammates.map((t) => (
-            <li key={t.id} className="inline-flex items-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-panel)] py-1 pl-1 pr-3">
-              <span aria-hidden className="grid h-6 w-6 place-items-center rounded-full bg-[var(--fy-accent-soft)] text-[10.5px] font-semibold text-[var(--fy-accent-ink)]">
+            <li key={t.id} className="grid grid-cols-[32px_minmax(0,1fr)] gap-3">
+              <span aria-hidden className="grid h-8 w-8 place-items-center rounded-full bg-[var(--fy-accent-soft)] text-[13px] font-semibold text-[var(--fy-accent-ink)]">
                 {initials(t.name)}
               </span>
-              <span className="font-medium text-[var(--text-primary)]">{t.name}</span>
-              <span className="text-[var(--text-tertiary)]">{t.title}</span>
+              <span className="min-w-0">
+                <span className="block text-app-body font-medium text-[var(--text-primary)]">
+                  {t.name} <span className="font-normal text-[var(--text-tertiary)]">· {t.title}</span>
+                </span>
+                {t.askAbout ? <span className="block text-app-meta leading-[1.5] text-[var(--text-secondary)]">{t.askAbout}</span> : null}
+              </span>
             </li>
           ))}
         </ul>
-        <p className="mt-2 max-w-[68ch] text-app-meta leading-[1.55] text-[var(--text-tertiary)]">
-          Simulated teammates. They answer from a fixed set of facts about this incident, the same for every candidate. If a question is not covered, they say so; note your assumption in the handoff.
+        <p className="mt-3 max-w-[68ch] text-app-meta leading-[1.55] text-[var(--text-tertiary)]">
+          Simulated teammates. They reply to what you write, and every candidate gets the same decisions from them. If something has not been decided, they say so; note your assumption in the handoff.
         </p>
       </PanelSection>
       <PanelSection>
@@ -245,7 +265,7 @@ function TeamTab({
                 <span
                   aria-hidden
                   className={cn(
-                    "grid h-7 w-7 place-items-center rounded-full text-[10.5px] font-semibold",
+                    "grid h-7 w-7 place-items-center rounded-full text-[12px] font-semibold",
                     mine ? "bg-[var(--surface-selected)] text-[var(--text-secondary)]" : "bg-[var(--fy-accent-soft)] text-[var(--fy-accent-ink)]"
                   )}
                 >
@@ -254,7 +274,7 @@ function TeamTab({
                 <div className="min-w-0">
                   <p className="text-app-meta">
                     <span className="font-medium text-[var(--text-primary)]">{who}</span>
-                    <span className="ml-2 font-mono text-[11.5px] text-[var(--text-tertiary)]">
+                    <span className="ml-2 text-[var(--text-tertiary)]">
                       {new Date(m.created_at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
                     </span>
                   </p>
@@ -265,7 +285,7 @@ function TeamTab({
           })}
           {pending ? (
             <li className="ml-[42px] rounded-[10px] bg-[var(--surface-panel)] px-3 py-2 opacity-70">
-              <p className="text-app-meta text-[var(--text-tertiary)]">{error ? "Not sent" : "Sending…"}</p>
+              <p className="text-app-meta text-[var(--text-tertiary)]">{error ? "Not sent" : "Waiting for a reply…"}</p>
               <p className="mt-0.5 whitespace-pre-wrap text-app-body text-[var(--text-secondary)]">{pending.body}</p>
             </li>
           ) : null}
@@ -341,7 +361,7 @@ function UpdatesTab({ view, onAcknowledged }: { view: View; onAcknowledged: (at:
       <PanelSection
         title={
           <>
-            <span className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--fy-red-ink)]">
+            <span className="mb-2 flex items-center gap-2 text-[13px] font-medium text-[var(--fy-red-ink)]">
               <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[var(--fy-red)]" />
               Requirement changed
             </span>
@@ -500,7 +520,7 @@ function UploadCard({ attemptId, uploads, onUploaded, disabled }: { attemptId: s
             {latest.original_filename ?? "ZIP"} is valid: {latest.file_list.length} files, {formatBytes(latest.byte_size)}. It is not submitted yet.
             <details className="mt-1">
               <summary className="cursor-pointer text-app-meta">Files included</summary>
-              <ul className="mt-1 grid max-h-48 gap-0.5 overflow-auto font-mono text-[11.5px]">
+              <ul className="mt-1 grid max-h-48 gap-0.5 overflow-auto font-mono text-[13px]">
                 {latest.file_list.map((f) => (
                   <li key={f.path}>
                     {f.path} <span className="opacity-70">({formatBytes(f.size)})</span>
@@ -785,7 +805,7 @@ export function AssessmentWorkspace({
                       <Icon aria-hidden className={cn("h-4 w-4 shrink-0", tab === t ? "text-[var(--fy-accent)]" : "text-[var(--text-tertiary)]")} strokeWidth={1.8} />
                       <span className="min-w-0 flex-1">
                         <span className={cn("block text-[13.5px] font-medium", tab === t ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]")}>{TAB_LABEL[t]}</span>
-                        <span className="hidden text-[12px] text-[var(--text-tertiary)] md:block">{TAB_HINT[t]}</span>
+                        <span className="hidden text-[13px] text-[var(--text-tertiary)] md:block">{TAB_HINT[t]}</span>
                       </span>
                       {badge ? (
                         <span className={cn("rounded-full px-1.5 text-[11px] font-medium leading-[18px] text-white", t === "updates" ? "bg-[var(--fy-red)]" : "bg-[var(--fy-accent)]")}>
@@ -800,7 +820,7 @@ export function AssessmentWorkspace({
             </ul>
           </nav>
           <div className="hidden rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4 md:block">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-tertiary)]">Before you submit</p>
+            <p className="text-[13px] font-medium text-[var(--text-tertiary)]">Before you submit</p>
             <ul className="mt-3 grid gap-2.5">
               {checklist.map((item) => (
                 <li key={item.label}>

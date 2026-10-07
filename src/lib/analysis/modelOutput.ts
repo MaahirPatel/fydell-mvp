@@ -1,12 +1,12 @@
 /**
- * AI-06 — Model-output validation.
+ * AI-06 - Model-output validation.
  *
  * The model ships JSON. JSON from a model is untrusted input: it gets schema
  * checks, permitted-label checks, citation validation (AI-04), bounded-length
  * checks, and contradiction checks against the deterministic section.
  *
  * Invalid output is routed to retry or human review. It is NEVER patched up
- * into a "complete" report — a fabricated complete report is worse than an
+ * into a "complete" report - a fabricated complete report is worse than an
  * honest incomplete one, because it looks finished.
  */
 
@@ -207,7 +207,7 @@ export function validateModelOutput(raw: unknown, ctx: ValidationContext): Model
 
   // Route: structural problems (schema/bounds/labels) are retryable; semantic
   // problems (contradictions, AI-01, bad citations, prohibited inferences)
-  // go to a human — retrying the model is unlikely to fix judgment errors.
+  // go to a human - retrying the model is unlikely to fix judgment errors.
   const semantic = /contradiction|AI-01|citation|communication/i;
   const route: ValidationRoute = reasons.some((r) => semantic.test(r)) ? "human_review" : "retry";
   return fail(route);

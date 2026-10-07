@@ -7,6 +7,7 @@ import {
   getConsentForInvitation,
   recordConsent,
 } from "@/lib/pilot/consent";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -27,7 +28,7 @@ export async function GET(
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed" },
+      { error: publicErrorMessage(err, "Failed") },
       { status: 400 }
     );
   }
@@ -73,7 +74,7 @@ export async function POST(
     return NextResponse.json({ ok: true, consentId: consent.id, policyVersion: CONSENT_POLICY_VERSION });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not record consent" },
+      { error: publicErrorMessage(err, "Could not record consent") },
       { status: 400 }
     );
   }

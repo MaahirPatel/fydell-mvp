@@ -177,6 +177,108 @@ function isIgnored(path: string): boolean {
   return IGNORED_FILES.has(parts[parts.length - 1] ?? "");
 }
 
+export type ProjectArchiveExclusion = { path: string; reason: "ignored_folder" | "possible_secret" | "nested_archive" };
+
+export interface ProjectArchive {
+  ok: true;
+  entryCount: number;
+  uncompressedBytes: number;
+  /** Files read from the archive, keyed by path with any single shared top-level folder removed. */
+  contents: Map<string, Uint8Array>;
+  /** Files left unread, so they never reach analysis. */
+  excluded: ProjectArchiveExclusion[];
+}
+
+/**
+ * Reads an engineer-supplied project archive for Passport analysis. Unsafe
+ * archives are rejected outright; credential files, nested archives and
+ * dependency folders are left out unread rather than failing the upload.
+ */
+export function readProjectArchive(buf: Uint8Array): ProjectArchive | ZipRejection {
+  if (buf.length > ZIP_LIMITS.maxArchiveBytes) {
+    return reject("too_large", "The archive is larger than 5 MB. Leave out dependency folders, build output and data files.");
+  }
+  const central = readCentralDirectory(buf);
+  if (!Array.isArray(central)) return central;
+
+  let declaredTotal = 0;
+  const seen = new Set<string>();
+  const candidates: (CentralEntry & { path: string })[] = [];
+  const excluded: ProjectArchiveExclusion[] = [];
+  for (const entry of central) {
+    const path = safePath(entry.name);
+    if (!path) return reject("unsafe_path", "The archive contains a path that points outside the project folder. Re-create the ZIP from the project folder itself.", entry.name.slice(0, 200));
+    if (entry.flags & 0x1) return reject("encrypted_entry", "Password-protected ZIP files are not accepted. Create the ZIP without a password.", path);
+    if (entry.isSymlink) return reject("symlink", "Symbolic links are not accepted. Replace the link with the real file or remove it.", path);
+    const key = path.replace(/\/$/, "").toLowerCase();
+    if (seen.has(key)) return reject("duplicate_name", "Two files in the archive have the same name (ignoring letter case). Rename one and re-create the ZIP.", path);
+    seen.add(key);
+    if (entry.isDirectory) continue;
+    if (isIgnored(path)) {
+      excluded.push({ path, reason: "ignored_folder" });
+      continue;
+    }
+    if (CREDENTIAL.test(path)) {
+      excluded.push({ path, reason: "possible_secret" });
+      continue;
+    }
+    if (NESTED_ARCHIVE.test(path)) {
+      excluded.push({ path, reason: "nested_archive" });
+      continue;
+    }
+    declaredTotal += entry.uncompressedSize;
+    if (declaredTotal > ZIP_LIMITS.maxTotalUncompressedBytes) {
+      return reject("too_large", "The archive expands to more than 20 MB. Leave out dependency folders, build output and data files.");
+    }
+    if (entry.method !== 0 && entry.method !== 8) return reject("unsupported_archive", "The archive uses an unsupported compression method. Use your system's standard ZIP tool.", path);
+    if (entry.uncompressedSize > ZIP_LIMITS.maxFileBytes) return reject("file_too_large", "A single file is larger than 1 MB. Remove large data or generated files.", path);
+    if (entry.uncompressedSize > 1024 * 1024 / 4 && entry.compressedSize > 0 && entry.uncompressedSize / entry.compressedSize > ZIP_LIMITS.maxRatio) {
+      return reject("compression_ratio", "A file expands far more than normal source code does. Remove it and re-create the ZIP.", path);
+    }
+    candidates.push({ ...entry, path });
+  }
+  if (candidates.length === 0) return reject("missing_source", "The archive has no project files after dependency folders and credentials are left out.");
+  if (candidates.length > ZIP_LIMITS.maxEvaluatedFiles) {
+    return reject("too_many_entries", `The project has ${candidates.length} files after dependency folders are left out; the limit is ${ZIP_LIMITS.maxEvaluatedFiles}.`);
+  }
+
+  const firstSegment = (p: string) => (p.includes("/") ? p.slice(0, p.indexOf("/") + 1) : "");
+  const top = firstSegment(candidates[0].path);
+  const prefix = top && candidates.every((c) => c.path.startsWith(top)) ? top : "";
+
+  const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+  const contents = new Map<string, Uint8Array>();
+  let actualTotal = 0;
+  for (const entry of candidates) {
+    const lo = entry.localOffset;
+    if (lo + 30 > buf.length || view.getUint32(lo, true) !== 0x04034b50) {
+      return reject("corrupt_entry", "The archive is damaged. Create it again and re-upload.", entry.path);
+    }
+    const start = lo + 30 + view.getUint16(lo + 26, true) + view.getUint16(lo + 28, true);
+    const end = start + entry.compressedSize;
+    if (end > buf.length) return reject("corrupt_entry", "The archive is damaged. Create it again and re-upload.", entry.path);
+    const raw = buf.subarray(start, end);
+    let data: Uint8Array;
+    try {
+      data = entry.method === 0 ? raw.slice() : inflateSync(raw, { out: new Uint8Array(entry.uncompressedSize) });
+    } catch {
+      return reject("corrupt_entry", "A file in the archive could not be read. Create the ZIP again and re-upload.", entry.path);
+    }
+    if (data.length !== entry.uncompressedSize || crc32(data) !== entry.crc) {
+      return reject("corrupt_entry", "A file in the archive does not match its recorded size or checksum. Create the ZIP again.", entry.path);
+    }
+    actualTotal += data.length;
+    contents.set(entry.path.slice(prefix.length), data);
+  }
+  return {
+    ok: true,
+    entryCount: central.length,
+    uncompressedBytes: actualTotal,
+    contents,
+    excluded: excluded.map((e) => ({ ...e, path: e.path.startsWith(prefix) ? e.path.slice(prefix.length) : e.path })),
+  };
+}
+
 export function inspectArchive(buf: Uint8Array, expectedScenarioKey: string): ZipAccepted | ZipRejection {
   if (buf.length > ZIP_LIMITS.maxArchiveBytes) {
     return reject("too_large", "The archive is larger than 5 MB. Leave out virtual environments, caches and build output.");

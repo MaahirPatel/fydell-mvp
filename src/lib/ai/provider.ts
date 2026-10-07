@@ -4,20 +4,23 @@
  * The application supports two generation providers:
  * - "openai": hosted OpenAI API (production default; requires OPENAI_API_KEY)
  * - "ollama": local Ollama server (development; requires Ollama running locally)
+ * - "groq": hosted Groq API, OpenAI-compatible (requires GROQ_API_KEY). Its
+ *   free plan has small daily token limits; when a request is refused, callers
+ *   fall back to authored replies exactly as they do for any provider error.
  *
  * There is deliberately NO mock provider here. Mock responses exist only in
  * test scripts under scripts/test-*.ts and are never a runtime fallback.
  * When no provider is configured, generation returns an honest "unavailable"
  * state rather than a fake dynamic response.
  *
- * IMPORTANT — where Ollama runs:
+ * IMPORTANT - where Ollama runs:
  * Generation executes inside Next.js API routes. In production those run on
  * Vercel (serverless), which cannot reach a model on anyone's personal
  * computer. The Ollama option only works when the Next.js server itself runs
  * locally (`npm run dev`), so that `localhost` means the same machine as the
  * Ollama server. Do not set MODEL_PROVIDER=ollama on a deployed environment.
  */
-export type ModelProvider = "openai" | "ollama";
+export type ModelProvider = "openai" | "ollama" | "groq";
 
 export interface ProviderConfig {
   provider: ModelProvider;
@@ -35,6 +38,7 @@ export interface ProviderConfig {
 const DEFAULT_OLLAMA_URL = "http://localhost:11434";
 const DEFAULT_OLLAMA_MODEL = "qwen2.5:7b";
 const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
+const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
 
 /**
  * Resolve the active provider from the environment.
@@ -52,6 +56,21 @@ export function getProviderConfig(): ProviderConfig | null {
       model: process.env.OLLAMA_MODEL ?? DEFAULT_OLLAMA_MODEL,
       supportsJsonSchema: false,
       timeoutMs: Number(process.env.OLLAMA_TIMEOUT_MS ?? 120_000),
+    };
+  }
+
+  if (provider === "groq") {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) return null;
+    return {
+      provider: "groq",
+      baseUrl: "https://api.groq.com/openai",
+      apiKey,
+      model: process.env.GROQ_MODEL ?? DEFAULT_GROQ_MODEL,
+      // Structured-output support differs by Groq model; JSON mode plus the
+      // caller's validation works for all of them.
+      supportsJsonSchema: false,
+      timeoutMs: 15_000,
     };
   }
 
@@ -84,6 +103,7 @@ export function describeProvider(): string {
   if (config.provider === "ollama") {
     return `ollama (${config.model} at ${config.baseUrl})`;
   }
+  if (config.provider === "groq") return `groq (${config.model})`;
   return `openai (${config.model})`;
 }
 
@@ -98,7 +118,7 @@ export interface ChatMessage {
  * For providers with json_schema support (OpenAI), the schema is enforced
  * by the API. For others (Ollama json_object mode), the schema is described
  * in the system prompt and enforced afterwards by the caller's own
- * validation — which must run regardless of provider.
+ * validation - which must run regardless of provider.
  */
 export function buildChatBody(
   config: ProviderConfig,

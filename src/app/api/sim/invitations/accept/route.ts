@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { acceptInvitationById } from "@/lib/simulations/db";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -9,7 +10,7 @@ export const runtime = "nodejs";
  *
  * The inbox (`GET /api/sim/invitations/mine`) lists invitations scoped to
  * the session email and returns their ids; accepting POSTs the id here and
- * the server verifies email ownership — no token round-trips through the
+ * the server verifies email ownership - no token round-trips through the
  * client, and listing never invalidates previously emailed links.
  *
  * The token-based accept (`POST /api/sim/invitations/{token}`) remains for
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     const { session } = await acceptInvitationById(invitationId.trim(), user.id, user.email);
     return NextResponse.json({ ok: true, sessionId: session.id });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Could not accept invitation";
+    const message = publicErrorMessage(err, "Could not accept invitation");
     const status = message === "Invitation not found" ? 404 : 400;
     return NextResponse.json({ error: message }, { status });
   }

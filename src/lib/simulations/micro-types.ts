@@ -170,13 +170,18 @@ export function validateMicroSim(sim: MicroSimContent): string[] {
     errors.push("Micro sims must be 5-25 minutes");
   if (sim.resources.length < 2 || sim.resources.length > 6)
     errors.push(`Expected 2-6 resources, got ${sim.resources.length}`);
-  if (sim.stakeholders.length !== 1) errors.push("Micro sims have exactly one stakeholder");
+  if (sim.engineering) {
+    if (sim.stakeholders.length < 1 || sim.stakeholders.length > 4)
+      errors.push("Engineering scenarios have 1-4 teammates");
+  } else if (sim.stakeholders.length !== 1) {
+    errors.push("Micro sims have exactly one stakeholder");
+  }
   if (sim.questions.length < 3 || sim.questions.length > 5)
     errors.push(`Expected 3-5 questions, got ${sim.questions.length}`);
   if (sim.curveball) {
     if (!sim.curveball.announcement) errors.push("curveball.announcement required");
-    if (sim.curveball.stakeholderId !== sim.stakeholders[0]?.id)
-      errors.push("curveball.stakeholderId must match the sim stakeholder");
+    if (!sim.stakeholders.some((s) => s.id === sim.curveball?.stakeholderId))
+      errors.push("curveball.stakeholderId must match a sim stakeholder");
   }
 
   const totalPoints =

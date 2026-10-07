@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
 
 /**
- * Scenario file package (W3) — the versioned, candidate-safe file set a
+ * Scenario file package (W3) - the versioned, candidate-safe file set a
  * desktop session materializes from.
  *
  * Built from the on-disk scenario package (`scenarios/<id>/.fydell/scenario.json`).

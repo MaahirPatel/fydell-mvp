@@ -48,7 +48,7 @@ function receiptProgress(processing: NonNullable<View["receipt"]>["processing"])
     case "human_review":
       return { index: 4, note: "Checks finished. The hiring team is reviewing your work.", delayed: false };
     case "ready":
-      return { index: 4, note: "Reviewed. The employer has the report and will contact you directly.", delayed: false };
+      return { index: 4, note: "Reviewed. Your report is below. The employer decides what happens next and contacts you directly.", delayed: false };
     case "retryable_failure":
     case "blocked":
       return { index: 3, note: "Evaluation is delayed by a platform problem. It retries automatically and is never counted against you.", delayed: true };
@@ -100,7 +100,8 @@ function ReceiptPanel({ view }: { view: View }) {
               className="text-app-body text-[var(--text-secondary)]"
               items={[
                 "Fydell runs the public tests and its own hidden checks against your ZIP in an isolated environment.",
-                "The hiring team reads the results alongside your code, the team thread and your handoff.",
+                "The hiring team reads the results alongside your code, the team thread and your handoff, and writes a report.",
+                "When they release it, the same report appears on this page for you, without their private notes or interview questions. You can inspect the evidence, add context or flag an error.",
                 "The employer decides what happens next and contacts you directly.",
               ]}
             />

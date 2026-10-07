@@ -1,5 +1,5 @@
 /**
- * Code-analysis prototype — Python AST bridge.
+ * Code-analysis prototype - Python AST bridge.
  *
  * Runs an embedded stdlib-only `ast` walker over each target file and returns
  * a stream of typed facts (function defs, calls, assignments, comprehensions,
@@ -274,7 +274,7 @@ print(json.dumps({"facts": facts}))
 export interface AstResult {
   facts: AstFact[] | null;
   parseError: { line: number; message: string } | null;
-  /** Set when python3 itself is unavailable — the analysis cannot run. */
+  /** Set when python3 itself is unavailable - the analysis cannot run. */
   engineError: string | null;
 }
 

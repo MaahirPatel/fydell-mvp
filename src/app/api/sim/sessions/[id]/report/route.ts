@@ -10,6 +10,7 @@ import { DA01_CONTENT_VERSION, DA01_SLUG } from "@/lib/contracts/da01";
 import { engineeringReportFor } from "@/lib/engineering/submission-eval";
 import { engineeringScenarioForTemplate } from "@/lib/engineering/session";
 import { REVIEW_HOLD_MESSAGE, employerCanSeeReport } from "@/lib/engineering/report-review";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -235,7 +236,7 @@ export async function GET(
       engineering,
     });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Failed to load report";
+    const msg = publicErrorMessage(err, "Failed to load report");
     return NextResponse.json({ error: msg }, { status: msg === "Forbidden" ? 403 : 404 });
   }
 }

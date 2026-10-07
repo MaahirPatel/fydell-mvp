@@ -420,7 +420,7 @@ impl Platform {
         let base = crate::config::platform_base();
         let http = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(60))
-            .user_agent("fydell-desktop/0.1.0")
+            .user_agent(concat!("fydell-desktop/", env!("CARGO_PKG_VERSION")))
             .build()
             .expect("reqwest client builds");
         Platform { base, http }
@@ -432,7 +432,7 @@ impl Platform {
 
     /// Authenticated request builder: Supabase session cookie (works with the
     /// deployed web app today) + Bearer header (forward-compatible, needs W2).
-    async fn authed(
+    pub(crate) async fn authed(
         &self,
         method: reqwest::Method,
         path: &str,
@@ -445,7 +445,7 @@ impl Platform {
             .header(reqwest::header::AUTHORIZATION, bearer))
     }
 
-    async fn check(&self, res: reqwest::Response, what: &str) -> AppResult<reqwest::Response> {
+    pub(crate) async fn check(&self, res: reqwest::Response, what: &str) -> AppResult<reqwest::Response> {
         let status = res.status();
         if status == reqwest::StatusCode::UNAUTHORIZED {
             return Err(AppError::Auth(
@@ -614,7 +614,7 @@ impl Platform {
             .json(&serde_json::json!({
                 "viewportWidth": 1440,
                 "viewportHeight": 900,
-                "userAgent": "fydell-desktop/0.1.0",
+                "userAgent": concat!("fydell-desktop/", env!("CARGO_PKG_VERSION")),
                 "localStorageOk": true,
             }))
             .send()

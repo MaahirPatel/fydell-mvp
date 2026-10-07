@@ -102,7 +102,7 @@ export interface StakeholderResponseRule {
 
 /**
  * Observable session conditions a response rule or proactive message can
- * depend on. Every condition is a fact about the candidate's session —
+ * depend on. Every condition is a fact about the candidate's session - 
  * never hidden scenario material.
  */
 export interface RuleContextRequires {

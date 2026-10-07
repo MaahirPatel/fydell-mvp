@@ -212,7 +212,7 @@ export function scoreCompetency(
  *
  * Hard rule: this analysis never emits an automatic hiring decision. Every
  * completed analysis resolves to "review" (a human reviews the evidence) or
- * "further_evidence_required" — never "advance" or "decline".
+ * "further_evidence_required" - never "advance" or "decline".
  */
 export function analyze(
   specs: CompetencySpec[],

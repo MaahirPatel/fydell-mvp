@@ -2,7 +2,7 @@
  * Demo data adapters (DEMO-04).
  *
  * Demo and product MUST use the same report/passport/thread components with
- * separate data adapters — no conflicting second product. These adapters map
+ * separate data adapters - no conflicting second product. These adapters map
  * deterministic demo fixtures onto the real component data contracts:
  *
  *  - PassportView  <- PassportData (src/lib/passport/view.ts)

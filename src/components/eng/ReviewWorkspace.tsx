@@ -1,6 +1,7 @@
 import { Panel, PanelSection } from "@/components/ui/Panel";
 import ReportEditor from "./ReportEditor";
 import ReviewerEvidence from "./ReviewerEvidence";
+import { observedFor } from "@/lib/eng/criteria";
 import type { ScenarioDefinition } from "@/lib/eng/scenarios/types";
 import type { MessageRow, ProbeResult, ReportRow, SubmissionRow, UploadRow } from "@/lib/eng/types";
 
@@ -49,11 +50,24 @@ export default function ReviewWorkspace({
       <Panel>
         <PanelSection
           title={released ? (draft ? `Correction draft (will become v${draft.version})` : `Released v${released.version}: start a correction`) : draft ? "Report draft" : "Write the report"}
-          description="Every finding must cite the file lines, test, message or handoff it rests on. Release is refused until every citation checks out against this submission."
+          description="Every finding must cite the file lines, test, message or handoff it rests on. Release is refused until every citation checks out against this submission. The candidate sees the released report, except interview follow-ups; hidden checks appear to them by count only. Write about the work, and don't quote hidden check inputs."
         >
           <ReportEditor
             apiBase={apiBase}
-            rubric={scenario.rubric.map((r) => ({ key: r.key, label: r.label, question: r.question, anchors: r.anchors }))}
+            rubric={scenario.rubric.map((r) => ({
+              key: r.key,
+              label: r.label,
+              question: r.question,
+              anchors: r.anchors,
+              criteria: (r.criteria ?? []).map((c) => ({
+                id: c.id,
+                label: c.label,
+                requirement: c.requirement,
+                anchors: c.anchors,
+                notCovered: c.notCovered,
+                observed: observedFor(c, results),
+              })),
+            }))}
             evidence={{
               files,
               probes: results.map((p) => ({ id: p.id, title: p.title, outcome: p.outcome })),

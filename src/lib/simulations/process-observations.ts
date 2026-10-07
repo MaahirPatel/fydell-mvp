@@ -3,7 +3,7 @@
  *
  * Telemetry supports narrow factual claims, not sweeping inferences:
  *  - a test-run event before the first saved edit supports "ran tests before
- *    first saved edit" — NOT "understood the architecture"
+ *    first saved edit" - NOT "understood the architecture"
  *  - file-open duration does not prove reading or root-cause discovery
  *  - a pause does not prove confusion
  *
@@ -80,7 +80,7 @@ export function deriveProcessObservations(
   }
 
   // Observation: tests ran before the first saved edit (supports exactly
-  // that claim — nothing about understanding the architecture).
+  // that claim - nothing about understanding the architecture).
   if (input.firstSavedEditAt && testRuns.length > 0) {
     const firstEditMs = new Date(input.firstSavedEditAt).getTime();
     const early = testRuns.filter((e) => new Date(e.created_at).getTime() < firstEditMs);
@@ -96,7 +96,7 @@ export function deriveProcessObservations(
     }
   }
 
-  // Observation: resource opens (counts only — duration proves nothing).
+  // Observation: resource opens (counts only - duration proves nothing).
   if (resourceOpens.length > 0) {
     const distinct = new Set(
       resourceOpens.map((e) => e.payload?.resourceId).filter((x) => typeof x === "string")
@@ -120,7 +120,7 @@ export function deriveProcessObservations(
   }
 
   // Inference (labeled, with missing telemetry): steady early activity may
-  // suggest engagement — but pauses prove nothing and focus proves nothing.
+  // suggest engagement - but pauses prove nothing and focus proves nothing.
   if (candidateEvents.length >= 5) {
     out.push({
       kind: "inference",

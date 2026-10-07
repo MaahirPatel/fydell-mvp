@@ -115,7 +115,7 @@ export function resolveAssignmentLink(
       kind: "recovery",
       reason: "expired",
       message:
-        "This assignment link has expired. Contact the hiring team to request a new invitation — your previous work is preserved.",
+        "This assignment link has expired. Contact the hiring team to request a new invitation. Your previous work is preserved.",
     };
   }
 

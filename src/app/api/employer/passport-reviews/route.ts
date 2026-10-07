@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { addReview, listReviews } from "@/lib/passport/store";
+import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
+import { csrfGuard } from "@/lib/security/csrf";
 
 export async function GET() {
   const user = await requireUser();
@@ -11,10 +13,13 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const blocked = csrfGuard(req);
+  if (blocked) return blocked;
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const org = await requireOrgMember(user.id);
   if (!org) return NextResponse.json({ error: "No workspace" }, { status: 403 });
+  if (!orgCan(org.role, "record_decisions")) return NextResponse.json({ error: capabilityDeniedMessage("record_decisions") }, { status: 403 });
   const body = (await req.json().catch(() => null)) as { shareUrl?: unknown; roleTitle?: unknown } | null;
   if (typeof body?.shareUrl !== "string" || !body.shareUrl.trim()) {
     return NextResponse.json({ error: "Paste the passport link the candidate shared with you." }, { status: 400 });

@@ -41,6 +41,15 @@ const RETIRED: { label: string; re: RegExp }[] = [
   { label: "em dash", re: /\u2014/ },
 ];
 
+/**
+ * Stored identifiers that predate the naming change. They are data keys and
+ * on-disk paths, never shown to users, and renaming them would orphan rows.
+ */
+const ALLOWED_IDENTIFIERS: RegExp[] = [
+  /^\s*(family: )?"forward_deployed",\r?$/,
+  /join\(process\.cwd\(\), "scenarios", "project-relay"\)/,
+];
+
 const EXTENSIONS = new Set([
   ".ts",
   ".tsx",
@@ -90,6 +99,7 @@ for (const scanPath of SCAN_PATHS) {
     const text = readFileSync(file, "utf8");
     const lines = text.split("\n");
     for (let i = 0; i < lines.length; i++) {
+      if (ALLOWED_IDENTIFIERS.some((re) => re.test(lines[i]))) continue;
       for (const { label, re } of RETIRED) {
         if (re.test(lines[i])) {
           violations++;

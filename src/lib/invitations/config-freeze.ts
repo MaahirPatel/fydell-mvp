@@ -1,9 +1,9 @@
 /**
- * Employer chunk — EMP-03: freeze assessment configuration.
+ * Employer chunk - EMP-03: freeze assessment configuration.
  *
  * An invitation pins the exact scenario and rubric *version ids* that are
- * current when the invite is created. Every later read of attempt content —
- * workspace provisioning, candidate instructions, scoring, grading — must
+ * current when the invite is created. Every later read of attempt content - 
+ * workspace provisioning, candidate instructions, scoring, grading - must
  * resolve the pinned version, never the template's current version.
  *
  * The enforcement rule is simple and absolute: if the pinned version is no

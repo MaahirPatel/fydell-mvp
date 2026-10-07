@@ -5,5 +5,5 @@ import { redirect } from "next/navigation";
  * the unified engineering profile.
  */
 export default function CandidatePassportRedirect() {
-  redirect("/app/candidate/profile");
+  redirect("/app/candidate/work-record");
 }

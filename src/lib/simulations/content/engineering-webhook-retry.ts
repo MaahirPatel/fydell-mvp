@@ -165,7 +165,7 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
           priority: 5,
           anyKeywords: ["impact", "affected", "merchants", "users", "who", "how many"],
           reply:
-            "Three merchants reported duplicates starting 09:14 UTC. Two saw duplicate order notifications, one saw duplicate inventory updates. No data loss — duplicates are the only symptom.",
+            "Three merchants reported duplicates starting 09:14 UTC. Two saw duplicate order notifications, one saw duplicate inventory updates. No data loss. Duplicates are the only symptom.",
         },
         {
           id: "priya_timeline",
@@ -179,11 +179,11 @@ export const ENGINEERING_WEBHOOK_RETRY: MicroSimContent = {
           priority: 4,
           anyKeywords: ["replay", "dashboard", "manual"],
           reply:
-            "Merchants can replay from the dashboard themselves. We don't do manual replays from support — point them to the dashboard if they ask.",
+            "Merchants can replay from the dashboard themselves. We don't do manual replays from support. Point them to the dashboard if they ask.",
         },
       ],
       fallbackReply:
-        "I handle the merchant-facing side — who reported what, and when. For the technical fix itself, Maya's your person.",
+        "I handle the merchant-facing side. Who reported what, and when. For the technical fix itself, Maya's your person.",
       proactiveMessages: [],
     },
   ],

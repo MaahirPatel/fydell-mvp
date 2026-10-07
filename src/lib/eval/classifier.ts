@@ -1,10 +1,10 @@
 /**
- * RUN-06 — Result classification.
+ * RUN-06 - Result classification.
  *
  * A run that did not produce a clean pass is classified into exactly one of:
  * candidate code error | test failure | timeout (caused by code) |
  * setup incompatibility | platform outage. When the signals do not support a
- * confident classification, the outcome is `indeterminate` — uncertainty is
+ * confident classification, the outcome is `indeterminate` - uncertainty is
  * surfaced, never guessed, and an indeterminate run never becomes a
  * candidate skill failure.
  */
@@ -50,12 +50,12 @@ export interface ClassifiedRun {
  */
 export function classifyRunOutcome(s: RunSignals): ClassifiedRun {
   // Platform outage: the harness errored while the platform was unhealthy.
-  // (A harness error on a healthy platform is indeterminate — we do not know
+  // (A harness error on a healthy platform is indeterminate - we do not know
   // whether the candidate triggered it.)
   if (s.harnessError && !s.platformHealthy) {
     return {
       classification: "platform_outage",
-      reason: "Harness errored while the platform reported unhealthy — infrastructure failure, not a skill signal.",
+      reason: "Harness errored while the platform reported unhealthy. Infrastructure failure, not a skill signal.",
       notCandidateFault: true,
     };
   }
@@ -63,7 +63,7 @@ export function classifyRunOutcome(s: RunSignals): ClassifiedRun {
   if (!s.testsStarted && s.phase === "setup" && (s.exitCode ?? 0) !== 0) {
     return {
       classification: "setup_incompatibility",
-      reason: `Setup phase exited with code ${s.exitCode} before any test started — environment/dependency problem, not candidate code.`,
+      reason: `Setup phase exited with code ${s.exitCode} before any test started. Environment/dependency problem, not candidate code.`,
       notCandidateFault: true,
     };
   }
@@ -71,7 +71,7 @@ export function classifyRunOutcome(s: RunSignals): ClassifiedRun {
   if (s.timedOut && s.testsStarted) {
     return {
       classification: "timeout",
-      reason: "Run exceeded the wall-clock limit after tests started — treated as code-caused timeout (e.g. infinite loop).",
+      reason: "Run exceeded the wall-clock limit after tests started. Treated as code-caused timeout (e.g. infinite loop).",
       notCandidateFault: false,
     };
   }
@@ -86,7 +86,7 @@ export function classifyRunOutcome(s: RunSignals): ClassifiedRun {
   if (s.testsStarted && s.signal && ["SIGSEGV", "SIGABRT", "SIGBUS", "SIGILL"].includes(s.signal)) {
     return {
       classification: "code_error",
-      reason: `Candidate process died with ${s.signal} during tests — code error (crash), distinct from an assertion failure.`,
+      reason: `Candidate process died with ${s.signal} during tests. Code error (crash), distinct from an assertion failure.`,
       notCandidateFault: false,
     };
   }
@@ -94,7 +94,7 @@ export function classifyRunOutcome(s: RunSignals): ClassifiedRun {
   if (s.testsStarted && (s.exitCode ?? 0) !== 0) {
     return {
       classification: "test_failure",
-      reason: `Tests ran and the process exited with code ${s.exitCode} — test failure.`,
+      reason: `Tests ran and the process exited with code ${s.exitCode}. Test failure.`,
       notCandidateFault: false,
     };
   }
@@ -102,13 +102,13 @@ export function classifyRunOutcome(s: RunSignals): ClassifiedRun {
   if (s.harnessError) {
     return {
       classification: "indeterminate",
-      reason: "Harness errored on a healthy platform with no candidate signal — cause unknown. Not held against the candidate.",
+      reason: "Harness errored on a healthy platform with no candidate signal. Cause unknown. Not held against the candidate.",
       notCandidateFault: true,
     };
   }
   return {
     classification: "indeterminate",
-    reason: "Signals do not support a confident classification — surfaced as indeterminate rather than guessed.",
+    reason: "Signals do not support a confident classification. Surfaced as indeterminate rather than guessed.",
     notCandidateFault: true,
   };
 }

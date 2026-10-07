@@ -10,7 +10,7 @@ import { getProviderConfig, postChatCompletion } from "@/lib/ai/provider";
  *
  * Replies are session-aware: rules can require observable session conditions
  * (time elapsed, questions answered, resources opened) and the AI redraft
- * receives grounded session facts — never hidden scenario material.
+ * receives grounded session facts - never hidden scenario material.
  */
 import type {
   RuleContextRequires,
@@ -46,7 +46,7 @@ function requiresSatisfied(req: RuleContextRequires | undefined, ctx: SessionCha
 
 /**
  * Interpolates a fixed allowlist of {tokens} from session context.
- * Unknown tokens are left untouched — never interpolated from raw input.
+ * Unknown tokens are left untouched - never interpolated from raw input.
  */
 export function interpolateReply(reply: string, ctx: SessionChatContext): string {
   const tokens: Record<string, string> = {
@@ -86,7 +86,7 @@ export function selectAuthoredReply(
  *
  * Guardrails (WORK-05), enforced structurally:
  *  - the model receives ONLY the stakeholder persona, the APPROVED authored
- *    reply, and observed session facts — never answer keys, rubrics,
+ *    reply, and observed session facts - never answer keys, rubrics,
  *    withholds, or grading material (none of those are parameters here, so
  *    they cannot leak by construction)
  *  - the prompt orders the model to convey EXACTLY the approved reply's

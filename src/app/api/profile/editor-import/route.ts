@@ -14,7 +14,7 @@ export const maxDuration = 60;
  * `state.vscdb` / `storage.json`, a Local History `entries.json`, or the
  * Cursor equivalents). We parse it, store ONLY the extracted summary, and
  * discard the raw file. Explicit consent is required on every upload, and
- * the result is always labeled provenance 'local-import' — self-supplied,
+ * the result is always labeled provenance 'local-import' - self-supplied,
  * not independently observed.
  */
 export async function GET() {
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const parsed = await parseEditorUpload(file.name || "upload", buffer, source);
-  // The raw upload is dropped here — only the extracted summary is stored.
+  // The raw upload is dropped here - only the extracted summary is stored.
   const saved = await saveEditorImport(user.id, source, parsed);
   return NextResponse.json({ import: saved, warnings: parsed.warnings });
 }

@@ -45,7 +45,7 @@ export function verifyDistributionManifest(artifacts: readonly ReleaseArtifact[]
   const seen = new Set<string>();
   for (const a of artifacts) {
     if ((a.os as string) !== "linux") {
-      errors.push(`Unsupported OS in manifest: ${a.os} — no tested distribution path`);
+      errors.push(`Unsupported OS in manifest: ${a.os}. No tested distribution path`);
       continue;
     }
     const key = `${a.os}:${a.format}`;
@@ -55,7 +55,7 @@ export function verifyDistributionManifest(artifacts: readonly ReleaseArtifact[]
     if (!a.publisher) errors.push(`${key}: missing publisher identity`);
     if (!a.downloadSource) errors.push(`${key}: missing download source`);
     if (!a.signature) {
-      errors.push(`${key}: missing signature — shipped artifacts must be signed`);
+      errors.push(`${key}: missing signature. Shipped artifacts must be signed`);
     } else if (!a.signature.fingerprint) {
       errors.push(`${key}: signature missing key fingerprint`);
     }

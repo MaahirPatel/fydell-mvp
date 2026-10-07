@@ -11,6 +11,7 @@ import { toSubmitErrorResponse } from "@/lib/submissions/errors";
 import { finalizeSnapshotSubmission } from "@/lib/submissions/finalize";
 import { realFinalizeDeps } from "@/lib/submissions/real-deps";
 import { isMicroContent } from "@/lib/simulations/micro-types";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -63,7 +64,7 @@ export async function GET(
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed" },
+      { error: publicErrorMessage(err, "Failed") },
       { status: 400 }
     );
   }
@@ -169,7 +170,7 @@ export async function POST(
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Submission failed" },
+      { error: publicErrorMessage(err, "Submission failed") },
       { status: 400 }
     );
   }

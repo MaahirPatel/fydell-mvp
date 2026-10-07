@@ -75,10 +75,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # --- Signing (optional, uncomment when credentials are available) ---
-          # Updater signing: uncomment when TAURI_SIGNING_PRIVATE_KEY is set in
-          # repo secrets. If set (even to empty), tauri-action tries to sign and fails.
-          # TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          # TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # Updater signing is required: createUpdaterArtifacts is on, so the
+          # build fails without these two repo secrets. They sign latest.json
+          # and the update packages that installed apps verify before installing.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           # macOS code signing + notarization: uncomment when APPLE_CERTIFICATE is set.
           # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}

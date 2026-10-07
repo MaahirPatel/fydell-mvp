@@ -1,14 +1,14 @@
 /**
- * RUN-09 — Concurrency model (in-process).
+ * RUN-09 - Concurrency model (in-process).
  *
  * Drives jobs through the RunQueue with at most `limit` workers active.
  * Each worker must heartbeat to stay alive; a worker that stops
  * heartbeating (crash/hang) has its job recovered via stale-worker
- * detection and retried by a fresh worker — bounded by maxAttempts.
+ * detection and retried by a fresh worker - bounded by maxAttempts.
  *
- * This models the *contract*. Real verification — the purchased cohort's
+ * This models the *contract*. Real verification - the purchased cohort's
  * expected parallel jobs against the live sandbox, the malicious
- * resource-exhaustion fixture, worker-restart recovery — is NEEDS-LIVE.
+ * resource-exhaustion fixture, worker-restart recovery - is NEEDS-LIVE.
  */
 
 import { RunQueue } from "./queue";
@@ -60,11 +60,11 @@ export async function runWithConcurrency(opts: {
         try {
           const result = await work(job.runId, job.attempts, () => {
             try {
-              // Only heartbeat our own claim — a stale worker must not keep
+              // Only heartbeat our own claim - a stale worker must not keep
               // another worker's job alive.
               if (queue.get(job.runId)?.claimedAt === myClaim) queue.heartbeat(job.runId);
             } catch {
-              /* job finished or was requeued — ignore */
+              /* job finished or was requeued - ignore */
             }
           });
           queue.complete(job.runId, result);

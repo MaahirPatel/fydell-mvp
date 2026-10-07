@@ -7,7 +7,7 @@
  *
  * Per DESK-01 (architecture decision): only Linux distribution is claimed
  * (installers: .deb / .rpm / .AppImage). macOS/Windows are explicitly NOT
- * offered — additional OS support waits for its own tested distribution
+ * offered - additional OS support waits for its own tested distribution
  * path (DESK-03).
  */
 
@@ -83,7 +83,7 @@ export const UNSUPPORTED_PLATFORM_NOTE =
 
 /**
  * Every capability in the preview must be labeled simulated vs
- * requires_install — an unlabeled capability is a DEMO-07 failure.
+ * requires_install - an unlabeled capability is a DEMO-07 failure.
  */
 export function validatePreviewLabels(caps: readonly DesktopCapability[]): string[] {
   const errors: string[] = [];

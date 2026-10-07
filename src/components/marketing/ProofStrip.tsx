@@ -6,10 +6,10 @@ import s from "./proof-strip.module.css";
 /**
  * Proof strip: ONLY real numbers, each sourced from the repo.
  *
- *  - 8 authored scenario definitions — src/lib/sim-engine/scenarios/catalog.ts (SCENARIO_BY_ID)
- *  - 6 role families — the six scenario directories under src/lib/sim-engine/scenarios/
- *  - 20 minutes — the released public evaluation's working time (src/lib/fixtures/northline.ts)
- *  - $49 per completed simulation — the published Starter price (src/lib/marketing/pricing.ts)
+ *  - 8 authored scenario definitions - src/lib/sim-engine/scenarios/catalog.ts (SCENARIO_BY_ID)
+ *  - 6 role families - the six scenario directories under src/lib/sim-engine/scenarios/
+ *  - 20 minutes - the released public evaluation's working time (src/lib/fixtures/northline.ts)
+ *  - $49 per completed simulation - the published Starter price (src/lib/marketing/pricing.ts)
  *
  * When the catalog grows, update this list by hand; never invent a number.
  */
@@ -78,7 +78,7 @@ export default function ProofStrip() {
           <p className={s.sub}>{m.sub}</p>
         </div>
       ))}
-      <p className={s.source}>Numbers from the product and the published price list — not a survey, not a projection.</p>
+      <p className={s.source}>Numbers from the product and the published price list. Not a survey, not a projection.</p>
     </div>
   );
 }

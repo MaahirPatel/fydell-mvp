@@ -11,13 +11,13 @@
  * mirror used by routes and in-process tests):
  * - same-state transitions are always allowed (idempotent repeats),
  * - `accepted` is terminal: no transition leaves it,
- * - `rejected` returns to `local_draft` only — the candidate must
+ * - `rejected` returns to `local_draft` only - the candidate must
  *   explicitly rebuild/re-acknowledge before another finalize,
  * - `failed` allows retry via `syncing`, `submitting`, or `local_draft`,
  * - anything else is a conflict: repeated or concurrent requests cannot
  *   regress states.
  *
- * Pure module — no `server-only` — unit-testable in-process.
+ * Pure module - no `server-only` - unit-testable in-process.
  */
 
 export type TransferState =
@@ -104,7 +104,7 @@ export function applyTransferTransition(
   const effective: TransferRecord = current ?? { state: "local_draft" };
   // First touch: only a caller expecting local_draft may create the record.
   if (current === null && from !== "local_draft") return null;
-  if (effective.state !== from) return null; // stale caller — no regression
+  if (effective.state !== from) return null; // stale caller - no regression
   if (!isLegalTransferTransition(from, to)) return null;
   const next: TransferRecord = { ...effective, state: to };
   if (detail.operationId !== undefined) next.operationId = detail.operationId;

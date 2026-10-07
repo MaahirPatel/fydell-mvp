@@ -37,8 +37,8 @@ function SignupRoleContent() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Request failed");
-      if (role === "fde" && next) {
-        router.push(next);
+      if (role === "fde") {
+        router.push(next ?? "/app/candidate/work-record");
         return;
       }
       router.push(data.redirectTo || "/");
@@ -58,7 +58,7 @@ function SignupRoleContent() {
 
   if (invitedCandidate) {
     return (
-      <AuthShell title="Opening your evaluation">
+      <AuthShell title="Opening your invitation">
         <p role="status" className="text-app-body text-[var(--text-secondary)]">
           One moment while we take you to your invitation.
         </p>
@@ -80,14 +80,14 @@ function SignupRoleContent() {
     {
       role: "employer",
       icon: Building2,
-      title: "I am hiring",
-      body: "Create a workspace, invite candidates to an evaluation, and review the evidence behind their conclusions.",
+      title: "I'm hiring",
+      body: "Create a workspace, publish an engineering role and invite candidates. Your team reads the evidence and decides.",
     },
     {
       role: "fde",
       icon: UserRound,
-      title: "I am a candidate",
-      body: "Complete evaluations you are invited to and keep a record of the work you produced.",
+      title: "I'm an engineer",
+      body: "Build a Builder Profile from your projects and take the tasks hiring teams invite you to.",
     },
     ...(showPartner
       ? [
@@ -104,7 +104,7 @@ function SignupRoleContent() {
   return (
     <AuthShell
       title="How will you use Fydell?"
-      description="This decides where you land. You can change it later in settings."
+      description="This decides what you set up next: a Builder Profile, or a hiring workspace."
       width="wide"
     >
       <div className="grid gap-2.5">

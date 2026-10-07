@@ -102,6 +102,8 @@ console.log("\ndestination classification");
 check("invite is candidate", isCandidateDestination("/invite/abc"), true);
 check("sim is candidate", isCandidateDestination("/sim/1"), true);
 check("candidate home is candidate", isCandidateDestination("/app/candidate"), true);
+check("role application is candidate", isCandidateDestination("/jobs/backend-engineer-1a2b3c4d/apply"), true);
+check("bare /jobs is not a destination", isCandidateDestination("/jobs"), false);
 check("employer is not candidate", isCandidateDestination("/app/employer"), false);
 check("employer is employer", isEmployerDestination("/app/employer/reports"), true);
 check("builder is employer", isEmployerDestination("/app/simulations/new"), true);

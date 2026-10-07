@@ -2,10 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { listReviews } from "@/lib/passport/store";
+import { questionsAwaitingReview } from "@/lib/employer/review";
 import { PageHeader } from "@/components/ui/PageHeader";
 import AddPassportForm from "@/components/employer/AddPassportForm";
 
-export const metadata = { title: "Shared passports" };
+export const metadata = { title: "Reviews" };
 export const dynamic = "force-dynamic";
 
 const DECISION_LABEL = { none: "Needs review", advance: "Advance to interview", hold: "Hold", decline: "Decline" } as const;
@@ -16,17 +17,29 @@ export default async function EmployerPassportsPage() {
   if (!user) redirect("/login?next=%2Fapp%2Femployer%2Fpassports");
   const org = await requireOrgMember(user.id);
   if (!org) redirect("/account/setup-required?reason=no_org");
-  const reviews = await listReviews(org.organizationId);
+  const [reviews, awaiting] = await Promise.all([listReviews(org.organizationId), questionsAwaitingReview(org.organizationId)]);
+  const answersByShare = new Map<string, number>();
+  for (const a of awaiting) answersByShare.set(a.shareId, (answersByShare.get(a.shareId) ?? 0) + a.count);
+  const needingAction = [...answersByShare.values()].reduce((n, c) => n + c, 0);
 
   return (
     <div>
       <PageHeader
-        title="Shared passports"
-        description="Engineering Passports candidates have shared with you. Review the evidence behind each finding, then record your team's decision."
+        title="Reviews"
+        description="Every Passport shared with your team, from role applications or a link a candidate sent you. Review the evidence behind each finding, then record your team's decision."
       />
       <div className="mt-6">
         <AddPassportForm />
       </div>
+
+      {needingAction ? (
+        <p className="mt-6 text-app-body text-[var(--text-primary)]">
+          <span className="font-medium">
+            {needingAction} new answer{needingAction === 1 ? "" : "s"} to read.
+          </span>{" "}
+          <span className="text-[var(--text-secondary)]">Candidates replied to your follow-up questions; they are marked below.</span>
+        </p>
+      ) : null}
 
       <div className="mt-6 overflow-hidden rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
         {reviews.length === 0 ? (
@@ -52,6 +65,11 @@ export default async function EmployerPassportsPage() {
                       {r.candidateName}
                     </Link>
                     {r.shareRevoked ? <span className="ml-2 badge badge-neutral">Link revoked</span> : null}
+                    {answersByShare.get(r.shareId) ? (
+                      <span className="ml-2 badge badge-attention">
+                        {answersByShare.get(r.shareId)} new answer{answersByShare.get(r.shareId) === 1 ? "" : "s"}
+                      </span>
+                    ) : null}
                   </td>
                   <td className="px-4 py-3 text-[var(--text-secondary)]">{r.roleTitle || "No role set"}</td>
                   <td className="hidden px-4 py-3 text-[var(--text-secondary)] md:table-cell">

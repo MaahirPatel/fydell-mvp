@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * W1 — desktop sign-in callback.
+ * W1 - desktop sign-in callback.
  *
  * The desktop app opens the system browser at
  * `{platform}/login?desktop=1&state=<opaque>`; after sign-in the login form

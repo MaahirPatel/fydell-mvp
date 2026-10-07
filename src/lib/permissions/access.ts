@@ -1,15 +1,15 @@
 /**
- * Accounts chunk — field- and record-level access matrix.
+ * Accounts chunk - field- and record-level access matrix.
  *
  * Implements the "Required access matrix" from the release checklist as a
  * single pure permission function. Every server route that serves accounts,
  * organization, evidence, report, billing or demo data goes through
  * `checkAccess`; the matrix rows are the four caller kinds:
  *
- *   developer  — the candidate who owns the record
- *   employer   — a member of an employer organization, with a role
- *   unrelated  — any other signed-in user
- *   operator   — a platform operator, always purpose-limited and audited
+ *   developer - the candidate who owns the record
+ *   employer - a member of an employer organization, with a role
+ *   unrelated - any other signed-in user
+ *   operator - a platform operator, always purpose-limited and audited
  *
  * Rules encoded here (checklist defaults):
  * - Passport evidence: developer full; employer only inside an authorized
@@ -30,14 +30,14 @@
  *   operator is a restricted assessment maintainer.
  * - Billing: developer never unless they hold the workspace billing role;
  *   employer only for billing-authorized members (the billing role is
- *   explicit — org owner/admin do NOT inherit it); unrelated never; operator
+ *   explicit - org owner/admin do NOT inherit it); unrelated never; operator
  *   only restricted billing support with a purpose and audit.
  * - Public demo: everyone gets fictional fixtures only.
  *
  * AUTH-06 enforcement: a membership whose status is not "active" (removed /
  * suspended / never accepted) grants nothing org-scoped, and a revoked
  * session is treated as no membership at all. The caller builds the Actor
- * from server-side store reads — never from values the browser supplied.
+ * from server-side store reads - never from values the browser supplied.
  *
  * These functions are pure and side-effect free so they can be unit-tested
  * in-process. They are server-side logic by convention; routes must call
@@ -53,7 +53,7 @@ export type MembershipStatus = "invited" | "active" | "suspended" | "removed";
 
 export interface Actor {
   kind: CallerKind;
-  /** Authenticated user id, from the server session — never from the request body. */
+  /** Authenticated user id, from the server session - never from the request body. */
   userId: string;
   /** For employers: the organization the caller is acting inside, resolved server-side. */
   orgId?: string;
@@ -123,7 +123,7 @@ function hasActiveMembership(actor: Actor): boolean {
   return actor.kind === "employer" && actor.membershipStatus === "active" && !!actor.orgId;
 }
 
-/** Operator access is always purpose-limited and audited — no blanket access. */
+/** Operator access is always purpose-limited and audited - no blanket access. */
 function operatorGate(actor: Actor): boolean {
   return !!actor.operatorPurpose && actor.operatorAudited === true;
 }
@@ -272,7 +272,7 @@ function checkBilling(actor: Actor, resource: Resource): AccessDecision {
 }
 
 function checkPublicDemo(actor: Actor, resource: Resource): AccessDecision {
-  // Everyone — including operators and unrelated visitors — may only ever
+  // Everyone - including operators and unrelated visitors - may only ever
   // see fictional fixtures from the demo surface.
   if (resource.fixtureOnly) return allow("fixtures_only", "demo_fixtures_only");
   return deny("demo_must_be_fixtures");

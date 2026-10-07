@@ -9,6 +9,7 @@ const TEXT = /\.(py|pyi|ts|tsx|js|jsx|mjs|cjs|go|rs|java|kt|rb|php|cs|swift|scal
 
 const MANIFEST = /(^|\/)(package\.json|pyproject\.toml|requirements[^/]*\.txt|setup\.py|setup\.cfg|go\.mod|Cargo\.toml|pom\.xml|build\.gradle(\.kts)?|Gemfile|composer\.json|environment\.ya?ml)$/;
 const CI = /^\.github\/workflows\/[^/]+\.ya?ml$/;
+const CONFIG = /(^|\/)(Dockerfile|docker-compose\.ya?ml|compose\.ya?ml|tsconfig\.json|mypy\.ini|action\.ya?ml)$/;
 const TEST = /(^|\/)(tests?|__tests__|spec)\/|(^|\/)test_[^/]+\.py$|_test\.(py|go)$|\.(test|spec)\.(ts|tsx|js|jsx)$/;
 const README = /(^|\/)readme(\.[a-z]+)?$/i;
 
@@ -22,7 +23,7 @@ const TEST_RESERVE = 12;
 
 function priority(path: string): number {
   if (MANIFEST.test(path)) return 0;
-  if (CI.test(path)) return 1;
+  if (CI.test(path) || (CONFIG.test(path) && path.split("/").length <= 2)) return 1;
   if (README.test(path) && !path.includes("/")) return 2;
   if (/\.(md|txt)$/i.test(path) || PACKAGE_MARKER.test(path)) return 6;
   if (TEST.test(path)) return 4;
@@ -106,3 +107,4 @@ export const isReadme = (path: string) => README.test(path);
 export const isTestFile = (path: string) => TEST.test(path);
 export const isManifest = (path: string) => MANIFEST.test(path);
 export const isCiWorkflow = (path: string) => CI.test(path);
+export const isConfigFile = (path: string) => CONFIG.test(path);

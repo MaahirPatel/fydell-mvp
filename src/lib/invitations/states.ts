@@ -1,5 +1,5 @@
 /**
- * Employer chunk — EMP-06: operational states with defined meaning.
+ * Employer chunk - EMP-06: operational states with defined meaning.
  *
  * Every candidate assessment invitation moves through one canonical state
  * machine. Transitions are enforced server-side (see transitionInvitation);

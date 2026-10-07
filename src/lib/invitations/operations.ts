@@ -1,5 +1,5 @@
 /**
- * Employer chunk — EMP-07: resend, revoke and extend.
+ * Employer chunk - EMP-07: resend, revoke and extend.
  *
  * - Resend re-issues the SAME invitation (sendCount + 1). It never creates a
  *   second invitation and never creates a second attempt: the invitation's

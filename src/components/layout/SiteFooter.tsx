@@ -5,8 +5,8 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Product",
     links: [
-      { label: "How it works", href: "/product" },
-      { label: "Engineering Passport", href: "/passport/new" },
+      { label: "How it works", href: "/how-it-works" },
+      { label: "Build your Passport", href: "/passport/new" },
       { label: "Pricing", href: "/pricing" },
       { label: "Download", href: "/download" },
       { label: "Demo", href: "/demo" },
@@ -15,8 +15,8 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Solutions",
     links: [
-      { label: "For Employers", href: "/employers" },
-      { label: "For Developers", href: "/developers" },
+      { label: "For engineers", href: "/candidates" },
+      { label: "For employers", href: "/employers" },
     ],
   },
   {
@@ -31,7 +31,7 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
     title: "Account",
     links: [
       { label: "Log in", href: "/login" },
-      { label: "Sign up", href: "/get-started" },
+      { label: "Get started", href: "/get-started" },
     ],
   },
 ];

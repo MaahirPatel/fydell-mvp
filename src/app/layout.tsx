@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { GeistMono } from "geist/font/mono";
-import { Inter } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import NavigationProgress from "@/components/layout/NavigationProgress";
 import StorageMigration from "@/components/layout/StorageMigration";
 import { SITE_URL } from "@/lib/seo/site";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -35,8 +29,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistMono.variable} ${inter.variable}`}>
-      <body className={inter.className}>
+    <html lang="en" className={`${GeistMono.variable} ${GeistSans.variable}`}>
+      <body className={GeistSans.className}>
         <Script
           id="vtag-ai-js"
           src="https://r2.leadsy.ai/tag.js"

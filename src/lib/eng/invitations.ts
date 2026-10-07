@@ -6,6 +6,8 @@ import { scenarioForVersionId } from "./scenario-versions";
 import type { AttemptRow, InvitationRow, RoleRow, RoleSnapshot } from "./types";
 import { appUrl } from "@/lib/app-url";
 import { fydellEmailShell, isResendConfigured, sendResendHtml } from "@/lib/email";
+import { notifyUser } from "@/lib/notifications/store";
+import { normalizeHandle } from "@/lib/profile/handle";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const INVITE_TTL_DAYS = 14;
@@ -34,6 +36,28 @@ export function normalizeCandidate(emailRaw: unknown, nameRaw: unknown): { email
   return { email, name: name || null };
 }
 
+export type InviteCandidate = { email: string; name: string | null; handle?: string; userId?: string };
+
+/**
+ * Finds the engineer behind an @handle. The email is read server-side from
+ * their account so the employer can invite without ever seeing it.
+ */
+export async function resolveHandleCandidate(db: Admin, raw: string): Promise<InviteCandidate | { error: string }> {
+  const normalized = normalizeHandle(raw);
+  if ("error" in normalized) return { error: normalized.error };
+  const { data: profile } = await db
+    .from("engineer_profiles")
+    .select("owner_id, display_name")
+    .eq("handle", normalized.handle)
+    .maybeSingle();
+  if (!profile) return { error: `No engineer on Fydell has the handle @${normalized.handle}.` };
+  const { data: account } = await db.auth.admin.getUserById(profile.owner_id as string);
+  const email = account.user?.email?.toLowerCase();
+  if (!email) return { error: `@${normalized.handle} cannot receive invitations right now.` };
+  const name = typeof profile.display_name === "string" && profile.display_name.trim() ? profile.display_name.trim().slice(0, 120) : null;
+  return { email, name, handle: normalized.handle, userId: profile.owner_id as string };
+}
+
 async function deliver(invitation: InvitationRow, token: string, organizationName: string): Promise<InvitationRow["email_delivery"]> {
   if (!isResendConfigured()) return "not_configured";
   const url = inviteUrl(token);
@@ -56,7 +80,7 @@ export async function createInvitation(
   db: Admin,
   member: EngMember,
   role: RoleRow,
-  candidate: { email: string; name: string | null }
+  candidate: InviteCandidate
 ): Promise<{ invitation: InvitationRow; url: string }> {
   if (role.status !== "published") throw new Error("Publish the role before inviting candidates.");
   const { definition, row } = await scenarioForVersionId(db, role.scenario_version_id);
@@ -76,6 +100,7 @@ export async function createInvitation(
       scenario_version_id: role.scenario_version_id,
       candidate_email: candidate.email,
       candidate_name: candidate.name,
+      candidate_handle: candidate.handle ?? null,
       token_hash: hashInviteToken(token),
       status: "invited",
       role_snapshot: snapshot,
@@ -92,6 +117,14 @@ export async function createInvitation(
   const invitation = data as InvitationRow;
   const delivery = await deliver(invitation, token, member.organizationName);
   await db.from("eng_invitations").update({ email_delivery: delivery }).eq("id", invitation.id);
+  if (candidate.userId) {
+    await notifyUser(candidate.userId, {
+      kind: "invitation_received",
+      title: `${member.organizationName} invited you to a task`,
+      body: `${role.title}. Review the details and start when you are ready.`,
+      href: `/assess/invitations/${invitation.id}`,
+    });
+  }
   return { invitation: { ...invitation, email_delivery: delivery }, url: inviteUrl(token) };
 }
 

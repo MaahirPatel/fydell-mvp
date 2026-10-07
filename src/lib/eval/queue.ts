@@ -1,11 +1,11 @@
 /**
- * RUN-07 — Durable run queue with idempotent run IDs and bounded retries.
+ * RUN-07 - Durable run queue with idempotent run IDs and bounded retries.
  *
  * Model (in-process, durable via a JSON journal in a data directory):
  *  - enqueue(runId, …) is idempotent: the same runId returns the existing job,
  *    never a duplicate. Double-submits create one accepted operation.
  *  - Bounded retries: transient failures retry up to maxAttempts with
- *    backoff; exhaustion lands in `exhausted` — an explicit terminal state,
+ *    backoff; exhaustion lands in `exhausted` - an explicit terminal state,
  *    never an endless spinner.
  *  - Stale-worker detection: a claimed job whose heartbeat lapses past
  *    workerTimeoutMs is requeued for another worker.
@@ -147,7 +147,7 @@ export class RunQueue {
 
   /**
    * Transient failure: retry while attempts remain (bounded, with backoff),
-   * else move to `exhausted` — explicit, visible, billable once.
+   * else move to `exhausted` - explicit, visible, billable once.
    */
   failTransient(runId: string, reason: string, atMs = Date.now()): RunJob {
     const job = this.jobs.get(runId);

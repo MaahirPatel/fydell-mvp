@@ -1,8 +1,8 @@
 /**
- * Employer chunk — EMP-01: create a useful role.
+ * Employer chunk - EMP-01: create a useful role.
  *
- * A role captures exactly what the checklist asks for — role family, stack,
- * responsibilities, and job-relevant evaluation criteria — and nothing more.
+ * A role captures exactly what the checklist asks for - role family, stack,
+ * responsibilities, and job-relevant evaluation criteria - and nothing more.
  * Field limits keep this a focused definition, not a giant configuration
  * form. This lib is pure; the API route persists to the database.
  */
@@ -65,7 +65,7 @@ function checkList(
 
 /**
  * Validate a role definition. Returns the normalized role (with generated
- * id) or the first validation failure — no partial giant forms.
+ * id) or the first validation failure - no partial giant forms.
  */
 export function defineRole(
   orgId: string,

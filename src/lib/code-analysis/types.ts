@@ -1,5 +1,5 @@
 /**
- * Code-analysis prototype — shared types.
+ * Code-analysis prototype - shared types.
  *
  * Design rule: every finding must cite the exact file/line(s) it rests on.
  * Severity "bug" means the evidence shows a real defect; "risk" means the
@@ -34,7 +34,7 @@ export interface Finding {
   summary: string;
   evidence: Evidence[];
   confidence: Confidence;
-  /** What the analyzer could not verify — stated explicitly, never guessed. */
+  /** What the analyzer could not verify - stated explicitly, never guessed. */
   uncertainAbout?: string;
   suggestedFix?: string;
   relatedCodes?: string[];

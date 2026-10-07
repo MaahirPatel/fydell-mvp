@@ -1,8 +1,8 @@
 /**
- * AI-08 — Narrow communication evaluation.
+ * AI-08 - Narrow communication evaluation.
  *
  * The reviewer may assess ONLY: relevant clarification, impact description,
- * stated uncertainty, and handoff accuracy — each cited to transcript
+ * stated uncertainty, and handoff accuracy - each cited to transcript
  * messages. Culture fit, personality, accent, sentiment, "attitude", and any
  * other suitability inference are prohibited and rejected by validation.
  *

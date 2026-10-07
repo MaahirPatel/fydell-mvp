@@ -13,6 +13,7 @@ import {
   FolderOpen,
   House,
   IdCard,
+  LibraryBig,
   Plus,
   ReceiptText,
   Settings,
@@ -26,6 +27,7 @@ import FydellLogo from "@/components/brand/FydellLogo";
 import { initialsFrom } from "@/lib/workspace/identity";
 import { ToastProvider } from "@/components/ui/Toast";
 import SignOutButton from "./SignOutButton";
+import NotificationBell from "@/components/notifications/NotificationBell";
 import { InviteModalProvider, useInviteModal } from "./InviteCandidateModal";
 import type { CatalogRole } from "./catalog-types";
 import {
@@ -50,7 +52,8 @@ const NAV_ICONS: Record<WorkspaceNavLabel, typeof House> = {
   "Engineering tasks": SquareTerminal,
   Roles: BriefcaseBusiness,
   Candidates: Users,
-  "Shared passports": IdCard,
+  Reviews: IdCard,
+  "Task library": LibraryBig,
   Work: FolderOpen,
   Evidence: FileCheck2,
   "Work Receipts": ReceiptText,
@@ -443,6 +446,7 @@ function WorkspaceToolbar() {
         >
           <CircleHelp className="h-4 w-4" strokeWidth={1.6} aria-hidden />
         </Link>
+        <NotificationBell />
         <div className="ml-1">
           <SidebarInvite compact />
         </div>

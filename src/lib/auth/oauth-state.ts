@@ -1,16 +1,16 @@
 /**
- * Accounts chunk — GitHub account-linking OAuth state protection (AUTH-02).
+ * Accounts chunk - GitHub account-linking OAuth state protection (AUTH-02).
  *
  * Linking a GitHub account must bind to the *authenticated intended user*.
  * The OAuth `state` parameter is a signed, expiring, single-purpose token:
  *
- * - payload: { uid, redirect, iat, nonce } — bound to the signed-in user id
+ * - payload: { uid, redirect, iat, nonce } - bound to the signed-in user id
  * - signature: HMAC-SHA256 over the payload with a server secret
  * - lifetime: 10 minutes
  * - redirect: must be a relative path on an allowlist of post-link
  *   destinations (open redirects are rejected)
  *
- * Validation re-checks the signature, the expiry, and — critically — that
+ * Validation re-checks the signature, the expiry, and - critically - that
  * the `uid` inside the state matches the *currently authenticated* user.
  * A state minted for user A presented in user B's session is rejected, and
  * state alone never links anything: the link step requires the authenticated
@@ -23,7 +23,7 @@
  *
  * The live GitHub OAuth round-trip itself (redirect to github.com, code
  * exchange) requires real credentials and a browser and is NOT covered
- * here — see NEEDS-LIVE in the progress notes.
+ * here - see NEEDS-LIVE in the progress notes.
  */
 
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
@@ -67,8 +67,8 @@ function sign(secret: string, payloadB64: string): string {
 }
 
 /**
- * Allowlist for post-link redirects. Relative paths only; anything else —
- * absolute URLs, protocol-relative, javascript:, or paths outside the list —
+ * Allowlist for post-link redirects. Relative paths only; anything else - 
+ * absolute URLs, protocol-relative, javascript:, or paths outside the list - 
  * is rejected to prevent open-redirect abuse.
  */
 const ALLOWED_REDIRECTS = new Set([
@@ -139,8 +139,8 @@ export function validateOAuthState(
   if (nowMs - payload.iat > STATE_TTL_MS || payload.iat > nowMs + 60_000) {
     return fail("expired", "state has expired");
   }
-  // Bound to the intended user: a state minted for someone else — or replayed
-  // into a different session — cannot link this account.
+  // Bound to the intended user: a state minted for someone else - or replayed
+  // into a different session - cannot link this account.
   if (payload.uid !== authenticatedUserId) {
     return fail("user_mismatch", "state was issued for a different user");
   }

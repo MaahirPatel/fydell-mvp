@@ -3,7 +3,7 @@ import type { TimelineItem } from "./types";
 /**
  * Merge evidence from every source into one reverse-chronological timeline.
  * Pure function: no I/O, no Supabase. Provenance is carried through untouched
- * — aggregation must never weaken or relabel it.
+ * - aggregation must never weaken or relabel it.
  */
 export function aggregateTimeline(items: TimelineItem[]): TimelineItem[] {
   return [...items].sort((a, b) => {

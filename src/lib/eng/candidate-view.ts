@@ -35,6 +35,7 @@ export interface CandidateView {
     testCommands: ScenarioDefinition["testCommands"];
     setupCommands: ScenarioDefinition["setupCommands"];
     updateAfterMinutes: number;
+    kickoffFrom: string;
     stack: string[];
     targetMinutes: number;
     submissionGraceMinutes: number;
@@ -99,6 +100,7 @@ export async function buildCandidateView(db: Admin, attemptRow: AttemptRow): Pro
       testCommands: scenario.testCommands,
       setupCommands: scenario.setupCommands,
       updateAfterMinutes: scenario.requirementUpdate.releaseAfterMinutes,
+      kickoffFrom: scenario.teammates.find((t) => t.id === scenario.kickoff.teammateId)?.name ?? "Your lead",
       stack: scenario.stack,
       targetMinutes: scenario.targetMinutes,
       submissionGraceMinutes: scenario.submissionGraceMinutes,

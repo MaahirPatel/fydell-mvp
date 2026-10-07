@@ -10,6 +10,7 @@ import {
   recordAiInteraction,
   recordEvent,
 } from "@/lib/simulations/db";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -113,7 +114,7 @@ export async function POST(
     return NextResponse.json({ ok: true, interactionId, answer });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Assistant request failed" },
+      { error: publicErrorMessage(err, "Assistant request failed") },
       { status: 400 }
     );
   }
@@ -147,7 +148,7 @@ export async function PATCH(
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed" },
+      { error: publicErrorMessage(err, "Failed") },
       { status: 400 }
     );
   }

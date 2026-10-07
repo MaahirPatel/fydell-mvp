@@ -3,7 +3,7 @@
  *
  * A useful handoff covers four things: what changed, what testing was done,
  * remaining risks, and next steps. This module defines the field spec and
- * validates completeness — it never invents content, it only reports what
+ * validates completeness - it never invents content, it only reports what
  * the candidate actually provided.
  *
  * The submit path (chunk-submit) uses `validateHandoff` to decide whether
@@ -103,7 +103,7 @@ export function validateHandoff(
  * Optional short submission-specific follow-up (SIM-09): after submit, the
  * candidate may add a brief note answering a reviewer question. The follow-up
  * is stored with the submission transcript; alternatives to audio (text only)
- * are the default — no audio capture exists in this product.
+ * are the default - no audio capture exists in this product.
  */
 export interface SubmissionFollowUp {
   submissionId: string;

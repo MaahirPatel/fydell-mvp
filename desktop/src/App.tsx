@@ -23,6 +23,9 @@ import Profile from "./components/Profile";
 import Onboarding from "./components/Onboarding";
 import { BrandLockup } from "./components/Brand";
 import { ProvenanceTag } from "./components/ui";
+import UpdatePrompt from "./components/UpdatePrompt";
+import EngTasks from "./components/EngTasks";
+import EngAssessment from "./components/EngAssessment";
 
 type Screen =
   | "loading"
@@ -37,7 +40,7 @@ type Screen =
   | "workspace"
   | "submitted";
 
-type HomeTab = "home" | "inbox" | "profile";
+type HomeTab = "home" | "inbox" | "engineering" | "profile";
 
 /* ---------------- DESK-06: truthful provisioning progress ---------------- */
 
@@ -142,7 +145,7 @@ function Provisioning({
    The signed-in candidate home. Linear-style: a quiet sidebar for
    navigation, the content area owns the information density. */
 
-function NavIcon({ kind }: { kind: "home" | "inbox" | "profile" }) {
+function NavIcon({ kind }: { kind: HomeTab }) {
   const common = {
     width: 16,
     height: 16,
@@ -168,6 +171,14 @@ function NavIcon({ kind }: { kind: "home" | "inbox" | "profile" }) {
         <path d="M5 5h14l3 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6l3-7z" />
       </svg>
     );
+  if (kind === "engineering")
+    return (
+      <svg {...common} aria-hidden="true">
+        <path d="M8 8l-4 4 4 4" />
+        <path d="M16 8l4 4-4 4" />
+        <path d="M13.5 5l-3 14" />
+      </svg>
+    );
   return (
     <svg {...common} aria-hidden="true">
       <circle cx="12" cy="8" r="3.5" />
@@ -183,6 +194,8 @@ function Shell({
   onAcceptInvitationId,
   onAcceptInviteToken,
   onContinueSession,
+  onAuthExpired,
+  onTimedChange,
 }: {
   auth: SessionSummary | null;
   session: SessionInfo | null;
@@ -190,8 +203,16 @@ function Shell({
   onAcceptInvitationId: (inv: InboxInvitation) => void;
   onAcceptInviteToken: (token: string) => void;
   onContinueSession: () => void;
+  onAuthExpired: () => void;
+  onTimedChange: (timed: boolean) => void;
 }) {
   const [tab, setTab] = useState<HomeTab>("home");
+  const [engAttempt, setEngAttempt] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (tab !== "engineering" || engAttempt == null) onTimedChange(false);
+  }, [tab, engAttempt, onTimedChange]);
+  useEffect(() => () => onTimedChange(false), [onTimedChange]);
   const [inboxCount, setInboxCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -246,6 +267,16 @@ function Shell({
             )}
           </button>
           <button
+            className={`nav-item ${tab === "engineering" ? "active" : ""}`}
+            onClick={() => setTab("engineering")}
+            aria-current={tab === "engineering" ? "page" : undefined}
+          >
+            <span className="nav-item-label">
+              <span className="nav-icon"><NavIcon kind="engineering" /></span>
+              Engineering
+            </span>
+          </button>
+          <button
             className={`nav-item ${tab === "profile" ? "active" : ""}`}
             onClick={() => setTab("profile")}
             aria-current={tab === "profile" ? "page" : undefined}
@@ -290,14 +321,45 @@ function Shell({
         {tab === "inbox" && (
           <Inbox onAcceptId={onAcceptInvitationId} onAcceptToken={onAcceptInviteToken} />
         )}
+        {tab === "engineering" &&
+          (engAttempt ? (
+            <EngAssessment
+              attemptId={engAttempt}
+              onBack={() => setEngAttempt(null)}
+              onAuthExpired={onAuthExpired}
+              onTimedChange={onTimedChange}
+            />
+          ) : (
+            <EngTasks onOpen={setEngAttempt} onAuthExpired={onAuthExpired} />
+          ))}
         {tab === "profile" && <Profile />}
       </main>
     </div>
   );
 }
 
+const TIMED_SCREENS: ReadonlySet<Screen> = new Set(["provisioning", "workspace"]);
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>("loading");
+  const [engTimed, setEngTimed] = useState(false);
+  return (
+    <>
+      <AppScreens onScreenChange={setScreen} onEngTimedChange={setEngTimed} />
+      <UpdatePrompt hold={TIMED_SCREENS.has(screen) || (screen === "home" && engTimed)} />
+    </>
+  );
+}
+
+function AppScreens({
+  onScreenChange,
+  onEngTimedChange,
+}: {
+  onScreenChange: (s: Screen) => void;
+  onEngTimedChange: (timed: boolean) => void;
+}) {
+  const [screen, setScreen] = useState<Screen>("loading");
+  useEffect(() => onScreenChange(screen), [screen, onScreenChange]);
   const [auth, setAuth] = useState<SessionSummary | null>(null);
   const [session, setSession] = useState<SessionInfo | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
@@ -631,6 +693,11 @@ export default function App() {
         onAcceptInvitationId={(inv) => void joinByInvitationId(inv)}
         onAcceptInviteToken={(token) => void join(token)}
         onContinueSession={continueSession}
+        onAuthExpired={() => {
+          setScreen("signin");
+          setError("Your sign-in expired — please sign in again.");
+        }}
+        onTimedChange={onEngTimedChange}
       />
     );
   }

@@ -3,7 +3,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 /**
  * File-snapshot validation + server receipt (W4).
  *
- * Pure module — no `server-only`, no Supabase — so it is unit-testable
+ * Pure module - no `server-only`, no Supabase - so it is unit-testable
  * in-process. The submit route uses it before calling the atomic
  * `submit_session_atomic` RPC.
  *
@@ -249,7 +249,7 @@ export function collectSnapshotIssues(
 
 /**
  * Make a raw snapshot path safe to display. Strips control characters and
- * truncates; the result is plain text — render it as a text node. For HTML
+ * truncates; the result is plain text - render it as a text node. For HTML
  * string contexts, pass the result through `escapeHtml`.
  */
 export function sanitizeDisplayPath(p: string): string {
@@ -284,11 +284,11 @@ export function escapeHtml(s: string): string {
  * slash-separated, control-character-free path. Rejected: traversal (`..`),
  * absolute paths, backslashes, NUL bytes, empty segments, overlong paths.
  * Symlinks: the JSON snapshot format carries no file-type metadata, so a
- * symlink cannot be represented or created from a snapshot — extraction must
+ * symlink cannot be represented or created from a snapshot - extraction must
  * create regular files only. Paths that collide case-insensitively are
  * treated as duplicates (they would collide on case-insensitive filesystems).
  *
- * Content safety (UP-07): NUL bytes in file contents are rejected — no
+ * Content safety (UP-07): NUL bytes in file contents are rejected - no
  * downstream renderer or extractor has to cope with them. Contents are never
  * executed, evaluated, or written to the app host filesystem; they are stored
  * as opaque bytes in the submission row.

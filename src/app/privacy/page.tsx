@@ -37,7 +37,7 @@ const FACTS: Array<[string, string]> = [
   ],
   [
     "Requests",
-    `To access, correct or delete your data, email ${CONTACT_EMAIL} from the address on the record. We will confirm what we hold and act on the request.`,
+    `Engineers can download their Passport and delete their account themselves from Settings. Deletion erases their projects, reports, notes and profile, revokes their share links and withdraws open applications; decisions and notes an employer already recorded stay with that employer. For anything else, email ${CONTACT_EMAIL} from the address on the record. We will confirm what we hold and act on the request.`,
   ],
 ];
 

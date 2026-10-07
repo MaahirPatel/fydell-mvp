@@ -20,7 +20,7 @@ const TOKEN_SHAPES: Array<[RegExp, string]> = [
   [/\b(AIza[0-9A-Za-z_-]{30,})\b/g, "[REDACTED API KEY]"],
 ];
 
-// `password = "..."`, `api_key: '...'`, `SECRET=...` — the name stays so the
+// `password = "..."`, `api_key: '...'`, `SECRET=...` - the name stays so the
 // code still reads naturally, the value is replaced.
 const SECRET_ASSIGNMENT =
   /\b(password|passwd|pwd|secret|api[_-]?key|apikey|auth[_-]?token|access[_-]?token|refresh[_-]?token|client[_-]?secret|db[_-]?password|private[_-]?token)\b(\s*[:=]\s*)(["']?)([^"'`\s;,)}\]]{4,}|["'][^"'`]{1,200}["'])/gi;

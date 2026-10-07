@@ -7,7 +7,7 @@ import f from "./figs.module.css";
  * defined in figs.module.css and starts when the figure scrolls into view.
  */
 
-const BLUE = "#1a1915";
+const BLUE = "#5b5bd6";
 const RED = "#ff5a6e";
 
 function Svg({ children }: { children: ReactNode }) {
@@ -16,7 +16,7 @@ function Svg({ children }: { children: ReactNode }) {
       <defs>
         <linearGradient id="fyRingL" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#a19d92" />
-          <stop offset="1" stopColor="#6f6c62" />
+          <stop offset="1" stopColor="#8b8be6" />
         </linearGradient>
         <linearGradient id="fyRingR" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#e5484d" />

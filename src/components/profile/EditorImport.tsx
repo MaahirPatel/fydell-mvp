@@ -26,7 +26,7 @@ const WHERE_TO_FIND: Record<"vscode" | "cursor", { mac: string; linux: string; w
  *
  * Explicit consent is required before every upload. The component states
  * plainly that imported data is self-supplied and NOT independently observed
- * by Fydell — the provenance badge on the result says the same.
+ * by Fydell - the provenance badge on the result says the same.
  */
 export default function EditorImport({ onImported }: { onImported?: () => void }) {
   const router = useRouter();
@@ -148,7 +148,7 @@ export default function EditorImport({ onImported }: { onImported?: () => void }
         <button
           type="submit"
           disabled={busy || !file || !consent}
-          className="rounded-[8px] bg-[var(--text-primary)] px-4 py-2 text-app-body font-medium text-[var(--surface-canvas)] disabled:opacity-50"
+          className="rounded-[8px] bg-[var(--control-solid)] px-4 py-2 text-[14px] font-medium text-white shadow-[0_1px_2px_rgba(16,24,40,0.12)] hover:bg-[var(--control-solid-hover)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--accent-line)] disabled:cursor-not-allowed disabled:bg-[var(--surface-deep)] disabled:text-[var(--text-disabled)] disabled:shadow-none"
         >
           {busy ? "Parsing…" : "Import history"}
         </button>
@@ -172,12 +172,12 @@ export default function EditorImport({ onImported }: { onImported?: () => void }
             </div>
             <div>
               <dt className="text-[var(--text-tertiary)]">Languages</dt>
-              <dd className="mt-0.5 font-medium text-[var(--text-primary)]">{result.languages.join(", ") || "—"}</dd>
+              <dd className="mt-0.5 font-medium text-[var(--text-primary)]">{result.languages.join(", ") || "–"}</dd>
             </div>
             <div>
               <dt className="text-[var(--text-tertiary)]">Range</dt>
               <dd className="mt-0.5 font-medium text-[var(--text-primary)]">
-                {result.timeRangeStart ? result.timeRangeStart.slice(0, 10) : "—"}
+                {result.timeRangeStart ? result.timeRangeStart.slice(0, 10) : "–"}
                 {result.timeRangeEnd ? ` → ${result.timeRangeEnd.slice(0, 10)}` : ""}
               </dd>
             </div>

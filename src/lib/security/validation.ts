@@ -44,8 +44,8 @@ const INLINE_CODE_RE = /`([^`\n]+)`/g;
 
 /**
  * Renders a small Markdown subset (headings, bold, italic, inline code,
- * fenced code blocks, unordered lists, links) to HTML. Everything else —
- * including raw HTML, <script>, and javascript: URLs — is escaped.
+ * fenced code blocks, unordered lists, links) to HTML. Everything else - 
+ * including raw HTML, <script>, and javascript: URLs - is escaped.
  */
 export function renderSafeMarkdown(markdown: string): string {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");

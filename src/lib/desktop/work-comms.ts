@@ -72,7 +72,7 @@ export function setHandoff(comms: WorkComms, handoff: HandoffNote): WorkComms {
 
 /**
  * Shortcuts the editor owns. App chrome (panels, comms, navigation) must
- * never register these — normal editor commands always win.
+ * never register these - normal editor commands always win.
  */
 export const EDITOR_RESERVED_SHORTCUTS: readonly string[] = [
   "mod+c",

@@ -3,7 +3,7 @@
  *
  * Tracks what has been discussed, what questions are resolved, what plans
  * the candidate stated, and what facts were revealed. This is what the old
- * system lacked — it only tracked rule IDs and counts, never content.
+ * system lacked - it only tracked rule IDs and counts, never content.
  *
  * Memory is persisted per session and rebuilt from events on load.
  */
@@ -270,7 +270,7 @@ export function getActivePlan(state: ConversationState): CandidatePlan | null {
 
 /**
  * Check if a candidate question is a paraphrase of an existing open question.
- * Compares by topic overlap — same topics + both unanswered = same question.
+ * Compares by topic overlap - same topics + both unanswered = same question.
  */
 export function isParaphraseOfOpen(
   state: ConversationState,

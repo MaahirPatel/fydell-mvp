@@ -1,5 +1,5 @@
 /**
- * Employer chunk — REP-04: versioned report updates.
+ * Employer chunk - REP-04: versioned report updates.
  *
  * Identifiers (candidate / role / scenario / rubric versions) are checked at
  * publish time. Fixes never mutate a published report: they create a new

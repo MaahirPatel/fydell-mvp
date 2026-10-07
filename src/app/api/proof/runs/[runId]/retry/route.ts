@@ -4,6 +4,7 @@ import { proofAdmin, audit } from "@/lib/sim-engine/proof/db";
 import { enqueueJob, processQueuedJobs } from "@/lib/sim-engine/proof/jobs";
 import type { AnalysisJobType } from "@/lib/sim-engine/proof/types";
 import { authorizeProofRunAccess } from "@/lib/sim-engine/proof/sandbox/access";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export async function POST(_request: Request, context: { params: Promise<{ runId: string }> }) {
   const user = await requireUser();
@@ -27,7 +28,7 @@ export async function POST(_request: Request, context: { params: Promise<{ runId
     await processQueuedJobs(runId);
   } catch (err) {
     await audit(user.email, "job_retry_failed", "proof_runs", runId, null, { error: String(err) });
-    return NextResponse.json({ error: err instanceof Error ? err.message : "retry failed" }, { status: 500 });
+    return NextResponse.json({ error: publicErrorMessage(err, "retry failed") }, { status: 500 });
   }
   await audit(user.email, "job_retry", "proof_runs", runId);
   return NextResponse.json({ ok: true });

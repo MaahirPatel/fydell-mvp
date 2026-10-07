@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { PageIntro } from "@/components/marketing/PageIntro";
 import { ButtonLink } from "@/components/marketing/ui";
 import { AppWindow, ArrowUpRight, BellOff, CheckCircle2, MonitorDown } from "lucide-react";
@@ -9,6 +9,8 @@ import s from "./download.module.css";
 const RELEASES_URL = "https://github.com/MaahirPatel/fydell-mvp/releases";
 
 type Os = "windows" | "macos" | "linux";
+
+const noSubscription = () => () => {};
 
 function detectOs(): Os | null {
   if (typeof navigator === "undefined") return null;
@@ -80,8 +82,7 @@ const REQUIREMENTS: Array<[string, string]> = [
 ];
 
 export default function DownloadClient() {
-  const [os, setOs] = useState<Os | null>(null);
-  useEffect(() => setOs(detectOs()), []);
+  const os = useSyncExternalStore(noSubscription, detectOs, () => null);
 
   const ordered = [...OS_CARDS].sort((a, b) => (a.id === os ? -1 : b.id === os ? 1 : 0));
 
@@ -176,7 +177,7 @@ export default function DownloadClient() {
           <p>
             <strong>Version note.</strong> The desktop client is packaged from the{" "}
             <span className={s.mono}>fydell-desktop 0.1.0</span> codebase in this repository. The first public
-            installers ship with v0.1.0 — this page stays the source of truth until then.
+            installers ship with v0.1.0. This page stays the source of truth until then.
           </p>
         </div>
         <div className={s.closing}>

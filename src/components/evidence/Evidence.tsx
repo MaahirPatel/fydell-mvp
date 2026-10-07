@@ -157,13 +157,27 @@ export function DiffStat({ added, removed }: { added: number; removed: number })
 
 /* ---------- Decision brief ---------- */
 
-export type Level = "strong" | "adequate" | "weak" | "insufficient_evidence";
+export type Level =
+  | "strong"
+  | "adequate"
+  | "weak"
+  | "insufficient_evidence"
+  | "demonstrated_additional"
+  | "demonstrated"
+  | "partially_demonstrated"
+  | "concern_observed"
+  | "not_assessed";
 
 export const LEVEL_LABEL: Record<Level, string> = {
   strong: "Strong",
   adequate: "Adequate",
   weak: "Weak",
   insufficient_evidence: "Not enough evidence",
+  demonstrated_additional: "Demonstrated under additional constraints",
+  demonstrated: "Demonstrated",
+  partially_demonstrated: "Partially demonstrated",
+  concern_observed: "Concern observed",
+  not_assessed: "Not assessed",
 };
 
 export type ProofRow = {
@@ -188,9 +202,9 @@ function ProofValue({ row }: { row: ProofRow }) {
     <span
       className={cx(
         s.proofValue,
-        row.level === "strong" && s.levelStrong,
-        row.level === "weak" && s.levelWeak,
-        row.level === "insufficient_evidence" && s.levelNone,
+        (row.level === "strong" || row.level === "demonstrated" || row.level === "demonstrated_additional") && s.levelStrong,
+        (row.level === "weak" || row.level === "concern_observed") && s.levelWeak,
+        (row.level === "insufficient_evidence" || row.level === "not_assessed") && s.levelNone,
       )}
     >
       {row.value}

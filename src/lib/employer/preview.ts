@@ -1,5 +1,5 @@
 /**
- * Employer chunk — EMP-02: preview the assessment.
+ * Employer chunk - EMP-02: preview the assessment.
  *
  * Before sending an invite, the employer sees what the candidate will see:
  * candidate instructions, required tools, expected effort, the rubric, the
@@ -63,7 +63,7 @@ export function assembleAssessmentPreview(input: {
     exampleReport: input.exampleReportId
       ? {
           reportId: input.exampleReportId,
-          note: "Example report from labeled sample data — not a real candidate.",
+          note: "Example report from labeled sample data. Not a real candidate.",
         }
       : null,
     aiPolicy: scenario.aiPolicy,

@@ -1,5 +1,5 @@
 /**
- * Employer chunk — candidate assessment invitations.
+ * Employer chunk - candidate assessment invitations.
  *
  * This namespace covers assessment invitations to *candidates* (EMP-05/06/07),
  * distinct from `src/lib/orgs/invitations.ts` (accounts chunk: invitations to

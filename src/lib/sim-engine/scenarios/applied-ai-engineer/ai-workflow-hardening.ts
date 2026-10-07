@@ -521,12 +521,12 @@ The model may summarize unstructured material, but it must not authorize a custo
     },
     {
       id: "res_latency_constraint",
-      title: "LATENCY_001 — changed production requirement",
+      title: "LATENCY_001. Changed production requirement",
       kind: "brief",
       initiallyVisible: false,
       summary: "Released only after preliminary architecture commitment",
       searchableText: "latency p95 four seconds quality authorization changed requirement",
-      content: `# Changed production requirement — LATENCY_001
+      content: `# Changed production requirement. LATENCY_001
 
 Enterprise deployment requirements changed. p95 end-to-end response time must be below 4 seconds. The current implementation is approximately 10–12 seconds.
 

@@ -1,10 +1,9 @@
 "use client";
 
 import PassportBuilder from "@/components/passport/PassportBuilder";
-import type { PassportProject } from "@/lib/passport/view";
 
 /**
- * Passport builder wired into the profile hub: every successful project save
+ * Passport builder wired into the profile hub: every accepted import
  * registers (or refreshes) the GitHub connected-account row, so the account
  * registry always reflects the extraction flow the engineer actually used.
  */
@@ -15,7 +14,7 @@ export default function PassportConnectSection({
   initialLogin: string;
   initialRepos: string[];
 }) {
-  async function handleSaved(project: PassportProject, githubLogin: string | null) {
+  async function handleStarted(repositories: string[], githubLogin: string | null) {
     if (!githubLogin) return;
     try {
       await fetch("/api/profile/accounts", {
@@ -24,11 +23,11 @@ export default function PassportConnectSection({
         body: JSON.stringify({
           provider: "github",
           label: githubLogin,
-          meta: { login: githubLogin, lastRepo: project.repoFullName },
+          meta: { login: githubLogin, lastRepo: repositories[repositories.length - 1] },
         }),
       });
     } catch {
-      // Registry bookkeeping is cosmetic; the project is already saved.
+      // Registry bookkeeping is cosmetic; the import is already queued.
     }
   }
 
@@ -38,7 +37,7 @@ export default function PassportConnectSection({
       initialLogin={initialLogin}
       initialRepos={initialRepos}
       showPreview={false}
-      onProjectSaved={handleSaved}
+      onImportsStarted={handleStarted}
     />
   );
 }

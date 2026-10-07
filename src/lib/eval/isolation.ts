@@ -1,10 +1,10 @@
 /**
- * RUN-04 — Authoritative tests outside candidate control.
+ * RUN-04 - Authoritative tests outside candidate control.
  *
  * Guarantees:
  *  1. The trusted test bundle is sealed by hash. Any candidate-side change
  *     to the tests (or a swapped bundle) fails verification before the run.
- *  2. Test paths resolve inside the sealed bundle only — traversal and
+ *  2. Test paths resolve inside the sealed bundle only - traversal and
  *     absolute paths are rejected, so candidate code cannot redirect the
  *     harness at a different test file.
  *  3. The harness computes the verdict from process signals (exit code /
@@ -41,7 +41,7 @@ export function sealTestBundle(suiteVersion: string, files: { path: string; cont
 export function verifyTestBundle(bundle: SealedTestBundle): string | null {
   const recomputed = sealTestBundle(bundle.suiteVersion, bundle.files).testsHash;
   if (recomputed !== bundle.testsHash) {
-    return "RUN-04: test bundle hash mismatch — the authoritative tests were modified or swapped after sealing";
+    return "RUN-04: test bundle hash mismatch. The authoritative tests were modified or swapped after sealing";
   }
   return null;
 }
@@ -72,7 +72,7 @@ export interface HarnessRunResult {
   exitCode: number;
   timedOut: boolean;
   signal?: string;
-  /** Raw stdout — UNTRUSTED. May contain candidate-printed lies. */
+  /** Raw stdout - UNTRUSTED. May contain candidate-printed lies. */
   stdout: string;
 }
 
@@ -80,7 +80,7 @@ export type TestVerdict = "passed" | "failed";
 
 /**
  * Compute the verdict from harness signals ONLY. Candidate-printed summaries
- * in stdout are ignored — even "ALL TESTS PASSED" with exit code 1 is a fail.
+ * in stdout are ignored - even "ALL TESTS PASSED" with exit code 1 is a fail.
  */
 export function verdictFromHarness(run: HarnessRunResult): {
   verdict: TestVerdict;

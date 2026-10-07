@@ -12,7 +12,7 @@
  * assertDemoCopyHonest().
  */
 
-export const SAMPLE_DATA_LABEL = "Sample data — fictional candidate";
+export const SAMPLE_DATA_LABEL = "Sample data. Fictional candidate";
 export const DEMO_CANDIDATE_ID = "candidate01";
 export const DEMO_CANDIDATE_NAME = "Candidate 01";
 
@@ -116,7 +116,7 @@ export interface DemoSharingPreview {
 export const DEMO_CANDIDATE: DemoCandidate = {
   id: DEMO_CANDIDATE_ID,
   displayName: DEMO_CANDIDATE_NAME,
-  headline: "Fictional backend engineer — example profile",
+  headline: "Fictional backend engineer. Example profile",
   meta: makeFixtureMeta(),
 };
 
@@ -140,7 +140,7 @@ export const DEMO_FINDING: DemoEvidence = {
       "            continue  # no backoff between attempts",
     ],
   },
-  limitations: ["Example only — no real repository was scanned."],
+  limitations: ["Example only. No real repository was scanned."],
   meta: makeFixtureMeta(),
 };
 
@@ -157,7 +157,7 @@ export const DEMO_TESTS: DemoTestResult[] = [
     id: "demo-test-02",
     name: "test_deliver_backs_off_between_retries",
     status: "failing",
-    output: "FAILED — expected sleep(2), sleep(4); observed no delay between attempts",
+    output: "FAILED. Expected sleep(2), sleep(4); observed no delay between attempts",
     meta: makeFixtureMeta(),
   },
 ];
@@ -165,13 +165,13 @@ export const DEMO_TESTS: DemoTestResult[] = [
 /** A readable message thread (DEMO-02). */
 export const DEMO_THREAD: DemoThread = {
   id: "demo-thread-01",
-  title: "Webhook retry incident — teammate thread",
+  title: "Webhook retry incident. Teammate thread",
   messages: [
     {
       id: "demo-msg-01",
       author: DEMO_CANDIDATE_NAME,
       role: "candidate",
-      body: "Repro shows the receiver getting hammered on deploy — retries fire with no delay. Adding backoff now.",
+      body: "Repro shows the receiver getting hammered on deploy. Retries fire with no delay. Adding backoff now.",
       at: "2026-01-14T10:02:00Z",
       meta: makeFixtureMeta(),
     },
@@ -190,7 +190,7 @@ export const DEMO_THREAD: DemoThread = {
 /** Sharing preview fixture (DEMO-02). */
 export const DEMO_SHARING: DemoSharingPreview = {
   fields: ["projects", "evidence", "roles", "capabilities"],
-  linkLabel: "Preview — this is what a share link reveals",
+  linkLabel: "Preview. This is what a share link reveals",
   meta: makeFixtureMeta(),
 };
 

@@ -5,7 +5,7 @@
  * keep or hand to anyone: projects with source-linked evidence, role
  * suggestions, capability summaries, and their own corrections. It never
  * includes employer-private notes, hidden tests, or anything outside the
- * candidate's own passport data — those live in other tables and are not
+ * candidate's own passport data - those live in other tables and are not
  * reachable from this builder by construction.
  */
 

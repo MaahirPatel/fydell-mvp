@@ -20,7 +20,12 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/simulations") ||
     path.startsWith("/invite/") ||
     path.startsWith("/assess") ||
-    path.startsWith("/results/")
+    path.startsWith("/results/") ||
+    // Shared passports and receipts must stop rendering the moment access is revoked.
+    path.startsWith("/p/") ||
+    path.startsWith("/r/") ||
+    path.startsWith("/receipts") ||
+    path.startsWith("/api/")
   ) {
     res.headers.set("Cache-Control", "private, no-store, max-age=0, must-revalidate");
   }

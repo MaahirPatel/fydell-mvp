@@ -5,6 +5,7 @@ import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/
 import { ensureEmployerOnboardingRow } from "@/lib/pilot/lifecycle";
 import { employerSelfSignupMode } from "@/lib/org/reserved";
 import { appUrl } from "@/lib/app-url";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export async function POST(req: Request) {
   try {
@@ -130,7 +131,7 @@ export async function POST(req: Request) {
       redirectTo: intent === "candidate" ? "/login" : "/app/employer",
     });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Could not create account.";
+    const msg = publicErrorMessage(err, "Could not create account.");
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 }

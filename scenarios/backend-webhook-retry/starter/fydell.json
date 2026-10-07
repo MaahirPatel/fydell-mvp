@@ -1,6 +1,6 @@
 {
   "scenario": "backend-webhook-retry",
-  "version": 1,
+  "version": 2,
   "runtime": "python>=3.11,<3.14",
   "dependencies": "standard library only",
   "test_command": "python -m unittest -v"

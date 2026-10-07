@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { createInvite } from "@/lib/db";
 import { sendInviteEmail } from "@/lib/email";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 function appUrl(): string {
   return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
@@ -12,6 +13,8 @@ export async function POST(req: Request) {
   if (!session) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
+  const rl = rateLimit(`invite:${session.email}`, 10, 60 * 60 * 1000);
+  if (!rl.ok) return NextResponse.json({ error: "Too many invites. Try again later." }, { status: 429 });
 
   const body = await req.json().catch(() => ({}));
   const name = (body.name ?? "").toString().trim();

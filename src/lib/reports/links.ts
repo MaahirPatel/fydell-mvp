@@ -1,5 +1,5 @@
 /**
- * Employer chunk — REP-02: evidence one click away.
+ * Employer chunk - REP-02: evidence one click away.
  *
  * Each finding carries structured sources (see reports/types.ts). This
  * module turns those into stable deep links: report id + finding id +
@@ -28,7 +28,7 @@ export function findingLink(reportId: string, finding: Finding): FindingLink {
   };
 }
 
-/** Resolve a link anchor back to (finding, source) — proves links are lossless. */
+/** Resolve a link anchor back to (finding, source) - proves links are lossless. */
 export function resolveAnchor(
   findings: Finding[],
   anchor: string

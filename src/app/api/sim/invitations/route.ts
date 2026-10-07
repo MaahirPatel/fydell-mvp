@@ -11,6 +11,7 @@ import { isMicroContent } from "@/lib/simulations/micro-types";
 import type { RoleKey } from "@/lib/simulations/types";
 import { invitationTruth } from "@/lib/contracts/lifecycle";
 import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -189,7 +190,7 @@ export async function POST(req: NextRequest) {
       });
     } catch (err) {
       errors.push(
-        `${candidate.email}: ${err instanceof Error ? err.message : "failed to invite"}`
+        `${candidate.email}: ${publicErrorMessage(err, "failed to invite")}`
       );
     }
   }

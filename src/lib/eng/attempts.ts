@@ -3,7 +3,8 @@ import type { Admin } from "./context";
 import { recordEngEvent } from "./events";
 import { verifySetupCode } from "./scenarios";
 import type { ScenarioDefinition } from "./scenarios/types";
-import { selectReply } from "./teammate";
+import type { ThreadTurn } from "./teammate";
+import { composeTeammateReply } from "./teammate-chat";
 import type { AttemptRow, MessageRow } from "./types";
 
 export class AttemptError extends Error {
@@ -151,7 +152,7 @@ export async function submitSetupCode(
   return (data as AttemptRow) ?? attempt;
 }
 
-export async function startAttempt(db: Admin, attempt: AttemptRow, userId: string): Promise<AttemptRow> {
+export async function startAttempt(db: Admin, attempt: AttemptRow, scenario: ScenarioDefinition, userId: string): Promise<AttemptRow> {
   requireOpen(attempt);
   if (attempt.status === "in_progress" || attempt.status === "submitted") return attempt;
   if (attempt.status !== "preflight_passed") throw new AttemptError("Finish the setup check before starting.", 409);
@@ -174,6 +175,14 @@ export async function startAttempt(db: Admin, attempt: AttemptRow, userId: strin
     actorUserId: userId,
     payload: { dueAt: dueAt.toISOString() },
     clientEventId: "attempt_started",
+  });
+  await db.from("eng_messages").insert({
+    attempt_id: attempt.id,
+    sender: "teammate",
+    teammate_id: scenario.kickoff.teammateId,
+    body: scenario.kickoff.body,
+    client_msg_id: "kickoff",
+    rule_id: "kickoff",
   });
   return data as AttemptRow;
 }
@@ -264,17 +273,39 @@ export async function sendMessage(
     candidateMessage = data as MessageRow;
   }
 
-  const reply = selectReply(scenario, candidateMessage.body, { updateReleased: Boolean(attempt.update_released_at) });
+  const history = await listMessages(db, attempt.id);
+  const replyClientId = `reply_${input.clientMsgId}`;
+  if (history.some((m) => m.client_msg_id === replyClientId)) return history;
+  const thread: ThreadTurn[] = history
+    .filter((m) => m.id !== candidateMessage.id)
+    .map((m) => ({ sender: m.sender, teammateId: m.teammate_id, body: m.body }));
+
+  const reply = await composeTeammateReply(scenario, candidateMessage.body, thread, Boolean(attempt.update_released_at));
   const { error: replyError } = await db.from("eng_messages").insert({
     attempt_id: attempt.id,
     sender: "teammate",
     teammate_id: reply.teammateId,
     body: reply.body,
-    client_msg_id: `reply_${input.clientMsgId}`,
+    client_msg_id: replyClientId,
     reply_to: candidateMessage.id,
     rule_id: reply.ruleId,
   });
   if (replyError && replyError.code !== "23505") throw new AttemptError("Your message was saved, but the reply failed. Refresh to retry.", 500);
+  if (!replyError) {
+    await recordEngEvent(db, attempt.id, {
+      type: "teammate_replied",
+      actor: "system",
+      payload: {
+        teammateId: reply.teammateId,
+        mode: reply.mode,
+        factIds: reply.factIds,
+        fallbackReason: reply.fallbackReason,
+        droppedFraming: reply.droppedFraming,
+        provider: reply.provider,
+      },
+      clientEventId: replyClientId,
+    });
+  }
   return listMessages(db, attempt.id);
 }
 

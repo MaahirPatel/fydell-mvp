@@ -3,7 +3,7 @@
  *
  * An early submission must never silently bypass a required issue update.
  * `evaluateSubmissionReadiness` computes, from server-side session state and
- * recorded events, whether the attempt is complete — and when it is not,
+ * recorded events, whether the attempt is complete - and when it is not,
  * exactly which dimensions become UNOBSERVED so the report can say so
  * honestly instead of scoring them.
  *
@@ -121,7 +121,7 @@ export function evaluateSubmissionReadiness(input: ReadinessInput): SubmissionRe
   ).length;
   if (messageCount === 0) {
     // Not a blocker: a candidate may legitimately need no clarification. But
-    // the communication dimension then has limited evidence — flag it so the
+    // the communication dimension then has limited evidence - flag it so the
     // report can be honest about coverage.
     unobserved.add("__communication_limited");
   }
@@ -150,7 +150,7 @@ export interface PartialSubmissionMarking {
 
 /**
  * Build the marking persisted with an intentional partial submission.
- * Requires the candidate's explicit acceptance — the route must collect it.
+ * Requires the candidate's explicit acceptance - the route must collect it.
  */
 export function markIntentionalPartial(args: {
   readiness: SubmissionReadiness;

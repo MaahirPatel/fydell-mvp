@@ -7,6 +7,7 @@ import { isMicroContent } from "@/lib/simulations/micro-types";
 import { runV2Scoring } from "@/lib/simulations/v2/run";
 import { mayUseKeywordFallback } from "@/lib/contracts/da01";
 import { evaluateSubmittedSession } from "@/lib/engineering/submission-eval";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 // Engineering attempts also run the trusted + hidden tests in an isolated runner.
@@ -108,7 +109,7 @@ export async function POST(
     }
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Analysis failed" },
+      { error: publicErrorMessage(err, "Analysis failed") },
       { status: 500 }
     );
   }

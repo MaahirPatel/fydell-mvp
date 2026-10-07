@@ -66,7 +66,7 @@ function Basis({ basis }: { basis: EvidenceBasis }) {
 
 function RailHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-app-meta font-medium uppercase tracking-[0.06em] text-[var(--text-tertiary)]">
+    <h3 className="text-app-meta font-medium text-[var(--text-tertiary)]">
       {children}
     </h3>
   );

@@ -14,7 +14,7 @@ export const runtime = "nodejs";
 /**
  * Snapshot-transfer lifecycle for the desktop client (UP-03, DESK-15, DESK-16).
  *
- * GET: reconcile — returns the current transfer state, and the existing
+ * GET: reconcile - returns the current transfer state, and the existing
  * receipt when the attempt already submitted. The client calls this after a
  * reconnect or a lost submit response instead of submitting again.
  *
@@ -27,7 +27,7 @@ export const runtime = "nodejs";
  *                     fileSnapshot, answers?, externalAiDisclosed?)
  *
  * All transitions go through `submit_transfer_transition`, which refuses
- * stale or illegal moves — repeated/concurrent requests cannot regress
+ * stale or illegal moves - repeated/concurrent requests cannot regress
  * states. Every error is a structured { code, message, recovery } body.
  */
 

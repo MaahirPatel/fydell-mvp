@@ -17,9 +17,7 @@
  *
  * Run with: npx tsx --conditions react-server scripts/test-sim-chat-api.ts
  */
-import { register } from "node:module";
-import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { installSimStubs } from "./stubs/install-sim-stubs";
 
 let failures = 0;
 const statuses: number[] = [];
@@ -34,10 +32,7 @@ function check(name: string, cond: boolean, detail?: string) {
 type Handler = (req: unknown, ctx: { params: Promise<{ id: string }> }) => Promise<Response>;
 
 async function main() {
-  register(
-    pathToFileURL(path.join(process.cwd(), "scripts", "stubs", "sim-test-hooks.mjs")).href,
-    pathToFileURL(path.join(process.cwd(), "scripts", "test-sim-chat-api.ts")).href
-  );
+  installSimStubs();
 
   const stub = await import("./stubs/sim-db-stub");
   const { GET: sessionGET } = await import("../src/app/api/sim/sessions/[id]/route");
@@ -198,8 +193,12 @@ async function main() {
     check("message POST 200", r.status === 200 && r.json.ok === true, `status=${r.status} ${JSON.stringify(r.json)}`);
     const cand = r.json.candidateMessage as Record<string, unknown>;
     check("candidate message persisted", cand.body === "give me context on the yield drop");
-    const reply = r.json.reply as Record<string, unknown>;
-    check("coworker reply persisted", typeof reply.body === "string" && (reply.body as string).length > 10);
+    const reply = (r.json.reply ?? {}) as Record<string, unknown>;
+    check(
+      "coworker reply persisted",
+      typeof reply.body === "string" && (reply.body as string).length > 10,
+      JSON.stringify({ noReplyReason: r.json.noReplyReason, teammateUnavailable: r.json.teammateUnavailable })
+    );
     // The rule id is recorded on the message_received event.
     const recv = stub.__store.events.find(
       (e) => e.event_type === "message_received" && (e.payload as Record<string, unknown>).ruleId === "test_ctx_rule"

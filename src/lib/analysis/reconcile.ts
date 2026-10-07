@@ -1,10 +1,10 @@
 /**
- * AI-09 — Reconcile evidence.
+ * AI-09 - Reconcile evidence.
  *
  * The candidate's handoff (what they claim they did) is compared against the
  * deterministic record (what the harness observed). Disagreements are shown
  * explicitly. When the candidate correctly identifies their own limitation,
- * that is recorded as accurate self-assessment — it is evidence of judgment,
+ * that is recorded as accurate self-assessment - it is evidence of judgment,
  * and it must never be used to "upgrade" failing code into passing code.
  *
  * Nothing is invented about unseen development history: only the submitted
@@ -31,7 +31,7 @@ export interface ReconciliationItem {
   claimId: string;
   kind: HandoffClaimKind;
   text: string;
-  /** agrees | disagrees | unverifiable — never guessed. */
+  /** agrees | disagrees | unverifiable - never guessed. */
   verdict: "agrees" | "disagrees" | "unverifiable";
   detail: string;
 }
@@ -73,7 +73,7 @@ export function reconcileHandoff(
             };
       }
       if (CLAIMS_FAILURE.test(claim.text)) {
-        // Candidate says something fails — check whether the named thing is real.
+        // Candidate says something fails - check whether the named thing is real.
         const namesSomethingReal =
           failingIds.size > 0 &&
           (failingNames.some((n) => claim.text.toLowerCase().includes(n.split(" ")[0] ?? "")) ||
@@ -86,7 +86,7 @@ export function reconcileHandoff(
           detail:
             failingIds.size > 0
               ? `Candidate reports failure; harness confirms ${failed.length} failure(s).${namesSomethingReal ? " The described area matches a recorded failure." : ""}`
-              : "Candidate reports a failure the harness did not record — no failing tests in the deterministic section.",
+              : "Candidate reports a failure the harness did not record. No failing tests in the deterministic section.",
         };
       }
       return {
@@ -113,7 +113,7 @@ export function reconcileHandoff(
         text: claim.text,
         verdict: grounded ? "agrees" : "unverifiable",
         detail: grounded
-          ? "The limitation the candidate names is confirmed by the deterministic record — accurate self-assessment."
+          ? "The limitation the candidate names is confirmed by the deterministic record. Accurate self-assessment."
           : "The named limitation has no counterpart in the deterministic record; recorded as stated, not judged.",
       };
     }

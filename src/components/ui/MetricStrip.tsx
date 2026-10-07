@@ -24,7 +24,7 @@ export function MetricStrip({
     >
       {items.map((item) => (
         <div key={item.label} className="min-w-[132px] flex-1 px-5 py-4">
-          <dt className="text-app-meta font-medium uppercase tracking-wider text-[var(--text-tertiary)]">{item.label}</dt>
+          <dt className="text-app-meta font-medium text-[var(--text-tertiary)]">{item.label}</dt>
           <dd className="mt-1 text-app-page font-semibold leading-none tabular-nums tracking-[-0.02em] text-[var(--text-primary)]">
             {item.value}
           </dd>

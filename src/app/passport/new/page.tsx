@@ -12,7 +12,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function NewPassportPage() {
-  if (await requireUser()) redirect("/app/candidate/profile");
+  if (await requireUser()) redirect("/app/candidate/work-record");
   return (
     <MarketingShell>
       <Hero

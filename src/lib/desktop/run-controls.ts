@@ -1,17 +1,17 @@
 /**
  * Run controls: snapshot-bound execution (DESK-12, DESK-13).
  *
- * DESK-12 — Run actual code against a known revision:
+ * DESK-12 - Run actual code against a known revision:
  *  - Running tests synchronizes a snapshot; the snapshot hash is attached
  *    to results.
  *  - Editing after a run marks results stale: "Results from an earlier version".
  *  - A working/defective code change produces the expected result change
  *    because the hash binds results to exact file contents.
  *
- * DESK-13 — Bound run controls:
+ * DESK-13 - Bound run controls:
  *  - Approved commands only; queued/running/completed/canceled/failed
  *    states; stop/retry; bounded output; resource caps.
- *  - If only tests run, the panel is labeled "Test output" — never a fake
+ *  - If only tests run, the panel is labeled "Test output" - never a fake
  *    terminal.
  */
 
@@ -108,7 +108,7 @@ export type RunPanelKind = "tests" | "checks";
 
 /**
  * Panel labeling (DESK-13): when only tests/checks run, the panel says
- * "Test output" / "Run output". It is never labeled "Terminal" — there is
+ * "Test output" / "Run output". It is never labeled "Terminal" - there is
  * no fake terminal.
  */
 export function runPanelLabel(kind: RunPanelKind): "Test output" | "Run output" {

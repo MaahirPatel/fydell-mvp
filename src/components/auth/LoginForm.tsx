@@ -143,7 +143,7 @@ export default function LoginForm() {
         <FormSuccess>Password updated. Sign in with your new password.</FormSuccess>
       ) : null}
 
-      <Field label="Work email" htmlFor="login-email">
+      <Field label="Email" htmlFor="login-email">
         <Input
           id="login-email"
           name="email"
@@ -151,7 +151,9 @@ export default function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="username"
+          spellCheck={false}
           autoFocus
+          disabled={loading}
           required
         />
       </Field>
@@ -177,8 +179,8 @@ export default function LoginForm() {
             name="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Your password"
             autoComplete="current-password"
+            disabled={loading}
             required
           />
         </div>
@@ -193,7 +195,7 @@ export default function LoginForm() {
         loading={loading}
         className="mt-1 w-full"
       >
-        {loading ? "Signing in" : "Continue to your workspace"}
+        {loading ? "Signing in" : "Sign in"}
       </Button>
     </form>
   );

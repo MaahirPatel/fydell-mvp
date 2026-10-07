@@ -117,7 +117,7 @@ export type MessageIntent =
   | "sharing_diagnosis"     // Sharing what they found/think the problem is
   | "sharing_result"        // Reporting a test result or outcome
   | "sharing_explanation"   // Explaining their approach/decision
-  | "acknowledgment"        // "ok", "thanks", "got it" — no response needed
+  | "acknowledgment"        // "ok", "thanks", "got it" - no response needed
   | "off_topic"             // Unrelated to the scenario
   | "unclear";              // Cannot determine intent
 

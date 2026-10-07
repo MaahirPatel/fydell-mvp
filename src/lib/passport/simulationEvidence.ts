@@ -8,7 +8,7 @@
  * scope, date and version so a summary can never circulate without them.
  *
  * Hidden tests and answer-leaking details can never pass through, because
- * the builder never reads them — there is no code path that copies an
+ * the builder never reads them - there is no code path that copies an
  * unlisted key.
  */
 

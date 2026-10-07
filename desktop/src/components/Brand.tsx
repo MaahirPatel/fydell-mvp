@@ -1,4 +1,5 @@
 import markUrl from "../assets/fydell-chain-mark.svg";
+import lockupUrl from "../assets/fydell-lockup.png";
 
 /* ============================================================================
    Fydell brand mark — the real chain-link mark from public/brand, rendered
@@ -20,11 +21,20 @@ export function BrandMark({ size = 28 }: { size?: number }) {
   );
 }
 
+/* The same lockup image the website uses (public/brand/fydell-lockup.png),
+   so the wordmark is identical across web and desktop. */
+const LOCKUP_RATIO = 952 / 248;
+
 export function BrandLockup({ size = 28 }: { size?: number }) {
+  const height = Math.round(size * 0.85);
   return (
-    <span className="brand-lockup">
-      <BrandMark size={size} />
-      <span className="brand-word">Fydell</span>
-    </span>
+    <img
+      src={lockupUrl}
+      alt="Fydell"
+      width={Math.round(height * LOCKUP_RATIO)}
+      height={height}
+      className="brand-lockup-img"
+      draggable={false}
+    />
   );
 }

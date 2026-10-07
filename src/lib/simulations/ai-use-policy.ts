@@ -98,7 +98,7 @@ export function describeAiPermissions(decl: Partial<AiPermissionDeclaration>): s
     `In-product AI assistant: ${(decl.builtInAssistant ?? true) ? "available (all interactions recorded)" : "disabled for this assessment"}`
   );
   lines.push(
-    `External AI tools: ${decl.externalAiAllowed ? "permitted — you must disclose use at submission" : "not permitted for this assessment"}`
+    `External AI tools: ${decl.externalAiAllowed ? "permitted. You must disclose use at submission" : "not permitted for this assessment"}`
   );
   if (decl.externalToolsNote) lines.push(decl.externalToolsNote);
   return lines.join("\n");

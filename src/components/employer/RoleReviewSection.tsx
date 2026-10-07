@@ -1,126 +1,103 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useState } from "react";
 import type { PassportEvidence } from "@/lib/passport/view";
 import RequirementEvidenceReview from "./RequirementEvidenceReview";
 
-interface RoleOption {
+export interface RoleOption {
   id: string;
   title: string;
-  responsibilities: string[];
-  evaluation_criteria: string[];
+  required: string[];
 }
 
 /**
- * H06 integration: pick one of the org's roles, then review the candidate's
- * evidence against that role's requirements. Requirements come from the
- * role's evaluation criteria; responsibilities provide context.
+ * Review the candidate's evidence against one role's required capabilities.
+ * When the Passport arrived through a role page, that role is preselected.
  */
 export default function RoleReviewSection({
   shareId,
   candidateName,
   evidence,
+  roles,
+  initialRoleId,
 }: {
   shareId: string;
   candidateName: string;
   evidence: PassportEvidence[];
+  roles: RoleOption[];
+  initialRoleId?: string | null;
 }) {
-  const [roles, setRoles] = useState<RoleOption[]>([]);
-  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/employer/roles")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.ok) setRoles(d.roles);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(
+    initialRoleId && roles.some((r) => r.id === initialRoleId) ? initialRoleId : roles.length === 1 ? roles[0].id : null,
+  );
   const selected = roles.find((r) => r.id === selectedRoleId);
-  // Requirements = evaluation criteria; fall back to responsibilities if empty.
-  const requirements =
-    selected && selected.evaluation_criteria.length > 0
-      ? selected.evaluation_criteria
-      : selected?.responsibilities ?? [];
-
-  if (loading) {
-    return (
-      <div style={{ padding: 16, color: "var(--ink-secondary)", fontSize: 14 }}>
-        Loading roles…
-      </div>
-    );
-  }
 
   return (
-    <section style={{ marginTop: 32 }}>
-      <h2 style={{ fontSize: 17, fontWeight: 600, margin: "0 0 4px" }}>
+    <section className="mt-8" aria-labelledby="role-review-heading">
+      <h2 id="role-review-heading" className="text-app-section text-[var(--text-primary)]">
         Review against role requirements
       </h2>
-      <p style={{ fontSize: 13, color: "var(--ink-secondary)", margin: "0 0 16px" }}>
-        Select a role to map its requirements to this candidate&apos;s evidence.
+      <p className="mt-1 text-app-meta text-[var(--text-secondary)]">
+        For each required capability, note whether the evidence supports it, falls short, is missing, or raises a concern.
       </p>
 
       {roles.length === 0 ? (
-        <div
-          style={{
-            border: "1px dashed var(--control-border)",
-            borderRadius: "var(--radius-control)",
-            padding: 20,
-            fontSize: 14,
-          }}
-        >
-          <p style={{ margin: "0 0 8px", fontWeight: 500 }}>No roles yet</p>
-          <p style={{ margin: 0, color: "var(--ink-secondary)", fontSize: 13 }}>
-            Create a role with evaluation criteria first, then return here to review evidence against it.
+        <div className="mt-4 rounded-[10px] border border-dashed border-[var(--border-default)] p-5">
+          <p className="text-app-body font-medium text-[var(--text-primary)]">No roles yet</p>
+          <p className="mt-1 text-app-meta text-[var(--text-secondary)]">
+            Create a role with its required capabilities, then come back to review this evidence against it.
           </p>
-          <a
-            href="/app/employer/roles"
-            style={{ fontSize: 13, color: "var(--action)", display: "inline-block", marginTop: 8 }}
-          >
-            Go to roles →
-          </a>
+          <Link href="/app/employer/openings/new" className="mt-3 inline-block text-app-meta font-medium text-[var(--text-primary)] underline underline-offset-4">
+            Create a role
+          </Link>
         </div>
       ) : (
         <>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-            {roles.map((r) => (
-              <button
-                key={r.id}
-                onClick={() => setSelectedRoleId(r.id === selectedRoleId ? null : r.id)}
-                style={{
-                  fontSize: 13,
-                  fontWeight: 500,
-                  padding: "8px 14px",
-                  borderRadius: "var(--radius-tag)",
-                  border: `1px solid ${r.id === selectedRoleId ? "var(--action)" : "var(--border)"}`,
-                  background: r.id === selectedRoleId ? "var(--action-tint)" : "var(--surface)",
-                  color: r.id === selectedRoleId ? "var(--action-hover)" : "var(--ink)",
-                  cursor: "pointer",
-                }}
-              >
-                {r.title}
-              </button>
-            ))}
+          <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Role">
+            {roles.map((r) => {
+              const active = r.id === selectedRoleId;
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setSelectedRoleId(active ? null : r.id)}
+                  className={`h-8 rounded-full border px-3.5 text-app-meta font-medium transition-colors ${
+                    active
+                      ? "border-[var(--control-solid)] bg-[var(--control-solid)] text-[var(--control-solid-ink)]"
+                      : "border-[var(--border-default)] bg-[var(--surface-raised)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+                  }`}
+                >
+                  {r.title}
+                </button>
+              );
+            })}
           </div>
 
-          {selected && requirements.length > 0 && (
-            <RequirementEvidenceReview
-              roleId={selected.id}
-              shareId={shareId}
-              roleTitle={selected.title}
-              requirements={requirements}
-              evidence={evidence}
-              candidateName={candidateName}
-            />
-          )}
+          {selected && selected.required.length > 0 ? (
+            <div className="mt-4">
+              <RequirementEvidenceReview
+                key={selected.id}
+                roleId={selected.id}
+                shareId={shareId}
+                roleTitle={selected.title}
+                requirements={selected.required}
+                evidence={evidence}
+                candidateName={candidateName}
+              />
+            </div>
+          ) : null}
 
-          {selected && requirements.length === 0 && (
-            <p style={{ fontSize: 13, color: "var(--ink-secondary)" }}>
-              This role has no evaluation criteria or responsibilities yet. Edit the role to add them.
+          {selected && selected.required.length === 0 ? (
+            <p className="mt-4 text-app-meta text-[var(--text-secondary)]">
+              This role has no required capabilities yet.{" "}
+              <Link href={`/app/employer/openings/${selected.id}/edit`} className="underline underline-offset-4">
+                Add them
+              </Link>{" "}
+              to review against it.
             </p>
-          )}
+          ) : null}
         </>
       )}
     </section>

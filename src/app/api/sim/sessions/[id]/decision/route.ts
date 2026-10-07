@@ -3,6 +3,7 @@ import { orgMemberRole, requireUser } from "@/lib/simulations/auth";
 import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 import { getSessionForOrgMember } from "@/lib/simulations/db";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -85,7 +86,7 @@ export async function POST(
     return NextResponse.json({ ok: true, decision: data });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not record decision" },
+      { error: publicErrorMessage(err, "Could not record decision") },
       { status: 400 }
     );
   }

@@ -1,8 +1,8 @@
 /**
- * RUN-01/02/03/05/08 — Sandbox specification and validation.
+ * RUN-01/02/03/05/08 - Sandbox specification and validation.
  *
  * Untrusted candidate code runs in a sandbox suitable for hostile
- * multi-tenant code — never in an ordinary privileged app container.
+ * multi-tenant code - never in an ordinary privileged app container.
  * This module defines the REQUIRED sandbox properties and validates a
  * concrete spec against them:
  *
@@ -18,7 +18,7 @@
  *          before cleanup; no carry-over between candidates.
  *
  * What this module is: the machine-checked contract. What it is NOT: proof
- * that a live sandbox honors it — that verification is NEEDS-LIVE and must
+ * that a live sandbox honors it - that verification is NEEDS-LIVE and must
  * run against the real sandbox before release.
  */
 
@@ -43,7 +43,7 @@ export interface SandboxSpec {
   hostMounts: string[];
   /** Must be false: the Docker socket is never mounted. */
   dockerSocketMounted: boolean;
-  /** "none" — production credentials are never in scope of a run. */
+  /** "none" - production credentials are never in scope of a run. */
   credentialsInScope: "none" | string;
   /** Pinned image + controlled installs; candidate scripts are untrusted. */
   dependencyInstall: {

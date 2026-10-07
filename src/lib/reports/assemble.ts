@@ -1,5 +1,5 @@
 /**
- * Employer chunk — REP-01 (decision brief from real data) and REP-03
+ * Employer chunk - REP-01 (decision brief from real data) and REP-03
  * (separated result categories, no universal hireability number).
  *
  * The brief is assembled only from supplied analysis artifacts. Every claim

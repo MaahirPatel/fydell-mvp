@@ -1,10 +1,10 @@
 /**
- * AI-12 — Human QA gate for early reports.
+ * AI-12 - Human QA gate for early reports.
  *
  * Consequential findings do not ship without a qualified reviewer looking at
  * them. This module is the gate's state machine plus workload tracking; the
  * actual verification is done by a human (MANUAL-OK). Unclear cases stay
- * pending — the gate has no "auto-approve on timeout".
+ * pending - the gate has no "auto-approve on timeout".
  */
 
 export type QaState = "pending" | "approved" | "flagged" | "escalated";
@@ -35,7 +35,7 @@ export function openGate(reportId: string, consequential: boolean): QaGate {
 
 /** Record a human decision. Only a human (reviewerId) can move the gate. */
 export function decide(gate: QaGate, reviewerId: string, state: QaState, notes?: string): QaGate {
-  if (!reviewerId) throw new Error("AI-12: QA decisions require a reviewer id — no anonymous approvals.");
+  if (!reviewerId) throw new Error("AI-12: QA decisions require a reviewer id. No anonymous approvals.");
   if (TERMINAL.includes(gate.state)) {
     throw new Error(`AI-12: gate for ${gate.reportId} is already ${gate.state}; reopen explicitly instead.`);
   }

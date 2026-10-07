@@ -4,7 +4,7 @@ import s from "./simulation-library.module.css";
 /**
  * The real scenario library: one row per definition in the engine catalog.
  *
- * Every value below is copied from the authored scenario files — keep them in
+ * Every value below is copied from the authored scenario files - keep them in
  * sync by hand when the catalog changes:
  *   src/lib/sim-engine/scenarios/catalog.ts and the eight scenario files it
  *   imports (solutions-engineer/northstar-integration,

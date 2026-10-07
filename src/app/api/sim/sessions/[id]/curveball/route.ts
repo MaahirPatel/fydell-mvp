@@ -8,6 +8,7 @@ import {
 } from "@/lib/simulations/db";
 import { isMicroContent, type MicroSimContent } from "@/lib/simulations/micro-types";
 import { maybePresentCurveball } from "@/lib/simulations/curveball-present";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -88,7 +89,7 @@ export async function POST(
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed" },
+      { error: publicErrorMessage(err, "Failed") },
       { status: 400 }
     );
   }

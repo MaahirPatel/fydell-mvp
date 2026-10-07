@@ -1,13 +1,13 @@
 /**
  * Content guards for rubric quality (WORK-07, SCEN-02).
  *
- * WORK-07 — no cultural-fit scoring: rubric indicators, deterministic checks
+ * WORK-07 - no cultural-fit scoring: rubric indicators, deterministic checks
  * and stakeholder content must assess job-relevant clarification, accurate
  * risk communication and handoff completeness. They must not infer
  * personality, protected traits, mental state, or team belonging from writing
  * style or interaction speed.
  *
- * SCEN-02 — job-relevant dimensions with observable anchors: the rubric must
+ * SCEN-02 - job-relevant dimensions with observable anchors: the rubric must
  * cover correctness, engineering judgment, response to requirements, and work
  * communication, and every indicator must carry observable anchors (what the
  * evaluator can actually see), not style preferences.

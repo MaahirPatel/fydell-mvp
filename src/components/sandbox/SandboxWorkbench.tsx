@@ -58,7 +58,7 @@ export function SandboxWorkbench({
   if (!session) {
     return (
       <section className="mx-auto max-w-[720px] py-16">
-        <p className="text-app-meta uppercase tracking-[0.12em] text-[var(--text-tertiary)]">Candidate 01 · Applied AI Engineer</p>
+        <p className="text-app-meta text-[var(--text-tertiary)]">Candidate 01 · Applied AI Engineer</p>
         <h1 className="mt-3 text-app-page">Verify remaining proof</h1>
         <p className="mt-3 text-app-body text-[var(--text-secondary)]">
           Start an isolated 24-hour sandbox. The runtime is deterministic and synthetic; it does not execute arbitrary proposal code.
@@ -291,13 +291,13 @@ export function SandboxWorkbench({
 function Metrics({ current, baseline }: { current: SandboxSessionView["latestEval"]; baseline: SandboxSessionView["baselineEval"] }) {
   if (!current) return <p className="px-3 py-5 text-app-body text-[var(--text-secondary)]">No evaluation result yet.</p>;
   const rows = [
-    ["Quality", `${current.quality}%`, baseline ? `${baseline.quality}%` : "—"],
-    ["Critical slice", `${current.criticalSliceQuality}%`, baseline ? `${baseline.criticalSliceQuality}%` : "—"],
-    ["Schema failures", `${current.schemaFailureRate}%`, baseline ? `${baseline.schemaFailureRate}%` : "—"],
-    ["Semantic failures", `${current.semanticFailureRate}%`, baseline ? `${baseline.semanticFailureRate}%` : "—"],
-    ["Duplicate side effects", `${current.duplicateSideEffectRate}%`, baseline ? `${baseline.duplicateSideEffectRate}%` : "—"],
-    ["p50 / p95", `${current.p50LatencySeconds}s / ${current.p95LatencySeconds}s`, baseline ? `${baseline.p50LatencySeconds}s / ${baseline.p95LatencySeconds}s` : "—"],
-    ["Cost / plan", `$${current.estimatedCostDollars}`, baseline ? `$${baseline.estimatedCostDollars}` : "—"],
+    ["Quality", `${current.quality}%`, baseline ? `${baseline.quality}%` : "–"],
+    ["Critical slice", `${current.criticalSliceQuality}%`, baseline ? `${baseline.criticalSliceQuality}%` : "–"],
+    ["Schema failures", `${current.schemaFailureRate}%`, baseline ? `${baseline.schemaFailureRate}%` : "–"],
+    ["Semantic failures", `${current.semanticFailureRate}%`, baseline ? `${baseline.semanticFailureRate}%` : "–"],
+    ["Duplicate side effects", `${current.duplicateSideEffectRate}%`, baseline ? `${baseline.duplicateSideEffectRate}%` : "–"],
+    ["p50 / p95", `${current.p50LatencySeconds}s / ${current.p95LatencySeconds}s`, baseline ? `${baseline.p50LatencySeconds}s / ${baseline.p95LatencySeconds}s` : "–"],
+    ["Cost / plan", `$${current.estimatedCostDollars}`, baseline ? `$${baseline.estimatedCostDollars}` : "–"],
   ];
   return (
     <div className="px-3 py-3">

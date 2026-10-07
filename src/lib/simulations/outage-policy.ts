@@ -59,7 +59,7 @@ export function evaluateOutage(args: {
  * NOTE: a degraded redraft still delivers the authored fallback reply, so
  * each degraded attempt also records `message_received` with
  * `source: "authored"`. Those are part of the degraded cycle and must be
- * skipped, not treated as recovery — otherwise the streak can never reach
+ * skipped, not treated as recovery - otherwise the streak can never reach
  * the outage threshold in the real route ordering.
  */
 export function countConsecutiveDegraded(

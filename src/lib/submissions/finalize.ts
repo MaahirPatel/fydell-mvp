@@ -18,7 +18,7 @@
  *   RPC is the second line of defense.
  * - UP-08: every rejection is a `SubmissionError` with code + actionable
  *   recovery, and `workPreserved` is always true. Infrastructure failures
- *   surface as INFRA_ERROR — never as a skill-test failure.
+ *   surface as INFRA_ERROR - never as a skill-test failure.
  * - E2E-20: if the server accepted but the response was lost, a later
  *   finalize call (same operation id) or a `recoverFinalizeState` poll
  *   returns the existing receipt; no duplicate is created.
@@ -29,7 +29,7 @@
  * (local_draft → syncing → server_saved → submitting, or failed → submitting),
  * re-reading after any lost CAS race. Only the task that wins the final
  * submitting CAS performs the atomic submit; losers recover the receipt or
- * report in-flight — repeated/concurrent requests cannot regress states.
+ * report in-flight - repeated/concurrent requests cannot regress states.
  */
 
 import {
@@ -71,7 +71,7 @@ export interface FinalizeDeps {
   loadTransfer(sessionId: string): Promise<TransferRecord | null>;
   /**
    * Atomic compare-and-set transition. Returns { ok:false } when the
-   * caller's `from` is stale or the transition is illegal — the caller must
+   * caller's `from` is stale or the transition is illegal - the caller must
    * NOT proceed with the submit in that case.
    */
   storeTransferTransition(
@@ -194,7 +194,7 @@ export async function driveSyncAction(
 /**
  * Reconcile client state with the server before doing anything else (UP-03).
  * Returns the existing receipt when this operation (or session) already
- * completed — the caller must NOT submit again.
+ * completed - the caller must NOT submit again.
  */
 export async function recoverFinalizeState(
   deps: RecoveryDeps,
@@ -407,7 +407,7 @@ export async function finalizeSnapshotSubmission(
     } catch (err) {
       // The atomic RPC is the durability boundary: if it threw, the
       // submission may or may not have committed. Mark failed and let the
-      // idempotent retry / recovery path reconcile — never claim success.
+      // idempotent retry / recovery path reconcile - never claim success.
       const detail = err instanceof Error ? err.message : "unknown error";
       return failAs(sanitizeDisplayPath(detail).slice(0, 200));
     }

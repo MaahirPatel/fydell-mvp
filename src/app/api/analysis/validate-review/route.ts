@@ -8,7 +8,7 @@
  *
  * This endpoint never fabricates a report: invalid output is returned with
  * reasons and a route ("retry" | "human_review"). A valid response contains
- * only validation results — the caller assembles the report.
+ * only validation results - the caller assembles the report.
  *
  * Body: {
  *   deterministic: DeterministicSection,
@@ -22,6 +22,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateModelOutput } from "@/lib/analysis/modelOutput";
 import { indexSnapshot } from "@/lib/analysis/citations";
 import type { DeterministicSection } from "@/lib/analysis/separation";
+import { requirePlatformRoleApi } from "@/lib/ops/require-platform-role";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +32,13 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  // A development utility with no in-app caller: production limits it to
+  // platform operators rather than leaving an open compute endpoint.
+  if (process.env.NODE_ENV === "production") {
+    const gate = await requirePlatformRoleApi(["super_admin", "admin", "operator"]);
+    if ("error" in gate) return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
+
   let body: unknown;
   try {
     body = await req.json();

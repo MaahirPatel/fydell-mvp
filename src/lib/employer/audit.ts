@@ -1,5 +1,5 @@
 /**
- * Employer chunk — audit log shared by invitation operations (EMP-07),
+ * Employer chunk - audit log shared by invitation operations (EMP-07),
  * decisions (EMP-08) and report updates (REP-04/05).
  *
  * Every resend / revoke / extension / decision / report version is an

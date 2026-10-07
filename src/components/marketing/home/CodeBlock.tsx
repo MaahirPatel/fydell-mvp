@@ -1,7 +1,7 @@
 import type { CodeLine } from "@/lib/marketing/demo-fixture";
 
 const TOKEN =
-  /(#.*$)|(f?"[^"]*")|(@[\w.]+)|\b(def|async|await|return|if|not|from|import|class|None|True|False)\b|\b(\d+)\b/g;
+  /(#.*$|\/\/.*$)|(f?"[^"]*")|(@[\w.]+)|\b(def|async|await|return|if|not|from|import|class|None|True|False|const|let|export|function|for|new|true|false)\b|\b(\d+)\b/g;
 
 function highlight(text: string) {
   const out: React.ReactNode[] = [];
@@ -33,7 +33,7 @@ function highlight(text: string) {
 }
 
 const MARK: Record<NonNullable<CodeLine["mark"]>, string> = {
-  cited: "bg-[var(--field-teal)] shadow-[inset_2px_0_0_var(--brand-teal)]",
+  cited: "bg-[var(--accent-soft)] shadow-[inset_2px_0_0_var(--accent)]",
   observed: "bg-[var(--field-violet)] shadow-[inset_2px_0_0_var(--brand-violet)]",
   added: "bg-[var(--ev-success-field)] shadow-[inset_2px_0_0_var(--ev-success)]",
   removed: "bg-[var(--ev-error-field)] shadow-[inset_2px_0_0_var(--ev-error)]",

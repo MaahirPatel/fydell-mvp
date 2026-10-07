@@ -18,7 +18,11 @@ import { DecisionForm, EmployerReport, NoteForm, When } from "@/components/eng/E
 import ReviewWorkspace from "@/components/eng/ReviewWorkspace";
 import { RequeueButton } from "@/components/eng/ReviewerControls";
 import { scheduleIfRunnable } from "@/lib/eng/route-helpers";
+import { observedSentence } from "@/lib/eng/criteria";
+import { listResponses } from "@/lib/eng/candidate-report";
+import CandidateResponsesReview from "@/components/eng/CandidateResponsesReview";
 import { getAttemptForOrg } from "@/lib/eng/attempts";
+import { candidateIdentity } from "@/lib/eng/candidate-label";
 import { engAdmin } from "@/lib/eng/context";
 import { EVENT_LABELS, orgAttemptView, pageMember } from "@/lib/eng/employer-view";
 import { isUuid } from "@/lib/eng/http";
@@ -74,13 +78,17 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
   const canSeeEvidence = roleCan(member.role, "view_reports");
   const canWrite = roleCan(member.role, "write_reports");
   if (attempt.status === "submitted") await scheduleIfRunnable(db, attempt.id);
-  const view = await orgAttemptView(db, member, attempt, canSeeEvidence);
+  const [view, responses] = await Promise.all([
+    orgAttemptView(db, member, attempt, canSeeEvidence),
+    canSeeEvidence ? listResponses(db, attempt.id) : Promise.resolve([]),
+  ]);
   const testsFinished = view.run?.status === "human_review" || view.run?.status === "ready";
   const delayed = view.run?.status === "blocked" || view.run?.status === "retryable_failure";
   const { definition } = await scenarioForVersionId(db, attempt.scenario_version_id);
   const teammates = Object.fromEntries(definition.teammates.map((t) => [t.id, t.name]));
   const state = OPERATIONAL_STATES[view.state];
-  const candidateLabel = view.invitation.candidate_name || view.invitation.candidate_email;
+  const who = candidateIdentity(view.invitation);
+  const candidateLabel = who.primary;
   const results = view.run?.results ?? [];
   const hidden = results.filter((r) => r.visibility === "hidden");
   const hiddenPassed = hidden.filter((r) => r.outcome === "passed").length;
@@ -148,10 +156,10 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
           </p>
           <p className="mt-3 max-w-[64ch] text-app-body leading-[1.55] text-[var(--text-body)]">{definition.summary}</p>
           <dl className="mt-4 grid grid-cols-[72px_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-app-meta">
-            {view.invitation.candidate_name ? (
+            {who.secondary ? (
               <>
-                <dt className="text-[var(--text-tertiary)]">Email</dt>
-                <dd className="m-0 text-[var(--text-primary)]">{view.invitation.candidate_email}</dd>
+                <dt className="text-[var(--text-tertiary)]">{who.secondaryLabel}</dt>
+                <dd className="m-0 text-[var(--text-primary)]">{who.secondary}</dd>
               </>
             ) : null}
             <dt className="text-[var(--text-tertiary)]">Time</dt>
@@ -268,6 +276,7 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
             </PanelSection>
           )}
         </Panel>
+        {canSeeEvidence && responses.length ? <CandidateResponsesReview attemptId={attempt.id} initial={responses} canResolve={canWrite} /> : null}
         {view.report && canWrite && view.run?.results && view.submission ? (
           <details className="group">
             <summary className="cursor-pointer text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
@@ -309,13 +318,21 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
                   concerns={view.report.brief.gaps.slice(0, 2)}
                   proof={[
                     ...(hidden.length ? [{ label: "Hidden checks", value: <Mono>{hiddenPassed} / {hidden.length}</Mono> }] : []),
-                    ...view.report.brief.dimensions.map((d) => ({
-                      label: DIMENSION_LABEL[d.key],
-                      value: LEVEL_LABEL[d.level],
-                      level: d.level,
-                      rationale: d.rationale,
-                      support: view.report!.findings.filter((f) => f.dimension === d.key).map((f) => f.statement),
-                    })),
+                    ...(view.report.brief.criteria?.length
+                      ? view.report.brief.criteria.map((c) => ({
+                          label: c.label,
+                          value: LEVEL_LABEL[c.state],
+                          level: c.state,
+                          rationale: [c.observed ? `${observedSentence(c.observed)}.` : "", c.rationale, `Not covered: ${c.notCovered}`].filter(Boolean).join(" "),
+                          support: view.report!.findings.filter((f) => f.dimension === c.dimension).map((f) => f.statement),
+                        }))
+                      : view.report.brief.dimensions.map((d) => ({
+                          label: DIMENSION_LABEL[d.key],
+                          value: LEVEL_LABEL[d.level],
+                          level: d.level,
+                          rationale: d.rationale,
+                          support: view.report!.findings.filter((f) => f.dimension === d.key).map((f) => f.statement),
+                        }))),
                   ]}
                 />
               </div>

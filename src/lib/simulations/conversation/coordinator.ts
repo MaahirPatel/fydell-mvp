@@ -55,7 +55,7 @@ export function decideResponse(ctx: CoordinatorContext): SpeakingDecision & {
 
   // --- Step 1: Silence gate (CONSERVATIVE) ---
   // Only suppress messages we are HIGHLY confident need no response.
-  // Everything else goes to the model for interpretation — a good generation
+  // Everything else goes to the model for interpretation - a good generation
   // engine cannot answer a question it never receives.
   //
   // The model itself can return no_response_needed with full context.
@@ -77,9 +77,9 @@ export function decideResponse(ctx: CoordinatorContext): SpeakingDecision & {
     };
   }
 
-  // Everything else — including uncertain classifications, implicit questions
+  // Everything else - including uncertain classifications, implicit questions
   // ("I can't tell whether retries should reuse the original ID"),
-  // mixed statements/questions, plan sharing, and diagnosis sharing —
+  // mixed statements/questions, plan sharing, and diagnosis sharing - 
   // goes to the model. The model has the full conversation context and can
   // decide no_response_needed if truly nothing is useful to say.
   //
@@ -111,7 +111,7 @@ export function decideResponse(ctx: CoordinatorContext): SpeakingDecision & {
           helpReason: help.reason,
         };
       }
-      // Help allowed — route to appropriate coworker with level info
+      // Help allowed - route to appropriate coworker with level info
       const speaker = selectSpeaker(classified.topicIds, coworkers, state);
       return {
         shouldSpeak: true,

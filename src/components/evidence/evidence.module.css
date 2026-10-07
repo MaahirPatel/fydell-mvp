@@ -10,10 +10,8 @@
 }
 
 .label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 560;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--text-tertiary);
 }
 
@@ -49,7 +47,7 @@
 }
 .railValue {
   overflow: hidden;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 510;
   color: var(--text-primary);
   text-overflow: ellipsis;
@@ -100,7 +98,7 @@
 }
 .tlTime {
   padding-top: 1px;
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--text-tertiary);
   text-align: right;
 }
@@ -147,7 +145,7 @@
 }
 .tlDetail {
   margin-top: 1px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
   color: var(--text-secondary);
 }
@@ -191,7 +189,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 510;
   color: var(--fy-accent-ink);
 }
@@ -209,7 +207,7 @@
 }
 .receiptSub {
   margin-top: 2px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
 }
 .receiptRows {
@@ -224,7 +222,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--text-body);
 }
 .receiptRow span:last-child {
@@ -247,7 +245,7 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.45;
   color: var(--text-body);
 }
@@ -274,7 +272,7 @@
   padding: 10px 16px;
   border-top: 1px solid var(--border-subtle);
   background: var(--surface-panel);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
 }
 .receiptFoot a,
@@ -348,7 +346,7 @@
 }
 .verdictNote {
   margin-top: 4px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
 }
 .list {
@@ -366,7 +364,7 @@
   border: 1px solid var(--fy-red-line);
   border-radius: 8px;
   background: var(--fy-red-field);
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.5;
   color: var(--text-body);
 }
@@ -396,7 +394,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 7px 0;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--text-body);
   list-style: none;
 }
@@ -442,7 +440,7 @@ details[open] > .proofSummary .proofChevron {
   display: grid;
   gap: 6px;
   padding: 0 0 10px 18px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
   color: var(--text-secondary);
 }

@@ -16,7 +16,7 @@ function StepNumber({ n, done }: { n: number; done?: boolean }) {
   return (
     <span
       aria-hidden
-      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11.5px] tabular-nums ${
+      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[13px] tabular-nums ${
         done ? "bg-[var(--fy-accent)] text-white" : "border border-[var(--fy-accent-line)] bg-[var(--fy-accent-field)] text-[var(--fy-accent-ink)]"
       }`}
     >
@@ -50,6 +50,8 @@ export function ConsentStep({ view, onView }: { view: View; onView: (v: View) =>
             { label: "Tools", value: "Any editor, documentation, search and AI assistant, as at work" },
             { label: "Recorded", value: "Team messages, setup result, your ZIP and handoff" },
             { label: "Not recorded", value: "Your screen, editor, files or AI conversations" },
+            { label: "The employer receives", value: "Your ZIP, handoff, team messages, test results and the report their team writes" },
+            { label: "You receive", value: "The same report once the hiring team releases it, without their private notes or interview questions. It cannot be hidden from the employer after you submit." },
           ]}
         />
       </PanelSection>
@@ -122,8 +124,8 @@ export function SetupStep({ view, onView }: { view: View; onView: (v: View) => v
         </Step>
         <Step n={2} title="Open the folder in your editor and run the setup check">
           <p>
-            In VS Code or Cursor, choose <span className="text-[var(--text-primary)]">File → Open Folder</span> and pick the extracted <code className="font-mono text-[12.5px] text-[var(--text-primary)]">{root}</code> folder (the one containing{" "}
-            <code className="font-mono text-[12.5px] text-[var(--text-primary)]">preflight.py</code>). Open a terminal there with <span className="text-[var(--text-primary)]">Terminal → New Terminal</span> and run:
+            In VS Code or Cursor, choose <span className="text-[var(--text-primary)]">File → Open Folder</span> and pick the extracted <code className="font-mono text-[13px] text-[var(--text-primary)]">{root}</code> folder (the one containing{" "}
+            <code className="font-mono text-[13px] text-[var(--text-primary)]">preflight.py</code>). Open a terminal there with <span className="text-[var(--text-primary)]">Terminal → New Terminal</span> and run:
           </p>
           <CommandBlock label="Setup check command" commands={view.scenario.setupCommands} />
           <p className="text-app-meta">Some public tests fail at this point. That is the incident you will fix, not a setup problem.</p>
@@ -131,7 +133,7 @@ export function SetupStep({ view, onView }: { view: View; onView: (v: View) => v
         <Step n={3} title="Paste the setup result">
           <p>
             Run the setup check locally, then paste its result here. Copy the last line it prints, which starts with{" "}
-            <code className="font-mono text-[12.5px] text-[var(--text-primary)]">Setup code:</code>.
+            <code className="font-mono text-[13px] text-[var(--text-primary)]">Setup code:</code>.
           </p>
           <form
             className="flex flex-wrap items-start gap-2"

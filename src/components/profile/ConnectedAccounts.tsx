@@ -80,8 +80,6 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
     }
   }
 
-  const editors = accounts.filter((a) => a.provider !== "github");
-
   return (
     <div className="space-y-5">
       {accounts.length === 0 ? (
@@ -116,13 +114,11 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
         </div>
       ))}
 
-      <form onSubmit={connectGithub} className="rounded-[10px] border border-dashed border-[var(--border-default)] p-4">
-        <p className="text-app-body font-medium text-[var(--text-primary)]">Connect GitHub</p>
-        <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
-          Enter your GitHub username, then analyze your repositories in the passport section below.
-          Full GitHub sign-in (OAuth) is coming later. Today Fydell reads only the public repositories you choose.
-        </p>
-        <div className="mt-3 flex gap-2">
+      {accounts.some((a) => a.provider === "github") ? null : (
+      <form onSubmit={connectGithub}>
+        <p className="text-[14px] font-medium text-[var(--text-primary)]">Connect GitHub</p>
+        <p className="mt-0.5 text-[13px] text-[var(--text-secondary)]">Your username. Fydell reads only the public repositories you choose.</p>
+        <div className="mt-2.5 flex gap-2">
           <input
             className={inputClass}
             value={login}
@@ -134,17 +130,12 @@ export default function ConnectedAccounts({ initial }: { initial: ConnectedAccou
           <button
             type="submit"
             disabled={busy || !login.trim()}
-            className="shrink-0 rounded-[8px] bg-[var(--text-primary)] px-4 py-2 text-app-body font-medium text-[var(--surface-canvas)] disabled:opacity-50"
+            className="shrink-0 rounded-[8px] bg-[var(--control-solid)] px-4 py-2 text-[14px] font-medium text-white shadow-[0_1px_2px_rgba(16,24,40,0.12)] hover:bg-[var(--control-solid-hover)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--accent-line)] disabled:cursor-not-allowed disabled:bg-[var(--surface-deep)] disabled:text-[var(--text-disabled)] disabled:shadow-none"
           >
             Connect
           </button>
         </div>
       </form>
-
-      {editors.length > 0 ? null : (
-        <p className="text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
-          VS Code and Cursor appear here automatically when you import editor history below.
-        </p>
       )}
       {error ? <p className="text-app-meta text-[var(--status-attention-ink)]">{error}</p> : null}
     </div>

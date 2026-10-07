@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { startSession } from "@/lib/simulations/db";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -20,7 +21,7 @@ export async function POST(
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not start session" },
+      { error: publicErrorMessage(err, "Could not start session") },
       { status: 400 }
     );
   }

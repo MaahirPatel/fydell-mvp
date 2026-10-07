@@ -1,4 +1,5 @@
 import { isCiWorkflow, isManifest, isReadme, isTestFile } from "./select";
+import { runPracticeDetectors } from "./practice-detectors";
 import type { EvidenceBasis, EvidenceCategory } from "./types";
 
 export type DraftFinding = {
@@ -15,7 +16,7 @@ export type DraftFinding = {
 type Files = Map<string, string>;
 
 const PER_DETECTOR = 3;
-const TOTAL = 25;
+const TOTAL = 36;
 
 const lines = (text: string) => text.split(/\r?\n/);
 const ext = (path: string) => path.slice(path.lastIndexOf(".") + 1).toLowerCase();
@@ -298,9 +299,10 @@ const DETECTORS = [
   mlTraining,
   llmIntegrations,
   reactComponents,
-  dependencyDeclarations,
 ];
 
 export function runDetectors(files: Files): DraftFinding[] {
-  return DETECTORS.flatMap((detect) => detect(files).slice(0, PER_DETECTOR)).slice(0, TOTAL);
+  const observed = [...DETECTORS.flatMap((detect) => detect(files).slice(0, PER_DETECTOR)), ...runPracticeDetectors(files)];
+  // Declarations are the weakest evidence: kept separate and capped, never crowding out observations.
+  return [...observed.slice(0, TOTAL), ...dependencyDeclarations(files)];
 }

@@ -145,6 +145,7 @@ export class GithubClient {
         type: e.type as TreeEntry["type"],
         mode: String(e.mode ?? ""),
         size: typeof e.size === "number" ? e.size : undefined,
+        sha: typeof e.sha === "string" ? e.sha : undefined,
       }));
     return { entries, truncated: body.truncated === true };
   }
@@ -157,7 +158,7 @@ export class GithubClient {
 
   /**
    * Lists public repositories, following API pagination up to `maxPages`.
-   * Stops early — and reports `truncated` — when pagination would leave the
+   * Stops early - and reports `truncated` - when pagination would leave the
    * API host or exceed the page cap, so partial listings are explicit (GH-05,
    * GH-07).
    */
@@ -200,7 +201,7 @@ export class GithubClient {
 /**
  * Follows RFC 5988 `Link` pagination. Returns the `rel="next"` URL, null
  * when there is no next page, or "refused" when the next link points off
- * api.github.com — which is never followed (GH-07).
+ * api.github.com - which is never followed (GH-07).
  */
 function nextPageUrl(linkHeader: string | null): string | "refused" | null {
   if (!linkHeader) return null;

@@ -117,7 +117,7 @@ function runPythonWorker(input: string): Promise<unknown> {
     // NFT list" warning (which Next.js intends to promote to an error).
     // The executable here is intentionally resolved at request time (the
     // `EVIDENCE_ENGINE_PYTHON` override / platform fallback), so the call is
-    // detached via `.bind(null)`, which the tracer does not follow — it skips
+    // detached via `.bind(null)`, which the tracer does not follow - it skips
     // the call instead of warning. `spawn.bind(null)` is identical to `spawn`
     // at runtime. The worker script is still traced via the `path.join` above,
     // so the deployment is unchanged.

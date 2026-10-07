@@ -5,7 +5,7 @@
  * - a stable machine `code` the desktop client can switch on,
  * - a human `message` that names the problem without leaking secrets,
  * - a `recovery` action telling the candidate exactly what to do next,
- * - `workPreserved: true` — no rejection path deletes or overwrites the
+ * - `workPreserved: true` - no rejection path deletes or overwrites the
  *   candidate's local work.
  *
  * Leakage contract (audited in scripts/test-submit-grind-finalize.ts):
@@ -13,7 +13,7 @@
  * paths, operation ids and error codes. They must NEVER contain file
  * contents, manifest digests, stack traces, or database error text.
  *
- * Pure module — no `server-only` — so it is unit-testable in-process.
+ * Pure module - no `server-only` - so it is unit-testable in-process.
  */
 
 export const SUBMISSION_ERROR_CODES = [
@@ -49,39 +49,39 @@ const RECOVERY: Record<SubmitErrorCode, string> = {
   SESSION_NOT_ACTIVE:
     "This attempt is already submitted or closed. Open your existing receipt instead of submitting again.",
   SNAPSHOT_SHAPE:
-    "The submission package was malformed. Update the desktop app and try again — your workspace files are untouched.",
+    "The submission package was malformed. Update the desktop app and try again. Your workspace files are untouched.",
   SCENARIO_MISMATCH:
-    "This file package belongs to a different scenario. Open the correct attempt and submit from its workspace — your work is preserved.",
+    "This file package belongs to a different scenario. Open the correct attempt and submit from its workspace. Your work is preserved.",
   VERSION_MISMATCH:
-    "This file package pins an outdated scenario version. Refresh the attempt to get the current version, then submit again — your work is preserved.",
+    "This file package pins an outdated scenario version. Refresh the attempt to get the current version, then submit again. Your work is preserved.",
   SCENARIO_UNAVAILABLE:
-    "This session has no file package configured. Contact support — do not recreate the assessment; your work is preserved.",
+    "This session has no file package configured. Contact support. Do not recreate the assessment; your work is preserved.",
   MANIFEST_INCONSISTENT:
-    "The file list and its manifest disagree. Rebuild the snapshot from your current workspace and submit again — nothing was stored.",
+    "The file list and its manifest disagree. Rebuild the snapshot from your current workspace and submit again. Nothing was stored.",
   MANIFEST_DIGEST_INVALID:
-    "A manifest entry is not a valid SHA-256 digest. Rebuild the snapshot from your current workspace and submit again — nothing was stored.",
+    "A manifest entry is not a valid SHA-256 digest. Rebuild the snapshot from your current workspace and submit again. Nothing was stored.",
   PATH_UNSAFE:
-    "One file has an unsafe path (for example '..', an absolute path, or special characters). Rename it inside your workspace and submit again — your work is preserved.",
+    "One file has an unsafe path (for example '..', an absolute path, or special characters). Rename it inside your workspace and submit again. Your work is preserved.",
   DUPLICATE_PATH:
-    "Two files resolve to the same path. Rename one and submit again — your work is preserved.",
+    "Two files resolve to the same path. Rename one and submit again. Your work is preserved.",
   HASH_MISMATCH:
-    "A file changed after the snapshot was built. Rebuild the snapshot from the current workspace and submit again — nothing was stored.",
+    "A file changed after the snapshot was built. Rebuild the snapshot from the current workspace and submit again. Nothing was stored.",
   FILE_TOO_LARGE:
-    "One file exceeds the per-file size limit. Split it or remove generated files, then submit again — your work is preserved.",
+    "One file exceeds the per-file size limit. Split it or remove generated files, then submit again. Your work is preserved.",
   TOTAL_TOO_LARGE:
-    "The snapshot exceeds the total size limit. Remove generated files or dependencies and submit again — your work is preserved.",
+    "The snapshot exceeds the total size limit. Remove generated files or dependencies and submit again. Your work is preserved.",
   TOO_MANY_FILES:
-    "The snapshot has too many files. Submit only the scenario's source files and try again — your work is preserved.",
+    "The snapshot has too many files. Submit only the scenario's source files and try again. Your work is preserved.",
   EMPTY_SNAPSHOT:
     "The snapshot has no files. Add your work files to the workspace and submit again.",
   CONTENT_UNSAFE:
-    "A file contains data this snapshot format cannot carry safely. Remove or fix the file and submit again — your work is preserved.",
+    "A file contains data this snapshot format cannot carry safely. Remove or fix the file and submit again. Your work is preserved.",
   TRANSFER_CONFLICT:
-    "This attempt's submission is already in progress or finished. Refresh the submission status instead of sending another request — your work is preserved.",
+    "This attempt's submission is already in progress or finished. Refresh the submission status instead of sending another request. Your work is preserved.",
   OPERATION_ID_REQUIRED:
-    "The request is missing its idempotency key. Update the desktop app and try again — your work is preserved.",
+    "The request is missing its idempotency key. Update the desktop app and try again. Your work is preserved.",
   INFRA_ERROR:
-    "Our servers hit a problem saving your submission — this is not a reflection of your work. Your files are safe on this device. Wait a moment and retry; the retry cannot create a duplicate. If it keeps failing, contact support with your operation ID.",
+    "Our servers hit a problem saving your submission. This is not a reflection of your work. Your files are safe on this device. Wait a moment and retry; the retry cannot create a duplicate. If it keeps failing, contact support with your operation ID.",
 };
 
 const HTTP_STATUS: Record<SubmitErrorCode, number> = {
@@ -173,7 +173,7 @@ export function snapshotIssueToError(issue: {
 /**
  * Serialize any thrown value into a safe API error body. Non-SubmissionError
  * values (database errors, unexpected exceptions) become INFRA_ERROR with a
- * generic message — their details never reach the client.
+ * generic message - their details never reach the client.
  */
 export function toSubmitErrorResponse(err: unknown): {
   status: number;

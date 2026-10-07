@@ -43,13 +43,16 @@ ok("the retired second marketing system is gone", !existsSync(resolve("src/compo
 // Page contract (release checklist, Landing): a clear proposition for both
 // audiences, and "Get started" and "Explore demo" both work.
 const hero = page.slice(page.indexOf("<Hero"), page.indexOf("<Stage"));
-ok("hero speaks to hiring teams and candidates", /Candidates/.test(hero) && /team/i.test(hero));
+ok("hero states the proposition", /The Proof of Work Network/.test(hero));
 ok(
-  "hero actions: Get started, Explore demo, and an engineer path",
+  "hero lead speaks to engineers and hiring teams",
+  /Show your skills/.test(hero) && /Find your next engineer/.test(hero),
+);
+ok(
+  "hero actions: Get started and Explore demo",
   /href="\/get-started"[^>]*>\s*Get started/.test(hero) &&
     /href="\/demo"[^>]*>\s*Explore demo/.test(hero) &&
-    /href="\/developers"/.test(hero) &&
-    ["src/app/get-started/page.tsx", "src/app/demo/page.tsx", "src/app/developers/page.tsx"].every((f) => existsSync(resolve(f))),
+    ["src/app/get-started/page.tsx", "src/app/demo/page.tsx"].every((f) => existsSync(resolve(f))),
 );
 ok(
   "audience choice offers developer and employer paths into signup",
@@ -67,7 +70,10 @@ ok("demo has four steps with skip and reset", /Skip to the report/.test(stage) &
 ok("official lockup is used in the site header", /FydellLogo/.test(nav) && /FydellLogo/.test(footer));
 ok(
   "navigation labels",
-  /Product[\s\S]*Employers[\s\S]*Developers[\s\S]*Pricing/.test(nav) && /Sign in/.test(nav) && /Get started/.test(nav),
+  /For Engineers[\s\S]*For Employers[\s\S]*Pricing/.test(nav) &&
+    />\s*Product\s*</.test(nav) &&
+    /Log in/.test(nav) &&
+    /href="\/get-started"[^>]*>\s*Sign up/.test(nav),
 );
 ok(
   "no retired positioning in active public surfaces",

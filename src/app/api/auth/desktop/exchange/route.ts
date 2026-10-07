@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * W1 — exchange a single-use desktop authorization code for the Supabase
+ * W1 - exchange a single-use desktop authorization code for the Supabase
  * session.
  *
  *   POST /api/auth/desktop/exchange   { "code": "<one-time>" }

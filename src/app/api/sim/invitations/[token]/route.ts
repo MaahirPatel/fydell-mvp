@@ -10,6 +10,7 @@ import { requireUser } from "@/lib/simulations/auth";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
 import type { RoleKey } from "@/lib/simulations/types";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -70,7 +71,7 @@ export async function POST(
     return NextResponse.json({ ok: true, sessionId: session.id });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not accept invitation" },
+      { error: publicErrorMessage(err, "Could not accept invitation") },
       { status: 400 }
     );
   }

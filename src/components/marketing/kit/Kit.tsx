@@ -31,16 +31,20 @@ function Lines({ lines }: { lines: readonly string[] }) {
 
 export function Hero({
   title,
+  eyebrow,
   lead,
   aside,
   actions,
+  note,
   compact = false,
   children,
 }: {
   title: readonly string[];
+  eyebrow?: string;
   lead?: ReactNode;
   aside?: { href: string; strong?: string; label: string };
   actions?: ReactNode;
+  note?: { href: string; label: string };
   compact?: boolean;
   children?: ReactNode;
 }) {
@@ -54,11 +58,17 @@ export function Hero({
             <Arrow />
           </Link>
         ) : null}
+        {eyebrow ? <p className={s.heroEyebrow}>{eyebrow}</p> : null}
         <h1 className={cx("l-hero", s.heroTitle)}>
           <Lines lines={title} />
         </h1>
         {lead ? <p className={s.heroLead}>{lead}</p> : null}
         {actions ? <div className={s.heroActions}>{actions}</div> : null}
+        {note ? (
+          <Link href={note.href} className={s.heroNote}>
+            {note.label} <Arrow />
+          </Link>
+        ) : null}
       </div>
       {children}
     </section>
@@ -70,7 +80,19 @@ export type Art = "lake" | "coast" | "hills";
 const ART_CLASS: Record<Art, string> = { lake: s.artLake, coast: s.artCoast, hills: s.artHills };
 
 /** A product window on a painted ground, the way the product is seen in use. */
-function ArtCanvas({ art, title, label, children }: { art: Art; title: string; label: string; children: ReactNode }) {
+function ArtCanvas({
+  art,
+  title,
+  label,
+  interactive = false,
+  children,
+}: {
+  art: Art;
+  title: string;
+  label: string;
+  interactive?: boolean;
+  children: ReactNode;
+}) {
   return (
     <div className={cx(s.canvas, ART_CLASS[art])}>
       <InView className={s.window}>
@@ -82,34 +104,47 @@ function ArtCanvas({ art, title, label, children }: { art: Art; title: string; l
           </span>
           <span className={s.windowTitle}>{title}</span>
         </div>
-        <div role="img" aria-label={label}>
-          {children}
-        </div>
+        {interactive ? (
+          <div role="region" aria-label={label} className={s.windowLive}>
+            {children}
+          </div>
+        ) : (
+          <div role="img" aria-label={label}>
+            {children}
+          </div>
+        )}
       </InView>
     </div>
   );
 }
 
-/** The product, shown large on a painted ground. `label` names the example. */
+/**
+ * The product, shown large on a painted ground. `label` names the example.
+ * `interactive` renders real, usable components instead of a static picture.
+ */
 export function Stage({
   children,
   label,
+  caption,
   title = "Fydell",
   art = "lake",
+  interactive = false,
 }: {
   children: ReactNode;
   label: string;
+  caption?: ReactNode;
   title?: string;
   art?: Art;
   hero?: boolean;
+  interactive?: boolean;
 }) {
   return (
     <div className="l-container">
       <figure className={s.stage}>
-        <ArtCanvas art={art} title={title} label={label}>
+        <ArtCanvas art={art} title={title} label={label} interactive={interactive}>
           {children}
         </ArtCanvas>
-        <figcaption className={s.caption}>{label}</figcaption>
+        <figcaption className={s.caption}>{caption ?? label}</figcaption>
       </figure>
     </div>
   );
@@ -121,16 +156,18 @@ export function Visual({
   label,
   title = "Fydell",
   art = "coast",
+  interactive = false,
 }: {
   children: ReactNode;
   label: string;
   title?: string;
   art?: Art;
   fade?: boolean;
+  interactive?: boolean;
 }) {
   return (
     <figure className={s.headVisual}>
-      <ArtCanvas art={art} title={title} label={label}>
+      <ArtCanvas art={art} title={title} label={label} interactive={interactive}>
         {children}
       </ArtCanvas>
       <figcaption className={s.caption}>{label}</figcaption>

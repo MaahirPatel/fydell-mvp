@@ -1,4 +1,5 @@
-import type { Citation, Finding, ProbeResult, ReportBrief } from "./types";
+import { ASSESSMENT_STATES, isAssessmentState } from "./criteria";
+import type { Citation, CriterionAssessment, Finding, ProbeResult, ReportBrief } from "./types";
 
 export interface EvidenceIndex {
   /** path -> line count */
@@ -9,7 +10,7 @@ export interface EvidenceIndex {
 }
 
 const DIMENSIONS = new Set(["correctness", "engineering_judgment", "requirement_response", "work_communication"]);
-const LEVELS = new Set(["strong", "adequate", "weak", "insufficient_evidence"]);
+const LEVELS = new Set(["strong", "adequate", "weak", "insufficient_evidence", ...ASSESSMENT_STATES]);
 const CATEGORIES = new Set(["coding_result", "interpretation", "communication"]);
 const KINDS = new Set(["strength", "gap", "observation"]);
 const BASES = new Set(["observed", "hypothesis"]);
@@ -46,7 +47,21 @@ export function parseBrief(value: unknown): { ok: true; brief: ReportBrief } | {
     }
     dimensions.push({ key: row.key as ReportBrief["dimensions"][number]["key"], level: row.level as ReportBrief["dimensions"][number]["level"], rationale: (row.rationale as string).trim() });
   }
-  return { ok: true, brief: { summary: (v.summary as string).trim(), strengths, gaps, limitations, followUps, dimensions } };
+  const brief: ReportBrief = { summary: (v.summary as string).trim(), strengths, gaps, limitations, followUps, dimensions };
+  if (v.criteria !== undefined) {
+    if (!Array.isArray(v.criteria) || v.criteria.length > 30) return { ok: false, error: "Send up to 30 criterion assessments." };
+    const criteria: CriterionAssessment[] = [];
+    for (const raw of v.criteria) {
+      const c = raw as Record<string, unknown>;
+      if (!isString(c?.id, 1, 40) || !isAssessmentState(c.state) || typeof c.rationale !== "string" || c.rationale.length > 600) {
+        return { ok: false, error: "Each criterion needs a state and a rationale of up to 600 characters." };
+      }
+      // Label, dimension and observed counts are filled in from the scenario and the run on save.
+      criteria.push({ id: c.id.trim(), dimension: "correctness", label: "", state: c.state, rationale: c.rationale.trim(), observed: null, notCovered: "" });
+    }
+    brief.criteria = criteria;
+  }
+  return { ok: true, brief };
 }
 
 export function parseFindings(value: unknown): { ok: true; findings: Finding[] } | { ok: false; error: string } {

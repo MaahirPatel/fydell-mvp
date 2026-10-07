@@ -1,10 +1,10 @@
 /**
- * AI-03 — Explicit rubric anchors.
+ * AI-03 - Explicit rubric anchors.
  *
  * Each dimension defines: what evidence is required, what each level looks
  * like, how severe a miss is, and the dimension's known limitations.
  * Two guarantees:
- *  1. Legitimate alternative solutions are acceptable — the rubric scores
+ *  1. Legitimate alternative solutions are acceptable - the rubric scores
  *     *properties* (correctness, robustness), never textual similarity to a
  *     reference implementation.
  *  2. "We could not tell" is a first-class outcome (insufficient_evidence),
@@ -25,7 +25,7 @@ export interface RubricDimension {
   /** What a reviewer must have in hand before scoring above insufficient_evidence. */
   evidenceRequired: string[];
   levels: Record<"exceeds" | "meets" | "below", RubricLevel>;
-  /** When the evidence bar is not met — and what the outcome means. */
+  /** When the evidence bar is not met - and what the outcome means. */
   insufficientEvidence: { when: string; meaning: string };
   severityGuidance: string;
   limitations: string[];
@@ -57,12 +57,12 @@ export const RUBRIC: RubricDimension[] = [
     },
     insufficientEvidence: {
       when: "The authoritative suite did not run, was superseded, or its results are indeterminate (platform outage, setup incompatibility).",
-      meaning: "Correctness is unknown — the report must say so and must not imply a verdict.",
+      meaning: "Correctness is unknown. The report must say so and must not imply a verdict.",
     },
     severityGuidance:
       "A reproduced defect in core behavior is high severity. A hypothesis (unreproduced) is at most medium and must be labeled as such.",
     limitations: [
-      "The authoritative suite cannot prove absence of bugs — only the tested properties.",
+      "The authoritative suite cannot prove absence of bugs. Only the tested properties.",
       "Semantic inversions (e.g. swapped return order) are invisible to pattern detectors; only tests catch them.",
     ],
     alternativeSolutionsAllowed: true,
@@ -89,12 +89,12 @@ export const RUBRIC: RubricDimension[] = [
     },
     insufficientEvidence: {
       when: "Static analysis was skipped (parse failure, file over size limit) and edge-case tests are absent.",
-      meaning: "Robustness is unknown — do not assume the code is safe because nothing was found.",
+      meaning: "Robustness is unknown. Do not assume the code is safe because nothing was found.",
     },
     severityGuidance:
       "Security findings are high severity by default. 'Risk' findings are medium at most and must state what is unknown.",
     limitations: [
-      "Pattern detectors see shape, not intent — a flagged pattern with a documented reason is not a defect.",
+      "Pattern detectors see shape, not intent. A flagged pattern with a documented reason is not a defect.",
       "Runtime behavior (races, resource exhaustion) is outside static analysis; the sandbox run covers it.",
     ],
     alternativeSolutionsAllowed: true,
@@ -118,7 +118,7 @@ export const RUBRIC: RubricDimension[] = [
     },
     insufficientEvidence: {
       when: "Submission is a stub, or files were truncated before analysis.",
-      meaning: "Quality cannot be judged from a stub — say so.",
+      meaning: "Quality cannot be judged from a stub. Say so.",
     },
     severityGuidance:
       "Quality is low-stakes: it informs interview follow-ups, never a hire/no-hire call on its own. Do not reward verbosity or superficial style.",
@@ -147,13 +147,13 @@ export const RUBRIC: RubricDimension[] = [
     },
     insufficientEvidence: {
       when: "No transcript or handoff was submitted.",
-      meaning: "Communication is unscored — absence of messages is not a negative signal.",
+      meaning: "Communication is unscored. Absence of messages is not a negative signal.",
     },
     severityGuidance:
       "Communication is assessed narrowly (AI-08): clarification, impact, uncertainty, handoff accuracy. Never culture fit, personality, or sentiment.",
     limitations: [
       "Terse messages are not poor communication. Verbose messages are not good communication.",
-      "Only the submitted transcript is assessed — never inferred traits.",
+      "Only the submitted transcript is assessed. Never inferred traits.",
     ],
     alternativeSolutionsAllowed: true,
   },
@@ -175,7 +175,7 @@ export interface ScoredEvidence {
 
 /**
  * Score a dimension. With no evidence refs, the outcome is ALWAYS
- * insufficient_evidence — never a default pass, never a default fail.
+ * insufficient_evidence - never a default pass, never a default fail.
  */
 export function scoreDimension(
   id: DimensionId,
@@ -195,7 +195,7 @@ export function scoreDimension(
   };
 }
 
-/** All permitted outcome labels — the model may not invent others. */
+/** All permitted outcome labels - the model may not invent others. */
 export const PERMITTED_OUTCOMES: DimensionOutcome[] = [
   "exceeds",
   "meets",

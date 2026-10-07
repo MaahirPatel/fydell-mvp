@@ -1,7 +1,7 @@
 /**
  * Data-presence completeness for the engineering profile.
  *
- * This is a checklist of what the engineer has actually added — never a
+ * This is a checklist of what the engineer has actually added - never a
  * quality score, never a ranking. Missing items link to the section that
  * supplies them, so the strip is a wayfinder rather than a judgement.
  */

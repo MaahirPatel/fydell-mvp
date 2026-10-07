@@ -1,4 +1,4 @@
-export const ANALYSIS_VERSION = "github-extract-v1";
+export const ANALYSIS_VERSION = "github-extract-v2";
 
 /**
  * Supported intake (GH-01). Passport import starts with explicitly selected
@@ -43,6 +43,32 @@ export type TreeEntry = {
   type: "blob" | "tree" | "commit";
   mode: string;
   size?: number;
+  /** Git blob id, so each manifest entry identifies exact file content. */
+  sha?: string;
+};
+
+/** Version of the import pipeline (selection rules, limits, manifest shape). */
+export const IMPORTER_VERSION = "github-public-import-v2";
+
+/**
+ * One file in an immutable snapshot manifest. `included` files were read
+ * and analyzed; everything else carries the reason it was left out.
+ */
+export type ManifestEntry = {
+  path: string;
+  size: number | null;
+  blobSha: string | null;
+  included: boolean;
+  reason?: SkipReason;
+};
+
+/** Manifest storage cap. Skip-reason counts stay exact beyond it. */
+export const MANIFEST_MAX_ENTRIES = 600;
+
+export type ExtractionProgress = {
+  stage: "resolving" | "listing" | "fetching" | "analyzing";
+  filesFetched?: number;
+  filesSelected?: number;
 };
 
 export type SkipReason =
@@ -61,7 +87,7 @@ export type SkipReason =
 
 export type SkippedFile = { path: string; reason: SkipReason };
 
-export type EvidenceCategory = "backend" | "frontend" | "testing" | "ml_engineering" | "applied_ai" | "delivery";
+export type EvidenceCategory = "backend" | "software" | "frontend" | "testing" | "ml_engineering" | "applied_ai" | "delivery";
 
 export type EvidenceBasis = "repository_observation" | "dependency_declaration";
 
@@ -107,6 +133,9 @@ export type ExtractionResult = {
   status: ExtractionStatus;
   repository: RepositoryMeta | null;
   commitSha: string | null;
+  /** Branch or ref the commit was resolved from. */
+  revisionRef?: string | null;
+  manifest?: ManifestEntry[];
   coverage: {
     totalFiles: number;
     analyzedFiles: number;

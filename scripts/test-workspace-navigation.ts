@@ -17,10 +17,11 @@ function ok(name: string, condition: boolean) {
 const labels = WORKSPACE_NAV_ITEMS.map((item) => item.label);
 const expected = [
   "Home",
-  "Engineering tasks",
   "Roles",
+  "Reviews",
+  "Engineering tasks",
+  "Task library",
   "Candidates",
-  "Shared passports",
   "Work",
   "Evidence",
   "Work Receipts",
@@ -37,9 +38,13 @@ ok(
 );
 ok("settings is the final persistent item", labels.at(-1) === WORKSPACE_SETTINGS_ITEM.label);
 ok(
-  "only Hiring and Proof have section labels",
+  "section labels are Hiring, Work samples and Proof",
   WORKSPACE_NAV_GROUPS.filter((group) => group.label).map((group) => group.label).join(",") ===
-    "Hiring,Proof",
+    "Hiring,Work samples,Proof",
+);
+ok(
+  "Roles opens the employer's role pages, not the task library",
+  WORKSPACE_NAV_ITEMS.find((item) => item.label === "Roles")?.href === "/app/employer/openings",
 );
 
 if (failures) process.exit(1);

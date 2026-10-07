@@ -1,6 +1,6 @@
 [package]
 name = "fydell-desktop"
-version = "0.1.0"
+version = "0.1.6"
 description = "Fydell simulation client — candidates complete hiring simulations locally."
 authors = ["Fydell"]
 edition = "2021"
@@ -25,6 +25,8 @@ keyring = "3"
 tauri-plugin-opener = "2"
 tauri-plugin-deep-link = "2"
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
 
 # rlimit (POSIX setrlimit) is Unix-only; execution.rs already gates its use
 # behind #[cfg(unix)].

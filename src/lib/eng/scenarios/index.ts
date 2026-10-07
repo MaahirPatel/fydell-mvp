@@ -1,12 +1,14 @@
 import { createHash } from "crypto";
 import { BACKEND_WEBHOOK_RETRY_V1 } from "./backend-webhook-retry/definition";
+import { BACKEND_WEBHOOK_RETRY_V2 } from "./backend-webhook-retry/definition-v2";
 import type { ScenarioDefinition } from "./types";
 
-const REGISTRY: Record<string, ScenarioDefinition> = {
-  [`${BACKEND_WEBHOOK_RETRY_V1.key}@${BACKEND_WEBHOOK_RETRY_V1.version}`]: BACKEND_WEBHOOK_RETRY_V1,
-};
+const REGISTRY: Record<string, ScenarioDefinition> = Object.fromEntries(
+  [BACKEND_WEBHOOK_RETRY_V1, BACKEND_WEBHOOK_RETRY_V2].map((s) => [`${s.key}@${s.version}`, s])
+);
 
-export const CURRENT_SCENARIO = BACKEND_WEBHOOK_RETRY_V1;
+/** New roles use this version. Earlier versions stay registered so existing attempts keep their rubric. */
+export const CURRENT_SCENARIO = BACKEND_WEBHOOK_RETRY_V2;
 
 export function getScenario(key: string, version: number): ScenarioDefinition | null {
   return REGISTRY[`${key}@${version}`] ?? null;
@@ -26,10 +28,20 @@ export function expectedSetupCodes(scenario: ScenarioDefinition): Map<string, st
   return codes;
 }
 
-/** Accepts the bare code or the whole line preflight.py printed around it. */
+/**
+ * Accepts the bare code or the whole line preflight.py printed around it.
+ * Only one starter is served per scenario key, so an attempt on an earlier
+ * version also accepts the code printed by a later version's starter.
+ */
 export function verifySetupCode(scenario: ScenarioDefinition, pasted: string): string | null {
   const match = pasted.toUpperCase().match(new RegExp(`${scenario.setupCodePrefix}-[0-9A-F]{8}`));
-  return match ? (expectedSetupCodes(scenario).get(match[0]) ?? null) : null;
+  if (!match) return null;
+  const versions = Object.values(REGISTRY).filter((s) => s.key === scenario.key && s.version >= scenario.version);
+  for (const s of versions) {
+    const runtime = expectedSetupCodes(s).get(match[0]);
+    if (runtime) return runtime;
+  }
+  return null;
 }
 
 export type { ScenarioDefinition } from "./types";

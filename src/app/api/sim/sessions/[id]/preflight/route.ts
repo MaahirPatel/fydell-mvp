@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/simulations/auth";
 import { getSessionForCandidate } from "@/lib/simulations/db";
 import { evaluatePreflight, recordPreflight } from "@/lib/pilot/consent";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -48,7 +49,7 @@ export async function POST(
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Preflight failed" },
+      { error: publicErrorMessage(err, "Preflight failed") },
       { status: 400 }
     );
   }
@@ -75,7 +76,7 @@ export async function GET(
     return NextResponse.json({ preflight: data });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed" },
+      { error: publicErrorMessage(err, "Failed") },
       { status: 400 }
     );
   }

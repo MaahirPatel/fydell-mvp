@@ -33,14 +33,14 @@
   --hue-signal: 258;
   --hue-warm: 52;
 
-  /* ---- Surfaces: warm paper, the way a notebook page reads under daylight ---- */
-  --surface-canvas: #f7f7f4;
-  --surface-deep: #efeee9;
-  --surface-band: #f2f1ec;
-  --surface-raised: #fcfcfa;
-  --surface-panel: #f4f3ef;
-  --surface-hover: #edece6;
-  --surface-selected: #e9e7df;
+  /* ---- Surfaces: neutral, slightly cool. Canvas < content < selected. ---- */
+  --surface-canvas: #f7f8fa;
+  --surface-deep: #eceef2;
+  --surface-band: #f2f4f7;
+  --surface-raised: #ffffff;
+  --surface-panel: #f5f6f8;
+  --surface-hover: #f0f2f5;
+  --surface-selected: #eceefb;
   --surface-paper: #ffffff;
   --surface-0: var(--surface-raised);
   --surface-code: oklch(19% 0.02 var(--hue-signal));
@@ -53,31 +53,37 @@
   --surface-counter: #fdedf0;
 
   /* ---- Borders ---- */
-  --border-subtle: #ebe9e3;
-  --border-default: #e1ded6;
-  --border-strong: #cfcbc0;
+  --border-subtle: #eceef1;
+  --border-default: #e1e4e9;
+  --border-strong: #cdd2da;
 
-  /* ---- Text: warm ink. Secondary and tertiary clear 4.5:1 on the canvas. ---- */
-  --text-primary: #1a1915;
-  --text-body: #34322b;
-  --text-secondary: #5e5b52;
-  --text-tertiary: #6f6c62;
-  --text-quaternary: #a19d92;
-  --text-disabled: #aeaa9f;
+  /* ---- Text. Secondary and tertiary clear 4.5:1 on the canvas. ---- */
+  --text-primary: #14161b;
+  --text-body: #2b2e35;
+  --text-secondary: #4f5562;
+  --text-tertiary: #646b78;
+  --text-quaternary: #959cab;
+  --text-disabled: #a8aebb;
 
-  /* ---- Controls: ink-black, as in a printed page. Colour is kept for meaning. ---- */
-  --control-solid: #1a1915;
-  --control-solid-hover: #34322b;
-  --control-solid-active: #000000;
-  --control-solid-ink: #fcfcfa;
+  /* ---- Accent: indigo from the logo. Primary actions, selection, links, focus. ---- */
+  --accent: #5b5bd6;
+  --accent-hover: #4d4dc4;
+  --accent-active: #4242ad;
+  --accent-ink: #4040b0;
+  --accent-soft: #eeeefc;
+  --accent-line: #cfd0f5;
 
-  /* ---- Fydell palette: ink accent on warm paper. Yellow is a small highlight
-     (live state, the one thing that changed), red is change and risk. ---- */
-  --fy-accent: #1a1915;
-  --fy-accent-ink: #1a1915;
-  --fy-accent-soft: #ebe9e2;
-  --fy-accent-field: #f5f4f0;
-  --fy-accent-line: #d6d2c7;
+  /* ---- Controls ---- */
+  --control-solid: #111214;
+  --control-solid-hover: #2a2c31;
+  --control-solid-active: #3a3d43;
+  --control-solid-ink: #ffffff;
+
+  --fy-accent: var(--accent);
+  --fy-accent-ink: var(--accent-ink);
+  --fy-accent-soft: var(--accent-soft);
+  --fy-accent-field: #f6f6fe;
+  --fy-accent-line: var(--accent-line);
   --fy-yellow: #e2a500;
   --fy-yellow-field: #fbf3dc;
   --fy-red: #e5484d;
@@ -98,7 +104,7 @@
   --field-coral: oklch(95% 0.035 18);
   --field-lime: oklch(96% 0.06 125);
   --ink-teal: #0b5e58;
-  --ink-blue: #1a1915;
+  --ink-blue: var(--accent-ink);
   --ink-violet: #5b21b6;
   --ink-coral: #b4213f;
   --field-warm: oklch(96% 0.04 var(--hue-warm));
@@ -106,19 +112,19 @@
   --brand-warm: oklch(70% 0.17 var(--hue-warm));
 
   /* ---- Evidence and state ---- */
-  --fydell-brand-blue: #1a1915;
-  --fydell-brand-blue-hover: #34322b;
-  --fydell-brand-blue-active: #000000;
+  --fydell-brand-blue: var(--accent);
+  --fydell-brand-blue-hover: var(--accent-hover);
+  --fydell-brand-blue-active: var(--accent-active);
   --fydell-brand-red: #f26b82;
   --fydell-action: #e8eaed;
-  --fydell-evidence: #4a5bd4;
-  --fydell-evidence-selected: #3547c4;
-  --fydell-risk: #c2405a;
+  --fydell-evidence: var(--accent);
+  --fydell-evidence-selected: var(--accent-hover);
+  --fydell-risk: #c93b55;
   --fydell-risk-hover: #d85a70;
-  --fydell-changed: #a9752a;
-  --fydell-good: #3f7d5c;
-  --action-ink: #1a1915;
-  --action-ink-ring: rgba(26, 25, 21, 0.3);
+  --fydell-changed: #9a6a1c;
+  --fydell-good: #2f7d54;
+  --action-ink: var(--accent);
+  --action-ink-ring: rgba(91, 91, 214, 0.35);
   --fydell-verified: #7a4fa0;
   --evidence-generated: #6d28d9;
   --evidence-observed: #0b6e67;
@@ -144,6 +150,18 @@
   --status-attention-ink: #80520c;
   --status-attention-line: rgba(180, 120, 20, 0.22);
 
+  /* Status badge tints: tinted fill, strong ink, no border. */
+  --badge-success-bg: #e7f5ec;
+  --badge-success-ink: #17663a;
+  --badge-pending-bg: #eef0ff;
+  --badge-pending-ink: #3f3fb0;
+  --badge-attention-bg: #fdf3e1;
+  --badge-attention-ink: #8a5a0b;
+  --badge-failed-bg: #fdeced;
+  --badge-failed-ink: #a5243b;
+  --badge-neutral-bg: #f0f2f5;
+  --badge-neutral-ink: #4f5562;
+
   /* ---- Stage ---- */
   --stage-bg: oklch(97.2% 0.004 var(--hue-signal));
   --stage-bg-2: oklch(96.2% 0.006 var(--hue-signal));
@@ -155,10 +173,10 @@
   --type-display: clamp(3rem, 2rem + 5vw, 4.5rem);
   --type-page: clamp(2.75rem, 1.9rem + 4.2vw, 4.5rem);
   --type-section: clamp(1.75rem, 1.35rem + 1.9vw, 2.5rem);
-  --type-app-page: 1.625rem;
-  --type-app-section: 1.0625rem;
-  --type-app-body: 0.875rem;
-  --type-app-meta: 0.78125rem;
+  --type-app-page: 1.875rem;
+  --type-app-section: 1.1875rem;
+  --type-app-body: 0.9375rem;
+  --type-app-meta: 0.8125rem;
   --lh-app-page: 1.15;
   --lh-app-section: 1.3;
   --lh-app-body: 1.5;
@@ -242,7 +260,7 @@
   --warning: var(--fydell-changed);
 
   /* ---- Other ---- */
-  --nav-scrim: rgba(247, 247, 244, 0.86);
+  --nav-scrim: rgba(247, 248, 250, 0.86);
   --passport-cover: oklch(30% 0.06 var(--hue-evidence));
   --hero-panel: oklch(30% 0.14 var(--hue-brand));
   --hero-panel-ink: #d9ccff;
@@ -255,8 +273,8 @@
    pinned to the live palette above; the names exist so passport and
    desktop surfaces written against the contract keep working. */
 :root {
-  --font-sans: "Geist Sans", "Geist", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
   --ev-observed: #0b6e67;
   --ev-observed-ink: #0b5e58;
   --ev-observed-field: #e3f2ef;
@@ -272,8 +290,8 @@
   --ev-error: #c2405a;
   --ev-error-ink: #a83248;
   --ev-error-field: #fbe9ed;
-  --action: #4a5bd4;
-  --action-hover: #3d4dc2;
+  --action: var(--accent);
+  --action-hover: var(--accent-hover);
   --text-on-solid: #ffffff;
   --focus-ring: 2px solid var(--action-ink);
   --focus-ring-offset: 2px;

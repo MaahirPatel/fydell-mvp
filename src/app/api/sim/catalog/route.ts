@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getPublishedTemplates } from "@/lib/simulations/db";
 import { toCatalogCard } from "@/lib/simulations/candidate-view";
 import type { SimulationContent } from "@/lib/simulations/types";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 export const revalidate = 300;
@@ -18,7 +19,7 @@ export async function GET() {
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Catalog unavailable" },
+      { error: publicErrorMessage(err, "Catalog unavailable") },
       { status: 500 }
     );
   }

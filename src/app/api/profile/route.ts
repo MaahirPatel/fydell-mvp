@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
-import { getProfileHub, updateIdentity } from "@/lib/profile/store";
+import { getProfileHub, ProfileInputError, updateIdentity } from "@/lib/profile/store";
+import { SOCIAL_KINDS, type ProfileLink, type SocialKind } from "@/lib/profile/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,24 +18,50 @@ export async function GET() {
   }
 }
 
-/** Update identity fields: displayName, headline, role. */
+function str(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+function links(value: unknown): ProfileLink[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  return value
+    .filter((l): l is Record<string, unknown> => typeof l === "object" && l !== null)
+    .map((l) => ({ label: str(l.label) ?? "", url: str(l.url) ?? "" }));
+}
+
+function social(value: unknown): Partial<Record<SocialKind, string>> | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+  const v = value as Record<string, unknown>;
+  const out: Partial<Record<SocialKind, string>> = {};
+  for (const kind of SOCIAL_KINDS) {
+    const s = str(v[kind]);
+    if (s !== undefined) out[kind] = s;
+  }
+  return out;
+}
+
+/** Update identity and about fields. Omitted fields are left unchanged. */
 export async function PATCH(req: Request) {
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Sign in to edit your profile." }, { status: 401 });
-  const body = (await req.json().catch(() => null)) as {
-    displayName?: unknown;
-    headline?: unknown;
-    role?: unknown;
-  } | null;
-  if (!body) return NextResponse.json({ error: "Send JSON with profile fields." }, { status: 400 });
+  const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
+  if (!body || typeof body !== "object") return NextResponse.json({ error: "Send JSON with profile fields." }, { status: 400 });
   try {
     const profile = await updateIdentity(user.id, {
-      displayName: typeof body.displayName === "string" ? body.displayName : undefined,
-      headline: typeof body.headline === "string" ? body.headline : undefined,
-      role: typeof body.role === "string" ? body.role : undefined,
+      displayName: str(body.displayName),
+      handle: str(body.handle),
+      headline: str(body.headline),
+      role: str(body.role),
+      bio: str(body.bio),
+      location: str(body.location),
+      website: str(body.website),
+      links: links(body.links),
+      openTo: str(body.openTo),
+      social: social(body.social),
     });
     return NextResponse.json({ profile });
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Could not save the profile." }, { status: 400 });
+    if (err instanceof ProfileInputError) return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json({ error: "Could not save the profile. Try again." }, { status: 500 });
   }
 }

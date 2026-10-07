@@ -1,5 +1,5 @@
 /**
- * Accounts chunk — organization workspaces and membership (AUTH-03/04/06).
+ * Accounts chunk - organization workspaces and membership (AUTH-03/04/06).
  *
  * Server-side only. The browser never supplies an organization id that is
  * trusted: `createOrganization` generates the id itself, and every other
@@ -164,7 +164,7 @@ export function orgsForUser(store: MembershipStore, userId: string): Organizatio
  * AUTH-03: create an employer workspace. The caller supplies only a name
  * (and optional slug); the organization id is generated server-side. Any
  * `id` the client may have sent is not part of the input type and is
- * ignored — there is no code path that lets the browser pick or claim an
+ * ignored - there is no code path that lets the browser pick or claim an
  * organization id.
  */
 export function createOrganization(
@@ -228,7 +228,7 @@ function assertValidRole(role: string): role is OrgRole {
 
 /**
  * Add a member (owner/admin only). Used after a secure invitation is
- * accepted — see src/lib/orgs/invitations.ts. Direct adds are still gated
+ * accepted - see src/lib/orgs/invitations.ts. Direct adds are still gated
  * on the caller's active owner/admin membership.
  */
 export function addMember(
@@ -293,7 +293,7 @@ export function setMemberRole(
  * AUTH-06: removal takes effect immediately. The membership row is flipped
  * to "removed" (never deleted, for the audit trail), `revokedAt` is stamped,
  * and every session the member holds for this org is revoked at the same
- * instant — including sessions opened before the removal.
+ * instant - including sessions opened before the removal.
  */
 export function removeMember(
   store: MembershipStore,
@@ -356,7 +356,7 @@ export function issueSession(
   return { ok: true, value: s };
 }
 
-/** False after removal — this is the check API/file/report routes consult. */
+/** False after removal - this is the check API/file/report routes consult. */
 export function isSessionValid(store: MembershipStore, sessionId: string): boolean {
   const s = store.sessions.get(sessionId);
   if (!s || s.revokedAt) return false;

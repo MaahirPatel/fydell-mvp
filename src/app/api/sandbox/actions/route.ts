@@ -5,6 +5,7 @@ import { loadOwnedSandbox } from "@/lib/sim-engine/proof/sandbox/lifecycle";
 import { applySandboxAction, buildSandboxView, type SandboxActionInput } from "@/lib/sim-engine/proof/sandbox/service";
 import type { ArtifactContent } from "@/lib/sim-engine/proof/types";
 import type { AppliedAiConfig, AppliedAiEvalCase } from "@/lib/sim-engine/proof/sandbox/applied-ai-workspace";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const maxDuration = 60;
 
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
   try {
     run = await loadOwnedSandbox(cap.runId, cap.secret);
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "session invalid" }, { status: 403 });
+    return NextResponse.json({ error: publicErrorMessage(error, "session invalid") }, { status: 403 });
   }
   let parsed: unknown;
   try { parsed = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
     const next = await applySandboxAction(run, action);
     return NextResponse.json({ ok: true, session: await buildSandboxView(next) });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "action failed";
+    const message = publicErrorMessage(error, "action failed");
     const status = /conflict|Illegal|cannot|requires|not ready|not pending/i.test(message) ? 409 : 400;
     return NextResponse.json({ error: message }, { status });
   }

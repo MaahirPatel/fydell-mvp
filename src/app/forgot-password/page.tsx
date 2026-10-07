@@ -101,7 +101,7 @@ function ForgotPasswordContent() {
       footer={backToSignIn}
     >
       <form onSubmit={submit} className="grid gap-4">
-        <Field label="Work email" htmlFor="reset-email">
+        <Field label="Email" htmlFor="reset-email">
           <Input
             id="reset-email"
             name="email"

@@ -32,10 +32,10 @@ const SHAPE: Record<ButtonShape, string> = {
 const VARIANT: Record<ButtonVariant, string> = {
   // The single loudest control on any given screen.
   primary:
-    "bg-[var(--control-solid)] text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]",
+    "bg-[var(--control-solid)] text-[var(--control-solid-ink)] shadow-[0_1px_2px_rgba(16,18,24,0.2),inset_0_1px_0_rgba(255,255,255,0.1)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]",
   // Bordered. Sits beside primary without competing.
   secondary:
-    "border border-[var(--border-strong)] bg-transparent text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-selected)]",
+    "border border-[var(--border-default)] bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-[0_1px_2px_rgba(16,24,40,0.05)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-selected)]",
   // Filled, borderless companion to primary. Reads as a second button rather
   // than as an outline of one, which is what keeps a CTA pair balanced.
   soft: "bg-[var(--surface-selected)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-deep)]",
@@ -44,16 +44,16 @@ const VARIANT: Record<ButtonVariant, string> = {
     "bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] active:bg-[var(--surface-selected)]",
   destructive:
     "border border-[rgba(194,64,90,0.32)] bg-[rgba(194,64,90,0.08)] text-[var(--fydell-risk)] hover:bg-[rgba(194,64,90,0.14)] hover:border-[rgba(194,64,90,0.46)]",
-  // Brand fill. Reserved for the primary action inside the candidate flow.
+  // Primary action inside the candidate flow.
   accent:
-    "bg-[var(--fydell-brand-blue)] text-white hover:bg-[var(--fydell-brand-blue-hover)] active:bg-[var(--fydell-brand-blue-active)]",
+    "bg-[var(--control-solid)] text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]",
 };
 
 const SIZE: Record<ButtonSize, string> = {
   sm: "h-8 text-app-meta",
-  md: "h-9 text-app-body",
-  cta: "h-10 text-app-body",
-  lg: "h-11 text-app-body",
+  md: "h-9 text-app-control",
+  cta: "h-10 text-app-control",
+  lg: "h-11 text-app-control",
 };
 
 /** Padding is keyed by shape as well as size, and is the only source of a

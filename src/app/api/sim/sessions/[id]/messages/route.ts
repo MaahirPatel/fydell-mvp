@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { csrfGuard } from "@/lib/security/csrf";
 import {
   extendSessionEndsAt,
   getSessionForCandidate,
@@ -28,6 +30,7 @@ import { classifyMessage } from "@/lib/simulations/conversation/intent";
 import { decideResponse } from "@/lib/simulations/conversation/coordinator";
 import { buildStateFromMessages } from "@/lib/simulations/conversation/state-builder";
 import { recordCandidateMessage } from "@/lib/simulations/conversation/memory";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -70,7 +73,7 @@ export async function GET(
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not load messages" },
+      { error: publicErrorMessage(err, "Could not load messages") },
       { status: 400 }
     );
   }
@@ -85,9 +88,14 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const blocked = csrfGuard(req);
+  if (blocked) return blocked;
   const { id } = await params;
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Generation is costly; a realistic session sends far fewer than this.
+  const rl = rateLimit(`sim-chat:${user.id}`, 150, 60 * 60 * 1000);
+  if (!rl.ok) return NextResponse.json({ error: "Too many messages this hour. Your draft is kept; try again shortly." }, { status: 429 });
 
   let body: { stakeholderId?: string; text?: string; clientMsgId?: string };
   try {
@@ -160,7 +168,7 @@ export async function POST(
     // This prevents the old behavior of replying to every message with
     // a generic fallback question.
 
-    // Extract scenario's versioned assistance policy early — both the
+    // Extract scenario's versioned assistance policy early - both the
     // coordinator and generator need it.
     const scenarioPolicy = (content as unknown as {
       assistancePolicy?: {
@@ -275,11 +283,12 @@ export async function POST(
     let assistanceCategory: string = "clarification";
     let generationStatus: string;
     let memoryUpdates: Record<string, unknown> | null = null;
+    let ruleId: string | null = null;
 
     if (generated.status === "generated") {
       const g = generated.generation;
       // If the model says no response needed, respect it (even though
-      // the coordinator said to speak — the model has more context)
+      // the coordinator said to speak - the model has more context)
       if (g.response.no_response_needed) {
         await recordEvent(id, {
           eventType: "message_no_reply",
@@ -312,8 +321,8 @@ export async function POST(
         diagnosisShared: g.memory_updates.diagnosis_shared,
         questionsResolved: g.memory_updates.questions_resolved,
       };
-    } else if (generated.status === "unavailable") {
-      // Honest unavailable state — do not masquerade as dynamic
+    } else if (generated.status === "unavailable" && generated.configured) {
+      // Honest unavailable state - do not masquerade as dynamic
       await recordEvent(id, {
         eventType: "teammate_unavailable",
         actor: "system",
@@ -328,7 +337,8 @@ export async function POST(
         unavailableReason: "The simulated teammate service is temporarily unavailable. Your message is saved. Try again in a moment.",
       });
     } else {
-      // Invalid output — fall back to authored rules (honest limited fallback)
+      // Invalid output, or no model configured: answer from the scenario's
+      // authored rules, recorded as fallback_authored.
       generationStatus = "fallback_authored";
       const fallback = await draftReply(stakeholder, text, {
         curveballPresented: chatCtx.curveballPresented,
@@ -336,6 +346,7 @@ export async function POST(
         chat: chatCtx,
       });
       replyText = fallback.reply;
+      ruleId = fallback.ruleId;
     }
 
     // Stale-response check: if the candidate sent another message while we
@@ -415,6 +426,8 @@ export async function POST(
         generationStatus,
         factIds,
         assistanceCategory,
+        // Authored rule ids feed onceOnly semantics via chat-context usedRuleIds.
+        ...(ruleId ? { ruleId } : {}),
         // Model's memory updates for exact state rebuild
         ...(memoryUpdates ? { memoryUpdates } : {}),
         // Assistance tracking: record help level for fair reviewer interpretation
@@ -529,7 +542,7 @@ export async function POST(
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not send message" },
+      { error: publicErrorMessage(err, "Could not send message") },
       { status: 400 }
     );
   }

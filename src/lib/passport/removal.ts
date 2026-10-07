@@ -10,7 +10,7 @@ export function projectRemovalExplanation(repoFullName: string): string {
   return [
     `Removed ${repoFullName} and its extracted findings from your passport.`,
     "This deletes the imported snapshot from Fydell's servers. It does not delete the public repository on GitHub.",
-    "Share links you already created stop showing this project. Employers who previously opened or downloaded your passport keep the copies they already have — revocation and removal cannot retract downloaded copies.",
+    "Share links you already created stop showing this project. Employers who previously opened or downloaded your passport keep the copies they already have. Revocation and removal cannot retract downloaded copies.",
     "Decisions an employer already recorded stay in their own records with their original timestamps.",
   ].join(" ");
 }
@@ -18,7 +18,7 @@ export function projectRemovalExplanation(repoFullName: string): string {
 export function githubDisconnectExplanation(): string {
   return [
     "Disconnected GitHub from your passport.",
-    "Fydell stores no GitHub credentials for passport imports — imports read public repositories through the public API — so there is no token to revoke.",
+    "Fydell stores no GitHub credentials for passport imports. Imports read public repositories through the public API. So there is no token to revoke.",
     "Disconnecting removes the linked GitHub username from your passport, so future imports will not be associated with it automatically.",
     "Projects you already imported stay in your passport until you remove them individually.",
   ].join(" ");

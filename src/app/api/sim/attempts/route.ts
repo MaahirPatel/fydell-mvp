@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { createSelfServeAttempt } from "@/lib/simulations/db";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, sessionId, resumed });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not start the simulation" },
+      { error: publicErrorMessage(err, "Could not start the simulation") },
       { status: 400 }
     );
   }

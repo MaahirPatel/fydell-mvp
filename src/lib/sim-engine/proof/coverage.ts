@@ -326,7 +326,7 @@ export const APPLIED_AI_PROOF_REQUIREMENTS: readonly ProofRequirement[] = Object
     strongAnchor:
       "Chooses the simplest architecture that satisfies the requirements, keeps probabilistic boundaries explicit, and explains state, validation, and recovery.",
     moderateAnchor:
-      "Architecture is plausible but leaves one important boundary—state, validation, permissions, or recovery—underspecified.",
+      "Architecture is plausible but leaves one important boundary–state, validation, permissions, or recovery–underspecified.",
     weakAnchor:
       "Adds opaque chains/agents without necessity, treats a framework as the architecture, or ignores persistence and failure boundaries.",
     insufficientEvidenceAnchor: "Only isolated prompt text is observed.",

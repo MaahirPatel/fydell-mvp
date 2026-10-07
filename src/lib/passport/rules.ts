@@ -75,6 +75,21 @@ const STATEMENTS: Record<string, string> = {
   react_component: "Builds React interface components",
   ml_training_step: "Writes model training code",
   llm_api_integration: "Integrates hosted language models into application code",
+  auth_boundary: "Checks caller identity at request boundaries",
+  explicit_error_handling: "Handles named failures explicitly instead of discarding them",
+  retry_with_backoff: "Retries failed operations with a delay between attempts",
+  outbound_timeout: "Sets explicit timeouts on outbound calls",
+  db_transaction: "Groups related database writes in transactions",
+  parameterized_sql: "Passes SQL values as bound parameters",
+  background_job: "Moves work into background jobs or queues",
+  observability: "Instruments code with logging, metrics or tracing",
+  failure_path_test: "Tests failure paths, not only the expected case",
+  test_isolation: "Isolates tests from external services",
+  ml_data_split: "Separates training and evaluation data",
+  ml_evaluation_metric: "Computes evaluation metrics for models",
+  ml_reproducibility: "Fixes random seeds for reproducible runs",
+  llm_output_validation: "Validates model output before using it",
+  container_build: "Packages software as container images",
 };
 
 export function notShown(roles: RoleSuggestion[]): string[] {

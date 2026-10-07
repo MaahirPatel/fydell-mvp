@@ -78,19 +78,43 @@ export const BACKEND_WEBHOOK_RETRY_V1: ScenarioDefinition = {
   setupCodePrefix: "HWR",
   supportedRuntimes: ["3.11", "3.12", "3.13"],
   teammates: [
-    { id: "priya", name: "Alex Morgan", title: "Engineering lead" },
-    { id: "marcus", name: "Jordan Hayes", title: "Partner support" },
+    { id: "priya", name: "Alex Morgan", title: "Engineering lead", askAbout: "Your lead for this fix. Scope, retry policy, edge cases, tests and logistics." },
+    { id: "marcus", name: "Jordan Hayes", title: "Partner support", askAbout: "What merchants and partners need. Not deep in the code." },
   ],
+  teamContext:
+    "Harbor Pay sends payment webhooks to merchants. Last week the dispatcher retried failed deliveries in a tight loop and flooded several merchants (the retry storm in INCIDENT.md). The new engineer has been asked to fix how the dispatcher retries, gives up and identifies deliveries. The project is a small standard-library Python service with in-memory fakes; there is no database or real network.",
+  personas: {
+    priya: {
+      relationship: "manager",
+      voice:
+        "Engineering lead and the new engineer's manager for this fix. Direct, calm, short messages. Decides scope and policy quickly and says so plainly. Trusts the engineer to make reasonable calls and expects assumptions written in the handoff. Does not write the code for them.",
+      owns: "retry policy, which failures are temporary or permanent, backoff, attempt limits, idempotency, scope, tests and logistics",
+      defersTo: [{ teammateId: "marcus", topics: "what partners have asked for, including Retry-After details after the partner request" }],
+    },
+    marcus: {
+      relationship: "stakeholder",
+      voice:
+        "Partner support. Friendly, practical, relays what partners need in plain language. Not deeply technical about the codebase and says so; points code questions back to Alex.",
+      owns: "partner requests, especially the Retry-After request once it has been posted",
+      defersTo: [{ teammateId: "priya", topics: "code structure, retry policy beyond the partner request, scope and tests" }],
+    },
+  },
+  kickoff: {
+    teammateId: "priya",
+    body:
+      "Welcome aboard, and thanks for picking this up. The short version: the dispatcher hammered merchants during last week's incident. I need retries with proper backoff, a clean stop for permanent failures and after the attempt limit, and the same Idempotency-Key on every retry. INCIDENT.md has the details. Ask me here if a call isn't clear, and note any assumptions in your handoff.",
+  },
   fallbackRuleId: "fallback",
   clarificationRules: [
     {
       id: "identity",
       teammateId: "priya",
+      mandatory: true,
       signals: [["real", "bot", "ai", "human", "person", "automated", "scripted", "simulated"], ["you", "alex", "jordan", "priya", "marcus", "are", "is"]],
       minGroups: 2,
       availability: "always",
       answer:
-        "I'm a simulated teammate for this assessment, not a real person. My answers are written in advance so every candidate gets the same information.",
+        "I'm a simulated teammate for this assessment, not a real person. Every candidate gets the same facts from me, so ask whatever you'd ask a real lead.",
     },
     {
       id: "retry_after_policy",

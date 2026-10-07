@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { GithubClient, GithubError } from "@/lib/passport/github/client";
-import { extractRepository } from "@/lib/passport/github/extract";
+import { extractRepository, previewRepository } from "@/lib/passport/github/extract";
 import { parseGithubInput } from "@/lib/passport/github/parse";
-import { INTAKE_SCOPE, LIMITS } from "@/lib/passport/github/types";
+import { INTAKE_SCOPE } from "@/lib/passport/github/types";
 import { projectFromResult } from "@/lib/passport/assemble";
 import { disconnectGithub } from "@/lib/passport/store";
 
@@ -38,22 +38,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Send JSON with an \"input\" field." }, { status: 400 });
   }
   const raw = typeof body === "object" && body !== null && "input" in body ? (body as { input: unknown }).input : null;
-  const repositories =
-    typeof body === "object" && body !== null && "repositories" in body ? (body as { repositories: unknown }).repositories : null;
-
-  if (Array.isArray(repositories)) {
-    if (repositories.length === 0 || repositories.length > LIMITS.maxRepositoriesPerImport) {
-      return NextResponse.json({ error: `Select between 1 and ${LIMITS.maxRepositoriesPerImport} repositories.` }, { status: 400 });
-    }
-    const refs = repositories.map((r) => (typeof r === "string" ? parseGithubInput(r) : null));
-    if (refs.some((r) => !r || r.kind !== "repository")) {
-      return NextResponse.json({ error: "Each selection must be an owner/repository name." }, { status: 400 });
-    }
-    const client = new GithubClient();
-    const results = [];
-    for (const ref of refs) if (ref && ref.kind === "repository") results.push(await extractRepository(ref.ref, client));
-    return NextResponse.json({ results });
-  }
+  const wantsPreview = typeof body === "object" && body !== null && (body as { preview?: unknown }).preview === true;
 
   if (typeof raw !== "string") return NextResponse.json({ error: "Enter a GitHub username or repository URL." }, { status: 400 });
   const parsed = parseGithubInput(raw);
@@ -81,6 +66,18 @@ export async function POST(req: Request) {
     }
   }
 
+  // Scope preview: resolves the revision and the files an import would read,
+  // without fetching contents. Saved imports are pinned to this commit.
+  if (wantsPreview) {
+    const preview = await previewRepository(parsed.ref);
+    if (preview.ok === false) {
+      const status = preview.error.code === "rate_limited" || preview.error.code === "github_unavailable" ? 503 : 422;
+      return NextResponse.json({ kind: "preview", error: preview.error.message, code: preview.error.code, retryAfterSeconds: preview.error.retryAfterSeconds }, { status });
+    }
+    return NextResponse.json({ kind: "preview", preview, intake: INTAKE_SCOPE });
+  }
+
+  // Unsaved analysis for visitors who have not signed in. Nothing is stored.
   const result = await extractRepository(parsed.ref);
   return NextResponse.json({ kind: "repository", result, project: projectFromResult(result, ""), intake: INTAKE_SCOPE });
 }

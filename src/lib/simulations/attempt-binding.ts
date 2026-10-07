@@ -37,7 +37,7 @@ export function validateAttemptBinding(b: Partial<AttemptBinding>): string[] {
 /**
  * Resume idempotency key: accepting the same invitation twice (or retrying
  * the create call) must resolve to the same attempt. The key is derived from
- * stable inputs only — never from timestamps or randomness.
+ * stable inputs only - never from timestamps or randomness.
  */
 export function resumeKey(input: {
   origin: "invitation" | "self_serve";
@@ -54,7 +54,7 @@ export function resumeKey(input: {
 
 /**
  * SIM-01 resume rule: an existing non-submitted attempt for the same binding
- * is resumed, never duplicated. Submitted attempts are terminal — a new
+ * is resumed, never duplicated. Submitted attempts are terminal - a new
  * attempt requires a new invitation (or a new self-serve start).
  */
 export function shouldResumeExisting(args: {

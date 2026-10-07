@@ -1,12 +1,12 @@
 /**
- * Employer chunk — EMP-08: keep human decisions explicit.
+ * Employer chunk - EMP-08: keep human decisions explicit.
  *
  * Advance / Hold / Decline are recorded with actor + timestamp in an
  * append-only history. A newer decision supersedes (never deletes) earlier
  * ones, so the full decision trail survives.
  *
  * Hard guarantee: recording a decision NEVER sends a message to the
- * candidate. This module has no mailer, no outbox, no notification hook —
+ * candidate. This module has no mailer, no outbox, no notification hook - 
  * there is literally no code path from `recordDecision` to a candidate
  * message. Any candidate communication is a separate, deliberate employer
  * action with its own approved copy (not implemented here).
@@ -55,7 +55,7 @@ let decisionSeq = 0;
 /**
  * Record a hiring decision. Appends to history; supersedes (never deletes)
  * any prior decision for the same session. Takes no mailer and sends
- * nothing — by construction it cannot notify the candidate.
+ * nothing - by construction it cannot notify the candidate.
  */
 export function recordDecision(
   store: DecisionStore,

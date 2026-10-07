@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
+import { rateLimit } from "@/lib/security/rate-limit";
+
+/** Feedback forms have a fixed set of free-text questions; more is abuse. */
+const MAX_FREE_TEXT_FIELDS = 20;
 
 export const runtime = "nodejs";
 
@@ -72,6 +76,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (!rateLimit(`pilot-feedback:${ip}`, 10, 60 * 60 * 1000).ok) {
+    return NextResponse.json(
+      { error: "Too many submissions from this network. Try again later." },
+      { status: 429 }
+    );
+  }
+
   let body: Payload;
   try {
     body = await req.json();
@@ -94,7 +106,7 @@ export async function POST(req: NextRequest) {
 
   const textBlock = body.text && typeof body.text === "object" ? body.text : {};
   const freeText: Record<string, string> = {};
-  for (const [key, raw] of Object.entries(textBlock)) {
+  for (const [key, raw] of Object.entries(textBlock).slice(0, MAX_FREE_TEXT_FIELDS)) {
     const v = asText(raw);
     if (v) freeText[key] = v;
   }

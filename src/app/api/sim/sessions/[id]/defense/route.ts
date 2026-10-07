@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/simulations/auth";
 import { getSessionForCandidate, getSessionForOrgMember } from "@/lib/simulations/db";
 import { getOralDefense, saveDefenseResponse } from "@/lib/pilot/oral-defense";
 import { isPreviewMode, previewDefense } from "@/lib/dev/preview";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -54,7 +55,7 @@ export async function GET(
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed" },
+      { error: publicErrorMessage(err, "Failed") },
       { status: 400 }
     );
   }
@@ -105,7 +106,7 @@ export async function POST(
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not save response" },
+      { error: publicErrorMessage(err, "Could not save response") },
       { status: 400 }
     );
   }

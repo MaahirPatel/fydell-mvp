@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   Check,
   ChevronRight,
@@ -13,16 +13,16 @@ import {
 import FydellMark from "@/components/brand/FydellMark";
 import styles from "./hero-sim-workspace.module.css";
 
+const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+
+function subscribeReducedMotion(onChange: () => void) {
+  const mq = window.matchMedia(REDUCED_MOTION);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
 function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return reduced;
+  return useSyncExternalStore(subscribeReducedMotion, () => window.matchMedia(REDUCED_MOTION).matches, () => false);
 }
 
 function useInView<T extends Element>() {
@@ -32,8 +32,8 @@ function useInView<T extends Element>() {
     const el = ref.current;
     if (!el) return;
     if (typeof IntersectionObserver === "undefined") {
-      setSeen(true);
-      return;
+      const frame = requestAnimationFrame(() => setSeen(true));
+      return () => cancelAnimationFrame(frame);
     }
     const io = new IntersectionObserver(
       ([entry]) => {

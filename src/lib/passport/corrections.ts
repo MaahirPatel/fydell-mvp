@@ -12,6 +12,8 @@ import type { PassportData, PassportEvidence } from "./view";
 
 export type CorrectionStatus = "open" | "resolved";
 
+export type CorrectionKind = "context" | "inaccurate" | "correction";
+
 export type Correction = {
   id: string;
   findingId: string;
@@ -21,10 +23,19 @@ export type Correction = {
   createdAt: string;
   resolvedAt: string | null;
   resolutionNote: string;
+  kind: CorrectionKind;
+  proposedInterpretation: string;
+  withdrawnAt: string | null;
 };
 
-export function validateCorrectionReason(reason: unknown): { ok: boolean; reason: string; error: string } {
-  if (typeof reason !== "string" || !reason.trim()) return { ok: false, reason: "", error: "Describe what is inaccurate about the finding." };
+const EMPTY_MESSAGE: Record<CorrectionKind, string> = {
+  context: "Add the context you want reviewers to see.",
+  inaccurate: "Describe what is inaccurate about the finding.",
+  correction: "Explain why the finding should change.",
+};
+
+export function validateCorrectionReason(reason: unknown, kind: CorrectionKind = "inaccurate"): { ok: boolean; reason: string; error: string } {
+  if (typeof reason !== "string" || !reason.trim()) return { ok: false, reason: "", error: EMPTY_MESSAGE[kind] };
   if (reason.trim().length > 1000) return { ok: false, reason: "", error: "Keep the correction under 1000 characters." };
   return { ok: true, reason: reason.trim(), error: "" };
 }
@@ -51,5 +62,5 @@ export function flaggedFindings(passport: PassportData, corrections: Correction[
 
 /** Finding ids with at least one open (unresolved) correction. */
 export function disputedFindingIds(corrections: Correction[]): Set<string> {
-  return new Set(corrections.filter((c) => c.status === "open").map((c) => c.findingId));
+  return new Set(corrections.filter((c) => c.status === "open" && c.kind !== "context" && !c.withdrawnAt).map((c) => c.findingId));
 }

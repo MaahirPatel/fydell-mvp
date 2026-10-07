@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Panel } from "@/components/ui/Panel";
 import { AppliedAiDemoModule } from "@/components/employer/AppliedAiDemoModule";
 
-export const metadata = { title: "Roles" };
+export const metadata = { title: "Task library" };
 export const dynamic = "force-dynamic";
 
 export default async function EmployerRolesPage() {
@@ -25,14 +25,14 @@ export default async function EmployerRolesPage() {
   return (
     <div>
       <PageHeader
-        title="Roles"
-        description="The work your team needs done, the evidence required, and every candidate moving through it."
+        title="Task library"
+        description="Work-sample simulations by discipline, the evidence each one asks for, and the candidates you've invited to them."
       />
       <div className="mt-7">
         {catalog.length === 0 ? (
           <EmptyState
-            title="Create your first role"
-            description="Start with the work the person will actually do. Fydell uses it to define what candidates should demonstrate."
+            title="No simulations available yet"
+            description="Work-sample simulations appear here once they are enabled for your workspace."
           />
         ) : (
           <Panel>

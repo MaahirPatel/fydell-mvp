@@ -713,7 +713,7 @@ export async function getOperationalSnapshot(
  * Append-only: every row here is a real decision row in
  * `sim_employer_decisions`, joined to the session it was made about. When the
  * workspace has not recorded any decision yet, this returns [] and the page
- * says exactly that — Fydell will not invent a chart before that data exists.
+ * says exactly that - Fydell will not invent a chart before that data exists.
  */
 export interface OutcomeRecord {
   id: string;

@@ -6,6 +6,7 @@ import { hashIp } from "@/lib/ops/platform-roles";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { verifyCaptchaToken } from "@/lib/security/captcha";
 import { CONTACT_EMAIL } from "@/lib/contact";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -126,7 +127,7 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     const errorId = `err-${Date.now().toString(36)}`;
-    console.error("[pilot-request]", errorId, err instanceof Error ? err.message : "unknown");
+    console.error("[pilot-request]", errorId, publicErrorMessage(err, "unknown"));
     return NextResponse.json(
       {
         error: "Could not save your request. Please try again.",

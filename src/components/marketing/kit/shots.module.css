@@ -733,7 +733,7 @@
 .hash b {
   display: block;
   margin-bottom: 2px;
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-geist-sans), sans-serif;
   font-weight: 510;
   color: var(--t1);
 }
@@ -791,7 +791,7 @@
 }
 .summaryBar i:first-child {
   width: 93.3%;
-  background: linear-gradient(90deg, #1a1915, #6f6c62);
+  background: linear-gradient(90deg, #4242ad, #5b5bd6);
 }
 .summaryBar i:last-child {
   width: 6.7%;

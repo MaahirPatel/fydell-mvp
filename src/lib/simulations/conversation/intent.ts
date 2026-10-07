@@ -1,7 +1,7 @@
 /**
  * Deterministic intent classification for candidate messages.
  *
- * Uses pattern matching, not an LLM — fast, predictable, testable.
+ * Uses pattern matching, not an LLM - fast, predictable, testable.
  * When confidence is low, returns "unclear" and the coordinator decides
  * whether to ask for clarification or stay silent.
  */
@@ -105,6 +105,19 @@ const INTENT_PATTERNS: IntentPattern[] = [
   },
 ];
 
+/**
+ * Plain requests for information. Applied only when no specific intent
+ * matched, so they never override help requests (which the assistance
+ * policy gates) or shared plans and diagnoses. A teammate asked for context
+ * should answer rather than treat the message as unclear.
+ */
+const INFORMATION_REQUEST: RegExp[] = [
+  /\b(give me|tell me|explain|walk me through|fill me in|catch me up|send me)\b/i,
+  /\bmore (context|detail|details|info|information)\b/i,
+  /^(what|why|how|when|where|who|which|can you|could you|would you|do you|does|did|is there|are there)\b/i,
+  /\?\s*$/,
+];
+
 const TOPIC_KEYWORDS: Record<string, string[]> = {
   retry_backoff: ["retry", "retries", "backoff", "delay", "attempt", "jitter"],
   idempotency: ["idempot", "dedup", "duplicate", "exactly once", "at-least-once"],
@@ -146,6 +159,10 @@ export function classifyMessage(text: string): ClassifiedMessage {
       bestScore = score;
       bestIntent = intent;
     }
+  }
+  if (bestScore === 0 && INFORMATION_REQUEST.some((p) => p.test(lower))) {
+    bestIntent = "question_requirement";
+    bestScore = 2;
   }
 
   // Topic detection

@@ -1,10 +1,10 @@
 /**
- * Employer chunk — EMP-05: invite the right candidate.
+ * Employer chunk - EMP-05: invite the right candidate.
  *
  * - Email is validated and normalized at creation.
  * - Duplicate prevention: one active invitation per (org, template, email).
  *   Creating another invite for the same candidate does not create a second
- *   row and must not create a second charge — the existing invitation is
+ *   row and must not create a second charge - the existing invitation is
  *   returned with `duplicate: true`.
  * - Creation never sends. Sending is a deliberate, explicit call
  *   (`sendInvitation`) that enqueues the email through the mailer; the

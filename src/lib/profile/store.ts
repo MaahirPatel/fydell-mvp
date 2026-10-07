@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { getOwnerPassport, getShareOwnerId, resolveShare } from "@/lib/passport/store";
+import { getOwnerPassport, getShareOwnerId, previewShare, resolveShare } from "@/lib/passport/store";
+import type { PassportData } from "@/lib/passport/view";
 import { aggregateTimeline, publicTimelineItem } from "./aggregate";
 import type { ParsedEditorEvidence } from "./editor-import/parse";
 import type {
@@ -8,16 +9,51 @@ import type {
   ConnectedAccountProvider,
   EditorEvidenceImport,
   EngineerProfile,
+  OpenTo,
   ProfileHub,
+  ProfileLink,
   TimelineItem,
 } from "./types";
+import { EMPTY_SOCIAL, OPEN_TO, SOCIAL_KINDS, type SocialKind } from "./types";
+import { normalizeSocial } from "./social";
+import { normalizeHandle } from "./handle";
+import { sniffImage } from "./image";
+import { shareHowIBuild, type HowIBuildInput } from "./how-i-build";
+import { signSharedPresentationImages } from "@/lib/passport/presentation-store";
+
+const SOCIAL_COLUMN: Record<SocialKind, "linkedin_url" | "x_url" | "instagram_url"> = {
+  linkedin: "linkedin_url",
+  x: "x_url",
+  instagram: "instagram_url",
+};
 
 type ProfileRow = {
   display_name: string;
+  handle: string | null;
   headline: string;
   role: string;
+  bio: string | null;
+  location: string | null;
+  website: string | null;
+  links: unknown;
+  open_to: string | null;
+  avatar_path: string | null;
+  linkedin_url: string | null;
+  x_url: string | null;
+  instagram_url: string | null;
+  how_i_build: string | null;
+  how_i_build_shared: boolean | null;
+  how_i_build_updated_at: string | null;
   updated_at: string;
 };
+
+export const PHOTO_BUCKET = "profile-photos";
+
+function photoUrl(path: string | null): string {
+  if (!path) return "";
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
+  return base ? `${base}/storage/v1/object/public/${PHOTO_BUCKET}/${path}` : "";
+}
 
 type AccountRow = {
   id: string;
@@ -49,16 +85,55 @@ type EditorEvidenceFileRow = {
   lastTouchedAt: string | null;
 };
 
+const PROFILE_COLUMNS =
+  "display_name,handle,headline,role,bio,location,website,links,open_to,avatar_path,linkedin_url,x_url,instagram_url,how_i_build,how_i_build_shared,how_i_build_updated_at,updated_at";
+
+function toProfile(row: ProfileRow): EngineerProfile {
+  const links = Array.isArray(row.links)
+    ? row.links.filter(
+        (l): l is ProfileLink =>
+          typeof l === "object" && l !== null && typeof (l as ProfileLink).label === "string" && typeof (l as ProfileLink).url === "string",
+      )
+    : [];
+  return {
+    displayName: row.display_name,
+    handle: row.handle ?? "",
+    headline: row.headline,
+    role: row.role,
+    bio: row.bio ?? "",
+    location: row.location ?? "",
+    website: row.website ?? "",
+    links,
+    openTo: (OPEN_TO as readonly string[]).includes(row.open_to ?? "") ? (row.open_to as OpenTo) : "",
+    avatarUrl: photoUrl(row.avatar_path),
+    social: { linkedin: row.linkedin_url ?? "", x: row.x_url ?? "", instagram: row.instagram_url ?? "" },
+    howIBuild: row.how_i_build
+      ? { text: row.how_i_build, includeInShares: row.how_i_build_shared === true, updatedAt: row.how_i_build_updated_at }
+      : null,
+    updatedAt: row.updated_at,
+  };
+}
+
+/** Saves the engineer's "How I build" statement. Clearing the text also stops sharing it. */
+export async function updateHowIBuild(ownerId: string, fallbackName: string, input: HowIBuildInput): Promise<EngineerProfile> {
+  await getOrCreateProfile(ownerId, fallbackName);
+  const admin = createAdminSupabaseClient();
+  const now = new Date().toISOString();
+  const { data, error } = await admin
+    .from("engineer_profiles")
+    .update({ how_i_build: input.text, how_i_build_shared: input.text ? input.includeInShares : false, how_i_build_updated_at: now, updated_at: now })
+    .eq("owner_id", ownerId)
+    .select(PROFILE_COLUMNS)
+    .single();
+  if (error || !data) throw new Error("Could not save the statement.");
+  return toProfile(data as ProfileRow);
+}
+
 export async function getProfile(ownerId: string): Promise<EngineerProfile | null> {
   const admin = createAdminSupabaseClient();
-  const { data } = await admin
-    .from("engineer_profiles")
-    .select("display_name,headline,role,updated_at")
-    .eq("owner_id", ownerId)
-    .maybeSingle();
+  const { data } = await admin.from("engineer_profiles").select(PROFILE_COLUMNS).eq("owner_id", ownerId).maybeSingle();
   const row = data as ProfileRow | null;
-  if (!row) return null;
-  return { displayName: row.display_name, headline: row.headline, role: row.role, updatedAt: row.updated_at };
+  return row ? toProfile(row) : null;
 }
 
 export async function getOrCreateProfile(ownerId: string, fallbackName: string): Promise<EngineerProfile> {
@@ -68,35 +143,150 @@ export async function getOrCreateProfile(ownerId: string, fallbackName: string):
   const { data, error } = await admin
     .from("engineer_profiles")
     .upsert({ owner_id: ownerId, display_name: fallbackName.slice(0, 80) }, { onConflict: "owner_id" })
-    .select("display_name,headline,role,updated_at")
+    .select(PROFILE_COLUMNS)
     .single();
   if (error || !data) throw new Error("Could not create the engineering profile.");
-  const row = data as ProfileRow;
-  return { displayName: row.display_name, headline: row.headline, role: row.role, updatedAt: row.updated_at };
+  return toProfile(data as ProfileRow);
 }
 
 const MAX_FIELD = 120;
 
+export class ProfileInputError extends Error {}
+
+/** Only https URLs, so a profile link can never run script or point at a local file. */
+export function cleanUrl(value: string, field: string): string {
+  const raw = value.trim();
+  if (!raw) return "";
+  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : `https://${raw}`;
+  let url: URL;
+  try {
+    url = new URL(withScheme);
+  } catch {
+    throw new ProfileInputError(`${field} is not a valid web address.`);
+  }
+  if (url.protocol !== "https:") throw new ProfileInputError(`${field} must start with https://.`);
+  const out = url.toString();
+  if (out.length > 200) throw new ProfileInputError(`${field} is too long.`);
+  return out;
+}
+
 export async function updateIdentity(
   ownerId: string,
-  input: { displayName?: string; headline?: string; role?: string },
+  input: {
+    displayName?: string;
+    handle?: string;
+    headline?: string;
+    role?: string;
+    bio?: string;
+    location?: string;
+    website?: string;
+    links?: ProfileLink[];
+    openTo?: string;
+    social?: Partial<Record<SocialKind, string>>;
+  },
 ): Promise<EngineerProfile> {
-  const patch: Record<string, string> = { updated_at: new Date().toISOString() };
-  if (typeof input.displayName === "string") patch.display_name = input.displayName.trim().slice(0, MAX_FIELD);
+  const patch: Record<string, string | null | ProfileLink[]> = { updated_at: new Date().toISOString() };
+  if (typeof input.displayName === "string") {
+    patch.display_name = input.displayName.trim().slice(0, MAX_FIELD);
+    if (!patch.display_name) throw new ProfileInputError("Display name cannot be empty.");
+  }
+  if (typeof input.handle === "string") {
+    if (!input.handle.trim()) patch.handle = null;
+    else {
+      const result = normalizeHandle(input.handle);
+      if ("error" in result) throw new ProfileInputError(result.error);
+      patch.handle = result.handle;
+    }
+  }
   if (typeof input.headline === "string") patch.headline = input.headline.trim().slice(0, 160);
   if (typeof input.role === "string") patch.role = input.role.trim().slice(0, MAX_FIELD);
-  if (!patch.display_name?.trim() && typeof input.displayName === "string") {
-    throw new Error("Display name cannot be empty.");
+  if (typeof input.bio === "string") {
+    if (input.bio.trim().length > 1200) throw new ProfileInputError("Keep About under 1,200 characters.");
+    patch.bio = input.bio.trim();
+  }
+  if (typeof input.location === "string") patch.location = input.location.trim().slice(0, 80);
+  if (typeof input.website === "string") patch.website = cleanUrl(input.website, "Website");
+  if (Array.isArray(input.links)) {
+    const links = input.links
+      .filter((l) => l.url.trim())
+      .map((l) => ({ label: l.label.trim().slice(0, 40), url: cleanUrl(l.url, l.label.trim() || "Link") }));
+    if (links.length > 5) throw new ProfileInputError("Add up to five links.");
+    patch.links = links.map((l) => ({ label: l.label || new URL(l.url).hostname.replace(/^www\./, ""), url: l.url }));
+  }
+  if (typeof input.openTo === "string") {
+    if (!(OPEN_TO as readonly string[]).includes(input.openTo)) throw new ProfileInputError("Choose what you are open to from the list.");
+    patch.open_to = input.openTo;
+  }
+  if (input.social) {
+    for (const kind of SOCIAL_KINDS) {
+      const value = input.social[kind];
+      if (typeof value !== "string") continue;
+      const result = normalizeSocial(kind, value);
+      if ("error" in result) throw new ProfileInputError(result.error);
+      patch[SOCIAL_COLUMN[kind]] = result.url;
+    }
   }
   const admin = createAdminSupabaseClient();
   const { data, error } = await admin
     .from("engineer_profiles")
     .upsert({ owner_id: ownerId, ...patch }, { onConflict: "owner_id" })
-    .select("display_name,headline,role,updated_at")
+    .select(PROFILE_COLUMNS)
     .single();
+  if (error?.code === "23505" && patch.handle) throw new ProfileInputError("That handle is taken. Choose another.");
   if (error || !data) throw new Error("Could not save the profile.");
-  const row = data as ProfileRow;
-  return { displayName: row.display_name, headline: row.headline, role: row.role, updatedAt: row.updated_at };
+  return toProfile(data as ProfileRow);
+}
+
+const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+
+export { sniffImage };
+
+async function currentPhotoPath(ownerId: string): Promise<string> {
+  const admin = createAdminSupabaseClient();
+  const { data } = await admin.from("engineer_profiles").select("avatar_path").eq("owner_id", ownerId).maybeSingle();
+  return (data as { avatar_path: string | null } | null)?.avatar_path ?? "";
+}
+
+export async function setProfilePhoto(ownerId: string, bytes: Uint8Array): Promise<EngineerProfile> {
+  if (bytes.length === 0) throw new ProfileInputError("Choose an image to upload.");
+  if (bytes.length > MAX_PHOTO_BYTES) throw new ProfileInputError("Use an image under 2 MB.");
+  const kind = sniffImage(bytes);
+  if (!kind) throw new ProfileInputError("Use a PNG, JPEG or WebP image.");
+
+  const admin = createAdminSupabaseClient();
+  const previous = await currentPhotoPath(ownerId);
+  const path = `${ownerId}/${crypto.randomUUID()}.${kind.ext}`;
+  const { error: uploadError } = await admin.storage
+    .from(PHOTO_BUCKET)
+    .upload(path, bytes, { contentType: kind.mime, cacheControl: "31536000", upsert: false });
+  if (uploadError) throw new Error("Could not store the photo.");
+
+  const { data, error } = await admin
+    .from("engineer_profiles")
+    .update({ avatar_path: path, updated_at: new Date().toISOString() })
+    .eq("owner_id", ownerId)
+    .select(PROFILE_COLUMNS)
+    .single();
+  if (error || !data) {
+    await admin.storage.from(PHOTO_BUCKET).remove([path]);
+    throw new Error("Could not save the photo.");
+  }
+  if (previous) await admin.storage.from(PHOTO_BUCKET).remove([previous]);
+  return toProfile(data as ProfileRow);
+}
+
+export async function removeProfilePhoto(ownerId: string): Promise<EngineerProfile> {
+  const admin = createAdminSupabaseClient();
+  const previous = await currentPhotoPath(ownerId);
+  const { data, error } = await admin
+    .from("engineer_profiles")
+    .update({ avatar_path: "", updated_at: new Date().toISOString() })
+    .eq("owner_id", ownerId)
+    .select(PROFILE_COLUMNS)
+    .single();
+  if (error || !data) throw new Error("Could not remove the photo.");
+  if (previous) await admin.storage.from(PHOTO_BUCKET).remove([previous]);
+  return toProfile(data as ProfileRow);
 }
 
 export async function listAccounts(ownerId: string): Promise<ConnectedAccount[]> {
@@ -284,14 +474,32 @@ export async function getPublicProfile(
   if (shared.status !== "ok") return shared;
   const ownerId = await getShareOwnerId(token);
   if (!ownerId) return { status: "missing" };
-  const [profile, accounts, editorImports, simItems] = await Promise.all([
+  return { status: "ok", public: await buildPublicProfile(ownerId, shared.passport) };
+}
+
+/**
+ * Recipient preview for the owner: the same assembly as a live share link,
+ * built from unsaved share settings. Nothing is created or recorded.
+ */
+export async function getSharePreview(
+  ownerId: string,
+  fields: string[],
+  opts: { repos?: string[]; versionPolicy?: string; label?: string },
+): Promise<PublicProfile | null> {
+  const passport = await previewShare(ownerId, fields, opts);
+  return passport ? buildPublicProfile(ownerId, passport) : null;
+}
+
+async function buildPublicProfile(ownerId: string, passport: PassportData): Promise<PublicProfile> {
+  // Simulation history is private to the engineer and is never part of a
+  // share; only the shared passport and self-supplied imports appear here.
+  const [profile, accounts, editorImports, presentations] = await Promise.all([
     getProfile(ownerId),
     listAccounts(ownerId),
     listEditorImports(ownerId),
-    listSubmissionTimeline(ownerId),
+    signSharedPresentationImages(ownerId, passport.presentations),
   ]);
-  const passport = shared.passport;
-  const items: TimelineItem[] = [...simItems];
+  const items: TimelineItem[] = [];
   for (const project of passport.projects) {
     items.push({
       id: `gh-${project.repoFullName}`,
@@ -300,7 +508,7 @@ export async function getPublicProfile(
       detail: `${project.evidence.length} cited finding${project.evidence.length === 1 ? "" : "s"}${project.primaryLanguage ? ` · ${project.primaryLanguage}` : ""}`,
       occurredAt: passport.updatedAt ?? new Date(0).toISOString(),
       provenance: "repository-observation",
-      url: project.htmlUrl,
+      url: project.htmlUrl || null,
       meta: {},
     });
   }
@@ -321,18 +529,26 @@ export async function getPublicProfile(
     });
   }
   return {
-    status: "ok",
-    public: {
-      profile: profile ?? {
-        displayName: passport.displayName,
-        headline: passport.headline,
-        role: "",
-        updatedAt: passport.updatedAt,
-      },
-      accounts: accounts.map((a) => ({ provider: a.provider, label: a.label })),
-      timeline: aggregateTimeline(items).map(publicTimelineItem),
-      passport,
-    },
+    profile: profile
+      ? { ...profile, howIBuild: shareHowIBuild(profile.howIBuild) }
+      : {
+          displayName: passport.displayName,
+          handle: "",
+          headline: passport.headline,
+          role: "",
+          bio: "",
+          location: "",
+          website: "",
+          links: [],
+          openTo: "",
+          avatarUrl: "",
+          social: EMPTY_SOCIAL,
+          howIBuild: null,
+          updatedAt: passport.updatedAt,
+        },
+    accounts: accounts.map((a) => ({ provider: a.provider, label: a.label })),
+    timeline: aggregateTimeline(items).map(publicTimelineItem),
+    passport: presentations ? { ...passport, presentations } : passport,
   };
 }
 export async function getProfileHub(ownerId: string, fallbackName: string): Promise<ProfileHub> {
@@ -354,7 +570,7 @@ export async function getProfileHub(ownerId: string, fallbackName: string): Prom
       detail: `${project.evidence.length} cited finding${project.evidence.length === 1 ? "" : "s"}${project.primaryLanguage ? ` · ${project.primaryLanguage}` : ""}${project.commitSha ? ` · ${project.commitSha.slice(0, 7)}` : ""}`,
       occurredAt: passport?.updatedAt ?? new Date(0).toISOString(),
       provenance: "repository-observation",
-      url: project.htmlUrl,
+      url: project.htmlUrl || null,
       meta: { commitSha: project.commitSha, status: project.status, findings: project.evidence.length },
     });
   }
@@ -370,7 +586,7 @@ export async function getProfileHub(ownerId: string, fallbackName: string): Prom
       id: `ed-${imp.id}`,
       kind: "editor-import",
       title: `${imp.source === "vscode" ? "VS Code" : "Cursor"} work history`,
-      detail: `${imp.filesTouched.length} files · ${imp.languages.join(", ") || "languages unknown"} · ${range}. Self-supplied — not independently observed.`,
+      detail: `${imp.filesTouched.length} files · ${imp.languages.join(", ") || "languages unknown"} · ${range}. Self-supplied. Not independently observed.`,
       occurredAt: imp.importedAt,
       provenance: "local-import",
       url: null,

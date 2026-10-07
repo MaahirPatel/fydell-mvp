@@ -46,7 +46,7 @@ export function Facts({ items }: { items: { label: string; value: ReactNode }[] 
     <dl className="grid overflow-hidden rounded-[10px] border border-[var(--border-subtle)] bg-[var(--border-subtle)] sm:grid-cols-2" style={{ gap: 1 }}>
       {items.map((item) => (
         <div key={item.label} className="min-w-0 bg-[var(--surface-raised)] px-4 py-3">
-          <dt className="text-[11.5px] font-medium uppercase tracking-[0.06em] text-[var(--text-tertiary)]">{item.label}</dt>
+          <dt className="text-[13px] font-medium text-[var(--text-tertiary)]">{item.label}</dt>
           <dd className="mt-1 text-app-body leading-[1.55] text-[var(--text-primary)]">{item.value}</dd>
         </div>
       ))}

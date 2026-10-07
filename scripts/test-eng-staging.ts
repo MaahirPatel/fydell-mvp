@@ -91,6 +91,8 @@ async function main() {
   const { roleCan } = await import("../src/lib/eng/permissions");
   const { CURRENT_SCENARIO, expectedSetupCodes } = await import("../src/lib/eng/scenarios");
   const { buildStarterArchive } = await import("../src/lib/eng/starter");
+const { criteriaOf, observedFor, suggestState } = await import("../src/lib/eng/criteria");
+const { addResponse, buildCandidateReport, resolveResponse } = await import("../src/lib/eng/candidate-report");
   type EngMember = import("../src/lib/eng/context").EngMember;
 
   const db = engAdmin();
@@ -170,9 +172,11 @@ async function main() {
     await assert.rejects(() => attempts.submitSetupCode(db, attempt, scenario, "HWR-00000000", ids.candidate), /does not match/);
     const code = [...expectedSetupCodes(scenario).keys()][0];
     attempt = await attempts.submitSetupCode(db, attempt, scenario, code, ids.candidate);
-    attempt = await attempts.startAttempt(db, attempt, ids.candidate);
+    attempt = await attempts.startAttempt(db, attempt, scenario, ids.candidate);
     assert.equal(attempt.status, "in_progress");
-    const restarted = await attempts.startAttempt(db, attempt, ids.candidate);
+    const restarted = await attempts.startAttempt(db, attempt, scenario, ids.candidate);
+    const kickoff = (await attempts.listMessages(db, attempt.id)).filter((m) => m.client_msg_id === "kickoff");
+    assert.equal(kickoff.length, 1, "the lead's kickoff is posted exactly once");
     assert.equal(restarted.started_at, attempt.started_at);
     await assert.rejects(async () => {
       const { error } = await db.from("eng_attempts").update({ started_at: new Date(0).toISOString() }).eq("id", attempt.id);
@@ -302,8 +306,26 @@ async function main() {
         gaps: [],
         limitations: ["Synthetic staging submission."],
         followUps: ["Walk through the backoff choice."],
-        dimensions: (["correctness", "engineering_judgment", "requirement_response", "work_communication"] as const).map((key) => ({ key, level: "insufficient_evidence" as const, rationale: "Staging test only." })),
+        dimensions: (["correctness", "engineering_judgment", "requirement_response", "work_communication"] as const).map((key) => ({ key, level: "not_assessed" as const, rationale: "Staging test only." })),
+        criteria: criteriaOf(CURRENT_SCENARIO.rubric).map((def) => ({
+          id: def.id,
+          dimension: def.dimension,
+          label: "",
+          state: def.id === "added_tests" ? ("partially_demonstrated" as const) : suggestState(observedFor(def, results)),
+          rationale: def.id === "added_tests" ? "Staging test: added tests cover only the happy path." : "Staging test only.",
+          observed: null,
+          notCovered: "",
+        })),
       };
+      const overclaimed = {
+        ...brief,
+        criteria: brief.criteria.map((c) => (observedFor(criteriaOf(CURRENT_SCENARIO.rubric).find((d) => d.id === c.id)!, results)?.passed === 0 ? { ...c, state: "demonstrated" as const } : c)),
+      };
+      if (overclaimed.criteria.some((c, i) => c.state !== brief.criteria[i].state)) {
+        await reports.saveReportDraft(db, attempt, memberA.email, { brief: overclaimed, findings, changeReason: null, reviewMinutes: 1 });
+        await assert.rejects(() => reports.releaseReport(db, attempt, memberA.email), (e: unknown) => e instanceof reports.ReportError && e.problems.some((p) => p.includes("cannot be marked demonstrated")));
+        pass("a criterion marked demonstrated against failing defined cases is refused at release");
+      }
       assert.ok(roleCan(memberA.role, "write_reports") && !roleCan("viewer", "write_reports") && !roleCan("viewer", "view_reports"));
       await reports.saveReportDraft(db, attempt, memberA.email, { brief, findings: [{ ...findings[0], citations: [{ kind: "file", ref: "missing.py", lineStart: 1 }] }], changeReason: null, reviewMinutes: 1 });
       await assert.rejects(() => reports.releaseReport(db, attempt, memberA.email), (e: unknown) => e instanceof reports.ReportError && e.problems.length > 0);
@@ -320,6 +342,25 @@ async function main() {
       assert.equal(await visibleCount(employerB, "eng_reports", "attempt_id", attempt.id), 0);
       assert.equal(await visibleCount(candidateClient, "eng_reports", "attempt_id", attempt.id), 0);
       pass("the employer's own owner writes and releases the report; viewers cannot; uncited findings rejected; drafts hidden; released report frozen and scoped to the workspace");
+
+      const candidateReport = await buildCandidateReport(db, attempt, scenario);
+      assert.ok(candidateReport, "the candidate sees the released report");
+      const reportJson = JSON.stringify(candidateReport);
+      assert.ok(!reportJson.includes(memberA.email) && !reportJson.includes("Walk through the backoff choice."), "no reviewer identity or interview follow-ups");
+      assert.equal(candidateReport!.criteria.length, criteriaOf(scenario.rubric).length);
+      const requestId = `r_${randomUUID().replace(/-/g, "")}`;
+      const first = await addResponse(db, attempt, ids.candidate, { targetKind: "finding", targetId: "f1", kind: "inaccurate", body: "Staging: this test passes locally.", clientRequestId: requestId });
+      const retried = await addResponse(db, attempt, ids.candidate, { targetKind: "finding", targetId: "f1", kind: "inaccurate", body: "Staging: this test passes locally.", clientRequestId: requestId });
+      assert.ok(first.created && !retried.created && first.response.id === retried.response.id, "a retried response is stored once");
+      await assert.rejects(() => addResponse(db, attempt, ids.candidate, { targetKind: "finding", targetId: "nope", kind: "context", body: "x", clientRequestId: null }), reports.ReportError);
+      assert.equal(await visibleCount(candidateClient, "eng_report_responses", "attempt_id", attempt.id), 1);
+      assert.equal(await visibleCount(employerB, "eng_report_responses", "attempt_id", attempt.id), 0);
+      const resolved = await resolveResponse(db, attempt, first.response.id, memberA.email, "Checked: the hidden check uses a different status code.");
+      assert.equal(resolved.status, "resolved");
+      await assert.rejects(() => resolveResponse(db, attempt, first.response.id, memberA.email, "again"), reports.ReportError);
+      const { data: frozen } = await db.from("eng_reports").select("findings").eq("id", released.id).single();
+      assert.equal(JSON.stringify(frozen?.findings), JSON.stringify(released.findings), "a response never changes the report");
+      pass("the candidate reads the released report without private notes, responds once per request, other workspaces cannot see it, and the team resolves it without changing the report");
 
       await employer.recordDecision(db, memberA, attempt, "hold", "Staging test decision.");
       await employer.flagFinding(db, memberA, attempt, "f2", "Staging test flag.");
@@ -367,7 +408,12 @@ async function main() {
 
     console.log(`ENG_STAGING_OK ${passed} checks`);
   } finally {
-    await cleanup(db, orgIds, userIds, storagePaths);
+    if (process.env.ENG_STAGING_KEEP === "1") {
+      console.log(`KEPT for a browser check (dev only). Candidate ${emails.candidate}, employer ${emails.employerA}, shared test password in KEPT_PASSWORD below. Remove later with the cleanup SQL above.`);
+      console.log(`KEPT_PASSWORD ${password}`);
+    } else {
+      await cleanup(db, orgIds, userIds, storagePaths);
+    }
   }
 }
 
@@ -386,7 +432,7 @@ async function cleanup(db: SupabaseClient, orgIds: string[], userIds: string[], 
       await sql.begin(async (tx) => {
         await tx.unsafe("set local session_replication_role = replica");
         const attemptIds = (await tx`select id from public.eng_attempts where organization_id = any(${orgIds}::uuid[])`).map((r) => r.id as string);
-        for (const table of ["eng_finding_flags", "eng_decisions", "eng_review_notes", "eng_reports", "eng_evaluation_runs", "eng_submissions", "eng_uploads", "eng_drafts", "eng_messages", "eng_attempt_events"]) {
+        for (const table of ["eng_report_responses", "eng_finding_flags", "eng_decisions", "eng_review_notes", "eng_reports", "eng_evaluation_runs", "eng_submissions", "eng_uploads", "eng_drafts", "eng_messages", "eng_attempt_events"]) {
           await tx.unsafe(`delete from public.${table} where attempt_id = any($1::uuid[])`, [attemptIds]);
         }
         await tx`delete from public.eng_attempts where organization_id = any(${orgIds}::uuid[])`;

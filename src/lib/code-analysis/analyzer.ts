@@ -1,10 +1,10 @@
 /**
- * Code-analysis prototype — analyzer orchestration.
+ * Code-analysis prototype - analyzer orchestration.
  *
  * analyzeSource: extract AST facts per file, run deterministic detectors,
  * deduplicate, attach summaries. LLM layer is a clean seam: it is only
  * consulted when a model provider is configured (MODEL_PROVIDER), and it never
- * invents findings — it can only re-rank or explain deterministic findings.
+ * invents findings - it can only re-rank or explain deterministic findings.
  */
 import { extractFacts, type ExtractionResult } from "./pythonAst";
 import { runDetectors, type FileModel } from "./detectors";
@@ -52,7 +52,7 @@ function llmLayer(): LlmLayer {
     return {
       kind: "enabled",
       model: config.model,
-      note: "LLM reranking/explanation is configured but not implemented in this prototype — deterministic findings only.",
+      note: "LLM reranking/explanation is configured but not implemented in this prototype. Deterministic findings only.",
     };
   }
   return {

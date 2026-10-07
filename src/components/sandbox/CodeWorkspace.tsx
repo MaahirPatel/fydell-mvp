@@ -29,6 +29,8 @@ export function CodeWorkspace({ session, busy, onAction, onDirtyChange }: {
       const restored = sessionStorage.getItem(cacheKey);
       if (restored !== null) {
         current.current = restored;
+        // sessionStorage only exists after hydration, so the draft is restored once on mount.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSource(restored);
         if (restored !== saved) setMessage('Recovered your unsaved draft from this tab.');
       }

@@ -1,9 +1,9 @@
 /**
  * Local editor-history importer prototype (VS Code and Cursor).
  *
- * The engineer uploads a file from their own machine — e.g. VS Code's
+ * The engineer uploads a file from their own machine - e.g. VS Code's
  * `globalStorage/state.vscdb` (SQLite), `storage.json`, or a Local History
- * `entries.json` — and we extract work-session evidence from it.
+ * `entries.json` - and we extract work-session evidence from it.
  *
  * Honesty rules for this module:
  *  - Every result carries provenance 'local-import' and a `parseMethod`
@@ -280,7 +280,7 @@ type SqliteDb = {
  * Parse a VS Code / Cursor `state.vscdb` SQLite file.
  * Known layout: table ItemTable(key TEXT PRIMARY KEY, value BLOB) where values
  * are JSON strings. Keys we treat as recognized: history.recentlyOpenedPathsList.
- * Anything else is a labeled heuristic scan — reported, never asserted.
+ * Anything else is a labeled heuristic scan - reported, never asserted.
  */
 export async function parseWorkspaceStateDb(buffer: Buffer, source: "vscode" | "cursor"): Promise<ParsedEditorEvidence> {
   const warnings: string[] = [];

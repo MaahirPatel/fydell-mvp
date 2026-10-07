@@ -1,4 +1,15 @@
 import { invoke } from "@tauri-apps/api/core";
+import type {
+  EngAttemptDetail,
+  EngDraftSave,
+  EngLocalState,
+  EngMessage,
+  EngPackagePlan,
+  EngReceipt,
+  EngReport,
+  EngTaskList,
+  EngUploadOutcome,
+} from "./eng";
 
 // Typed bindings for the Rust commands (see src-tauri/src/*.rs).
 // The desktop is a client of the platform's session API
@@ -350,7 +361,8 @@ export const api = {
   sendMessage: (stakeholderId: string, text: string) =>
     invoke<ChatMessage[]>("send_message", { stakeholderId, text }),
   // Candidate passport (src-tauri/src/passport.rs)
-  getPassport: () => invoke<PassportView | null>("get_passport"),  addProject: (repository: string, contribution: string, githubLogin?: string | null) =>
+  getPassport: () => invoke<PassportView | null>("get_passport"),
+  addProject: (repository: string, contribution: string, githubLogin?: string | null) =>
     invoke<AddProjectResult>("add_project", {
       repository,
       contribution,
@@ -365,4 +377,26 @@ export const api = {
       headline,
       role,
     }),
+};
+
+// Engineering assessments (src-tauri/src/eng.rs) — the /assess/[attemptId]
+// flow on the platform's /api/eng/* routes.
+export const engApi = {
+  listTasks: () => invoke<EngTaskList>("eng_list_tasks"),
+  acceptInvitation: (invitationId: string) => invoke<string>("eng_accept_invitation", { invitationId }),
+  openAttempt: (attemptId: string) => invoke<EngAttemptDetail>("eng_open_attempt", { attemptId }),
+  recordConsent: (attemptId: string) => invoke<EngAttemptDetail>("eng_record_consent", { attemptId }),
+  prepareWorkspace: (attemptId: string) => invoke<EngLocalState>("eng_prepare_workspace", { attemptId }),
+  confirmSetup: (attemptId: string, code: string) => invoke<EngAttemptDetail>("eng_confirm_setup", { attemptId, code }),
+  start: (attemptId: string) => invoke<EngAttemptDetail>("eng_start", { attemptId }),
+  sendMessage: (attemptId: string, body: string) => invoke<EngMessage[]>("eng_send_message", { attemptId, body }),
+  acknowledgeUpdate: (attemptId: string) => invoke<string | null>("eng_acknowledge_update", { attemptId }),
+  saveDraft: (attemptId: string, field: string, body: string, baseRevision: number) =>
+    invoke<EngDraftSave>("eng_save_draft", { attemptId, field, body, baseRevision }),
+  packagePreview: (attemptId: string) => invoke<EngPackagePlan>("eng_package_preview", { attemptId }),
+  uploadPackage: (attemptId: string) => invoke<EngUploadOutcome>("eng_upload_package", { attemptId }),
+  submit: (attemptId: string, uploadId: string, answers: Record<string, string>) =>
+    invoke<EngReceipt>("eng_submit", { attemptId, uploadId, answers }),
+  getReport: (attemptId: string) => invoke<EngReport | null>("eng_get_report", { attemptId }),
+  openWorkspace: (attemptId: string) => invoke<void>("eng_open_workspace", { attemptId }),
 };

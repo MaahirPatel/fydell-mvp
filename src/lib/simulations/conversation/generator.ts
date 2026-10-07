@@ -11,7 +11,7 @@
  * - Withheld content is screened
  * - Response length bounded
  *
- * If the model is unavailable, returns an explicit unavailable state —
+ * If the model is unavailable, returns an explicit unavailable state - 
  * never a fake dynamic response.
  */
 import type { SimulationStakeholder } from "../types";
@@ -54,6 +54,8 @@ export type GenerateResult =
   | {
       status: "unavailable";
       reason: string;
+      /** False when no provider is set up at all, as opposed to a failing one. */
+      configured: boolean;
     }
   | {
       status: "invalid";
@@ -82,7 +84,7 @@ function containsWithheld(text: string, withholds: string[]): string | null {
 export async function generateResponse(input: GenerateInput): Promise<GenerateResult> {
   const config = getProviderConfig();
   if (!config) {
-    return { status: "unavailable", reason: "Model not configured (set MODEL_PROVIDER and its credentials)" };
+    return { status: "unavailable", reason: "Model not configured (set MODEL_PROVIDER and its credentials)", configured: false };
   }
 
   const ctx = buildGenerationContext({
@@ -122,9 +124,9 @@ export async function generateResponse(input: GenerateInput): Promise<GenerateRe
   } catch (err) {
     const reason = err instanceof Error ? err.message : "unknown";
     if (/timed out/i.test(reason)) {
-      return { status: "unavailable", reason: "Model request timed out" };
+      return { status: "unavailable", reason: "Model request timed out", configured: true };
     }
-    return { status: "unavailable", reason: `Model error: ${reason}` };
+    return { status: "unavailable", reason: `Model error: ${reason}`, configured: true };
   }
 
   try {
@@ -147,7 +149,7 @@ export async function generateResponse(input: GenerateInput): Promise<GenerateRe
     }
 
     // Verify grounding: specific claims must be supported by cited facts.
-    // A valid fact ID is not enough — the claim must actually appear in the fact.
+    // A valid fact ID is not enough - the claim must actually appear in the fact.
     const permittedFacts = getPermittedFacts(input.stakeholder);
     const grounding = verifyGrounding(
       validated.response.text,
@@ -204,8 +206,8 @@ export async function generateResponse(input: GenerateInput): Promise<GenerateRe
     };
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
-      return { status: "unavailable", reason: "Model request timed out" };
+      return { status: "unavailable", reason: "Model request timed out", configured: true };
     }
-    return { status: "unavailable", reason: `Model error: ${err instanceof Error ? err.message : "unknown"}` };
+    return { status: "unavailable", reason: `Model error: ${err instanceof Error ? err.message : "unknown"}`, configured: true };
   }
 }

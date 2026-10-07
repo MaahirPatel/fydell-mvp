@@ -1,12 +1,12 @@
 /**
- * AI-04 — Citation validation.
+ * AI-04 - Citation validation.
  *
  * Every material finding must link to a verifiable location: valid lines in
  * the pinned submission snapshot, a test-output record, or an exact message.
- * Invalid references fail validation — the report cannot ship with them.
+ * Invalid references fail validation - the report cannot ship with them.
  *
  * A citation is a claim of the form "this is true, look here". This module
- * checks that "here" exists. It does not check that the claim is *correct* —
+ * checks that "here" exists. It does not check that the claim is *correct* - 
  * that is the reviewer's job (see grounding.ts).
  */
 
@@ -98,7 +98,7 @@ export function validateCitation(
  * Validate the citations of one finding.
  *
  * @param material  true for findings whose claims matter (defects, security,
- *                  high-severity) — these MUST carry at least one citation.
+ *                  high-severity) - these MUST carry at least one citation.
  *                  Non-material notes may carry none.
  */
 export function validateFindingCitations(

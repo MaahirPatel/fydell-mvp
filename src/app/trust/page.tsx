@@ -145,7 +145,7 @@ const LIFECYCLE: {
     state: "Appending",
     mutability: "append",
     Icon: PencilLine,
-    time: "14:20—14:40",
+    time: "14:20–14:40",
   },
   {
     step: "Submission",
@@ -994,7 +994,7 @@ export default function TrustPage() {
                 title="Claim lineage"
                 source={`${NORTHLINE_SCENARIO.company} · synthetic`}
                 meta={
-                  <span className="tabular-nums">14:22 — 17:05</span>
+                  <span className="tabular-nums">14:22–17:05</span>
                 }
                 label="An evidence graph for one claim: source files, the candidate action, the claim and its cited lines, its limitation, the revision after a fact changed, and the employer judgment."
                 footer={

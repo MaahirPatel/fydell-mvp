@@ -12,7 +12,7 @@ import "server-only";
  *
  * Actions that cause an external send (email to a candidate, charge/credit at
  * the provider) require deliberate confirmation: externalSendConfirmedBy must
- * name the operator who approved it — the tool never sends silently.
+ * name the operator who approved it - the tool never sends silently.
  */
 
 export type OperatorActionKind =

@@ -1036,7 +1036,7 @@ export async function getTemplateById(templateId: string): Promise<TemplateRow> 
  * Submit with a full file snapshot (desktop W4 path). The snapshot is
  * validated (every client-claimed hash recomputed server-side), the receipt
  * hash is computed by the server, and everything is stored transactionally
- * via `submit_session_atomic` — all files or none. Idempotent: resubmitting
+ * via `submit_session_atomic` - all files or none. Idempotent: resubmitting
  * returns the existing submission id and its stored receipt hash.
  *
  * The existing `submitSession()` path is untouched; web candidates never send

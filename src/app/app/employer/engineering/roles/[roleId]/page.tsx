@@ -10,6 +10,7 @@ import { InvitationActions, InviteCandidateForm, RoleStatusActions } from "@/com
 import { engAdmin } from "@/lib/eng/context";
 import { listRoleCandidates, pageMember } from "@/lib/eng/employer-view";
 import { isUuid } from "@/lib/eng/http";
+import { candidateIdentity } from "@/lib/eng/candidate-label";
 import { roleCan } from "@/lib/eng/permissions";
 import { FOCUS_OPTIONS, getRoleForOrg } from "@/lib/eng/roles";
 import { scenarioForVersionId } from "@/lib/eng/scenario-versions";
@@ -83,17 +84,18 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
                 {candidates.map((c) => {
                   const state = OPERATIONAL_STATES[c.state];
                   const open = c.attempt && ["accepted", "preflight_passed", "in_progress"].includes(c.attempt.status);
+                  const who = candidateIdentity(c.invitation);
                   return (
                     <TR key={c.invitation.id}>
                       <TDPrimary>
                         {c.attempt ? (
                           <Link href={`/app/employer/engineering/attempts/${c.attempt.id}`} className="hover:underline">
-                            {c.invitation.candidate_name || c.invitation.candidate_email}
+                            {who.primary}
                           </Link>
                         ) : (
-                          c.invitation.candidate_name || c.invitation.candidate_email
+                          who.primary
                         )}
-                        {c.invitation.candidate_name ? <span className="block text-app-meta font-normal text-[var(--text-tertiary)]">{c.invitation.candidate_email}</span> : null}
+                        {who.secondary ? <span className="block text-app-meta font-normal text-[var(--text-tertiary)]">{who.secondary}</span> : null}
                       </TDPrimary>
                       <TD>
                         <span title={state.meaning}>

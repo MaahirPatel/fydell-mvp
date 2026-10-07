@@ -1,5 +1,5 @@
 /**
- * Accounts chunk — server-side lifecycle state machines (checklist § "State
+ * Accounts chunk - server-side lifecycle state machines (checklist § "State
  * machines to make explicit").
  *
  * Three machines are enforced here, exactly as the checklist defines them:
@@ -12,13 +12,13 @@
  * Enforcement is server-side via `applyTransition`: the transition table is
  * the only legal way to move, re-asserting the current state is an idempotent
  * no-op (so retried requests are safe), and every record carries a version
- * counter for optimistic concurrency — a request holding a stale version
+ * counter for optimistic concurrency - a request holding a stale version
  * fails with `version_conflict` instead of regressing or double-applying.
  * Tenancy is checked alongside: a legal transition against another org's
  * record is refused as an authorization failure.
  *
  * The generic `transition()` engine is reused from the simulations v3 state
- * module (import only — that module is owned elsewhere and is not modified).
+ * module (import only - that module is owned elsewhere and is not modified).
  */
 
 import {
@@ -172,8 +172,8 @@ export type ApplyResult<S extends string> =
 
 /**
  * The single server-side way to move a lifecycle record. Guards:
- * 1. tenancy — the actor's org must own the record;
- * 2. optimistic concurrency — `expectedVersion` must match the record;
+ * 1. tenancy - the actor's org must own the record;
+ * 2. optimistic concurrency - `expectedVersion` must match the record;
  * 3. the machine's transition table (via `transition()`).
  *
  * A stale-version retry fails with `version_conflict`; re-asserting the
@@ -221,7 +221,7 @@ export interface AttemptRecord extends VersionedRecord<AttemptState> {
 }
 
 /**
- * Extend an attempt's deadline. The state does not change — the extension is
+ * Extend an attempt's deadline. The state does not change - the extension is
  * recorded as an audited event, exactly as the checklist requires.
  */
 export function extendAttempt(

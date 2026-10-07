@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { recordDecision, type ReviewDecision } from "@/lib/passport/store";
+import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
+import { csrfGuard } from "@/lib/security/csrf";
 
 const DECISIONS: ReviewDecision[] = ["none", "advance", "hold", "decline"];
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const blocked = csrfGuard(req);
+  if (blocked) return blocked;
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const org = await requireOrgMember(user.id);
   if (!org) return NextResponse.json({ error: "No workspace" }, { status: 403 });
+  if (!orgCan(org.role, "record_decisions")) return NextResponse.json({ error: capabilityDeniedMessage("record_decisions") }, { status: 403 });
   const { id } = await params;
   const body = (await req.json().catch(() => null)) as { decision?: unknown; note?: unknown } | null;
   const decision = DECISIONS.find((d) => d === body?.decision);

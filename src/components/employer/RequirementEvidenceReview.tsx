@@ -5,13 +5,13 @@ import type { PassportEvidence } from "@/lib/passport/view";
 import type { EvidenceMapping, ReviewQuestion, MappingStatus } from "@/lib/employer/review";
 
 /**
- * H06 — Requirement-to-evidence review screen.
+ * H06 - Requirement-to-evidence review screen.
  *
  * Three panels: requirements left, evidence center, source drawer right.
  * Each requirement shows mapped evidence and uncertainty; the reviewer can
  * accept a mapping, correct it, or ask a follow-up question (H09).
  *
- * "Not established" is visually distinct from "cannot do" — unresolved
+ * "Not established" is visually distinct from "cannot do" - unresolved
  * requirements show the amber question state, never a red failure mark.
  */
 
@@ -22,6 +22,14 @@ interface Props {
   requirements: string[];
   evidence: PassportEvidence[];
   candidateName: string;
+}
+
+function dayFromNow(days: number): string {
+  return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+}
+
+function newRequestId(): string {
+  return `q_${crypto.randomUUID().replace(/-/g, "")}`;
 }
 
 const STATUS_LABEL: Record<MappingStatus, string> = {
@@ -80,27 +88,33 @@ export default function RequirementEvidenceReview({
   const [selectedReq, setSelectedReq] = useState(0);
   const [drawerEvidence, setDrawerEvidence] = useState<PassportEvidence | null>(null);
   const [questionDraft, setQuestionDraft] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [requestId, setRequestId] = useState(newRequestId);
   const [askingFor, setAskingFor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/employer/review/${roleId}/${shareId}`);
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Could not load review.");
-      setMappings(data.mappings);
-      setQuestions(data.questions);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load review.");
-    } finally {
-      setLoading(false);
-    }
-  }, [roleId, shareId]);
+  const load = useCallback(
+    () =>
+      fetch(`/api/employer/review/${roleId}/${shareId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.ok) throw new Error(data.error || "Could not load review.");
+          setMappings(data.mappings);
+          setQuestions(data.questions);
+        })
+        .catch((e: unknown) => {
+          setError(e instanceof Error ? e.message : "Could not load review.");
+        })
+        .finally(() => {
+          setLoading(false);
+        }),
+    [roleId, shareId],
+  );
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   const mappingFor = (index: number) => mappings.find((m) => m.requirementIndex === index);
@@ -137,33 +151,61 @@ export default function RequirementEvidenceReview({
     }
   }
 
-  async function askFollowUp(mappingId: string | null) {
-    if (!questionDraft.trim()) return;
+  async function askFollowUp(index: number) {
+    if (!questionDraft.trim() || saving) return;
     setSaving(true);
     setError(null);
     try {
+      // A question is always attached to its requirement; create the
+      // assessment first when this requirement has none yet.
+      let mapping = mappingFor(index);
+      if (!mapping) {
+        const created = await fetch(`/api/employer/review/${roleId}/${shareId}/mappings`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ requirementText: requirements[index], requirementIndex: index, evidenceProjectId: null, evidenceId: null, status: "questioned", reviewerNote: "" }),
+        });
+        const createdData = (await created.json()) as { ok?: boolean; error?: string; mapping?: EvidenceMapping };
+        if (!createdData.ok || !createdData.mapping) throw new Error(createdData.error || "Could not save the requirement before asking.");
+        mapping = createdData.mapping;
+      }
       const res = await fetch(`/api/employer/review/${roleId}/${shareId}/questions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: questionDraft.trim(), mappingId }),
+        body: JSON.stringify({ question: questionDraft.trim(), mappingId: mapping.id, dueAt: dueDate ? new Date(`${dueDate}T23:59:00`).toISOString() : null, clientRequestId: requestId }),
       });
       const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Could not ask question.");
+      if (!data.ok) throw new Error(data.error || "Could not send the question. Your draft is kept; try again.");
       setQuestionDraft("");
+      setDueDate("");
+      setRequestId(newRequestId());
       setAskingFor(null);
-      const mapping = mappings.find((m) => m.id === mappingId);
-      if (mapping) {
-        await saveMapping(mapping.requirementIndex, {
-          evidenceId: mapping.evidenceId,
-          status: "questioned",
-        });
+      if (mapping.status !== "questioned") {
+        await saveMapping(index, { evidenceId: mapping.evidenceId, status: "questioned" });
       } else {
         await load();
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not ask question.");
+      setError(e instanceof Error ? e.message : "Could not send the question. Your draft is kept; try again.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function updateQuestion(questionId: string, action: "reviewed" | "close" | "reopen") {
+    setError(null);
+    try {
+      const res = await fetch(`/api/employer/review/${roleId}/${shareId}/questions`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionId, action }),
+      });
+      const data = (await res.json()) as { ok?: boolean; error?: string; question?: ReviewQuestion };
+      if (!data.ok || !data.question) throw new Error(data.error || "Could not update the question.");
+      const updated = data.question;
+      setQuestions((list) => list.map((q) => (q.id === questionId ? updated : q)));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not update the question.");
     }
   }
 
@@ -434,15 +476,31 @@ export default function RequirementEvidenceReview({
                   resize: "vertical",
                 }}
               />
+              <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, fontSize: 13, color: "var(--ink-secondary)" }}>
+                Answer by (optional)
+                <input
+                  type="date"
+                  value={dueDate}
+                  min={dayFromNow(1)}
+                  max={dayFromNow(60)}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  style={{ fontSize: 13, padding: "4px 8px", borderRadius: "var(--radius-control)", border: "1px solid var(--control-border)", fontFamily: "inherit" }}
+                />
+              </label>
+              {dueDate ? (
+                <p style={{ fontSize: 12, color: "var(--ink-secondary)", margin: "4px 0 0" }}>
+                  The candidate will see this date. Only set one your team will hold to.
+                </p>
+              ) : null}
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 <button
-                  onClick={() => askFollowUp(current?.id ?? null)}
+                  onClick={() => askFollowUp(selectedReq)}
                   disabled={saving || !questionDraft.trim()}
                   style={actionButtonStyle(true)}
                 >
-                  Send question
+                  {saving ? "Sending…" : "Send question"}
                 </button>
-                <button onClick={() => { setAskingFor(null); setQuestionDraft(""); }} style={actionButtonStyle(false)}>
+                <button onClick={() => { setAskingFor(null); setQuestionDraft(""); setDueDate(""); }} style={actionButtonStyle(false)}>
                   Cancel
                 </button>
               </div>
@@ -465,14 +523,35 @@ export default function RequirementEvidenceReview({
                     marginBottom: 8,
                   }}
                 >
+                  <p style={{ fontSize: 12, color: "var(--ink-secondary)", margin: "0 0 4px" }}>
+                    {q.status === "closed"
+                      ? "Closed"
+                      : q.status === "answered"
+                        ? q.reviewedAt
+                          ? "Answered · read"
+                          : "Answered · needs your review"
+                        : `Waiting for the candidate${q.dueAt ? ` · due ${new Date(q.dueAt).toLocaleDateString()}` : ""}`}
+                  </p>
                   <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 6px" }}>{q.question}</p>
                   {q.response ? (
-                    <p style={{ fontSize: 13, color: "var(--ink-secondary)", margin: 0 }}>{q.response}</p>
-                  ) : (
-                    <p style={{ fontSize: 12, fontStyle: "italic", color: "var(--ink-secondary)", margin: 0 }}>
-                      Awaiting candidate response
-                    </p>
-                  )}
+                    <p style={{ fontSize: 13, color: "var(--ink-secondary)", margin: 0, whiteSpace: "pre-wrap" }}>{q.response}</p>
+                  ) : null}
+                  <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                    {q.status === "answered" && !q.reviewedAt ? (
+                      <button onClick={() => void updateQuestion(q.id, "reviewed")} style={actionButtonStyle(true)}>
+                        Mark as read
+                      </button>
+                    ) : null}
+                    {q.status !== "closed" ? (
+                      <button onClick={() => void updateQuestion(q.id, "close")} style={actionButtonStyle(false)}>
+                        Close question
+                      </button>
+                    ) : (
+                      <button onClick={() => void updateQuestion(q.id, "reopen")} style={actionButtonStyle(false)}>
+                        Reopen
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -552,14 +631,20 @@ export default function RequirementEvidenceReview({
                 </ul>
               </div>
             )}
-            <a
-              href={drawerEvidence.sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-              style={{ fontSize: 13, color: "var(--action)", display: "inline-block", marginTop: 16 }}
-            >
-              Open in repository →
-            </a>
+            {drawerEvidence.sourceUrl ? (
+              <a
+                href={drawerEvidence.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{ fontSize: 13, color: "var(--action)", display: "inline-block", marginTop: 16 }}
+              >
+                Open in repository →
+              </a>
+            ) : (
+              <p style={{ fontSize: 13, color: "var(--ink-secondary)", marginTop: 16 }}>
+                Uploaded by the candidate. There is no hosted repository to open.
+              </p>
+            )}
           </div>
         </div>
       )}

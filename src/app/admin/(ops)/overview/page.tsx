@@ -10,6 +10,7 @@ import {
 } from "@/components/admin/AdminUi";
 import { getOpsMetrics } from "@/lib/ops/metrics";
 import { listPilotRequests } from "@/lib/ops/pilot-requests";
+import { loadOpsSnapshot, stuckTotal } from "@/lib/ops/stuck-work";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminOverviewPage() {
   const metrics = await getOpsMetrics();
   const recent = await listPilotRequests(8);
+  const stuck = isSupabaseConfigured() ? stuckTotal(await loadOpsSnapshot(getSupabaseAdmin())) : 0;
   const emailConfigured = Boolean(process.env.RESEND_API_KEY);
 
   let failedEmails: Array<{
@@ -39,6 +41,12 @@ export default async function AdminOverviewPage() {
   }
 
   const cards = [
+    {
+      label: "Stuck work",
+      value: stuck,
+      href: "/admin/operations",
+      hint: "Evaluations, uploads, imports",
+    },
     {
       label: "New requests",
       value: metrics.newPilotRequests,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { getSessionForCandidate, saveSessionState } from "@/lib/simulations/db";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -65,7 +66,7 @@ export async function PATCH(
     return NextResponse.json({ ok: true, revision: result.revision });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Save failed" },
+      { error: publicErrorMessage(err, "Save failed") },
       { status: 400 }
     );
   }

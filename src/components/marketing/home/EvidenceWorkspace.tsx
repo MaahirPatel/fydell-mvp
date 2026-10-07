@@ -111,7 +111,7 @@ function EvidenceList({
     <div className="space-y-4">
       {groups.map((group) => (
         <div key={group.heading}>
-          <p className="px-2 text-app-caption font-medium uppercase tracking-[0.07em] text-[var(--text-tertiary)]">{group.heading}</p>
+          <p className="px-2 text-app-caption font-medium text-[var(--text-tertiary)]">{group.heading}</p>
           <ul className="mt-1.5 space-y-0.5">
             {group.items.map((item) => {
               const Icon = KIND[item.kind].icon;

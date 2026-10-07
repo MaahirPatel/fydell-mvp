@@ -429,8 +429,13 @@ mod tests {
         assert!(out.contains("code=abc"), "code wrongly redacted: {out}");
     }
 
+    /// The error ring is process-global; tests that clear and inspect it
+    /// must not interleave when the harness runs them in parallel.
+    static RING_TEST_LOCK: Mutex<()> = Mutex::new(());
+
     #[test]
     fn error_ring_is_capped() {
+        let _serial = RING_TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let ring = errors();
         ring.lock().unwrap().clear();
         for i in 0..(RING_CAP + 5) {
@@ -443,6 +448,7 @@ mod tests {
 
     #[test]
     fn note_error_redacts_before_storing() {
+        let _serial = RING_TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let ring = errors();
         ring.lock().unwrap().clear();
         note_error(

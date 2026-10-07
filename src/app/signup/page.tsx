@@ -1,68 +1,52 @@
-"use client";
+import SignupView, { type SignupAudience } from "@/components/auth/SignupView";
+import { EmployerAside, EngineerAside } from "@/components/auth/SignupAside";
+import type { SignupPath } from "@/components/auth/SignupForm";
+import { partnerSignupEnabled } from "@/lib/auth/flags";
+import { isCandidateDestination, isEmployerDestination, safeNext } from "@/lib/auth/safe-next";
+import { CURRENT_SCENARIO } from "@/lib/eng/scenarios";
 
-import { Suspense } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import AuthShell from "@/components/auth/AuthShell";
-import SignupForm from "@/components/auth/SignupForm";
-import { isCandidateDestination, withNext } from "@/lib/auth/safe-next";
-
-function SignupContent() {
-  const params = useSearchParams();
-  const next = params.get("next");
-  const as = params.get("as");
-  const candidate = isCandidateDestination(next);
-  const audience = candidate ? "invited" : as === "developer" ? "developer" : as === "employer" ? "employer" : "unchosen";
-
-  const copy = {
-    invited: {
-      title: "Create your Fydell account",
-      description: "Create an account to open the assessment you were invited to. Your progress is saved as you work.",
-    },
-    developer: {
-      title: "Create your developer account",
-      description: "Your Engineering Passport starts here. No company workspace is created, and nothing is shared until you choose.",
-    },
-    employer: {
-      title: "Create your hiring workspace",
-      description: "Set up your account and company workspace, then define your first role.",
-    },
-    unchosen: {
-      title: "Create your Fydell account",
-      description: "You will choose whether you are a developer or hiring on the next step.",
-    },
-  }[audience];
-
-  return (
-    <AuthShell
-      title={copy.title}
-      description={copy.description}
-      footer={
-        <>
-          Already have an account?{" "}
-          <Link href={withNext("/login", next)} className="font-medium text-[var(--text-primary)] underline underline-offset-2">
-            Sign in
-          </Link>
-          {audience === "developer" || audience === "employer" ? (
-            <>
-              {" · "}
-              <Link href="/get-started" className="font-medium text-[var(--text-primary)] underline underline-offset-2">
-                {audience === "developer" ? "Hiring instead?" : "A developer instead?"}
-              </Link>
-            </>
-          ) : null}
-        </>
-      }
-    >
-      <SignupForm path={audience === "developer" ? "fde" : audience === "employer" ? "employer" : undefined} />
-    </AuthShell>
-  );
+function one(value: string | string[] | undefined): string | null {
+  return typeof value === "string" ? value : null;
 }
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const next = safeNext(one(params.next));
+  const as = one(params.as);
+
+  const candidate = isCandidateDestination(next);
+  const audience: SignupAudience = candidate ? (next?.startsWith("/jobs/") ? "applicant" : "invited") : "open";
+
+  const initialPath: SignupPath | null = candidate
+    ? "fde"
+    : isEmployerDestination(next) || as === "employer"
+      ? "employer"
+      : as === "developer" || as === "engineer"
+        ? "fde"
+        : null;
+
+  const task = {
+    scenarioKey: CURRENT_SCENARIO.key,
+    version: CURRENT_SCENARIO.version,
+    title: CURRENT_SCENARIO.title,
+    summary: CURRENT_SCENARIO.summary,
+    targetMinutes: CURRENT_SCENARIO.targetMinutes,
+    allowedMinutes: CURRENT_SCENARIO.defaultAllowedMinutes,
+    stack: CURRENT_SCENARIO.stack,
+  };
+
   return (
-    <Suspense fallback={<div className="min-h-[100dvh] bg-[var(--surface-canvas)]" />}>
-      <SignupContent />
-    </Suspense>
+    <SignupView
+      audience={audience}
+      initialPath={initialPath}
+      next={next}
+      partnerEnabled={partnerSignupEnabled()}
+      engineerAside={<EngineerAside />}
+      employerAside={<EmployerAside task={task} />}
+    />
   );
 }

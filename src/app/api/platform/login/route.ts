@@ -10,6 +10,7 @@ import { resolvePostLoginDestination } from "@/lib/auth/resolve-post-login";
 import { ensureEmployerOnboardingRow } from "@/lib/pilot/lifecycle";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isSupabaseAuthConfigured } from "@/lib/supabase";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export async function POST(req: Request) {
   try {
@@ -93,7 +94,7 @@ export async function POST(req: Request) {
       reason: "reason" in dest ? dest.reason : undefined,
     });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Could not sign in.";
+    const msg = publicErrorMessage(err, "Could not sign in.");
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

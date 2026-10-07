@@ -1,11 +1,11 @@
 /**
- * AI-13 — Confidential-input minimization.
+ * AI-13 - Confidential-input minimization.
  *
  * Principle: the model receives the smallest authorized input that still
  * supports the review. This module is the allowlist: exactly these fields may
  * leave our infrastructure for model review, each with its justification.
- * Everything else — full repository, credentials, unrelated files, candidate
- * PII beyond their handle — is excluded by construction.
+ * Everything else - full repository, credentials, unrelated files, candidate
+ * PII beyond their handle - is excluded by construction.
  *
  * Provider posture (documented, not assumed): no standing claim is made here
  * about any provider's training/retention behavior. The deployment checklist

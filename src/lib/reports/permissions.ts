@@ -1,5 +1,5 @@
 /**
- * Employer chunk — REP-06: report permissions.
+ * Employer chunk - REP-06: report permissions.
  *
  * Only authorized reviewers see employer reports:
  * - the viewer must be an active member of the report's organization, and
@@ -76,5 +76,5 @@ export function canExportReport(
 }
 
 export function sensitivityLabel(brief: DecisionBrief): string {
-  return `CONFIDENTIAL — employer hiring evidence · ${brief.roleTitle} · report v${brief.reportVersion} · ${brief.scenarioVersion}`;
+  return `CONFIDENTIAL. Employer hiring evidence · ${brief.roleTitle} · report v${brief.reportVersion} · ${brief.scenarioVersion}`;
 }

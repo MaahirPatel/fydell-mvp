@@ -1,5 +1,5 @@
 /**
- * Code-analysis prototype — deterministic detectors over AST facts.
+ * Code-analysis prototype - deterministic detectors over AST facts.
  *
  * Every detector cites exact file/line evidence. Severity "bug" is reserved
  * for defects the evidence actually shows; anything conditional is "risk"
@@ -143,7 +143,7 @@ function classifyDropUsage(
       usages.add("count");
       continue;
     }
-    // Single-key projection: [x["k"] for x in VAR] — ids surface, payload lost.
+    // Single-key projection: [x["k"] for x in VAR] - ids surface, payload lost.
     if (
       /\bfor\b/.test(line) &&
       new RegExp(`\\bfor\\s+\\w+\\s+in\\s+${droppedVar}\\b`).test(line)
@@ -151,7 +151,7 @@ function classifyDropUsage(
       usages.add(/\[.*\["[^"]+"\]/.test(line) ? "ids" : "payload");
       continue;
     }
-    // Truthiness/emptiness checks are neutral — neither use nor surfacing.
+    // Truthiness/emptiness checks are neutral - neither use nor surfacing.
     if (new RegExp(`^\\s*if\\s+(not\\s+)?${droppedVar}\\s*:`).test(line)) {
       usages.add("check");
       continue;
@@ -167,7 +167,7 @@ function detectSilentDrop(all: FileModel[]): Finding[] {
   for (const model of all) {
     for (const f of funcs(model)) {
       // Partition: two comprehensions over the same iterable, one `in`,
-      // one `not in` — or a single filtered comprehension with a
+      // one `not in` - or a single filtered comprehension with a
       // drop-named return.
       const assigns = model.facts.filter(
         (a) => a.kind === "assign" && a.enclosing === f.name,
@@ -220,7 +220,7 @@ function detectSilentDrop(all: FileModel[]): Finding[] {
         const container = enclosingFunc(site.model, site.call.lineno);
         if (!container) {
           untraceable++;
-          siteNotes.push(`${site.model.path}:${site.call.lineno} (call at module level — usage could not be traced into a function)`);
+          siteNotes.push(`${site.model.path}:${site.call.lineno} (call at module level. Usage could not be traced into a function)`);
           continue;
         }
         // Binding position: which tuple slot holds the dropped partition.
@@ -243,7 +243,7 @@ function detectSilentDrop(all: FileModel[]): Finding[] {
         const usages = classifyDropUsage(site.model, site.call, container, boundVar);
         const via = site.viaAlias ? ` via parameter \`${site.viaAlias}\`` : "";
         siteNotes.push(
-          `${site.model.path}:${site.call.lineno}${via} — \`${boundVar}\` is ${usages.join("+")}`,
+          `${site.model.path}:${site.call.lineno}${via}. \`${boundVar}\` is ${usages.join("+")}`,
         );
         evidence.push(
           ev(site.model, site.call, "call_site", `\`${boundVar}\` usage after this call: ${usages.join(", ")}${via}`),
@@ -269,7 +269,7 @@ function detectSilentDrop(all: FileModel[]): Finding[] {
         summary:
           `\`${f.name}\` splits input rows into kept and \`${droppedVar}\` via an exact-match membership test. ` +
           (severity === "bug"
-            ? `At ${tracedSilent} traced call site${tracedSilent === 1 ? "" : "s"}, the \`${droppedVar}\` rows are only counted or have their ids listed — their payload never influences any computed output. Rows vanish from the metric without warning.` +
+            ? `At ${tracedSilent} traced call site${tracedSilent === 1 ? "" : "s"}, the \`${droppedVar}\` rows are only counted or have their ids listed. Their payload never influences any computed output. Rows vanish from the metric without warning.` +
               (tracedHandled > 0
                 ? ` (${tracedHandled} other call site${tracedHandled === 1 ? "" : "s"} handle${tracedHandled === 1 ? "s" : ""} the dropped rows.)`
                 : "")
@@ -283,7 +283,7 @@ function detectSilentDrop(all: FileModel[]): Finding[] {
               ? "No call sites of this function exist in the analyzed files, so downstream handling of the dropped partition is unknown."
               : `Call-site handling: ${siteNotes.join("; ")}`,
         suggestedFix:
-          "Do not let the dropped partition vanish: reconcile it (normalize ids and re-match), or surface every dropped row for human review — a loud failure beats a silent one.",
+          "Do not let the dropped partition vanish: reconcile it (normalize ids and re-match), or surface every dropped row for human review. A loud failure beats a silent one.",
         relatedCodes: ["FRAGILE_ID_JOIN"],
       });
     }
@@ -353,8 +353,8 @@ function detectFragileJoin(all: FileModel[]): Finding[] {
           );
         const testIter = ((comp ?? loop)?.iterSource ?? "").replace(/\s+/g, "");
         const { iter: setIter, rhs: setRhs } = setInfo.get(right)!;
-        if (testIter && testIter === setIter) continue; // same source — not cross-source
-        // The set itself was built from normalized values — not fragile.
+        if (testIter && testIter === setIter) continue; // same source - not cross-source
+        // The set itself was built from normalized values - not fragile.
         if (NORMALIZE_RE.test(setRhs)) continue;
         // Normalization anywhere on the key path?
         const keyNormalized =
@@ -373,7 +373,7 @@ function detectFragileJoin(all: FileModel[]): Finding[] {
             (a.targets ?? []).includes(right),
         );
         // Bug-grade only when the test partitions input rows (a sibling
-        // comprehension over the same iterable with the negated test) — there
+        // comprehension over the same iterable with the negated test) - there
         // the silent-exclusion mechanism is directly demonstrated. Otherwise
         // the analyzer cannot trace data flow between the two sources, so the
         // pattern is reported as a risk with the uncertainty stated.
@@ -410,7 +410,7 @@ function detectFragileJoin(all: FileModel[]): Finding[] {
             ? undefined
             : "The analyzer does not trace data flow between the two id sources. If both sets are already known to share one canonical format, this match is safe and the finding is a false positive.",
           suggestedFix:
-            "Canonicalize both id sets to one format before comparing (strip prefixes, zero-pad, normalize case) — or reuse this codebase's existing normalization if one exists.",
+            "Canonicalize both id sets to one format before comparing (strip prefixes, zero-pad, normalize case). Or reuse this codebase's existing normalization if one exists.",
         });
         break; // one finding per function is enough
       }
@@ -455,7 +455,7 @@ function detectLossyDefault(all: FileModel[], flagged: Set<string>): Finding[] {
           file: model.path,
           line: f.lineno,
           summary:
-            `\`${f.name}\` defaults \`${p.arg}\` to \`${defName}\`, which is flagged as a lossy/exact-match implementation, while \`${alt.name}\` — the reconciled alternative — exists in the codebase but is never wired in. Callers that accept the default silently get the defective behavior.`,
+            `\`${f.name}\` defaults \`${p.arg}\` to \`${defName}\`, which is flagged as a lossy/exact-match implementation, while \`${alt.name}\`. The reconciled alternative. Exists in the codebase but is never wired in. Callers that accept the default silently get the defective behavior.`,
           evidence: [
             ev(model, f, "defect", `Default parameter \`${p.arg} = ${defName}\``),
             ev(altModel, alt, "remediation", `Existing reconciled alternative, never used as the default`),
@@ -484,7 +484,7 @@ function detectMutableDefault(all: FileModel[]): Finding[] {
             file: model.path,
             line: f.lineno,
             summary:
-              `Parameter \`${p.arg}\` defaults to mutable \`${p.defSrc}\`. The default is created once at def time and shared across calls — mutations leak between invocations.`,
+              `Parameter \`${p.arg}\` defaults to mutable \`${p.defSrc}\`. The default is created once at def time and shared across calls. Mutations leak between invocations.`,
             evidence: [ev(model, f, "defect", `def …(${p.arg}=${p.defSrc}, …)`)],
             confidence: "high",
             suggestedFix: `Default \`${p.arg}\` to None and create a fresh container inside the body.`,
@@ -510,10 +510,10 @@ function detectRiskyExcept(all: FileModel[]): Finding[] {
         summary:
           h.handlerType === "bare"
             ? "A bare `except:` catches everything including KeyboardInterrupt/SystemExit, hiding real failures."
-            : "The handler body is just `pass` — any exception here disappears without a trace, including ones the caller needs to know about.",
+            : "The handler body is just `pass`. Any exception here disappears without a trace, including ones the caller needs to know about.",
         evidence: [ev(model, h, "defect")],
         confidence: "high",
-        uncertainAbout: "Whether any caller depends on distinguishing these failures — the handler makes that impossible to tell.",
+        uncertainAbout: "Whether any caller depends on distinguishing these failures. The handler makes that impossible to tell.",
         suggestedFix: "Catch the narrowest exception type you expect and log or re-raise the rest.",
       });
     }
@@ -566,7 +566,7 @@ function detectUncheckedSubscript(all: FileModel[]): Finding[] {
           evidence: [ev(model, s, "defect")],
           confidence: "medium",
           uncertainAbout:
-            "Whether upstream data is guaranteed to contain this key (e.g. csv headers usually are) — the analyzer cannot prove the input contract.",
+            "Whether upstream data is guaranteed to contain this key (e.g. csv headers usually are). The analyzer cannot prove the input contract.",
           suggestedFix: `Use \`${base}.get("${s.key}")\` with an explicit policy for the missing case, or validate the row shape once at ingestion.`,
         });
       }
@@ -588,7 +588,7 @@ function detectSecurity(all: FileModel[]): Finding[] {
         summary: `\`${d.callee}()\` executes a string as code. If any part of that string is influenced by outside input, it is arbitrary code execution.`,
         evidence: [ev(model, d, "defect")],
         confidence: "high",
-        uncertainAbout: "Whether the evaluated string can ever contain untrusted input — if it is fully constructed from constants, the practical risk is lower.",
+        uncertainAbout: "Whether the evaluated string can ever contain untrusted input. If it is fully constructed from constants, the practical risk is lower.",
         suggestedFix: "Replace with explicit dispatch (a dict of callables, ast.literal_eval for data) so no string is ever executed.",
       });
     }
@@ -599,7 +599,7 @@ function detectSecurity(all: FileModel[]): Finding[] {
         title: "Subprocess with shell=True",
         file: model.path,
         line: s.lineno,
-        summary: "Runs a shell command from a string with shell=True — shell metacharacters in any interpolated value become command injection.",
+        summary: "Runs a shell command from a string with shell=True. Shell metacharacters in any interpolated value become command injection.",
         evidence: [ev(model, s, "defect")],
         confidence: "high",
         uncertainAbout: "Whether the command string interpolates untrusted data; with pure constants the risk is contained but the pattern is still fragile.",
@@ -616,7 +616,7 @@ function detectSecurity(all: FileModel[]): Finding[] {
         summary: `A string literal is assigned to a name that looks like a credential. If this is a real secret it is now in version control forever.`,
         evidence: [ev(model, p, "defect")],
         confidence: "medium",
-        uncertainAbout: "Whether the value is a real credential or a placeholder/test value — the analyzer cannot tell; verify against your secret manager.",
+        uncertainAbout: "Whether the value is a real credential or a placeholder/test value. The analyzer cannot tell; verify against your secret manager.",
         suggestedFix: "Move to environment configuration or a secret manager; rotate the value if it was ever real.",
       });
     }

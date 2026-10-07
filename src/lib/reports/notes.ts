@@ -1,5 +1,5 @@
 /**
- * Employer chunk — REP-05: reviewer work support.
+ * Employer chunk - REP-05: reviewer work support.
  *
  * - Private notes: reviewer-scoped, persisted, and EXCLUDED from anything
  *   candidate-facing (see candidateSafeReport below and permissions.ts).

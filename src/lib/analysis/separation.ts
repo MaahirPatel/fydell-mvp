@@ -1,11 +1,11 @@
 /**
- * AI-01 — Separation of deterministic and interpretive results.
+ * AI-01 - Separation of deterministic and interpretive results.
  *
  * Hard rule: actual test results live ONLY in the deterministic section,
  * produced by the evaluator-controlled harness. The interpretive (model)
  * section may *cite* those results ("the harness reports 2 failures, see
  * test run t-118") but it can never *declare* a verdict. A model that writes
- * `testsPassed: true` is not "optimistic" — it is invalid output, rejected
+ * `testsPassed: true` is not "optimistic" - it is invalid output, rejected
  * before it can reach a report.
  *
  * This is enforced twice:
@@ -17,7 +17,7 @@
 import type { Citation } from "./citations";
 
 /* ------------------------------------------------------------------ */
-/* Deterministic section — produced by harness/engine, never by model  */
+/* Deterministic section - produced by harness/engine, never by model  */
 /* ------------------------------------------------------------------ */
 
 export type TestStatus = "passed" | "failed" | "error" | "skipped";
@@ -67,13 +67,13 @@ export function summarizeTests(d: DeterministicSection): {
 }
 
 /* ------------------------------------------------------------------ */
-/* Interpretive section — model prose; verdict fields are forbidden    */
+/* Interpretive section - model prose; verdict fields are forbidden    */
 /* ------------------------------------------------------------------ */
 
 /**
  * Keys a model must never emit as data. "testsPassed" with a boolean value
  * is a verdict declaration. A model may still write prose like "the harness
- * reports two failures (t-118, t-121)" — that is a *citation*, checked by
+ * reports two failures (t-118, t-121)" - that is a *citation*, checked by
  * contradiction detection in modelOutput.ts.
  */
 export const FORBIDDEN_VERDICT_KEYS = [
@@ -97,7 +97,7 @@ function isRecord(v: unknown): v is Record<string, unknown> {
  *
  * A key counts as a verdict declaration only when it carries a verdict-like
  * value (boolean, or a pass/fail-ish string/number). A prose string that
- * merely *mentions* tests is not a verdict — contradiction with the
+ * merely *mentions* tests is not a verdict - contradiction with the
  * deterministic section is checked separately.
  */
 export function findTestVerdicts(value: unknown, path = "$"): string[] {
@@ -137,7 +137,7 @@ export function assertNoTestVerdict(modelOutput: unknown): void {
 }
 
 /* ------------------------------------------------------------------ */
-/* Report assembly — the two sections stay visibly distinct            */
+/* Report assembly - the two sections stay visibly distinct            */
 /* ------------------------------------------------------------------ */
 
 export interface InterpretiveSection {
@@ -146,7 +146,7 @@ export interface InterpretiveSection {
     id: string;
     dimension: string;
     claim: string;
-    /** reproduced_defect | hypothesis | observation — see grounding.ts */
+    /** reproduced_defect | hypothesis | observation - see grounding.ts */
     status: string;
     citations: Citation[];
   }[];

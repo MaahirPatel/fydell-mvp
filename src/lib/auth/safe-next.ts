@@ -21,6 +21,7 @@ const ALLOWED_PREFIXES = [
   "/record/",
   "/results/",
   "/account/",
+  "/jobs/",
 ] as const;
 
 /** Exact paths that are allowed but have no trailing segment. */
@@ -103,6 +104,7 @@ export function isCandidateDestination(next: string | null | undefined): boolean
     safe.startsWith("/sim/") ||
     safe.startsWith("/record/") ||
     safe.startsWith("/results/") ||
+    safe.startsWith("/jobs/") ||
     safe.startsWith("/app/candidate")
   );
 }

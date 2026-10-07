@@ -91,7 +91,7 @@ export function assertPublishedImmutable(
 }
 
 /**
- * Attempting to edit a published version in place is always wrong — force
+ * Attempting to edit a published version in place is always wrong - force
  * the caller through nextVersion(). This helper makes the intent explicit
  * at call sites.
  */

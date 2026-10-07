@@ -6,7 +6,7 @@
  * work events → submission → evidence → findings → report.
  *
  * Version: v1
- * Do not use model-generated narrative as the primary schema — these types
+ * Do not use model-generated narrative as the primary schema - these types
  * are the source of truth.
  */
 

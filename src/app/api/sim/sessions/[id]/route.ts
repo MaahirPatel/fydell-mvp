@@ -25,6 +25,7 @@ import { DISCLOSED_EVENT_TAXONOMY, TELEMETRY_DISCLOSURE } from "@/lib/simulation
 import { HANDOFF_FIELDS } from "@/lib/simulations/handoff";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { CONSENT_POLICY_VERSION } from "@/lib/pilot/consent";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -74,7 +75,7 @@ export async function GET(
     }
 
     // Deliver proactive teammate messages due right now (session welcome,
-    // elapsed-time nudges). Best-effort and idempotent — re-running this
+    // elapsed-time nudges). Best-effort and idempotent - re-running this
     // route never duplicates a message.
     let messagesForView = messages;
     if (session.status === "active") {
@@ -112,7 +113,7 @@ export async function GET(
 
     // W3: versioned, candidate-safe file package for scenario-backed sessions.
     // Convention: template slug == scenario directory name. Null when the
-    // template has no on-disk scenario or the package fails to build — the
+    // template has no on-disk scenario or the package fails to build - the
     // failure is logged server-side and the client falls back to
     // `state.workspace.files`. A broken package must never break this route
     // for web candidates.
@@ -184,7 +185,7 @@ export async function GET(
       })),
     });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Failed to load session";
+    const msg = publicErrorMessage(err, "Failed to load session");
     return NextResponse.json({ error: msg }, { status: msg === "Forbidden" ? 403 : 404 });
   }
 }

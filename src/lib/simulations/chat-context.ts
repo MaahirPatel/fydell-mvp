@@ -1,7 +1,7 @@
 import "server-only";
 /**
  * SessionChatContext: grounded, observable facts about what the candidate has
- * actually done in this session. Built from session state + events — never
+ * actually done in this session. Built from session state + events - never
  * from answer keys, rubrics, or hidden scenario material.
  *
  * Stakeholder replies use this to stay aware of the session (files opened,
@@ -153,7 +153,7 @@ export function buildSessionChatContext(input: ChatContextInput): SessionChatCon
 
 /**
  * Human-readable one-liners describing the session, for the AI redraft prompt.
- * Facts only — never answers, rubrics, or hidden content.
+ * Facts only - never answers, rubrics, or hidden content.
  */
 export function describeSessionContext(ctx: SessionChatContext): string[] {
   const lines = [

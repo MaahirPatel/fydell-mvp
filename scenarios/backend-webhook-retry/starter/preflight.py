@@ -8,7 +8,7 @@ import hashlib
 import subprocess
 import sys
 
-SCENARIO = "backend-webhook-retry:v1"
+SCENARIO = "backend-webhook-retry:v2"
 SUPPORTED = ((3, 11), (3, 12), (3, 13))
 
 

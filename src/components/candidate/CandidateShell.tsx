@@ -1,6 +1,7 @@
 import Link from "next/link";
 import FydellLogo from "@/components/brand/FydellLogo";
 import SignOutButton from "@/components/employer/SignOutButton";
+import NotificationBell from "@/components/notifications/NotificationBell";
 import { CONTACT_MAILTO } from "@/lib/contact";
 import s from "./candidate.module.css";
 
@@ -25,11 +26,13 @@ export function CandidateShell({
   children: React.ReactNode;
   width?: "default" | "narrow" | "wide";
   action?: React.ReactNode;
-  current?: "profile" | "assessments";
+  current?: "profile" | "work" | "applications" | "assessments" | "settings";
 }) {
   const links = [
-    { key: "assessments", label: "Evaluations", href: "/app/candidate" },
     { key: "profile", label: "Profile", href: "/app/candidate/profile" },
+    { key: "work", label: "Passport", href: "/app/candidate/work-record" },
+    { key: "applications", label: "Applications", href: "/app/candidate/applications" },
+    { key: "assessments", label: "Evaluations", href: "/app/candidate" },
   ] as const;
 
   return (
@@ -52,9 +55,15 @@ export function CandidateShell({
           </div>
           <div className={s.headerRight}>
             {current ? (
-              <a href={CONTACT_MAILTO} className={s.help}>
-                Help
-              </a>
+              <>
+                <a href={CONTACT_MAILTO} className={s.help}>
+                  Help
+                </a>
+                <Link href="/app/candidate/settings" aria-current={current === "settings" ? "page" : undefined} className={s.help}>
+                  Settings
+                </Link>
+                <NotificationBell />
+              </>
             ) : null}
             {action ?? <CandidateSignOut />}
           </div>

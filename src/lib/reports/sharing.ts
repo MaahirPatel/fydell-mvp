@@ -1,5 +1,5 @@
 /**
- * Employer chunk — REP-07: secure report sharing.
+ * Employer chunk - REP-07: secure report sharing.
  *
  * A share token grants exactly one capability: viewing one report version.
  * It does not grant org membership, does not expose private notes or

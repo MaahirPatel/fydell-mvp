@@ -10,6 +10,7 @@ import {
   revokeReceiptShare,
 } from "@/lib/pilot/receipt-share";
 import { isPreviewMode, previewReceiptShares } from "@/lib/dev/preview";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -186,7 +187,7 @@ export async function POST(
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not create share" },
+      { error: publicErrorMessage(err, "Could not create share") },
       { status: 500 }
     );
   }
@@ -226,7 +227,7 @@ export async function DELETE(
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not revoke" },
+      { error: publicErrorMessage(err, "Could not revoke") },
       { status: 400 }
     );
   }

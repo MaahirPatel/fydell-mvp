@@ -70,49 +70,106 @@ const DELIVERY_MESSAGE = {
   not_configured: "Email sending is not configured on this deployment, so nothing was emailed. Share the link below with the candidate yourself.",
 } as const;
 
+type InviteResult = {
+  url: string;
+  emailDelivery: keyof typeof DELIVERY_MESSAGE;
+  notified: boolean;
+  handle?: string;
+  name?: string | null;
+};
+
 export function InviteCandidateForm({ roleId }: { roleId: string }) {
   const router = useRouter();
+  const [mode, setMode] = useState<"handle" | "email">("handle");
+  const [handle, setHandle] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ url: string; emailDelivery: keyof typeof DELIVERY_MESSAGE } | null>(null);
+  const [result, setResult] = useState<InviteResult | null>(null);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError(null);
     setResult(null);
-    const res = await engFetch<{ url: string; emailDelivery: keyof typeof DELIVERY_MESSAGE }>(`/api/eng/roles/${roleId}/invitations`, { body: { email, name } });
+    const body = mode === "handle" ? { handle } : { email, name };
+    const res = await engFetch<InviteResult>(`/api/eng/roles/${roleId}/invitations`, { body });
     setBusy(false);
     if (res.ok === false) {
       setError(res.error);
       return;
     }
     setResult(res.data);
+    setHandle("");
     setEmail("");
     setName("");
     router.refresh();
   }
+
+  const tab = (value: "handle" | "email", label: string) => (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={mode === value}
+      onClick={() => {
+        setMode(value);
+        setError(null);
+      }}
+      className={`h-8 rounded-md px-3 text-app-meta transition-colors ${
+        mode === value
+          ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-[0_0_0_1px_var(--border-default)]"
+          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+      }`}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <form onSubmit={submit} className="grid gap-3">
       <FormError>{error}</FormError>
       {result ? (
         <FormSuccess>
-          {DELIVERY_MESSAGE[result.emailDelivery]}
+          {result.handle ? (
+            <span className="block">
+              Invited {result.name ? `${result.name} (@${result.handle})` : `@${result.handle}`}. They have a notification in Fydell
+              {result.emailDelivery === "sent" ? " and an email." : "."}
+            </span>
+          ) : (
+            DELIVERY_MESSAGE[result.emailDelivery]
+          )}
           <CopyLink url={result.url} />
           <span className="mt-2 block text-app-meta">This link is shown once. Resending creates a new link and stops this one working.</span>
         </FormSuccess>
       ) : null}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Candidate email" htmlFor="inv-email" help="They must sign in with this address to accept.">
-          <Input id="inv-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </Field>
-        <Field label="Name" htmlFor="inv-name" optional>
-          <Input id="inv-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
-        </Field>
+      <div role="tablist" aria-label="Invite by" className="inline-flex w-fit gap-1 rounded-lg bg-[var(--surface-hover)] p-1">
+        {tab("handle", "Engineer on Fydell")}
+        {tab("email", "By email")}
       </div>
+      {mode === "handle" ? (
+        <Field label="Handle" htmlFor="inv-handle" help="Their @handle from their Fydell profile. Their email stays private.">
+          <Input
+            id="inv-handle"
+            value={handle}
+            onChange={(e) => setHandle(e.target.value)}
+            placeholder="@maya"
+            autoComplete="off"
+            spellCheck={false}
+            maxLength={31}
+            required
+          />
+        </Field>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Candidate email" htmlFor="inv-email" help="They must sign in with this address to accept.">
+            <Input id="inv-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </Field>
+          <Field label="Name" htmlFor="inv-name" optional>
+            <Input id="inv-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+          </Field>
+        </div>
+      )}
       <div>
         <Button type="submit" variant="primary" loading={busy}>
           Create invitation

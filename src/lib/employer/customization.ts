@@ -1,11 +1,11 @@
 /**
- * Employer chunk — EMP-04: bound employer customization.
+ * Employer chunk - EMP-04: bound employer customization.
  *
  * Employers may edit company context and instructions, but only within safe
  * limits. Edits are classified:
- * - "contextual": wording, company name, logistics — safe to apply.
+ * - "contextual": wording, company name, logistics - safe to apply.
  * - "substantive": changes what is being measured (new requirements, removed
- *   deliverables, changed success criteria) — requires validated tests and a
+ *   deliverables, changed success criteria) - requires validated tests and a
  *   re-pinned rubric version before release, and can never apply to
  *   invitations that already pinned an older configuration.
  */

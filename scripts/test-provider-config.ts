@@ -64,6 +64,20 @@ withEnv({ MODEL_PROVIDER: "ollama", OLLAMA_BASE_URL: "http://192.168.1.10:11434/
   check("custom model used", c?.model === "llama3.1:8b");
 });
 
+console.log("groq");
+withEnv({ MODEL_PROVIDER: "groq", GROQ_API_KEY: undefined }, () => {
+  check("groq without key -> null (fail closed)", getProviderConfig() === null);
+});
+withEnv({ MODEL_PROVIDER: "groq", GROQ_API_KEY: "gsk-test", GROQ_MODEL: undefined }, () => {
+  const c = getProviderConfig();
+  check("provider is groq", c?.provider === "groq");
+  check("groq base url", c?.baseUrl === "https://api.groq.com/openai");
+  check("groq key passed through", c?.apiKey === "gsk-test");
+  check("groq default model", c?.model === "openai/gpt-oss-120b");
+  check("groq uses json mode", c?.supportsJsonSchema === false);
+  check("describe names groq without the key", describeProvider() === "groq (openai/gpt-oss-120b)");
+});
+
 console.log("unknown provider -> null (fail closed)");
 withEnv({ MODEL_PROVIDER: "anthropic", OPENAI_API_KEY: "sk-test" }, () => {
   check("returns null", getProviderConfig() === null);

@@ -1,3 +1,5 @@
+import type { AssessmentState, RubricLevel } from "./scenarios/types";
+
 export type RoleStatus = "draft" | "published" | "archived";
 export type InvitationStatus = "invited" | "accepted" | "withdrawn" | "expired";
 export type AttemptStatus = "accepted" | "preflight_passed" | "in_progress" | "submitted" | "withdrawn" | "expired";
@@ -45,6 +47,8 @@ export interface InvitationRow {
   scenario_version_id: string;
   candidate_email: string;
   candidate_name: string | null;
+  /** Set when invited by @handle; employer views show this instead of the email. */
+  candidate_handle: string | null;
   status: InvitationStatus;
   email_delivery: "sent" | "failed" | "not_configured";
   role_snapshot: RoleSnapshot;
@@ -202,9 +206,26 @@ export interface ReportBrief {
   followUps: string[];
   dimensions: {
     key: Finding["dimension"];
-    level: "strong" | "adequate" | "weak" | "insufficient_evidence";
+    level: RubricLevel;
     rationale: string;
   }[];
+  /** Rubric v2 and later: one entry per task criterion. */
+  criteria?: CriterionAssessment[];
+}
+
+/**
+ * A reviewer's call on one criterion. `observed` is recomputed by the server
+ * from the evaluation run when the draft is saved; it is never taken from the
+ * browser.
+ */
+export interface CriterionAssessment {
+  id: string;
+  dimension: Finding["dimension"];
+  label: string;
+  state: AssessmentState;
+  rationale: string;
+  observed: { passed: number; total: number; notRun: number } | null;
+  notCovered: string;
 }
 
 export interface ReportRow {

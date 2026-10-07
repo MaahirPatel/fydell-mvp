@@ -58,7 +58,7 @@ export default function CandidatesPage() {
         <SectionHead
           id="session-title"
           title={["Your path", "through a session"]}
-          lead="You get an incident brief, a repository that runs, and two teammates. Ask them anything; their answers are written in advance, so every candidate gets the same information. About twenty minutes in, the team posts one requirement update."
+          lead="You get an incident brief, a repository that runs, and two teammates. Ask them anything; they reply to what you write, and every candidate gets the same decisions from them. About twenty minutes in, the team posts one requirement update."
         />
         <Details
           items={[

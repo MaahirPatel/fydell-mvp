@@ -220,11 +220,11 @@ function MetricRow({ label, metrics }: { label: string; metrics: Record<string, 
   return (
     <tr>
       <td className="border-b border-[var(--border-subtle)] py-2.5 pr-4 font-medium">{label}</td>
-      <td className="border-b border-[var(--border-subtle)] py-2.5 pr-4">{String(metrics.caseCount ?? "—")}</td>
-      <td className="border-b border-[var(--border-subtle)] py-2.5 pr-4">{metrics.quality === undefined ? "—" : `${String(metrics.quality)}%`}</td>
-      <td className="border-b border-[var(--border-subtle)] py-2.5 pr-4">{metrics.criticalSliceQuality === undefined ? "—" : `${String(metrics.criticalSliceQuality)}%`}</td>
-      <td className="border-b border-[var(--border-subtle)] py-2.5 pr-4">{metrics.p95LatencySeconds === undefined ? "—" : `${String(metrics.p95LatencySeconds)}s`}</td>
-      <td className="border-b border-[var(--border-subtle)] py-2.5">{metrics.estimatedCostDollars === undefined ? "—" : `$${String(metrics.estimatedCostDollars)}`}</td>
+      <td className="border-b border-[var(--border-subtle)] py-2.5 pr-4">{String(metrics.caseCount ?? "–")}</td>
+      <td className="border-b border-[var(--border-subtle)] py-2.5 pr-4">{metrics.quality === undefined ? "–" : `${String(metrics.quality)}%`}</td>
+      <td className="border-b border-[var(--border-subtle)] py-2.5 pr-4">{metrics.criticalSliceQuality === undefined ? "–" : `${String(metrics.criticalSliceQuality)}%`}</td>
+      <td className="border-b border-[var(--border-subtle)] py-2.5 pr-4">{metrics.p95LatencySeconds === undefined ? "–" : `${String(metrics.p95LatencySeconds)}s`}</td>
+      <td className="border-b border-[var(--border-subtle)] py-2.5">{metrics.estimatedCostDollars === undefined ? "–" : `$${String(metrics.estimatedCostDollars)}`}</td>
     </tr>
   );
 }

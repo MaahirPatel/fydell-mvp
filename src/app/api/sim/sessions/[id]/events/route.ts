@@ -15,6 +15,7 @@ import { buildSessionChatContext, toChatEvents } from "@/lib/simulations/chat-co
 import { deliverDueProactiveMessages } from "@/lib/simulations/proactive";
 import { ALLOWED_CANDIDATE_EVENTS } from "@/lib/simulations/observed-events";
 import { pendingConnectivityExtensions } from "@/lib/simulations/timing";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -170,7 +171,7 @@ export async function POST(
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not record event" },
+      { error: publicErrorMessage(err, "Could not record event") },
       { status: 400 }
     );
   }

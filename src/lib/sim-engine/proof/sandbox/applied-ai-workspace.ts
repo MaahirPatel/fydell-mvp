@@ -80,7 +80,7 @@ export function createAppliedAiWorkspace(): AppliedAiWorkspace {
       { id: "standard-04", title: "Known workflow type", slice: "standard", enabled: true },
     ],
     proposalCode:
-      "// Proposal only — not executed by this sandbox.\n// Describe optional TypeScript changes here; measured results use supported config and eval mutations only.",
+      "// Proposal only. Not executed by this sandbox.\n// Describe optional TypeScript changes here; measured results use supported config and eval mutations only.",
     architectureDecision: "",
     productionRecommendation: "",
   });

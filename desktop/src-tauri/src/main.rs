@@ -14,10 +14,12 @@
 //! Privacy: nothing is recorded outside an active simulation session. No
 //! keystroke logging, no screen capture, no process monitoring.
 //!
-//! Native boundary (DESK-17): the renderer gets exactly three plugin
-//! surfaces — deep-link (auth callback only), opener (used from Rust, never
-//! exposed to the renderer with renderer-chosen URLs), and the core
-//! event/window permissions declared in `capabilities/main.json`. There is
+//! Native boundary (DESK-17): the renderer gets these plugin surfaces —
+//! deep-link (auth callback only), opener (used from Rust, never exposed to
+//! the renderer with renderer-chosen URLs), updater (checks one fixed
+//! endpoint and only installs packages signed with the embedded public key),
+//! process restart (after an update), and the core event/window permissions
+//! declared in `capabilities/main.json`. There is
 //! deliberately no shell/fs/dialog plugin: the renderer cannot execute local
 //! commands or read arbitrary files; every file operation goes through the
 //! validated workspace bridge (workspace.rs).
@@ -26,6 +28,8 @@ mod auth;
 mod chat;
 mod config;
 mod diagnostics;
+mod eng;
+mod eng_package;
 mod error;
 mod events;
 mod execution;
@@ -55,14 +59,17 @@ fn main() {
         }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_deep_link::init())
-        // The updater plugin must not be registered until tauri.conf.json has
-        // a complete `plugins.updater` block (pubkey + endpoints): without it
-        // plugin init fails at launch and the app exits before any window.
+        // Requires the `plugins.updater` block (pubkey + endpoints) in
+        // tauri.conf.json; without it plugin init fails and the app exits
+        // before any window opens.
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
             let app_data = app
                 .path()
                 .app_data_dir()
                 .expect("app data dir must resolve");
+            eng::init(&app_data, app.path().document_dir().ok());
             session::init(app_data);
 
             // fydell://auth/callback → auth::handle_callback_url.
@@ -110,6 +117,21 @@ fn main() {
             events::append_event,
             events::get_events,
             submission::submit,
+            eng::eng_list_tasks,
+            eng::eng_accept_invitation,
+            eng::eng_open_attempt,
+            eng::eng_record_consent,
+            eng::eng_prepare_workspace,
+            eng::eng_confirm_setup,
+            eng::eng_start,
+            eng::eng_send_message,
+            eng::eng_acknowledge_update,
+            eng::eng_save_draft,
+            eng::eng_package_preview,
+            eng::eng_upload_package,
+            eng::eng_submit,
+            eng::eng_get_report,
+            eng::eng_open_workspace,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Fydell desktop");

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { assertDemoMutationAllowed, assertDemoNamespace } from "@/lib/ops/demo-isolation";
 import { checkThrottle, createMemoryThrottleStore, THROTTLE_POLICIES, throttleIdentity } from "@/lib/security/throttles";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
     assertDemoNamespace(namespace);
   } catch (err) {
     const status = (err as { status?: number }).status ?? 403;
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Forbidden" }, { status });
+    return NextResponse.json({ error: publicErrorMessage(err, "Forbidden") }, { status });
   }
 
   const policy = THROTTLE_POLICIES.demo_reset;
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Demo reset is not configured on this deployment." }, { status: 503 });
   }
 
-  // The namespace must be a registered demo namespace — never a live one.
+  // The namespace must be a registered demo namespace - never a live one.
   const { data: registered, error: lookupError } = await admin
     .from("demo_namespaces")
     .select("namespace")

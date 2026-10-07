@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { requireUser } from "@/lib/simulations/auth";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
@@ -8,6 +7,7 @@ import type { RoleKey } from "@/lib/simulations/types";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
 import { CandidatePageHead } from "@/components/candidate/CandidatePageHead";
 import { ButtonLink } from "@/components/ui/Button";
+import { Status, type StatusKind } from "@/components/ui/report";
 import { CONTACT_EMAIL, CONTACT_MAILTO } from "@/lib/contact";
 import type { AttemptRow, AttemptStatus, InvitationRow } from "@/lib/eng/types";
 import s from "@/components/candidate/candidate.module.css";
@@ -32,20 +32,7 @@ function day(iso: string | null | undefined): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function Dot({ tone }: { tone: Tone }) {
-  const cls = tone === "blue" ? s.dotBlue : tone === "amber" ? s.dotAmber : tone === "green" ? s.dotGreen : "";
-  return <span aria-hidden className={`${s.dot} ${cls}`} />;
-}
-
-function Meter({ stage }: { stage: number }) {
-  return (
-    <span className={s.meter} aria-label={`Stage ${stage + 1} of 5`}>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <span key={i} className={`${s.meterSeg} ${i < stage ? s.meterDone : i === stage ? s.meterCurrent : ""}`} />
-      ))}
-    </span>
-  );
-}
+const TONE_KIND: Record<Tone, StatusKind> = { blue: "pending", amber: "attention", green: "success", neutral: "neutral" };
 
 function Table({ title, count, dateHeading, children }: { title: string; count: number; dateHeading: string; children: React.ReactNode }) {
   return (
@@ -93,11 +80,10 @@ function Row({
         <p className={s.rowSub}>{sub}</p>
       </div>
       <div className={s.status}>
-        <span className={s.statusLabel}>
-          <Dot tone={tone} />
+        <Status kind={TONE_KIND[tone]} className="justify-self-start">
           {status}
-        </span>
-        {typeof stage === "number" ? <Meter stage={stage} /> : null}
+        </Status>
+        {typeof stage === "number" ? <span className="text-[13px] text-[var(--text-tertiary)]">Step {stage + 1} of 5</span> : null}
       </div>
       <div className={s.date}>
         <span className={s.dateLabel}>{dateLabel}</span>
@@ -171,55 +157,30 @@ export default async function CandidateHomePage() {
   const engDone = engTasks.filter((t) => t.attempt?.status === "submitted");
   const waiting = engOpen.length + active.length + pendingInvites.length;
   const submitted = engDone.length + completed.length;
-  const receipts = (credentials || []).filter((c) => c.status !== "revoked").length + engDone.length;
   const empty = pendingInvites.length === 0 && allSessions.length === 0 && engTasks.length === 0;
 
   return (
     <CandidateShell width="wide" current="assessments">
-      <CandidatePageHead
-        eyebrow={["Candidate", user.email]}
-        title="Evaluations"
-        lead="Work hiring teams have invited you to do. Start what is waiting, then follow each submission until the team has reviewed it."
-      />
+      <CandidatePageHead title="Evaluations" lead={empty ? undefined : "Tasks hiring teams have invited you to, with each one's deadline and next step."} />
 
-      <div className="mt-8 grid gap-8">
-        <div className={s.summary}>
-          <div className={s.summaryCell}>
-            <span className={s.metaLabel}>Waiting on you</span>
-            <span className={`${s.summaryValue} ${waiting > 0 ? s.summaryValueAccent : ""}`}>{waiting}</span>
-            <span className={s.summaryNote}>{waiting > 0 ? "Invitations and unfinished tasks" : "Nothing needs you right now"}</span>
-          </div>
-          <div className={s.summaryCell}>
-            <span className={s.metaLabel}>Submitted</span>
-            <span className={s.summaryValue}>{submitted}</span>
-            <span className={s.summaryNote}>Sent to a hiring team</span>
-          </div>
-          <div className={s.summaryCell}>
-            <span className={s.metaLabel}>Receipts</span>
-            <span className={s.summaryValue}>{receipts}</span>
-            <span className={s.summaryNote}>Proof of exactly what you sent</span>
-          </div>
-        </div>
-
-        <div className={s.layout}>
-          <div className="grid gap-8">
-            {empty ? (
-              <div className={s.empty}>
-                <p className={s.emptyTitle}>No evaluations yet</p>
-                <p className={s.emptyBody}>
-                  When a hiring team invites you, the evaluation appears here with its deadline and next step. Invitations always come from the
-                  company that wants to see your work.
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <ButtonLink href="/app/candidate/profile" variant="primary" size="sm">
-                    Build your profile
-                  </ButtonLink>
-                  <ButtonLink href="/simulations" variant="secondary" size="sm">
-                    See an example task
-                  </ButtonLink>
-                </div>
+      <div className="mt-8 grid gap-10">
+        <div className="grid gap-10">
+          {empty ? (
+            <section className="py-4">
+              <h2 className="text-[19px] font-semibold tracking-[-0.014em]">No invitations yet</h2>
+              <p className="mt-1.5 max-w-[56ch] text-[15px] leading-[1.6] text-[var(--text-secondary)]">
+                Invitations from hiring teams will appear here, with the task, deadline, and next step.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <ButtonLink href="/app/candidate/work-record" variant="primary" size="md">
+                  Build your Passport
+                </ButtonLink>
+                <ButtonLink href="/simulations" variant="secondary" size="md">
+                  View example task
+                </ButtonLink>
               </div>
-            ) : null}
+            </section>
+          ) : null}
 
             {engOpen.length > 0 || active.length > 0 || pendingInvites.length > 0 ? (
               <Table title="Waiting on you" count={waiting} dateHeading="Deadline">
@@ -352,37 +313,31 @@ export default async function CandidateHomePage() {
                 })}
               </Table>
             ) : null}
-          </div>
+        </div>
 
-          <aside className={s.side}>
-            <div className={s.card}>
-              <p className={s.cardTitle}>How an evaluation runs</p>
-              <ol className={s.steps}>
-                {HOW_IT_WORKS.map((step) => (
-                  <li key={step.title} className={s.step}>
-                    <div>
-                      <p className={s.stepTitle}>{step.title}</p>
-                      <p className={s.stepBody}>{step.body}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <div className={s.card}>
-              <p className={s.cardTitle}>Engineering profile</p>
-              <p className={s.cardBody}>Connect GitHub and Fydell cites what your public repositories demonstrate, line by line.</p>
-              <Link href="/app/candidate/profile" className={s.cardLink}>
-                Open profile <ArrowRight aria-hidden width={13} height={13} />
-              </Link>
-            </div>
-            <div className={s.card}>
-              <p className={s.cardTitle}>Stuck on setup?</p>
-              <p className={s.cardBody}>Setup problems are never held against you. Tell us what the terminal printed.</p>
-              <a href={CONTACT_MAILTO} className={s.cardLink}>
-                {CONTACT_EMAIL}
-              </a>
-            </div>
-          </aside>
+        <div className="max-w-[960px] border-t border-[var(--border-default)]">
+          <details className="group border-b border-[var(--border-subtle)]">
+            <summary className="flex cursor-pointer list-none items-center gap-2 py-4 text-[15px] font-medium text-[var(--text-primary)]">
+              <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)] transition-transform group-open:rotate-90" aria-hidden />
+              How an evaluation works
+            </summary>
+            <ol className="grid gap-x-8 gap-y-4 pb-6 pl-6 sm:grid-cols-2 lg:grid-cols-5">
+              {HOW_IT_WORKS.map((step, i) => (
+                <li key={step.title}>
+                  <p className="text-[14px] font-semibold text-[var(--text-primary)]">
+                    <span className="tabular-nums text-[var(--text-tertiary)]">{i + 1}.</span> {step.title}
+                  </p>
+                  <p className="mt-1 text-[14px] leading-[1.55] text-[var(--text-secondary)]">{step.body}</p>
+                </li>
+              ))}
+            </ol>
+          </details>
+          <p className="py-4 text-[14px] text-[var(--text-secondary)]">
+            Stuck on setup? Setup problems are never held against you.{" "}
+            <a href={CONTACT_MAILTO} className="font-medium text-[var(--accent-ink)] hover:underline hover:underline-offset-4">
+              Email {CONTACT_EMAIL}
+            </a>
+          </p>
         </div>
       </div>
     </CandidateShell>

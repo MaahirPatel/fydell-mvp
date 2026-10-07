@@ -1,10 +1,10 @@
 /**
- * AI-02 — Review the correct inputs.
+ * AI-02 - Review the correct inputs.
  *
  * The reviewer analyzes exactly: the pinned starter/submission diff, the
  * necessary surrounding code, the actual tests, scenario events, and the
  * transcript. Every input is pinned by hash. Anything omitted or truncated is
- * tracked explicitly on the bundle — the report must disclose what the
+ * tracked explicitly on the bundle - the report must disclose what the
  * reviewer did NOT see.
  */
 
@@ -23,7 +23,7 @@ export interface PinnedFile {
   role: InputRole;
   sha256: string;
   bytes: number;
-  /** True when content was cut at the byte cap — the reviewer saw a prefix. */
+  /** True when content was cut at the byte cap - the reviewer saw a prefix. */
   truncated: boolean;
   content: string;
 }
@@ -108,7 +108,7 @@ export function buildInputBundle(inputs: BundleFileInput[]): InputBundle {
     });
   }
 
-  // Starter vs submission diff summary (line counts only — the full contents
+  // Starter vs submission diff summary (line counts only - the full contents
   // are pinned above; the summary is for the reviewer prompt).
   const starterLines = new Set(
     files.filter((f) => f.role === "starter").flatMap((f) => f.content.split("\n")),

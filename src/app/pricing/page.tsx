@@ -14,6 +14,7 @@ export default function PricingPage() {
       <Hero
         compact
         title={["Pricing"]}
+        lead="Free for engineers. Hiring teams pay only when a candidate submits, never for invitations, expired links or abandoned attempts."
       >
         <div className="l-container">
           <Plans

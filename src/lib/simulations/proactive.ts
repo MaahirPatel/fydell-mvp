@@ -6,7 +6,7 @@ import "server-only";
  * Delivery is idempotent: each def delivers at most once per session via a
  * deterministic client_msg_id, and `proactive_message_delivered` events track
  * what fired. Every proactive message is tagged as simulation content in the
- * UI — these never claim real-world events or false authorship.
+ * UI - these never claim real-world events or false authorship.
  */
 import type {
   ProactiveMessageDef,
@@ -98,7 +98,7 @@ export interface ProactiveDeliveryDeps {
 
 /**
  * Inserts every due proactive message and records delivery. Safe to call from
- * multiple routes — deterministic ids make re-delivery a no-op.
+ * multiple routes - deterministic ids make re-delivery a no-op.
  * Returns the number of newly delivered messages.
  */
 export async function deliverDueProactiveMessages(deps: ProactiveDeliveryDeps): Promise<number> {

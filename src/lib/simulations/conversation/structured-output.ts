@@ -7,7 +7,7 @@
  * - memory_updates: proposed changes to conversation memory
  *
  * All output is validated before publishing. Model-provided fact references
- * are checked against the permitted set — a reference alone does not prove
+ * are checked against the permitted set - a reference alone does not prove
  * the claim is supported.
  */
 import type { HelpLevel } from "./types";

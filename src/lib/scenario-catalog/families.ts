@@ -249,7 +249,7 @@ export const CATALOG: CatalogEntry[] = [
   },
   {
     family: "forward_deployed",
-    label: "Forward-deployed / integration engineering",
+    label: "Customer integration engineering",
     priority: 2,
     scopeDisclosure:
       "Covers clarifying one ambiguous customer request and integrating a supplied REST API with inconsistent data into a small sync job. It does not cover travel, live customer meetings, sales or long-running account management.",
@@ -271,7 +271,7 @@ export const CATALOG: CatalogEntry[] = [
       blueprint: {
         businessSituation:
           "A retail customer says 'our stock counts are wrong in your dashboard' and wants a nightly sync from their supplier's API fixed before a promotion.",
-        candidateRole: "Forward-deployed engineer assigned to the customer.",
+        candidateRole: "Integration engineer assigned to the customer.",
         starterAssets: [
           "sync/ job with a client for a controlled fixture supplier API (served by the harness)",
           "Sample API responses showing mixed units (each vs case), duplicate SKUs and cursor pagination",

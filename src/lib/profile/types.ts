@@ -3,7 +3,7 @@
  *
  * The profile is the engineer's resume stack: identity, connected accounts,
  * and evidence aggregated across every source. Provenance is marked on every
- * evidence item — the profile never lets self-supplied data look observed.
+ * evidence item - the profile never lets self-supplied data look observed.
  */
 
 /** Where an evidence item came from. Never invent new values without updating PROVENANCE_LABELS. */
@@ -28,12 +28,47 @@ export function isProvenance(value: unknown): value is EvidenceProvenance {
   return value === "observed-simulation" || value === "repository-observation" || value === "local-import";
 }
 
+export type ProfileLink = { label: string; url: string };
+
+export const OPEN_TO = ["", "full_time", "contract", "either", "not_looking"] as const;
+export type OpenTo = (typeof OPEN_TO)[number];
+export const OPEN_TO_LABEL: Record<OpenTo, string> = {
+  "": "Not stated",
+  full_time: "Open to full-time roles",
+  contract: "Open to contract work",
+  either: "Open to full-time or contract",
+  not_looking: "Not looking right now",
+};
+
 export type EngineerProfile = {
   displayName: string;
+  /** Public @handle employers can invite by, or "" when not chosen yet. */
+  handle: string;
   headline: string;
   role: string;
+  bio: string;
+  location: string;
+  website: string;
+  links: ProfileLink[];
+  openTo: OpenTo;
+  /** Public URL of the profile photo, or "" when none is set. */
+  avatarUrl: string;
+  social: SocialProfiles;
+  /**
+   * The engineer's own statement of how they work. Private by default; on a
+   * shared profile it is null unless the engineer included it in shares.
+   */
+  howIBuild: HowIBuild | null;
   updatedAt: string | null;
 };
+
+export type HowIBuild = { text: string; includeInShares: boolean; updatedAt: string | null };
+
+export const SOCIAL_KINDS = ["linkedin", "x", "instagram"] as const;
+export type SocialKind = (typeof SOCIAL_KINDS)[number];
+export type SocialProfiles = Record<SocialKind, string>;
+export const SOCIAL_LABEL: Record<SocialKind, string> = { linkedin: "LinkedIn", x: "X", instagram: "Instagram" };
+export const EMPTY_SOCIAL: SocialProfiles = { linkedin: "", x: "", instagram: "" };
 
 export type ConnectedAccountProvider = "github" | "vscode" | "cursor";
 

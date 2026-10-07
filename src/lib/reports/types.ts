@@ -1,10 +1,10 @@
 /**
- * Employer chunk — report types (REP-01..REP-07).
+ * Employer chunk - report types (REP-01..REP-07).
  *
  * A report is assembled from real analysis artifacts only. There is no
  * universal hireability number anywhere in this namespace by design (REP-03):
- * results are presented in separated categories — coding results,
- * interpretation, communication observations, infrastructure status — each
+ * results are presented in separated categories - coding results,
+ * interpretation, communication observations, infrastructure status - each
  * with its own band and evidence.
  */
 

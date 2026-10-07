@@ -78,7 +78,7 @@ export function planSignOut(args: { unsyncedDrafts: number }): SignOutPlan {
   };
 }
 
-/** Manifest of what purging a scope deletes — used by the purge routine and docs. */
+/** Manifest of what purging a scope deletes - used by the purge routine and docs. */
 export function purgeScopeManifest(scope: CacheScope): { scopeKey: string; kinds: CachedKind[] } {
   return {
     scopeKey: scopeKey(scope),

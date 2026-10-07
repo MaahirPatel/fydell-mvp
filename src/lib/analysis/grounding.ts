@@ -1,5 +1,5 @@
 /**
- * AI-07 — Ground technical criticisms.
+ * AI-07 - Ground technical criticisms.
  *
  * A consequential technical claim is either:
  *  - a REPRODUCED defect: a failing authoritative test, or a cited code path
@@ -27,7 +27,7 @@ export interface TechnicalClaim {
 }
 
 export interface GroundedClaim extends TechnicalClaim {
-  /** The status after grounding — may be demoted from the assertion. */
+  /** The status after grounding - may be demoted from the assertion. */
   groundedStatus: ClaimGrounding;
   groundingNote: string;
 }

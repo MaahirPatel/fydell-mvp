@@ -1,5 +1,5 @@
 /**
- * Accounts chunk — secure organization invitations (AUTH-05).
+ * Accounts chunk - secure organization invitations (AUTH-05).
  *
  * - Tokens are 256-bit random values; only a SHA-256 hash is stored, so a
  *   database read never yields a usable token.
@@ -10,7 +10,7 @@
  *   *authenticated* user's id and email, and the email must match the
  *   invited address. There is no silent membership: no domain-based auto-join
  *   exists anywhere in this module, and merely presenting a token (e.g. by
- *   opening the invite link) never creates a membership — only the explicit
+ *   opening the invite link) never creates a membership - only the explicit
  *   accept call does.
  * - ID spoofing: the org id comes from the stored invitation row, never from
  *   the request; a caller cannot redirect an invite at another organization.
@@ -93,7 +93,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Create an invitation. Only an active owner/admin of the org may invite.
- * Returns the plaintext token exactly once — it is never stored and never
+ * Returns the plaintext token exactly once - it is never stored and never
  * returned again (e.g. by a "resend" or "view" path).
  */
 export function createInvitation(
@@ -142,7 +142,7 @@ export function createInvitation(
 /**
  * Deliberate acceptance. The caller passes the *authenticated* user's id and
  * email (from the server session). Acceptance requires the email to match
- * the invited address exactly — a different address, even on the same
+ * the invited address exactly - a different address, even on the same
  * domain, is rejected. There is deliberately no domain-based auto-accept.
  *
  * The organization id and role come from the stored invitation row, never
@@ -182,7 +182,7 @@ export function acceptInvitation(
   const existing = activeMembership(memberStore, authenticatedUserId, candidate.orgId);
   if (existing) return fail("already_member", "user is already an active member");
 
-  // The org id and role are taken from the invitation row — the request
+  // The org id and role are taken from the invitation row - the request
   // supplies no org id to spoof.
   const added = addMember(
     memberStore,

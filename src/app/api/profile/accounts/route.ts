@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { connectAccount, disconnectAccount, listAccounts } from "@/lib/profile/store";
 import type { ConnectedAccountProvider } from "@/lib/profile/types";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
     const account = await connectAccount(user.id, provider, body.label, meta);
     return NextResponse.json({ account });
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Could not connect the account." }, { status: 400 });
+    return NextResponse.json({ error: publicErrorMessage(err, "Could not connect the account.") }, { status: 400 });
   }
 }
 

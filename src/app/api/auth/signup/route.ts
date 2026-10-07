@@ -4,6 +4,7 @@ import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/
 import { completeEmployerOnboarding } from "@/lib/pilot/lifecycle";
 import { ensureCandidateProfile, audit } from "@/lib/auth/signup-helpers";
 import { isReservedOrganizationName } from "@/lib/org/reserved";
+import { publicErrorMessage } from "@/lib/security/public-error";
 export const dynamic = "force-dynamic";
 
 type SignupPath = "employer" | "fde" | "partner";
@@ -153,7 +154,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, redirectTo });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Could not create account.";
+    const msg = publicErrorMessage(err, "Could not create account.");
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 }

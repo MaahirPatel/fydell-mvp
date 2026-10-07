@@ -121,8 +121,12 @@ check("resolved topics stay resolved", () => {
   state = recordCoworkerMessage(r.newState, "r1", "maya", "Backoff.", { topicId: "retry_backoff" });
   state = resolveTopic(state, "retry_backoff", "Answered and confirmed");
 
+  // A direct re-ask still gets an answer (the model sees the history and can
+  // be brief); it must not reopen the topic.
   r = decide(state, "Tell me about retries again?");
-  assertTrue(!r.decision.shouldSpeak, "resolved topic should not re-trigger");
+  assertTrue(r.decision.shouldSpeak, "a direct re-ask is answered");
+  const topic = r.newState.topics.find((t) => t.id === "retry_backoff");
+  assertTrue(topic?.status === "resolved", "topic stays resolved");
 });
 
 // --- State survives rebuild ---

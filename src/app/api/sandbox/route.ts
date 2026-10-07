@@ -3,6 +3,7 @@ import { checkSandboxHealth } from "@/lib/sim-engine/proof/sandbox/kill-switch";
 import { createSandboxRun, loadOwnedSandbox } from "@/lib/sim-engine/proof/sandbox/lifecycle";
 import { writeCapabilityCookie, readCapability, clearCapabilityCookie } from "@/lib/sim-engine/proof/sandbox/capability";
 import { buildSandboxView } from "@/lib/sim-engine/proof/sandbox/service";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 function clientIp(request: Request): string {
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
@@ -20,7 +21,7 @@ export async function GET() {
     return NextResponse.json({ ok: true, session: await buildSandboxView(run) });
   } catch (error) {
     await clearCapabilityCookie();
-    const message = error instanceof Error ? error.message : "session invalid";
+    const message = publicErrorMessage(error, "session invalid");
     return NextResponse.json({ ok: true, session: null, cleared: true, message });
   }
 }
@@ -35,6 +36,6 @@ export async function POST(request: Request) {
     await writeCapabilityCookie(created.run.id, created.capabilitySecret);
     return NextResponse.json({ ok: true, session: await buildSandboxView(created.run) });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "create failed" }, { status: 409 });
+    return NextResponse.json({ error: publicErrorMessage(error, "create failed") }, { status: 409 });
   }
 }

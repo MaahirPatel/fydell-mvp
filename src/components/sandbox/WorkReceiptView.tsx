@@ -45,11 +45,11 @@ export function WorkReceiptView({ receipt }: { receipt: Record<string, unknown> 
 
       <dl className="mt-6 grid gap-4 sm:grid-cols-3">
         {[
-          ["Format", String(receipt.formatVersion ?? "—")],
-          ["Proof spec", String(role.proofSpecVersion ?? "—")],
-          ["Fixture", String(role.fixtureVersion ?? "—")],
-          ["Review kind", String(review.kind ?? "—").replaceAll("_", " ")],
-          ["Review decision", String(review.decision ?? "—").replaceAll("_", " ")],
+          ["Format", String(receipt.formatVersion ?? "–")],
+          ["Proof spec", String(role.proofSpecVersion ?? "–")],
+          ["Fixture", String(role.fixtureVersion ?? "–")],
+          ["Review kind", String(review.kind ?? "–").replaceAll("_", " ")],
+          ["Review decision", String(review.decision ?? "–").replaceAll("_", " ")],
           [
             "Changed fact",
             `${String(changedFact.id ?? "none")} · ${changedFact.released ? "released" : "not released"}`,

@@ -3,6 +3,7 @@ import { checkSandboxHealth } from "@/lib/sim-engine/proof/sandbox/kill-switch";
 import { readCapability, writeCapabilityCookie, clearCapabilityCookie } from "@/lib/sim-engine/proof/sandbox/capability";
 import { resetSandbox } from "@/lib/sim-engine/proof/sandbox/lifecycle";
 import { buildSandboxView } from "@/lib/sim-engine/proof/sandbox/service";
+import { publicErrorMessage } from "@/lib/security/public-error";
 
 function clientIp(request: Request): string {
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
     await writeCapabilityCookie(created.run.id, created.capabilitySecret);
     return NextResponse.json({ ok: true, session: await buildSandboxView(created.run) });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "reset failed";
+    const message = publicErrorMessage(error, "reset failed");
     if (message.includes("cleanup_failed")) {
       await clearCapabilityCookie();
     }

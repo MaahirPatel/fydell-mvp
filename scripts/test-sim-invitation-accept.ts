@@ -23,9 +23,7 @@
  *
  * Run with: npx tsx --conditions react-server scripts/test-sim-invitation-accept.ts
  */
-import { register } from "node:module";
-import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { installSimStubs } from "./stubs/install-sim-stubs";
 
 let failures = 0;
 const statuses: number[] = [];
@@ -44,10 +42,7 @@ const setUser = (u: { id: string; email: string } | null | undefined) =>
   ((globalThis as G).__SIM_TEST_USER__ = u);
 
 async function main() {
-  register(
-    pathToFileURL(path.join(process.cwd(), "scripts", "stubs", "sim-test-hooks.mjs")).href,
-    pathToFileURL(path.join(process.cwd(), "scripts", "test-sim-invitation-accept.ts")).href
-  );
+  installSimStubs();
 
   const stub = await import("./stubs/sim-db-stub");
   const adminStub = await import("./stubs/sim-supabase-admin-stub");

@@ -7,17 +7,21 @@ import { Field, FormError, FormSuccess, Input, Select, Textarea } from "@/compon
 import { PanelLabel } from "@/components/ui/Panel";
 import { engFetch } from "./api";
 import { FileViewer, type FileTarget } from "./EvidenceViews";
-import type { Citation, Finding, ReportBrief } from "@/lib/eng/types";
+import { observedSentence, STATE_LABEL, suggestState } from "@/lib/eng/criteria";
+import type { AssessmentState } from "@/lib/eng/scenarios/types";
+import type { Citation, CriterionAssessment, Finding, ReportBrief } from "@/lib/eng/types";
 
 type DimensionKey = Finding["dimension"];
 type Level = ReportBrief["dimensions"][number]["level"];
 
-const LEVELS: { key: Level; label: string }[] = [
-  { key: "strong", label: "Strong" },
-  { key: "adequate", label: "Adequate" },
-  { key: "weak", label: "Weak" },
-  { key: "insufficient_evidence", label: "Insufficient evidence" },
-];
+export interface EditorCriterion {
+  id: string;
+  label: string;
+  requirement: string;
+  anchors: { state: AssessmentState; observable: string }[];
+  notCovered: string;
+  observed: CriterionAssessment["observed"];
+}
 
 export interface EditorEvidence {
   files: { path: string; size: number }[];
@@ -31,6 +35,18 @@ export interface EditorRubric {
   label: string;
   question: string;
   anchors: { level: Level; observable: string }[];
+  criteria: EditorCriterion[];
+}
+
+type CriterionDraft = { id: string; state: AssessmentState; rationale: string };
+
+function initialCriteria(rubric: EditorRubric[], brief: ReportBrief | null): CriterionDraft[] {
+  return rubric.flatMap((r) =>
+    r.criteria.map((c) => {
+      const saved = brief?.criteria?.find((x) => x.id === c.id);
+      return saved ? { id: c.id, state: saved.state, rationale: saved.rationale } : { id: c.id, state: suggestState(c.observed), rationale: "" };
+    })
+  );
 }
 
 function lines(text: string): string[] {
@@ -138,8 +154,21 @@ export default function ReportEditor({
   const router = useRouter();
   const [summary, setSummary] = useState(initialBrief?.summary ?? "");
   const [dimensions, setDimensions] = useState<ReportBrief["dimensions"]>(
-    rubric.map((r) => initialBrief?.dimensions.find((d) => d.key === r.key) ?? { key: r.key, level: "insufficient_evidence", rationale: "" })
+    rubric.map(
+      (r) =>
+        initialBrief?.dimensions.find((d) => d.key === r.key && r.anchors.some((a) => a.level === d.level)) ?? {
+          key: r.key,
+          level: r.anchors[r.anchors.length - 1]?.level ?? "not_assessed",
+          rationale: "",
+        }
+    )
   );
+  const [criteria, setCriteria] = useState<CriterionDraft[]>(() => initialCriteria(rubric, initialBrief));
+  const hasCriteria = criteria.length > 0;
+
+  function updateCriterion(id: string, patch: Partial<CriterionDraft>) {
+    setCriteria((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  }
   const [strengths, setStrengths] = useState((initialBrief?.strengths ?? []).join("\n"));
   const [gaps, setGaps] = useState((initialBrief?.gaps ?? []).join("\n"));
   const [limitations, setLimitations] = useState(
@@ -168,7 +197,15 @@ export default function ReportEditor({
     const res = await engFetch(`${apiBase}/report`, {
       method: "PUT",
       body: {
-        brief: { summary, dimensions, strengths: lines(strengths), gaps: lines(gaps), limitations: lines(limitations), followUps: lines(followUps) },
+        brief: {
+          summary,
+          dimensions,
+          strengths: lines(strengths),
+          gaps: lines(gaps),
+          limitations: lines(limitations),
+          followUps: lines(followUps),
+          ...(hasCriteria ? { criteria } : {}),
+        },
         findings: findings.map((f) => ({ ...f, citations: f.citations.filter((c) => c.ref) })),
         changeReason: changeReason || null,
         reviewMinutes: reviewMinutes ? Number(reviewMinutes) : null,
@@ -187,7 +224,7 @@ export default function ReportEditor({
 
   async function release() {
     if (!(await save())) return;
-    if (!window.confirm("Release this report to the hiring team? Every citation is checked against the submitted evidence first, and released versions cannot be edited.")) return;
+    if (!window.confirm("Release this report? The hiring team and the candidate will see it (the candidate without interview follow-ups). Every citation is checked against the submitted evidence first, and released versions cannot be edited.")) return;
     setBusy("release");
     setError(null);
     const res = await engFetch(`${apiBase}/report`, { body: {} });
@@ -197,7 +234,7 @@ export default function ReportEditor({
       setProblems(res.problems);
       return;
     }
-    setNotice("Released. The hiring team can now see this report.");
+    setNotice("Released. Your team and the candidate can now see this report.");
     router.refresh();
   }
 
@@ -232,9 +269,9 @@ export default function ReportEditor({
                   onChange={(e) => setDimensions((prev) => prev.map((d, j) => (j === i ? { ...d, level: e.target.value as Level } : d)))}
                   className="w-[200px]"
                 >
-                  {LEVELS.map((l) => (
-                    <option key={l.key} value={l.key}>
-                      {l.label}
+                  {r.anchors.map((a) => (
+                    <option key={a.level} value={a.level}>
+                      {STATE_LABEL[a.level]}
                     </option>
                   ))}
                 </Select>
@@ -245,11 +282,61 @@ export default function ReportEditor({
                 <ul className="mt-1 grid gap-1 text-app-meta text-[var(--text-secondary)]">
                   {r.anchors.map((a) => (
                     <li key={a.level}>
-                      <span className="text-[var(--text-primary)]">{LEVELS.find((l) => l.key === a.level)?.label}:</span> {a.observable}
+                      <span className="text-[var(--text-primary)]">{STATE_LABEL[a.level]}:</span> {a.observable}
                     </li>
                   ))}
                 </ul>
               </details>
+              {r.criteria.length ? (
+                <ul className="mt-3 grid gap-3 border-t border-[var(--border-subtle)] pt-3">
+                  {r.criteria.map((c) => {
+                    const draft = criteria.find((x) => x.id === c.id);
+                    if (!draft) return null;
+                    return (
+                      <li key={c.id} className="grid gap-1.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-app-body text-[var(--text-primary)]">{c.label}</p>
+                          <Select
+                            aria-label={`${c.label} state`}
+                            value={draft.state}
+                            onChange={(e) => updateCriterion(c.id, { state: e.target.value as AssessmentState })}
+                            className="w-[260px]"
+                          >
+                            {c.anchors.map((a) => (
+                              <option key={a.state} value={a.state}>
+                                {STATE_LABEL[a.state]}
+                              </option>
+                            ))}
+                          </Select>
+                        </div>
+                        <p className="text-app-meta text-[var(--text-secondary)]">{c.requirement}</p>
+                        <p className="text-app-meta text-[var(--text-tertiary)]">
+                          {c.observed ? `Observed: ${observedSentence(c.observed)}. Suggested: ${STATE_LABEL[suggestState(c.observed)]}.` : "No defined checks. Judge from the code, messages or handoff and cite them in a finding."}
+                          {" "}Not covered: {c.notCovered}
+                        </p>
+                        <details>
+                          <summary className="cursor-pointer text-app-meta text-[var(--text-tertiary)]">Anchors</summary>
+                          <ul className="mt-1 grid gap-1 text-app-meta text-[var(--text-secondary)]">
+                            {c.anchors.map((a) => (
+                              <li key={a.state}>
+                                <span className="text-[var(--text-primary)]">{STATE_LABEL[a.state]}:</span> {a.observable}
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                        <Textarea
+                          aria-label={`${c.label} rationale`}
+                          value={draft.rationale}
+                          onChange={(e) => updateCriterion(c.id, { rationale: e.target.value })}
+                          rows={2}
+                          maxLength={600}
+                          placeholder="What in the submission supports this state"
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
               <Textarea
                 aria-label={`${r.label} rationale`}
                 className="mt-2"
@@ -274,7 +361,7 @@ export default function ReportEditor({
         <Field label="Limitations of the evidence" htmlFor="rep-limits" help="At least one.">
           <Textarea id="rep-limits" value={limitations} onChange={(e) => setLimitations(e.target.value)} rows={3} />
         </Field>
-        <Field label="Interview follow-ups" htmlFor="rep-follow" help="At least one.">
+        <Field label="Interview follow-ups" htmlFor="rep-follow" help="At least one. Visible to your team only, not the candidate.">
           <Textarea id="rep-follow" value={followUps} onChange={(e) => setFollowUps(e.target.value)} rows={3} />
         </Field>
       </div>
