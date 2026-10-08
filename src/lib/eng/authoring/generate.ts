@@ -13,6 +13,7 @@ import {
   LANGUAGES,
   TASK_TYPES,
   TECHNOLOGIES,
+  placeholderTitle,
   type AuthoringConfig,
   type CapabilityId,
 } from "./registry";
@@ -764,7 +765,7 @@ export function skeletonPackage(config: AuthoringConfig): { pkg: ScenarioPackage
   }));
   const layout = layoutFor(config);
   const brief: BriefStage = {
-    title: config.description.split(/[.\n]/)[0].slice(0, 100) || "Untitled work sample",
+    title: placeholderTitle(config),
     summary: config.description.slice(0, 380),
     context: config.background || config.description,
     task: config.description,

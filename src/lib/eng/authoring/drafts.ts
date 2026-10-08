@@ -25,7 +25,7 @@ import {
   type ScenarioPackage,
   type SectionKey,
 } from "./package";
-import { CAPABILITIES, DURATION_LIMITS, parseInput, validateConfig, type AuthoringConfig, type AuthoringInput } from "./registry";
+import { CAPABILITIES, DURATION_LIMITS, parseInput, placeholderTitle, validateConfig, type AuthoringConfig, type AuthoringInput } from "./registry";
 import { buildExemplar, validatedExemplars } from "../exemplars/registry";
 import { isProductionRuntime } from "./runner";
 
@@ -86,7 +86,7 @@ export async function createDraft(db: Admin, member: EngMember, raw: unknown): P
   const config = validation.resolved;
   const asIs = config.startingMaterial === "reviewed_template";
   const roleModel = asIs ? roleModelDraft(config) : null;
-  const title = roleModel?.title ?? (config.description.split(/[.\n]/)[0] || "Untitled work sample").slice(0, 120).padEnd(2, ".");
+  const title = roleModel?.title ?? placeholderTitle(config).padEnd(2, ".");
   const uploaded = config.startingMaterial === "uploaded";
   const skeleton = roleModel ?? (uploaded ? skeletonPackage(config) : null);
   const { data, error } = await db

@@ -376,6 +376,17 @@ const DESCRIPTION_MIN = 80;
 const DESCRIPTION_MAX = 6000;
 const OTHER_MAX = 200;
 
+/** A short, readable draft title: the first clause of the description, cut at a word boundary. */
+export function placeholderTitle(config: Pick<AuthoringConfig, "description" | "simulation">, max = 90): string {
+  const clause = (config.description.split(/[.\n]/)[0] ?? "").replace(/\s+/g, " ").trim();
+  const job = config.simulation?.jobTitle.trim() ?? "";
+  const base = clause || job || "Untitled work sample";
+  if (base.length <= max) return base;
+  const cut = base.slice(0, max + 1);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > max / 2 ? cut.slice(0, space) : base.slice(0, max)).replace(/[,;:]+$/, "")}…`;
+}
+
 function cleanList(v: unknown, max = 10, len = 300): string[] {
   return Array.isArray(v)
     ? v.filter((x): x is string => typeof x === "string").map((x) => x.trim()).filter((x) => x.length > 0).map((x) => x.slice(0, len)).slice(0, max)
