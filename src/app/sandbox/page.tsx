@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import SandboxLibrary from "@/components/sandbox/demo/SandboxLibrary";
+import GuidedDemo from "@/components/sandbox/demo/GuidedDemo";
 
 export const metadata: Metadata = {
-  title: "Try a simulation",
+  title: "Guided demo",
   description:
-    "Try a Fydell engineering simulation without an account: read the brief, work in a full workspace with real test runs in your browser and simulated teammates, then see your report.",
+    "Walk through a Fydell hiring loop without an account: an engineer's Passport, a real engineering task with tests that run in your browser, and the hiring team's review of the work.",
 };
 
 export default function SandboxPage() {
-  return <SandboxLibrary />;
+  return <GuidedDemo />;
 }

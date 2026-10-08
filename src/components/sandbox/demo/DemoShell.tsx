@@ -16,7 +16,7 @@ export function DemoShell({ children }: { children: ReactNode }) {
           <span className={s.demoLabel}>Demo</span>
           <div className={s.barEnd}>
             <Link href="/contact" className={s.barLink}>
-              Book a demo
+              Contact sales
             </Link>
             <Link href="/" className="l-btn l-btn-ghost">
               Back to site

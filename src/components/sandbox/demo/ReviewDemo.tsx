@@ -1,20 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Copy, EyeOff, Play } from "lucide-react";
-import { demoScenario } from "@/lib/sandbox-demo/catalog";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Copy, EyeOff, Play } from "lucide-react";
+import { demoScenario, referenceSolution } from "@/lib/sandbox-demo/catalog";
 import type { DemoScenario } from "@/lib/sandbox-demo/catalog-types";
 import type { LineRange } from "@/lib/sandbox-demo/diff";
 import { deriveReport } from "@/lib/sandbox-demo/report";
 import { candidateFinding, defaultFollowUp, reviewerObservation } from "@/lib/sandbox-demo/review";
 import { runtimeFor } from "@/lib/sandbox-demo/runtime";
-import { DECISIONS, type Attempt, type DecisionValue, type ReviewDraft } from "@/lib/sandbox-demo/state";
+import { DECISIONS, emptyHandoff, emptyReview, type Attempt, type DecisionValue, type ReviewDraft } from "@/lib/sandbox-demo/state";
+import type { RunRecord } from "@/lib/sandbox-demo/types";
 import { DemoShell } from "./DemoShell";
 import { BackToBrief, DemoAttemptNote, RunSummaryPanel, WrittenEvidencePanel, revealInDiff, type Highlight } from "./ReportView";
 import { workspaceHref } from "./ScenarioBrief";
 import { Transcript } from "./Transcript";
-import { useHydrated, useScenarioProgress, type UpdateProgress } from "./useDemoState";
+import { useHydrated, useScenarioProgress } from "./useDemoState";
+import { runFiles } from "./useTestRun";
 import { Badge, DiffView, Note, StateBadge, StatusIcon, TestList, cx, formatTime } from "./ui";
 import s from "./demo.module.css";
 
@@ -54,19 +56,108 @@ function EmployerView({ scenario }: { scenario: DemoScenario }) {
           </div>
           <DemoAttemptNote />
           <div className="mt-6">
-            <ReviewBody key={attempt.id} scenario={scenario} attempt={attempt} review={progress.review} updateProgress={updateProgress} />
+            <ReviewBody
+              key={attempt.id}
+              scenario={scenario}
+              attempt={attempt}
+              review={progress.review}
+              setReview={(patch) => updateProgress((p) => ({ ...p, review: { ...p.review, ...patch } }))}
+            />
           </div>
         </>
       ) : (
         <div className={s.stack}>
           <h1 className={s.h1}>Employer view of your submission</h1>
           <Note>There is no submission to review yet. Submit from the workspace and the employer view of your work appears here.</Note>
-          <Link href={workspaceHref(scenario.key)} className={cx("l-btn l-btn-solid", s.alignStart)}>
-            <Play size={14} aria-hidden />
-            Launch workspace
-          </Link>
+          <div className={s.actions}>
+            <Link href={workspaceHref(scenario.key)} className="l-btn l-btn-solid">
+              <Play size={14} aria-hidden />
+              Launch workspace
+            </Link>
+            <Link href={`/sandbox/${scenario.key}/example/review`} className="l-btn l-btn-quiet">
+              Review an example submission
+            </Link>
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/** The same employer view, built from the reference solution run in this browser. Nothing here is stored. */
+export function ExampleEmployerViewPage({ scenarioKey }: { scenarioKey: string }) {
+  const scenario = demoScenario(scenarioKey);
+  const hydrated = useHydrated();
+  if (!scenario) return null;
+  return <DemoShell>{hydrated ? <ExampleEmployerView scenario={scenario} /> : <p className={s.loading}>Opening the example review</p>}</DemoShell>;
+}
+
+function ExampleEmployerView({ scenario }: { scenario: DemoScenario }) {
+  const reference = useMemo(() => referenceSolution(scenario.key), [scenario.key]);
+  const [run, setRun] = useState<RunRecord | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [review, setReviewState] = useState<ReviewDraft>(emptyReview);
+
+  useEffect(() => {
+    if (!reference) return;
+    let cancelled = false;
+    runFiles(scenario, reference, "all").then(
+      (record) => {
+        if (!cancelled) setRun(record);
+      },
+      (e: unknown) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "The example could not run in this browser.");
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [reference, scenario]);
+
+  return (
+    <div className={s.briefPage}>
+      <Link href="/sandbox" className={s.backLink}>
+        <ArrowLeft size={14} aria-hidden />
+        Guided demo
+      </Link>
+      <div className={s.viewHead}>
+        <div>
+          <div className="mb-2 flex flex-wrap gap-2">
+            <span className={s.chip} data-tone="indigo">
+              Illustrative example
+            </span>
+          </div>
+          <h1 className={s.h1}>The hiring team&apos;s review</h1>
+          <p className={s.lead}>
+            {scenario.title}. This is what a reviewer sees for one submission: the changes, every test result, and room for a decision. Decisions stay in this
+            browser and nobody is notified.
+          </p>
+        </div>
+        <div className={s.actions}>
+          <Link href={workspaceHref(scenario.key)} className="l-btn l-btn-quiet">
+            <Play size={14} aria-hidden />
+            Try the task yourself
+          </Link>
+        </div>
+      </div>
+      <DemoAttemptNote example />
+      <div className="mt-6">
+        {!reference ? (
+          <Note>This simulation has no reference solution in the demo, so there is no example to review.</Note>
+        ) : run ? (
+          <ReviewBody
+            scenario={scenario}
+            attempt={{ id: "example", at: run.at, files: reference, run, handoff: emptyHandoff(), transcript: [] }}
+            review={review}
+            setReview={(patch) => setReviewState((r) => ({ ...r, ...patch }))}
+            example
+          />
+        ) : (
+          <div role="status" aria-live="polite">
+            <Note>{error ?? "Running the example submission through the public and protected tests in your browser."}</Note>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -75,12 +166,14 @@ function ReviewBody({
   scenario,
   attempt,
   review,
-  updateProgress,
+  setReview,
+  example = false,
 }: {
   scenario: DemoScenario;
   attempt: Attempt;
   review: ReviewDraft;
-  updateProgress: UpdateProgress;
+  setReview: (patch: Partial<ReviewDraft>) => void;
+  example?: boolean;
 }) {
   const rt = runtimeFor(scenario);
   const report = useMemo(() => deriveReport(scenario, attempt.files, attempt.run.results), [scenario, attempt]);
@@ -91,7 +184,6 @@ function ReviewBody({
   const [highlight, setHighlight] = useState<Highlight | null>(null);
   const [copied, setCopied] = useState<"done" | "failed" | null>(null);
   const allLines = report.diffs.flatMap((d) => d.ranges.map((r) => ({ path: d.path, range: r })));
-  const setReview = (patch: Partial<ReviewDraft>) => updateProgress((p) => ({ ...p, review: { ...p.review, ...patch } }));
 
   function reveal(path: string, range: LineRange) {
     setHighlight({ path, ranges: [range] });
@@ -122,7 +214,7 @@ function ReviewBody({
             <h2 id="rev-changes" className={s.h2}>
               Submitted changes
             </h2>
-            <span className={s.chip}>Your submission</span>
+            <span className={s.chip}>{example ? "Example submission" : "Your submission"}</span>
           </div>
           <div className="max-h-[520px] overflow-auto" data-lenis-prevent data-diff-scroll>
             <DiffView diffs={report.diffs} highlight={highlight} />
@@ -199,7 +291,7 @@ function ReviewBody({
           </div>
         </section>
 
-        <WrittenEvidencePanel scenario={scenario} handoff={attempt.handoff} transcript={attempt.transcript} />
+        <WrittenEvidencePanel scenario={scenario} handoff={attempt.handoff} transcript={attempt.transcript} example={example} />
 
         <section className={s.panel} aria-labelledby="rev-team">
           <div className={s.panelHead}>
@@ -209,7 +301,11 @@ function ReviewBody({
             <span className={s.meta}>Check-ins are labelled</span>
           </div>
           <div className={s.panelBody}>
-            <Transcript scenario={scenario} messages={attempt.transcript} />
+            {example ? (
+              <p className={s.meta}>Not observed. The example has no candidate, so there is no conversation.</p>
+            ) : (
+              <Transcript scenario={scenario} messages={attempt.transcript} />
+            )}
           </div>
         </section>
       </div>

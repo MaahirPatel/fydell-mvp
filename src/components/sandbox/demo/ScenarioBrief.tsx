@@ -12,11 +12,10 @@ import { progressStatus } from "@/lib/sandbox-demo/state";
 import { CHECKIN_RULES, CHECKIN_TRIGGERS } from "@/lib/sandbox-demo/team";
 import { checkinSenderId } from "@/lib/sandbox-demo/team-client";
 import { DemoShell } from "./DemoShell";
-import { DIFFICULTY_LABEL } from "./SandboxLibrary";
 import { Avatar } from "./Transcript";
 import { useHydrated, useScenarioProgress } from "./useDemoState";
 import { runFiles } from "./useTestRun";
-import { Note, cx, formatTime } from "./ui";
+import { DIFFICULTY_LABEL, Note, cx, formatTime } from "./ui";
 import s from "./demo.module.css";
 
 export function workspaceHref(key: string) {
@@ -33,7 +32,7 @@ export default function ScenarioBrief({ scenarioKey }: { scenarioKey: string }) 
       <div className={s.briefPage}>
         <Link href="/sandbox" className={s.backLink}>
           <ArrowLeft size={14} aria-hidden />
-          All simulations
+          Guided demo
         </Link>
         <BriefHeader scenario={scenario} />
         <div className={cx(s.split, s.splitBrief)}>
@@ -344,7 +343,7 @@ function HowBuilt({ scenario }: { scenario: DemoScenario }) {
       </summary>
       <div className={cx(s.panelBody, s.stack)}>
         <p className={s.body}>
-          It comes from a role-model scenario package in Fydell&apos;s {scenario.trackLabel} track, version {scenario.version}. The demo runs that package as
+          It comes from a simulation template in Fydell&apos;s {scenario.trackLabel} track, version {scenario.version}. The demo runs that package as
           is: the same files, the same public and protected tests and the same acceptance criteria.
         </p>
         <div className={s.stackSm}>

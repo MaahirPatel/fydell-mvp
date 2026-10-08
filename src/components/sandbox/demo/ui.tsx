@@ -5,8 +5,15 @@ import { CircleCheck, CircleDashed, CircleX, FileCode2, FileText, Info, Lock } f
 import type { DiffOp, FileDiff, LineRange } from "@/lib/sandbox-demo/diff";
 import { toHunks } from "@/lib/sandbox-demo/diff";
 import { CRITERION_STATE_LABEL, type CriterionState } from "@/lib/sandbox-demo/report";
+import type { DemoDifficulty } from "@/lib/sandbox-demo/catalog-types";
 import type { TestMeta, TestStatus } from "@/lib/sandbox-demo/types";
 import s from "./demo.module.css";
+
+export const DIFFICULTY_LABEL: Record<DemoDifficulty, string> = {
+  introductory: "Introductory",
+  moderate: "Moderate",
+  challenging: "Challenging",
+};
 
 export function cx(...names: (string | false | null | undefined)[]): string {
   return names.filter(Boolean).join(" ");

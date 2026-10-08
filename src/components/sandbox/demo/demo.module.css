@@ -285,123 +285,16 @@
   color: var(--mk-indigo);
 }
 
-/* ---------- Library ---------- */
-
-.libraryHero {
-  max-width: 760px;
-  padding-top: 56px;
-  padding-bottom: 36px;
-}
-.libraryHero .h1 {
-  font-size: clamp(32px, 3.6vw, 46px);
-  line-height: 1.08;
-  letter-spacing: -0.035em;
-}
-.libraryHero .lead {
-  margin-top: 14px;
-  font-size: 16.5px;
-}
-.heroNote {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 12px;
-  margin-top: 14px;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--text-secondary);
-}
-.inlineLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  border-radius: 4px;
-  font-weight: 500;
-  color: var(--mk-indigo);
-  text-decoration: underline;
-  text-decoration-color: var(--mk-indigo-line);
-  text-underline-offset: 3px;
-  white-space: nowrap;
-}
-.inlineLink:hover {
-  text-decoration-color: var(--mk-indigo);
-}
 .stackLg {
   display: flex;
   flex-direction: column;
   gap: 32px;
-}
-.umbrella {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 6px 20px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border-default);
 }
 .h2Lg {
   font-size: 22px;
   line-height: 1.2;
   font-weight: 500;
   letter-spacing: -0.02em;
-}
-.trackTitle {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-.cardGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
-}
-.simCard {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 20px;
-}
-.simCard[data-playable="false"] {
-  background: var(--surface-panel);
-}
-.simCardHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
-  min-height: 24px;
-}
-.simCardHead > .meta:first-child {
-  margin-right: auto;
-}
-.simCard .h3 {
-  font-size: 17px;
-  line-height: 1.3;
-  letter-spacing: -0.012em;
-}
-.factRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 16px;
-  margin-top: auto;
-  padding-top: 4px;
-}
-.factRow dd {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  color: var(--text-body);
-}
-.factRow svg {
-  color: var(--text-tertiary);
-}
-.simCardFoot {
-  display: flex;
-  align-items: center;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-subtle);
 }
 
 /* ---------- Brief ---------- */
