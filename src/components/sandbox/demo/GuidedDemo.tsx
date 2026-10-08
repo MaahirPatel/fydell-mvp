@@ -22,7 +22,7 @@ const TASK_STATE: Record<ProgressStatus, string> = {
   submitted: "Submitted",
 };
 
-/** The public demo: one engineer's profile, the task they do, and the hiring team's review of it. */
+/** The product tour: one engineer's profile, the task they do, and the hiring team's review of it. */
 export default function GuidedDemo() {
   const scenario = useMemo(() => playableScenarios()[0] ?? null, []);
   const hydrated = useHydrated();
@@ -34,12 +34,12 @@ export default function GuidedDemo() {
   return (
     <DemoShell>
       <header className={s.hero}>
-        <h1 className={s.title}>Walk through a hiring loop</h1>
+        <h1 className={s.title}>See how a hire runs on Fydell</h1>
         <p className={s.lead}>
-          Follow one engineer from their profile, into a real task, and on to the hiring team&apos;s review. Everything runs in this browser with fictional
-          data. No account is needed and nothing is sent to anyone.
+          Open an engineer&apos;s profile, work the task a candidate would, then review that work as the hiring team. It runs in your browser on fictional
+          data, with no account, and nothing is sent to anyone.
         </p>
-        <nav aria-label="Demo steps" className={s.steps}>
+        <nav aria-label="Tour steps" className={s.steps}>
           <ol>
             <StepLink n={1} href="#profile" tone="engineer" label="The engineer's profile" state="Example" />
             <StepLink n={2} href="#task" tone="simulation" label="The task" state={scenario ? TASK_STATE[status] : "Unavailable"} />
@@ -50,9 +50,6 @@ export default function GuidedDemo() {
 
       <section id="profile" aria-labelledby="profile-title" className={s.section}>
         <div className={s.intro}>
-          <span className={s.num} data-tone="engineer" aria-hidden>
-            1
-          </span>
           <div>
             <h2 id="profile-title" className={s.h2}>
               Start where the candidate starts
@@ -80,9 +77,6 @@ export default function GuidedDemo() {
 
       <section id="task" aria-labelledby="task-title" className={s.section}>
         <div className={s.intro}>
-          <span className={s.num} data-tone="simulation" aria-hidden>
-            2
-          </span>
           <div>
             <h2 id="task-title" className={s.h2}>
               Do the task they would do
@@ -100,9 +94,6 @@ export default function GuidedDemo() {
 
       <section id="review" aria-labelledby="review-title" className={s.section}>
         <div className={s.intro}>
-          <span className={s.num} data-tone="employer" aria-hidden>
-            3
-          </span>
           <div>
             <h2 id="review-title" className={s.h2}>
               Review it as the hiring team
@@ -141,7 +132,7 @@ function StepLink({ n, href, tone, label, state }: { n: number; href: string; to
     <li>
       <a href={href} className={s.step} data-tone={tone}>
         <span className={s.stepNum} aria-hidden>
-          {n}
+          {String(n).padStart(2, "0")}
         </span>
         <span className={s.stepText}>
           <span className={s.stepLabel}>{label}</span>

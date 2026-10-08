@@ -4,6 +4,7 @@
    anything people need to read uses --text-body. */
 
 .page {
+  padding-top: 64px;
   padding-bottom: 96px;
   color: var(--text-primary);
 
@@ -18,79 +19,6 @@
   max-width: calc(1320px + var(--l-gutter) * 2);
   margin-inline: auto;
   padding-inline: var(--l-gutter);
-}
-
-/* ---------- Demo header ---------- */
-
-.bar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--nav-scrim, rgba(247, 247, 244, 0.84));
-  backdrop-filter: saturate(1.4) blur(12px);
-  -webkit-backdrop-filter: saturate(1.4) blur(12px);
-}
-.barInner {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-height: 60px;
-}
-.logoLink {
-  display: inline-flex;
-  flex-shrink: 0;
-  border-radius: 6px;
-}
-.demoLabel {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  height: 24px;
-  padding-inline: 9px;
-  border: 1px solid var(--mk-indigo-line);
-  border-radius: 999px;
-  background: var(--mk-indigo-tint);
-  color: var(--mk-indigo);
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.barEnd {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-}
-
-.barLink {
-  display: inline-flex;
-  align-items: center;
-  height: 32px;
-  padding-inline: 10px;
-  border-radius: 999px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--text-body);
-  white-space: nowrap;
-}
-.barLink:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-}
-
-@media (max-width: 980px) {
-  .barInner {
-    flex-wrap: wrap;
-    gap: 8px 12px;
-    padding-block: 10px;
-  }
-
-  .barEnd {
-    margin-left: auto;
-  }
 }
 
 /* ---------- Shared type and controls ---------- */

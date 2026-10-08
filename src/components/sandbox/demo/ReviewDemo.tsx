@@ -118,7 +118,7 @@ function ExampleEmployerView({ scenario }: { scenario: DemoScenario }) {
     <div className={s.briefPage}>
       <Link href="/sandbox" className={s.backLink}>
         <ArrowLeft size={14} aria-hidden />
-        Guided demo
+        Product tour
       </Link>
       <div className={s.viewHead}>
         <div>

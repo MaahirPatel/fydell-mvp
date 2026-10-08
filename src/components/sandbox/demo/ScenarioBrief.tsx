@@ -32,7 +32,7 @@ export default function ScenarioBrief({ scenarioKey }: { scenarioKey: string }) 
       <div className={s.briefPage}>
         <Link href="/sandbox" className={s.backLink}>
           <ArrowLeft size={14} aria-hidden />
-          Guided demo
+          Product tour
         </Link>
         <BriefHeader scenario={scenario} />
         <div className={cx(s.split, s.splitBrief)}>
