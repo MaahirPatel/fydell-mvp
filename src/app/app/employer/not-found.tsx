@@ -15,7 +15,7 @@ export default function EmployerNotFound() {
       </p>
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <ButtonLink href="/app/employer/engineering" variant="primary">
-          Engineering tasks
+          Assessments
         </ButtonLink>
         <Link
           href="/app/employer"

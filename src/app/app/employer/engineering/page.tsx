@@ -31,12 +31,12 @@ export default async function EngineeringRolesPage() {
     <div className="max-w-[1120px]">
       <PageHeader
         title="Assessments"
-        description="Each role invites candidates to one published simulation. They work in their own editor, message the simulated team and submit their project. Your team reviews the evidence and releases the report."
+        description="Invite candidates to a published simulation. They work in their own editor, message the simulated team and submit their project. Your team reviews the evidence and releases the report."
       />
 
       <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <Panel>
-          <PanelSection title="Roles" description="Each role pins one simulation version, so every candidate for it gets the same work." />
+          <PanelSection title="Roles" description="Invite from a role page. Every candidate stays on the simulation version they were invited to." />
           {roles.length === 0 ? (
             <div className="px-5 pb-5 lg:px-6">
               <EmptyState title="No engineering roles yet" description={canManage ? "Create a draft role, preview the task, then publish it to start inviting." : "An owner, admin or hiring manager can create the first role."} />

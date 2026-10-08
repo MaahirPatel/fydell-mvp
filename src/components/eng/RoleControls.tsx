@@ -80,10 +80,20 @@ type InviteResult = {
 
 export type WorkSampleChoice = { id: string; label: string };
 
-export function InviteCandidateForm({ roleId, defaultLabel, workSamples = [] }: { roleId: string; defaultLabel?: string; workSamples?: WorkSampleChoice[] }) {
+export function InviteCandidateForm({
+  roleId,
+  defaultLabel,
+  workSamples = [],
+  initialVersionId = "",
+}: {
+  roleId: string;
+  defaultLabel?: string;
+  workSamples?: WorkSampleChoice[];
+  initialVersionId?: string;
+}) {
   const router = useRouter();
   const [mode, setMode] = useState<"handle" | "email">("handle");
-  const [versionId, setVersionId] = useState("");
+  const [versionId, setVersionId] = useState(initialVersionId);
   const [handle, setHandle] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -174,14 +184,14 @@ export function InviteCandidateForm({ roleId, defaultLabel, workSamples = [] }: 
         </div>
       )}
       {workSamples.length ? (
-        <Field label="Task" htmlFor="inv-version" help="Each candidate is pinned to the version chosen here.">
+        <Field label="Simulation" htmlFor="inv-version" help="Each candidate stays on the version chosen here.">
           <Select id="inv-version" value={versionId} onChange={(e) => setVersionId(e.target.value)}>
-            <option value="">{defaultLabel ?? "The role's task"}</option>
             {workSamples.map((w) => (
               <option key={w.id} value={w.id}>
                 {w.label}
               </option>
             ))}
+            <option value="">{defaultLabel ?? "The role’s simulation"}</option>
           </Select>
         </Field>
       ) : null}
@@ -218,7 +228,7 @@ export function PreviewWorkSample({ roleId, workSamples }: { roleId: string; wor
       <FormError>{error}</FormError>
       <div className="flex flex-wrap items-end gap-3">
         {workSamples.length > 1 ? (
-          <Field label="Work sample" htmlFor="preview-version">
+          <Field label="Preview a simulation" htmlFor="preview-version">
             <Select id="preview-version" value={versionId} onChange={(e) => setVersionId(e.target.value)}>
               {workSamples.map((w) => (
                 <option key={w.id} value={w.id}>
@@ -232,7 +242,7 @@ export function PreviewWorkSample({ roleId, workSamples }: { roleId: string; wor
           {workSamples.length === 1 ? `Preview ${workSamples[0].label}` : "Start preview"}
         </Button>
       </div>
-      <p className="text-app-meta text-[var(--text-secondary)]">Takes the task yourself as a candidate would. Previews are never emailed, use no quota and are left out of counts and decisions.</p>
+      <p className="text-app-meta text-[var(--text-secondary)]">Take it yourself as a candidate would. Previews are never emailed, use no quota and are left out of counts and decisions.</p>
     </div>
   );
 }

@@ -54,15 +54,15 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
   return (
     <div className="max-w-[1160px]">
       <Link href="/app/employer/engineering" className="text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
-        ← Engineering tasks
+        ← Assessments
       </Link>
       <PageHeader
         className="mt-3"
         title={role.title}
         description={
           workSamples.length
-            ? `${taskTitle}, task version ${row.version}, unless you choose one of your published work samples when inviting. Each candidate is pinned to the version they were invited to.`
-            : `${taskTitle}, task version ${row.version}. Every candidate for this role gets exactly this version.`
+            ? "Choose the simulation each candidate gets when you invite them. Every candidate stays on the version they were invited to."
+            : `${taskTitle}, version ${row.version}. Every candidate for this role gets exactly this version.`
         }
         meta={
           <>
@@ -81,7 +81,12 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
           />
           {canInvite ? (
             <div className="grid gap-5 px-5 pb-5 lg:px-6">
-              <InviteCandidateForm roleId={role.id} defaultLabel={`${taskTitle}, version ${row.version} (the role's task)`} workSamples={workSamples} />
+              <InviteCandidateForm
+                roleId={role.id}
+                defaultLabel={`${taskTitle}, version ${row.version} (${resolved.origin === "fydell_reviewed" ? "Fydell’s built-in task" : "the role’s simulation"})`}
+                workSamples={workSamples}
+                initialVersionId={resolved.origin === "fydell_reviewed" ? (workSamples[0]?.id ?? "") : ""}
+              />
               {previewable.length ? (
                 <div className="border-t border-[var(--border-subtle)] pt-5">
                   <PreviewWorkSample roleId={role.id} workSamples={previewable} />
