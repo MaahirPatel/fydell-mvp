@@ -92,10 +92,14 @@ function RefList({ refs, findings, projectId, onOpen }: { refs: EvidenceRef[]; f
   );
 }
 
+/** Fired after a contribution or decision is saved, so panels derived from it can reload. */
+export const CONTEXT_SAVED_EVENT = "fydell:context-saved";
+
 async function send(method: string, payload: unknown): Promise<{ ok: boolean; status: number; data: Record<string, unknown> }> {
   try {
     const res = await fetch("/api/passport/context", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (res.ok) window.dispatchEvent(new Event(CONTEXT_SAVED_EVENT));
     return { ok: res.ok, status: res.status, data };
   } catch {
     return { ok: false, status: 0, data: { error: "Fydell could not be reached. Your text is kept; try again." } };

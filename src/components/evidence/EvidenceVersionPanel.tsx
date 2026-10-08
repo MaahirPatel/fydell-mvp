@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { CONTEXT_SAVED_EVENT } from "@/components/passport/ContributionContext";
 import type { EvidenceStatus } from "@/lib/profile-evidence/store";
 import { GUIDE_LABEL, RELATIONSHIPS, RELATIONSHIP_LABEL, type Relationship } from "@/lib/profile-evidence/contract";
 import EvidenceSnapshotView from "./EvidenceSnapshotView";
@@ -94,6 +95,21 @@ export default function EvidenceVersionPanel({ initial }: { initial: EvidenceSta
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [addingFeedback, setAddingFeedback] = useState(false);
+  const projectKey = status.projectKey;
+
+  useEffect(() => {
+    async function reload() {
+      try {
+        const res = await fetch(`/api/passport/evidence?projectKey=${encodeURIComponent(projectKey)}`, { cache: "no-store" });
+        const data = (await res.json().catch(() => ({}))) as { status?: EvidenceStatus };
+        if (data.status) setStatus(data.status);
+      } catch {
+        // The next confirm or publish reports the error; nothing was lost.
+      }
+    }
+    window.addEventListener(CONTEXT_SAVED_EVENT, reload);
+    return () => window.removeEventListener(CONTEXT_SAVED_EVENT, reload);
+  }, [projectKey]);
 
   async function refresh() {
     try {

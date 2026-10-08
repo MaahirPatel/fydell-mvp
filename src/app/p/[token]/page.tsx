@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPublicProfile } from "@/lib/profile/store";
-import { CandidateShell } from "@/components/candidate/CandidateShell";
+import { CandidateShell, PublicHeaderLink } from "@/components/candidate/CandidateShell";
 import PassportView from "@/components/passport/PassportView";
 import ProfileOverview from "@/components/profile/ProfileOverview";
 
@@ -19,7 +19,7 @@ export default async function SharedProfilePage({ params }: { params: Promise<{ 
 
   if (shared.status !== "ok") {
     return (
-      <CandidateShell width="narrow">
+      <CandidateShell width="narrow" action={<PublicHeaderLink />}>
         <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
           {shared.status === "revoked" ? "This link was revoked." : shared.status === "expired" ? "This link has expired." : "This profile link is not valid."}
         </h1>
@@ -42,7 +42,7 @@ export default async function SharedProfilePage({ params }: { params: Promise<{ 
   ];
 
   return (
-    <CandidateShell width="wide">
+    <CandidateShell width="wide" action={<PublicHeaderLink />}>
       <ProfileOverview
         profile={profile}
         accounts={shownAccounts}

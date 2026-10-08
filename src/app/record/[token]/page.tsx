@@ -4,7 +4,7 @@ import { resolveReceiptShare } from "@/lib/pilot/receipt-share";
 import type { ReceiptField } from "@/lib/pilot/receipt-fields";
 import { EvidenceReportV2 } from "@/components/sim/EvidenceReportV2";
 import { isV2PersistedResult, type V2PersistedResult } from "@/lib/simulations/v2/scoring";
-import { CandidateShell } from "@/components/candidate/CandidateShell";
+import { CandidateShell, PublicHeaderLink } from "@/components/candidate/CandidateShell";
 import { Surface } from "@/components/ui/Surface";
 
 export const metadata = { title: "Work Receipt" };
@@ -107,7 +107,7 @@ export default async function WorkReceiptPage({
           ? "The person who shared this receipt withdrew access to it. Only they can issue a new link."
           : "The link may be incomplete, or the receipt it pointed to no longer exists. Ask whoever sent it to you to check.";
     return (
-      <CandidateShell width="narrow">
+      <CandidateShell width="narrow" action={<PublicHeaderLink />}>
         <h1 className="text-app-page font-medium tracking-[-0.02em] text-[var(--text-primary)]">
           {title}
         </h1>
@@ -125,7 +125,7 @@ export default async function WorkReceiptPage({
     fieldAllowed(allowed, "evidence_summaries");
 
   return (
-    <CandidateShell width="wide">
+    <CandidateShell width="wide" action={<PublicHeaderLink />}>
       <Surface tone="panel" className="mb-5 px-5 py-4">
         <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
           Work Receipt, shared with you

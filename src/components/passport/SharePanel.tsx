@@ -18,7 +18,7 @@ type Share = {
 };
 
 /** `title` is set for manual projects, which have no analyzed version. */
-type ShareProject = { repo: string; commit: string; findings: number; title?: string; confirmed: boolean };
+type ShareProject = { repo: string; commit: string; findings: number; title?: string; confirmed: boolean; confirmHref: string };
 
 const FIELD_LABEL: Record<ShareField, string> = {
   projects: "Projects, contribution context and decisions",
@@ -77,7 +77,11 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
     e.preventDefault();
     if (busy) return;
     if (repos.length === 0) {
-      return setError(projects.some((p) => p.confirmed) ? "Choose at least one project to include." : "Confirm your contribution on at least one project before sharing it.");
+      return setError(
+        projects.some((p) => p.confirmed)
+          ? "Choose at least one project to include."
+          : "Confirm your contribution on at least one project before sharing it. Use the link under a project above.",
+      );
     }
     setBusy(true);
     setError(null);
@@ -163,7 +167,11 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
                   )}
                   {p.confirmed ? null : (
                     <span id={`share-unconfirmed-${p.repo}`} className="block text-app-meta text-[var(--text-secondary)]">
-                      Draft, not shared. Confirm your contribution on this project to include it.
+                      Draft, not shared.{" "}
+                      <a href={p.confirmHref} className="font-medium text-[var(--accent-ink)] underline-offset-4 hover:underline">
+                        Confirm your contribution
+                      </a>{" "}
+                      to include it.
                     </span>
                   )}
                 </span>

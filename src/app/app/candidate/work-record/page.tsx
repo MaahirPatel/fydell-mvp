@@ -73,10 +73,15 @@ export default async function WorkRecordPage({
   const shareable = [
     ...current
       .filter((p) => !privateKeys.has(p.repoFullName.toLowerCase()))
-      .map((p) => ({ repo: p.repoFullName, commit: p.commitSha.slice(0, 7), findings: p.evidence.length })),
+      .map((p) => ({
+        repo: p.repoFullName,
+        commit: p.commitSha.slice(0, 7),
+        findings: p.evidence.length,
+        confirmHref: p.id ? `/app/candidate/projects/${p.id}#evidence-version-heading` : "#showcase",
+      })),
     ...presentations
       .filter((p) => p.sourceKind === "manual" && p.visibility === "shareable")
-      .map((p) => ({ repo: p.projectKey, commit: "", findings: 0, title: p.title })),
+      .map((p) => ({ repo: p.projectKey, commit: "", findings: 0, title: p.title, confirmHref: "#showcase" })),
   ].map((p) => ({ ...p, confirmed: confirmedKeys.has(p.repo.toLowerCase()) }));
 
   return (

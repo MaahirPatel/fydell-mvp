@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CandidateShell } from "@/components/candidate/CandidateShell";
+import { CandidateShell, PublicHeaderLink } from "@/components/candidate/CandidateShell";
 import { Surface } from "@/components/ui/Surface";
 
 export const metadata = { title: "This link has been retired" };
@@ -23,7 +23,7 @@ export const metadata = { title: "This link has been retired" };
  */
 export default function RetiredResultLinkPage() {
   return (
-    <CandidateShell width="narrow">
+    <CandidateShell width="narrow" action={<PublicHeaderLink />}>
       <h1 className="text-app-page font-medium tracking-[-0.02em] text-[var(--text-primary)]">
         This link has been retired
       </h1>

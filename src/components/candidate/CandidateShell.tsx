@@ -14,6 +14,15 @@ function CandidateSignOut() {
   );
 }
 
+/** Header-right for pages opened from a link by someone who may not have an account. */
+export function PublicHeaderLink() {
+  return (
+    <Link href="/" className="inline-flex h-8 shrink-0 items-center rounded-[8px] px-2.5 text-[13px] font-medium text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]">
+      About Fydell
+    </Link>
+  );
+}
+
 /**
  * Chrome for every candidate page except the workbench itself.
  *
