@@ -99,6 +99,8 @@
     "test:webhook-dedupe": "tsx --conditions react-server scripts/test-webhook-dedupe.ts",
     "test:job-lease-recovery": "tsx --conditions react-server scripts/test-job-lease-recovery.ts",
     "test:inventory-pagination-contract": "tsx --conditions react-server scripts/test-inventory-pagination-contract.ts",
+    "test:support-retrieval-quality": "tsx --conditions react-server scripts/test-support-retrieval-quality.ts",
+    "test:extraction-structured-output": "tsx --conditions react-server scripts/test-extraction-structured-output.ts",
     "validate:exemplars": "tsx --conditions react-server scripts/validate-exemplars.ts",
     "check:exemplars": "tsx --conditions react-server scripts/validate-exemplars.ts --check",
     "test:collaboration": "tsx --conditions react-server scripts/test-collaboration.ts",
