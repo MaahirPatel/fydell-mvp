@@ -104,6 +104,69 @@ function HealthPanel({ health }: { health: WorkspaceHealth }) {
   );
 }
 
+const SETUP_STEPS = [
+  {
+    title: "Choose a simulation",
+    detail:
+      "Start from a validated role model for Backend & API or Applied AI, use it as reviewed, or adapt it to your product.",
+    href: "/app/employer/work-samples/new",
+    cta: "Create simulation",
+  },
+  {
+    title: "Open a role",
+    detail: "Describe the engineering role and attach the published simulation candidates will complete.",
+    href: "/app/employer/engineering",
+    cta: "Create role",
+  },
+  {
+    title: "Invite candidates",
+    detail:
+      "Candidates work in the Fydell desktop app, in their own editor. Your team reviews the evidence before anything is released.",
+    href: "/app/employer/roles",
+    cta: "View roles",
+  },
+] as const;
+
+function GettingStarted({ className, canManage }: { className?: string; canManage: boolean }) {
+  return (
+    <Panel className={className}>
+      <div className="px-5 py-6 lg:px-7 lg:py-7">
+        <h2 className="text-[20px] font-semibold leading-[1.25] tracking-[-0.02em] text-[var(--text-primary)]">
+          Run your first practical assessment
+        </h2>
+        <p className="mt-1.5 max-w-[62ch] text-[15px] leading-[1.55] text-[var(--text-secondary)]">
+          Three steps from an empty workspace to evidence your team can review.
+        </p>
+        <ol className="mt-6 grid gap-4 md:grid-cols-3">
+          {SETUP_STEPS.map((step, i) => (
+            <li
+              key={step.title}
+              className="flex flex-col rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] p-4"
+            >
+              <span
+                aria-hidden
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[13px] font-semibold tabular-nums text-[var(--accent-ink)]"
+              >
+                {i + 1}
+              </span>
+              <h3 className="mt-3 text-[15px] font-semibold text-[var(--text-primary)]">{step.title}</h3>
+              <p className="mt-1 flex-1 text-[14px] leading-[1.5] text-[var(--text-secondary)]">{step.detail}</p>
+              {canManage ? (
+                <Link
+                  href={step.href}
+                  className="mt-4 text-[14px] font-medium text-[var(--accent-ink)] underline-offset-2 hover:underline"
+                >
+                  {step.cta}
+                </Link>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </Panel>
+  );
+}
+
 export default async function EmployerHomePage() {
   const user = await requireUser();
   if (!user) redirect("/login?next=%2Fapp%2Femployer");
@@ -166,7 +229,7 @@ export default async function EmployerHomePage() {
             ? "Review the candidate evidence that is ready and prepare the next interview."
             : hasInvited
               ? "Candidate work is underway. Fydell will surface the next decision when evidence is ready."
-              : "Start with an open role, or explore the isolated Applied AI proof demo below."
+              : "Set up a simulation, open a role, and invite your first candidates."
         }
       />
 
@@ -188,12 +251,7 @@ export default async function EmployerHomePage() {
       ) : null}
 
       {!hasInvited ? (
-        <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
-          <WorkspaceSection
-            title="Start with an open role"
-            description="No candidates have been invited yet. Create an engineering role, publish it, and invite candidates to a practical task they complete in their own editor. Your team reviews the evidence and releases the report."
-          />
-        </Panel>
+        <GettingStarted className={attentionRows.length > 0 ? "mt-6" : "mt-7"} canManage={canManage} />
       ) : (
         <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
           <WorkspaceSection

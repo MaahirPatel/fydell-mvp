@@ -1,9 +1,8 @@
 import { cn } from "@/lib/cn";
 
 /**
- * Every employer page opens the same way: a compact title, one grey line of
- * context, and at most one primary action on the right. The breadcrumb in the
- * top bar already says where you are, so the header does not need to shout.
+ * Every employer page opens the same way: a confident title, one line of
+ * context, and at most one primary action on the right.
  */
 export function WorkspacePageHeader({
   title,
@@ -19,11 +18,11 @@ export function WorkspacePageHeader({
   return (
     <header className={cn("flex flex-wrap items-start justify-between gap-x-6 gap-y-3", className)}>
       <div className="min-w-0">
-        <h1 className="text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-[var(--text-primary)]">
+        <h1 className="text-[30px] font-semibold leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)]">
           {title}
         </h1>
         {description ? (
-          <p className="mt-1 max-w-[72ch] text-[14px] leading-[1.5] text-[var(--text-secondary)]">
+          <p className="mt-2 max-w-[68ch] text-[16px] leading-[1.55] text-[var(--text-secondary)]">
             {description}
           </p>
         ) : null}
@@ -55,9 +54,9 @@ export function WorkspaceSection({
     <div className="px-5 py-4 lg:px-6 lg:py-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-[14px] font-semibold leading-[1.4] text-[var(--text-primary)]">{title}</h2>
+          <h2 className="text-[16px] font-semibold leading-[1.35] tracking-[-0.011em] text-[var(--text-primary)]">{title}</h2>
           {description ? (
-            <p className="mt-0.5 max-w-[72ch] text-[13px] leading-[1.5] text-[var(--text-tertiary)]">
+            <p className="mt-1 max-w-[72ch] text-[14px] leading-[1.5] text-[var(--text-secondary)]">
               {description}
             </p>
           ) : null}

@@ -29,6 +29,7 @@ mod chat;
 mod config;
 mod diagnostics;
 mod eng;
+mod eng_authored;
 mod eng_package;
 mod error;
 mod events;
@@ -132,6 +133,15 @@ fn main() {
             eng::eng_submit,
             eng::eng_get_report,
             eng::eng_open_workspace,
+            eng_authored::eng_authored_view,
+            eng_authored::eng_authored_action,
+            eng_authored::eng_authored_prepare,
+            eng_authored::eng_authored_local,
+            eng_authored::eng_authored_run_tests,
+            eng_authored::eng_authored_team,
+            eng_authored::eng_authored_collaboration,
+            eng_authored::eng_authored_submit,
+            eng_authored::eng_authored_report,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Fydell desktop");

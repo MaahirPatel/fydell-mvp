@@ -13,6 +13,8 @@ export type EngAttemptStatus =
 
 export interface EngAttemptSummary {
   id: string;
+  /** "authored" tasks use the work-sample flow (lib/eng-authored.ts). */
+  kind?: "authored" | "standard" | string;
   status: EngAttemptStatus | string;
   roleTitle: string;
   organizationName: string;

@@ -26,7 +26,7 @@ function choiceClass(on: boolean, disabled = false) {
     disabled
       ? "cursor-not-allowed border-[var(--border-subtle)] bg-[var(--surface-panel)] opacity-70"
       : on
-        ? "border-[var(--accent-primary)] bg-[var(--surface-selected)] ring-1 ring-[var(--accent-primary)]"
+        ? "border-[var(--accent)] bg-[var(--surface-selected)] ring-1 ring-[var(--accent)]"
         : "border-[var(--border-default)] hover:border-[var(--border-strong)]",
   );
 }
@@ -86,7 +86,7 @@ export function SimulationPicker({
               <button key={t.track} type="button" role="radio" aria-checked={on} onClick={() => pickTrack(t)} className={choiceClass(on)}>
                 <span className="block text-[15px] font-semibold text-[var(--text-primary)]">{t.label}</span>
                 <span className="mt-0.5 block text-[13px] leading-[1.45] text-[var(--text-secondary)]">{t.roles.slice(0, 3).join(", ")}</span>
-                <span className="mt-1.5 block text-[12px] font-medium text-[var(--accent-primary)]">
+                <span className="mt-1.5 block text-[12px] font-medium text-[var(--accent)]">
                   {t.exemplars.length} role-model {t.exemplars.length === 1 ? "simulation" : "simulations"}
                 </span>
               </button>
@@ -125,7 +125,7 @@ export function SimulationPicker({
                   onClick={() => pickFamily(id)}
                   className={cn(
                     "h-9 rounded-[8px] border px-3.5 text-[14px] font-medium transition-colors",
-                    on ? "border-[var(--accent-primary)] bg-[var(--surface-selected)] text-[var(--text-primary)]" : "border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]",
+                    on ? "border-[var(--accent)] bg-[var(--surface-selected)] text-[var(--text-primary)]" : "border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]",
                   )}
                 >
                   {label}

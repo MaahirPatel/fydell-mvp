@@ -73,7 +73,7 @@ fn attempt_folder_name(attempt_id: &str) -> String {
     format!("engineering-{}", &attempt_id[..8])
 }
 
-fn planned_project_dir(attempt_id: &str, root: &str) -> AppResult<PathBuf> {
+pub(crate) fn planned_project_dir(attempt_id: &str, root: &str) -> AppResult<PathBuf> {
     if !eng_package::is_safe_segment(root) {
         return Err(AppError::Integrity("the starter folder name is not valid".into()));
     }
@@ -84,10 +84,18 @@ fn planned_project_dir(attempt_id: &str, root: &str) -> AppResult<PathBuf> {
 // Task list — src/app/api/eng/attempts/route.ts (GET, candidate-scoped)
 // ---------------------------------------------------------------------------
 
+fn standard_kind() -> String {
+    "standard".into()
+}
+
+/// `kind` is "authored" for employer-authored work samples, which use the
+/// `/authored` routes (see `eng_authored.rs`), and "standard" otherwise.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EngAttemptSummary {
     pub id: String,
+    #[serde(default = "standard_kind")]
+    pub kind: String,
     pub status: String,
     pub role_title: String,
     #[serde(default)]
@@ -487,7 +495,7 @@ pub struct EngLocalState {
     pub receipt: Option<EngReceipt>,
 }
 
-fn load_local(attempt_id: &str) -> AppResult<Option<EngLocalState>> {
+pub(crate) fn load_local(attempt_id: &str) -> AppResult<Option<EngLocalState>> {
     let path = state_path(attempt_id)?;
     match std::fs::read_to_string(&path) {
         Ok(text) => Ok(serde_json::from_str(&text).ok()),
@@ -496,7 +504,7 @@ fn load_local(attempt_id: &str) -> AppResult<Option<EngLocalState>> {
     }
 }
 
-fn save_local(state: &EngLocalState) -> AppResult<()> {
+pub(crate) fn save_local(state: &EngLocalState) -> AppResult<()> {
     let path = state_path(&state.attempt_id)?;
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)?;
@@ -507,14 +515,14 @@ fn save_local(state: &EngLocalState) -> AppResult<()> {
     Ok(())
 }
 
-fn require_local(attempt_id: &str) -> AppResult<EngLocalState> {
+pub(crate) fn require_local(attempt_id: &str) -> AppResult<EngLocalState> {
     load_local(attempt_id)?.ok_or_else(|| {
         AppError::NotFound("the project folder for this task (download the starter first)".into())
     })
 }
 
 /// The local record is trusted only for paths inside the workspace root.
-fn local_project_dir(state: &EngLocalState) -> AppResult<PathBuf> {
+pub(crate) fn local_project_dir(state: &EngLocalState) -> AppResult<PathBuf> {
     let expected = planned_project_dir(&state.attempt_id, &state.starter_root)?;
     if PathBuf::from(&state.project_dir) != expected {
         return Err(AppError::PathEscape);
@@ -522,7 +530,7 @@ fn local_project_dir(state: &EngLocalState) -> AppResult<PathBuf> {
     Ok(expected)
 }
 
-fn now_iso() -> String {
+pub(crate) fn now_iso() -> String {
     chrono::Utc::now().to_rfc3339()
 }
 
@@ -535,7 +543,7 @@ fn reach(e: reqwest::Error) -> AppError {
     AppError::Platform(format!("could not reach Fydell: {}", e.without_url()))
 }
 
-async fn get_json<T: serde::de::DeserializeOwned>(path: &str, what: &str) -> AppResult<T> {
+pub(crate) async fn get_json<T: serde::de::DeserializeOwned>(path: &str, what: &str) -> AppResult<T> {
     let p = Platform::new();
     let res = p
         .authed(reqwest::Method::GET, path)
@@ -549,7 +557,7 @@ async fn get_json<T: serde::de::DeserializeOwned>(path: &str, what: &str) -> App
         .map_err(|e| AppError::Platform(format!("{what}: unexpected response ({})", e.without_url())))
 }
 
-async fn post_json<T: serde::de::DeserializeOwned>(
+pub(crate) async fn post_json<T: serde::de::DeserializeOwned>(
     path: &str,
     body: serde_json::Value,
     what: &str,
@@ -888,7 +896,7 @@ pub async fn eng_save_draft(
     Ok(EngDraftSave::Saved { revision: ok.revision })
 }
 
-fn starter_map(state: &EngLocalState) -> BTreeMap<String, String> {
+pub(crate) fn starter_map(state: &EngLocalState) -> BTreeMap<String, String> {
     state
         .starter_files
         .iter()

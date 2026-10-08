@@ -33,7 +33,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistMono.variable} ${GeistSans.variable} ${inter.variable}`}>
-      <body className={GeistSans.className}>
+      <body className={inter.className}>
         <Script
           id="vtag-ai-js"
           src="https://r2.leadsy.ai/tag.js"

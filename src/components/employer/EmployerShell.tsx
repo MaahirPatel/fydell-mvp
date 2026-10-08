@@ -28,7 +28,7 @@ import {
 import { ToastProvider } from "@/components/ui/Toast";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import AccountMenu from "@/components/workspace/AccountMenu";
-import { HELP_HREF, type WorkspaceContexts } from "@/lib/workspace/account";
+import { type WorkspaceContexts } from "@/lib/workspace/account";
 import { InviteModalProvider, useInviteModal } from "./InviteCandidateModal";
 import type { CatalogRole } from "./catalog-types";
 import {
@@ -342,23 +342,26 @@ function SidebarContent({
         <SidebarNav onNavigate={onNavigate} />
       </div>
 
-      <div className="mt-2 flex flex-col gap-px pt-2">
-        <NavRow item={WORKSPACE_SETTINGS_ITEM} pathname={pathname} onNavigate={onNavigate} />
+      <div className="mt-2 flex items-center gap-1 border-t border-[var(--border-subtle)] pt-2">
+        <div className="min-w-0 flex-1">
+          <AccountMenu
+            person={{ name: identity.userName, email: identity.userEmail, avatarUrl: identity.userAvatarUrl }}
+            context="organization"
+            contexts={identity.contexts}
+            placement="above"
+            onNavigate={onNavigate}
+          />
+        </div>
         <Link
-          href={HELP_HREF}
+          href={WORKSPACE_SETTINGS_ITEM.href}
           onClick={onNavigate}
-          className={`flex h-[30px] items-center gap-2 rounded-[6px] px-2 text-[14px] font-medium text-[var(--text-secondary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] ${INSET_FOCUS}`}
+          aria-label="Settings"
+          title="Settings"
+          aria-current={pathname.startsWith(WORKSPACE_SETTINGS_ITEM.href) ? "page" : undefined}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] aria-[current=page]:bg-[var(--surface-selected)] aria-[current=page]:text-[var(--text-primary)] ${INSET_FOCUS}`}
         >
-          <CircleHelp className="h-4 w-4 shrink-0 text-[var(--text-tertiary)]" strokeWidth={ICON_STROKE} aria-hidden />
-          Help
+          <Settings className="h-4 w-4" strokeWidth={ICON_STROKE} aria-hidden />
         </Link>
-        <AccountMenu
-          person={{ name: identity.userName, email: identity.userEmail, avatarUrl: identity.userAvatarUrl }}
-          context="organization"
-          contexts={identity.contexts}
-          placement="above"
-          onNavigate={onNavigate}
-        />
       </div>
     </div>
   );
@@ -541,21 +544,22 @@ function MobileTopBar({ identity }: { identity: ShellIdentity }) {
 
 /**
  * List density for every employer page, including those still built on the
- * shared `PageHeader` and `PanelSection`: a 22px title with one grey line,
- * 15px section headings and 14px body text. Scoped here so the candidate app
- * and the public site keep their own scale.
+ * shared `PageHeader` and `PanelSection`: a 30px title with one secondary
+ * line, 17px section headings and 15px body text. Scoped here so the
+ * candidate app and the public site keep their own scale.
  */
 const WORKSPACE_DENSITY = [
-  "[&_h1.text-app-page]:text-[22px]",
+  "[&_h1.text-app-page]:text-[30px]",
   "[&_h1.text-app-page]:font-semibold",
-  "[&_h1.text-app-page]:leading-[1.2]",
-  "[&_h1.text-app-page]:tracking-[-0.015em]",
-  "[&_h1.text-app-page+p]:mt-1",
-  "[&_h1.text-app-page+p]:text-[14px]",
+  "[&_h1.text-app-page]:leading-[1.15]",
+  "[&_h1.text-app-page]:tracking-[-0.025em]",
+  "[&_h1.text-app-page+p]:mt-2",
+  "[&_h1.text-app-page+p]:text-[16px]",
   "[&_h1.text-app-page+p]:text-[var(--text-secondary)]",
-  "[&_h2.text-app-section]:text-[15px]",
+  "[&_h2.text-app-section]:text-[17px]",
   "[&_h2.text-app-section]:font-semibold",
-  "[&_.text-app-body]:text-[14px]",
+  "[&_h2.text-app-section]:tracking-[-0.012em]",
+  "[&_.text-app-body]:text-[15px]",
 ].join(" ");
 
 /** Page padding and reading width, except where the workbench takes over. */

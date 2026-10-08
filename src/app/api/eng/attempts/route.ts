@@ -17,7 +17,7 @@ export async function GET() {
   const [{ data: attemptRows, error: attemptError }, { data: inviteRows, error: inviteError }] = await Promise.all([
     db
       .from("eng_attempts")
-      .select("id, invitation_id, status, allowed_minutes, extension_minutes, started_at, due_at, submitted_at, created_at")
+      .select("id, invitation_id, scenario_version_id, status, allowed_minutes, extension_minutes, started_at, due_at, submitted_at, created_at")
       .eq("candidate_user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50),
@@ -36,7 +36,7 @@ export async function GET() {
 
   type AttemptPick = Pick<
     AttemptRow,
-    "id" | "invitation_id" | "status" | "allowed_minutes" | "extension_minutes" | "started_at" | "due_at" | "submitted_at" | "created_at"
+    "id" | "invitation_id" | "scenario_version_id" | "status" | "allowed_minutes" | "extension_minutes" | "started_at" | "due_at" | "submitted_at" | "created_at"
   >;
   type InvitePick = Pick<InvitationRow, "id" | "status" | "expires_at" | "role_snapshot" | "allowed_minutes" | "created_at">;
   const attempts = (attemptRows ?? []) as AttemptPick[];
@@ -50,12 +50,20 @@ export async function GET() {
     for (const row of (data ?? []) as Pick<InvitationRow, "id" | "role_snapshot">[]) snapshots.set(row.id, row.role_snapshot);
   }
 
+  const versionIds = [...new Set(attempts.map((a) => a.scenario_version_id).filter((id): id is string => Boolean(id)))];
+  const authoredVersions = new Set<string>();
+  if (versionIds.length > 0) {
+    const { data } = await db.from("eng_scenario_versions").select("id, origin").in("id", versionIds);
+    for (const row of (data ?? []) as { id: string; origin: string }[]) if (row.origin === "employer_authored") authoredVersions.add(row.id);
+  }
+
   const attempted = new Set(attemptInviteIds);
   return ok({
     attempts: attempts.map((a) => {
       const snap = snapshots.get(a.invitation_id);
       return {
         id: a.id,
+        kind: a.scenario_version_id && authoredVersions.has(a.scenario_version_id) ? "authored" : "standard",
         status: a.status,
         roleTitle: snap?.title ?? "Engineering task",
         organizationName: snap?.organizationName ?? "",

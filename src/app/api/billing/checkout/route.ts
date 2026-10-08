@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   if (existing?.stripeSubscriptionId && BILLABLE_STATUSES.has(existing.status ?? "")) {
     const portal = await stripe.billingPortal.sessions.create({
       customer: existing.stripeCustomerId,
-      return_url: `${origin}/app/employer/settings#plan`,
+      return_url: `${origin}/app/employer/settings?section=plan`,
     });
     return NextResponse.json({ url: portal.url });
   }

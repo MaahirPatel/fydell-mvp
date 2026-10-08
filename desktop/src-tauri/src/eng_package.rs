@@ -92,7 +92,7 @@ pub fn is_safe_segment(s: &str) -> bool {
 
 /// Validates an archive entry name: relative, forward slashes only, no
 /// traversal, no empty or dot segments, no control characters, no drive.
-fn validate_entry_name(name: &str) -> Option<Vec<&str>> {
+pub fn validate_entry_name(name: &str) -> Option<Vec<&str>> {
     if name.is_empty() || name.len() > MAX_PATH_LEN + 81 {
         return None;
     }
@@ -346,7 +346,7 @@ pub fn plan_package(
             "The project is larger than 20 MB. Leave out virtual environments, caches and build output.".into(),
         );
     }
-    if !present.contains("fydell.json") {
+    if starter.contains_key("fydell.json") && !present.contains("fydell.json") {
         plan.problems.push(
             "fydell.json is missing from the top of the project folder. Restore it from the starter.".into(),
         );
@@ -608,14 +608,17 @@ mod tests {
     }
 
     #[test]
-    fn plan_requires_manifest_and_build_refuses_problems() {
+    fn plan_requires_manifest_the_starter_shipped_and_build_refuses_problems() {
         let dest = temp_dir();
         let project = dest.join("proj");
         std::fs::create_dir_all(&project).unwrap();
         std::fs::write(project.join("app.py"), b"x").unwrap();
-        let plan = plan_package(&project, "proj", &BTreeMap::new()).unwrap();
+        let starter: BTreeMap<String, String> = [("fydell.json".to_string(), "h".to_string())].into();
+        let plan = plan_package(&project, "proj", &starter).unwrap();
         assert!(plan.problems.iter().any(|p| p.contains("fydell.json")));
         assert!(build_archive(&project, &plan).is_err());
+        let without = plan_package(&project, "proj", &BTreeMap::new()).unwrap();
+        assert!(without.problems.is_empty(), "{:?}", without.problems);
         let _ = std::fs::remove_dir_all(dest);
     }
 

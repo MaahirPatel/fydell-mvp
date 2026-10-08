@@ -443,6 +443,14 @@ export default function CreatorForm({
             </Field>
           </PanelSection>
 
+          {asIs ? (
+            <PanelSection title="What the candidate gets">
+              <p className="text-[14px] leading-[1.6] text-[var(--text-body)]">
+                The role model exactly as validated: its brief, starter project, tests, teammates, time limit and AI policy. After the draft is created you can edit any section, and the checks run again before it can be published.
+              </p>
+            </PanelSection>
+          ) : (
+          <>
           <PanelSection title="Environment" description="Only combinations the runner can execute are offered. Everything runs without network access or package installation.">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Primary language" htmlFor="f-language" error={fieldError("language")}>
@@ -623,12 +631,16 @@ export default function CreatorForm({
                 <Combobox id="f-ai-policy" options={aiPolicyOptions} value={input.aiPolicy} onChange={(v) => setField("aiPolicy", v as AuthoringInput["aiPolicy"])} />
                 {otherInput("aiPolicy", { long: true })}
               </Field>
-              <Field label="Starting material" htmlFor="f-material" error={fieldError("startingMaterial")}>
-                <Combobox id="f-material" options={materialOptions} value={input.startingMaterial} onChange={(v) => setField("startingMaterial", v as AuthoringInput["startingMaterial"])} />
-                {otherInput("startingMaterial")}
-              </Field>
+              {input.simulation ? null : (
+                <Field label="Starting material" htmlFor="f-material" error={fieldError("startingMaterial")}>
+                  <Combobox id="f-material" options={materialOptions} value={input.startingMaterial} onChange={(v) => setField("startingMaterial", v as AuthoringInput["startingMaterial"])} />
+                  {otherInput("startingMaterial")}
+                </Field>
+              )}
             </div>
           </PanelSection>
+          </>
+          )}
         </Panel>
       </div>
 

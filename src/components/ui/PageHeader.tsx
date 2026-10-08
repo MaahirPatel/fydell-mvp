@@ -27,7 +27,7 @@ export function PageHeader({
       <div className="min-w-0">
         <h1 className="text-app-page text-[var(--text-primary)]">{title}</h1>
         {description ? (
-          <p className="mt-2 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-body)]">
+          <p className="mt-2.5 max-w-[64ch] text-[1.0625rem] leading-[1.55] text-[var(--text-secondary)]">
             {description}
           </p>
         ) : null}

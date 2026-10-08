@@ -75,12 +75,20 @@ export function WorkspaceCard({
   plannedDir,
   allowPrepare,
   onPrepared,
+  prepareWith,
+  verifiedNote = "verified against SHA-256",
+  plannedNote = "The starter project will be downloaded, checked against the hash Fydell sends, and extracted to:",
+  prepareLabel = "Download starter",
 }: {
   attemptId: string;
   local: EngLocalState | null;
   plannedDir: string;
   allowPrepare: boolean;
   onPrepared: (l: EngLocalState) => void;
+  prepareWith?: (attemptId: string) => Promise<EngLocalState>;
+  verifiedNote?: string;
+  plannedNote?: string;
+  prepareLabel?: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,7 +97,7 @@ export function WorkspaceCard({
     setBusy(true);
     setError(null);
     try {
-      onPrepared(await engApi.prepareWorkspace(attemptId));
+      onPrepared(await (prepareWith ?? engApi.prepareWorkspace)(attemptId));
     } catch (e) {
       setError(messageOf(e));
     } finally {
@@ -115,7 +123,7 @@ export function WorkspaceCard({
               <div className="section-label">Project folder</div>
               <div className="mono eng-path">{local.projectDir}</div>
               <div className="muted">
-                {local.starterFiles.length} starter files · verified against SHA-256{" "}
+                {local.starterFiles.length} starter files · {verifiedNote}{" "}
                 <span className="mono">{local.starterSha256.slice(0, 12)}…</span>
               </div>
             </div>
@@ -128,14 +136,11 @@ export function WorkspaceCard({
         <div className="eng-workspace-row">
           <div className="eng-workspace-main">
             <div className="section-label">Project folder</div>
-            <div className="muted">
-              The starter project will be downloaded, checked against the hash Fydell sends, and
-              extracted to:
-            </div>
+            <div className="muted">{plannedNote}</div>
             <div className="mono eng-path">{plannedDir}</div>
           </div>
           <button className="btn" disabled={busy || !allowPrepare} onClick={() => void prepare()}>
-            {busy ? "Downloading…" : "Download starter"}
+            {busy ? "Preparing…" : prepareLabel}
           </button>
         </div>
       )}

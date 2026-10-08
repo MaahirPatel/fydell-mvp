@@ -17,12 +17,14 @@
      different size on every machine. caption < meta < body < section < page. */
   --text-app-caption: 0.8125rem;
   --text-app-caption--line-height: 1.4;
-  --text-app-page: 1.875rem;
-  --text-app-page--line-height: 1.15;
-  --text-app-page--letter-spacing: -0.022em;
-  --text-app-section: 1.1875rem;
+  --text-app-page: 2.125rem;
+  --text-app-page--line-height: 1.12;
+  --text-app-page--letter-spacing: -0.028em;
+  --text-app-page--font-weight: 650;
+  --text-app-section: 1.25rem;
   --text-app-section--line-height: 1.3;
-  --text-app-section--letter-spacing: -0.014em;
+  --text-app-section--letter-spacing: -0.018em;
+  --text-app-section--font-weight: 600;
   --text-app-body: 0.9375rem;
   --text-app-body--line-height: 1.55;
   --text-app-control: 0.875rem;
@@ -30,8 +32,8 @@
   --text-app-meta: 0.8125rem;
   --text-app-meta--line-height: 1.45;
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --shadow-panel: 0 1px 2px rgba(19, 32, 56, 0.05);
@@ -59,7 +61,8 @@ body {
   overflow-x: clip;
   background: var(--surface-canvas);
   color: var(--text-primary);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-feature-settings: "cv01", "ss03";
   font-size: 16px;
   line-height: 1.55;
   font-optical-sizing: auto;

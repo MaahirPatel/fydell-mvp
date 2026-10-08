@@ -391,7 +391,7 @@ export default function DraftWorkspace({
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
         <div className="min-w-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-hidden">
             <Tabs idBase="ws" label="Draft sections" items={TABS} value={tab} onValueChange={(v) => setTab(v as TabKey)} />
           </div>
           <div className="mt-5">

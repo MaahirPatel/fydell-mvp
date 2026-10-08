@@ -78,7 +78,7 @@ export function WorkSamplesHome({
 
   return (
     <div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-hidden">
         <Tabs
           idBase="wsh"
           label="Work samples"

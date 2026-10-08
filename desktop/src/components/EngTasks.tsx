@@ -15,7 +15,7 @@ export default function EngTasks({
   onOpen,
   onAuthExpired,
 }: {
-  onOpen: (attemptId: string) => void;
+  onOpen: (attemptId: string, kind: "authored" | "standard") => void;
   onAuthExpired: () => void;
 }) {
   const [tasks, setTasks] = useState<EngTaskList | null>(null);
@@ -45,7 +45,10 @@ export default function EngTasks({
       setAcceptingId(invitationId);
       setError(null);
       try {
-        onOpen(await engApi.acceptInvitation(invitationId));
+        const attemptId = await engApi.acceptInvitation(invitationId);
+        const fresh = await engApi.listTasks().catch(() => null);
+        const kind = fresh?.attempts.find((a) => a.id === attemptId)?.kind === "authored" ? "authored" : "standard";
+        onOpen(attemptId, kind);
       } catch (e) {
         if (isAuthRequired(e)) onAuthExpired();
         else setError(messageOf(e));
@@ -138,7 +141,7 @@ export default function EngTasks({
                         <span className="muted">{a.allowedMinutes} min window</span>
                       </div>
                     </div>
-                    <button className={`btn ${a.status === "in_progress" ? "" : "ghost"}`} onClick={() => onOpen(a.id)}>
+                    <button className={`btn ${a.status === "in_progress" ? "" : "ghost"}`} onClick={() => onOpen(a.id, a.kind === "authored" ? "authored" : "standard")}>
                       {a.status === "in_progress" ? "Continue" : a.status === "submitted" ? "View" : "Open"}
                     </button>
                   </li>

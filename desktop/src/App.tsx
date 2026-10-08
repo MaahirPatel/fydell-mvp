@@ -26,6 +26,7 @@ import { ProvenanceTag } from "./components/ui";
 import UpdatePrompt from "./components/UpdatePrompt";
 import EngTasks from "./components/EngTasks";
 import EngAssessment from "./components/EngAssessment";
+import EngAuthored from "./components/EngAuthored";
 
 type Screen =
   | "loading"
@@ -207,7 +208,7 @@ function Shell({
   onTimedChange: (timed: boolean) => void;
 }) {
   const [tab, setTab] = useState<HomeTab>("home");
-  const [engAttempt, setEngAttempt] = useState<string | null>(null);
+  const [engAttempt, setEngAttempt] = useState<{ id: string; kind: "authored" | "standard" } | null>(null);
 
   useEffect(() => {
     if (tab !== "engineering" || engAttempt == null) onTimedChange(false);
@@ -322,15 +323,22 @@ function Shell({
           <Inbox onAcceptId={onAcceptInvitationId} onAcceptToken={onAcceptInviteToken} />
         )}
         {tab === "engineering" &&
-          (engAttempt ? (
+          (engAttempt?.kind === "authored" ? (
+            <EngAuthored
+              attemptId={engAttempt.id}
+              onBack={() => setEngAttempt(null)}
+              onAuthExpired={onAuthExpired}
+              onTimedChange={onTimedChange}
+            />
+          ) : engAttempt ? (
             <EngAssessment
-              attemptId={engAttempt}
+              attemptId={engAttempt.id}
               onBack={() => setEngAttempt(null)}
               onAuthExpired={onAuthExpired}
               onTimedChange={onTimedChange}
             />
           ) : (
-            <EngTasks onOpen={setEngAttempt} onAuthExpired={onAuthExpired} />
+            <EngTasks onOpen={(id, kind) => setEngAttempt({ id, kind })} onAuthExpired={onAuthExpired} />
           ))}
         {tab === "profile" && <Profile />}
       </main>

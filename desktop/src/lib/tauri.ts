@@ -10,6 +10,7 @@ import type {
   EngTaskList,
   EngUploadOutcome,
 } from "./eng";
+import type { AuthoredReceipt, AuthoredReport, AuthoredView, Collaboration, PublicRun } from "./eng-authored";
 
 // Typed bindings for the Rust commands (see src-tauri/src/*.rs).
 // The desktop is a client of the platform's session API
@@ -399,4 +400,19 @@ export const engApi = {
     invoke<EngReceipt>("eng_submit", { attemptId, uploadId, answers }),
   getReport: (attemptId: string) => invoke<EngReport | null>("eng_get_report", { attemptId }),
   openWorkspace: (attemptId: string) => invoke<void>("eng_open_workspace", { attemptId }),
+};
+
+export const engAuthoredApi = {
+  view: (attemptId: string) => invoke<AuthoredView>("eng_authored_view", { attemptId }),
+  action: (attemptId: string, action: "consent" | "environment_ready" | "start", continueWithoutCheck = false) =>
+    invoke<AuthoredView>("eng_authored_action", { attemptId, action, continueWithoutCheck }),
+  prepare: (attemptId: string) => invoke<EngLocalState>("eng_authored_prepare", { attemptId }),
+  local: (attemptId: string) => invoke<{ local: EngLocalState | null; plannedProjectDir: string }>("eng_authored_local", { attemptId }),
+  runTests: (attemptId: string, purpose: "environment_check" | "workspace") => invoke<PublicRun>("eng_authored_run_tests", { attemptId, purpose }),
+  collaboration: (attemptId: string) => invoke<Collaboration>("eng_authored_collaboration", { attemptId }),
+  sendTeam: (attemptId: string, teammateId: string, body: string, clientMsgId: string) =>
+    invoke<Collaboration>("eng_authored_team", { attemptId, teammateId, body, clientMsgId }),
+  submit: (attemptId: string, handoff: Record<string, string>, aiUse: string) =>
+    invoke<AuthoredReceipt>("eng_authored_submit", { attemptId, handoff, aiUse }),
+  report: (attemptId: string) => invoke<AuthoredReport | null>("eng_authored_report", { attemptId }),
 };
