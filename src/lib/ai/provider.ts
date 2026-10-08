@@ -159,6 +159,24 @@ export function buildChatBody(
 }
 
 /**
+ * The provider's machine-readable error code (for example `json_validate_failed`).
+ * Only an identifier-shaped code is returned: error messages can echo prompt or
+ * generated content and must not reach logs or job status.
+ */
+async function providerErrorCode(res: Response): Promise<string | null> {
+  try {
+    const body: unknown = await res.json();
+    if (!body || typeof body !== "object" || !("error" in body)) return null;
+    const error: unknown = body.error;
+    if (!error || typeof error !== "object") return null;
+    const raw = "code" in error && typeof error.code === "string" ? error.code : "type" in error && typeof error.type === "string" ? error.type : null;
+    return raw && /^[a-z0-9_.-]{1,48}$/i.test(raw) ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * POST a chat completion to the configured provider's OpenAI-compatible
  * endpoint. Returns the raw assistant content string, or throws on
  * transport/API failure. Callers own parsing and validation.
@@ -189,7 +207,8 @@ export async function postChatCompletion(
     });
 
     if (!res.ok) {
-      throw new Error(`Model API error: ${res.status} (${config.provider})`);
+      const code = await providerErrorCode(res);
+      throw new Error(`Model API error: ${res.status}${code ? ` ${code}` : ""} (${config.provider})`);
     }
 
     const data = (await res.json()) as {
