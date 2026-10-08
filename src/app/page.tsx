@@ -24,22 +24,22 @@ export default function HomePage() {
       <CenteredHero
         announcement={<Announcement href="/changelog" label={`Fydell Desktop ${LATEST.version}`} action="See what's new" />}
         title="Engineering work, ready to be seen."
-        lead="Fydell turns real projects and realistic simulations into evidence hiring teams can read."
+        lead="Bring projects and simulation results into one engineering profile, with evidence hiring teams can inspect."
         actions={
           <>
             <DownloadButton />
-            <Link href="/signup" className="l-btn l-btn-quiet">
-              Sign up
+            <Link href="/sandbox" className="l-btn l-btn-quiet">
+              Explore demo
             </Link>
           </>
         }
       >
-        <PaintedStage painting="hills" priority wash>
+        <PaintedStage painting="hills" priority wash inset="hero">
           <ProductFrame
             size="hero"
             chrome="none"
             title="Fydell · Simulation"
-            label="A candidate's simulation in the Fydell desktop app: the INC-2291 incident with its activity and public test run, and the team thread docked on the right with a teammate's answer and the candidate's changed files."
+            label="A candidate's simulation: the requirement being worked on, the candidate's change to the webhook dispatcher, the public tests now passing, and a short team thread. Example data."
           >
             <SimulationHero />
           </ProductFrame>

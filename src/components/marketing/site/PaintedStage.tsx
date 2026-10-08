@@ -32,13 +32,13 @@ export default function PaintedStage({
 }: {
   painting: Painting;
   children: ReactNode;
-  inset?: "default" | "wide";
+  inset?: "default" | "wide" | "hero";
   priority?: boolean;
   wash?: boolean;
 }) {
   const painted = hasPainting(painting);
   return (
-    <div className={inset === "wide" ? s.stageWide : s.stage} data-painted={painted ? undefined : "none"}>
+    <div className={inset === "wide" ? s.stageWide : inset === "hero" ? `${s.stage} ${s.stageHero}` : s.stage} data-painted={painted ? undefined : "none"}>
       {painted ? (
         <Image
           src={`/marketing/paintings/${painting}.jpg`}

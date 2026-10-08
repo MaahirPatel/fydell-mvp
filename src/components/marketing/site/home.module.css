@@ -12,7 +12,7 @@
 /* ---------- Hero ---------- */
 
 .hero {
-  padding-top: 136px;
+  padding-top: 112px;
   text-align: center;
 }
 
@@ -53,7 +53,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   font-size: 13.5px;
   color: var(--text-secondary);
   transition: color 120ms ease;
@@ -92,8 +92,8 @@
 }
 .lead {
   max-width: 34em;
-  margin: 20px auto 0;
-  font-size: 18px;
+  margin: 16px auto 0;
+  font-size: 19px;
   line-height: 1.55;
   font-weight: 400;
   letter-spacing: -0.008em;
@@ -105,7 +105,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  margin-top: 32px;
+  margin-top: 24px;
 }
 .ctas :global(.l-btn) {
   height: 42px;
@@ -113,7 +113,7 @@
   font-size: 14.5px;
 }
 .heroStage {
-  margin-top: 64px;
+  margin-top: 44px;
   text-align: left;
 }
 
@@ -129,6 +129,10 @@
 }
 .stageWide {
   padding: 48px 56px;
+}
+/* The hero keeps a thin painted margin so the product gets the width. */
+.stage.stageHero {
+  padding: 36px 40px;
 }
 .stageImage {
   object-fit: cover;
@@ -320,6 +324,9 @@
   .stage {
     padding: 40px;
   }
+  .stage.stageHero {
+    padding: 24px;
+  }
   .stageWide {
     padding: 32px;
   }
@@ -353,8 +360,9 @@
     margin-top: 48px;
   }
   .stage,
-  .stageWide {
-    padding: 16px;
+  .stageWide,
+  .stage.stageHero {
+    padding: 12px;
     border-radius: 4px;
   }
   .h2 {

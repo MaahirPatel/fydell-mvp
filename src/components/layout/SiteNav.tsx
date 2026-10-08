@@ -10,7 +10,7 @@ import NavDownload from "@/components/marketing/site/NavDownload";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const linkClass = (active: boolean) =>
-  `h-9 items-center gap-1 rounded-full px-3 text-[14px] font-semibold tracking-[-0.006em] transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
+  `h-9 items-center gap-1 whitespace-nowrap rounded-full px-3 text-[14px] font-semibold tracking-[-0.006em] transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
     active
       ? "text-[var(--mk-indigo)]"
       : "text-[var(--text-body)] hover:text-[var(--mk-indigo)]"
