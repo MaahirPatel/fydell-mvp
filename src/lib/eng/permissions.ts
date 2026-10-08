@@ -12,7 +12,10 @@ export type EngAction =
   | "record_decision"
   | "write_notes"
   | "flag_finding"
-  | "manage_members";
+  | "manage_members"
+  | "author_work_samples"
+  | "approve_work_samples"
+  | "publish_work_samples";
 
 /**
  * Server routes enforce this matrix on every request; pages only use it to
@@ -33,6 +36,9 @@ export const ENG_PERMISSIONS: Record<EngAction, readonly OrgRole[]> = {
   write_notes: ["owner", "admin", "hiring_manager", "reviewer"],
   flag_finding: ["owner", "admin", "hiring_manager", "reviewer"],
   manage_members: ["owner", "admin"],
+  author_work_samples: ["owner", "admin", "hiring_manager"],
+  approve_work_samples: ["owner", "admin", "hiring_manager", "reviewer"],
+  publish_work_samples: ["owner", "admin", "hiring_manager"],
 };
 
 export function roleCan(role: OrgRole, action: EngAction): boolean {

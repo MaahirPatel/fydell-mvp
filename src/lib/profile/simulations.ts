@@ -28,7 +28,7 @@ type SessionRow = {
 export async function listProfileSimulations(ownerId: string): Promise<ProfileSimulation[]> {
   const db = createAdminSupabaseClient();
   const [{ data: attempts }, { data: sessions }, { data: credentials }] = await Promise.all([
-    db.from("eng_attempts").select("id, invitation_id, status, submitted_at").eq("candidate_user_id", ownerId).eq("status", "submitted"),
+    db.from("eng_attempts").select("id, invitation_id, status, submitted_at").eq("candidate_user_id", ownerId).eq("status", "submitted").eq("is_preview", false),
     db
       .from("sim_sessions")
       .select("id, status, submitted_at, organizations(name), sim_templates(title)")

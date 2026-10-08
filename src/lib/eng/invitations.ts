@@ -2,8 +2,8 @@ import "server-only";
 import { createHash, randomBytes } from "crypto";
 import type { Admin, EngMember } from "./context";
 import { recordEngEvent } from "./events";
-import { scenarioForVersionId } from "./scenario-versions";
-import type { AttemptRow, InvitationRow, RoleRow, RoleSnapshot } from "./types";
+import { resolveScenarioVersion } from "./scenario-versions";
+import type { AttemptRow, InvitationRow, RoleRow, RoleSnapshot, ScenarioVersionRow } from "./types";
 import { appUrl } from "@/lib/app-url";
 import { fydellEmailShell, isResendConfigured, sendResendHtml } from "@/lib/email";
 import { notifyUser } from "@/lib/notifications/store";
@@ -58,7 +58,13 @@ export async function resolveHandleCandidate(db: Admin, raw: string): Promise<In
   return { email, name, handle: normalized.handle, userId: profile.owner_id as string };
 }
 
-async function deliver(invitation: InvitationRow, token: string, organizationName: string): Promise<InvitationRow["email_delivery"]> {
+async function deliver(
+  invitation: InvitationRow,
+  token: string,
+  organizationName: string,
+  taskLine = "You work locally in your own editor for about 50 minutes, then upload your project.",
+): Promise<InvitationRow["email_delivery"]> {
+  if (invitation.is_preview) return "not_configured";
   if (!isResendConfigured()) return "not_configured";
   const url = inviteUrl(token);
   const hello = invitation.candidate_name ? ` ${escapeHtml(invitation.candidate_name)}` : "";
@@ -67,7 +73,7 @@ async function deliver(invitation: InvitationRow, token: string, organizationNam
     subject: `${organizationName} invited you to a Fydell engineering task`,
     html: fydellEmailShell(
       `<p style="margin:0 0 12px">Hi${hello},</p>
-       <p style="margin:0 0 12px"><strong>${escapeHtml(organizationName)}</strong> invited you to a practical backend task: <strong>${escapeHtml(invitation.role_snapshot.title)}</strong>. You work locally in your own editor for about 50 minutes, then upload your project.</p>
+       <p style="margin:0 0 12px"><strong>${escapeHtml(organizationName)}</strong> invited you to a practical engineering task: <strong>${escapeHtml(invitation.role_snapshot.title)}</strong>. ${escapeHtml(taskLine)}</p>
        <p style="margin:0 0 20px"><a href="${url}" style="background:#111827;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Review the invitation</a></p>
        <p style="margin:0;color:#6B7280;font-size:13px">Nothing starts until you finish setup and press Start. This link expires ${new Date(invitation.expires_at).toUTCString()}.</p>`
     ),
@@ -76,14 +82,37 @@ async function deliver(invitation: InvitationRow, token: string, organizationNam
   return sent.ok ? "sent" : "failed";
 }
 
+/** Employer-authored versions must belong to the inviting workspace and still be published. */
+function assertUsableAuthored(row: ScenarioVersionRow, organizationId: string, preview: boolean) {
+  if (row.organization_id !== organizationId) throw new Error("That work sample isn't available to your workspace.");
+  if (row.status !== "published" || row.archived_at) throw new Error("That work sample version is no longer published. Choose the current version.");
+  if (row.purpose === "preview" && !preview) throw new Error("That version is for previews only.");
+}
+
 export async function createInvitation(
   db: Admin,
   member: EngMember,
   role: RoleRow,
-  candidate: InviteCandidate
+  candidate: InviteCandidate,
+  opts: { scenarioVersionId?: string; preview?: boolean } = {}
 ): Promise<{ invitation: InvitationRow; url: string }> {
-  if (role.status !== "published") throw new Error("Publish the role before inviting candidates.");
-  const { definition, row } = await scenarioForVersionId(db, role.scenario_version_id);
+  const preview = opts.preview === true;
+  if (preview ? role.status === "archived" : role.status !== "published") {
+    throw new Error(preview ? "This role is archived." : "Publish the role before inviting candidates.");
+  }
+  const versionId = opts.scenarioVersionId ?? role.scenario_version_id;
+  const resolved = await resolveScenarioVersion(db, versionId);
+  const row = resolved.row;
+  if (resolved.origin === "employer_authored") assertUsableAuthored(row, member.organizationId, preview);
+  else if (versionId !== role.scenario_version_id) throw new Error("Only your workspace's own work samples can replace the role's task.");
+  const allowedMinutes =
+    resolved.origin === "employer_authored"
+      ? Math.min(480, Math.max(30, Math.round(resolved.pkg.environment.taskMinutes)))
+      : resolved.definition.defaultAllowedMinutes;
+  const taskLine =
+    resolved.origin === "employer_authored"
+      ? `You edit the starter project in the browser or in your own editor for about ${resolved.pkg.environment.taskMinutes} minutes, then submit it.`
+      : undefined;
   const snapshot: RoleSnapshot = {
     title: role.title,
     companyContext: role.company_context,
@@ -97,16 +126,17 @@ export async function createInvitation(
     .insert({
       organization_id: member.organizationId,
       role_id: role.id,
-      scenario_version_id: role.scenario_version_id,
+      scenario_version_id: versionId,
       candidate_email: candidate.email,
       candidate_name: candidate.name,
       candidate_handle: candidate.handle ?? null,
       token_hash: hashInviteToken(token),
       status: "invited",
       role_snapshot: snapshot,
-      allowed_minutes: definition.defaultAllowedMinutes,
+      allowed_minutes: allowedMinutes,
       expires_at: new Date(Date.now() + INVITE_TTL_DAYS * 86400000).toISOString(),
       invited_by: member.userId,
+      is_preview: preview,
     })
     .select("*")
     .single();
@@ -115,9 +145,9 @@ export async function createInvitation(
     throw new Error(`Could not create invitation: ${error.message}`);
   }
   const invitation = data as InvitationRow;
-  const delivery = await deliver(invitation, token, member.organizationName);
+  const delivery = await deliver(invitation, token, member.organizationName, taskLine);
   await db.from("eng_invitations").update({ email_delivery: delivery }).eq("id", invitation.id);
-  if (candidate.userId) {
+  if (candidate.userId && !preview) {
     await notifyUser(candidate.userId, {
       kind: "invitation_received",
       title: `${member.organizationName} invited you to a task`,
@@ -150,7 +180,12 @@ export async function resendInvitation(db: Admin, member: EngMember, invitation:
     .single();
   if (error || !data) throw new Error("Could not resend the invitation. Reload and try again.");
   const updated = data as InvitationRow;
-  const delivery = await deliver(updated, token, member.organizationName);
+  const resolved = await resolveScenarioVersion(db, updated.scenario_version_id);
+  const taskLine =
+    resolved.origin === "employer_authored"
+      ? `You edit the starter project in the browser or in your own editor for about ${resolved.pkg.environment.taskMinutes} minutes, then submit it.`
+      : undefined;
+  const delivery = await deliver(updated, token, member.organizationName, taskLine);
   await db.from("eng_invitations").update({ email_delivery: delivery }).eq("id", updated.id);
   return { invitation: { ...updated, email_delivery: delivery }, url: inviteUrl(token) };
 }
@@ -238,6 +273,7 @@ async function acceptLoaded(db: Admin, inv: InvitationRow, user: { id: string; e
       candidate_user_id: user.id,
       status: "accepted",
       allowed_minutes: inv.allowed_minutes,
+      is_preview: inv.is_preview ?? false,
     })
     .select("*")
     .single();

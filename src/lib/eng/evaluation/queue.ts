@@ -3,8 +3,9 @@ import { randomUUID } from "crypto";
 import type { Admin } from "../context";
 import { recordEngEvent } from "../events";
 import { EXPECTATIONS, HARNESS_SHA256, HARNESS_SOURCE } from "../scenarios/backend-webhook-retry/hidden.generated";
-import { scenarioForVersionId } from "../scenario-versions";
-import type { ProbeResult, RunRow, SubmissionRow, UploadRow } from "../types";
+import { scenarioForVersionId, versionOrigin } from "../scenario-versions";
+import { processAuthoredRun } from "../authored/evaluation-run";
+import type { ProbeResult, RunRow, ScenarioVersionRow, SubmissionRow, UploadRow } from "../types";
 import { loadAcceptedArchive } from "../uploads";
 import { gradeProbe, summarize } from "./grade.mjs";
 import type { ExecutorSelection } from "./executor";
@@ -33,7 +34,9 @@ export function selectExecutor(): ExecutorSelection {
 }
 
 export async function enqueueEvaluation(db: Admin, submission: SubmissionRow, scenarioVersionId: string): Promise<void> {
-  const { row } = await scenarioForVersionId(db, scenarioVersionId);
+  const { data: versionRow } = await db.from("eng_scenario_versions").select("id, suite_version, harness_sha256").eq("id", scenarioVersionId).single();
+  if (!versionRow) throw new Error("Scenario version not found");
+  const row = versionRow as Pick<ScenarioVersionRow, "id" | "suite_version" | "harness_sha256">;
   const { error } = await db.from("eng_evaluation_runs").insert({
     submission_id: submission.id,
     attempt_id: submission.attempt_id,
@@ -99,7 +102,7 @@ export async function claimRun(db: Admin, workerId: string, now = new Date()): P
 }
 
 /** A worker whose lease was reclaimed is fenced out: its write matches no row and it records nothing. */
-async function failRun(db: Admin, run: RunRow, code: string, detail: string, retryable: boolean): Promise<RunRow["status"]> {
+export async function failRun(db: Admin, run: RunRow, code: string, detail: string, retryable: boolean): Promise<RunRow["status"]> {
   const exhausted = !retryable || run.attempt_count >= run.max_attempts;
   const nextRetry = new Date(Date.now() + Math.min(30, 2 ** run.attempt_count) * 60000).toISOString();
   const { data: applied } = await db
@@ -127,6 +130,7 @@ async function failRun(db: Admin, run: RunRow, code: string, detail: string, ret
 }
 
 export async function processRun(db: Admin, run: RunRow): Promise<RunRow["status"]> {
+  if ((await versionOrigin(db, run.scenario_version_id)) === "employer_authored") return processAuthoredRun(db, run);
   const { data: submission } = await db.from("eng_submissions").select("*").eq("id", run.submission_id).single();
   const { data: upload } = await db.from("eng_uploads").select("*").eq("id", (submission as SubmissionRow).upload_id).single();
   const { row: version } = await scenarioForVersionId(db, run.scenario_version_id);

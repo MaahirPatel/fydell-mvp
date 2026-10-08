@@ -8,7 +8,10 @@ import { getAttemptForCandidate } from "@/lib/eng/attempts";
 import CandidateReport from "@/components/eng/CandidateReport";
 import { buildCandidateReport } from "@/lib/eng/candidate-report";
 import { buildCandidateView } from "@/lib/eng/candidate-view";
-import { scenarioForVersionId } from "@/lib/eng/scenario-versions";
+import { scenarioForVersionId, versionOrigin } from "@/lib/eng/scenario-versions";
+import { buildAuthoredCandidateReport } from "@/lib/eng/authored/reports";
+import { buildAuthoredCandidateView, loadAuthored } from "@/lib/eng/authored/runtime";
+import { AuthoredAssessment } from "@/components/work-samples/runtime/AuthoredAssessment";
 import { engAdmin } from "@/lib/eng/context";
 import { requireUser } from "@/lib/simulations/auth";
 
@@ -35,6 +38,18 @@ export default async function AssessmentPage({ params }: { params: Promise<{ att
         </div>
       </CandidateShell>
     );
+  }
+  if ((await versionOrigin(db, attempt.scenario_version_id)) === "employer_authored") {
+    const authored = await loadAuthored(db, attempt);
+    const authoredView = await buildAuthoredCandidateView(db, authored);
+    const authoredReport =
+      authoredView.evaluation === "released"
+        ? await buildAuthoredCandidateReport(db, attempt, authored.pkg).catch((err: unknown) => {
+            console.error("[eng:authored-report] could not build the candidate report", err);
+            return null;
+          })
+        : null;
+    return <AuthoredAssessment initialView={authoredView} report={authoredReport} />;
   }
   const view = await buildCandidateView(db, attempt);
   const report =

@@ -11,8 +11,7 @@ export const PRODUCT_ITEMS: readonly NavItem[] = [
 ];
 
 export const RESOURCE_ITEMS: readonly NavItem[] = [
-  { label: "Interactive demo", href: "/demo" },
-  { label: "Changelog", href: "/changelog" },
+ { label: "Changelog", href: "/changelog" },
   { label: "Trust and privacy", href: "/trust" },
   { label: "Contact", href: "/contact" },
 ];

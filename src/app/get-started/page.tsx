@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Code2, Users } from "lucide-react";
 import AuthShell from "@/components/auth/AuthShell";
+import DemoWorkspaceOption from "@/components/marketing/site/DemoWorkspaceOption";
 
 export const metadata = {
   title: "Get started",
@@ -62,6 +63,9 @@ export default function GetStartedPage() {
           </li>
         ))}
       </ul>
+      <div className="mt-6">
+        <DemoWorkspaceOption />
+      </div>
     </AuthShell>
   );
 }

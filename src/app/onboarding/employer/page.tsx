@@ -37,7 +37,7 @@ export default async function OnboardingEmployerPage({ searchParams }: { searchP
   if (member) {
     const [rolesRes, invitesRes] = await Promise.all([
       db.from("eng_roles").select("*").eq("organization_id", member.organizationId).neq("status", "archived").order("created_at", { ascending: false }),
-      db.from("eng_invitations").select("id", { count: "exact", head: true }).eq("organization_id", member.organizationId).neq("status", "withdrawn"),
+      db.from("eng_invitations").select("id", { count: "exact", head: true }).eq("organization_id", member.organizationId).eq("is_preview", false).neq("status", "withdrawn"),
     ]);
     roles = (rolesRes.data ?? []) as RoleRow[];
     invited = invitesRes.count ?? 0;

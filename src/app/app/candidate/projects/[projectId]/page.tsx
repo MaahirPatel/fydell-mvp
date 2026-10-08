@@ -10,6 +10,8 @@ import { CandidateShell } from "@/components/candidate/CandidateShell";
 import BuilderReport, { type VersionSummary } from "@/components/passport/BuilderReport";
 import { parseReportView } from "@/lib/passport/record-states";
 import type { PassportProject } from "@/lib/passport/view";
+import { evidenceStatus } from "@/lib/profile-evidence/store";
+import EvidenceVersionPanel from "@/components/evidence/EvidenceVersionPanel";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Builder Report" };
@@ -48,11 +50,12 @@ export default async function BuilderReportPage({
   const project = passport?.projects.find((p): p is PassportProject & { id: string } => p.id === projectId);
   if (!passport || !project || !manifestRow) notFound();
 
-  const [contribution, decisions, shares, removalImpact] = await Promise.all([
+  const [contribution, decisions, shares, removalImpact, evidence] = await Promise.all([
     getContribution(user.id, project.repoFullName),
     listDecisions(user.id, project.repoFullName),
     listShares(user.id),
     projectRemovalImpact(user.id, project.repoFullName),
+    evidenceStatus(user.id, project.repoFullName),
   ]);
   const pinnedByShare = shares.some((s) => !s.revokedAt && (s.pinnedProjectIds ?? []).includes(project.id));
 
@@ -64,7 +67,7 @@ export default async function BuilderReportPage({
   const initialView = parseReportView(view);
 
   return (
-    <CandidateShell width="wide" current="work">
+    <CandidateShell width="wide" current="work" crumbs={[{ label: project.repoFullName.split("/").pop() ?? project.repoFullName }]}>
       <BuilderReport
         project={project}
         versions={versions.map(summarize)}
@@ -80,6 +83,7 @@ export default async function BuilderReportPage({
         initialView={initialView}
         pinnedByShare={pinnedByShare}
       />
+      {evidence ? <EvidenceVersionPanel initial={evidence} /> : null}
       <DevelopmentFeedback projectId={project.id} items={developmentFeedback(project)} evidence={project.evidence} />
       <RemoveProject repoFullName={project.repoFullName} versionCount={versions.length} impact={removalImpact} />
     </CandidateShell>

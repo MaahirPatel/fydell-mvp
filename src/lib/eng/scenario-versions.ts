@@ -5,6 +5,7 @@ import { STARTER_SHA256 } from "./scenarios/backend-webhook-retry/starter.genera
 import { HARNESS_SHA256 } from "./scenarios/backend-webhook-retry/hidden.generated";
 import type { Admin } from "./context";
 import type { ScenarioVersionRow } from "./types";
+import { asPackage, type ScenarioPackage } from "./authoring/package";
 
 /**
  * Content stored in the database is what a candidate may read before starting.
@@ -79,7 +80,36 @@ export async function scenarioForVersionId(
   const { data } = await db.from("eng_scenario_versions").select("*").eq("id", versionId).single();
   if (!data) throw new Error("Scenario version not found");
   const row = data as ScenarioVersionRow;
+  if (row.origin === "employer_authored") throw new Error("This task is an employer-authored work sample; open it through the work-sample runtime.");
   const definition = getScenario(row.scenario_key, row.version);
   if (!definition) throw new Error(`Scenario ${row.scenario_key} v${row.version} is not available on this server`);
   return { row, definition };
+}
+
+export type ResolvedScenarioVersion =
+  | { origin: "fydell_reviewed"; row: ScenarioVersionRow; definition: ScenarioDefinition }
+  | { origin: "employer_authored"; row: ScenarioVersionRow; pkg: ScenarioPackage };
+
+/**
+ * Loads a version for an attempt, branching on origin. Reads only the
+ * candidate-visible `content`; evaluator-only material lives in
+ * eng_scenario_version_protected and is read by the evaluation queue alone.
+ */
+export async function resolveScenarioVersion(db: Admin, versionId: string): Promise<ResolvedScenarioVersion> {
+  const { data } = await db.from("eng_scenario_versions").select("*").eq("id", versionId).single();
+  if (!data) throw new Error("Scenario version not found");
+  const row = data as ScenarioVersionRow;
+  if (row.origin === "employer_authored") {
+    const pkg = asPackage(row.content);
+    if (!pkg) throw new Error("This work sample's content could not be read. Ask the employer to republish it.");
+    return { origin: "employer_authored", row, pkg };
+  }
+  const definition = getScenario(row.scenario_key, row.version);
+  if (!definition) throw new Error(`Scenario ${row.scenario_key} v${row.version} is not available on this server`);
+  return { origin: "fydell_reviewed", row, definition };
+}
+
+export async function versionOrigin(db: Admin, versionId: string): Promise<ScenarioVersionRow["origin"] | null> {
+  const { data } = await db.from("eng_scenario_versions").select("origin").eq("id", versionId).maybeSingle();
+  return (data?.origin as ScenarioVersionRow["origin"] | undefined) ?? null;
 }

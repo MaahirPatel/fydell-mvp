@@ -36,22 +36,23 @@ export function CandidatePageSkeleton({
 function Head() {
   return (
     <div>
-      <Skeleton className="h-8 w-56 max-w-full" />
-      <Skeleton className="mt-3 h-4 w-[52ch] max-w-full" />
+      <Skeleton className="h-6 w-44 max-w-full" />
+      <Skeleton className="mt-2.5 h-3.5 w-[52ch] max-w-full" />
     </div>
   );
 }
 
 function ListShape() {
   return (
-    <div className="mt-8 overflow-hidden rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+    <div className="mt-6">
+      <Skeleton className="h-[34px] w-full rounded-[6px]" />
       {[0, 1, 2].map((i) => (
-        <div key={i} className="flex flex-wrap items-center gap-4 border-t border-[var(--border-subtle)] px-[18px] py-4 first:border-t-0">
+        <div key={i} className="flex flex-wrap items-center gap-4 border-t border-[var(--border-subtle)] px-3 py-3 first:border-t-0">
           <div className="min-w-0 flex-1">
-            <Skeleton className="h-4 w-60 max-w-full" />
+            <Skeleton className="h-3.5 w-60 max-w-full" />
             <Skeleton className="mt-2 h-3 w-40 max-w-full" />
           </div>
-          <Skeleton className="h-6 w-28" />
+          <Skeleton className="h-[22px] w-24" />
           <Skeleton className="h-8 w-24" />
         </div>
       ))}
@@ -63,14 +64,14 @@ function ProfileShape() {
   return (
     <div>
       <div className="flex flex-wrap items-center gap-4">
-        <Skeleton className="h-16 w-16 rounded-full" />
+        <Skeleton className="h-[72px] w-[72px] rounded-full" />
         <div className="min-w-0 flex-1">
-          <Skeleton className="h-7 w-52 max-w-full" />
+          <Skeleton className="h-6 w-52 max-w-full" />
           <Skeleton className="mt-2.5 h-4 w-72 max-w-full" />
         </div>
-        <Skeleton className="h-9 w-32" />
+        <Skeleton className="h-8 w-56" />
       </div>
-      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
         <div className="space-y-8">
           <SkeletonText lines={3} />
           <div className="grid gap-4 sm:grid-cols-2">
@@ -103,7 +104,7 @@ function ReportShape() {
         <Skeleton className="h-4 w-20" />
         <Skeleton className="h-4 w-20" />
       </div>
-      <div className="mt-6 grid overflow-hidden rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div className="mt-6 grid overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className="space-y-4 border-b border-[var(--border-subtle)] p-4 lg:border-b-0 lg:border-r">
           {[0, 1, 2, 3].map((i) => (
             <div key={i}>
@@ -123,12 +124,14 @@ function ReportShape() {
 
 function SectionsShape() {
   return (
-    <div className="mt-10 space-y-10">
+    <div className="mt-8 space-y-8">
       {[0, 1, 2].map((i) => (
-        <div key={i} className="border-t border-[var(--border-default)] pt-6">
-          <Skeleton className="h-5 w-36" />
-          <Skeleton className="mt-2 h-3.5 w-[44ch] max-w-full" />
-          <Skeleton className="mt-4 h-9 w-40" />
+        <div key={i}>
+          <Skeleton className="h-4 w-28" />
+          <div className="mt-3 rounded-[8px] border border-[var(--border-default)] px-4 py-3">
+            <Skeleton className="h-3.5 w-40" />
+            <Skeleton className="mt-2 h-3 w-[36ch] max-w-full" />
+          </div>
         </div>
       ))}
     </div>

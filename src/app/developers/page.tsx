@@ -17,10 +17,9 @@ export default function DevelopersPage() {
   return (
     <MarketingShell>
       <SiteHero
-        title={["Show the work", "behind your résumé."]}
+        title={["Show the work", "behind your resume."]}
         lead="Present the projects you're proud of, with what you contributed and what the code shows. Share exactly what you choose, and apply to roles with it. Free for engineers."
         primary={{ href: "/signup", label: "Sign up" }}
-        secondary={{ href: "/demo", label: "Explore the platform" }}
         supporting={{ href: "/download", label: "Download Fydell" }}
       >
         <ProductFrame size="hero" interactive title="Fydell · Passport" label="An engineer's projects, the open project's contribution, and one finding with its cited lines. Select a project or a finding.">
@@ -63,7 +62,7 @@ export default function DevelopersPage() {
       <Feature
         id="applying"
         layout="text"
-        title="Apply with your work, not just a résumé."
+        title="Apply with your work, not just a resume."
         body="When a hiring team shares a role link, apply by choosing which projects to include. The team reads them against the role's requirements. If something isn't covered, they can ask you a question tied to that requirement or invite you to a simulation."
         points={[
           { title: "Your choice of projects", body: "Each application carries only the projects you select for it." },
@@ -97,7 +96,7 @@ export default function DevelopersPage() {
         title="Put your work where it can be seen."
         body="Create your profile and add your first project."
         primary={{ href: "/signup", label: "Sign up" }}
-        secondary={{ href: "/demo", label: "Explore the platform" }}
+        secondary={{ href: "/download", label: "Download Fydell" }}
       />
     </MarketingShell>
   );

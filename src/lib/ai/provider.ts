@@ -128,9 +128,12 @@ export function buildChatBody(
     schemaName?: string;
     temperature?: number;
     maxTokens?: number;
+    /** Provider-specific fields such as `reasoning_effort`. Caller is responsible for compatibility. */
+    extraBody?: Record<string, unknown>;
   } = {}
 ): Record<string, unknown> {
   const body: Record<string, unknown> = {
+    ...opts.extraBody,
     model: config.model,
     temperature: opts.temperature ?? 0.3,
     max_tokens: opts.maxTokens ?? 800,
@@ -168,6 +171,7 @@ export async function postChatCompletion(
     schemaName?: string;
     temperature?: number;
     maxTokens?: number;
+    extraBody?: Record<string, unknown>;
   } = {}
 ): Promise<string> {
   const controller = new AbortController();

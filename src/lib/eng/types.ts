@@ -21,6 +21,12 @@ export interface ScenarioVersionRow {
   rubric_version: string;
   status: "published" | "retired";
   published_at: string;
+  /** Added in 061. Rows written before it read back as fydell_reviewed. */
+  origin?: "fydell_reviewed" | "employer_authored";
+  organization_id?: string | null;
+  purpose?: "hiring" | "preview";
+  family?: string | null;
+  archived_at?: string | null;
 }
 
 export interface RoleRow {
@@ -60,6 +66,8 @@ export interface InvitationRow {
   withdrawn_at: string | null;
   resend_count: number;
   created_at: string;
+  /** Added in 061: an employer's own preview, excluded from counts and hiring outcomes. */
+  is_preview?: boolean;
 }
 
 export interface RoleSnapshot {
@@ -89,6 +97,7 @@ export interface AttemptRow {
   update_acknowledged_at: string | null;
   submitted_at: string | null;
   created_at: string;
+  is_preview?: boolean;
 }
 
 export interface MessageRow {
@@ -138,6 +147,11 @@ export interface Handoff {
   testing: string;
   risks: string;
   next_steps: string;
+}
+
+/** Employer-authored work samples also store the answers to the package's own handoff prompts, in order. */
+export interface AuthoredHandoff extends Handoff {
+  authored: { id: string; label: string; answer: string }[];
 }
 
 export interface ProbeResult {
@@ -211,6 +225,25 @@ export interface ReportBrief {
   }[];
   /** Rubric v2 and later: one entry per task criterion. */
   criteria?: CriterionAssessment[];
+  /** Employer-authored work samples: per-criterion results derived from executed tests. */
+  authored?: AuthoredReportBody;
+}
+
+export interface AuthoredReportBody {
+  evaluationRunId: string;
+  runner: { name: string; label: string; isolated: boolean; version: string };
+  acceptance: { id: string; text: string; state: "confirmed" | "not_confirmed" | "no_result"; passed: number; failed: number; missing: number }[];
+  criteria: {
+    id: string;
+    label: string;
+    capability: string;
+    judgedBy: "tests" | "reviewer";
+    state: "demonstrated" | "partially_demonstrated" | "concern_observed" | "not_assessed" | "insufficient_evidence";
+    rationale: string;
+    acceptanceCriterionIds: string[];
+    evidence: { confirmed: number; notConfirmed: number; noResult: number };
+  }[];
+  reviewerNote: string | null;
 }
 
 /**

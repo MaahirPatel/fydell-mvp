@@ -19,7 +19,7 @@ export default function DevelopmentFeedback({
   return (
     <section aria-labelledby="dev-feedback-heading" className="mt-12 border-t border-[var(--border-default)] pt-8">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 id="dev-feedback-heading" className="text-[19px] font-semibold tracking-[-0.014em] text-[var(--text-primary)]">
+        <h2 id="dev-feedback-heading" className="text-[15px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
           What would strengthen this project
         </h2>
         <span className="text-[13px] text-[var(--text-tertiary)]">Only you see this</span>
@@ -35,7 +35,7 @@ export default function DevelopmentFeedback({
       ) : (
         <ol className="mt-5 space-y-4">
           {items.map((item) => (
-            <li key={item.id} className="rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+            <li key={item.id} className="rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
               <h3 className="text-[15px] font-semibold text-[var(--text-primary)]">{item.title}</h3>
               <dl className="mt-3 grid gap-x-6 gap-y-2.5 text-[14px] leading-[1.55] sm:grid-cols-[132px_minmax(0,1fr)]">
                 <dt className="text-[var(--text-tertiary)]">Observation</dt>

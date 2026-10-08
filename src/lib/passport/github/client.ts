@@ -10,6 +10,19 @@ export type PublicRepo = {
   fork: boolean;
   archived: boolean;
   pushedAt: string | null;
+  htmlUrl?: string;
+  defaultBranch?: string;
+  sizeKb?: number;
+  stars?: number;
+  description?: string | null;
+};
+
+export type AuthoredCommit = {
+  sha: string;
+  /** First line of the commit message only. */
+  subject: string;
+  authoredAt: string;
+  parents: number;
 };
 
 const API = "https://api.github.com";
@@ -183,6 +196,11 @@ export class GithubClient {
           fork: r.fork === true,
           archived: r.archived === true,
           pushedAt: typeof r.pushed_at === "string" ? r.pushed_at : null,
+          htmlUrl: typeof r.html_url === "string" ? r.html_url : undefined,
+          defaultBranch: typeof r.default_branch === "string" ? r.default_branch : undefined,
+          sizeKb: typeof r.size === "number" ? r.size : undefined,
+          stars: typeof r.stargazers_count === "number" ? r.stargazers_count : undefined,
+          description: typeof r.description === "string" ? r.description.slice(0, 300) : null,
         });
       }
       const next = nextPageUrl(res.headers.get("link"));
@@ -195,6 +213,40 @@ export class GithubClient {
     }
     if (url) truncated = true;
     return { repositories, truncated };
+  }
+
+  /**
+   * The most recent commits on the default branch attributed to `author` by
+   * GitHub (one page, so a sample, never the full history). Only the subject
+   * line of each message is kept.
+   */
+  async listCommitsByAuthor({ owner, repo }: RepoRef, author: string, perPage = 100): Promise<AuthoredCommit[]> {
+    const res = await this.request(
+      `${API}/repos/${seg(owner)}/${seg(repo)}/commits?author=${seg(author)}&per_page=${Math.min(100, Math.max(1, perPage))}`,
+    );
+    const body = (await res.json()) as Array<Record<string, unknown>>;
+    const commits: AuthoredCommit[] = [];
+    for (const c of Array.isArray(body) ? body : []) {
+      const commit = (c.commit ?? {}) as Record<string, unknown>;
+      const author = (commit.author ?? {}) as Record<string, unknown>;
+      const message = typeof commit.message === "string" ? commit.message : "";
+      const date = typeof author.date === "string" ? author.date : null;
+      if (typeof c.sha !== "string" || !date) continue;
+      commits.push({
+        sha: c.sha,
+        subject: message.split("\n")[0].slice(0, 200),
+        authoredAt: date,
+        parents: Array.isArray(c.parents) ? c.parents.length : 1,
+      });
+    }
+    return commits;
+  }
+
+  /** Number of published releases, counted from one page (capped at 100). */
+  async countReleases({ owner, repo }: RepoRef): Promise<number> {
+    const res = await this.request(`${API}/repos/${seg(owner)}/${seg(repo)}/releases?per_page=100`);
+    const body = (await res.json()) as unknown;
+    return Array.isArray(body) ? body.length : 0;
   }
 }
 

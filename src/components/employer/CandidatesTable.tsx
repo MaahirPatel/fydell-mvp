@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Field";
 import { StatusTag, type StatusTone } from "@/components/ui/StatusTag";
 import { Panel } from "@/components/ui/Panel";
-import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
+import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "./WorkspaceTable";
 import { RowMenu } from "@/components/ui/RowMenu";
 import { useInviteModal } from "./InviteCandidateModal";
 import { useInvitationActions } from "./useInvitationActions";
@@ -233,7 +233,7 @@ export default function CandidatesTable({
                   <TDPrimary>
                     <span className="block truncate">{r.name || r.email}</span>
                     {r.name ? (
-                      <span className="mt-0.5 block truncate text-app-meta font-normal text-[var(--text-tertiary)]">
+                      <span className="block truncate text-[12px] font-normal text-[var(--text-tertiary)]">
                         {r.email}
                       </span>
                     ) : null}
@@ -271,7 +271,7 @@ export default function CandidatesTable({
                       {r.reportReady && r.sessionId ? (
                         <Link
                           href={`/app/employer/candidates/${r.sessionId}`}
-                          className="inline-flex h-8 items-center rounded-[var(--radius-control)] px-2.5 text-app-body font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+                          className="inline-flex h-7 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
                         >
                           Review candidate
                         </Link>

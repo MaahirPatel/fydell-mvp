@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "crypto";
 import { engAdmin, jsonError } from "@/lib/eng/context";
+import { processDueJobs } from "@/lib/eng/authoring/jobs";
 import { processPendingRuns } from "@/lib/eng/evaluation/queue";
 import { errorResponse, ok } from "@/lib/eng/http";
 import { requireReviewer } from "@/lib/eng/route-helpers";
@@ -21,8 +22,10 @@ async function run(req: Request) {
     if (gate.ok === false) return jsonError(401, "Unauthorized");
   }
   try {
-    const result = await processPendingRuns(engAdmin(), 3);
-    return ok(result);
+    const db = engAdmin();
+    const result = await processPendingRuns(db, 3);
+    const authoring = await processDueJobs(db, 1);
+    return ok({ ...result, authoringJobs: authoring.attempted });
   } catch (err) {
     return errorResponse(err, "worker");
   }

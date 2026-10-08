@@ -4,7 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
-export default function SignOutButton({ className = "" }: { className?: string }) {
+export default function SignOutButton({
+  className = "",
+  role,
+  tabIndex,
+}: {
+  className?: string;
+  /** Set to "menuitem" when the button sits inside a menu. */
+  role?: "menuitem";
+  tabIndex?: number;
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -22,6 +31,8 @@ export default function SignOutButton({ className = "" }: { className?: string }
   return (
     <button
       type="button"
+      role={role}
+      tabIndex={tabIndex}
       onClick={() => void signOut()}
       disabled={loading}
       className={

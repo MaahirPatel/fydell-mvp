@@ -6,11 +6,14 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
 import FydellLogo from "@/components/brand/FydellLogo";
 import { PRIMARY_LINKS, PRODUCT_ITEMS, RESOURCE_ITEMS } from "@/components/marketing/site/nav-data";
+import NavDownload from "@/components/marketing/site/NavDownload";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const linkClass = (active: boolean) =>
-  `h-9 items-center gap-1 rounded-[8px] px-3 text-[14.5px] font-medium tracking-[-0.01em] text-[var(--text-primary)] transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
-    active ? "bg-[var(--surface-selected)]" : "hover:bg-[var(--surface-hover)]"
+  `h-9 items-center gap-1 rounded-full px-3 text-[14px] font-semibold tracking-[-0.006em] transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
+    active
+      ? "text-[var(--mk-indigo)]"
+      : "text-[var(--text-body)] hover:text-[var(--mk-indigo)]"
   }`;
 
 const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
@@ -127,7 +130,7 @@ export default function SiteNav() {
     <header
       className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-200 ${
         lifted || mobileOpen || productOpen
-          ? "border-[var(--border-default)] bg-[var(--nav-scrim)] backdrop-blur-[16px] backdrop-saturate-150"
+          ? "border-[var(--border-default)] bg-[var(--nav-scrim)] backdrop-blur-[20px] backdrop-saturate-150"
           : "border-transparent bg-transparent"
       }`}
     >
@@ -174,7 +177,7 @@ export default function SiteNav() {
                           aria-current={isActive(pathname, item.href) ? "page" : undefined}
                           className="block rounded-[8px] px-3 py-2.5 transition-colors hover:bg-[var(--surface-hover)] focus-visible:bg-[var(--surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
                         >
-                          <span className="block text-[14.5px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">{item.label}</span>
+                          <span className="block text-[14px] font-medium tracking-[-0.006em] text-[var(--text-primary)]">{item.label}</span>
                           <span className="mt-0.5 block text-[13px] leading-[1.45] text-[var(--text-secondary)]">{item.description}</span>
                         </Link>
                       </li>
@@ -189,7 +192,7 @@ export default function SiteNav() {
                         <Link
                           href={item.href}
                           onClick={() => setProductOn(null)}
-                          className="block rounded-[8px] px-3 py-2 text-[14px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] focus-visible:bg-[var(--surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
+                          className="block rounded-[8px] px-3 py-2 text-[14px] font-normal text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] focus-visible:bg-[var(--surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
                         >
                           {item.label}
                         </Link>
@@ -211,11 +214,8 @@ export default function SiteNav() {
         </nav>
 
         <div className="flex items-center justify-self-end gap-1">
-          <Link href="/download" className={`${linkClass(pathname === "/download")} hidden min-[960px]:inline-flex`}>
-            Download
-          </Link>
           {signedIn ? (
-            <Link href="/app" className="l-btn l-btn-solid ml-1.5 h-9 px-4 text-[14px]">
+            <Link href="/app" className="l-btn l-btn-quiet h-9 px-4 text-[14px]">
               Open workspace
             </Link>
           ) : (
@@ -223,11 +223,14 @@ export default function SiteNav() {
               <Link href="/login" className={`${linkClass(pathname === "/login")} hidden sm:inline-flex`}>
                 Log in
               </Link>
-              <Link href="/signup" className="l-btn l-btn-solid ml-1.5 h-9 px-4 text-[14px]">
+              <Link href="/signup" className="l-btn l-btn-quiet ml-1 h-9 px-4 text-[14px]">
                 Sign up
               </Link>
             </>
           )}
+          <span className="hidden min-[960px]:flex">
+            <NavDownload />
+          </span>
           <button
             type="button"
             onClick={() => setMobileOn(mobileOpen ? null : pathname)}
@@ -248,7 +251,7 @@ export default function SiteNav() {
               {PRODUCT_ITEMS.map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} onClick={() => setMobileOn(null)} className="block py-2.5">
-                    <span className="block text-[16px] font-semibold text-[var(--text-primary)]">{item.label}</span>
+                    <span className="block text-[16px] font-medium text-[var(--text-primary)]">{item.label}</span>
                     <span className="block text-[14px] leading-[1.45] text-[var(--text-secondary)]">{item.description}</span>
                   </Link>
                 </li>
@@ -261,7 +264,7 @@ export default function SiteNav() {
                     href={item.href}
                     onClick={() => setMobileOn(null)}
                     aria-current={isActive(pathname, item.href) ? "page" : undefined}
-                    className="block border-b border-[var(--border-default)] py-3.5 text-[16px] font-medium tracking-[-0.012em] text-[var(--text-primary)]"
+                    className="block border-b border-[var(--border-default)] py-3.5 text-[16px] font-normal tracking-[-0.012em] text-[var(--text-primary)]"
                   >
                     {item.label}
                   </Link>

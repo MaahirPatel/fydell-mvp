@@ -1,0 +1,393 @@
+/* Home and download page grammar: a centred statement, product views on
+   painted grounds, two-tone section headings, very little copy. Type is
+   Inter at regular and medium weights only. */
+
+.container {
+  width: 100%;
+  max-width: calc(1200px + var(--l-gutter, 32px) * 2);
+  margin-inline: auto;
+  padding-inline: var(--l-gutter, 32px);
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  padding-top: 136px;
+  text-align: center;
+}
+
+/* First paint: announcement, headline, lead, actions and the product settle
+   in order, 60ms apart. CSS only, so the end state needs no script. */
+.heroIn {
+  animation: hero-in 640ms var(--mk-ease, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+.heroIn:nth-child(2) {
+  animation-delay: 60ms;
+}
+.heroIn:nth-child(3) {
+  animation-delay: 120ms;
+}
+.heroIn:nth-child(4) {
+  animation-delay: 180ms;
+}
+.heroIn:nth-child(5) {
+  animation-delay: 260ms;
+  animation-duration: 700ms;
+}
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .heroIn {
+    animation: none;
+  }
+}
+.announce {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  transition: color 120ms ease;
+}
+.announce strong {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.announce:hover {
+  color: var(--text-primary);
+}
+.circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface-deep);
+  color: var(--text-primary);
+  transition: background-color 120ms ease, transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.announce:hover .circle {
+  background: var(--border-strong);
+  transform: translate(1px, -1px);
+}
+.title {
+  max-width: 13em;
+  margin-inline: auto;
+  font-size: 64px;
+  line-height: 1.04;
+  font-weight: 500;
+  letter-spacing: -0.032em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.lead {
+  max-width: 34em;
+  margin: 20px auto 0;
+  font-size: 18px;
+  line-height: 1.55;
+  font-weight: 400;
+  letter-spacing: -0.008em;
+  color: var(--text-secondary);
+  text-wrap: balance;
+}
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 32px;
+}
+.ctas :global(.l-btn) {
+  height: 42px;
+  padding-inline: 20px;
+  font-size: 14.5px;
+}
+.heroStage {
+  margin-top: 64px;
+  text-align: left;
+}
+
+/* ---------- Painted stage ---------- */
+
+.stage,
+.stageWide {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  padding: 72px 80px;
+  background: #b59a72;
+}
+.stageWide {
+  padding: 48px 56px;
+}
+.stageImage {
+  object-fit: cover;
+  object-position: center;
+}
+/* No painting on disk: a plain warm ground instead of a broken image. */
+.stage[data-painted="none"],
+.stageWide[data-painted="none"],
+.desktop[data-painted="none"] {
+  background: #e8e2d4;
+}
+/* The one place the logo's teal and violet appear: soft light pooled behind
+   the hero product, not over it. */
+.stageWash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(42% 60% at 6% 30%, color-mix(in srgb, var(--mk-brand-teal) 32%, transparent), transparent 75%),
+    radial-gradient(42% 60% at 94% 72%, color-mix(in srgb, var(--mk-brand-violet) 32%, transparent), transparent 75%);
+}
+.stageInner {
+  position: relative;
+  z-index: 1;
+}
+.stage :global(figure) > div:first-child,
+.stageWide :global(figure) > div:first-child {
+  box-shadow:
+    0 2px 4px rgba(40, 30, 15, 0.1),
+    0 24px 60px -16px rgba(40, 30, 15, 0.45);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- Sections ---------- */
+
+.section {
+  padding-top: 144px;
+  scroll-margin-top: 80px;
+}
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 20px 48px;
+  margin-bottom: 40px;
+}
+.h2 {
+  max-width: 19em;
+  font-size: 44px;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.028em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.muted {
+  color: var(--text-tertiary);
+}
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--mk-indigo);
+  white-space: nowrap;
+  transition: color 140ms ease;
+}
+.more:hover {
+  color: var(--mk-indigo-hover);
+}
+.more:focus-visible {
+  outline: 2px solid var(--mk-indigo);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.more svg {
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.more:hover svg {
+  transform: translateX(3px);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 40px;
+  border-top: 1px solid var(--border-default);
+}
+.tile {
+  padding: 22px 28px 0 0;
+}
+.tile + .tile {
+  padding-left: 28px;
+  border-left: 1px solid var(--border-default);
+}
+.tileTitle {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.tileBody {
+  margin-top: 4px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* ---------- Desktop band ---------- */
+
+.desktop {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  padding: 96px 32px;
+  text-align: center;
+  background: #9c8a6c;
+}
+.desktopInner {
+  position: relative;
+  z-index: 1;
+}
+.desktopCard {
+  display: inline-block;
+  max-width: 560px;
+  padding: 44px 48px 40px;
+  border-radius: 14px;
+  background: rgba(250, 249, 246, 0.94);
+  box-shadow: 0 24px 60px -20px rgba(40, 30, 15, 0.45);
+  backdrop-filter: blur(6px);
+}
+.desktopTitle {
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: -0.024em;
+  color: var(--text-primary);
+}
+.desktopBody {
+  margin-top: 10px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.desktopCtas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 28px;
+}
+.desktopMeta {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+.desktopMeta a {
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+
+/* ---------- Closing ---------- */
+
+.closing {
+  padding-block: 160px 128px;
+  text-align: center;
+}
+.closingTitle {
+  font-size: 56px;
+  line-height: 1.05;
+  font-weight: 500;
+  letter-spacing: -0.032em;
+  color: var(--text-primary);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1023px) {
+  .hero {
+    padding-top: 128px;
+  }
+  .title {
+    font-size: 52px;
+  }
+  .stage {
+    padding: 40px;
+  }
+  .stageWide {
+    padding: 32px;
+  }
+  .h2 {
+    font-size: 36px;
+  }
+  .head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .section {
+    padding-top: 112px;
+  }
+  .closingTitle {
+    font-size: 44px;
+  }
+}
+
+@media (max-width: 639px) {
+  .hero {
+    padding-top: 108px;
+  }
+  .title {
+    font-size: 38px;
+    line-height: 1.08;
+    letter-spacing: -0.028em;
+  }
+  .lead {
+    font-size: 16.5px;
+  }
+  .heroStage {
+    margin-top: 48px;
+  }
+  .stage,
+  .stageWide {
+    padding: 16px;
+    border-radius: 4px;
+  }
+  .h2 {
+    font-size: 28px;
+    line-height: 1.15;
+  }
+  .head {
+    margin-bottom: 28px;
+  }
+  .section {
+    padding-top: 88px;
+  }
+  .tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tile,
+  .tile + .tile {
+    padding: 18px 0 0;
+    border-left: 0;
+  }
+  .desktop {
+    padding: 40px 16px;
+  }
+  .desktopCard {
+    padding: 32px 22px 28px;
+  }
+  .desktopTitle {
+    font-size: 26px;
+  }
+  .closing {
+    padding-block: 112px 96px;
+  }
+  .closingTitle {
+    font-size: 34px;
+  }
+}

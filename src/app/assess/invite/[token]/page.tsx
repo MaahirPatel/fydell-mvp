@@ -5,7 +5,9 @@ import EngInvitationBrief from "@/components/eng/EngInvitationBrief";
 import { withNext } from "@/lib/auth/safe-next";
 import { engAdmin } from "@/lib/eng/context";
 import { getInvitationByToken, invitationUsable } from "@/lib/eng/invitations";
-import { scenarioForVersionId } from "@/lib/eng/scenario-versions";
+import { resolveScenarioVersion } from "@/lib/eng/scenario-versions";
+import { candidateTask } from "@/lib/eng/authored/runtime";
+import { AuthoredInvitationBrief } from "@/components/work-samples/runtime/AuthoredInvitationBrief";
 import { requireUser } from "@/lib/simulations/auth";
 
 export const metadata = { title: "Engineering task invitation" };
@@ -46,14 +48,11 @@ export default async function EngInvitePage({ params }: { params: Promise<{ toke
   const usable = invitationUsable(invitation);
   if (usable.ok === false) return <Closed title="This invitation is closed" detail={usable.reason} />;
 
-  const { definition } = await scenarioForVersionId(db, invitation.scenario_version_id);
+  const resolved = await resolveScenarioVersion(db, invitation.scenario_version_id);
   const here = `/assess/invite/${token}`;
   const emailMismatch = user && user.email.toLowerCase() !== invitation.candidate_email;
 
-  return (
-    <CandidateShell>
-      <EngInvitationBrief invitation={invitation} definition={definition}>
-        {!user ? (
+  const action = !user ? (
           <div className="flex flex-wrap gap-3">
             <ButtonLink href={withNext("/login", here)} variant="accent" size="lg">
               Sign in to accept
@@ -68,8 +67,27 @@ export default async function EngInvitePage({ params }: { params: Promise<{ toke
           </p>
         ) : (
           <AcceptEngInvitation token={token} />
-        )}
-      </EngInvitationBrief>
+        );
+
+  return (
+    <CandidateShell>
+      {resolved.origin === "employer_authored" ? (
+        <AuthoredInvitationBrief
+          task={candidateTask(resolved.pkg)}
+          roleTitle={invitation.role_snapshot.title}
+          organizationName={invitation.role_snapshot.organizationName}
+          companyContext={invitation.role_snapshot.companyContext}
+          allowedMinutes={invitation.allowed_minutes}
+          expiresAt={invitation.expires_at}
+          preview={Boolean(invitation.is_preview)}
+        >
+          {action}
+        </AuthoredInvitationBrief>
+      ) : (
+        <EngInvitationBrief invitation={invitation} definition={resolved.definition}>
+          {action}
+        </EngInvitationBrief>
+      )}
     </CandidateShell>
   );
 }

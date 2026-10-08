@@ -43,7 +43,7 @@
   white-space: nowrap;
 }
 .appNavOn {
-  background: var(--surface-selected);
+  background: var(--surface-deep);
   color: var(--text-primary);
   font-weight: 500;
 }
@@ -141,7 +141,7 @@
 .findingOn:focus-visible,
 .req:focus-visible,
 .reqOn:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--mk-indigo);
   outline-offset: 1px;
 }
 .projectTitle {
@@ -237,9 +237,12 @@
 .finding:hover {
   background: var(--surface-hover);
 }
+/* The selected finding is the view's one indigo mark. */
 .findingOn {
-  background: var(--accent-soft);
-  box-shadow: inset 2px 0 0 var(--accent);
+  background: var(--mk-indigo-tint);
+}
+.findingOn .findingCat {
+  color: var(--mk-indigo);
 }
 .findingCat {
   font-size: 12px;
@@ -303,9 +306,12 @@
 .req:hover {
   background: var(--surface-hover);
 }
+/* The requirement being mapped to evidence is the view's one indigo mark. */
 .reqOn {
-  background: var(--surface-selected);
-  box-shadow: inset 2px 0 0 var(--accent);
+  background: var(--mk-indigo-tint);
+}
+.reqOn .reqText {
+  color: var(--mk-indigo-hover);
 }
 .reqText {
   font-size: 14px;
@@ -321,13 +327,13 @@
   color: var(--text-secondary);
 }
 .outcome[data-tone="positive"] {
-  color: var(--status-positive-ink);
+  color: var(--mk-success);
 }
 .outcome[data-tone="attention"] {
-  color: var(--status-attention-ink);
+  color: var(--mk-attention);
 }
 .outcome[data-tone="concern"] {
-  color: var(--fy-red-ink);
+  color: var(--mk-error);
 }
 .decision {
   margin-top: 20px;
@@ -375,7 +381,7 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--status-positive-ink);
+  color: var(--mk-indigo);
 }
 .simMeta {
   font-size: 13px;
@@ -434,7 +440,7 @@
   color: var(--text-secondary);
 }
 .fileOn {
-  background: var(--surface-selected);
+  background: var(--surface-deep);
   color: var(--text-primary);
 }
 .brief {
@@ -462,14 +468,14 @@
 .update {
   margin-top: 16px;
   padding: 10px 12px;
-  border-left: 2px solid var(--status-attention-ink);
-  background: var(--status-attention-bg);
-  border-radius: 0 6px 6px 0;
+  border: 1px solid var(--mk-attention-line);
+  background: var(--mk-attention-tint);
+  border-radius: 8px;
 }
 .updateTitle {
   font-size: 13px;
   font-weight: 600;
-  color: var(--status-attention-ink);
+  color: var(--mk-attention);
 }
 .updateText {
   margin-top: 2px;
@@ -510,10 +516,10 @@
   border-bottom: 0;
 }
 .pass {
-  color: var(--status-positive-ink);
+  color: var(--mk-success);
 }
 .fail {
-  color: var(--fy-red-ink);
+  color: var(--mk-error);
 }
 .testName {
   flex: 1;

@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import CandidatesTable from "@/components/employer/CandidatesTable";
-import { PageHeader } from "@/components/ui/PageHeader";
+import InviteActionButton from "@/components/employer/InviteActionButton";
+import { WorkspacePageHeader } from "@/components/employer/WorkspacePage";
 import { getInvitationRecords } from "../_lib/data";
 
 export const metadata = { title: "Candidates" };
@@ -31,15 +32,19 @@ export default async function EmployerCandidatesPage({
 
   return (
     <div>
-      <PageHeader
+      <WorkspacePageHeader
         title="Candidates"
         description={
           only
             ? `Everyone this workspace has invited to ${only}, with where they have reached.`
             : "Everyone this workspace has invited, with where they have reached."
         }
+        // The empty list carries its own invite button; one per screen.
+        action={
+          records.length > 0 ? <InviteActionButton label="Invite candidate" size="sm" /> : undefined
+        }
       />
-      <div className="mt-7">
+      <div className="mt-6">
         <CandidatesTable rows={records} initialQuery={initialQuery} />
       </div>
     </div>

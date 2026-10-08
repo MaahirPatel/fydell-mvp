@@ -1,4 +1,4 @@
-import SignupView, { type SignupAudience } from "@/components/auth/SignupView";
+import SignupView, { type SignupAudience, type SignupDemo } from "@/components/auth/SignupView";
 import type { SignupPath } from "@/components/auth/SignupForm";
 import { partnerSignupEnabled } from "@/lib/auth/flags";
 import { isCandidateDestination, isEmployerDestination, safeNext } from "@/lib/auth/safe-next";
@@ -27,5 +27,8 @@ export default async function SignupPage({
         ? "fde"
         : null;
 
-  return <SignupView audience={audience} initialPath={initialPath} next={next} partnerEnabled={partnerSignupEnabled()} />;
+  // The demo workspace is offered only on open sign-up, never to someone arriving with an invitation or application.
+  const demo: SignupDemo = audience !== "open" ? "none" : one(params.intent) === "demo" ? "first" : "offer";
+
+  return <SignupView audience={audience} initialPath={initialPath} next={next} partnerEnabled={partnerSignupEnabled()} demo={demo} />;
 }

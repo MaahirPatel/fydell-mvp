@@ -1,11 +1,12 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import { requireUser } from "@/lib/simulations/auth";
 import { getOwnerPassport, listCorrections, listShares } from "@/lib/passport/store";
 import { listImportJobs } from "@/lib/passport/import-store";
 import { getProfileHub } from "@/lib/profile/store";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
+import { CandidatePageHead } from "@/components/candidate/CandidatePageHead";
+import { ButtonLink } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/report";
 import SharePanel from "@/components/passport/SharePanel";
 import ImportJobsPanel from "@/components/passport/ImportJobsPanel";
@@ -18,16 +19,20 @@ import EditorImport from "@/components/profile/EditorImport";
 import EvidenceTimeline from "@/components/profile/EvidenceTimeline";
 import PassportConnectSection from "@/components/profile/PassportConnectSection";
 import CandidateQuestions from "@/components/candidate/CandidateQuestions";
+import WorkSamplesPanel from "@/components/evidence/WorkSamplesPanel";
+import EvidenceVersionPanel from "@/components/evidence/EvidenceVersionPanel";
+import { listIncludableReports, listWorkSamples } from "@/lib/profile-evidence/work-samples";
+import { evidenceStatus, shareableProjectKeys } from "@/lib/profile-evidence/store";
 
-export const metadata = { title: "Passport" };
+export const metadata = { title: "Projects" };
 export const dynamic = "force-dynamic";
 
 function Section({ title, hint, children, id }: { title: string; hint?: string; children: React.ReactNode; id?: string }) {
   return (
-    <section id={id} className="scroll-mt-24 border-t border-[var(--border-default)] pt-6">
-      <h2 className="text-[17px] font-semibold tracking-[-0.012em]">{title}</h2>
-      {hint ? <p className="mt-0.5 text-[14px] text-[var(--text-secondary)]">{hint}</p> : null}
-      <div className="mt-4">{children}</div>
+    <section id={id} className="scroll-mt-24 border-t border-[var(--border-subtle)] pt-5">
+      <h2 className="text-[15px] font-semibold tracking-[-0.01em]">{title}</h2>
+      {hint ? <p className="mt-0.5 text-[13px] leading-[1.55] text-[var(--text-secondary)]">{hint}</p> : null}
+      <div className="mt-3">{children}</div>
     </section>
   );
 }
@@ -41,24 +46,30 @@ export default async function WorkRecordPage({
   if (!user) redirect(`/login?next=${encodeURIComponent("/app/candidate/work-record")}`);
 
   const params = await searchParams;
-  const [hub, passport, shares, jobs, corrections] = await Promise.all([
+  const [hub, passport, shares, jobs, corrections, workSamples, includable] = await Promise.all([
     getProfileHub(user.id, user.email.split("@")[0]),
     getOwnerPassport(user.id),
     listShares(user.id),
     listImportJobs(user.id),
     listCorrections(user.id),
+    listWorkSamples(user.id),
+    listIncludableReports(user.id),
   ]);
 
   const initialRepos = (params.repos ?? "").split(",").filter((r) => /^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/.test(r)).slice(0, 3);
   const initialLogin = /^[A-Za-z0-9-]{1,39}$/.test(params.github ?? "") ? (params.github as string) : (passport?.githubLogin ?? "");
   const projects = passport?.projects ?? [];
   const presentations = await getPresentations(user.id, projects);
+  const manualStatuses = (
+    await Promise.all(presentations.filter((p) => p.sourceKind === "manual").map((p) => evidenceStatus(user.id, p.projectKey)))
+  ).filter((s): s is NonNullable<typeof s> => s !== null);
   const current = projects.filter((p) => p.status !== "stale");
   const hasProjects = current.length > 0;
   const findings = current.reduce((n, p) => n + p.evidence.length, 0);
   const liveShares = shares.filter((s) => !s.revokedAt).length;
   const selfSupplied = hub.timeline.filter((t) => t.kind === "editor-import");
   const privateKeys = new Set(presentations.filter((p) => p.visibility === "private").map((p) => p.projectKey.toLowerCase()));
+  const confirmedKeys = new Set((await shareableProjectKeys(user.id, undefined)).map((k) => k.toLowerCase()));
   const shareable = [
     ...current
       .filter((p) => !privateKeys.has(p.repoFullName.toLowerCase()))
@@ -66,71 +77,86 @@ export default async function WorkRecordPage({
     ...presentations
       .filter((p) => p.sourceKind === "manual" && p.visibility === "shareable")
       .map((p) => ({ repo: p.projectKey, commit: "", findings: 0, title: p.title })),
-  ];
+  ].map((p) => ({ ...p, confirmed: confirmedKeys.has(p.repo.toLowerCase()) }));
 
   return (
     <CandidateShell width="wide" current="work">
-      <header>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-[30px] font-semibold leading-[1.15] tracking-[-0.024em] text-[var(--text-primary)]">Passport</h1>
-            <p className="mt-1.5 max-w-[64ch] text-[15px] leading-[1.6] text-[var(--text-secondary)]">
-              Your projects, their Builder Reports, and the links you share. Only what you share through a link is visible to anyone else.
-            </p>
-          </div>
-          <Link
-            href="/app/candidate/profile"
-            className="inline-flex h-9 items-center rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-[14px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
-          >
-            View profile
-          </Link>
-        </div>
-        {hasProjects ? (
-          <p className="mt-4 text-[16px] leading-[1.55] text-[var(--text-body)]">
-            <span className="font-semibold text-[var(--text-primary)]">
-              {current.length} project{current.length === 1 ? "" : "s"}
-            </span>{" "}
-            with {findings} source-linked finding{findings === 1 ? "" : "s"}
-            {liveShares ? ` · shared through ${liveShares} active link${liveShares === 1 ? "" : "s"}` : " · private"}            .
-          </p>
-        ) : null}
-        {params.removed === "1" ? (
-          <Notice className="mt-4">
-            Project removed. Share links and applications no longer show it.
-          </Notice>
-        ) : null}
-      </header>
+      <CandidatePageHead
+        title="Projects"
+        lead="Your projects, their Builder Reports, and the links you share. Only what you share through a link is visible to anyone else."
+        aside={
+          <>
+            <ButtonLink href="/app/candidate/reports" variant="secondary" size="sm">
+              Builder Analysis
+            </ButtonLink>
+            <ButtonLink href="/app/candidate/profile" variant="secondary" size="sm">
+              View profile
+            </ButtonLink>
+            <ButtonLink href="#add-repository" variant="primary" size="sm">
+              <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+              Add project
+            </ButtonLink>
+          </>
+        }
+        meta={
+          hasProjects
+            ? [
+                { label: "Projects", value: <span className="tabular-nums">{current.length}</span> },
+                { label: "Source-linked findings", value: <span className="tabular-nums">{findings}</span> },
+                { label: "Sharing", value: liveShares ? `${liveShares} active link${liveShares === 1 ? "" : "s"}` : "Private" },
+              ]
+            : []
+        }
+      />
+      {params.removed === "1" ? (
+        <Notice className="mt-4">
+          Project removed. Share links and applications no longer show it.
+        </Notice>
+      ) : null}
 
-      <div className="mt-10 grid grid-cols-1 items-start gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="mt-8 grid grid-cols-1 items-start gap-x-10 gap-y-10 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-10">
           <div id="imports" className="scroll-mt-24 empty:hidden">
             <ImportJobsPanel initialJobs={jobs} />
           </div>
 
           <section id="projects" aria-labelledby="projects-heading" className="scroll-mt-24">
-            <h2 id="projects-heading" className="mb-3 text-[19px] font-semibold tracking-[-0.014em]">
+            <h2 id="projects-heading" className="mb-3 text-[15px] font-semibold tracking-[-0.01em]">
               Projects
             </h2>
             <WorkRecordProjects projects={projects} corrections={corrections} />
           </section>
 
           <section id="showcase" aria-labelledby="showcase-heading" className="scroll-mt-24">
-            <h2 id="showcase-heading" className="mb-2 text-[19px] font-semibold tracking-[-0.014em]">
+            <h2 id="showcase-heading" className="mb-2 text-[15px] font-semibold tracking-[-0.01em]">
               On your profile
             </h2>
             <ProjectShowcase initial={presentations} />
+            {manualStatuses.map((s) => (
+              <details key={s.projectKey} className="group mt-4 border-t border-[var(--border-subtle)]">
+                <summary className="flex cursor-pointer list-none items-center gap-2 py-3 text-[14px] font-semibold tracking-[-0.01em]">
+                  <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)] transition-transform group-open:rotate-90" aria-hidden />
+                  Confirm and publish: {s.title}
+                </summary>
+                <EvidenceVersionPanel initial={s} />
+              </details>
+            ))}
           </section>
 
+          <Section id="work-samples" title="Work sample reports" hint="Reports from Fydell work samples you completed. Add one to attach it to applications.">
+            <WorkSamplesPanel included={workSamples} includable={includable} />
+          </Section>
+
           <section id="add-repository" aria-labelledby="add-heading" className="scroll-mt-24">
-            <h2 id="add-heading" className="mb-3 text-[19px] font-semibold tracking-[-0.014em]">
+            <h2 id="add-heading" className="mb-3 text-[15px] font-semibold tracking-[-0.01em]">
               Add a repository
             </h2>
             <PassportConnectSection initialLogin={initialLogin} initialRepos={initialRepos} />
-            <details id="upload-project" className="group mt-6 scroll-mt-24 border-t border-[var(--border-default)]">
-              <summary className="flex cursor-pointer list-none items-center gap-2 py-4 text-[15px] font-semibold tracking-[-0.01em]">
+            <details id="upload-project" className="group mt-6 scroll-mt-24 border-t border-[var(--border-subtle)]">
+              <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-0.5 py-3 text-[14px] font-semibold tracking-[-0.01em]">
                 <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)] transition-transform group-open:rotate-90" aria-hidden />
                 Upload a project instead
-                <span className="text-[14px] font-normal text-[var(--text-tertiary)]">For work that isn&apos;t on public GitHub</span>
+                <span className="text-[13px] font-normal text-[var(--text-tertiary)]">For work that isn&apos;t on public GitHub</span>
               </summary>
               <div className="pb-4">
                 <UploadProject />
@@ -142,12 +168,12 @@ export default async function WorkRecordPage({
             <CandidateQuestions />
           </Section>
 
-          <section id="profile-editor" className="scroll-mt-24 border-t border-[var(--border-default)]">
+          <section id="profile-editor" className="scroll-mt-24 border-t border-[var(--border-subtle)]">
             <details className="group">
-              <summary className="flex cursor-pointer list-none items-center gap-2 py-5 text-[17px] font-semibold tracking-[-0.012em]">
+              <summary className="flex cursor-pointer list-none items-center gap-2 py-4 text-[15px] font-semibold tracking-[-0.01em]">
                 <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)] transition-transform group-open:rotate-90" aria-hidden />
                 Editor history
-                <span className="text-[14px] font-normal text-[var(--text-tertiary)]">Optional</span>
+                <span className="text-[13px] font-normal text-[var(--text-tertiary)]">Optional</span>
               </summary>
               <div className="pb-6">
                 {selfSupplied.length ? <EvidenceTimeline items={selfSupplied} /> : null}
@@ -163,8 +189,8 @@ export default async function WorkRecordPage({
           {shareable.length ? (
             <SharePanel initialShares={shares} projects={shareable} />
           ) : (
-            <Section title="Sharing">
-              <p className="text-[14px] leading-[1.6] text-[var(--text-secondary)]">Available once you have a project.</p>
+            <Section id="share" title="Sharing">
+              <p className="text-[13px] leading-[1.55] text-[var(--text-secondary)]">Share links become available once you add a project.</p>
             </Section>
           )}
 
@@ -177,7 +203,7 @@ export default async function WorkRecordPage({
               <a
                 href="/api/passport/export"
                 download
-                className="inline-flex h-9 items-center rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-[14px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+                className="inline-flex h-8 items-center rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-app-meta font-medium text-[var(--text-primary)] shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
               >
                 Download my Passport
               </a>

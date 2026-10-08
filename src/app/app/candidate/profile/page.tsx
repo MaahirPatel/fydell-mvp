@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Link2 } from "lucide-react";
 import { requireUser } from "@/lib/simulations/auth";
 import { accountDisplayName } from "@/lib/auth/account-name";
 import { getOwnerPassport, listShares } from "@/lib/passport/store";
@@ -7,6 +7,8 @@ import { getProfileHub } from "@/lib/profile/store";
 import { getPresentations } from "@/lib/passport/presentation-store";
 import { listProfileSimulations } from "@/lib/profile/simulations";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
+import { SHARE_HREF } from "@/components/candidate/nav";
+import { ButtonLink } from "@/components/ui/Button";
 import ProfileOverview from "@/components/profile/ProfileOverview";
 import ProfileIdentityForm from "@/components/profile/ProfileIdentityForm";
 
@@ -59,16 +61,14 @@ export default async function CandidateProfilePage({ searchParams }: { searchPar
         actions={
           <>
             <ProfileIdentityForm initial={hub.profile} githubLogin={githubLogin} />
-            <Link
-              href="/app/candidate/work-record#share"
-              className="inline-flex h-9 items-center rounded-[8px] bg-[var(--control-solid)] px-4 text-[14px] font-medium text-white shadow-[0_1px_2px_rgba(16,24,40,0.12)] hover:bg-[var(--control-solid-hover)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--accent-line)]"
-            >
+            <ButtonLink href={SHARE_HREF} variant="primary" size="sm">
+              <Link2 className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
               {liveShares ? `Shared · ${liveShares} link${liveShares === 1 ? "" : "s"}` : "Share profile"}
-            </Link>
+            </ButtonLink>
           </>
         }
         emptyAbout={
-          <p className="max-w-[60ch] text-[15px] leading-[1.6] text-[var(--text-secondary)]">
+          <p className="max-w-[60ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
             Add a few sentences about what you build and the kind of team you work best in. Use Edit profile above.
           </p>
         }

@@ -21,13 +21,14 @@ export interface RoleSummary extends RoleRow {
 
 export async function listRoleSummaries(db: Admin, organizationId: string): Promise<RoleSummary[]> {
   const { data: roles } = await db.from("eng_roles").select("*").eq("organization_id", organizationId).order("created_at", { ascending: false });
-  const { data: invitations } = await db.from("eng_invitations").select("id, role_id, status").eq("organization_id", organizationId);
-  const { data: attempts } = await db.from("eng_attempts").select("role_id, status").eq("organization_id", organizationId);
+  const { data: invitations } = await db.from("eng_invitations").select("id, role_id, status").eq("organization_id", organizationId).eq("is_preview", false);
+  const { data: attempts } = await db.from("eng_attempts").select("role_id, status").eq("organization_id", organizationId).eq("is_preview", false);
   const { data: released } = await db
     .from("eng_reports")
-    .select("attempt_id, eng_attempts!inner(role_id, organization_id)")
+    .select("attempt_id, eng_attempts!inner(role_id, organization_id, is_preview)")
     .eq("status", "released")
-    .eq("eng_attempts.organization_id", organizationId);
+    .eq("eng_attempts.organization_id", organizationId)
+    .eq("eng_attempts.is_preview", false);
   const readyByRole = new Map<string, number>();
   for (const row of released ?? []) {
     const roleId = (row.eng_attempts as unknown as { role_id: string }).role_id;

@@ -1,15 +1,16 @@
 export type WorkspaceNavLabel =
-  | "Home"
+  | "Overview"
   | "Roles"
+  | "Applicants"
   | "Reviews"
-  | "Engineering tasks"
+  | "Work samples"
+  | "Team"
+  | "Task attempts"
   | "Task library"
-  | "Candidates"
   | "Work"
   | "Evidence"
   | "Work Receipts"
   | "Outcomes"
-  | "Team"
   | "Settings";
 
 export type WorkspaceNavItem = {
@@ -18,48 +19,44 @@ export type WorkspaceNavItem = {
   exact?: boolean;
 };
 
-export type WorkspaceNavGroup = {
-  label: "Hiring" | "Work samples" | "Proof" | null;
-  items: WorkspaceNavItem[];
-};
+/**
+ * Two kinds of group, in the order they appear in the rail: unlabelled top
+ * destinations, and a labelled section that starts collapsed because it holds
+ * lower-traffic records.
+ */
+export type WorkspaceNavGroup =
+  | { kind: "primary"; items: WorkspaceNavItem[] }
+  | { kind: "collapsible"; label: "More"; items: WorkspaceNavItem[] };
 
 /**
- * The employer workspace is organized around the hiring decision, not around
- * the implementation mechanisms that happen to produce evidence.
+ * The organization workspace is organized around the hiring decision. Every
+ * active member can open each of these pages; what a member may change on
+ * them is decided by the server per request. The records that hiring produces
+ * sit under More, which opens on its own whenever the current page lives
+ * inside it.
  */
 export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
   {
-    label: null,
-    items: [{ href: "/app/employer", label: "Home", exact: true }],
-  },
-  {
-    label: "Hiring",
+    kind: "primary",
     items: [
+      { href: "/app/employer", label: "Overview", exact: true },
       { href: "/app/employer/openings", label: "Roles" },
+      { href: "/app/employer/candidates", label: "Applicants" },
       { href: "/app/employer/passports", label: "Reviews" },
+      { href: "/app/employer/work-samples", label: "Work samples" },
+      { href: "/app/employer/team", label: "Team" },
     ],
   },
   {
-    label: "Work samples",
+    kind: "collapsible",
+    label: "More",
     items: [
-      { href: "/app/employer/engineering", label: "Engineering tasks" },
+      { href: "/app/employer/engineering", label: "Task attempts" },
       { href: "/app/employer/roles", label: "Task library" },
-      { href: "/app/employer/candidates", label: "Candidates" },
       { href: "/app/employer/work", label: "Work" },
-    ],
-  },
-  {
-    label: "Proof",
-    items: [
       { href: "/app/employer/evidence", label: "Evidence" },
       { href: "/app/employer/receipts", label: "Work Receipts" },
-    ],
-  },
-  {
-    label: null,
-    items: [
       { href: "/app/employer/outcomes", label: "Outcomes" },
-      { href: "/app/employer/team", label: "Team" },
     ],
   },
 ];
@@ -74,12 +71,17 @@ export const WORKSPACE_NAV_ITEMS = [
   WORKSPACE_SETTINGS_ITEM,
 ];
 
+export function isNavItemActive(item: WorkspaceNavItem, pathname: string): boolean {
+  return item.exact
+    ? pathname === item.href
+    : pathname === item.href || pathname.startsWith(`${item.href}/`);
+}
+
 export function workspaceSection(pathname: string): WorkspaceNavItem {
-  return (
-    WORKSPACE_NAV_ITEMS.find((item) =>
-      item.exact
-        ? pathname === item.href
-        : pathname === item.href || pathname.startsWith(`${item.href}/`),
-    ) ?? WORKSPACE_NAV_ITEMS[0]
-  );
+  return WORKSPACE_NAV_ITEMS.find((item) => isNavItemActive(item, pathname)) ?? WORKSPACE_NAV_ITEMS[0];
+}
+
+/** True when the current page is one of the group's destinations. */
+export function groupContainsPath(group: WorkspaceNavGroup, pathname: string): boolean {
+  return group.items.some((item) => isNavItemActive(item, pathname));
 }

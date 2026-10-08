@@ -129,7 +129,7 @@ function ResetPasswordContent() {
       title="Choose a new password"
       description="You will be signed out of other sessions and asked to sign in with the new password."
     >
-      <form onSubmit={submit} className="grid gap-4">
+      <form method="post" onSubmit={submit} className="grid gap-4">
         <Field
           label="New password"
           htmlFor="new-password"

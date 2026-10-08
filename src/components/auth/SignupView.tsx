@@ -4,9 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import AuthShell from "./AuthShell";
 import SignupForm, { type SignupPath } from "./SignupForm";
+import DemoWorkspaceOption from "@/components/marketing/site/DemoWorkspaceOption";
 import { withNext } from "@/lib/auth/safe-next";
 
 export type SignupAudience = "applicant" | "invited" | "open";
+/** Whether the demo workspace is offered: after the form, first, or not at all (invitations). */
+export type SignupDemo = "offer" | "first" | "none";
 
 const COPY: Record<SignupAudience, { title: string; description: string }> = {
   applicant: {
@@ -33,11 +36,13 @@ export default function SignupView({
   initialPath,
   next,
   partnerEnabled,
+  demo = "none",
 }: {
   audience: SignupAudience;
   initialPath: SignupPath | null;
   next: string | null;
   partnerEnabled: boolean;
+  demo?: SignupDemo;
 }) {
   const [path, setPath] = useState<SignupPath | null>(initialPath);
   const chooseRole = audience === "open";
@@ -64,7 +69,18 @@ export default function SignupView({
         </>
       }
     >
+      {demo === "first" ? (
+        <div className="mb-6">
+          <DemoWorkspaceOption prominent />
+          <p className="mt-6 text-[13px] text-[var(--text-secondary)]">Or create your account now.</p>
+        </div>
+      ) : null}
       <SignupForm next={next} path={path} onPathChange={setPath} chooseRole={chooseRole} partnerEnabled={partnerEnabled} />
+      {demo === "offer" ? (
+        <div className="mt-6">
+          <DemoWorkspaceOption />
+        </div>
+      ) : null}
     </AuthShell>
   );
 }

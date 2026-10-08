@@ -17,7 +17,9 @@ export type ThrottleRoute =
   | "import"
   | "ai_conversation"
   | "sandbox_run"
-  | "demo_reset";
+  | "demo_reset"
+  | "demo_teammate"
+  | "demo_teammate_global";
 
 export interface ThrottlePolicy {
   /** max attempts per window */
@@ -37,6 +39,8 @@ export const THROTTLE_POLICIES: Record<ThrottleRoute, ThrottlePolicy> = {
   ai_conversation: { limit: 60, windowMs: 60 * 60_000, scope: "user", retryAfterSeconds: 3600 },
   sandbox_run: { limit: 10, windowMs: 60 * 60_000, scope: "user", retryAfterSeconds: 3600 },
   demo_reset: { limit: 5, windowMs: 60 * 60_000, scope: "ip", retryAfterSeconds: 3600 },
+  demo_teammate: { limit: 40, windowMs: 60 * 60_000, scope: "ip", retryAfterSeconds: 3600 },
+  demo_teammate_global: { limit: 600, windowMs: 60 * 60_000, scope: "global", retryAfterSeconds: 3600 },
 };
 
 interface Bucket {

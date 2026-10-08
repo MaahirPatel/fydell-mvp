@@ -1,0 +1,40 @@
+import { FolderGit2, House, IdCard, Send, type LucideIcon } from "lucide-react";
+import type { CandidateSection } from "./section";
+
+export type CandidateNavItem = {
+  key: Exclude<CandidateSection, "settings">;
+  label: string;
+  href: string;
+  icon: LucideIcon;
+};
+
+/**
+ * The places an engineer works in. Builder Reports open from their project, so
+ * Projects is where reports are listed. Settings and Help sit apart, at the
+ * foot of the sidebar.
+ */
+export const CANDIDATE_NAV: readonly CandidateNavItem[] = [
+  { key: "assessments", label: "Overview", href: "/app/candidate", icon: House },
+  { key: "work", label: "Projects", href: "/app/candidate/work-record", icon: FolderGit2 },
+  { key: "profile", label: "Profile & Passport", href: "/app/candidate/profile", icon: IdCard },
+  { key: "applications", label: "Applications", href: "/app/candidate/applications", icon: Send },
+];
+
+export const SECTION_LABEL: Record<CandidateSection, string> = {
+  assessments: "Overview",
+  work: "Projects",
+  profile: "Profile & Passport",
+  applications: "Applications",
+  settings: "Settings",
+};
+
+export const SECTION_HREF: Record<CandidateSection, string> = {
+  assessments: "/app/candidate",
+  work: "/app/candidate/work-record",
+  profile: "/app/candidate/profile",
+  applications: "/app/candidate/applications",
+  settings: "/app/candidate/settings",
+};
+
+/** Where "Share profile" goes: the Sharing panel on the projects page, which creates and revokes links. */
+export const SHARE_HREF = "/app/candidate/work-record#share";

@@ -12,11 +12,13 @@ import {
 
 type ContributionRow = {
   repo_full_name: string;
+  problem: string | null;
   worked_on: string;
   inherited: string;
   collaboration: Collaboration;
   collaboration_note: string;
   constraints_faced: string;
+  checked_how: string | null;
   results: string;
   improvements: string;
   evidence_refs: EvidenceRef[] | null;
@@ -42,18 +44,20 @@ type DecisionRow = {
 };
 
 const CONTRIBUTION_COLUMNS =
-  "repo_full_name,worked_on,inherited,collaboration,collaboration_note,constraints_faced,results,improvements,evidence_refs,version,updated_at";
+  "repo_full_name,problem,worked_on,inherited,collaboration,collaboration_note,constraints_faced,checked_how,results,improvements,evidence_refs,version,updated_at";
 const DECISION_COLUMNS =
   "id,repo_full_name,title,problem,constraints_faced,alternatives,choice,tradeoffs,outcome,evidence_refs,version,withdrawn_at,created_at,updated_at";
 
 function toContribution(r: ContributionRow): ContributionContext {
   return {
     repoFullName: r.repo_full_name,
+    problem: r.problem ?? "",
     workedOn: r.worked_on,
     inherited: r.inherited,
     collaboration: r.collaboration,
     collaborationNote: r.collaboration_note,
     constraintsFaced: r.constraints_faced,
+    checkedHow: r.checked_how ?? "",
     results: r.results,
     improvements: r.improvements,
     evidenceRefs: r.evidence_refs ?? [],
@@ -169,11 +173,13 @@ async function recordContributionRevision(passportId: string, saved: Contributio
     repo_full_name: saved.repoFullName,
     version: saved.version,
     content: {
+      problem: saved.problem,
       workedOn: saved.workedOn,
       inherited: saved.inherited,
       collaboration: saved.collaboration,
       collaborationNote: saved.collaborationNote,
       constraintsFaced: saved.constraintsFaced,
+      checkedHow: saved.checkedHow,
       results: saved.results,
       improvements: saved.improvements,
       evidenceRefs: saved.evidenceRefs,
@@ -202,11 +208,13 @@ export async function saveContribution(
   }
   const admin = createAdminSupabaseClient();
   const row = {
+    problem: input.problem,
     worked_on: input.workedOn,
     inherited: input.inherited,
     collaboration: input.collaboration,
     collaboration_note: input.collaborationNote,
     constraints_faced: input.constraintsFaced,
+    checked_how: input.checkedHow,
     results: input.results,
     improvements: input.improvements,
     evidence_refs: input.evidenceRefs,

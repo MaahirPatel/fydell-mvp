@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import RevealObserver from "./RevealObserver";
 import s from "./site.module.css";
 
 export function Arrow() {
@@ -39,7 +40,20 @@ function CtaLink({ cta, className }: { cta: Cta; className: string }) {
   );
 }
 
-/** Centred page hero: optional announcement, headline, lead, actions, then the product. */
+function Actions({ primary, secondary, className }: { primary?: Cta; secondary?: Cta; className?: string }) {
+  if (!primary && !secondary) return null;
+  return (
+    <div className={className ?? s.actions}>
+      {primary ? <CtaLink cta={primary} className={`l-btn l-btn-lg l-btn-solid ${s.btn}`} /> : null}
+      {secondary ? <CtaLink cta={secondary} className={`l-btn l-btn-lg ${s.btn} ${s.btnQuiet}`} /> : null}
+    </div>
+  );
+}
+
+/**
+ * Page hero: a large left-aligned statement, one grey line with the actions
+ * beside it, an optional facts line under the actions, then the product.
+ */
 export function SiteHero({
   title,
   lead,
@@ -47,8 +61,7 @@ export function SiteHero({
   primary,
   secondary,
   supporting,
-  eyebrow,
-  align = "center",
+  meta,
   children,
 }: {
   title: readonly string[];
@@ -57,45 +70,47 @@ export function SiteHero({
   primary?: Cta;
   secondary?: Cta;
   supporting?: Cta;
-  eyebrow?: ReactNode;
-  align?: "center" | "left";
+  meta?: ReactNode;
+  align?: "left";
   children?: ReactNode;
 }) {
   return (
-    <section className={align === "left" ? s.heroLeft : s.hero}>
+    <section className={s.hero}>
       <div className={s.container}>
-        <div className={s.heroText}>
-          {announcement ? (
-            <Link href={announcement.href} className={s.announce}>
-              {announcement.label} <Arrow />
-            </Link>
-          ) : null}
-          {eyebrow ? <div className={s.eyebrow}>{eyebrow}</div> : null}
-          <h1 className={s.heroTitle}>
-            <Lines lines={title} />
-          </h1>
-          {lead ? <p className={s.heroLead}>{lead}</p> : null}
-          {primary || secondary ? (
-            <div className={s.heroActions}>
-              {primary ? <CtaLink cta={primary} className="l-btn l-btn-lg l-btn-solid" /> : null}
-              {secondary ? <CtaLink cta={secondary} className={`l-btn l-btn-lg ${s.btnQuiet}`} /> : null}
-            </div>
-          ) : null}
-          {supporting ? (
-            <Link href={supporting.href} className={s.supporting}>
-              {supporting.label} <Arrow />
-            </Link>
-          ) : null}
-        </div>
-        {children ? <div className={s.heroVisual}>{children}</div> : null}
+        {announcement ? (
+          <Link href={announcement.href} className={`${s.announce} ${s.heroIn}`}>
+            {announcement.label} <Arrow />
+          </Link>
+        ) : null}
+        <h1 className={`${s.heroTitle} ${s.heroIn}`}>
+          <Lines lines={title} />
+        </h1>
+        {lead || primary || secondary ? (
+          <div className={`${s.heroRow} ${s.heroIn}`}>
+            {lead ? <p className={s.heroLead}>{lead}</p> : null}
+            {primary || secondary || supporting ? (
+              <div className={s.heroCtas}>
+                <Actions primary={primary} secondary={secondary} />
+                {supporting ? (
+                  <Link href={supporting.href} className={s.supporting}>
+                    {supporting.label} <Arrow />
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+        {meta ? <div className={`${s.heroMeta} ${s.heroIn}`}>{meta}</div> : null}
+        {children ? <div className={`${s.heroVisual} ${s.heroIn}`}>{children}</div> : null}
       </div>
     </section>
   );
 }
 
 /**
- * One chapter of a page. `layout` varies the composition: "stack" puts the
- * text above a full-width product view, "split" puts them side by side, and
+ * One chapter of a page, opened by a hairline. `layout` varies the
+ * composition: "stack" puts the title and copy side by side above a
+ * full-width product view, "split" puts copy and view side by side, and
  * "text" is copy only.
  */
 export function Feature({
@@ -117,11 +132,13 @@ export function Feature({
   flip?: boolean;
   children?: ReactNode;
 }) {
-  const text = (
-    <div className={s.featureText}>
-      <h2 id={`${id}-title`} className={s.h2}>
-        {title}
-      </h2>
+  const heading = (
+    <h2 id={`${id}-title`} className={s.h2}>
+      {title}
+    </h2>
+  );
+  const copy = (
+    <div className={s.featureCopy}>
       <div className={s.featureBody}>{typeof body === "string" ? <p>{body}</p> : body}</div>
       {link ? (
         <Link href={link.href} className={s.textLink}>
@@ -132,28 +149,37 @@ export function Feature({
   );
   return (
     <section id={id} aria-labelledby={`${id}-title`} className={s.section}>
+      <RevealObserver />
       <div className={s.container}>
-        {layout === "split" ? (
-          <div className={flip ? s.splitFlip : s.split}>
-            {text}
-            <div className={s.splitVisual}>{children}</div>
-          </div>
-        ) : (
-          <>
-            <div className={layout === "stack" ? s.stackHead : undefined}>{text}</div>
-            {children ? <div className={s.stackVisual}>{children}</div> : null}
-          </>
-        )}
-        {points?.length ? (
-          <dl className={s.points}>
-            {points.map((p) => (
-              <div key={p.title}>
-                <dt>{p.title}</dt>
-                <dd>{p.body}</dd>
+        <div className={s.rule} data-reveal>
+          {layout === "split" ? (
+            <div className={flip ? s.splitFlip : s.split}>
+              <div className={s.splitText}>
+                {heading}
+                {copy}
               </div>
-            ))}
-          </dl>
-        ) : null}
+              <div className={s.splitVisual}>{children}</div>
+            </div>
+          ) : (
+            <>
+              <div className={s.featureHead}>
+                {heading}
+                {copy}
+              </div>
+              {children ? <div className={s.stackVisual}>{children}</div> : null}
+            </>
+          )}
+          {points?.length ? (
+            <dl className={s.points} data-reveal="group">
+              {points.map((p) => (
+                <div key={p.title}>
+                  <dt>{p.title}</dt>
+                  <dd>{p.body}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
+        </div>
       </div>
     </section>
   );
@@ -162,17 +188,15 @@ export function Feature({
 export function SiteClosing({ title, body, primary, secondary }: { title: string; body?: string; primary: Cta; secondary?: Cta }) {
   return (
     <section className={s.closing} aria-labelledby="closing-title">
+      <RevealObserver />
       <div className={s.container}>
-        <div className={s.closingInner}>
-          <div>
-            <h2 id="closing-title" className={s.h2}>
-              {title}
-            </h2>
+        <div className={s.closingInner} data-reveal>
+          <h2 id="closing-title" className={s.closingTitle}>
+            {title}
+          </h2>
+          <div className={s.closingSide}>
             {body ? <p className={s.closingBody}>{body}</p> : null}
-          </div>
-          <div className={s.heroActions}>
-            <CtaLink cta={primary} className="l-btn l-btn-lg l-btn-solid" />
-            {secondary ? <CtaLink cta={secondary} className={`l-btn l-btn-lg ${s.btnQuiet}`} /> : null}
+            <Actions primary={primary} secondary={secondary} />
           </div>
         </div>
       </div>
@@ -183,8 +207,9 @@ export function SiteClosing({ title, body, primary, secondary }: { title: string
 export function SiteFaq({ title = "Questions", items }: { title?: string; items: readonly { q: string; a: string }[] }) {
   return (
     <section className={s.section} aria-labelledby="faq-title">
+      <RevealObserver />
       <div className={s.container}>
-        <div className={s.faqGrid}>
+        <div className={`${s.rule} ${s.faqGrid}`} data-reveal>
           <h2 id="faq-title" className={s.h2}>
             {title}
           </h2>

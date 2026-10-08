@@ -7,12 +7,14 @@ import type { RoleKey } from "@/lib/simulations/types";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
 import { CandidatePageHead } from "@/components/candidate/CandidatePageHead";
 import { ButtonLink } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Status, type StatusKind } from "@/components/ui/report";
 import { CONTACT_EMAIL, CONTACT_MAILTO } from "@/lib/contact";
+import { getOwnerPassport } from "@/lib/passport/store";
 import type { AttemptRow, AttemptStatus, InvitationRow } from "@/lib/eng/types";
 import s from "@/components/candidate/candidate.module.css";
 
-export const metadata = { title: "Your evaluations" };
+export const metadata = { title: "Overview" };
 export const dynamic = "force-dynamic";
 
 type Tone = "blue" | "amber" | "green" | "neutral";
@@ -107,7 +109,7 @@ export default async function CandidateHomePage() {
   if (!user) redirect(`/login?next=${encodeURIComponent("/app/candidate")}`);
 
   const admin = createAdminSupabaseClient();
-  const [{ data: invitations }, { data: sessions }, { data: credentials }, { data: engInvites }, { data: engAttempts }] =
+  const [{ data: invitations }, { data: sessions }, { data: credentials }, { data: engInvites }, { data: engAttempts }, passport] =
     await Promise.all([
       admin
         .from("sim_invitations")
@@ -132,7 +134,9 @@ export default async function CandidateHomePage() {
         .in("status", ["invited", "accepted"])
         .order("created_at", { ascending: false }),
       admin.from("eng_attempts").select("id, invitation_id, status, submitted_at").eq("candidate_user_id", user.id),
+      getOwnerPassport(user.id).catch(() => null),
     ]);
+  const hasProjects = (passport?.projects ?? []).some((p) => p.status !== "stale");
 
   const engAttemptByInvite = new Map(
     ((engAttempts ?? []) as Pick<AttemptRow, "id" | "invitation_id" | "status" | "submitted_at">[]).map((a) => [a.invitation_id, a])
@@ -161,25 +165,36 @@ export default async function CandidateHomePage() {
 
   return (
     <CandidateShell width="wide" current="assessments">
-      <CandidatePageHead title="Evaluations" lead={empty ? undefined : "Tasks hiring teams have invited you to, with each one's deadline and next step."} />
+      <CandidatePageHead title="Overview" lead="Evaluations hiring teams have invited you to, with each one's deadline and next step." />
 
-      <div className="mt-8 grid gap-10">
-        <div className="grid gap-10">
-          {empty ? (
-            <section className="py-4">
-              <h2 className="text-[19px] font-semibold tracking-[-0.014em]">No invitations yet</h2>
-              <p className="mt-1.5 max-w-[56ch] text-[15px] leading-[1.6] text-[var(--text-secondary)]">
-                Invitations from hiring teams will appear here, with the task, deadline, and next step.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <ButtonLink href="/app/candidate/work-record" variant="primary" size="md">
-                  Build your Passport
+      <div className="mt-6 grid gap-8">
+        <div className="grid gap-6">
+          {empty && !hasProjects ? (
+            <EmptyState
+              title="Start with a project"
+              description="Add a repository you built and Fydell writes its Builder Report. Your projects are what hiring teams see first, and evaluations you are invited to appear here."
+              action={
+                <ButtonLink href="/app/candidate/work-record#add-repository" variant="primary" size="sm">
+                  Add a project
                 </ButtonLink>
-                <ButtonLink href="/simulations" variant="secondary" size="md">
-                  View example task
+              }
+            />
+          ) : null}
+          {empty && hasProjects ? (
+            <EmptyState
+              title="No invitations yet"
+              description="Evaluations are invite-only. When a hiring team invites you, the task appears here with its deadline and next step. Until then, your projects are what teams see first."
+              action={
+                <ButtonLink href="/app/candidate/work-record" variant="primary" size="sm">
+                  View your projects
                 </ButtonLink>
-              </div>
-            </section>
+              }
+              secondary={
+                <a href="/simulations" className="text-app-meta font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline hover:underline-offset-4">
+                  See an example task
+                </a>
+              }
+            />
           ) : null}
 
             {engOpen.length > 0 || active.length > 0 || pendingInvites.length > 0 ? (
@@ -315,24 +330,24 @@ export default async function CandidateHomePage() {
             ) : null}
         </div>
 
-        <div className="max-w-[960px] border-t border-[var(--border-default)]">
+        <div className="border-t border-[var(--border-subtle)]">
           <details className="group border-b border-[var(--border-subtle)]">
-            <summary className="flex cursor-pointer list-none items-center gap-2 py-4 text-[15px] font-medium text-[var(--text-primary)]">
+            <summary className="flex cursor-pointer list-none items-center gap-2 py-3 text-[14px] font-medium text-[var(--text-primary)]">
               <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)] transition-transform group-open:rotate-90" aria-hidden />
               How an evaluation works
             </summary>
             <ol className="grid gap-x-8 gap-y-4 pb-6 pl-6 sm:grid-cols-2 lg:grid-cols-5">
               {HOW_IT_WORKS.map((step, i) => (
                 <li key={step.title}>
-                  <p className="text-[14px] font-semibold text-[var(--text-primary)]">
+                  <p className="text-[13.5px] font-semibold text-[var(--text-primary)]">
                     <span className="tabular-nums text-[var(--text-tertiary)]">{i + 1}.</span> {step.title}
                   </p>
-                  <p className="mt-1 text-[14px] leading-[1.55] text-[var(--text-secondary)]">{step.body}</p>
+                  <p className="mt-1 text-[13px] leading-[1.55] text-[var(--text-secondary)]">{step.body}</p>
                 </li>
               ))}
             </ol>
           </details>
-          <p className="py-4 text-[14px] text-[var(--text-secondary)]">
+          <p className="py-3 text-[13px] text-[var(--text-secondary)]">
             Stuck on setup? Setup problems are never held against you.{" "}
             <a href={CONTACT_MAILTO} className="font-medium text-[var(--accent-ink)] hover:underline hover:underline-offset-4">
               Email {CONTACT_EMAIL}

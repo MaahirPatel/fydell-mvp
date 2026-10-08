@@ -20,7 +20,7 @@ The product is judged on one question: did the hiring team learn something about
 9. **Review.** The employer's team writes the report. A report cannot be released unless every finding cites real evidence.
 10. **Decide.** The team records Advance, Hold or Decline. The decision never messages the candidate.
 
-The first simulation is `backend-webhook-retry` (Python): incident INC-2291, a webhook dispatcher in a retry storm, with Priya Raman (engineering lead) and Marcus Bell (partner support) on the team thread.
+The first simulation is `backend-webhook-retry` (Python): incident INC-2291, a webhook dispatcher in a retry storm at Harbor Pay, with Alex Morgan (engineering lead) and Jordan Hayes (partner support) on the team thread.
 
 ## Secondary surfaces
 - **Engineering Passport.** A developer-owned record built from public GitHub projects they choose, with source-linked evidence and scoped share links they can revoke. It supports the engineering loop; it is not a social network or a job board.
@@ -40,12 +40,12 @@ Precise · restrained · engineered
 Serious infrastructure for a consequential decision, built with the craft engineers expect from their own tools. Confidence comes from what is shown, not from adjectives.
 
 ## Visual reference
-The public site follows Linear's marketing grammar: a dark near-black ground, Inter at Linear's measured sizes (64px hero, 48px section titles, 24px section leads, 15px body, 13px navigation), left-aligned headlines, one grey supporting line, and the real product shown large immediately after. Cursor and Stripe are secondary references for product-window craft. See `DESIGN.md` for tokens.
+The public site is a light-mode Linear laid out like x.ai. The format follows x.ai: very large left-aligned statements, generous negative space, few words per section, a monochrome near-white and near-black palette, and hairline rules between sections. The text follows Linear: Geist with tight tracking, medium-to-semibold headlines, one grey supporting line and small precise labels. The visuals follow Linear's product windows in light mode, built in HTML from real product data: the home hero is the candidate's simulation drawn in an issue tracker's structure, with the team thread docked on the right. Light mode only. See `DESIGN.md` for the page grammar and tokens.
 
 ## Voice
 Direct and specific. State what happened and what it is evidence of. Name limits in the same breath as claims, because a hiring decision made on an overstated signal is the failure mode that ends the company.
 
-Write "the candidate changed `dispatcher.py`, ran the tests four times and asked Priya which status codes are temporary" rather than "powerful insights into candidate performance."
+Write "the candidate changed `dispatcher.py`, ran the tests four times and asked Alex which status codes are temporary" rather than "powerful insights into candidate performance."
 
 - No score presented as truth. A number is a summary of evidence, never a verdict.
 - No percentiles, benchmarks, or comparative rankings. The data to support them does not exist.

@@ -1,8 +1,11 @@
 import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { createShare, getOwnerPassport, revokeShare } from "@/lib/passport/store";
-import { currentSnapshots } from "@/lib/passport/snapshots";
+import { createShare, revokeShare } from "@/lib/passport/store";
 import { shareState } from "@/lib/passport/sharing";
+import { parseEvidenceSelection } from "@/lib/profile-evidence/contract";
+import { attachApplicationEvidence, prepareApplicationEvidence } from "@/lib/profile-evidence/applications";
+import { recordEvidenceEvent } from "@/lib/profile-evidence/events";
+import { SAMPLE_PREFIX } from "@/lib/profile-evidence/work-samples";
 import { notifyUser } from "@/lib/notifications/store";
 import { acceptsApplications, closedReason, roleState, STAGE_LABEL, type ApplicationInput, type ApplicationStage, type RoleState } from "./role-contract";
 import { roleForSlug } from "./roles";
@@ -51,7 +54,7 @@ export type SubmitResult =
  */
 export async function submitApplication(user: { id: string; email: string }, slug: string, input: ApplicationInput): Promise<SubmitResult> {
   const role = await roleForSlug(slug);
-  if (!role || role.state === "draft") return { ok: false, status: 404, error: "This role page doesn't exist or isn't published." };
+  if (!role || role.state === "draft" || role.intake.visibility === "private") return { ok: false, status: 404, error: "This role page doesn't exist or isn't published." };
   if (!acceptsApplications(role.status, role.applicationDeadline)) {
     return { ok: false, status: 409, error: closedReason(role.status, role.applicationDeadline) ?? "This role isn't taking applications." };
   }
@@ -69,16 +72,16 @@ export async function submitApplication(user: { id: string; email: string }, slu
     return { ok: false, status: 409, error: "You've already applied to this role. Your receipt has the details.", existingId: (existing as { id: string }).id };
   }
 
+  const selection = parseEvidenceSelection(input.repos);
+  if ("error" in selection) return { ok: false, status: 400, error: selection.error };
+  const prepared = await prepareApplicationEvidence(user.id, selection);
+  if (prepared.ok === false) return prepared;
+
   let shareId: string | null = null;
-  if (input.repos.length > 0) {
-    const passport = await getOwnerPassport(user.id);
-    const known = new Set(currentSnapshots(passport?.projects ?? []).map((p) => p.repoFullName));
-    const repos = input.repos.filter((r) => known.has(r));
-    if (repos.length !== input.repos.length) {
-      return { ok: false, status: 400, error: "One of the selected projects is no longer in your Passport. Reload and choose again." };
-    }
+  const shareKeys = prepared.items.map((i) => i.projectKey).filter((k) => !k.startsWith(SAMPLE_PREFIX));
+  if (shareKeys.length > 0) {
     const share = await createShare(user.id, `Application: ${role.organizationName}, ${role.title}`.slice(0, 80), ["projects", "evidence"], {
-      repos,
+      repos: shareKeys,
       versionPolicy: "pinned",
     });
     if ("error" in share) return { ok: false, status: 409, error: share.error };
@@ -125,6 +128,11 @@ export async function submitApplication(user: { id: string; email: string }, slu
     return { ok: false, status: 500, error: "Your application wasn't sent. Nothing was shared; your entries are kept, so try again." };
   }
   const id = (data as { id: string }).id;
+  if (!(await attachApplicationEvidence(id, prepared.items, role.organizationId))) {
+    await db.from("role_applications").delete().eq("id", id).eq("applicant_user_id", user.id);
+    if (shareId) await revokeShare(user.id, shareId);
+    return { ok: false, status: 500, error: "Your application wasn't sent. Nothing was shared; your entries are kept, so try again." };
+  }
   await notifyTeam(role.organizationId, role.id, role.title, input.contactName);
   return { ok: true, id };
 }
@@ -316,49 +324,41 @@ export type EmployerApplication = {
   note: string;
   snapshot: RoleSnapshot;
   reviewId: string | null;
+  shareId: string | null;
+  applicantUserId: string;
 };
+
+function toEmployerApplication(r: AppRow): EmployerApplication {
+  return {
+    id: r.id,
+    roleId: r.role_id,
+    name: r.contact_name,
+    email: r.contact_email,
+    submittedAt: r.submitted_at,
+    status: r.status,
+    stage: r.stage,
+    links: r.links ?? [],
+    note: r.note,
+    snapshot: r.role_snapshot,
+    reviewId: r.review_id,
+    shareId: r.share_id,
+    applicantUserId: r.applicant_user_id,
+  };
+}
 
 /** The application behind an employer review, if the review came from a role page. */
 export async function applicationForReview(organizationId: string, reviewId: string): Promise<EmployerApplication | null> {
   if (!/^[0-9a-f-]{36}$/.test(reviewId)) return null;
   const db = createAdminSupabaseClient();
   const { data } = await db.from("role_applications").select(APP_COLUMNS).eq("organization_id", organizationId).eq("review_id", reviewId).maybeSingle();
-  if (!data) return null;
-  const r = data as AppRow;
-  return {
-    id: r.id,
-    roleId: r.role_id,
-    name: r.contact_name,
-    email: r.contact_email,
-    submittedAt: r.submitted_at,
-    status: r.status,
-    stage: r.stage,
-    links: r.links ?? [],
-    note: r.note,
-    snapshot: r.role_snapshot,
-    reviewId: r.review_id,
-  };
+  return data ? toEmployerApplication(data as AppRow) : null;
 }
 
 export async function getApplicationForOrg(organizationId: string, applicationId: string): Promise<EmployerApplication | null> {
   if (!/^[0-9a-f-]{36}$/.test(applicationId)) return null;
   const db = createAdminSupabaseClient();
   const { data } = await db.from("role_applications").select(APP_COLUMNS).eq("organization_id", organizationId).eq("id", applicationId).maybeSingle();
-  if (!data) return null;
-  const r = data as AppRow;
-  return {
-    id: r.id,
-    roleId: r.role_id,
-    name: r.contact_name,
-    email: r.contact_email,
-    submittedAt: r.submitted_at,
-    status: r.status,
-    stage: r.stage,
-    links: r.links ?? [],
-    note: r.note,
-    snapshot: r.role_snapshot,
-    reviewId: r.review_id,
-  };
+  return data ? toEmployerApplication(data as AppRow) : null;
 }
 
 export async function setApplicationStage(organizationId: string, applicationId: string, stage: ApplicationStage): Promise<boolean> {
@@ -371,5 +371,7 @@ export async function setApplicationStage(organizationId: string, applicationId:
     .eq("organization_id", organizationId)
     .eq("status", "submitted")
     .select("id");
-  return (data ?? []).length > 0;
+  const changed = (data ?? []).length > 0;
+  if (changed) await recordEvidenceEvent("employer_next_step", { application_id: applicationId, step: `stage_${stage}` }, organizationId);
+  return changed;
 }

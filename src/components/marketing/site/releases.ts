@@ -72,13 +72,13 @@ export const RELEASES: readonly Release[] = [
 
 export const LATEST = RELEASES[0];
 
-export type DesktopOs = "macos" | "windows" | "linux";
+export type DesktopOs = "macos" | "windows";
 
 export type DesktopBuild = { label: string; file: string; note: string };
 
 const asset = (file: string) => `${RELEASES_URL}/download/v${LATEST.version}/${file}`;
 
-/** Only builds attached to the latest release. There is no Intel macOS or ARM Windows/Linux build. */
+/** Builds offered on the site. There is no Intel macOS or ARM Windows build, and Linux is not offered. */
 export const BUILDS: Record<DesktopOs, { name: string; arch: string; primary: DesktopBuild; others: readonly DesktopBuild[]; unavailable: string }> = {
   macos: {
     name: "macOS",
@@ -93,16 +93,6 @@ export const BUILDS: Record<DesktopOs, { name: string; arch: string; primary: De
     primary: { label: "Download for Windows", file: asset(`Fydell_${LATEST.version}_x64-setup.exe`), note: ".exe installer" },
     others: [{ label: "MSI package", file: asset(`Fydell_${LATEST.version}_x64_en-US.msi`), note: ".msi, for managed installs" }],
     unavailable: "No build for Windows on ARM yet. Use Fydell in the browser.",
-  },
-  linux: {
-    name: "Linux",
-    arch: "64-bit (x86_64)",
-    primary: { label: "Download AppImage", file: asset(`Fydell_${LATEST.version}_amd64.AppImage`), note: ".AppImage, runs on most distributions" },
-    others: [
-      { label: "Debian package", file: asset(`Fydell_${LATEST.version}_amd64.deb`), note: ".deb, for Ubuntu and Debian" },
-      { label: "RPM package", file: asset(`Fydell-${LATEST.version}-1.x86_64.rpm`), note: ".rpm, for Fedora and RHEL" },
-    ],
-    unavailable: "No ARM build yet. Use Fydell in the browser.",
   },
 };
 

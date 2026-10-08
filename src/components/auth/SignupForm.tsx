@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useHydrated } from "@/lib/use-hydrated";
 import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -88,6 +89,7 @@ export default function SignupForm({
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const hydrated = useHydrated();
 
   const choices = partnerEnabled ? [...CHOICES, PARTNER_CHOICE] : CHOICES;
   const passwordOk = password.length >= MIN_PASSWORD;
@@ -158,7 +160,7 @@ export default function SignupForm({
   const busy = loading || redirecting;
 
   return (
-    <form onSubmit={submit} className="grid gap-4" noValidate aria-busy={busy || undefined}>
+    <form method="post" onSubmit={submit} className="grid gap-4" noValidate aria-busy={busy || undefined}>
       {chooseRole ? (
         <fieldset aria-describedby={fieldErrors.path ? "signup-path-error" : undefined}>
           <legend className="text-app-meta font-medium text-[var(--text-primary)]">How will you use Fydell?</legend>
@@ -324,7 +326,7 @@ export default function SignupForm({
 
       {error ? <FormError>{error}</FormError> : null}
 
-      <Button type="submit" variant="primary" size="lg" loading={busy} className="mt-1 w-full">
+      <Button type="submit" variant="primary" size="lg" loading={busy} disabled={!hydrated} className="mt-1 w-full">
         {redirecting ? "Opening your account" : loading ? "Creating account" : "Create account"}
       </Button>
     </form>

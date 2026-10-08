@@ -18,7 +18,7 @@ type Share = {
 };
 
 /** `title` is set for manual projects, which have no analyzed version. */
-type ShareProject = { repo: string; commit: string; findings: number; title?: string };
+type ShareProject = { repo: string; commit: string; findings: number; title?: string; confirmed: boolean };
 
 const FIELD_LABEL: Record<ShareField, string> = {
   projects: "Projects, contribution context and decisions",
@@ -55,7 +55,7 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
   // Tracks what the engineer unticked, so projects added or made shareable
   // after the page loaded are included without a reload.
   const [excluded, setExcluded] = useState<string[]>([]);
-  const repos = projects.map((p) => p.repo).filter((r) => !excluded.includes(r));
+  const repos = projects.filter((p) => p.confirmed).map((p) => p.repo).filter((r) => !excluded.includes(r));
   const [policy, setPolicy] = useState<VersionPolicy>("pinned");
   const [expiryDays, setExpiryDays] = useState<string>("");
   const [created, setCreated] = useState<string | null>(null);
@@ -76,7 +76,9 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
   async function create(e: React.FormEvent) {
     e.preventDefault();
     if (busy) return;
-    if (repos.length === 0) return setError("Choose at least one project to include.");
+    if (repos.length === 0) {
+      return setError(projects.some((p) => p.confirmed) ? "Choose at least one project to include." : "Confirm your contribution on at least one project before sharing it.");
+    }
     setBusy(true);
     setError(null);
     const expiresAt = expiryDays ? expiryFromNow(Number(expiryDays)) : undefined;
@@ -121,12 +123,12 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
   const toggleRepo = (repo: string) => setExcluded((cur) => (cur.includes(repo) ? cur.filter((r) => r !== repo) : [...cur, repo]));
 
   return (
-    <section id="share" aria-labelledby="sharing-heading" className="scroll-mt-24 rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
-      <div className="border-b border-[var(--border-subtle)] px-5 py-4 sm:px-6">
-        <h2 id="sharing-heading" className="text-[17px] font-semibold tracking-[-0.012em]">Sharing</h2>
-        <p className="mt-0.5 text-[14px] text-[var(--text-secondary)]">Private until you create a link. Revoke it any time.</p>
+    <section id="share" aria-labelledby="sharing-heading" className="scroll-mt-20 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+      <div className="border-b border-[var(--border-subtle)] px-4 py-3">
+        <h2 id="sharing-heading" className="text-[15px] font-semibold tracking-[-0.01em]">Sharing</h2>
+        <p className="mt-0.5 text-[13px] text-[var(--text-secondary)]">Private until you create a link. Revoke it any time.</p>
       </div>
-      <form onSubmit={create} className="space-y-4 px-5 py-4 sm:px-6">
+      <form onSubmit={create} className="space-y-4 px-4 py-4">
         <div>
           <label htmlFor="share-label" className="text-app-meta font-medium">Who is this link for?</label>
           <input id="share-label" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={80} placeholder="e.g. Platform team, backend role" className="platform-input mt-1.5" />
@@ -137,7 +139,14 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
           <div className="mt-1.5 grid gap-1.5">
             {projects.map((p) => (
               <label key={p.repo} className="flex items-start gap-2 text-app-body">
-                <input type="checkbox" checked={repos.includes(p.repo)} onChange={() => toggleRepo(p.repo)} className="mt-1 h-4 w-4 accent-[var(--accent)]" />
+                <input
+                  type="checkbox"
+                  checked={repos.includes(p.repo)}
+                  disabled={!p.confirmed}
+                  aria-describedby={p.confirmed ? undefined : `share-unconfirmed-${p.repo}`}
+                  onChange={() => toggleRepo(p.repo)}
+                  className="mt-1 h-4 w-4 accent-[var(--accent)] disabled:cursor-not-allowed"
+                />
                 <span className="min-w-0">
                   {p.title ? (
                     <>
@@ -151,6 +160,11 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
                         {p.findings} finding{p.findings === 1 ? "" : "s"} · version {p.commit}
                       </span>
                     </>
+                  )}
+                  {p.confirmed ? null : (
+                    <span id={`share-unconfirmed-${p.repo}`} className="block text-app-meta text-[var(--text-secondary)]">
+                      Draft, not shared. Confirm your contribution on this project to include it.
+                    </span>
                   )}
                 </span>
               </label>
@@ -219,22 +233,22 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
             type="submit"
             disabled={busy}
             aria-busy={busy || undefined}
-            className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--control-solid)] px-3.5 text-[14px] font-medium text-[var(--control-solid-ink)] shadow-[0_1px_2px_rgba(16,24,40,0.12)] hover:bg-[var(--control-solid-hover)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--accent-line)] disabled:cursor-wait"
+            className="inline-flex h-8 items-center gap-1.5 rounded-[8px] bg-[var(--control-solid)] px-3 text-[13px] font-medium text-[var(--control-solid-ink)] shadow-[0_1px_2px_rgba(16,24,40,0.12)] hover:bg-[var(--control-solid-hover)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--accent-line)] disabled:cursor-wait"
           >
-            <Link2 className="h-4 w-4" aria-hidden /> {busy ? "Creating…" : "Create share link"}
+            <Link2 className="h-3.5 w-3.5" aria-hidden /> {busy ? "Creating…" : "Create share link"}
           </button>
           <a
             href={previewHref}
             target="_blank"
             rel="noopener"
             aria-disabled={repos.length === 0}
-            className={`inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--border-default)] px-3 text-[14px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)] ${repos.length === 0 ? "pointer-events-none opacity-50" : ""}`}
+            className={`inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-[var(--border-default)] px-3 text-[13px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)] ${repos.length === 0 ? "pointer-events-none opacity-50" : ""}`}
           >
-            <Eye className="h-4 w-4" aria-hidden /> Preview as recipient
+            <Eye className="h-3.5 w-3.5" aria-hidden /> Preview as recipient
           </a>
         </div>
         {created ? (
-          <div className="flex flex-wrap items-center gap-2 rounded-[10px] border border-[var(--accent-line)] bg-[var(--accent-soft)] p-3">
+          <div className="flex flex-wrap items-center gap-2 rounded-[8px] border border-[var(--accent-line)] bg-[var(--accent-soft)] p-3">
             <code className="min-w-0 flex-1 truncate font-mono text-[13px] text-[var(--accent-ink)]">{created}</code>
             <button
               type="button"
@@ -268,7 +282,7 @@ export default function SharePanel({ initialShares, projects }: { initialShares:
               .filter(Boolean)
               .join(" · ");
             return (
-              <li key={s.id} className="flex flex-wrap items-center gap-3 px-5 py-3 sm:px-6">
+              <li key={s.id} className="flex flex-wrap items-center gap-3 px-4 py-2.5">
                 <span className="min-w-0 flex-1">
                   <span className="block text-app-body font-medium">{s.label || "Untitled link"}</span>
                   <span className="block text-app-meta text-[var(--text-tertiary)]">{scope}</span>

@@ -23,8 +23,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ roleId:
     : normalizeCandidate(body?.email, body?.name);
   if ("error" in resolved) return jsonError(400, resolved.error);
   const candidate = resolved;
+  const versionRaw = body?.scenarioVersionId;
+  if (versionRaw !== undefined && versionRaw !== null && versionRaw !== "" && (typeof versionRaw !== "string" || !isUuid(versionRaw))) {
+    return jsonError(400, "Choose a valid work sample.");
+  }
+  const scenarioVersionId = typeof versionRaw === "string" && versionRaw ? versionRaw : undefined;
   try {
-    const { invitation, url } = await createInvitation(db, gate.value, role, candidate);
+    const { invitation, url } = await createInvitation(db, gate.value, role, candidate, { scenarioVersionId });
     return ok(
       {
         invitationId: invitation.id,

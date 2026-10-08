@@ -1,11 +1,12 @@
-import { checkSandboxHealth } from "@/lib/sim-engine/proof/sandbox/kill-switch";
-import { SandboxUnavailable } from "@/components/sandbox/SandboxUnavailable";
-import { SandboxApp } from "@/components/sandbox/SandboxApp";
+import type { Metadata } from "next";
+import SandboxLibrary from "@/components/sandbox/demo/SandboxLibrary";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Try a simulation",
+  description:
+    "Try a Fydell engineering simulation without an account: read the brief, work in a full workspace with real test runs in your browser and simulated teammates, then see your report.",
+};
 
-export default async function SandboxPage() {
-  const health = await checkSandboxHealth();
-  if (!health.enabled) return <SandboxUnavailable />;
-  return <SandboxApp surface="home" />;
+export default function SandboxPage() {
+  return <SandboxLibrary />;
 }

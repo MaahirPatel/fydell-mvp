@@ -6,14 +6,17 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
 import CreateRoleForm from "@/components/eng/CreateRoleForm";
-import { InvitationActions, InviteCandidateForm, RoleStatusActions } from "@/components/eng/RoleControls";
+import { InvitationActions, InviteCandidateForm, PreviewWorkSample, RoleStatusActions } from "@/components/eng/RoleControls";
+import { TaskBriefSections } from "@/components/work-samples/runtime/TaskBrief";
+import { listAuthoredVersionOptions } from "@/lib/eng/authored/employer";
+import { candidateTask } from "@/lib/eng/authored/runtime";
 import { engAdmin } from "@/lib/eng/context";
 import { listRoleCandidates, pageMember } from "@/lib/eng/employer-view";
 import { isUuid } from "@/lib/eng/http";
 import { candidateIdentity } from "@/lib/eng/candidate-label";
 import { roleCan } from "@/lib/eng/permissions";
 import { FOCUS_OPTIONS, getRoleForOrg } from "@/lib/eng/roles";
-import { scenarioForVersionId } from "@/lib/eng/scenario-versions";
+import { resolveScenarioVersion } from "@/lib/eng/scenario-versions";
 import { OPERATIONAL_STATES } from "@/lib/eng/state";
 
 export const metadata = { title: "Engineering role" };
@@ -30,7 +33,19 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
   const db = engAdmin();
   const role = await getRoleForOrg(db, roleId, member.organizationId);
   if (!role) notFound();
-  const [{ definition, row }, candidates] = await Promise.all([scenarioForVersionId(db, role.scenario_version_id), listRoleCandidates(db, role)]);
+  const [resolved, candidates, authoredOptions] = await Promise.all([
+    resolveScenarioVersion(db, role.scenario_version_id),
+    listRoleCandidates(db, role),
+    listAuthoredVersionOptions(db, member.organizationId),
+  ]);
+  const row = resolved.row;
+  const definition = resolved.origin === "fydell_reviewed" ? resolved.definition : null;
+  const taskTitle = resolved.origin === "employer_authored" ? resolved.pkg.brief.title : resolved.definition.title;
+  const workSamples = authoredOptions.filter((o) => o.id !== row.id).map((o) => ({ id: o.id, label: `${o.title}, version ${o.version}` }));
+  const previewable = [
+    ...(resolved.origin === "employer_authored" ? [{ id: row.id, label: `${taskTitle}, version ${row.version}` }] : []),
+    ...workSamples,
+  ];
   const canManage = roleCan(member.role, "manage_roles");
   const canInvite = roleCan(member.role, "invite_candidates") && role.status === "published";
   const canManageInvites = roleCan(member.role, "manage_invitations");
@@ -44,7 +59,11 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
       <PageHeader
         className="mt-3"
         title={role.title}
-        description={`${definition.title}, task version ${row.version}. Every candidate for this role gets exactly this version.`}
+        description={
+          workSamples.length
+            ? `${taskTitle}, task version ${row.version}, unless you choose one of your published work samples when inviting. Each candidate is pinned to the version they were invited to.`
+            : `${taskTitle}, task version ${row.version}. Every candidate for this role gets exactly this version.`
+        }
         meta={
           <>
             <StatusTag tone={role.status === "published" ? "good" : "neutral"}>{role.status[0].toUpperCase() + role.status.slice(1)}</StatusTag>
@@ -61,8 +80,13 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
             description="States come from the attempt, the evaluation queue and the report. An evaluation delay is a platform issue and never counts against a candidate."
           />
           {canInvite ? (
-            <div className="px-5 pb-5 lg:px-6">
-              <InviteCandidateForm roleId={role.id} />
+            <div className="grid gap-5 px-5 pb-5 lg:px-6">
+              <InviteCandidateForm roleId={role.id} defaultLabel={`${taskTitle}, version ${row.version} (the role's task)`} workSamples={workSamples} />
+              {previewable.length ? (
+                <div className="border-t border-[var(--border-subtle)] pt-5">
+                  <PreviewWorkSample roleId={role.id} workSamples={previewable} />
+                </div>
+              ) : null}
             </div>
           ) : role.status === "draft" ? (
             <div className="px-5 pb-5 lg:px-6">
@@ -95,6 +119,11 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
                         ) : (
                           who.primary
                         )}
+                        {c.invitation.is_preview ? (
+                          <span className="ml-2 align-middle">
+                            <StatusTag tone="active">Preview</StatusTag>
+                          </span>
+                        ) : null}
                         {who.secondary ? <span className="block text-app-meta font-normal text-[var(--text-tertiary)]">{who.secondary}</span> : null}
                       </TDPrimary>
                       <TD>
@@ -127,6 +156,12 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
           ) : null}
         </Panel>
 
+        {resolved.origin === "employer_authored" ? (
+          <Panel>
+            <TaskBriefSections task={candidateTask(resolved.pkg)} />
+          </Panel>
+        ) : null}
+        {definition ? (
         <div className="grid gap-6 lg:grid-cols-2">
           <Panel>
             <PanelSection title="What candidates see" description="The brief, the rules and the setup requirements, exactly as shown before they start.">
@@ -169,6 +204,7 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
             </PanelSection>
           </Panel>
         </div>
+        ) : null}
 
         {role.status === "draft" && canManage ? (
           <Panel>

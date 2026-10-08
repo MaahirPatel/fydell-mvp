@@ -1,6 +1,4 @@
 .picker {
-  max-width: 880px;
-  margin-inline: auto;
   text-align: left;
 }
 .tabs {
@@ -36,22 +34,25 @@
 .tab:focus-visible,
 .tabOn:focus-visible,
 .sideLink:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--mk-indigo);
   outline-offset: 2px;
 }
 .tabNote {
   font-size: 12.5px;
   font-weight: 400;
-  color: var(--status-positive-ink);
+  color: var(--mk-success);
 }
 .panel {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   margin-top: 16px;
   border: 1px solid var(--border-default);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--surface-raised);
-  box-shadow: 0 1px 2px rgba(17, 18, 20, 0.04), 0 24px 48px -32px rgba(17, 18, 20, 0.2);
+  box-shadow:
+    0 1px 1px rgba(17, 18, 20, 0.03),
+    0 6px 16px -6px rgba(17, 18, 20, 0.08),
+    0 36px 72px -36px rgba(17, 18, 20, 0.22);
   overflow: hidden;
 }
 .panelMain {

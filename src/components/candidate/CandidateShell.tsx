@@ -1,9 +1,11 @@
 import Link from "next/link";
 import FydellLogo from "@/components/brand/FydellLogo";
 import SignOutButton from "@/components/employer/SignOutButton";
-import NotificationBell from "@/components/notifications/NotificationBell";
-import { CONTACT_MAILTO } from "@/lib/contact";
+import CandidateWorkspace, { type CandidateCrumb } from "./CandidateWorkspace";
+import type { CandidateSection } from "./section";
 import s from "./candidate.module.css";
+
+export type { CandidateCrumb };
 
 /** The header-right sign-out. Quiet, text-only: leaving is a utility, not a CTA. */
 function CandidateSignOut() {
@@ -13,60 +15,44 @@ function CandidateSignOut() {
 }
 
 /**
- * Chrome for every candidate page except the workbench itself: the profile,
- * invitations, results, and shared receipts all sit inside the same header.
+ * Chrome for every candidate page except the workbench itself.
+ *
+ * With `current`, the page is one of the engineer's own destinations and gets
+ * the sidebar workspace. Without it (shared passports, invitations, results,
+ * the workbench) it keeps the slim public header: a recipient of a share link
+ * has no sidebar to navigate.
  */
 export function CandidateShell({
   children,
   width = "default",
-  /** Shown at the right of the header. A sign-out control, usually. */
+  /** Shown at the right of the header or top bar. */
   action,
   current,
+  /** Levels below the section, shown in the top bar after it. The last one is the page. */
+  crumbs,
 }: {
   children: React.ReactNode;
   width?: "default" | "narrow" | "wide";
   action?: React.ReactNode;
-  current?: "profile" | "work" | "applications" | "assessments" | "settings";
+  current?: CandidateSection;
+  crumbs?: readonly CandidateCrumb[];
 }) {
-  const links = [
-    { key: "profile", label: "Profile", href: "/app/candidate/profile" },
-    { key: "work", label: "Passport", href: "/app/candidate/work-record" },
-    { key: "applications", label: "Applications", href: "/app/candidate/applications" },
-    { key: "assessments", label: "Evaluations", href: "/app/candidate" },
-  ] as const;
+  if (current) {
+    return (
+      <CandidateWorkspace current={current} width={width} crumbs={crumbs} action={action}>
+        {children}
+      </CandidateWorkspace>
+    );
+  }
 
   return (
     <div className={s.shell}>
       <header className={s.header}>
         <div className={s.headerInner}>
-          <div className={s.headerLeft}>
-            <Link href="/" aria-label="Fydell home" className="inline-flex items-center">
-              <FydellLogo height={20} />
-            </Link>
-            {current ? (
-              <nav aria-label="Candidate" className={s.nav}>
-                {links.map((l) => (
-                  <Link key={l.key} href={l.href} aria-current={current === l.key ? "page" : undefined} className={s.navLink}>
-                    {l.label}
-                  </Link>
-                ))}
-              </nav>
-            ) : null}
-          </div>
-          <div className={s.headerRight}>
-            {current ? (
-              <>
-                <a href={CONTACT_MAILTO} className={s.help}>
-                  Help
-                </a>
-                <Link href="/app/candidate/settings" aria-current={current === "settings" ? "page" : undefined} className={s.help}>
-                  Settings
-                </Link>
-                <NotificationBell />
-              </>
-            ) : null}
-            {action ?? <CandidateSignOut />}
-          </div>
+          <Link href="/" aria-label="Fydell home" className="inline-flex items-center">
+            <FydellLogo height={20} />
+          </Link>
+          <div className={s.headerRight}>{action ?? <CandidateSignOut />}</div>
         </div>
       </header>
       <main className={`${s.main} ${s[width]}`}>{children}</main>

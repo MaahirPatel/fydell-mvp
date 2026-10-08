@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/simulations/auth";
 import { getSharePreview } from "@/lib/profile/store";
+import { shareableProjectKeys } from "@/lib/profile-evidence/store";
 import { SHAREABLE_FIELDS } from "@/lib/passport/view";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
 import PassportView from "@/components/passport/PassportView";
@@ -32,7 +33,7 @@ export default async function SharePreviewPage({
   const params = await searchParams;
   // Opened without settings, preview the default share: every shareable project with all sections.
   const fields = params.fields === undefined ? [...SHAREABLE_FIELDS] : list(params.fields);
-  const repos = params.repos === undefined ? undefined : list(params.repos);
+  const repos = await shareableProjectKeys(user.id, params.repos === undefined ? undefined : list(params.repos));
   const preview = await getSharePreview(user.id, fields.includes("projects") ? fields : ["projects", ...fields], {
     repos,
     versionPolicy: params.policy === "follow" ? "follow" : "pinned",
@@ -51,7 +52,7 @@ export default async function SharePreviewPage({
         </Link>
       </div>
       {!preview || (preview.passport.projects.length === 0 && !preview.passport.presentations?.length) ? (
-        <p className="text-[15px] text-[var(--text-secondary)]">Nothing would be shared with these settings. Choose at least one project that is not private.</p>
+        <p className="text-[15px] text-[var(--text-secondary)]">Nothing would be shared with these settings. Choose at least one project that is not private and whose contribution you have confirmed.</p>
       ) : (
         <>
           <ProfileOverview

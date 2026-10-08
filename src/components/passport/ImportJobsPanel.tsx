@@ -205,8 +205,8 @@ export default function ImportJobsPanel({ initialJobs }: { initialJobs: ImportJo
   if (visible.length === 0) return null;
 
   return (
-    <section aria-labelledby="imports-heading" className="rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--border-subtle)] px-5 py-3.5 sm:px-6">
+    <section aria-labelledby="imports-heading" className="rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--border-subtle)] px-4 py-3">
         <h2 id="imports-heading" className="text-[15px] font-semibold">
           Imports
         </h2>

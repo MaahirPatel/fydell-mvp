@@ -993,7 +993,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
   --fy-gradient: linear-gradient(90deg, var(--accent-active) 0%, var(--accent) 100%);
   --fy-teal: var(--text-secondary);
   --fy-violet: var(--accent-ink);
-  --l-accent: var(--fy-accent-ink);
+  --l-accent: var(--mk-indigo);
   --l-accent-fill: var(--fy-accent);
 
   --brand-teal: var(--fy-accent);
@@ -1018,15 +1018,84 @@ a, button { -webkit-tap-highlight-color: transparent; }
   --fydell-evidence: var(--fy-accent-ink);
   --fydell-risk: var(--fy-red-ink);
 
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --surface-canvas: #f7f7f4;
+  --surface-panel: #f0efea;
+  --surface-hover: rgba(38, 37, 30, 0.05);
+  --surface-deep: rgba(38, 37, 30, 0.07);
+  --border-subtle: rgba(38, 37, 30, 0.07);
+  --border-default: rgba(38, 37, 30, 0.11);
+  --border-strong: rgba(38, 37, 30, 0.18);
+  --text-primary: #1b1a17;
+  --text-body: #3a3934;
+  --text-secondary: #6b6a63;
+  --text-tertiary: #8a8981;
+  --control-solid: #1b1a17;
+  --control-solid-hover: #34332e;
+  --nav-scrim: rgba(247, 247, 244, 0.84);
+
+  /* Marketing colour. Neutral by default; indigo marks the one interactive
+     or selected thing, status inks carry outcomes, and the logo hues appear
+     only in the hero wash. Every ink is at least 4.5:1 on canvas, panel,
+     white and the indigo tint. */
+  --mk-indigo: #4f46e5;
+  --mk-indigo-hover: #4338ca;
+  --mk-indigo-tint: rgba(79, 70, 229, 0.08);
+  --mk-indigo-line: rgba(79, 70, 229, 0.28);
+  --mk-success: #16734a;
+  --mk-attention: #8a5700;
+  --mk-attention-tint: rgba(138, 87, 0, 0.07);
+  --mk-attention-line: rgba(138, 87, 0, 0.22);
+  --mk-error: #b42332;
+  --mk-brand-teal: #2dd4bf;
+  --mk-brand-blue: #2563eb;
+  --mk-brand-violet: #9333ea;
+  --mk-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "cv01", "ss03";
   font-size: 16px;
   line-height: 1.5;
   background-color: var(--surface-canvas);
   color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+.site-linear .l-btn {
+  font-weight: 500;
+  letter-spacing: -0.006em;
 }
 
 .site-linear ::selection {
-  background: rgba(226, 165, 0, 0.22);
+  background: rgba(79, 70, 229, 0.16);
+}
+
+/* Entrance motion for marketing pages. Content renders visible; the hidden
+   state applies only after RevealObserver marks <html> as motion-ready, and
+   never when the visitor prefers reduced motion. */
+html[data-mk-motion] .site-linear [data-reveal]:not([data-reveal="group"]),
+html[data-mk-motion] .site-linear [data-reveal="group"] > * {
+  transition:
+    opacity 600ms var(--mk-ease),
+    transform 600ms var(--mk-ease);
+}
+html[data-mk-motion] .site-linear [data-reveal]:not([data-reveal="group"]):not([data-shown]),
+html[data-mk-motion] .site-linear [data-reveal="group"]:not([data-shown]) > * {
+  opacity: 0;
+  transform: translateY(10px);
+}
+html[data-mk-motion] .site-linear [data-reveal="group"] > :nth-child(2) { transition-delay: 60ms; }
+html[data-mk-motion] .site-linear [data-reveal="group"] > :nth-child(3) { transition-delay: 120ms; }
+html[data-mk-motion] .site-linear [data-reveal="group"] > :nth-child(4) { transition-delay: 180ms; }
+html[data-mk-motion] .site-linear [data-reveal="group"] > :nth-child(n + 5) { transition-delay: 240ms; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-mk-motion] .site-linear [data-reveal],
+  html[data-mk-motion] .site-linear [data-reveal] > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }
 
 @media (max-width: 1023px) {
@@ -1142,6 +1211,11 @@ a, button { -webkit-tap-highlight-color: transparent; }
   color: var(--text-primary);
 }
 .l-btn-ghost:hover { background: var(--surface-hover); }
+.l-btn-quiet {
+  background: rgba(38, 37, 30, 0.07);
+  color: var(--text-primary);
+}
+.l-btn-quiet:hover { background: rgba(38, 37, 30, 0.11); }
 .l-btn:focus-visible,
 .l-link:focus-visible {
   outline: 2px solid var(--l-accent);

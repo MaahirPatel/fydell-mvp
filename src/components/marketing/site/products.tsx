@@ -7,6 +7,8 @@ import ProductFrame from "./ProductFrame";
 import ProfileWorkspace from "./ProfileWorkspace";
 import ApplicantReview from "./ApplicantReview";
 import SimulationWorkspace from "./SimulationWorkspace";
+import SimulationHero from "./SimulationHero";
+import s from "./site.module.css";
 import ReleasePanel from "./ReleasePanel";
 import { LATEST } from "./releases";
 import type { Cta } from "./Sections";
@@ -33,7 +35,7 @@ export const PRODUCTS: Record<ProductSlug, ProductPage> = {
     lead: "A Builder Profile holds the projects you want to be known for. Each one says what it is, why it existed, what part was yours, and what the code shows, kept apart so nobody has to guess who did what.",
     availability: { state: "available", text: "Available to every engineer account, free." },
     primary: { href: "/signup", label: "Sign up" },
-    secondary: { href: "/demo", label: "Explore the platform" },
+    secondary: { href: "/developers", label: "What engineers can expect" },
     visual: (
       <ProductFrame size="hero" interactive title="Fydell · Passport" label="An engineer's projects, the open project's contribution, and one finding with its cited lines. Select a project or a finding.">
         <ProfileWorkspace />
@@ -53,7 +55,7 @@ export const PRODUCTS: Record<ProductSlug, ProductPage> = {
     lead: "The Passport is how your work leaves Fydell. Choose the projects for one recipient, pin the versions, preview exactly what they will see, then send a link you can revoke.",
     availability: { state: "available", text: "Available to every engineer account, free." },
     primary: { href: "/signup", label: "Sign up" },
-    secondary: { href: "/demo", label: "Explore a sample Passport" },
+    secondary: { href: "/products/builder-profiles", label: "About Builder Profiles" },
     visual: (
       <ProductFrame size="hero" interactive title="Recipient preview" label="A Passport as a recipient sees it. Fictional engineer and project.">
         <div className="max-h-[680px] overflow-y-auto">
@@ -75,7 +77,7 @@ export const PRODUCTS: Record<ProductSlug, ProductPage> = {
     lead: "A Builder Report reads a project at a fixed revision and lists what the code shows. Every finding opens the lines it cites and states what it can't tell you.",
     availability: { state: "available", text: "Available for imported repositories and uploaded source." },
     primary: { href: "/signup", label: "Sign up" },
-    secondary: { href: "/demo", label: "Open the sample report" },
+    secondary: { href: "/developers", label: "What engineers can expect" },
     visual: (
       <ProductFrame size="hero" interactive title="Builder Report" label="A Builder Report for a fictional project. Select a finding to see the lines it cites and its limits.">
         <BuilderReportDemo />
@@ -117,9 +119,22 @@ export const PRODUCTS: Record<ProductSlug, ProductPage> = {
     primary: { href: "/signup?as=employer", label: "Create a role" },
     secondary: { href: "/developers", label: "What engineers can expect" },
     visual: (
-      <ProductFrame size="hero" tag="Preview" title="Simulation · Webhook retry incident" label="A candidate's simulation: the brief and requirements, the project files, a public test run, and the team thread docked beside the brief.">
-        <SimulationWorkspace />
-      </ProductFrame>
+      <>
+        <ProductFrame
+          size="hero"
+          chrome="none"
+          title="Fydell · Simulation"
+          label="A candidate's simulation: the INC-2291 incident with its activity and public test run, a requirement update that has just arrived, and the team thread docked on the right."
+          caption="A fictional incident from the Webhook retry incident simulation. Teammates are simulated."
+        >
+          <SimulationHero />
+        </ProductFrame>
+        <div className={s.secondVisual}>
+          <ProductFrame tag="Preview" title="Simulation · Brief and tests" label="A candidate's simulation in the browser: the brief and requirements, the project files, a public test run, and the team thread docked beside the brief.">
+            <SimulationWorkspace />
+          </ProductFrame>
+        </div>
+      </>
     ),
     sections: [
       { title: "Disclosed before you start", body: `The brief, the time (${SCENARIO.defaultAllowedMinutes} minutes for about ${SCENARIO.targetMinutes} of work), the AI tool policy and what is recorded are shown first. Setup time does not count.` },
@@ -133,10 +148,25 @@ export const PRODUCTS: Record<ProductSlug, ProductPage> = {
     name: "Desktop",
     title: ["Fydell on", "your computer."],
     lead: "Fydell Desktop opens invited simulations in a workspace on your computer: an editor with the brief, tests and team thread beside the code. Sign-in hands off from your browser, and your Passport is in the app too.",
-    availability: { state: "beta", text: `Beta. Version ${LATEST.version}, unsigned test builds for macOS, Windows and Linux.` },
+    availability: { state: "beta", text: `Beta. Version ${LATEST.version}, unsigned test builds for macOS and Windows.` },
     primary: { href: "/download", label: "Download Fydell" },
     secondary: { href: "/changelog", label: "Read the changelog" },
-    visual: <ReleasePanel />,
+    visual: (
+      <>
+        <ProductFrame
+          size="hero"
+          chrome="none"
+          title="Fydell Desktop · Simulation"
+          label="Fydell Desktop with an invited simulation open: the incident and its activity beside the team thread, with the changed files ready to test."
+          caption="Fydell Desktop with an example simulation open. Fictional company and teammates."
+        >
+          <SimulationHero />
+        </ProductFrame>
+        <div className={s.secondVisual}>
+          <ReleasePanel />
+        </div>
+      </>
+    ),
     sections: [
       { title: "An editor, not a form", body: "The workspace puts the brief, public tests, team thread and submission beside the code, with a command palette and keyboard shortcuts." },
       { title: "Browser sign-in", body: "Sign-in completes in your browser and hands back to the app. Opening a Fydell link focuses the running app." },

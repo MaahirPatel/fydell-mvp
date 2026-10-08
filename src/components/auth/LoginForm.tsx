@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useHydrated } from "@/lib/use-hydrated";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -72,6 +73,7 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [handedOff, setHandedOff] = useState(false);
+  const hydrated = useHydrated();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -138,7 +140,7 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-4">
+    <form method="post" onSubmit={submit} className="grid gap-4">
       {justReset && !error ? (
         <FormSuccess>Password updated. Sign in with your new password.</FormSuccess>
       ) : null}
@@ -193,6 +195,7 @@ export default function LoginForm() {
         variant="primary"
         size="lg"
         loading={loading}
+        disabled={!hydrated}
         className="mt-1 w-full"
       >
         {loading ? "Signing in" : "Sign in"}

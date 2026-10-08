@@ -1,29 +1,17 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
-import { Download } from "lucide-react";
+import { useState } from "react";
 import { BUILDS, LATEST, formatReleaseDate, type DesktopOs } from "./releases";
+import { OsIcon, useDesktopOs } from "./DownloadButton";
 import s from "./download.module.css";
 
-const ORDER: readonly DesktopOs[] = ["macos", "windows", "linux"];
+const ORDER: readonly DesktopOs[] = ["macos", "windows"];
 
-const noSubscription = () => () => {};
-
-function detectOs(): DesktopOs | null {
-  const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
-  const ua = `${nav.userAgentData?.platform ?? ""} ${nav.userAgent}`.toLowerCase();
-  if (/iphone|ipad|android/.test(ua)) return null;
-  if (/mac|darwin/.test(ua)) return "macos";
-  if (/win/.test(ua)) return "windows";
-  if (/linux|x11/.test(ua)) return "linux";
-  return null;
-}
-
-/** Suggests the visitor's platform and lets them pick another. Links only builds attached to the latest release. */
+/** Suggests the visitor's platform and lets them pick the other one. */
 export default function DownloadPicker() {
-  const detected = useSyncExternalStore(noSubscription, detectOs, () => null);
+  const detected = useDesktopOs();
   const [chosen, setChosen] = useState<DesktopOs | null>(null);
-  const os = chosen ?? detected ?? "macos";
+  const os = chosen ?? detected ?? "windows";
   const build = BUILDS[os];
 
   return (
@@ -37,6 +25,7 @@ export default function DownloadPicker() {
             onClick={() => setChosen(key)}
             className={os === key ? s.tabOn : s.tab}
           >
+            <OsIcon os={key} size={14} />
             {BUILDS[key].name}
             {detected === key ? <span className={s.tabNote}>Your system</span> : null}
           </button>
@@ -52,7 +41,7 @@ export default function DownloadPicker() {
             {build.arch} · {build.primary.note} · released {formatReleaseDate(LATEST.date)}
           </p>
           <a href={build.primary.file} className="l-btn l-btn-lg l-btn-solid mt-5">
-            <Download aria-hidden className="h-4 w-4" strokeWidth={1.8} />
+            <OsIcon os={os} />
             {build.primary.label}
           </a>
           <p className={s.unavailable}>{build.unavailable}</p>

@@ -77,8 +77,8 @@ function topAreas(p: PassportProject): string[] {
 
 function SectionTitle({ id, children, aside }: { id: string; children: React.ReactNode; aside?: React.ReactNode }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-[var(--border-subtle)] pb-3">
-      <h2 id={id} className="text-[17px] font-semibold tracking-[-0.012em] text-[var(--text-primary)]">
+    <div className="flex items-baseline justify-between gap-4 border-b border-[var(--border-subtle)] pb-2.5">
+      <h2 id={id} className="text-[15px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
         {children}
       </h2>
       {aside}
@@ -94,7 +94,7 @@ function SideTitle({ id, children }: { id: string; children: React.ReactNode }) 
   );
 }
 
-const quietLink = "text-[14px] font-medium text-[var(--accent-ink)] hover:underline hover:underline-offset-4";
+const quietLink = "text-[13px] font-medium text-[var(--accent-ink)] hover:underline hover:underline-offset-4";
 
 const ORIGIN: Record<ProjectPresentation["sourceKind"], string> = {
   github: "Public repository, analyzed",
@@ -125,7 +125,7 @@ function ProjectEntry({
   const image = featured && item.image?.url ? item.image : null;
   return (
     <article
-      className={featured ? "flex h-full flex-col overflow-hidden rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)]" : "py-5"}
+      className={featured ? "flex h-full flex-col overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]" : "py-4"}
     >
       {image ? (
         <div className="aspect-[16/9] w-full shrink-0 border-b border-[var(--border-subtle)] bg-[var(--surface-deep)]">
@@ -133,9 +133,9 @@ function ProjectEntry({
           <img src={image.url} alt={image.alt} width={1600} height={900} loading="lazy" decoding="async" className="h-full w-full object-cover" />
         </div>
       ) : null}
-      <div className={featured ? "flex flex-1 flex-col p-5" : ""}>
+      <div className={featured ? "flex flex-1 flex-col p-4" : ""}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
+        <h3 className="text-[14px] font-semibold tracking-[-0.006em] text-[var(--text-primary)]">
           {reportHref ? (
             <Link href={reportHref} className="hover:underline hover:underline-offset-4">
               {item.title}
@@ -217,7 +217,7 @@ function PresentedProjects({
   return (
     <div>
       {featured.length ? (
-        <ul className="mt-5 grid gap-4 md:grid-cols-2" aria-label="Featured projects">
+        <ul className="mt-4 grid gap-3 md:grid-cols-2" aria-label="Featured projects">
           {featured.map((item) => (
             <li key={item.projectKey}>
               <ProjectEntry item={item} project={byRepo.get(item.projectKey.toLowerCase())} mode={mode} featured />
@@ -305,13 +305,13 @@ export default function ProfileOverview({
 
   return (
     <div>
-      <header className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start">
-          <Avatar name={profile.displayName} url={profile.avatarUrl} size={96} />
-          <div className="min-w-0 sm:pt-1">
-            <h1 className="text-[30px] font-semibold leading-[1.15] tracking-[-0.024em] text-[var(--text-primary)]">{profile.displayName || "Your name"}</h1>
-            {profile.headline ? <p className="mt-1.5 max-w-[62ch] text-[16px] leading-[1.5] text-[var(--text-body)]">{profile.headline}</p> : null}
-            <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14px] text-[var(--text-secondary)]">
+      <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start">
+          <Avatar name={profile.displayName} url={profile.avatarUrl} size={72} />
+          <div className="min-w-0 sm:pt-0.5">
+            <h1 className="text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] text-[var(--text-primary)]">{profile.displayName || "Your name"}</h1>
+            {profile.headline ? <p className="mt-1 max-w-[62ch] text-[15px] leading-[1.5] text-[var(--text-body)]">{profile.headline}</p> : null}
+            <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-[var(--text-secondary)]">
               {profile.role ? <span>{profile.role}</span> : null}
               {profile.role && profile.location ? <span aria-hidden className="text-[var(--border-strong)]">·</span> : null}
               {profile.location ? (
@@ -323,14 +323,14 @@ export default function ProfileOverview({
               {profile.openTo ? <Status kind={open ? "success" : "neutral"}>{OPEN_TO_LABEL[profile.openTo]}</Status> : null}
             </p>
             {profileLinks.length ? (
-              <ul className="mt-4 flex flex-wrap gap-2" aria-label="Profiles and links">
+              <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Profiles and links">
                 {profileLinks.map(({ key, label, href, Icon }) => (
                   <li key={key}>
                     <a
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer nofollow"
-                      className="inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-2.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
+                      className="inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-2 text-[12.5px] font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
                       aria-label={key in SOCIAL_LABEL ? `${SOCIAL_LABEL[key as SocialKind]}: ${label}` : undefined}
                     >
                       <Icon className="h-3.5 w-3.5 text-[var(--text-secondary)]" aria-hidden />
@@ -345,22 +345,22 @@ export default function ProfileOverview({
         {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
       </header>
 
-      <dl className="mt-8 grid grid-cols-2 border-y border-[var(--border-default)] sm:grid-cols-4">
+      <dl className="mt-6 grid grid-cols-2 border-y border-[var(--border-subtle)] sm:grid-cols-4">
         {figures.map((f, i) => (
-          <div key={f.label} className={`px-1 py-4 sm:px-5 ${i > 0 ? "sm:border-l sm:border-[var(--border-subtle)]" : "sm:pl-0"}`}>
-            <dt className="text-[13px] text-[var(--text-tertiary)]">{f.label}</dt>
-            <dd className="mt-1 text-[22px] font-semibold tabular-nums tracking-[-0.02em] text-[var(--text-primary)]">{f.value}</dd>
+          <div key={f.label} className={`px-1 py-3 sm:px-5 ${i > 0 ? "sm:border-l sm:border-[var(--border-subtle)]" : "sm:pl-0"}`}>
+            <dt className="text-[12.5px] text-[var(--text-tertiary)]">{f.label}</dt>
+            <dd className="mt-0.5 text-[18px] font-semibold tabular-nums tracking-[-0.015em] text-[var(--text-primary)]">{f.value}</dd>
           </div>
         ))}
       </dl>
 
-      <div className="mt-10 grid grid-cols-1 items-start gap-x-14 gap-y-12 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="min-w-0 space-y-12">
+      <div className="mt-8 grid grid-cols-1 items-start gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1fr)_260px]">
+        <div className="min-w-0 space-y-10">
           {profile.bio || emptyAbout ? (
             <section aria-labelledby="about-heading">
               <SectionTitle id="about-heading">About</SectionTitle>
               {profile.bio ? (
-                <div className="mt-4 max-w-[68ch] space-y-3 text-[15px] leading-[1.7] text-[var(--text-body)]">
+                <div className="mt-3 max-w-[68ch] space-y-3 text-[14px] leading-[1.65] text-[var(--text-body)]">
                   {profile.bio.split(/\n{2,}/).map((para, i) => (
                     <p key={i} className="whitespace-pre-line">
                       {para}
@@ -399,7 +399,7 @@ export default function ProfileOverview({
                         : "The engineer's own statement. Fydell has not checked it."}
                     </span>
                   </p>
-                  <div className="mt-3 max-w-[68ch] space-y-3 text-[15px] leading-[1.7] text-[var(--text-body)]">
+                  <div className="mt-3 max-w-[68ch] space-y-3 text-[14px] leading-[1.65] text-[var(--text-body)]">
                     {profile.howIBuild.text.split(/\n{2,}/).map((para, i) => (
                       <p key={i} className="whitespace-pre-line">
                         {para}
@@ -432,7 +432,7 @@ export default function ProfileOverview({
                     <li key={c.statement} className="grid grid-cols-[14px_minmax(0,1fr)] gap-x-3">
                       <span aria-hidden className="mt-[9px] h-1.5 w-1.5 rounded-full bg-[var(--text-tertiary)]" />
                       <div>
-                        <p className="text-[15px] leading-[1.55] text-[var(--text-primary)]">{c.statement}</p>
+                        <p className="text-[14px] leading-[1.55] text-[var(--text-primary)]">{c.statement}</p>
                         <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
                           {plural(c.cited, "cited example")} · {c.repos.join(", ")}
                         </p>
@@ -469,19 +469,19 @@ export default function ProfileOverview({
                   const href = mode === "owner" && p.id ? `/app/candidate/projects/${p.id}` : p.htmlUrl;
                   const external = !(mode === "owner" && p.id);
                   return (
-                    <li key={p.repoFullName} className="py-5">
+                    <li key={p.repoFullName} className="py-4">
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                         {href ? (
                           <a
                             href={href}
                             {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                            className="inline-flex items-center gap-1 text-[15px] font-semibold text-[var(--text-primary)] hover:underline hover:underline-offset-4"
+                            className="inline-flex items-center gap-1 text-[14px] font-semibold text-[var(--text-primary)] hover:underline hover:underline-offset-4"
                           >
                             {repoName(p.repoFullName)}
                             {external ? <ArrowUpRight className="h-3.5 w-3.5 text-[var(--text-tertiary)]" aria-hidden /> : null}
                           </a>
                         ) : (
-                          <span className="text-[15px] font-semibold text-[var(--text-primary)]">
+                          <span className="text-[14px] font-semibold text-[var(--text-primary)]">
                             {repoName(p.repoFullName)}
                           </span>
                         )}
@@ -513,7 +513,7 @@ export default function ProfileOverview({
               </ul>
             ) : (
               <div className="py-6">
-                <p className="text-[15px] font-medium text-[var(--text-primary)]">No projects yet</p>
+                <p className="text-[14px] font-medium text-[var(--text-primary)]">No projects yet</p>
                 <p className="mt-1 max-w-[56ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
                   {mode === "owner"
                     ? "Add a public GitHub repository. Fydell reads the code and links each finding to the lines it came from."
@@ -522,7 +522,7 @@ export default function ProfileOverview({
                 {mode === "owner" ? (
                   <Link
                     href="/app/candidate/work-record#add-repository"
-                    className="mt-4 inline-flex h-9 items-center rounded-[8px] bg-[var(--control-solid)] px-4 text-[14px] font-medium text-white hover:bg-[var(--control-solid-hover)]"
+                    className="mt-3 inline-flex h-8 items-center rounded-[8px] bg-[var(--control-solid)] px-3 text-[13px] font-medium text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)]"
                   >
                     Add a repository
                   </Link>
@@ -540,9 +540,9 @@ export default function ProfileOverview({
               {simulations.length ? (
                 <ul className="mt-2 divide-y divide-[var(--border-subtle)]">
                   {simulations.slice(0, 6).map((s) => (
-                    <li key={s.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-4">
+                    <li key={s.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">
                       <div className="min-w-0">
-                        <Link href={s.href} className="text-[15px] font-medium text-[var(--text-primary)] hover:underline hover:underline-offset-4">
+                        <Link href={s.href} className="text-[14px] font-medium text-[var(--text-primary)] hover:underline hover:underline-offset-4">
                           {s.title}
                         </Link>
                         <p className="text-[13px] text-[var(--text-tertiary)]">
@@ -569,7 +569,7 @@ export default function ProfileOverview({
               <SectionTitle id="activity-heading">Activity</SectionTitle>
               <ol className="mt-1">
                 {activity.map((item) => (
-                  <li key={item.id} className="grid grid-cols-[72px_minmax(0,1fr)] gap-x-4 border-b border-[var(--border-subtle)] py-3.5 last:border-b-0">
+                  <li key={item.id} className="grid grid-cols-[72px_minmax(0,1fr)] gap-x-4 border-b border-[var(--border-subtle)] py-3 last:border-b-0">
                     <span className="pt-px text-[13px] tabular-nums text-[var(--text-tertiary)]">{shortDate(item.occurredAt)}</span>
                     <div className="min-w-0">
                       <p className="text-[14px] font-medium text-[var(--text-primary)]">
@@ -590,7 +590,7 @@ export default function ProfileOverview({
           ) : null}
         </div>
 
-        <aside className="space-y-9 lg:sticky lg:top-24">
+        <aside className="space-y-8 lg:sticky lg:top-20">
           <section aria-labelledby="strengths-heading">
             <SideTitle id="strengths-heading">Seen in the code</SideTitle>
             {areas.length ? (

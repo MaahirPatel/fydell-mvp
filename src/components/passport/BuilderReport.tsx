@@ -85,7 +85,7 @@ function NoteList({ notes, onWithdraw, busyId }: { notes: Correction[]; onWithdr
   return (
     <ul className="space-y-3">
       {notes.map((n) => (
-        <li key={n.id} className={`border-l-2 pl-3 ${n.kind === "context" ? "border-[var(--border-strong)]" : "border-[#e9c27a]"} ${n.withdrawnAt ? "opacity-60" : ""}`}>
+        <li key={n.id} className={`border-l pl-3 ${n.kind === "context" ? "border-[var(--border-strong)]" : "border-[#e9c27a]"} ${n.withdrawnAt ? "opacity-60" : ""}`}>
           <div className="flex flex-wrap items-baseline gap-x-2">
             <span className="text-[13px] font-semibold text-[var(--text-primary)]">{KIND_LABEL[n.kind]}</span>
             <span className="text-[13px] text-[var(--text-tertiary)]" title={formatDateTime(n.createdAt)}>
@@ -591,7 +591,7 @@ export default function BuilderReport({
       <header className="mt-5 flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="break-words text-[30px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--text-primary)]">{name}</h1>
+            <h1 className="break-words text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] text-[var(--text-primary)]">{name}</h1>
             <Status kind={TONE_KIND[REPORT_STATE[state].tone]}>{REPORT_STATE[state].label}</Status>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-[var(--text-secondary)]">
@@ -706,7 +706,7 @@ export default function BuilderReport({
                 </p>
               </div>
             ) : (
-              <div className="grid overflow-hidden rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)] shadow-[0_1px_2px_rgba(16,24,40,0.04)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+              <div className="grid overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
                 <div
                   role="group"
                   aria-label="Findings. Use the arrow keys to move between them."
@@ -740,9 +740,9 @@ export default function BuilderReport({
                                 aria-pressed={active}
                                 tabIndex={active ? 0 : -1}
                                 onClick={() => select(e.id)}
-                                className={`report-row ${active ? "is-active" : ""}`}
+                                className={`report-row ${active ? "is-active shadow-none!" : ""}`}
                               >
-                                <span className={`block text-[15px] leading-[1.45] ${active ? "font-medium text-[var(--text-primary)]" : "text-[var(--text-body)]"}`}>{e.finding}</span>
+                                <span className={`block text-[14px] leading-[1.45] ${active ? "font-medium text-[var(--text-primary)]" : "text-[var(--text-body)]"}`}>{e.finding}</span>
                                 <span className="mt-1 flex min-w-0 items-center gap-2 text-[13px]">
                                   <span className="truncate font-mono text-[var(--text-tertiary)]" title={e.path}>
                                     {e.path.split("/").pop()}:{e.startLine}
@@ -776,7 +776,7 @@ export default function BuilderReport({
                         {copied ? "Copied" : "Copy link"}
                       </button>
                     </div>
-                    <h3 className="mt-3 text-[19px] font-semibold leading-[1.35] tracking-[-0.014em]">{selected.finding}</h3>
+                    <h3 className="mt-3 text-[17px] font-semibold leading-[1.35] tracking-[-0.012em]">{selected.finding}</h3>
                     <div className="mt-4">
                       <CodeBlock path={selected.path} lines={selected.excerpt.map((text, i) => ({ n: selected.startLine + i, text, mark: "cited" as const }))} />
                     </div>

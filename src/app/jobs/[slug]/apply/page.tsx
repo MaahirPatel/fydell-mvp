@@ -5,7 +5,7 @@ import ApplyForm from "@/components/hiring/ApplyForm";
 import { requireUser } from "@/lib/simulations/auth";
 import { getPublicRole } from "@/lib/hiring/roles";
 import { getOwnerPassport } from "@/lib/passport/store";
-import { currentSnapshots } from "@/lib/passport/snapshots";
+import { listEvidenceOptions } from "@/lib/profile-evidence/store";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const metadata = { title: "Apply", robots: { index: false } };
@@ -13,9 +13,9 @@ export const dynamic = "force-dynamic";
 
 export default async function ApplyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const role = await getPublicRole(slug);
-  if (!role) notFound();
   const user = await requireUser();
+  const role = await getPublicRole(slug, user?.id ?? null);
+  if (!role) notFound();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/jobs/${slug}/apply`)}`);
 
   const db = createAdminSupabaseClient();
@@ -28,13 +28,8 @@ export default async function ApplyPage({ params }: { params: Promise<{ slug: st
     .maybeSingle();
   if (existing) redirect(`/app/candidate/applications/${(existing as { id: string }).id}?already=1`);
 
-  const passport = await getOwnerPassport(user.id);
-  const projects = currentSnapshots(passport?.projects ?? []).map((p) => ({
-    repo: p.repoFullName,
-    commit: p.commitSha.slice(0, 7),
-    findings: p.evidence.length,
-    analyzedAt: p.analyzedAt,
-  }));
+  const [passport, options] = await Promise.all([getOwnerPassport(user.id), listEvidenceOptions(user.id)]);
+  const projects = options.map((o) => ({ key: o.key, title: o.title, kind: o.kind, detail: o.detail, private: o.private, confirmed: o.confirmed }));
 
   return (
     <MarketingShell>

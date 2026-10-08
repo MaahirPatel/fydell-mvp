@@ -105,26 +105,30 @@ export async function completeEmployerOnboarding(input: {
     throw new Error(memErr.message);
   }
 
-  const { data: role, error: roleErr } = await admin
-    .from("hiring_roles")
-    .insert({
-      organization_id: org.id,
-      title: (input.roleTitle || "FP&A Analyst").trim(),
-      seniority: input.roleSeniority || null,
-      status: "active",
-      first_90_day_outcomes: input.outcomes || [],
-      simulation_template_key: "project-meridian",
-      invites_enabled: invitesEnabled,
-      created_by: input.userId,
-      opened_at: new Date().toISOString(),
-    })
-    .select("*")
-    .single();
-
-  if (roleErr || !role) {
-    await admin.from("organization_members").delete().eq("organization_id", org.id);
-    await admin.from("organizations").delete().eq("id", org.id);
-    throw new Error(roleErr?.message || "Could not create hiring role.");
+  // A workspace starts with no roles: the employer describes each real role
+  // through the role flow. A role is created here only when signup supplied one.
+  let role: { id: string; title: string } | null = null;
+  const roleTitle = input.roleTitle?.trim();
+  if (roleTitle) {
+    const { data, error: roleErr } = await admin
+      .from("hiring_roles")
+      .insert({
+        organization_id: org.id,
+        title: roleTitle,
+        seniority: input.roleSeniority || null,
+        status: "draft",
+        first_90_day_outcomes: input.outcomes || [],
+        invites_enabled: invitesEnabled,
+        created_by: input.userId,
+      })
+      .select("id, title")
+      .single();
+    if (roleErr || !data) {
+      await admin.from("organization_members").delete().eq("organization_id", org.id);
+      await admin.from("organizations").delete().eq("id", org.id);
+      throw new Error(roleErr?.message || "Could not create hiring role.");
+    }
+    role = data;
   }
 
   await admin.from("employer_onboarding").upsert({
@@ -137,7 +141,7 @@ export async function completeEmployerOnboarding(input: {
     company_size: input.companySize || null,
     industry: input.industry || null,
     timezone: input.timezone || null,
-    role_title: role.title,
+    role_title: role?.title ?? null,
     role_seniority: input.roleSeniority || null,
     first_90_day_outcomes: input.outcomes || [],
     referral_source: input.referralSource || null,
@@ -161,7 +165,7 @@ export async function completeEmployerOnboarding(input: {
     action: "employer.onboarding.completed",
     entity_type: "organization",
     entity_id: org.id,
-    metadata: { approval, mismatch, roleId: role.id },
+    metadata: { approval, mismatch, roleId: role?.id ?? null },
   });
 
   return { organization: org, role, approval, invitesEnabled };

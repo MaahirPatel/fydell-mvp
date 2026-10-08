@@ -24,7 +24,7 @@ export default function EmployerError({
 
   return (
     <div role="alert" className="mx-auto max-w-[62ch] py-10">
-      <h1 className="text-app-page font-medium text-[var(--text-primary)]">
+      <h1 className="text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-[var(--text-primary)]">
         This page did not load
       </h1>
       <p className="mt-3 text-app-body leading-[1.6] text-[var(--text-secondary)]">

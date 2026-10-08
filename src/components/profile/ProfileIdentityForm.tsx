@@ -31,6 +31,8 @@ const primaryClass =
   "inline-flex h-9 items-center rounded-[8px] bg-[var(--control-solid)] px-4 text-[14px] font-medium text-white shadow-[0_1px_2px_rgba(16,24,40,0.12)] hover:bg-[var(--control-solid-hover)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--accent-line)] disabled:cursor-not-allowed disabled:bg-[var(--surface-deep)] disabled:text-[var(--text-disabled)] disabled:shadow-none";
 const quietClass =
   "inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-[14px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--accent-line)]";
+const triggerClass =
+  "inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-[13px] font-medium text-[var(--text-primary)] shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--accent-line)]";
 
 function Field({ id, label, hint, children }: { id: string; label: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -156,7 +158,7 @@ export default function ProfileIdentityForm({
     <>
       <button
         type="button"
-        className={quietClass}
+        className={triggerClass}
         onClick={() => {
           setForm(formFrom(initial));
           setPhoto(initial.avatarUrl);
@@ -178,7 +180,7 @@ export default function ProfileIdentityForm({
               Cancel
             </button>
             <button type="button" className={primaryClass} disabled={saving} aria-busy={saving} onClick={() => void save()}>
-              {saving ? "Saving…" : "Save profile"}
+              {saving ? "Savingâ€¦" : "Save profile"}
             </button>
           </div>
         }
@@ -211,7 +213,7 @@ export default function ProfileIdentityForm({
                 />
                 <button type="button" className={quietClass} disabled={photoBusy} aria-busy={photoBusy} onClick={() => fileRef.current?.click()}>
                   <Camera className="h-4 w-4" aria-hidden />
-                  {photoBusy ? "Uploading…" : photo ? "Replace photo" : "Upload photo"}
+                  {photoBusy ? "Uploadingâ€¦" : photo ? "Replace photo" : "Upload photo"}
                 </button>
                 {photo ? (
                   <button type="button" aria-label="Remove photo" className="inline-flex h-9 items-center rounded-[8px] px-3 text-[14px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]" disabled={photoBusy} onClick={() => void removePhoto()}>

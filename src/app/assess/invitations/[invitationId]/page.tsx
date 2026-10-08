@@ -6,7 +6,9 @@ import EngInvitationBrief from "@/components/eng/EngInvitationBrief";
 import { withNext } from "@/lib/auth/safe-next";
 import { engAdmin } from "@/lib/eng/context";
 import { getInvitationForCandidate, invitationUsable } from "@/lib/eng/invitations";
-import { scenarioForVersionId } from "@/lib/eng/scenario-versions";
+import { resolveScenarioVersion } from "@/lib/eng/scenario-versions";
+import { candidateTask } from "@/lib/eng/authored/runtime";
+import { AuthoredInvitationBrief } from "@/components/work-samples/runtime/AuthoredInvitationBrief";
 import { requireUser } from "@/lib/simulations/auth";
 
 export const metadata = { title: "Engineering task invitation" };
@@ -43,12 +45,27 @@ export default async function CandidateInvitationPage({ params }: { params: Prom
   const usable = invitationUsable(invitation);
   if (usable.ok === false) return <Closed title="This invitation is closed" detail={usable.reason} />;
 
-  const { definition } = await scenarioForVersionId(db, invitation.scenario_version_id);
+  const resolved = await resolveScenarioVersion(db, invitation.scenario_version_id);
+  const accept = <AcceptEngInvitation invitationId={invitation.id} />;
   return (
     <CandidateShell>
-      <EngInvitationBrief invitation={invitation} definition={definition}>
-        <AcceptEngInvitation invitationId={invitation.id} />
-      </EngInvitationBrief>
+      {resolved.origin === "employer_authored" ? (
+        <AuthoredInvitationBrief
+          task={candidateTask(resolved.pkg)}
+          roleTitle={invitation.role_snapshot.title}
+          organizationName={invitation.role_snapshot.organizationName}
+          companyContext={invitation.role_snapshot.companyContext}
+          allowedMinutes={invitation.allowed_minutes}
+          expiresAt={invitation.expires_at}
+          preview={Boolean(invitation.is_preview)}
+        >
+          {accept}
+        </AuthoredInvitationBrief>
+      ) : (
+        <EngInvitationBrief invitation={invitation} definition={resolved.definition}>
+          {accept}
+        </EngInvitationBrief>
+      )}
     </CandidateShell>
   );
 }

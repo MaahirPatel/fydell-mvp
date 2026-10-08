@@ -5,12 +5,14 @@ import MarketingShell from "@/components/layout/MarketingShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { getPublicRole } from "@/lib/hiring/roles";
 import { REMOTE_LABEL } from "@/lib/hiring/role-contract";
+import { requireUser } from "@/lib/simulations/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const role = await getPublicRole(slug);
+  const viewer = await requireUser();
+  const role = await getPublicRole(slug, viewer?.id ?? null);
   if (!role) return { title: "Role not found", robots: { index: false } };
   return {
     title: `${role.title} at ${role.organizationName}`,
@@ -30,7 +32,8 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
 
 export default async function PublicRolePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const role = await getPublicRole(slug);
+  const viewer = await requireUser();
+  const role = await getPublicRole(slug, viewer?.id ?? null);
   if (!role) notFound();
   const facts = [
     role.seniority,
@@ -112,7 +115,7 @@ export default async function PublicRolePage({ params }: { params: Promise<{ slu
           ) : null}
           <Block title="How applying works">
             <p className="text-[16px] leading-[1.65] text-[var(--text-body)]">
-              You sign in, choose which Passport projects to include, and can add links or a short note. The team sees only what you select, at the version you sent. You can withdraw at any time, which stops their access to the projects you shared.
+              You sign in, choose which projects to include and in what order, and can add links or a short note. The team sees only what you select, as a fixed version of each project. You can withdraw at any time, which stops their access to the projects you shared.
             </p>
             {role.contactEmail ? (
               <p className="mt-3 text-[15px] text-[var(--text-secondary)]">

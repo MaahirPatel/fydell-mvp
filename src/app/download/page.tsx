@@ -1,85 +1,66 @@
+import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
-import DownloadPicker from "@/components/marketing/site/DownloadPicker";
-import ReleasePanel from "@/components/marketing/site/ReleasePanel";
-import { Feature, SiteClosing, SiteFaq, SiteHero } from "@/components/marketing/site/Sections";
-import { LATEST, RELEASES_URL } from "@/components/marketing/site/releases";
-import s from "@/components/marketing/site/site.module.css";
+import DownloadButton from "@/components/marketing/site/DownloadButton";
+import PaintedStage from "@/components/marketing/site/PaintedStage";
+import ProductFrame from "@/components/marketing/site/ProductFrame";
+import SimulationHero from "@/components/marketing/site/SimulationHero";
+import { Announcement, CenteredHero, ShowcaseSection, Tiles } from "@/components/marketing/site/Home";
+import { SiteFaq } from "@/components/marketing/site/Sections";
+import { LATEST } from "@/components/marketing/site/releases";
 
 export const metadata = {
   title: "Download",
-  description: `Fydell Desktop ${LATEST.version} for macOS (Apple silicon), Windows and Linux. Optional: everything also works in the browser.`,
+  description: `Fydell Desktop ${LATEST.version} for macOS (Apple silicon) and Windows. Optional: everything also works in the browser.`,
   alternates: { canonical: "/download" },
 };
-
-const INSTALL = [
-  {
-    title: "macOS",
-    body: "Open the .dmg and drag Fydell to Applications. The build is not yet signed, so on first launch right-click Fydell, choose Open, then confirm.",
-  },
-  {
-    title: "Windows",
-    body: "Run the .exe installer. SmartScreen warns about unsigned apps: choose More info, then Run anyway. Use the .msi for managed installs.",
-  },
-  {
-    title: "Linux",
-    body: "Make the AppImage executable (chmod +x) and run it, or install the .deb or .rpm with your package manager.",
-  },
-] as const;
-
-const REQUIREMENTS = [
-  { title: "macOS", body: "A Mac with Apple silicon (M1 or later). There is no Intel build." },
-  { title: "Windows", body: "Windows 10 or 11, 64-bit. Uses Microsoft Edge WebView2, which ships with Windows 11 and is installed on demand on Windows 10." },
-  { title: "Linux", body: "64-bit (x86_64) with WebKitGTK 4.1, for example Ubuntu 22.04 or later." },
-] as const;
 
 export default function DownloadPage() {
   return (
     <MarketingShell>
-      <SiteHero
-        title={["Download Fydell"]}
-        lead="Work invited simulations in a workspace on your computer, with your Passport in the same app. The desktop app is optional; everything also works in the browser."
+      <CenteredHero
+        announcement={<Announcement href="/changelog" label={`Version ${LATEST.version}`} action="Read the changelog" />}
+        title="Download Fydell"
+        lead="Take simulations in a native workspace on your computer. Optional: everything also works in the browser."
+        actions={
+          <>
+            <DownloadButton os="windows" />
+            <DownloadButton os="macos" variant="quiet" />
+          </>
+        }
       >
-        <DownloadPicker />
-        <p className={`${s.caption} text-center`}>
-          Beta: unsigned test builds, with no automatic updates yet. <a href={RELEASES_URL}>All builds on GitHub</a>.
-        </p>
-      </SiteHero>
+        <PaintedStage painting="field" priority>
+          <ProductFrame size="hero" chrome="none" title="Fydell · Simulation" label="The Fydell desktop app with a simulation open: the incident, its activity and the team thread.">
+            <SimulationHero />
+          </ProductFrame>
+        </PaintedStage>
+      </CenteredHero>
 
-      <Feature id="release" title={`What's in ${LATEST.version}`} body="The latest release, and which builds exist for each platform." link={{ href: "/changelog", label: "Read the changelog" }}>
-        <ReleasePanel />
-      </Feature>
-
-      <Feature
-        id="adds"
-        layout="text"
-        title="What the desktop app adds"
-        body="An invited simulation opens in an editor with the brief, public tests, team thread and submission beside the code, plus a command palette and keyboard shortcuts. Sign-in completes in your browser and hands back to the app."
-        points={[
-          { title: "Same rules as the web", body: "What is recorded is disclosed before you start, exactly as in the browser." },
-          { title: "Your Passport", body: "Your profile and projects are in the app too." },
-          { title: "Not required", body: "Every invitation also works in the browser. Hiring teams never need to install anything." },
-        ]}
-      />
-
-      <Feature id="install" layout="text" title="Install" body="The builds are not yet code-signed, so the first launch needs one extra step." points={INSTALL} />
-
-      <Feature id="requirements" layout="text" title="System requirements" body="An internet connection is needed for sign-in and submitting." points={REQUIREMENTS} />
+      <ShowcaseSection id="install" title="Install in a minute." aside="Beta builds are not code-signed yet, so the first launch takes one extra step.">
+        <Tiles
+          items={[
+            { title: "Windows 10 and 11, 64-bit", body: "Run the .exe. If SmartScreen warns, choose More info, then Run anyway. An .msi is available for managed installs." },
+            { title: "macOS, Apple silicon", body: "Open the .dmg and drag Fydell to Applications. On first launch, right-click Fydell and choose Open." },
+            { title: "Updates", body: "Automatic updates are off in beta builds. Download new versions from this page." },
+          ]}
+        />
+      </ShowcaseSection>
 
       <SiteFaq
         items={[
-          { q: "Do I need the desktop app?", a: "No. Invitations, your Passport and every other part of Fydell work in the browser. The app is there if you prefer a local workspace." },
-          { q: "How do I update?", a: "Automatic updates are turned off in these builds. Download the new version from this page when a release is published; the changelog lists every release." },
-          { q: "Why does my system warn me?", a: "The installers are not code-signed yet. macOS Gatekeeper and Windows SmartScreen warn about unsigned apps; the install steps above get past it. Signed builds are planned." },
-          { q: "Where do I report a problem?", a: "Use Contact on this site, or the Support link inside a simulation. Problems outside your control during a simulation are not held against you." },
+          { q: "Do I need the desktop app?", a: "No. Invitations, your Passport and every other part of Fydell work in the browser." },
+          { q: "Is there a Linux or Intel Mac build?", a: "Not yet. Use Fydell in the browser on those systems." },
+          { q: "Where do I report a problem?", a: "Use Contact on this site, or the Support link inside a simulation." },
         ]}
       />
 
-      <SiteClosing
-        title="Prefer the browser?"
-        body="Sign up and continue on the web. You can install the app later."
-        primary={{ href: "/signup", label: "Continue in the browser" }}
-        secondary={{ href: "/contact", label: "Get support" }}
-      />
+      <section className="pb-32 pt-24 text-center">
+        <p className="text-[15px] text-[var(--text-secondary)]">
+          Prefer the browser?{" "}
+          <Link href="/signup" className="font-medium text-[var(--text-primary)] underline decoration-[var(--border-strong)] underline-offset-4">
+            Continue on the web
+          </Link>
+        </p>
+      </section>
     </MarketingShell>
   );
 }

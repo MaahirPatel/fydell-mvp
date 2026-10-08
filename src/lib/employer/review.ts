@@ -163,6 +163,23 @@ export async function authorizeReviewScope(
   };
 }
 
+/** The snapshot a finding belongs to, when that snapshot is part of the shared work record. */
+export async function resolveEvidenceProject(scope: ReviewScope, evidenceId: string): Promise<string | null> {
+  if (!/^ev_[0-9a-f]{16}$/.test(evidenceId)) return null;
+  const db = createAdminSupabaseClient();
+  const { data: rows } = await db.from("passport_evidence").select("project_id").eq("id", evidenceId);
+  const projectIds = ((rows ?? []) as Array<{ project_id: string }>).map((r) => r.project_id);
+  if (projectIds.length === 0) return null;
+  const { data: owned } = await db
+    .from("passport_projects")
+    .select("id,analyzed_at")
+    .eq("passport_id", scope.passportId)
+    .in("id", projectIds)
+    .order("analyzed_at", { ascending: false })
+    .limit(1);
+  return ((owned ?? []) as Array<{ id: string }>)[0]?.id ?? null;
+}
+
 /** True when the cited evidence belongs to the shared work record. */
 export async function evidenceBelongsToScope(
   scope: ReviewScope,

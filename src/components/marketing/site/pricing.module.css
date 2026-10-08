@@ -5,13 +5,15 @@
   padding-inline: var(--l-gutter, 32px);
 }
 .section {
-  padding-top: 112px;
+  padding-top: 136px;
 }
 .h2 {
-  font-size: 36px;
-  line-height: 1.1;
-  font-weight: 500;
-  letter-spacing: -0.028em;
+  padding-top: 40px;
+  border-top: 1px solid var(--border-default);
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 560;
+  letter-spacing: -0.035em;
   color: var(--text-primary);
 }
 .sectionLead {
@@ -61,10 +63,10 @@
 }
 .price {
   margin-top: 14px;
-  font-size: 36px;
-  line-height: 1.1;
-  font-weight: 500;
-  letter-spacing: -0.03em;
+  font-size: 40px;
+  line-height: 1.05;
+  font-weight: 560;
+  letter-spacing: -0.035em;
   color: var(--text-primary);
 }
 .per {
@@ -108,8 +110,8 @@
   top: 0.45em;
   width: 9px;
   height: 5px;
-  border-left: 1.6px solid var(--status-positive-ink);
-  border-bottom: 1.6px solid var(--status-positive-ink);
+  border-left: 1.6px solid var(--mk-success);
+  border-bottom: 1.6px solid var(--mk-success);
   transform: rotate(-45deg);
 }
 .limitNote {
@@ -131,7 +133,7 @@
   background: var(--surface-raised);
 }
 .tableWrap:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--mk-indigo);
   outline-offset: 2px;
 }
 .table {
@@ -185,7 +187,8 @@
     padding-top: 80px;
   }
   .h2 {
-    font-size: 30px;
+    padding-top: 28px;
+    font-size: 32px;
   }
   .engineerGrid,
   .hiringGrid {

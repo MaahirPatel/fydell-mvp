@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, FormError, Input, Textarea } from "@/components/ui/Field";
 import { send } from "./send";
 
-type Project = { repo: string; commit: string; findings: number; analyzedAt: string };
+type Project = { key: string; title: string; kind: "github" | "upload" | "manual" | "work_sample"; detail: string; private: boolean; confirmed: boolean };
 type Draft = { contactName: string; repos: string[]; links: string; note: string };
 
 const draftKey = (slug: string) => `fydell:apply:${slug}`;
@@ -55,7 +55,7 @@ export default function ApplyForm({
   useEffect(() => {
     const saved = readDraft(slug);
     if (saved) {
-      const known = new Set(projects.map((p) => p.repo));
+      const known = new Set(projects.filter((p) => !p.private).map((p) => p.key));
       // eslint-disable-next-line react-hooks/set-state-in-effect -- session storage is only readable after mount
       setDraft({ ...saved, contactName: saved.contactName || defaultName, repos: saved.repos.filter((r) => known.has(r)) });
     }
@@ -73,6 +73,17 @@ export default function ApplyForm({
 
   const toggle = (repo: string) =>
     setDraft((d) => ({ ...d, repos: d.repos.includes(repo) ? d.repos.filter((r) => r !== repo) : [...d.repos, repo] }));
+  const move = (repo: string, by: -1 | 1) =>
+    setDraft((d) => {
+      const i = d.repos.indexOf(repo);
+      const j = i + by;
+      if (i < 0 || j < 0 || j >= d.repos.length) return d;
+      const next = [...d.repos];
+      [next[i], next[j]] = [next[j], next[i]];
+      return { ...d, repos: next };
+    });
+  const byKey = new Map(projects.map((p) => [p.key, p]));
+  const unconfirmed = draft.repos.filter((k) => byKey.get(k) && !byKey.get(k)?.confirmed && byKey.get(k)?.kind !== "work_sample").length;
   const links = draft.links.split("\n").map((l) => l.trim()).filter(Boolean);
   const hasContent = draft.repos.length > 0 || links.length > 0 || draft.note.trim().length > 0;
 
@@ -116,32 +127,47 @@ export default function ApplyForm({
       </div>
 
       <fieldset>
-        <legend className="text-app-meta font-medium text-[var(--text-primary)]">Passport projects to share</legend>
+        <legend className="text-app-meta font-medium text-[var(--text-primary)]">Projects to share</legend>
         {projects.length === 0 ? (
           <p className="mt-2 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
-            Your Passport has no projects yet. You can still apply with links and a note, or{" "}
+            Your profile has no projects yet. You can still apply with links and a note, or{" "}
             <Link href="/passport/new" className="text-[var(--text-primary)] underline underline-offset-4">add a project</Link> first and come back. Your entries here are kept.
           </p>
         ) : (
           <>
-            <p className="mt-1 text-app-meta text-[var(--text-secondary)]">
-              The team sees each selected Builder Report at the version below, even if you re-import later.
+            <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
+              Each selected project is sent as a fixed version. Later edits or re-imports don&apos;t change what this team sees, and the same version is reused for other applications while it stays unchanged.
             </p>
             <ul className="mt-3 grid gap-2">
               {projects.map((p) => {
-                const checked = draft.repos.includes(p.repo);
+                const checked = draft.repos.includes(p.key);
                 return (
-                  <li key={p.repo}>
+                  <li key={p.key}>
                     <label
-                      className={`flex cursor-pointer items-center gap-3 rounded-[8px] border px-3.5 py-3 transition-colors ${
-                        checked ? "border-[var(--border-strong)] bg-[var(--surface-selected)]" : "border-[var(--border-default)] bg-[var(--surface-raised)] hover:bg-[var(--surface-hover)]"
+                      className={`flex items-center gap-3 rounded-[8px] border px-3.5 py-3 transition-colors ${
+                        p.private
+                          ? "cursor-not-allowed border-[var(--border-subtle)] bg-[var(--surface-raised)] opacity-70"
+                          : checked
+                            ? "cursor-pointer border-[var(--border-strong)] bg-[var(--surface-selected)]"
+                            : "cursor-pointer border-[var(--border-default)] bg-[var(--surface-raised)] hover:bg-[var(--surface-hover)]"
                       }`}
                     >
-                      <input type="checkbox" checked={checked} onChange={() => toggle(p.repo)} className="h-4 w-4 shrink-0 accent-[var(--control-solid)]" />
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={p.private}
+                        onChange={() => toggle(p.key)}
+                        className="h-4 w-4 shrink-0 accent-[var(--control-solid)]"
+                      />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-mono text-app-meta text-[var(--text-primary)]">{p.repo}</span>
+                        <span className="block truncate text-app-meta font-medium text-[var(--text-primary)]">{p.title}</span>
                         <span className="block text-app-meta text-[var(--text-tertiary)]">
-                          Revision {p.commit} · {p.findings} finding{p.findings === 1 ? "" : "s"}
+                          {p.detail}
+                          {p.private
+                            ? " · Private in your profile"
+                            : p.kind !== "work_sample" && !p.confirmed
+                              ? " · Contribution not confirmed"
+                              : ""}
                         </span>
                       </span>
                     </label>
@@ -149,6 +175,30 @@ export default function ApplyForm({
                 );
               })}
             </ul>
+            {draft.repos.length > 1 ? (
+              <div className="mt-4">
+                <p className="text-app-meta font-medium text-[var(--text-primary)]">Order the team sees</p>
+                <ol className="mt-2 grid gap-1.5">
+                  {draft.repos.map((key, i) => (
+                    <li key={key} className="flex items-center gap-2 rounded-[8px] border border-[var(--border-subtle)] px-3 py-2 text-app-meta">
+                      <span className="w-5 text-[var(--text-tertiary)]">{i + 1}.</span>
+                      <span className="min-w-0 flex-1 truncate text-[var(--text-body)]">{byKey.get(key)?.title ?? key}</span>
+                      <Button type="button" size="sm" variant="quiet" onClick={() => move(key, -1)} disabled={i === 0} aria-label={`Move ${byKey.get(key)?.title ?? key} up`}>
+                        Up
+                      </Button>
+                      <Button type="button" size="sm" variant="quiet" onClick={() => move(key, 1)} disabled={i === draft.repos.length - 1} aria-label={`Move ${byKey.get(key)?.title ?? key} down`}>
+                        Down
+                      </Button>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            ) : null}
+            {unconfirmed > 0 ? (
+              <p className="mt-3 text-app-meta leading-[1.55] text-[var(--text-secondary)]">
+                {unconfirmed === 1 ? "One selected project has" : `${unconfirmed} selected projects have`} no confirmed contribution. The team will see that stated plainly. You can confirm from the project page first; your entries here are kept.
+              </p>
+            ) : null}
           </>
         )}
       </fieldset>
@@ -165,9 +215,9 @@ export default function ApplyForm({
           <input type="checkbox" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--control-solid)]" />
           <span>
             Share with {organizationName}: your name and email
-            {draft.repos.length === 1 ? ", 1 Builder Report with its findings and excerpts" : draft.repos.length > 1 ? `, ${draft.repos.length} Builder Reports with their findings and excerpts` : ""}
+            {draft.repos.length === 1 ? ", 1 project version with its statements, findings and excerpts" : draft.repos.length > 1 ? `, ${draft.repos.length} project versions with their statements, findings and excerpts` : ""}
             {links.length > 0 ? `, ${links.length} link${links.length === 1 ? "" : "s"}` : ""}
-            {draft.note.trim() ? ", and your note" : ""}. Nothing else from your Passport is shared, and withdrawing ends their access to the projects.
+            {draft.note.trim() ? ", and your note" : ""}. Nothing else from your profile is shared. You can remove a project later, and withdrawing ends their access to all of them.
           </span>
         </label>
       </div>

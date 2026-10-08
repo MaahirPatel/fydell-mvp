@@ -150,9 +150,11 @@ export function ContributionSection({
   }
 
   const rows = [
+    { k: "Problem", v: saved.problem },
     { k: "Built or changed", v: saved.workedOn },
     { k: "Already there", v: saved.inherited },
     { k: "Constraints", v: saved.constraintsFaced },
+    { k: "How it was checked", v: saved.checkedHow },
     { k: "Results", v: saved.results },
     { k: "Would improve", v: saved.improvements },
   ].filter((r) => r.v);
@@ -224,6 +226,7 @@ export function ContributionSection({
         }
       >
         <div className="space-y-5">
+          <TextArea id="c-problem" label="What problem were you solving?" hint="Who had it and why it mattered." value={draft.problem} onChange={(v) => set("problem", v)} rows={3} />
           <TextArea id="c-worked" label="What did you build or change?" hint="The parts that were yours." value={draft.workedOn} onChange={(v) => set("workedOn", v)} rows={4} />
           <TextArea id="c-inherited" label="What was already there?" hint="Code, design or infrastructure you inherited." value={draft.inherited} onChange={(v) => set("inherited", v)} rows={2} />
           <div className="grid gap-3 sm:grid-cols-[200px_1fr]">
@@ -247,6 +250,7 @@ export function ContributionSection({
             </div>
           </div>
           <TextArea id="c-constraints" label="Constraints" hint="Time, scale, legacy or team limits." value={draft.constraintsFaced} onChange={(v) => set("constraintsFaced", v)} rows={2} />
+          <TextArea id="c-checked" label="How did you check it worked?" hint="Tests, reviews, monitoring, or users trying it." value={draft.checkedHow} onChange={(v) => set("checkedHow", v)} rows={2} />
           <TextArea id="c-results" label="Results" hint="Only what you can back up." value={draft.results} onChange={(v) => set("results", v)} rows={2} />
           <TextArea id="c-improve" label="What would you improve?" value={draft.improvements} onChange={(v) => set("improvements", v)} rows={2} />
           <EvidencePicker projectId={projectId} findings={findings} refs={draft.evidenceRefs} onChange={(r) => set("evidenceRefs", r)} />
@@ -291,7 +295,7 @@ function DecisionForm({
   const [error, setError] = useState<string | null>(null);
   const set = <K extends keyof DecisionDraft>(k: K, v: DecisionDraft[K]) => setD((x) => ({ ...x, [k]: v }));
   return (
-    <div className="my-4 space-y-4 rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 sm:p-6">
+    <div className="my-4 space-y-4 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 sm:p-6">
       <div>
         <label htmlFor="d-title" className="text-[13.5px] font-medium">
           Decision

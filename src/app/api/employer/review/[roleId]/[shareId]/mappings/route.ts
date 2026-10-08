@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
-import { authorizeReviewScope, evidenceBelongsToScope, upsertMapping, type MappingStatus } from "@/lib/employer/review";
+import { authorizeReviewScope, evidenceBelongsToScope, resolveEvidenceProject, upsertMapping, type MappingStatus } from "@/lib/employer/review";
 import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 import { csrfGuard } from "@/lib/security/csrf";
 
@@ -53,8 +53,9 @@ export async function POST(
   if (!STATUSES.includes(status)) {
     return NextResponse.json({ error: `status must be one of: ${STATUSES.join(", ")}` }, { status: 400 });
   }
-  const evidenceProjectId = typeof body.evidenceProjectId === "string" ? body.evidenceProjectId : null;
   const evidenceId = typeof body.evidenceId === "string" ? body.evidenceId : null;
+  const evidenceProjectId =
+    typeof body.evidenceProjectId === "string" ? body.evidenceProjectId : evidenceId ? await resolveEvidenceProject(scope, evidenceId) : null;
   if (!(await evidenceBelongsToScope(scope, evidenceProjectId, evidenceId))) {
     return NextResponse.json({ error: "That evidence is not part of the shared Passport." }, { status: 400 });
   }

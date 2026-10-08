@@ -9,6 +9,7 @@ import { createAdminSupabaseClient, supabaseAdminStatus } from "@/lib/supabase/a
 import EmployerShell from "@/components/employer/EmployerShell";
 import WorkspaceUnavailable from "@/components/employer/WorkspaceUnavailable";
 import { memberIdentity } from "@/lib/workspace/identity";
+import { loadWorkspaceContexts } from "@/lib/workspace/contexts";
 import { isPreviewMode, PREVIEW_ORG, PREVIEW_USER } from "@/lib/dev/preview";
 import { getEmployerCatalog } from "./_lib/catalog";
 
@@ -97,6 +98,11 @@ export default async function EmployerAppLayout({ children }: { children: React.
         userEmail={PREVIEW_USER.email}
         userName={PREVIEW_USER.fullName}
         userAvatarUrl={PREVIEW_USER.avatarUrl}
+        contexts={{
+          organizations: [{ id: PREVIEW_ORG.organizationId, name: PREVIEW_ORG.organizationName, role: "owner" }],
+          activeOrganizationId: PREVIEW_ORG.organizationId,
+          hasPublicProfile: false,
+        }}
         catalog={await getEmployerCatalog()}
       >
         {children}
@@ -185,7 +191,10 @@ export default async function EmployerAppLayout({ children }: { children: React.
     }
   }
 
-  const catalog = await getEmployerCatalog();
+  const [catalog, contexts] = await Promise.all([
+    getEmployerCatalog(),
+    loadWorkspaceContexts(user.id).catch(() => null),
+  ]);
 
   return (
     <EmployerShell
@@ -193,6 +202,7 @@ export default async function EmployerAppLayout({ children }: { children: React.
       userEmail={identity.email}
       userName={identity.name}
       userAvatarUrl={identity.avatarUrl}
+      contexts={contexts}
       catalog={catalog}
     >
       {children}

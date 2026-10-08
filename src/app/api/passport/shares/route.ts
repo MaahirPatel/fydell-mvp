@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { createShare, listShares } from "@/lib/passport/store";
 import { csrfGuard } from "@/lib/security/csrf";
+import { shareableProjectKeys } from "@/lib/profile-evidence/store";
 
 export async function GET() {
   const user = await requireUser();
@@ -19,9 +20,13 @@ export async function POST(req: Request) {
     | null;
   const fields = Array.isArray(body?.fields) ? body.fields.filter((f): f is string => typeof f === "string") : [];
   if (!fields.includes("projects")) return NextResponse.json({ error: "Share at least your projects." }, { status: 400 });
+  const repos = await shareableProjectKeys(user.id, body?.repos);
+  if (repos.length === 0) {
+    return NextResponse.json({ error: "Confirm your contribution on at least one project before sharing it. Unconfirmed drafts stay private." }, { status: 400 });
+  }
   const created = await createShare(user.id, typeof body?.label === "string" ? body.label : "", fields, {
     expiresAt: body?.expiresAt,
-    repos: body?.repos,
+    repos,
     versionPolicy: body?.versionPolicy,
   });
   if ("error" in created) {

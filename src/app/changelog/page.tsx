@@ -15,7 +15,7 @@ export default function ChangelogPage() {
       <SiteHero
         align="left"
         title={["Changelog"]}
-        lead="Published releases of Fydell Desktop. Each one has installers for macOS, Windows and Linux on GitHub."
+        lead="Published releases of Fydell Desktop. Each one has installers for macOS and Windows."
       />
       <section className={s.wrap} aria-label="Releases">
         <ol className={s.list}>

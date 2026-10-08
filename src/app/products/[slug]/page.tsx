@@ -33,9 +33,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         lead={page.lead}
         primary={page.primary}
         secondary={page.secondary}
-        eyebrow={
+        meta={
           <>
-            <span className={s.eyebrowName}>{page.name}</span>
+            <span className={s.metaName}>{page.name}</span>
             <Availability state={page.availability.state}>{page.availability.text}</Availability>
           </>
         }

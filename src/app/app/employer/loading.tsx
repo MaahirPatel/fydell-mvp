@@ -10,10 +10,10 @@ import { Skeleton } from "@/components/ui/Skeleton";
 export default function EmployerLoading() {
   return (
     <div role="status" aria-label="Loading" className="animate-[fydell-fade-in_120ms_both]">
-      <Skeleton className="h-7 w-64" />
-      <Skeleton className="mt-3 h-4 w-[38ch]" />
+      <Skeleton className="h-6 w-48" />
+      <Skeleton className="mt-2 h-4 w-[38ch] max-w-full" />
 
-      <div className="mt-8 divide-y divide-[var(--border-subtle)] overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+      <div className="mt-6 divide-y divide-[var(--border-subtle)] overflow-hidden rounded-[var(--radius-frame)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
         <div className="px-5 py-5 lg:px-6">
           <Skeleton className="h-4 w-40" />
           <div className="mt-4 space-y-2.5">

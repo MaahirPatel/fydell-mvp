@@ -28,6 +28,8 @@ import {
   type TeamContext,
 } from "./presentation";
 import type { PassportProject } from "./view";
+import { draftEditStats } from "@/lib/profile-evidence/contract";
+import { recordEvidenceEvent } from "@/lib/profile-evidence/events";
 
 type Row = {
   id: string;
@@ -288,6 +290,7 @@ export async function savePresentation(
   if (!existing) {
     if (expectedVersion !== 0) return conflict(null);
     const project = await currentProjectFor(passportId, projectKey);
+    if (project) await recordDraftEdit(draftFromProject(project, 0), input);
     const { data, error } = await admin
       .from("passport_project_presentations")
       .insert({
@@ -314,9 +317,38 @@ export async function savePresentation(
     .eq("version", expectedVersion)
     .select(COLUMNS);
   const saved = (data ?? [])[0] as Row | undefined;
-  if (saved) return { ok: true, value: await signOne(passportId, toPresentation(saved)) };
+  if (saved) {
+    await recordDraftEdit(existing, input);
+    return { ok: true, value: await signOne(passportId, toPresentation(saved)) };
+  }
   const latest = await getRow(passportId, projectKey);
   return conflict(latest ? await signOne(passportId, latest) : null);
+}
+
+const DRAFT_TEXT_FIELDS = ["title", "summary", "purpose", "intendedUsers", "contribution", "outcomes"] as const;
+
+/** Records how much of the generated draft the engineer changed. Counts only, never the text. */
+async function recordDraftEdit(baseline: ProjectPresentation, input: PresentationInput): Promise<void> {
+  const before: Record<string, string> = {};
+  const after: Record<string, string> = {};
+  for (const field of DRAFT_TEXT_FIELDS) {
+    if (baseline.fieldSources[field] !== "generated") continue;
+    before[field] = baseline[field];
+    after[field] = input[field];
+  }
+  if (baseline.fieldSources.technologies === "generated") {
+    before.technologies = baseline.technologies.join(",");
+    after.technologies = input.technologies.join(",");
+  }
+  if (Object.keys(before).length === 0) return;
+  const stats = draftEditStats(before, after);
+  await recordEvidenceEvent("draft_edited", {
+    source_kind: baseline.sourceKind,
+    first_save: baseline.version === 0,
+    fields_compared: stats.fieldsCompared,
+    fields_changed: stats.fieldsChanged,
+    char_change_ratio: stats.charChangeRatio,
+  });
 }
 
 async function signOne(passportId: string, p: ProjectPresentation): Promise<ProjectPresentation> {

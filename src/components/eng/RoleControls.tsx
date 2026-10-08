@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Field, FormError, FormSuccess, Input } from "@/components/ui/Field";
+import { Field, FormError, FormSuccess, Input, Select } from "@/components/ui/Field";
 import { engFetch } from "./api";
 
 export function RoleStatusActions({ roleId, status }: { roleId: string; status: "draft" | "published" | "archived" }) {
@@ -78,9 +78,12 @@ type InviteResult = {
   name?: string | null;
 };
 
-export function InviteCandidateForm({ roleId }: { roleId: string }) {
+export type WorkSampleChoice = { id: string; label: string };
+
+export function InviteCandidateForm({ roleId, defaultLabel, workSamples = [] }: { roleId: string; defaultLabel?: string; workSamples?: WorkSampleChoice[] }) {
   const router = useRouter();
   const [mode, setMode] = useState<"handle" | "email">("handle");
+  const [versionId, setVersionId] = useState("");
   const [handle, setHandle] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -93,7 +96,7 @@ export function InviteCandidateForm({ roleId }: { roleId: string }) {
     setBusy(true);
     setError(null);
     setResult(null);
-    const body = mode === "handle" ? { handle } : { email, name };
+    const body = { ...(mode === "handle" ? { handle } : { email, name }), ...(versionId ? { scenarioVersionId: versionId } : {}) };
     const res = await engFetch<InviteResult>(`/api/eng/roles/${roleId}/invitations`, { body });
     setBusy(false);
     if (res.ok === false) {
@@ -170,12 +173,67 @@ export function InviteCandidateForm({ roleId }: { roleId: string }) {
           </Field>
         </div>
       )}
+      {workSamples.length ? (
+        <Field label="Task" htmlFor="inv-version" help="Each candidate is pinned to the version chosen here.">
+          <Select id="inv-version" value={versionId} onChange={(e) => setVersionId(e.target.value)}>
+            <option value="">{defaultLabel ?? "The role's task"}</option>
+            {workSamples.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      ) : null}
       <div>
         <Button type="submit" variant="primary" loading={busy}>
           Create invitation
         </Button>
       </div>
     </form>
+  );
+}
+
+/** Starts the employer's own preview attempt of a published work sample and opens it. */
+export function PreviewWorkSample({ roleId, workSamples }: { roleId: string; workSamples: WorkSampleChoice[] }) {
+  const router = useRouter();
+  const [versionId, setVersionId] = useState(workSamples[0]?.id ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function start() {
+    setBusy(true);
+    setError(null);
+    const res = await engFetch<{ attemptId: string }>(`/api/eng/roles/${roleId}/preview`, { body: { scenarioVersionId: versionId } });
+    if (res.ok === false) {
+      setBusy(false);
+      setError(res.error);
+      return;
+    }
+    router.push(`/assess/${res.data.attemptId}`);
+  }
+
+  return (
+    <div className="grid gap-3">
+      <FormError>{error}</FormError>
+      <div className="flex flex-wrap items-end gap-3">
+        {workSamples.length > 1 ? (
+          <Field label="Work sample" htmlFor="preview-version">
+            <Select id="preview-version" value={versionId} onChange={(e) => setVersionId(e.target.value)}>
+              {workSamples.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        ) : null}
+        <Button type="button" variant="secondary" loading={busy} disabled={!versionId} onClick={start}>
+          {workSamples.length === 1 ? `Preview ${workSamples[0].label}` : "Start preview"}
+        </Button>
+      </div>
+      <p className="text-app-meta text-[var(--text-secondary)]">Takes the task yourself as a candidate would. Previews are never emailed, use no quota and are left out of counts and decisions.</p>
+    </div>
   );
 }
 

@@ -356,7 +356,7 @@ export default function ProjectShowcase({ initial }: { initial: ProjectPresentat
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <p className="max-w-[62ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
+        <p className="max-w-[62ch] text-[13px] leading-[1.55] text-[var(--text-secondary)]">
           Choose up to {FEATURED_MAX} projects to feature at the top of your profile and set the order. Featured: {featuredCount} of {FEATURED_MAX}.
         </p>
         <Button size="sm" variant="secondary" onClick={() => open({ kind: "create", requestId: newRequestId() })}>
@@ -371,13 +371,13 @@ export default function ProjectShowcase({ initial }: { initial: ProjectPresentat
       ) : null}
 
       {items.length ? (
-        <ol className="mt-4 divide-y divide-[var(--border-subtle)] rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-raised)]" aria-busy={arranging || undefined}>
+        <ol className="mt-4 divide-y divide-[var(--border-subtle)] rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]" aria-busy={arranging || undefined}>
           {items.map((item, index) => {
             const period = formatPeriod(item.startedOn, item.endedOn, item.projectState);
             return (
-              <li key={item.projectKey} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-                <div className="min-w-0 flex-1">
-                  <p className="flex flex-wrap items-center gap-2 text-[15px] font-medium text-[var(--text-primary)]">
+              <li key={item.projectKey} className="flex flex-col gap-2 px-3 py-2.5 sm:flex-row sm:items-center sm:gap-4">
+                <div className="min-w-0 sm:flex-1">
+                  <p className="flex flex-wrap items-center gap-2 text-[14px] font-medium text-[var(--text-primary)]">
                     {item.title}
                     {item.featured ? <Status kind="success">Featured</Status> : null}
                     {item.visibility === "private" ? <Status kind="neutral">Private</Status> : null}

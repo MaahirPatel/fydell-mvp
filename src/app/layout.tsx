@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
+import { Inter } from "next/font/google";
 import NavigationProgress from "@/components/layout/NavigationProgress";
 import StorageMigration from "@/components/layout/StorageMigration";
 import { SITE_URL } from "@/lib/seo/site";
@@ -25,11 +26,13 @@ export const metadata: Metadata = {
   },
 };
 
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistMono.variable} ${GeistSans.variable}`}>
+    <html lang="en" className={`${GeistMono.variable} ${GeistSans.variable} ${inter.variable}`}>
       <body className={GeistSans.className}>
         <Script
           id="vtag-ai-js"

@@ -11,7 +11,7 @@ import { roleCan } from "@/lib/eng/permissions";
 import { FOCUS_OPTIONS } from "@/lib/eng/roles";
 import { CURRENT_SCENARIO } from "@/lib/eng/scenarios";
 
-export const metadata = { title: "Engineering tasks" };
+export const metadata = { title: "Work samples" };
 export const dynamic = "force-dynamic";
 
 const STATUS_TONE = { draft: "neutral", published: "good", archived: "neutral" } as const;
@@ -21,7 +21,7 @@ export default async function EngineeringRolesPage() {
   if (!member) {
     return (
       <div className="max-w-[880px]">
-        <PageHeader title="Engineering tasks" />
+        <PageHeader title="Work samples" />
         <EmptyState className="mt-6" title="No active workspace" description="You are not an active member of a workspace. Accept a pending invitation on the Team page, or ask an owner to add you." />
       </div>
     );
@@ -33,7 +33,7 @@ export default async function EngineeringRolesPage() {
   return (
     <div className="max-w-[1120px]">
       <PageHeader
-        title="Engineering tasks"
+        title="Work samples"
         description="Invite backend candidates to one reviewed, practical task. They work locally in their own editor, talk to the team in a thread, handle one requirement change, and upload their project. Trusted checks run in isolation, then your team reviews the evidence and releases a report where every finding cites the code, test, message or handoff behind it."
       />
 

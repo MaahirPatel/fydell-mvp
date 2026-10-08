@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
+import { useUnsavedChanges } from "@/lib/workspace/unsaved";
 
 /**
  * Inline save rather than a modal: renaming is a one-field change and the
@@ -24,6 +25,7 @@ export default function WorkspaceNameForm({
   const [error, setError] = useState<string | null>(null);
 
   const dirty = name.trim() !== initialName.trim();
+  useUnsavedChanges(canEdit && dirty);
 
   if (!canEdit) {
     return (

@@ -4,9 +4,10 @@ import s from "./site.module.css";
 export type FrameTag = "Example data" | "Preview";
 
 /**
- * A product view in a thin neutral frame. `label` names what is shown for
+ * A product view in a light window. `label` names what is shown for
  * assistive technology; `tag` says whether it is shipped UI with example data
- * or a preview of a layout that is still in development.
+ * or a preview of a layout that is still in development. `chrome="none"` is
+ * for views that draw their own window bar and carry their own visible label.
  */
 export default function ProductFrame({
   title,
@@ -15,6 +16,7 @@ export default function ProductFrame({
   interactive = false,
   caption,
   size = "default",
+  chrome = "window",
   children,
 }: {
   title: string;
@@ -23,20 +25,23 @@ export default function ProductFrame({
   interactive?: boolean;
   caption?: ReactNode;
   size?: "default" | "hero";
+  chrome?: "window" | "none";
   children: ReactNode;
 }) {
   return (
     <figure className={size === "hero" ? s.figureHero : s.figure}>
       <div className={s.frame}>
-        <div className={s.frameBar}>
-          <span className={s.frameDots} aria-hidden>
-            <i />
-            <i />
-            <i />
-          </span>
-          <span className={s.frameTitle}>{title}</span>
-          <span className={tag === "Preview" ? s.frameTagPreview : s.frameTag}>{tag}</span>
-        </div>
+        {chrome === "window" ? (
+          <div className={s.frameBar}>
+            <span className={s.frameDots} aria-hidden>
+              <i />
+              <i />
+              <i />
+            </span>
+            <span className={s.frameTitle}>{title}</span>
+            <span className={tag === "Preview" ? s.frameTagPreview : s.frameTag}>{tag}</span>
+          </div>
+        ) : null}
         {interactive ? (
           <div role="region" aria-label={`${label}. ${tag}.`} className={s.frameBody}>
             {children}

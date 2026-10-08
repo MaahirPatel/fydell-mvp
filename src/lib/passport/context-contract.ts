@@ -24,11 +24,13 @@ export type EvidenceRef = {
 
 export type ContributionContext = {
   repoFullName: string;
+  problem: string;
   workedOn: string;
   inherited: string;
   collaboration: Collaboration;
   collaborationNote: string;
   constraintsFaced: string;
+  checkedHow: string;
   results: string;
   improvements: string;
   evidenceRefs: EvidenceRef[];
@@ -59,11 +61,13 @@ export const MAX_REFS = 12;
 export function emptyContribution(repoFullName: string): ContributionContext {
   return {
     repoFullName,
+    problem: "",
     workedOn: "",
     inherited: "",
     collaboration: "unspecified",
     collaborationNote: "",
     constraintsFaced: "",
+    checkedHow: "",
     results: "",
     improvements: "",
     evidenceRefs: [],
@@ -105,10 +109,12 @@ export function parseContribution(raw: unknown): ContributionInput | { error: st
   if (typeof raw !== "object" || raw === null) return { error: "Send the contribution fields." };
   const b = raw as Record<string, unknown>;
   const fields = {
+    problem: text(b.problem),
     workedOn: text(b.workedOn),
     inherited: text(b.inherited),
     collaborationNote: text(b.collaborationNote, 500),
     constraintsFaced: text(b.constraintsFaced),
+    checkedHow: text(b.checkedHow),
     results: text(b.results),
     improvements: text(b.improvements),
   };
@@ -118,11 +124,13 @@ export function parseContribution(raw: unknown): ContributionInput | { error: st
   const refs = parseEvidenceRefs(b.evidenceRefs);
   if ("error" in refs) return refs;
   return {
+    problem: fields.problem as string,
     workedOn: fields.workedOn as string,
     inherited: fields.inherited as string,
     collaboration,
     collaborationNote: fields.collaborationNote as string,
     constraintsFaced: fields.constraintsFaced as string,
+    checkedHow: fields.checkedHow as string,
     results: fields.results as string,
     improvements: fields.improvements as string,
     evidenceRefs: refs,
@@ -162,5 +170,7 @@ export function parseDecision(raw: unknown): DecisionInput | { error: string } {
 
 /** True when the engineer has said anything about their contribution. */
 export function hasContribution(c: ContributionContext): boolean {
-  return Boolean(c.workedOn || c.inherited || c.collaboration !== "unspecified" || c.constraintsFaced || c.results || c.improvements);
+  return Boolean(
+    c.problem || c.workedOn || c.inherited || c.collaboration !== "unspecified" || c.constraintsFaced || c.checkedHow || c.results || c.improvements,
+  );
 }

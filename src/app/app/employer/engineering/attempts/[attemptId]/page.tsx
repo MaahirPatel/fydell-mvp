@@ -27,7 +27,8 @@ import { engAdmin } from "@/lib/eng/context";
 import { EVENT_LABELS, orgAttemptView, pageMember } from "@/lib/eng/employer-view";
 import { isUuid } from "@/lib/eng/http";
 import { roleCan } from "@/lib/eng/permissions";
-import { scenarioForVersionId } from "@/lib/eng/scenario-versions";
+import { resolveScenarioVersion } from "@/lib/eng/scenario-versions";
+import { AuthoredAttempt } from "./authored-attempt";
 import { OPERATIONAL_STATES } from "@/lib/eng/state";
 import type { Decision, Finding } from "@/lib/eng/types";
 
@@ -82,9 +83,11 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
     orgAttemptView(db, member, attempt, canSeeEvidence),
     canSeeEvidence ? listResponses(db, attempt.id) : Promise.resolve([]),
   ]);
+  const resolved = await resolveScenarioVersion(db, attempt.scenario_version_id);
+  if (resolved.origin === "employer_authored") return <AuthoredAttempt db={db} member={member} view={view} pkg={resolved.pkg} />;
+  const { definition } = resolved;
   const testsFinished = view.run?.status === "human_review" || view.run?.status === "ready";
   const delayed = view.run?.status === "blocked" || view.run?.status === "retryable_failure";
-  const { definition } = await scenarioForVersionId(db, attempt.scenario_version_id);
   const teammates = Object.fromEntries(definition.teammates.map((t) => [t.id, t.name]));
   const state = OPERATIONAL_STATES[view.state];
   const who = candidateIdentity(view.invitation);

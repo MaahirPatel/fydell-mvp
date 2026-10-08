@@ -1,58 +1,54 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
   BriefcaseBusiness,
-  CircleHelp,
+  Check,
   ChevronDown,
+  ChevronRight,
+  CircleHelp,
   FileCheck2,
   FolderOpen,
   House,
   IdCard,
   LibraryBig,
-  Plus,
+  Menu,
   ReceiptText,
   Settings,
   ShieldCheck,
   SquareTerminal,
   UserCog,
+  UserPlus,
   Users,
+  X,
 } from "lucide-react";
-import FydellMark from "@/components/brand/FydellMark";
-import FydellLogo from "@/components/brand/FydellLogo";
-import { initialsFrom } from "@/lib/workspace/identity";
 import { ToastProvider } from "@/components/ui/Toast";
-import SignOutButton from "./SignOutButton";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import AccountMenu from "@/components/workspace/AccountMenu";
+import { HELP_HREF, type WorkspaceContexts } from "@/lib/workspace/account";
 import { InviteModalProvider, useInviteModal } from "./InviteCandidateModal";
 import type { CatalogRole } from "./catalog-types";
 import {
   WORKSPACE_NAV_GROUPS,
-  WORKSPACE_NAV_ITEMS,
   WORKSPACE_SETTINGS_ITEM,
+  groupContainsPath,
+  isNavItemActive,
   workspaceSection,
+  type WorkspaceNavGroup,
+  type WorkspaceNavItem,
   type WorkspaceNavLabel,
 } from "@/lib/workspace/navigation";
 
-/**
- * Permanent destinations, grouped by what the person is doing.
- *
- * The groups exist because the rail now holds the simulations themselves as
- * well as the records they produce, and an ungrouped list of six reads as a
- * pile. "Pilot cohort" and "Compare" are not here: a cohort belongs to an
- * evaluation and a comparison is something you do to two reports, so both are
- * contextual actions rather than places in the product.
- */
 const NAV_ICONS: Record<WorkspaceNavLabel, typeof House> = {
-  Home: House,
-  "Engineering tasks": SquareTerminal,
+  Overview: House,
   Roles: BriefcaseBusiness,
-  Candidates: Users,
+  Applicants: Users,
   Reviews: IdCard,
+  "Work samples": SquareTerminal,
+  "Task attempts": ShieldCheck,
   "Task library": LibraryBig,
   Work: FolderOpen,
   Evidence: FileCheck2,
@@ -62,9 +58,12 @@ const NAV_ICONS: Record<WorkspaceNavLabel, typeof House> = {
   Settings,
 };
 
+const ICON_STROKE = 1.7;
+const INSET_FOCUS = "focus-visible:outline-offset-[-2px]";
+
 /**
  * The workbench is a work environment, not a document. It owns the whole
- * canvas beside the rail and manages its own scrolling regions, so the page
+ * canvas inside the panel and manages its own scrolling regions, so the page
  * padding and reading width that every other surface needs would only shrink
  * it.
  */
@@ -72,161 +71,16 @@ function isFullCanvas(pathname: string): boolean {
   return /^\/app\/employer\/workbench\/[^/]+$/.test(pathname);
 }
 
-function useIsActive() {
-  const pathname = usePathname();
-  return (href: string, exact: boolean) =>
-    exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
-}
-
-function NavLink({
-  href,
-  label,
-  icon: Icon,
-  active,
-}: {
-  href: string;
-  label: string;
-  icon: typeof House;
-  active: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={`relative flex items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 py-[7px] text-app-body transition-colors duration-[var(--motion-fast)] ${
-        active
-          ? "bg-[var(--surface-intelligence)] font-medium text-[var(--evidence-generated)]"
-          : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-      }`}
-    >
-      <Icon className="h-4 w-4 shrink-0" strokeWidth={1.7} aria-hidden />
-      {label}
-    </Link>
-  );
-}
-
-function SidebarNav() {
-  const isActive = useIsActive();
-  return (
-    <nav className="flex flex-1 flex-col gap-4" aria-label="Workspace">
-      {WORKSPACE_NAV_GROUPS.map((group, index) => (
-        <div key={group.label ?? `group-${index}`} className="flex flex-col gap-0.5">
-          {group.label ? (
-            <p className="px-2.5 pb-1 text-app-meta font-medium text-[var(--text-tertiary)]">
-              {group.label}
-            </p>
-          ) : null}
-          {group.items.map((item) => (
-            <NavLink
-              key={item.href}
-              href={item.href}
-              label={item.label}
-              icon={NAV_ICONS[item.label]}
-              active={isActive(item.href, Boolean(item.exact))}
-            />
-          ))}
-        </div>
-      ))}
-    </nav>
-  );
-}
-
-function MobileNav() {
-  const isActive = useIsActive();
-  return (
-    /* A scrolling strip hid Settings off the right edge at 390px with nothing
-       to say it was there. Fixed columns keep every destination visible, and
-       labels wrap rather than truncate so none of them become guesses. */
-    <nav
-      className="grid grid-cols-4 gap-0.5 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2 py-2 md:hidden"
-      aria-label="Workspace"
-    >
-      {WORKSPACE_NAV_ITEMS.map(({ href, label, exact }) => {
-        const active = isActive(href, Boolean(exact));
-        return (
-          <Link
-            key={href}
-            href={href}
-            aria-current={active ? "page" : undefined}
-            className={`flex items-center justify-center rounded-[var(--radius-control)] px-1 py-1.5 text-center text-app-caption leading-tight transition-colors duration-[var(--motion-fast)] ${
-              active
-                ? "bg-[var(--surface-selected)] font-medium text-[var(--text-primary)]"
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            }`}
-          >
-            {label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
-/**
- * The person's own picture when they have one, their initials when they do
- * not. A broken image URL falls back to initials rather than to a gap.
- */
-function Avatar({
-  name,
-  email,
-  avatarUrl,
-  size,
-}: {
-  name: string;
-  email: string;
-  avatarUrl: string | null;
-  size: number;
-}) {
-  const [failed, setFailed] = useState(false);
-  const initials = initialsFrom(name, email);
-  const box = { width: size, height: size };
-
-  if (avatarUrl && !failed) {
-    return (
-      <Image
-        src={avatarUrl}
-        alt=""
-        width={size}
-        height={size}
-        unoptimized
-        style={box}
-        referrerPolicy="no-referrer"
-        onError={() => setFailed(true)}
-        className="shrink-0 rounded-full border border-[var(--border-default)] object-cover"
-      />
-    );
-  }
-
-  return (
-    <span
-      aria-hidden
-      style={box}
-      className="flex shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--surface-panel)] text-app-caption font-medium text-[var(--text-primary)]"
-    >
-      {initials}
-    </span>
-  );
-}
-
-function AccountMenu({
-  userEmail,
-  userName,
-  userAvatarUrl,
-}: {
-  userEmail: string;
-  userName: string;
-  userAvatarUrl: string | null;
-}) {
-  const [open, setOpen] = useState(false);
+/** Closes a popover on an outside click or Escape. */
+function useDismiss(open: boolean, close: () => void) {
   const ref = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) close();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") close();
     };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
@@ -234,188 +88,222 @@ function AccountMenu({
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, [open, close]);
+  return ref;
+}
 
-  // The name given at signup, then the local part of the address. An address
-  // is a login, not an identity, and it truncates to nothing in a 232px rail.
-  const displayName = userName || userEmail.split("@")[0] || "Account";
-
+function NavRow({
+  item,
+  pathname,
+  onNavigate,
+}: {
+  item: WorkspaceNavItem;
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  const active = isNavItemActive(item, pathname);
+  const Icon = NAV_ICONS[item.label];
   return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className="flex w-full items-center gap-2.5 rounded-[var(--radius-control)] px-2 py-2 text-left transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
-      >
-        <Avatar name={displayName} email={userEmail} avatarUrl={userAvatarUrl} size={28} />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-app-meta font-medium leading-tight text-[var(--text-primary)]">
-            {displayName}
-          </span>
-        </span>
-        <ChevronDown
-          className="h-3.5 w-3.5 shrink-0 text-[var(--text-tertiary)]"
-          strokeWidth={1.7}
-          aria-hidden
-        />
-      </button>
-      {open ? (
-        <div
-          role="menu"
-          className="absolute bottom-[52px] left-0 z-40 w-[228px] rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 shadow-[var(--shadow-pop)]"
-        >
-          <div className="flex items-center gap-2.5">
-            <Avatar
-              name={displayName}
-              email={userEmail}
-              avatarUrl={userAvatarUrl}
-              size={32}
-            />
-            <div className="min-w-0">
-              <p className="truncate text-app-meta font-medium text-[var(--text-primary)]">
-                {displayName}
-              </p>
-              <p className="truncate text-app-meta text-[var(--text-secondary)]">
-                {userEmail}
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/app/employer/settings"
-            role="menuitem"
-            onClick={() => setOpen(false)}
-            className="mt-3 flex h-8 items-center rounded-[var(--radius-control)] border-t border-[var(--border-subtle)] px-2 text-app-meta text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      aria-current={active ? "page" : undefined}
+      className={`flex h-[30px] items-center gap-2 rounded-[6px] px-2 text-[14px] font-medium transition-colors duration-[var(--motion-fast)] ${INSET_FOCUS} ${
+        active
+          ? "bg-[var(--surface-deep)] text-[var(--text-primary)]"
+          : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+      }`}
+    >
+      <Icon
+        className={`h-4 w-4 shrink-0 ${active ? "text-[var(--text-primary)]" : "text-[var(--text-tertiary)]"}`}
+        strokeWidth={ICON_STROKE}
+        aria-hidden
+      />
+      <span className="truncate">{item.label}</span>
+    </Link>
+  );
+}
+
+function NavGroup({
+  group,
+  pathname,
+  onNavigate,
+}: {
+  group: WorkspaceNavGroup;
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  const listId = useId();
+  // Unset until the person toggles it, so More opens on its own whenever the
+  // current page is one of its records.
+  const [override, setOverride] = useState<boolean | null>(null);
+
+  const rows = (
+    <ul id={listId} className="flex flex-col gap-px">
+      {group.items.map((item) => (
+        <li key={item.href}>
+          <NavRow item={item} pathname={pathname} onNavigate={onNavigate} />
+        </li>
+      ))}
+    </ul>
+  );
+
+  switch (group.kind) {
+    case "primary":
+      return rows;
+    case "collapsible": {
+      const open = override ?? groupContainsPath(group, pathname);
+      return (
+        <div>
+          <button
+            type="button"
+            onClick={() => setOverride(!open)}
+            aria-expanded={open}
+            aria-controls={listId}
+            className={`flex h-7 w-full items-center gap-1 rounded-[6px] px-2 text-left text-[14px] font-medium text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-secondary)] ${INSET_FOCUS}`}
           >
-            Account settings
-          </Link>
-          <div className="mt-1">
-            <SignOutButton className="inline-flex h-8 w-full items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-strong)] text-app-meta font-medium text-[var(--text-primary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] disabled:opacity-50" />
-          </div>
+            {group.label}
+            <ChevronRight
+              className={`h-3 w-3 transition-transform duration-[var(--motion-fast)] ${open ? "rotate-90" : ""}`}
+              strokeWidth={2}
+              aria-hidden
+            />
+          </button>
+          {open ? rows : null}
         </div>
-      ) : null}
-    </div>
+      );
+    }
+  }
+}
+
+function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = usePathname();
+  return (
+    <nav className="flex flex-col gap-4" aria-label="Workspace">
+      {WORKSPACE_NAV_GROUPS.map((group) => (
+        <NavGroup
+          key={group.kind === "primary" ? "primary" : group.label}
+          group={group}
+          pathname={pathname}
+          onNavigate={onNavigate}
+        />
+      ))}
+    </nav>
   );
 }
 
 /**
  * Inviting is the one action available from anywhere in the workspace, so it
- * lives in the rail rather than the top bar. It used to render in both the top
- * bar and the page header, which read as two different buttons.
+ * sits beside the workspace name the way a compose button does. It renders
+ * once per layout: the rail on desktop, the top bar on a phone.
  */
-function SidebarInvite({ compact = false }: { compact?: boolean }) {
+function InviteIconButton({ onBeforeOpen }: { onBeforeOpen?: () => void }) {
   const { open } = useInviteModal();
   return (
     <button
       type="button"
-      onClick={() => open()}
-      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3 text-app-meta font-medium text-[var(--control-solid-ink)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)] ${
-        compact ? "w-auto" : "w-full"
-      }`}
+      onClick={() => {
+        onBeforeOpen?.();
+        open();
+      }}
+      aria-label="Invite candidate"
+      title="Invite candidate"
+      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-[var(--shadow-panel)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
     >
-      <Plus className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
-      Invite candidate
+      <UserPlus className="h-4 w-4" strokeWidth={ICON_STROKE} aria-hidden />
     </button>
   );
 }
 
-/** Settings sits with the account rather than with the working destinations. */
-function SidebarSettingsLink() {
-  const isActive = useIsActive();
-  return (
-    <NavLink
-      href={WORKSPACE_SETTINGS_ITEM.href}
-      label={WORKSPACE_SETTINGS_ITEM.label}
-      icon={NAV_ICONS.Settings}
-      active={isActive(WORKSPACE_SETTINGS_ITEM.href, false)}
-    />
-  );
-}
-
-function WorkspaceModeBar() {
-  return (
-    <div className="sticky top-0 z-50 flex h-8 items-center border-b border-[var(--border-subtle)] bg-[var(--surface-deep)] px-3 text-app-caption text-[var(--text-secondary)]">
-      <span className="font-medium text-[var(--text-primary)]">Live workspace</span>
-      <span className="mx-auto hidden sm:block">
-        Real roles, candidate work, evidence, and outcomes.
-      </span>
-      <Link
-        href="/sandbox"
-        className="ml-auto text-[var(--action-ink)] underline-offset-2 hover:underline sm:ml-0"
-      >
-        Explore Sandbox
-      </Link>
-    </div>
-  );
-}
-
-function WorkspaceSelector({ workspaceName }: { workspaceName: string }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+function WorkspaceMark({ workspaceName }: { workspaceName: string }) {
   const mark = workspaceName.trim().charAt(0).toUpperCase() || "F";
+  return (
+    <span
+      aria-hidden
+      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] bg-[var(--control-solid)] text-[11px] font-semibold text-[var(--control-solid-ink)]"
+    >
+      {mark}
+    </span>
+  );
+}
 
-  useEffect(() => {
-    if (!open) return;
-    const close = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, [open]);
+/**
+ * Which workspace you are in and whether it holds real data. Live is the only
+ * state a signed-in workspace can be in; the Sandbox is a separate place with
+ * isolated demo data, reached from this menu.
+ */
+function WorkspaceSwitcher({
+  workspaceName,
+  onNavigate,
+}: {
+  workspaceName: string;
+  onNavigate?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useDismiss(open, () => setOpen(false));
+  const choose = () => {
+    setOpen(false);
+    onNavigate?.();
+  };
+  const item =
+    "flex h-8 items-center gap-2 rounded-[6px] px-2 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]";
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative min-w-0 flex-1" ref={ref}>
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex min-h-[52px] w-full items-center gap-2.5 rounded-[var(--radius-control)] px-2 py-1.5 text-left transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
+        title={workspaceName}
+        className={`flex h-8 w-full min-w-0 items-center gap-2 rounded-[6px] px-1.5 text-left transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] ${INSET_FOCUS}`}
       >
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-panel)] text-app-caption font-semibold text-[var(--text-primary)]">
-          {mark}
+        <WorkspaceMark workspaceName={workspaceName} />
+        <span className="min-w-0 truncate text-[13px] font-semibold text-[var(--text-primary)]">
+          {workspaceName}
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-app-meta font-medium leading-tight text-[var(--text-primary)]">
-            {workspaceName}
-          </span>
-          <span className="mt-0.5 block truncate text-app-caption leading-tight text-[var(--text-tertiary)]">
-            Pilot · Live
-          </span>
+        <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-[var(--text-tertiary)]">
+          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[var(--brand-teal)]" />
+          Live
         </span>
         <ChevronDown
           className="h-3.5 w-3.5 shrink-0 text-[var(--text-tertiary)]"
-          strokeWidth={1.7}
+          strokeWidth={ICON_STROKE}
           aria-hidden
         />
       </button>
       {open ? (
         <div
           role="menu"
-          className="absolute left-0 top-[56px] z-50 w-[240px] rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-1.5 shadow-[var(--shadow-pop)]"
+          className="absolute left-0 top-[36px] z-50 w-[248px] rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-1 shadow-[var(--shadow-pop)]"
         >
-          <Link
-            href="/app/employer"
-            role="menuitem"
-            className="block rounded-[var(--radius-control)] px-3 py-2 text-app-meta hover:bg-[var(--surface-hover)]"
-          >
-            <span className="block font-medium text-[var(--text-primary)]">{workspaceName}</span>
-            <span className="mt-0.5 block text-app-caption text-[var(--text-tertiary)]">Live workspace</span>
+          <Link href="/app/employer" role="menuitem" onClick={choose} className={item}>
+            <WorkspaceMark workspaceName={workspaceName} />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-medium text-[var(--text-primary)]">
+                {workspaceName}
+              </span>
+              <span className="block text-[11px] text-[var(--text-tertiary)]">Live workspace</span>
+            </span>
+            <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
           </Link>
-          <Link
-            href="/sandbox"
-            role="menuitem"
-            className="mt-1 block rounded-[var(--radius-control)] px-3 py-2 text-app-meta hover:bg-[var(--surface-hover)]"
-          >
-            <span className="block font-medium text-[var(--text-primary)]">Demo Sandbox</span>
-            <span className="mt-0.5 block text-app-caption text-[var(--text-tertiary)]">Isolated demo data</span>
+          <Link href="/sandbox" role="menuitem" onClick={choose} className={`${item} mt-px`}>
+            <span
+              aria-hidden
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] border border-dashed border-[var(--border-strong)] text-[11px] font-semibold"
+            >
+              S
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium text-[var(--text-primary)]">Sandbox</span>
+              <span className="block text-[11px] text-[var(--text-tertiary)]">Isolated demo data</span>
+            </span>
           </Link>
-          <Link
-            href="/app/employer/settings"
-            role="menuitem"
-            className="mt-1 block border-t border-[var(--border-subtle)] px-3 py-2 text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-          >
+          <div className="my-1 h-px bg-[var(--border-subtle)]" />
+          <Link href="/app/employer/team" role="menuitem" onClick={choose} className={item}>
+            Invite teammates
+          </Link>
+          <Link href="/app/employer/settings" role="menuitem" onClick={choose} className={item}>
             Workspace settings
           </Link>
         </div>
@@ -424,49 +312,261 @@ function WorkspaceSelector({ workspaceName }: { workspaceName: string }) {
   );
 }
 
-function WorkspaceToolbar() {
+type ShellIdentity = {
+  workspaceName: string;
+  userEmail: string;
+  userName: string;
+  userAvatarUrl: string | null;
+  contexts: WorkspaceContexts | null;
+};
+
+/** Everything the rail holds. The phone sheet renders the same thing. */
+function SidebarContent({
+  identity,
+  showInvite,
+  onNavigate,
+}: {
+  identity: ShellIdentity;
+  showInvite: boolean;
+  onNavigate?: () => void;
+}) {
+  const pathname = usePathname();
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex items-center gap-1.5">
+        <WorkspaceSwitcher workspaceName={identity.workspaceName} onNavigate={onNavigate} />
+        {showInvite ? <InviteIconButton onBeforeOpen={onNavigate} /> : null}
+      </div>
+
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+        <SidebarNav onNavigate={onNavigate} />
+      </div>
+
+      <div className="mt-2 flex flex-col gap-px pt-2">
+        <NavRow item={WORKSPACE_SETTINGS_ITEM} pathname={pathname} onNavigate={onNavigate} />
+        <Link
+          href={HELP_HREF}
+          onClick={onNavigate}
+          className={`flex h-[30px] items-center gap-2 rounded-[6px] px-2 text-[14px] font-medium text-[var(--text-secondary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] ${INSET_FOCUS}`}
+        >
+          <CircleHelp className="h-4 w-4 shrink-0 text-[var(--text-tertiary)]" strokeWidth={ICON_STROKE} aria-hidden />
+          Help
+        </Link>
+        <AccountMenu
+          person={{ name: identity.userName, email: identity.userEmail, avatarUrl: identity.userAvatarUrl }}
+          context="organization"
+          contexts={identity.contexts}
+          placement="above"
+          onNavigate={onNavigate}
+        />
+      </div>
+    </div>
+  );
+}
+
+function TopBarIconLink({
+  href,
+  label,
+  icon: Icon,
+}: {
+  href: string;
+  label: string;
+  icon: typeof House;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      title={label}
+      className="inline-flex h-7 w-7 items-center justify-center rounded-[6px] text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+    >
+      <Icon className="h-4 w-4" strokeWidth={ICON_STROKE} aria-hidden />
+    </Link>
+  );
+}
+
+/** Where you are, and the few things that are true on every page. */
+function TopBar({ workspaceName }: { workspaceName: string }) {
   const pathname = usePathname();
   const section = workspaceSection(pathname);
+  const deeper = pathname !== section.href;
   return (
-    <header className="sticky top-8 z-30 hidden h-14 shrink-0 items-center gap-4 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-6 md:flex lg:px-10">
-      <p className="text-app-meta font-medium text-[var(--text-secondary)]">{section.label}</p>
-      <div className="ml-auto flex items-center gap-1.5">
-        <Link
-          href="/trust"
-          aria-label="Trust and data handling"
-          className="inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-control)] px-2.5 text-app-meta text-[var(--text-secondary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-        >
-          <ShieldCheck className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-          <span className="hidden xl:inline">Data handling</span>
-        </Link>
-        <Link
-          href="/how-it-works"
-          aria-label="Product guide"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-control)] text-[var(--text-secondary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-        >
-          <CircleHelp className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-        </Link>
+    <header className="hidden h-11 shrink-0 items-center gap-3 border-b border-[var(--border-subtle)] px-4 md:flex">
+      <nav aria-label="Breadcrumb" className="min-w-0">
+        <ol className="flex min-w-0 items-center gap-1.5 text-[13px]">
+          <li className="min-w-0">
+            <Link
+              href="/app/employer"
+              className="block truncate text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:text-[var(--text-primary)]"
+            >
+              {workspaceName}
+            </Link>
+          </li>
+          <li aria-hidden>
+            <ChevronRight className="h-3.5 w-3.5 text-[var(--text-quaternary)]" strokeWidth={ICON_STROKE} />
+          </li>
+          <li className="min-w-0">
+            {deeper ? (
+              <Link
+                href={section.href}
+                className="block truncate font-medium text-[var(--text-secondary)] transition-colors duration-[var(--motion-fast)] hover:text-[var(--text-primary)]"
+              >
+                {section.label}
+              </Link>
+            ) : (
+              <span aria-current="page" className="block truncate font-medium text-[var(--text-primary)]">
+                {section.label}
+              </span>
+            )}
+          </li>
+        </ol>
+      </nav>
+      <div className="ml-auto flex items-center gap-0.5">
+        <TopBarIconLink href="/trust" label="Trust and data handling" icon={ShieldCheck} />
+        <TopBarIconLink href="/contact" label="Contact support" icon={CircleHelp} />
         <NotificationBell />
-        <div className="ml-1">
-          <SidebarInvite compact />
-        </div>
       </div>
     </header>
   );
 }
 
+/**
+ * The same rail as a sheet. It closes on navigation, Escape and the backdrop,
+ * holds focus while open, and gives focus back to the menu button on close.
+ */
+function MobileNavSheet({
+  identity,
+  onClose,
+}: {
+  identity: ShellIdentity;
+  onClose: () => void;
+}) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    panelRef.current?.querySelector<HTMLElement>("a, button")?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key !== "Tab" || !panelRef.current) return;
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>("a[href], button:not([disabled])");
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = overflow;
+      document.removeEventListener("keydown", onKey);
+      previous?.focus();
+    };
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 md:hidden">
+      <button
+        type="button"
+        aria-label="Close navigation"
+        tabIndex={-1}
+        onClick={onClose}
+        className="absolute inset-0 bg-[rgba(15,17,23,0.28)]"
+      />
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Workspace navigation"
+        className="absolute inset-y-0 left-0 flex w-[min(300px,86vw)] flex-col bg-[var(--surface-panel)] px-2 pb-3 pt-2 shadow-[var(--shadow-float)]"
+      >
+        <div className="mb-2 flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close navigation"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+          >
+            <X className="h-4 w-4" strokeWidth={ICON_STROKE} aria-hidden />
+          </button>
+        </div>
+        <div className="min-h-0 flex-1">
+          <SidebarContent identity={identity} showInvite={false} onNavigate={onClose} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MobileTopBar({ identity }: { identity: ShellIdentity }) {
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
+  const pathname = usePathname();
+  const section = workspaceSection(pathname);
+  return (
+    <>
+      <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center gap-2 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2 md:hidden">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Open navigation"
+          aria-expanded={open}
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[6px] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+        >
+          <Menu className="h-[18px] w-[18px]" strokeWidth={ICON_STROKE} aria-hidden />
+        </button>
+        <Link href="/app/employer" className="flex min-w-0 items-center gap-2">
+          <WorkspaceMark workspaceName={identity.workspaceName} />
+          <span className="min-w-0 truncate text-[14px] font-semibold text-[var(--text-primary)]">
+            {identity.workspaceName}
+          </span>
+        </Link>
+        <span aria-hidden className="text-[var(--text-quaternary)]">/</span>
+        <span className="min-w-0 truncate text-[14px] text-[var(--text-secondary)]">{section.label}</span>
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          <NotificationBell />
+          <InviteIconButton />
+        </div>
+      </header>
+      {open ? <MobileNavSheet identity={identity} onClose={close} /> : null}
+    </>
+  );
+}
+
+/**
+ * List density for every employer page, including those still built on the
+ * shared `PageHeader` and `PanelSection`: a 22px title with one grey line,
+ * 15px section headings and 14px body text. Scoped here so the candidate app
+ * and the public site keep their own scale.
+ */
+const WORKSPACE_DENSITY = [
+  "[&_h1.text-app-page]:text-[22px]",
+  "[&_h1.text-app-page]:font-semibold",
+  "[&_h1.text-app-page]:leading-[1.2]",
+  "[&_h1.text-app-page]:tracking-[-0.015em]",
+  "[&_h1.text-app-page+p]:mt-1",
+  "[&_h1.text-app-page+p]:text-[14px]",
+  "[&_h1.text-app-page+p]:text-[var(--text-secondary)]",
+  "[&_h2.text-app-section]:text-[15px]",
+  "[&_h2.text-app-section]:font-semibold",
+  "[&_.text-app-body]:text-[14px]",
+].join(" ");
+
 /** Page padding and reading width, except where the workbench takes over. */
-function MainSurface({ children }: { children: React.ReactNode }) {
+function PageCanvas({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   if (isFullCanvas(pathname)) {
-    return <main className="min-w-0 flex-1">{children}</main>;
+    return <main className="min-h-0 min-w-0 flex-1">{children}</main>;
   }
   return (
-    /* The rail governs the width, so 1280 to 1440 is used fully. The cap only
-       binds past about 1736px, where a four-item metric row stretched across
-       the full canvas stops being scannable. */
-    <main className="min-w-0 flex-1 bg-[var(--surface-raised)] px-5 py-7 sm:px-8 lg:px-12 lg:py-9">
-      <div className="mx-auto w-full max-w-[1320px]">{children}</div>
+    <main className={`min-w-0 flex-1 px-4 py-6 sm:px-6 md:overflow-y-auto lg:px-10 lg:py-8 ${WORKSPACE_DENSITY}`}>
+      <div className="mx-auto w-full max-w-[1240px]">{children}</div>
     </main>
   );
 }
@@ -476,6 +576,7 @@ export default function EmployerShell({
   userEmail,
   userName = "",
   userAvatarUrl = null,
+  contexts,
   catalog,
   children,
 }: {
@@ -483,69 +584,28 @@ export default function EmployerShell({
   userEmail: string;
   userName?: string;
   userAvatarUrl?: string | null;
+  contexts: WorkspaceContexts | null;
   catalog: CatalogRole[];
   children: React.ReactNode;
 }) {
+  const identity: ShellIdentity = { workspaceName, userEmail, userName, userAvatarUrl, contexts };
   return (
     <ToastProvider>
-    <InviteModalProvider catalog={catalog}>
-      <div className="min-h-screen bg-[var(--surface-raised)] text-[var(--text-primary)] [--radius-frame:9px] [--radius-panel:8px]">
-        <WorkspaceModeBar />
-        <div className="flex min-h-[calc(100vh-32px)]">
-          <aside className="sticky top-8 hidden h-[calc(100vh-32px)] w-[224px] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2.5 py-2.5 md:flex">
-            <Link
-              href="/app/employer"
-              aria-label="Fydell home"
-              className="flex h-9 items-center gap-2.5 rounded-[6px] px-2 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
-            >
-              <FydellLogo height={20} />
-            </Link>
-
-            <div className="mt-1 border-b border-[var(--border-subtle)] pb-2">
-              <WorkspaceSelector workspaceName={workspaceName} />
-            </div>
-
-            <div className="mt-3 flex-1">
-              <SidebarNav />
-            </div>
-
-            <div className="mt-auto space-y-2 pt-2">
-              <SidebarSettingsLink />
-              <div className="border-t border-[var(--border-subtle)] pt-2">
-                <AccountMenu
-                  userEmail={userEmail}
-                  userName={userName}
-                  userAvatarUrl={userAvatarUrl}
-                />
-              </div>
-            </div>
+      <InviteModalProvider catalog={catalog}>
+        <div className="min-h-screen bg-[var(--surface-raised)] text-[var(--text-primary)] [--radius-frame:9px] [--radius-panel:8px] md:flex md:h-dvh md:min-h-0 md:overflow-hidden md:bg-[var(--surface-panel)]">
+          <aside className="hidden w-[244px] shrink-0 flex-col px-2 pb-2 pt-2.5 md:flex">
+            <SidebarContent identity={identity} showInvite />
           </aside>
 
-          <div className="flex min-w-0 flex-1 flex-col">
-            <WorkspaceToolbar />
-            {/* Below md the rail is gone, so the top bar carries the things it
-                held: which workspace you are in, and the one global action.
-                On desktop both live in the rail and a bar here would be an
-                empty 56px strip above every page. */}
-            <header className="sticky top-8 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-5 md:hidden">
-              <Link href="/app/employer" className="inline-flex min-w-0 items-center gap-2">
-                <FydellMark width={18} />
-                <span className="min-w-0 truncate text-app-body font-medium text-[var(--text-primary)]">
-                  {workspaceName}
-                </span>
-              </Link>
-              <div className="w-[150px] shrink-0">
-                <SidebarInvite />
-              </div>
-            </header>
+          <MobileTopBar identity={identity} />
 
-            <MobileNav />
-
-            <MainSurface>{children}</MainSurface>
+          {/* The inset sheet. On a phone it is simply the page. */}
+          <div className="flex min-w-0 flex-1 flex-col bg-[var(--surface-raised)] md:my-2 md:mr-2 md:overflow-hidden md:rounded-[10px] md:border md:border-[var(--border-default)] md:shadow-[var(--shadow-panel)]">
+            <TopBar workspaceName={workspaceName} />
+            <PageCanvas>{children}</PageCanvas>
           </div>
         </div>
-      </div>
-    </InviteModalProvider>
+      </InviteModalProvider>
     </ToastProvider>
   );
 }

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { Panel, PanelSection } from "@/components/ui/Panel";
+import { Panel } from "@/components/ui/Panel";
+import { ButtonLink } from "@/components/ui/Button";
+import { WorkspacePageHeader, WorkspaceSection } from "@/components/employer/WorkspacePage";
+import { orgCan } from "@/lib/orgs/capabilities";
 import ActivityFeed from "@/components/employer/ActivityFeed";
 import AttentionQueue from "@/components/employer/AttentionQueue";
 import CandidatePipeline from "@/components/employer/CandidatePipeline";
@@ -71,7 +73,7 @@ function HealthPanel({ health }: { health: WorkspaceHealth }) {
 
   return (
     <Panel className="mt-6">
-      <PanelSection
+      <WorkspaceSection
         title="Invitation and analysis health"
         description="Conditions that affect every candidate in this workspace."
       >
@@ -97,7 +99,7 @@ function HealthPanel({ health }: { health: WorkspaceHealth }) {
             </li>
           ))}
         </ul>
-      </PanelSection>
+      </WorkspaceSection>
     </Panel>
   );
 }
@@ -121,6 +123,7 @@ export default async function EmployerHomePage() {
   ]);
   const health = await getWorkspaceHealth(org.organizationId, invitations);
 
+  const canManage = orgCan(org.role, "manage_candidates");
   const hasInvited = invitations.length > 0;
   const hasResults = reports.length > 0;
 
@@ -149,9 +152,15 @@ export default async function EmployerHomePage() {
 
   return (
     <div>
-      <PageHeader
-        className="border-b border-[var(--border-subtle)] pb-6"
+      <WorkspacePageHeader
         title="Today"
+        action={
+          canManage ? (
+            <ButtonLink href="/app/employer/engineering" variant="primary" size="sm">
+              Create engineering role
+            </ButtonLink>
+          ) : undefined
+        }
         description={
           hasResults
             ? "Review the candidate evidence that is ready and prepare the next interview."
@@ -163,7 +172,7 @@ export default async function EmployerHomePage() {
 
       {attentionRows.length > 0 ? (
         <Panel className="mt-7">
-          <PanelSection
+          <WorkspaceSection
             title="Needs attention"
             description="Ordered by whose turn it is and how long the work has been waiting."
             action={
@@ -174,34 +183,27 @@ export default async function EmployerHomePage() {
             }
           >
             <AttentionQueue rows={attentionRows} />
-          </PanelSection>
+          </WorkspaceSection>
         </Panel>
       ) : null}
 
       {!hasInvited ? (
         <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
-          <PanelSection
+          <WorkspaceSection
             title="Start with an open role"
-            description="Create an engineering role, publish it, and invite candidates to a practical task they complete in their own editor. Your team reviews the evidence and releases the report."
-          >
-            <Link
-              href="/app/employer/engineering"
-              className="inline-flex min-h-9 items-center rounded-[var(--radius-control)] bg-[var(--control-solid)] px-3.5 text-app-body font-medium text-[var(--control-solid-ink)]"
-            >
-              Create engineering role
-            </Link>
-          </PanelSection>
+            description="No candidates have been invited yet. Create an engineering role, publish it, and invite candidates to a practical task they complete in their own editor. Your team reviews the evidence and releases the report."
+          />
         </Panel>
       ) : (
         <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
-          <PanelSection
+          <WorkspaceSection
             title="Active roles"
             action={
               <SectionLink href="/app/employer/roles" label="All roles" />
             }
           >
             <CandidatePipeline invitations={invitations} />
-          </PanelSection>
+          </WorkspaceSection>
         </Panel>
       )}
 
@@ -210,7 +212,7 @@ export default async function EmployerHomePage() {
       {hasInvited ? (
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <Panel>
-            <PanelSection
+            <WorkspaceSection
               title="Ready for review"
               action={<SectionLink href="/app/employer/evidence" label="All evidence" />}
               bodyClassName="-mx-5 -mb-4 lg:-mx-6 lg:-mb-5"
@@ -248,16 +250,16 @@ export default async function EmployerHomePage() {
                   ))}
                 </ul>
               )}
-            </PanelSection>
+            </WorkspaceSection>
           </Panel>
 
           <Panel>
-            <PanelSection
+            <WorkspaceSection
               title="Recent activity"
               description="Recorded events only. Unsubmitted candidate work is never shown."
             >
               <ActivityFeed rows={activityRows} />
-            </PanelSection>
+            </WorkspaceSection>
           </Panel>
         </div>
       ) : null}

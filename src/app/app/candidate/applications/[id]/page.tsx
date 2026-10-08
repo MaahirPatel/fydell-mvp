@@ -4,17 +4,22 @@ import { requireUser } from "@/lib/simulations/auth";
 import { getMyApplication } from "@/lib/hiring/applications";
 import { ROLE_STATE_LABEL } from "@/lib/hiring/role-contract";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
+import { CandidatePageHead } from "@/components/candidate/CandidatePageHead";
 import { FormSuccess } from "@/components/ui/Field";
 import WithdrawButton from "@/components/hiring/WithdrawButton";
+import EvidenceSnapshotView from "@/components/evidence/EvidenceSnapshotView";
+import StopSharingButton from "@/components/evidence/StopSharingButton";
+import AnswerQuestions from "@/components/evidence/AnswerQuestions";
+import { getApplicationEvidenceForApplicant, listApplicationQuestionsForApplicant } from "@/lib/profile-evidence/applications";
 
 export const metadata = { title: "Application receipt" };
 export const dynamic = "force-dynamic";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-1 border-t border-[var(--border-subtle)] py-4 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-6">
-      <dt className="text-app-meta font-medium text-[var(--text-secondary)]">{label}</dt>
-      <dd className="min-w-0 text-app-body text-[var(--text-body)]">{children}</dd>
+    <div className="grid gap-1 border-t border-[var(--border-subtle)] py-3 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-6">
+      <dt className="text-[13px] font-medium text-[var(--text-tertiary)]">{label}</dt>
+      <dd className="min-w-0 text-[14px] leading-[1.55] text-[var(--text-body)]">{children}</dd>
     </div>
   );
 }
@@ -33,25 +38,24 @@ export default async function ApplicationReceiptPage({
   const app = await getMyApplication(user.id, id);
   if (!app) notFound();
   const withdrawn = app.status === "withdrawn";
+  const [pinned, questions] = await Promise.all([getApplicationEvidenceForApplicant(user.id, app.id), listApplicationQuestionsForApplicant(user.id, app.id)]);
+  const pinnedItems = pinned ?? [];
+  const titles = Object.fromEntries(pinnedItems.flatMap((p) => (p.content ? [[p.versionId, p.content.title] as const] : [])));
 
   return (
-    <CandidateShell current="applications" width="narrow">
-      <p className="text-app-meta text-[var(--text-tertiary)]">
-        <Link href="/app/candidate/applications" className="hover:underline">Applications</Link> / Receipt
-      </p>
+    <CandidateShell current="applications" width="narrow" crumbs={[{ label: app.roleTitle }]}>
       {sp.sent === "1" && !withdrawn ? (
-        <div className="mt-4"><FormSuccess>Application sent. {app.organizationName} has been notified.</FormSuccess></div>
+        <div className="mb-5"><FormSuccess>Application sent. {app.organizationName} has been notified.</FormSuccess></div>
       ) : null}
       {sp.already === "1" && !withdrawn ? (
-        <p role="status" className="mt-4 rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-3 text-app-meta text-[var(--text-body)]">
+        <p role="status" className="mb-5 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] px-4 py-3 text-app-meta text-[var(--text-body)]">
           You&apos;ve already applied to this role. To change what you sent, withdraw this application and apply again.
         </p>
       ) : null}
 
-      <h1 className="mt-6 text-app-page text-[var(--text-primary)]">{app.roleTitle}</h1>
-      <p className="mt-2 text-app-body text-[var(--text-secondary)]">{app.organizationName}</p>
+      <CandidatePageHead title={app.roleTitle} lead={`${app.organizationName} · Application receipt`} />
 
-      <dl className="mt-8">
+      <dl className="mt-6">
         <Row label="Status">
           {withdrawn
             ? `Withdrawn ${app.withdrawnAt ? new Date(app.withdrawnAt).toLocaleString() : ""}`
@@ -70,7 +74,39 @@ export default async function ApplicationReceiptPage({
           ) : null}
         </Row>
         <Row label="Projects shared">
-          {app.sharedProjects.length === 0 ? (
+          {pinnedItems.length > 0 ? (
+            <>
+              <ol className="grid gap-3">
+                {pinnedItems.map((p) => (
+                  <li key={p.versionId} className="rounded-[8px] border border-[var(--border-subtle)] p-3">
+                    <p className="text-[14px] font-medium text-[var(--text-primary)]">
+                      {p.position + 1}. {p.content?.title ?? p.projectKey}
+                    </p>
+                    <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">
+                      Version {p.version}, prepared {new Date(p.publishedAt).toLocaleDateString()}
+                      {p.revokedAt ? `. You stopped sharing it on ${new Date(p.revokedAt).toLocaleDateString()}.` : ""}
+                    </p>
+                    {p.content ? (
+                      <details className="mt-2">
+                        <summary className="cursor-pointer text-app-meta text-[var(--text-secondary)]">Preview what the team sees</summary>
+                        <div className="mt-3">
+                          <EvidenceSnapshotView content={p.content} version={p.version} publishedAt={p.publishedAt} headingLevel={3} />
+                        </div>
+                      </details>
+                    ) : null}
+                    {!p.revokedAt && !withdrawn ? (
+                      <div className="mt-2">
+                        <StopSharingButton applicationId={app.id} versionId={p.versionId} title={p.content?.title ?? "this project"} organizationName={app.organizationName} />
+                      </div>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-2 text-app-meta text-[var(--text-secondary)]">
+                Each project is fixed at the version you sent. Editing your profile later does not change what this team sees.
+              </p>
+            </>
+          ) : app.sharedProjects.length === 0 ? (
             "None"
           ) : (
             <>
@@ -112,6 +148,13 @@ export default async function ApplicationReceiptPage({
           </Row>
         ) : null}
       </dl>
+
+      <section className="mt-6 border-t border-[var(--border-subtle)] pt-6" aria-labelledby="questions-heading">
+        <h2 id="questions-heading" className="text-[15px] font-semibold text-[var(--text-primary)]">Questions from {app.organizationName}</h2>
+        <div className="mt-3">
+          <AnswerQuestions initial={questions} titles={titles} withdrawn={withdrawn} />
+        </div>
+      </section>
 
       <div className="mt-6 border-t border-[var(--border-subtle)] pt-6">
         {withdrawn ? (

@@ -1,4 +1,4 @@
-import { CircleCheck, CircleX, FileText, Upload } from "lucide-react";
+import { CircleCheck, CircleDot, CircleX, FileText, Upload } from "lucide-react";
 import FydellLogo from "@/components/brand/FydellLogo";
 import { BACKEND_WEBHOOK_RETRY_V1 as SCENARIO } from "@/lib/eng/scenarios/backend-webhook-retry/definition";
 import s from "./screens.module.css";
@@ -49,7 +49,7 @@ export default function SimulationWorkspace() {
       <div className={s.simHeader}>
         <span className={s.simTitle}>{SCENARIO.title}</span>
         <span className={s.simStatus}>
-          <CircleCheck aria-hidden size={14} /> In progress
+          <CircleDot aria-hidden size={14} /> In progress
         </span>
         <span className={s.simMeta}>
           Started after the setup check · 52 of {SCENARIO.defaultAllowedMinutes} minutes left
