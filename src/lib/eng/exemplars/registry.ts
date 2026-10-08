@@ -6,6 +6,8 @@ import { EXEMPLAR as jobLeaseRecovery } from "../scenarios/job-lease-recovery/ex
 import { EXEMPLAR as inventoryPagination } from "../scenarios/inventory-pagination-contract/exemplar";
 import { EXEMPLAR as supportRetrieval } from "../scenarios/support-retrieval-quality/exemplar";
 import { EXEMPLAR as extractionOutput } from "../scenarios/extraction-structured-output/exemplar";
+import { EXEMPLAR as appointmentBooking } from "../scenarios/appointment-booking-consistency/exemplar";
+import { EXEMPLAR as evalHarness } from "../scenarios/eval-harness-integrity/exemplar";
 import { PRIORITY_LABEL, TRACKS, trackOf, type TrackId } from "../tracks";
 import type { Level } from "../taxonomy";
 import type { Exemplar, ExemplarDifficulty } from "./types";
@@ -18,7 +20,7 @@ import validation from "./validation.generated.json";
  * takes it out of the creator until it is validated again.
  */
 
-export const EXEMPLARS: Exemplar[] = [webhookDedupe, jobLeaseRecovery, inventoryPagination, supportRetrieval, extractionOutput];
+export const EXEMPLARS: Exemplar[] = [webhookDedupe, jobLeaseRecovery, inventoryPagination, supportRetrieval, extractionOutput, appointmentBooking, evalHarness];
 
 type ValidationRecord = { key: string; version: string; sha256: string; status: "passed" | "failed"; checkedAt: string; runner: string; checks: Array<{ id: string; status: string }> };
 
