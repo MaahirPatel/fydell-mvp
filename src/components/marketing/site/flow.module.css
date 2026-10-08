@@ -20,7 +20,16 @@
   padding: 20px;
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
-  background: var(--surface-panel);
+  background:
+    radial-gradient(70% 90% at 0% 0%, color-mix(in srgb, var(--mk-brand-teal) 20%, transparent), transparent 70%),
+    radial-gradient(70% 90% at 100% 100%, color-mix(in srgb, var(--mk-brand-blue) 14%, transparent), transparent 70%),
+    var(--surface-panel);
+}
+.step:nth-child(5) .stage {
+  background:
+    radial-gradient(70% 90% at 0% 0%, color-mix(in srgb, #22c55e 20%, transparent), transparent 70%),
+    radial-gradient(70% 90% at 100% 100%, color-mix(in srgb, var(--mk-brand-teal) 16%, transparent), transparent 70%),
+    var(--surface-panel);
 }
 .card {
   display: flex;

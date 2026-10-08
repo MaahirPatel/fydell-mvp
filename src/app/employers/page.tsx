@@ -1,6 +1,8 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import ProductFrame from "@/components/marketing/site/ProductFrame";
 import ApplicantReview from "@/components/marketing/site/ApplicantReview";
+import ColorStage from "@/components/marketing/site/ColorStage";
+import StoryStrip from "@/components/marketing/site/StoryStrip";
 import EmployerReview from "@/components/marketing/site/EmployerReview";
 import HiringFlow from "@/components/marketing/site/HiringFlow";
 import SimulationTemplates, { templateCatalog } from "@/components/marketing/site/SimulationTemplates";
@@ -28,9 +30,12 @@ export default function EmployersPage() {
         primary={{ href: "/signup?as=employer", label: "Create a workspace" }}
         supporting={{ href: "/sandbox", label: "Explore demo" }}
       >
-        <ProductFrame size="hero" title="Fydell · Submission review" label="A hiring team's review of one submission: a criterion, the changed lines and checks behind it, the one item left open, and the next step.">
+        <ColorStage tone="employer">
+          <ProductFrame size="hero" title="Fydell · Submission review" label="A hiring team's review of one submission: a criterion, the changed lines and checks behind it, the one item left open, and the next step.">
           <EmployerReview />
         </ProductFrame>
+        </ColorStage>
+        <StoryStrip current="employer" />
       </SiteHero>
 
       <Feature

@@ -5,6 +5,7 @@ import ProfileWorkspace from "@/components/marketing/site/ProfileWorkspace";
 import ApplicantReview from "@/components/marketing/site/ApplicantReview";
 import SimulationWorkspace from "@/components/marketing/site/SimulationWorkspace";
 import SimulationHero from "@/components/marketing/site/SimulationHero";
+import StoryStrip from "@/components/marketing/site/StoryStrip";
 import PaintedStage from "@/components/marketing/site/PaintedStage";
 import DownloadButton from "@/components/marketing/site/DownloadButton";
 import DesktopBand from "@/components/marketing/site/DesktopBand";
@@ -44,6 +45,7 @@ export default function HomePage() {
             <SimulationHero />
           </ProductFrame>
         </PaintedStage>
+        <StoryStrip current="simulation" />
       </CenteredHero>
 
       <ShowcaseSection
