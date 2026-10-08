@@ -18,11 +18,11 @@ export default function DevelopersPage() {
     <MarketingShell>
       <SiteHero
         title={["Show the work", "behind your resume."]}
-        lead="Present the projects you're proud of, with what you contributed and what the code shows. Share exactly what you choose, and apply to roles with it. Free for engineers."
+        lead="Bring your projects, contributions, and source-linked findings into one profile. Choose what to share."
         primary={{ href: "/signup", label: "Sign up" }}
         supporting={{ href: "/download", label: "Download Fydell" }}
       >
-        <ProductFrame size="hero" interactive title="Fydell · Passport" label="An engineer's projects, the open project's contribution, and one finding with its cited lines. Select a project or a finding.">
+        <ProductFrame size="hero" interactive title="Fydell · Passport" label="One project in an engineer's Passport: its purpose, their part, and a finding opened to the source lines it cites. Select a highlight to open it.">
           <ProfileWorkspace />
         </ProductFrame>
       </SiteHero>

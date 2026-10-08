@@ -47,7 +47,7 @@
 /* ---------- Hero ---------- */
 
 .hero {
-  padding-top: 144px;
+  padding-top: 112px;
 }
 .announce {
   display: inline-flex;
@@ -75,7 +75,7 @@
 }
 .heroTitle {
   max-width: 13em;
-  font-size: 76px;
+  font-size: 68px;
   line-height: 1;
   font-weight: 500;
   letter-spacing: -0.04em;
@@ -87,7 +87,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: 32px 64px;
-  margin-top: 36px;
+  margin-top: 28px;
 }
 .heroLead {
   max-width: 52ch;
@@ -174,7 +174,7 @@
   color: var(--text-primary);
 }
 .heroVisual {
-  margin-top: 72px;
+  margin-top: 48px;
 }
 .secondVisual {
   margin-top: 40px;
@@ -605,11 +605,59 @@
   color: var(--text-secondary);
 }
 
+/* ---------- Catalog ---------- */
+
+.catalog {
+  margin-top: 56px;
+  border-top: 1px solid var(--border-subtle);
+}
+.catalog li {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 32px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.catalogTitle {
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  color: var(--text-primary);
+}
+.catalogSummary {
+  margin-top: 6px;
+  max-width: 62ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.catalogMeta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: start;
+  gap: 4px 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.catalogMeta strong {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.catalogMinutes {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1023px) {
+  .catalog li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
   .hero {
-    padding-top: 136px;
+    padding-top: 104px;
   }
   .heroTitle {
     font-size: 60px;
@@ -623,7 +671,7 @@
     align-items: flex-start;
   }
   .heroVisual {
-    margin-top: 56px;
+    margin-top: 44px;
   }
   .h2,
   .splitText .h2 {
@@ -660,7 +708,7 @@
 
 @media (max-width: 639px) {
   .hero {
-    padding-top: 112px;
+    padding-top: 96px;
   }
   .heroTitle {
     font-size: 44px;

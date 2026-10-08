@@ -37,7 +37,7 @@ export const PRODUCTS: Record<ProductSlug, ProductPage> = {
     primary: { href: "/signup", label: "Sign up" },
     secondary: { href: "/developers", label: "What engineers can expect" },
     visual: (
-      <ProductFrame size="hero" interactive title="Fydell · Passport" label="An engineer's projects, the open project's contribution, and one finding with its cited lines. Select a project or a finding.">
+      <ProductFrame size="hero" interactive title="Fydell · Passport" label="One project in an engineer's Passport: its purpose, their part, and a finding opened to the source lines it cites. Select a highlight to open it.">
         <ProfileWorkspace />
       </ProductFrame>
     ),

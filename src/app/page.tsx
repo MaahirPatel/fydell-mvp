@@ -53,7 +53,7 @@ export default function HomePage() {
         more={{ href: "/products/builder-profiles", label: "Builder Profiles" }}
       >
         <PaintedStage painting="coast">
-          <ProductFrame interactive title="Fydell · Passport" label="An engineer's Passport: selected projects, the open project's contribution, and one finding with the source lines it cites. Select a project or a finding.">
+          <ProductFrame interactive title="Fydell · Passport" label="One project in an engineer's Passport: its purpose, their part, and a finding opened to the source lines it cites. Select a highlight to open it.">
             <ProfileWorkspace />
           </ProductFrame>
         </PaintedStage>
