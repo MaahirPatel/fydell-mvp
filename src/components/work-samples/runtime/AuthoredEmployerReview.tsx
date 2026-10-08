@@ -22,7 +22,7 @@ export function AuthoredEvaluationPanel({ evaluation }: { evaluation: EmployerAu
       <PanelSection title="Automated evaluation" description="States come only from tests that ran. There is no overall score, and reviewer-judged areas are left for you.">
         <Facts
           items={[
-            { label: "Runner", value: `${runner.label}${runner.isolated ? "" : ", not isolated"}` },
+            { label: "Runner", value: runner.isolated || /not isolated/i.test(runner.label) ? runner.label : `${runner.label}, not isolated` },
             { label: "Suite", value: suite.outcome === "timeout" ? `Timed out after ${(suite.durationMs / 1000).toFixed(0)}s` : `Finished in ${(suite.durationMs / 1000).toFixed(1)}s, exit code ${suite.exitCode ?? "none"}` },
             { label: "Command", value: <code className="font-mono text-[12.5px]">{suite.command}</code> },
             { label: "Tests", value: `${evaluation.tests.filter((t) => t.outcome === "passed").length} of ${evaluation.tests.length} passed` },

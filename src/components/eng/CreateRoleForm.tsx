@@ -75,7 +75,7 @@ export default function CreateRoleForm({
       <Field label="Role title" htmlFor="role-title">
         <Input id="role-title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} required placeholder="Backend engineer, payments" />
       </Field>
-      <Field label="Stack" htmlFor="role-stack" help="Comma separated. Shown to reviewers as context; the task itself is Python.">
+      <Field label="Stack" htmlFor="role-stack" help="Comma separated. Shown to reviewers as context. The simulation you attach sets the language candidates work in.">
         <Input id="role-stack" value={stack} onChange={(e) => setStack(e.target.value)} />
       </Field>
       <Field label="Responsibilities" htmlFor="role-resp" optional>

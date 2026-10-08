@@ -10,6 +10,10 @@ import AttentionQueue from "@/components/employer/AttentionQueue";
 import CandidatePipeline from "@/components/employer/CandidatePipeline";
 import { AppliedAiDemoModule } from "@/components/employer/AppliedAiDemoModule";
 import { describeElapsed, formatElapsed } from "@/lib/time/elapsed";
+import { StatusTag } from "@/components/ui/StatusTag";
+import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
+import { engAdmin } from "@/lib/eng/context";
+import { listRoleSummaries, listTeamQueue } from "@/lib/eng/employer-view";
 import {
   getInvitationRecords,
   getOperationalSnapshot,
@@ -48,7 +52,7 @@ function HealthPanel({ health }: { health: WorkspaceHealth }) {
       key: "email",
       label: "Email delivery is not configured",
       detail:
-        "Invitations are not sent. Copy each candidate link from Candidates and share it yourself.",
+        "Invitations are not emailed. When you invite someone, copy the link Fydell shows and send it yourself.",
       tone: "attention",
     });
   }
@@ -179,16 +183,21 @@ export default async function EmployerHomePage() {
   // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
 
-  const [invitations, reports, snapshot] = await Promise.all([
+  const db = engAdmin();
+  const [invitations, reports, snapshot, engRoles, teamQueue] = await Promise.all([
     getInvitationRecords(org.organizationId, 200),
     getReportRecords(org.organizationId, 5),
     getOperationalSnapshot(org.organizationId, now),
+    listRoleSummaries(db, org.organizationId),
+    listTeamQueue(db, org.organizationId),
   ]);
   const health = await getWorkspaceHealth(org.organizationId, invitations);
 
   const canManage = orgCan(org.role, "manage_candidates");
-  const hasInvited = invitations.length > 0;
-  const hasResults = reports.length > 0;
+  const engInvited = engRoles.reduce((n, r) => n + r.invited, 0);
+  const hasInvited = invitations.length > 0 || engInvited > 0;
+  const hasResults = reports.length > 0 || teamQueue.length > 0;
+  const activeRoles = engRoles.filter((r) => r.status !== "archived");
 
   const attentionRows = snapshot.attention.map((item) => ({
     key: item.key,
@@ -250,10 +259,93 @@ export default async function EmployerHomePage() {
         </Panel>
       ) : null}
 
-      {!hasInvited ? (
-        <GettingStarted className={attentionRows.length > 0 ? "mt-6" : "mt-7"} canManage={canManage} />
-      ) : (
+      {teamQueue.length > 0 ? (
         <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
+          <WorkspaceSection
+            title="Waiting on your team"
+            description="Submitted work with a report to release, a decision to record, or a candidate on hold. Oldest first."
+            action={
+              <span className="text-app-meta tabular-nums text-[var(--text-tertiary)]">
+                {teamQueue.length} {teamQueue.length === 1 ? "candidate" : "candidates"}
+              </span>
+            }
+            bodyClassName="-mx-5 -mb-4 lg:-mx-6 lg:-mb-5"
+          >
+            <ul>
+              {teamQueue.map((item) => (
+                <li key={item.attemptId} className="border-t border-[var(--border-subtle)]">
+                  <Link
+                    href={`/app/employer/engineering/attempts/${item.attemptId}`}
+                    className="flex items-baseline gap-3 px-5 py-3 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] lg:px-6"
+                  >
+                    <span className="min-w-0 flex-1 truncate">
+                      <span className="text-app-body font-medium text-[var(--text-primary)]">{item.candidate}</span>
+                      <span className="text-app-meta text-[var(--text-tertiary)]"> · {item.roleTitle}</span>
+                    </span>
+                    <span className="shrink-0 text-app-meta text-[var(--text-secondary)]">
+                      {item.waitingOn === "decision" ? "Record a decision" : item.waitingOn === "hold" ? "On hold" : "Review and release"}
+                    </span>
+                    {item.since ? (
+                      <span
+                        className="w-9 shrink-0 text-right font-mono text-app-meta tabular-nums text-[var(--text-tertiary)]"
+                        title={describeElapsed(item.since, now)}
+                      >
+                        {formatElapsed(item.since, now)}
+                      </span>
+                    ) : null}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </WorkspaceSection>
+        </Panel>
+      ) : null}
+
+      {!hasInvited && activeRoles.length === 0 ? (
+        <GettingStarted className={attentionRows.length > 0 ? "mt-6" : "mt-7"} canManage={canManage} />
+      ) : null}
+
+      {activeRoles.length > 0 ? (
+        <Panel className="mt-6">
+          <WorkspaceSection
+            title="Engineering roles"
+            action={<SectionLink href="/app/employer/engineering" label="All roles" />}
+            bodyClassName="-mx-5 -mb-4 lg:-mx-6 lg:-mb-5"
+          >
+            <Table>
+              <THead>
+                <TH>Role</TH>
+                <TH>Status</TH>
+                <TH align="right">Invited</TH>
+                <TH align="right">In progress</TH>
+                <TH align="right">Reports released</TH>
+              </THead>
+              <TBody>
+                {activeRoles.slice(0, 6).map((role) => (
+                  <TR key={role.id}>
+                    <TDPrimary>
+                      <Link href={`/app/employer/engineering/roles/${role.id}`} className="hover:underline">
+                        {role.title}
+                      </Link>
+                    </TDPrimary>
+                    <TD>
+                      <StatusTag tone={role.status === "published" ? "good" : "neutral"}>
+                        {role.status === "published" ? "Published" : "Draft"}
+                      </StatusTag>
+                    </TD>
+                    <TD align="right">{role.invited}</TD>
+                    <TD align="right">{role.inProgress}</TD>
+                    <TD align="right">{role.ready}</TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          </WorkspaceSection>
+        </Panel>
+      ) : null}
+
+      {invitations.length > 0 ? (
+        <Panel className="mt-6">
           <WorkspaceSection
             title="Active roles"
             action={
@@ -263,11 +355,11 @@ export default async function EmployerHomePage() {
             <CandidatePipeline invitations={invitations} />
           </WorkspaceSection>
         </Panel>
-      )}
+      ) : null}
 
       <AppliedAiDemoModule className="mt-6" />
 
-      {hasInvited ? (
+      {invitations.length > 0 ? (
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <Panel>
             <WorkspaceSection

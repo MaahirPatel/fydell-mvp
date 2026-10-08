@@ -2,6 +2,7 @@ import "server-only";
 import { requireUser } from "@/lib/simulations/auth";
 import { resolveMembership, type Admin, type EngMember } from "./context";
 import { listMessages } from "./attempts";
+import { candidateIdentity } from "./candidate-label";
 import { submissionFor } from "./evidence";
 import { listReports } from "./reports";
 import { effectiveDueAt, operationalState, type OperationalState } from "./state";
@@ -40,6 +41,66 @@ export async function listRoleSummaries(db: Admin, organizationId: string): Prom
     inProgress: (attempts ?? []).filter((a) => a.role_id === role.id && (a.status === "in_progress" || a.status === "preflight_passed")).length,
     ready: readyByRole.get(role.id) ?? 0,
   }));
+}
+
+export interface TeamQueueItem {
+  attemptId: string;
+  candidate: string;
+  roleTitle: string;
+  waitingOn: "release" | "decision" | "hold";
+  since: string;
+}
+
+/**
+ * Submitted engineering attempts waiting on the hiring team: a report to
+ * release, a decision against a released report, or a decision on hold.
+ * Preview attempts are left out.
+ */
+export async function listTeamQueue(db: Admin, organizationId: string, limit = 8): Promise<TeamQueueItem[]> {
+  const { data: attempts } = await db
+    .from("eng_attempts")
+    .select("id, role_id, invitation_id, submitted_at")
+    .eq("organization_id", organizationId)
+    .eq("is_preview", false)
+    .eq("status", "submitted")
+    .order("submitted_at", { ascending: true })
+    .limit(200);
+  const rows = (attempts ?? []) as { id: string; role_id: string; invitation_id: string; submitted_at: string | null }[];
+  if (rows.length === 0) return [];
+  const ids = rows.map((a) => a.id);
+  const [{ data: reports }, { data: decisions }, { data: invitations }, { data: roles }] = await Promise.all([
+    db.from("eng_reports").select("attempt_id, released_at").in("attempt_id", ids).eq("status", "released"),
+    db.from("eng_decisions").select("attempt_id, decision, created_at").in("attempt_id", ids).order("created_at", { ascending: false }),
+    db.from("eng_invitations").select("id, candidate_name, candidate_email, candidate_handle").in("id", rows.map((a) => a.invitation_id)),
+    db.from("eng_roles").select("id, title").in("id", [...new Set(rows.map((a) => a.role_id))]),
+  ]);
+  const releasedAt = new Map<string, string>();
+  for (const r of reports ?? []) {
+    const prev = releasedAt.get(r.attempt_id as string);
+    const at = (r.released_at as string | null) ?? "";
+    if (!prev || at > prev) releasedAt.set(r.attempt_id as string, at);
+  }
+  const latestDecision = new Map<string, { decision: string; at: string }>();
+  for (const d of decisions ?? []) {
+    if (!latestDecision.has(d.attempt_id as string)) latestDecision.set(d.attempt_id as string, { decision: d.decision as string, at: d.created_at as string });
+  }
+  const invById = new Map((invitations ?? []).map((i) => [i.id as string, i as Pick<InvitationRow, "candidate_name" | "candidate_email" | "candidate_handle">]));
+  const roleTitle = new Map((roles ?? []).map((r) => [r.id as string, r.title as string]));
+  const out: TeamQueueItem[] = [];
+  for (const a of rows) {
+    const decision = latestDecision.get(a.id);
+    if (decision && decision.decision !== "hold") continue;
+    const inv = invById.get(a.invitation_id);
+    const released = releasedAt.get(a.id);
+    out.push({
+      attemptId: a.id,
+      candidate: inv ? candidateIdentity(inv).primary : "Candidate",
+      roleTitle: roleTitle.get(a.role_id) ?? "Role",
+      waitingOn: decision ? "hold" : released !== undefined ? "decision" : "release",
+      since: decision?.at || released || a.submitted_at || "",
+    });
+  }
+  return out.sort((x, y) => x.since.localeCompare(y.since)).slice(0, limit);
 }
 
 export interface CandidateRow {
@@ -248,4 +309,12 @@ export const EVENT_LABELS: Record<string, string> = {
   decision_recorded: "Decision recorded",
   finding_flagged: "Finding flagged for review",
   attempt_withdrawn: "Invitation withdrawn",
+  environment_check_run: "Environment check ran",
+  public_tests_run: "Public tests ran",
+  scenario_event_released: "Scenario update posted to the team thread",
+  team_message_sent: "Candidate messaged the team",
+  teammate_replied: "Simulated teammate replied",
+  assistant_interaction: "Candidate asked the coding assistant",
+  assistant_patch_decided: "Candidate decided on an assistant change",
+  review_opened: "Candidate opened the review step",
 };

@@ -9,9 +9,7 @@ import { engAdmin } from "@/lib/eng/context";
 import { listRoleSummaries, pageMember } from "@/lib/eng/employer-view";
 import { roleCan } from "@/lib/eng/permissions";
 import { FOCUS_OPTIONS } from "@/lib/eng/roles";
-import { CURRENT_SCENARIO } from "@/lib/eng/scenarios";
-
-export const metadata = { title: "Work samples" };
+export const metadata = { title: "Assessments" };
 export const dynamic = "force-dynamic";
 
 const STATUS_TONE = { draft: "neutral", published: "good", archived: "neutral" } as const;
@@ -21,25 +19,24 @@ export default async function EngineeringRolesPage() {
   if (!member) {
     return (
       <div className="max-w-[880px]">
-        <PageHeader title="Work samples" />
+        <PageHeader title="Assessments" />
         <EmptyState className="mt-6" title="No active workspace" description="You are not an active member of a workspace. Accept a pending invitation on the Team page, or ask an owner to add you." />
       </div>
     );
   }
   const roles = await listRoleSummaries(engAdmin(), member.organizationId);
   const canManage = roleCan(member.role, "manage_roles");
-  const scenario = CURRENT_SCENARIO;
 
   return (
     <div className="max-w-[1120px]">
       <PageHeader
-        title="Work samples"
-        description="Invite backend candidates to one reviewed, practical task. They work locally in their own editor, talk to the team in a thread, handle one requirement change, and upload their project. Trusted checks run in isolation, then your team reviews the evidence and releases a report where every finding cites the code, test, message or handoff behind it."
+        title="Assessments"
+        description="Each role invites candidates to one published simulation. They work in their own editor, message the simulated team and submit their project. Your team reviews the evidence and releases the report."
       />
 
       <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <Panel>
-          <PanelSection title="Roles" description={`${member.organizationName}. Each role uses a pinned version of the task, so every candidate for it gets the same work.`} />
+          <PanelSection title="Roles" description="Each role pins one simulation version, so every candidate for it gets the same work." />
           {roles.length === 0 ? (
             <div className="px-5 pb-5 lg:px-6">
               <EmptyState title="No engineering roles yet" description={canManage ? "Create a draft role, preview the task, then publish it to start inviting." : "An owner, admin or hiring manager can create the first role."} />
@@ -51,7 +48,7 @@ export default async function EngineeringRolesPage() {
                 <TH>Status</TH>
                 <TH align="right">Invited</TH>
                 <TH align="right">In progress</TH>
-                <TH align="right">Reports ready</TH>
+                <TH align="right">Reports released</TH>
               </THead>
               <TBody>
                 {roles.map((role) => (
@@ -83,18 +80,16 @@ export default async function EngineeringRolesPage() {
             </Panel>
           ) : null}
           <Panel>
-            <PanelSection title="The task" description={`${scenario.title}, version ${scenario.version}`}>
-              <p className="text-app-body leading-[1.6] text-[var(--text-secondary)]">{scenario.summary}</p>
-              <dl className="mt-4 grid grid-cols-2 gap-3 text-app-meta">
-                <div>
-                  <dt className="text-[var(--text-tertiary)]">Target effort</dt>
-                  <dd className="text-[var(--text-primary)]">About {scenario.targetMinutes} minutes</dd>
-                </div>
-                <div>
-                  <dt className="text-[var(--text-tertiary)]">Window</dt>
-                  <dd className="text-[var(--text-primary)]">{scenario.defaultAllowedMinutes} minutes after Start</dd>
-                </div>
-              </dl>
+            <PanelSection title="Simulations" description="Roles attach a published simulation from Work samples.">
+              <p className="text-app-body leading-[1.6] text-[var(--text-secondary)]">
+                Start from a validated role model, use it as reviewed or adapt it to your product, then publish it once the checks pass.
+              </p>
+              <Link
+                href="/app/employer/work-samples"
+                className="mt-3 inline-block text-app-body font-medium text-[var(--accent-ink)] underline-offset-2 hover:underline"
+              >
+                Open work samples
+              </Link>
             </PanelSection>
           </Panel>
         </div>

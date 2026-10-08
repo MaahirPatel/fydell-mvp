@@ -45,10 +45,10 @@ import {
 const NAV_ICONS: Record<WorkspaceNavLabel, typeof House> = {
   Overview: House,
   Roles: BriefcaseBusiness,
+  Assessments: ShieldCheck,
   Applicants: Users,
   Reviews: IdCard,
   "Work samples": SquareTerminal,
-  "Task attempts": ShieldCheck,
   "Task library": LibraryBig,
   Work: FolderOpen,
   Evidence: FileCheck2,

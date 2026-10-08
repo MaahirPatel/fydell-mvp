@@ -1,11 +1,11 @@
 export type WorkspaceNavLabel =
   | "Overview"
   | "Roles"
+  | "Assessments"
   | "Applicants"
   | "Reviews"
   | "Work samples"
   | "Team"
-  | "Task attempts"
   | "Task library"
   | "Work"
   | "Evidence"
@@ -41,6 +41,7 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
     items: [
       { href: "/app/employer", label: "Overview", exact: true },
       { href: "/app/employer/openings", label: "Roles" },
+      { href: "/app/employer/engineering", label: "Assessments" },
       { href: "/app/employer/candidates", label: "Applicants" },
       { href: "/app/employer/passports", label: "Reviews" },
       { href: "/app/employer/work-samples", label: "Work samples" },
@@ -51,7 +52,6 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
     kind: "collapsible",
     label: "More",
     items: [
-      { href: "/app/employer/engineering", label: "Task attempts" },
       { href: "/app/employer/roles", label: "Task library" },
       { href: "/app/employer/work", label: "Work" },
       { href: "/app/employer/evidence", label: "Evidence" },

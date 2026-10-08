@@ -20,11 +20,11 @@ const labels = WORKSPACE_NAV_ITEMS.map((item) => item.label);
 const expected = [
   "Overview",
   "Roles",
+  "Assessments",
   "Applicants",
   "Reviews",
   "Work samples",
   "Team",
-  "Task attempts",
   "Task library",
   "Work",
   "Evidence",
@@ -73,11 +73,11 @@ ok(
 );
 ok(
   "the hiring destinations are visible before More",
-  visibleByDefault.map((item) => item.label).join(",") === "Overview,Roles,Applicants,Reviews,Work samples,Team",
+  visibleByDefault.map((item) => item.label).join(",") === "Overview,Roles,Assessments,Applicants,Reviews,Work samples,Team",
 );
 ok(
   "More holds the lower-traffic records",
-  more?.items.map((item) => item.label).join(",") === "Task attempts,Task library,Work,Evidence,Work Receipts,Outcomes",
+  more?.items.map((item) => item.label).join(",") === "Task library,Work,Evidence,Work Receipts,Outcomes",
 );
 ok(
   "More opens itself on its own pages and not elsewhere",
