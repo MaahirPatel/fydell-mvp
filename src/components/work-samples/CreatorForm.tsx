@@ -83,6 +83,7 @@ export default function CreatorForm({
   const router = useRouter();
   const [initial] = useState(() => loadStored(fromDraft));
   const [input, setInput] = useState<AuthoringInput>(() => initial?.input ?? prefill ?? registry.defaults);
+  const [start] = useState<AuthoringInput>(input);
   const presets = registry.durations.presets as readonly number[];
   const [customDuration, setCustomDuration] = useState<string | null>(() => {
     if (initial) return initial.customDuration;
@@ -329,9 +330,19 @@ export default function CreatorForm({
 
   // ---- derived state -------------------------------------------------------
 
+  const touched = (field: Issue["field"]): boolean => {
+    if (field === "general" || initial || fromDraft) return true;
+    const a: Record<string, unknown> = input;
+    const b: Record<string, unknown> = start;
+    const other = (x: AuthoringInput): unknown => (x.other as Record<string, unknown>)[field];
+    return JSON.stringify(a[field]) !== JSON.stringify(b[field]) || JSON.stringify(other(input)) !== JSON.stringify(other(start));
+  };
+  const issues = result ? [...result.errors, ...result.conflicts] : [];
+  const shownIssues = issues.filter((x) => touched(x.field));
+  const hiddenIssues = issues.length - shownIssues.length;
   const fieldError = (field: Issue["field"]): string | null => {
     if (pending || !result) return null;
-    const e = [...result.errors, ...result.conflicts].find((x) => x.field === field);
+    const e = shownIssues.find((x) => x.field === field);
     return e?.message ?? null;
   };
   const level = registry.levels.find((l) => l.id === input.level);
@@ -350,8 +361,9 @@ export default function CreatorForm({
   if (validateError) reasons.push(`Could not check the form: ${validateError}`);
   else if (pending) reasons.push("Checking your selections.");
   else if (result && !result.ok) {
-    const n = result.errors.length + result.conflicts.length;
+    const n = shownIssues.length;
     if (n) reasons.push(`Resolve ${n} ${n === 1 ? "problem" : "problems"} in the summary.`);
+    if (hiddenIssues) reasons.push(`Fill in ${hiddenIssues} more required ${hiddenIssues === 1 ? "field" : "fields"}.`);
     if (result.clarifications.length) reasons.push(`Answer ${result.clarifications.length} ${result.clarifications.length === 1 ? "question" : "questions"} (at least 8 characters each).`);
     if (result.assumptions.length) reasons.push(`Confirm ${result.assumptions.length} ${result.assumptions.length === 1 ? "assumption" : "assumptions"}.`);
   }
@@ -675,10 +687,10 @@ export default function CreatorForm({
             </div>
           </PanelSection>
 
-          {result && !pending && (result.errors.length > 0 || result.conflicts.length > 0) ? (
+          {result && !pending && shownIssues.length > 0 ? (
             <PanelSection title="Needs attention">
               <ul className="grid gap-3">
-                {[...result.errors, ...result.conflicts].map((issue, i) => (
+                {shownIssues.map((issue, i) => (
                   <li key={`${issue.field}-${i}`} className="flex items-start gap-2 text-[14px] leading-[1.5]">
                     <StatusIcon tone="bad" className="mt-[3px]" />
                     <div className="min-w-0">
