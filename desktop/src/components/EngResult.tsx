@@ -87,8 +87,19 @@ export function EngReportView({ attemptId, processing }: { attemptId: string; pr
   }, [attemptId]);
 
   useEffect(() => {
-    void load();
-  }, [load, processing]);
+    let live = true;
+    engApi.getReport(attemptId).then(
+      (r) => live && setReport(r),
+      (e: unknown) => {
+        if (!live) return;
+        setError(messageOf(e));
+        setReport(null);
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [attemptId, processing]);
 
   if (report === undefined) {
     return (

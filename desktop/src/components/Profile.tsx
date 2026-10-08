@@ -206,7 +206,7 @@ function AddProjectForm({ onAdded }: { onAdded: () => void }) {
       </div>
       {busy && (
         <p className="muted mt-2">
-          Reading the repository's public files. This can take up to a minute —
+          Reading the repository’s public files. This can take up to a minute —
           nothing is claimed until the analysis finishes.
         </p>
       )}
@@ -232,8 +232,18 @@ export default function Profile() {
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let live = true;
+    api
+      .getPassport()
+      .then(
+        (p) => live && setPassport(p),
+        (e: unknown) => live && setError(messageOf(e)),
+      )
+      .finally(() => live && setLoaded(true));
+    return () => {
+      live = false;
+    };
+  }, []);
 
   const remove = useCallback(
     async (repo: string) => {
@@ -259,7 +269,7 @@ export default function Profile() {
         <div>
           <h1 className="page-title">Profile</h1>
           <p className="page-sub">
-            Your evidence passport — projects you've added, skills extracted
+            Your evidence passport — projects you’ve added, skills extracted
             from real work, and what employers can see.
           </p>
         </div>

@@ -37,8 +37,19 @@ export default function EngTasks({
   }, [onAuthExpired]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let live = true;
+    engApi.listTasks().then(
+      (t) => live && setTasks(t),
+      (e: unknown) => {
+        if (!live) return;
+        if (isAuthRequired(e)) onAuthExpired();
+        else setError(messageOf(e));
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [onAuthExpired]);
 
   const accept = useCallback(
     async (invitationId: string) => {

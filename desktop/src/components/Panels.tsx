@@ -323,6 +323,8 @@ export function TeamPanel() {
   }, []);
 
   useEffect(() => {
+    // load() sets state only after awaiting the API, never synchronously.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load(false);
     const t = setInterval(() => void load(true), CHAT_POLL_MS);
     return () => clearInterval(t);
@@ -396,7 +398,7 @@ export function TeamPanel() {
         <div className="offline-banner" role="status">
           <span className="tag tag-attention">Offline</span>
           <span className="muted">
-            Can't reach the platform. Messages are scripted locally until you
+            Can’t reach the platform. Messages are scripted locally until you
             reconnect.
           </span>
           <button className="btn ghost sm" onClick={() => void load(false)}>
@@ -560,7 +562,7 @@ export function SubmitPanel({ onSubmitted, sessionId }: { onSubmitted: (r: Recei
         <textarea id="submit-approach" className="textarea" value={approach} onChange={(e) => setApproach(e.target.value)} />
       </div>
       <div className="field">
-        <label htmlFor="submit-tradeoffs">Tradeoffs / what you'd do with more time</label>
+        <label htmlFor="submit-tradeoffs">Tradeoffs / what you’d do with more time</label>
         <textarea id="submit-tradeoffs" className="textarea" value={tradeoffs} onChange={(e) => setTradeoffs(e.target.value)} />
       </div>
       <div className="field">
@@ -592,7 +594,7 @@ export function SubmitPanel({ onSubmitted, sessionId }: { onSubmitted: (r: Recei
           <p>
             This packages <strong>your files</strong>, <strong>your test record</strong>,
             and <strong>your event trail</strong> into one immutable submission with a
-            SHA-256 receipt. You can't edit after submitting.
+            SHA-256 receipt. You can’t edit after submitting.
           </p>
           {analysisNote && (
             <p className="muted">{analysisNote}</p>

@@ -648,7 +648,7 @@ function AppScreens({
             <>
               <p>
                 A browser window opened for sign-in. Complete it there — this
-                app will continue automatically when you're done.
+                app will continue automatically when you’re done.
               </p>
               <p className="muted">
                 Your credentials never touch this app; the browser talks to
@@ -731,7 +731,7 @@ function AppScreens({
             )}
             .
           </p>
-          <p>Here's exactly what this app does and doesn't do:</p>
+          <p>Here’s exactly what this app does and doesn’t do:</p>
           <ul className="consent-list">
             <li>
               <span className="yes">✓</span>
@@ -739,7 +739,7 @@ function AppScreens({
             </li>
             <li>
               <span className="yes">✓</span>
-              <span>Runs the scenario's test suite locally on your machine when the assignment declares one.</span>
+              <span>Runs the scenario’s test suite locally on your machine when the assignment declares one.</span>
             </li>
             <li>
               <span className="no">✕</span>
@@ -814,7 +814,7 @@ function AppScreens({
           </p>
           <p className="muted">
             Close it there first, then continue here. If the other window is
-            gone (for example after a crash), its lock goes stale and you'll be
+            gone (for example after a crash), its lock goes stale and you’ll be
             let in automatically — your files are preserved.
           </p>
           <div className="row mt-4">

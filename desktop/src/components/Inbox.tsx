@@ -37,8 +37,15 @@ export default function Inbox({
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let live = true;
+    api.listInvitations().then(
+      (inv) => live && setInvitations(inv),
+      (e: unknown) => live && setError(messageOf(e)),
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
 
   const accept = useCallback(
     (inv: InboxInvitation) => {
@@ -128,7 +135,7 @@ export default function Inbox({
         <div className="section-label">Have an invite code?</div>
         <p className="muted">
           Paste a code shared outside the inbox (chat, email forward). Codes
-          for a different email address won't work here.
+          for a different email address won’t work here.
         </p>
         <div className="row">
           <input

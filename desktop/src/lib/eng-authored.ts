@@ -208,6 +208,14 @@ export function outcomeLabel(outcome: TestOutcome | string): string {
   }
 }
 
+/** Whole seconds until the platform accepts another public test run. */
+export function publicRunWaitSeconds(latestCreatedAt: string | null, minGapSeconds: number, serverNowMs: number): number {
+  if (!latestCreatedAt) return 0;
+  const started = Date.parse(latestCreatedAt);
+  if (Number.isNaN(started)) return 0;
+  return Math.max(0, Math.ceil((started + minGapSeconds * 1000 - serverNowMs) / 1000));
+}
+
 /** Submit needs at least one handoff answer when the task asks for any. */
 export function authoredHandoffBlockers(prompts: { id: string; label: string }[], answers: Record<string, string>, aiUse: string): string[] {
   const out: string[] = [];

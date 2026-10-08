@@ -57,10 +57,6 @@ export default function CommandPalette({
 
   const total = fileResults.length + actionResults.length;
 
-  useEffect(() => {
-    setIndex(0);
-  }, [query]);
-
   const choose = (i: number) => {
     if (i < fileResults.length) {
       onOpenFile(fileResults[i].path);
@@ -96,7 +92,10 @@ export default function CommandPalette({
           ref={inputRef}
           className="palette-input"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIndex(0);
+          }}
           onKeyDown={onKey}
           placeholder="Type a file name or command…"
           aria-label="Search files and commands"

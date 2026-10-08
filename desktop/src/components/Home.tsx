@@ -150,7 +150,7 @@ export default function Home({
           </div>
           {invitations == null ? (
             inboxError ? (
-              <p className="muted">Couldn't load invitations — {inboxError}</p>
+              <p className="muted">Couldn’t load invitations — {inboxError}</p>
             ) : (
               <div aria-busy="true" aria-label="Loading invitations">
                 <div className="skeleton-row">

@@ -78,8 +78,17 @@ export default function AnalysisPanel({ sessionId }: { sessionId: string | null 
   }, [sessionId]);
 
   useEffect(() => {
-    void run();
-  }, [run]);
+    let live = true;
+    runAnalysis(sessionId)
+      .then(
+        (r) => live && setReport(r),
+        (e: unknown) => live && setError(e instanceof Error ? e.message : String(e)),
+      )
+      .finally(() => live && setLoading(false));
+    return () => {
+      live = false;
+    };
+  }, [sessionId]);
 
   if (loading) {
     return (

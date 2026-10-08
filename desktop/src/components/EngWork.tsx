@@ -45,15 +45,14 @@ function useDrafts(attemptId: string, initial: Record<string, { body: string; re
     )
   );
   const ref = useRef(drafts);
-  ref.current = drafts;
   const timers = useRef<Record<string, number>>({});
+  const saveRef = useRef<(field: string) => Promise<void>>(async () => {});
 
+  // The ref is the source of truth so save() sees a patch made in the same tick.
   const patch = useCallback((field: string, next: Partial<DraftState>) => {
-    setDrafts((prev) => {
-      const merged = { ...prev, [field]: { ...prev[field], ...next } };
-      ref.current = merged;
-      return merged;
-    });
+    const merged = { ...ref.current, [field]: { ...ref.current[field], ...next } };
+    ref.current = merged;
+    setDrafts(merged);
   }, []);
 
   const save = useCallback(
@@ -70,13 +69,16 @@ function useDrafts(attemptId: string, initial: Record<string, { body: string; re
         }
         const still = ref.current[field].body === sent;
         patch(field, { revision: r.revision, status: still ? "saved" : "dirty" });
-        if (!still) timers.current[field] = window.setTimeout(() => void save(field), 800);
+        if (!still) timers.current[field] = window.setTimeout(() => void saveRef.current(field), 800);
       } catch {
         patch(field, { status: "error" });
       }
     },
     [attemptId, patch]
   );
+  useEffect(() => {
+    saveRef.current = save;
+  }, [save]);
 
   const change = useCallback(
     (field: string, body: string) => {
@@ -98,7 +100,7 @@ function useDrafts(attemptId: string, initial: Record<string, { body: string; re
     [patch, save]
   );
 
-  const useSaved = useCallback(
+  const takeSaved = useCallback(
     (field: string) => {
       const c = ref.current[field]?.conflict;
       if (!c) return;
@@ -117,7 +119,7 @@ function useDrafts(attemptId: string, initial: Record<string, { body: string; re
 
   useEffect(() => () => Object.values(timers.current).forEach((t) => window.clearTimeout(t)), []);
 
-  return { drafts, change, keepMine, useSaved, retry };
+  return { drafts, change, keepMine, takeSaved, retry };
 }
 
 function draftStatusText(s: DraftState["status"]): string {
@@ -167,7 +169,7 @@ function TeamThread({ detail, messages, onMessages }: { detail: EngAttemptDetail
   return (
     <div className="eng-thread">
       <p className="muted">
-        The team is simulated. Replies are written by the Fydell server from the task's scenario,
+        The team is simulated. Replies are written by the Fydell server from the task’s scenario,
         and your messages are part of what the hiring team reviews.
       </p>
       {view.scenario.teammates.length > 0 && (
@@ -352,7 +354,7 @@ function PackageSection({
           </div>
           {outcome.upload.status === "accepted" && !outcome.matchesLocal && (
             <div className="error mt-2">
-              Fydell's copy has a different SHA-256 than the archive built here. Upload again before submitting.
+              Fydell’s copy has a different SHA-256 than the archive built here. Upload again before submitting.
             </div>
           )}
         </div>
@@ -399,12 +401,14 @@ export default function EngWork({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const [seenMessages, setSeenMessages] = useState(view.messages);
+  if (seenMessages !== view.messages) {
+    setSeenMessages(view.messages);
     setMessages((prev) => (view.messages.length >= prev.length ? view.messages : prev));
-  }, [view.messages]);
+  }
 
   const fields = useMemo(() => handoffFields(view.scenario.handoffPrompts), [view.scenario.handoffPrompts]);
-  const { drafts, change, keepMine, useSaved, retry } = useDrafts(attemptId, view.drafts, fields);
+  const { drafts, change, keepMine, takeSaved, retry } = useDrafts(attemptId, view.drafts, fields);
   const answers = useMemo(() => Object.fromEntries(fields.map((f) => [f, drafts[f]?.body ?? ""])), [fields, drafts]);
   const blockers = handoffBlockers(view.scenario.handoffPrompts, answers);
   const chosen = submittableUpload(view.uploads, detail.local);
@@ -539,7 +543,7 @@ export default function EngWork({
                   draft={drafts[p.field]}
                   onChange={(b) => change(p.field, b)}
                   onKeepMine={() => keepMine(p.field)}
-                  onUseSaved={() => useSaved(p.field)}
+                  onUseSaved={() => takeSaved(p.field)}
                   onRetry={() => retry(p.field)}
                 />
               ))}
@@ -549,14 +553,14 @@ export default function EngWork({
                 draft={drafts[AI_USE_FIELD]}
                 onChange={(b) => change(AI_USE_FIELD, b)}
                 onKeepMine={() => keepMine(AI_USE_FIELD)}
-                onUseSaved={() => useSaved(AI_USE_FIELD)}
+                onUseSaved={() => takeSaved(AI_USE_FIELD)}
                 onRetry={() => retry(AI_USE_FIELD)}
               />
             </section>
 
             <section>
               <h3 className="eng-h3">3. Submit</h3>
-              {!chosen && <p className="muted">Upload a package that passes Fydell's checks first.</p>}
+              {!chosen && <p className="muted">Upload a package that passes Fydell’s checks first.</p>}
               {chosen && !chosen.verifiedLocally && (
                 <p className="muted">
                   The accepted upload was not built by this app on this computer (or its fingerprint does

@@ -8,6 +8,7 @@ import {
   evaluationNote,
   newClientMsgId,
   outcomeLabel,
+  publicRunWaitSeconds,
   runHeadline,
   type AuthoredReport,
   type AuthoredView,
@@ -328,30 +329,40 @@ function Brief({ view }: { view: AuthoredView }) {
   );
 }
 
-function TestsPanel({ view, onRun }: { view: AuthoredView; onRun: () => void }) {
+function TestsPanel({ view, serverNowMs, onRun }: { view: AuthoredView; serverNowMs: number; onRun: () => void }) {
   const { busy, error, run } = useAction();
   const [latest, setLatest] = useState<PublicRun | null>(view.publicRuns.latest?.purpose === "workspace" ? view.publicRuns.latest : null);
-  const left = Math.max(0, view.publicRuns.limit - view.publicRuns.used);
+  const [ranHere, setRanHere] = useState(0);
+  const used = Math.max(view.publicRuns.used, ranHere);
+  const left = Math.max(0, view.publicRuns.limit - used);
+  const lastStarted = [view.publicRuns.latest?.createdAt, latest?.createdAt].filter((d): d is string => Boolean(d)).sort().pop() ?? null;
+  const wait = publicRunWaitSeconds(lastStarted, view.publicRuns.minGapSeconds, serverNowMs);
   return (
     <div className="eng-brief">
       <p className="muted">
         Runs the public tests against your project folder as it is now, on Fydell’s test runner. The employer also runs
-        evaluation tests you cannot see after you submit. {left} of {view.publicRuns.limit} runs left.
+        evaluation tests you cannot see after you submit.
       </p>
       <CopyLine label="Test command" text={view.task.environment.publicTestCommand || view.task.environment.testCommand} />
       <div className="row mt-3">
         <button
           className="btn"
-          disabled={busy || left === 0}
+          disabled={busy || left === 0 || wait > 0}
           onClick={() =>
             void run(async () => {
               setLatest(await engAuthoredApi.runTests(view.attempt.id, "workspace"));
+              setRanHere(used + 1);
               onRun();
             })
           }
         >
-          {busy ? "Running…" : "Run public tests"}
+          {busy ? "Running…" : wait > 0 ? `Run again in ${wait}s` : "Run public tests"}
         </button>
+        <span className="muted">
+          {left === 0
+            ? "No runs left. You can still run the tests locally and submit."
+            : `${left} of ${view.publicRuns.limit} runs left`}
+        </span>
       </div>
       {error && <div className="error mt-3">{error}</div>}
       {latest && <RunResult run={latest} />}
@@ -366,21 +377,24 @@ function TeamPanel({ attemptId }: { attemptId: string }) {
   const { busy, error, run, setError } = useAction();
   const endRef = useRef<HTMLDivElement>(null);
 
-  const load = useCallback(async () => {
-    try {
-      const c = await engAuthoredApi.collaboration(attemptId);
-      setCollab(c);
-      setTo((cur) => cur || c.teammates[0]?.id || "");
-    } catch (e) {
-      setError(messageOf(e));
-    }
-  }, [attemptId, setError]);
-
   useEffect(() => {
+    let live = true;
+    const load = () =>
+      engAuthoredApi.collaboration(attemptId).then(
+        (c) => {
+          if (!live) return;
+          setCollab(c);
+          setTo((cur) => cur || c.teammates[0]?.id || "");
+        },
+        (e: unknown) => live && setError(messageOf(e)),
+      );
     void load();
     const id = window.setInterval(() => void load(), 30_000);
-    return () => window.clearInterval(id);
-  }, [load]);
+    return () => {
+      live = false;
+      window.clearInterval(id);
+    };
+  }, [attemptId, setError]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
@@ -565,7 +579,21 @@ function SubmitPanel({ view, onView }: { view: AuthoredView; onView: () => Promi
   );
 }
 
-function Working({ view, local, plannedDir, onLocal, refresh }: { view: AuthoredView; local: EngLocalState | null; plannedDir: string; onLocal: (l: EngLocalState) => void; refresh: () => Promise<void> }) {
+function Working({
+  view,
+  local,
+  plannedDir,
+  serverNowMs,
+  onLocal,
+  refresh,
+}: {
+  view: AuthoredView;
+  local: EngLocalState | null;
+  plannedDir: string;
+  serverNowMs: number;
+  onLocal: (l: EngLocalState) => void;
+  refresh: () => Promise<void>;
+}) {
   const [tab, setTab] = useState<"brief" | "tests" | "team" | "submit">("brief");
   return (
     <section className="eng-panel">
@@ -589,7 +617,7 @@ function Working({ view, local, plannedDir, onLocal, refresh }: { view: Authored
       </div>
       <div className="eng-tab-body">
         {tab === "brief" && <Brief view={view} />}
-        {tab === "tests" && <TestsPanel view={view} onRun={() => void refresh()} />}
+        {tab === "tests" && <TestsPanel view={view} serverNowMs={serverNowMs} onRun={() => void refresh()} />}
         {tab === "team" && <TeamPanel attemptId={view.attempt.id} />}
         {tab === "submit" && <SubmitPanel view={view} onView={refresh} />}
       </div>
@@ -718,8 +746,19 @@ export default function EngAuthored({
   }, [attemptId, apply, onAuthExpired]);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let live = true;
+    engAuthoredApi.view(attemptId).then(
+      (v) => live && apply(v),
+      (e: unknown) => {
+        if (!live) return;
+        if (isAuthRequired(e)) onAuthExpired();
+        else setError(messageOf(e));
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [attemptId, apply, onAuthExpired]);
 
   const stage = view ? authoredStage(view) : null;
 
@@ -818,7 +857,7 @@ export default function EngAuthored({
       ) : stage === "ready" ? (
         <ReadyStep view={view} local={local} plannedDir={plannedDir} onView={apply} onLocal={setLocal} />
       ) : stage === "working" ? (
-        <Working view={view} local={local} plannedDir={plannedDir} onLocal={setLocal} refresh={refresh} />
+        <Working view={view} local={local} plannedDir={plannedDir} serverNowMs={now + offset} onLocal={setLocal} refresh={refresh} />
       ) : (
         <Submitted view={view} />
       )}

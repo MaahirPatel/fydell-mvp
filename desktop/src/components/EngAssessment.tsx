@@ -405,8 +405,19 @@ export default function EngAssessment({
   }, [attemptId, apply, onAuthExpired]);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let live = true;
+    engApi.openAttempt(attemptId).then(
+      (d) => live && apply(d),
+      (e: unknown) => {
+        if (!live) return;
+        if (isAuthRequired(e)) onAuthExpired();
+        else setError(messageOf(e));
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [attemptId, apply, onAuthExpired]);
 
   const stage = detail ? engStage(detail.view) : null;
 

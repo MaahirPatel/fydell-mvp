@@ -694,7 +694,7 @@ export default function Workspace({
               <strong>{exitWarning.unsynced} file{exitWarning.unsynced === 1 ? " is" : "s are"} saved
               on this device</strong> but not yet acknowledged by the server.
               They survive a restart and will sync later — quitting is safe,
-              but the server won't have them yet.
+              but the server won’t have them yet.
             </p>
           )}
           {exitWarning.conflict && (
