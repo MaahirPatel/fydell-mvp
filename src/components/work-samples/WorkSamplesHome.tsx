@@ -47,6 +47,23 @@ const DRAFT_STATUS: Record<DraftItem["status"], { tone: Tone; text: string }> = 
 
 const PATH_LABEL: Record<DraftItem["path"], string> = { generated: "Generated draft", import: "Uploaded draft", template: "Template" };
 
+type LibraryRow = VersionItem & { versionIds: string[] };
+
+/** One row per work sample: its newest published version, remembering the earlier ones. */
+function latestPerSample(published: VersionItem[]): LibraryRow[] {
+  const groups = new Map<string, LibraryRow>();
+  for (const v of published) {
+    const key = v.draftId ?? `${v.origin}:${v.title}`;
+    const current = groups.get(key);
+    if (!current) groups.set(key, { ...v, versionIds: [v.id] });
+    else {
+      const versionIds = [...current.versionIds, v.id];
+      groups.set(key, v.version > current.version ? { ...v, versionIds } : { ...current, versionIds });
+    }
+  }
+  return [...groups.values()].sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""));
+}
+
 export function WorkSamplesHome({
   drafts,
   versions,
@@ -63,7 +80,7 @@ export function WorkSamplesHome({
   highlightVersion: string | null;
 }) {
   const [tab, setTab] = useState<TabKey>(TAB_KEYS.includes(initialTab as TabKey) ? (initialTab as TabKey) : "library");
-  const library = versions.filter((v) => v.status === "published");
+  const library = latestPerSample(versions.filter((v) => v.status === "published"));
   const retired = versions.filter((v) => v.status !== "published" && v.origin !== "fydell_reviewed");
   const openDrafts = drafts.filter((d) => d.status !== "archived");
   const archivedDrafts = drafts.filter((d) => d.status === "archived");
@@ -104,12 +121,14 @@ export function WorkSamplesHome({
                 <THead>
                   <TH>Work sample</TH>
                   <TH>Source</TH>
-                  <TH align="right">Version</TH>
+                  <TH align="right">Latest version</TH>
                   <TH>Published</TH>
                 </THead>
                 <TBody>
-                  {library.map((v) => (
-                    <TR key={v.id} className={cn(v.id === highlightVersion && "bg-[var(--surface-selected)]")} aria-current={v.id === highlightVersion ? "true" : undefined}>
+                  {library.map((v) => {
+                    const highlighted = highlightVersion !== null && v.versionIds.includes(highlightVersion);
+                    return (
+                    <TR key={v.id} className={cn(highlighted && "bg-[var(--surface-selected)]")} aria-current={highlighted ? "true" : undefined}>
                       <TDPrimary>
                         {v.draftId ? (
                           <Link href={`/app/employer/work-samples/drafts/${v.draftId}`} className="hover:underline">
@@ -126,10 +145,14 @@ export function WorkSamplesHome({
                       <TD>{v.origin === "fydell_reviewed" ? "Fydell-reviewed" : "Your workspace"}</TD>
                       <TD align="right" className="tabular-nums">
                         {v.version}
+                        {v.versionIds.length > 1 ? (
+                          <span className="block text-app-meta text-[var(--text-tertiary)]">{v.versionIds.length} published</span>
+                        ) : null}
                       </TD>
                       <TD><LocalTime iso={v.publishedAt} /></TD>
                     </TR>
-                  ))}
+                    );
+                  })}
                 </TBody>
               </Table>
             </Panel>
