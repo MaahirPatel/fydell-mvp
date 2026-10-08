@@ -1,11 +1,159 @@
 {
   "records": [
     {
+      "key": "inventory-pagination-contract",
+      "version": "1",
+      "sha256": "b6d46635c64a47ce3226b0787ff21feeb6a986cfe26075731427c05cf2e06eb2",
+      "status": "passed",
+      "checkedAt": "2026-10-08T02:44:18.002Z",
+      "runner": "Local development runner (not isolated)",
+      "checks": [
+        {
+          "id": "setup",
+          "status": "passed"
+        },
+        {
+          "id": "baseline",
+          "status": "passed"
+        },
+        {
+          "id": "reference",
+          "status": "passed"
+        },
+        {
+          "id": "incorrect",
+          "status": "passed"
+        },
+        {
+          "id": "repeatability",
+          "status": "passed"
+        },
+        {
+          "id": "discovery",
+          "status": "passed"
+        },
+        {
+          "id": "protected_isolation",
+          "status": "passed"
+        },
+        {
+          "id": "test_mapping",
+          "status": "passed"
+        },
+        {
+          "id": "disclosed_requirements",
+          "status": "passed"
+        },
+        {
+          "id": "instructions_files",
+          "status": "passed"
+        },
+        {
+          "id": "secrets",
+          "status": "passed"
+        },
+        {
+          "id": "rubric",
+          "status": "passed"
+        },
+        {
+          "id": "coworkers",
+          "status": "passed"
+        },
+        {
+          "id": "policy",
+          "status": "passed"
+        },
+        {
+          "id": "timing",
+          "status": "passed"
+        },
+        {
+          "id": "submission",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "key": "job-lease-recovery",
+      "version": "1",
+      "sha256": "ff814fe2b50420a02afb299223cf5efecacefb74c91df4857cc0378e1346053a",
+      "status": "passed",
+      "checkedAt": "2026-10-08T02:44:15.919Z",
+      "runner": "Local development runner (not isolated)",
+      "checks": [
+        {
+          "id": "setup",
+          "status": "passed"
+        },
+        {
+          "id": "baseline",
+          "status": "passed"
+        },
+        {
+          "id": "reference",
+          "status": "passed"
+        },
+        {
+          "id": "incorrect",
+          "status": "passed"
+        },
+        {
+          "id": "repeatability",
+          "status": "passed"
+        },
+        {
+          "id": "discovery",
+          "status": "passed"
+        },
+        {
+          "id": "protected_isolation",
+          "status": "passed"
+        },
+        {
+          "id": "test_mapping",
+          "status": "passed"
+        },
+        {
+          "id": "disclosed_requirements",
+          "status": "passed"
+        },
+        {
+          "id": "instructions_files",
+          "status": "passed"
+        },
+        {
+          "id": "secrets",
+          "status": "passed"
+        },
+        {
+          "id": "rubric",
+          "status": "passed"
+        },
+        {
+          "id": "coworkers",
+          "status": "passed"
+        },
+        {
+          "id": "policy",
+          "status": "passed"
+        },
+        {
+          "id": "timing",
+          "status": "passed"
+        },
+        {
+          "id": "submission",
+          "status": "passed"
+        }
+      ]
+    },
+    {
       "key": "webhook-dedupe",
       "version": "1",
       "sha256": "f10fc68be452c9f0cf4018ec8fbafcb4d484c6df7f2548dc3f96f1608de9d042",
       "status": "passed",
-      "checkedAt": "2026-10-08T02:42:24.457Z",
+      "checkedAt": "2026-10-08T02:44:14.242Z",
       "runner": "Local development runner (not isolated)",
       "checks": [
         {

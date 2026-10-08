@@ -97,6 +97,8 @@
     "test:execution": "node --test services/code-execution/runner.test.mjs",
     "test:authoring": "tsx --conditions react-server scripts/test-authoring.ts",
     "test:webhook-dedupe": "tsx --conditions react-server scripts/test-webhook-dedupe.ts",
+    "test:job-lease-recovery": "tsx --conditions react-server scripts/test-job-lease-recovery.ts",
+    "test:inventory-pagination-contract": "tsx --conditions react-server scripts/test-inventory-pagination-contract.ts",
     "validate:exemplars": "tsx --conditions react-server scripts/validate-exemplars.ts",
     "check:exemplars": "tsx --conditions react-server scripts/validate-exemplars.ts --check",
     "test:collaboration": "tsx --conditions react-server scripts/test-collaboration.ts",

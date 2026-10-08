@@ -823,7 +823,7 @@ export function validateConfig(input: AuthoringInput, invalid: ConfigIssue[] = [
   if (!simulation && taskType === "debugging" && !/\b(bugs?|defects?|fail(s|s|ed|ing|ure)?|errors?|wrong|twice|duplicat\w*|crash\w*|regress\w*|incorrect\w*|instead of|leak\w*|races?|drop(s|ped|ping)?|missing|miss(es|ed)?|stale|los(es|t|ing)|skip(s|ped|ping)?|hang(s|ing)?|timeouts?|times out|broken|breaks?|flaky|inconsistent|corrupt\w*|overwrit\w*|never|not (saved|sent|called|updated|returned))\b/i.test(input.description)) {
     clarifications.push({ id: "symptom", question: "What does the defect look like from the outside?", why: "A debugging task needs a reproducible symptom so the baseline check can show the issue before the fix." });
   }
-  if (capabilities.includes("security") && !/\b(auth|permission|role|tenant|validat|injection|secret|token|access|sanitiz|signature)\b/i.test(text)) {
+  if (capabilities.includes("security") && !/\b(auth\w*|permission\w*|roles?|tenants?|validat\w*|injection|secrets?|tokens?|access\w*|sanitiz\w*|signatures?)\b/i.test(text)) {
     clarifications.push({ id: "security_boundary", question: "Which security boundary should the task exercise?", why: "Security is selected but the description names no boundary to check, such as authorization or input validation." });
   }
   if (capabilities.includes("performance") && !/\b(\d+\s*(ms|calls|queries|items|requests|operations)|o\(|complexity|bound|limit|at most)\b/i.test(text)) {
