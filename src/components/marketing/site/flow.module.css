@@ -1,0 +1,131 @@
+/* Five steps, each a small product fragment above a short caption. Fragments
+   sit on the panel neutral; colour marks state only. */
+
+.flow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(272px, 1fr));
+  gap: 32px 24px;
+  margin-top: 48px;
+  counter-reset: none;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.stage {
+  display: flex;
+  align-items: center;
+  min-height: 168px;
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--surface-panel);
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--surface-raised);
+  box-shadow: 0 1px 2px rgba(17, 18, 20, 0.04);
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+.cardTitle {
+  font-weight: 600;
+}
+.cardMeta {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.fieldLabel {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.field {
+  width: 100%;
+  padding: 6px 9px;
+  border: 1px solid var(--border-default);
+  border-radius: 7px;
+  font-size: 13px;
+}
+.chip {
+  margin-top: 4px;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: var(--surface-deep);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.chip[data-tone="positive"] {
+  background: color-mix(in srgb, var(--mk-success) 11%, transparent);
+  color: var(--mk-success);
+}
+.check,
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.tick {
+  flex-shrink: 0;
+  color: var(--mk-success);
+}
+.dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-tertiary);
+}
+.dot[data-tone="positive"] {
+  border-color: var(--mk-success);
+  background: var(--mk-success);
+}
+.dot[data-tone="attention"] {
+  border-color: var(--mk-attention);
+  background: var(--mk-attention);
+}
+
+.title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 18px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--text-primary);
+}
+.num {
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+.body {
+  margin-top: 6px;
+  max-width: 44ch;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 639px) {
+  .flow {
+    gap: 28px;
+    margin-top: 32px;
+  }
+  .stage {
+    min-height: 0;
+    padding: 14px;
+  }
+}

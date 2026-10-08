@@ -84,7 +84,8 @@
 }
 .heroRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 36rem) auto;
+  justify-content: start;
   align-items: end;
   gap: 32px 64px;
   margin-top: 28px;

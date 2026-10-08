@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { ArrowUp, CircleCheck, Clock3, FileCode2, FileText, FlaskConical, FolderTree, MessagesSquare, Upload } from "lucide-react";
 import { BACKEND_WEBHOOK_RETRY_V1 as SCENARIO } from "@/lib/eng/scenarios/backend-webhook-retry/definition";
+import { CHANGED_PATH, HUNK, HUNK_INDENT as INDENT, PUBLIC_RUN as RUN } from "./example-submission";
 import s from "./sim-hero.module.css";
 
 const LEAD = SCENARIO.teammates[0];
@@ -22,39 +23,8 @@ const NAV = [
   { label: "Submission", icon: Upload },
 ] as const;
 
-/**
- * One hunk of the candidate's change to the starter's `Dispatcher._attempt`.
- * Context lines and line numbers match the shipped starter; the added lines
- * are example work.
- */
-type DiffLine = { kind: "ctx" | "del" | "add"; old?: number; new?: number; code: string };
-const HUNK: DiffLine[] = [
-  { kind: "ctx", old: 45, new: 45, code: "        delivery.last_status_code = response.status" },
-  { kind: "ctx", old: 46, new: 46, code: "        if 200 <= response.status < 300:" },
-  { kind: "ctx", old: 47, new: 47, code: "            delivery.status = DELIVERED" },
-  { kind: "del", old: 48, code: "        else:" },
-  { kind: "del", old: 49, code: "            # Anything that did not succeed goes straight back on the queue." },
-  { kind: "del", old: 50, code: "            delivery.next_attempt_at = now" },
-  { kind: "add", new: 48, code: "        elif is_temporary(response.status):" },
-  { kind: "add", new: 49, code: "            self._schedule_retry(delivery, now)" },
-  { kind: "add", new: 50, code: "        else:" },
-  { kind: "add", new: 51, code: "            delivery.status = FAILED" },
-  { kind: "add", new: 52, code: "            delivery.next_attempt_at = None" },
-  { kind: "ctx", old: 51, new: 53, code: "        self.store.save(delivery)" },
-];
 const ADDED = HUNK.filter((l) => l.kind === "add").length;
 const REMOVED = HUNK.filter((l) => l.kind === "del").length;
-
-/** The scenario's public tests after the change, in the order `unittest -v` reports them. */
-const RUN = [
-  { name: "test_gone_endpoint_is_not_retried", fixed: true },
-  { name: "test_idempotency_key_is_stable_across_retries", fixed: false },
-  { name: "test_server_error_schedules_backoff", fixed: false },
-  { name: "test_success_marks_delivered", fixed: false },
-] as const;
-
-/** Display indent: the hunk sits inside a method, so its shared leading spaces carry no information. */
-const INDENT = Math.min(...HUNK.map((l) => l.code.match(/^ */)![0].length));
 
 const KEYWORDS = new Set(["if", "elif", "else", "def", "return", "None", "self", "and", "or", "not"]);
 
@@ -155,13 +125,13 @@ export default function SimulationHero() {
               <figure className={`${s.diff} ${s.enter}`} style={at(300)}>
                 <figcaption className={s.diffHead}>
                   <FileCode2 aria-hidden size={14} className={s.dim} />
-                  <span className={s.diffPath}>webhooks/dispatcher.py</span>
+                  <span className={s.diffPath}>{CHANGED_PATH}</span>
                   <span className={s.add}>+{ADDED}</span>
                   <span className={s.del}>−{REMOVED}</span>
                   <span className={s.hunkCount}>2 of 3 hunks</span>
                 </figcaption>
                 <p className={s.hunk}>@@ -45,7 +45,9 @@ def _attempt(self, delivery, now)</p>
-                <pre className={s.code} aria-label={`Diff of webhooks/dispatcher.py: ${ADDED} lines added, ${REMOVED} removed`}>
+                <pre className={s.code} aria-label={`Diff of ${CHANGED_PATH}: ${ADDED} lines added, ${REMOVED} removed`}>
                   {HUNK.map((l, i) => (
                     <span key={i} className={s.line} data-kind={l.kind}>
                       <span className={s.ln} aria-hidden>
