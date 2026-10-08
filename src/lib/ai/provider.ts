@@ -159,20 +159,47 @@ export function buildChatBody(
 }
 
 /**
- * The provider's machine-readable error code (for example `json_validate_failed`).
- * Only an identifier-shaped code is returned: error messages can echo prompt or
- * generated content and must not reach logs or job status.
+ * A non-2xx reply from the provider. `message` carries only the status and an
+ * identifier-shaped code. The rejected generation Groq returns with
+ * `json_validate_failed` is held in a private field so that logging the error
+ * never prints model output.
  */
-async function providerErrorCode(res: Response): Promise<string | null> {
+export class ModelApiError extends Error {
+  readonly #failedGeneration: string | null;
+
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly code: string | null,
+    failedGeneration: string | null
+  ) {
+    super(message);
+    this.name = "ModelApiError";
+    this.#failedGeneration = failedGeneration;
+  }
+
+  failedGeneration(): string | null {
+    return this.#failedGeneration;
+  }
+}
+
+/**
+ * The provider's machine-readable error code (for example `json_validate_failed`)
+ * and, when present, the generation it rejected. Only an identifier-shaped code
+ * is returned as a code: error messages can echo prompt or generated content
+ * and must not reach logs or job status.
+ */
+async function providerError(res: Response): Promise<{ code: string | null; failedGeneration: string | null }> {
   try {
     const body: unknown = await res.json();
-    if (!body || typeof body !== "object" || !("error" in body)) return null;
+    if (!body || typeof body !== "object" || !("error" in body)) return { code: null, failedGeneration: null };
     const error: unknown = body.error;
-    if (!error || typeof error !== "object") return null;
+    if (!error || typeof error !== "object") return { code: null, failedGeneration: null };
     const raw = "code" in error && typeof error.code === "string" ? error.code : "type" in error && typeof error.type === "string" ? error.type : null;
-    return raw && /^[a-z0-9_.-]{1,48}$/i.test(raw) ? raw : null;
+    const failed = "failed_generation" in error && typeof error.failed_generation === "string" ? error.failed_generation : null;
+    return { code: raw && /^[a-z0-9_.-]{1,48}$/i.test(raw) ? raw : null, failedGeneration: failed };
   } catch {
-    return null;
+    return { code: null, failedGeneration: null };
   }
 }
 
@@ -207,8 +234,8 @@ export async function postChatCompletion(
     });
 
     if (!res.ok) {
-      const code = await providerErrorCode(res);
-      throw new Error(`Model API error: ${res.status}${code ? ` ${code}` : ""} (${config.provider})`);
+      const { code, failedGeneration } = await providerError(res);
+      throw new ModelApiError(`Model API error: ${res.status}${code ? ` ${code}` : ""} (${config.provider})`, res.status, code, failedGeneration);
     }
 
     const data = (await res.json()) as {

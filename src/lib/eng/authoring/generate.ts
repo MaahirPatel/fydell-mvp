@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { getProviderConfig, postChatCompletion, type ChatMessage, type ProviderConfig } from "@/lib/ai/provider";
+import { ModelApiError, getProviderConfig, postChatCompletion, type ChatMessage, type ProviderConfig } from "@/lib/ai/provider";
 import { FAMILY_LABEL, LEVEL_LABEL, SPECIALIZATION_LABEL } from "../taxonomy";
 import { TRACK_LABEL, taskFamilyOf } from "../tracks";
 import { buildExemplar, exemplarFor } from "../exemplars/registry";
@@ -200,6 +200,57 @@ function stripFence(s: string): string {
   return m ? m[1] : t;
 }
 
+/**
+ * Drops closing brackets outside strings that do not match the open container,
+ * e.g. `{"content":"...\n"],"tests":[]}`, or that would close the top-level
+ * value before the end of the text. Models emit these after long string values.
+ * Nothing else changes; the schema and the execution checks still decide
+ * whether the result is usable. Returns null when no bracket was dropped.
+ */
+export function dropMismatchedClosers(text: string): string | null {
+  const stack: string[] = [];
+  let out = "";
+  let inString = false;
+  let escaped = false;
+  let dropped = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      out += ch;
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') inString = true;
+    else if (ch === "{" || ch === "[") stack.push(ch);
+    else if (ch === "}" || ch === "]") {
+      const mismatched = stack[stack.length - 1] !== (ch === "}" ? "{" : "[");
+      const closesRootEarly = stack.length === 1 && text.slice(i + 1).trim() !== "";
+      if (mismatched || closesRootEarly) {
+        dropped = true;
+        continue;
+      }
+      stack.pop();
+    }
+    out += ch;
+  }
+  return dropped ? out : null;
+}
+
+function salvage<T>(schema: z.ZodType<T>, error: unknown): T | null {
+  if (!(error instanceof ModelApiError) || error.code !== "json_validate_failed") return null;
+  const failed = error.failedGeneration();
+  const repaired = failed ? dropMismatchedClosers(stripFence(failed)) : null;
+  if (!repaired) return null;
+  try {
+    const parsed = schema.safeParse(JSON.parse(repaired));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
 async function callJson<T>(schema: z.ZodType<T>, system: string, user: string, maxTokens: number): Promise<T> {
   const config = authoringProvider();
   if (!config) throw new GenerationError("provider_unavailable", "No generation model is configured on the server.", false);
@@ -221,6 +272,8 @@ async function callJson<T>(schema: z.ZodType<T>, system: string, user: string, m
     try {
       raw = await postChatCompletion(config, sent, { schema: {}, schemaName: "authoring", temperature: 0.2, maxTokens: allowed, extraBody });
     } catch (error) {
+      const salvaged = salvage(schema, error);
+      if (salvaged !== null) return salvaged;
       const msg = error instanceof Error ? error.message : "";
       if (/\b(429|413)\b/.test(msg)) throw new GenerationError("provider_rate_limited", "The generation model's per-minute limit was reached. Generation continues automatically in about a minute.", true, 65_000);
       if (/\b400\b/.test(msg) && attempt === 0) {

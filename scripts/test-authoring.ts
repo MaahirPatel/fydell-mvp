@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import { DEFAULT_INPUT, parseInput, validateConfig, type AuthoringInput } from "../src/lib/eng/authoring/registry";
 import { parseTap, parseUnittest, localRunner } from "../src/lib/eng/authoring/runner";
 import { staleChecks, staticChecks, validatePackage } from "../src/lib/eng/authoring/checks";
-import { assemble, buildRubric, normalizeBrief, reconcileRefs, stagesFromPackage, stripHintComments, type BriefStage, type TestsStage } from "../src/lib/eng/authoring/generate";
+import { assemble, buildRubric, dropMismatchedClosers, normalizeBrief, reconcileRefs, stagesFromPackage, stripHintComments, type BriefStage, type TestsStage } from "../src/lib/eng/authoring/generate";
 import { bumpSections, packageSha256, sectionRevisions } from "../src/lib/eng/authoring/package";
 
 let passed = 0;
@@ -205,6 +205,18 @@ async function main() {
   await test("starter comments that point at the defect are removed", () => {
     const [f] = stripHintComments([{ path: "src/a.js", content: "let x = 1;\n// incorrect: stops early on exact multiples\n// Reads the next page\nif (a) break;\n    # TODO fix the off-by-one\n" }]);
     assert.equal(f.content, "let x = 1;\n// Reads the next page\nif (a) break;\n");
+  });
+
+  await test("a stray closing bracket after a long string value is dropped, strings are untouched", () => {
+    const broken = `{"publicTests":{"content":"x = rows[0]\\nassert ok\\n\\"]\\n"],"tests":[{"name":"T.test_a","criterionIds":["AC-1"]}]}}`;
+    const repaired = dropMismatchedClosers(broken);
+    assert.ok(repaired);
+    const parsed = JSON.parse(repaired) as { publicTests: { content: string; tests: Array<{ name: string }> } };
+    assert.equal(parsed.publicTests.content, 'x = rows[0]\nassert ok\n"]\n');
+    assert.equal(parsed.publicTests.tests[0].name, "T.test_a");
+    assert.equal(dropMismatchedClosers(`{"a":["]"],"b":{"c":"}"}}`), null);
+    const early = dropMismatchedClosers(`{"a":{"tests":[1]}}},"b":[2]}`);
+    assert.deepEqual(JSON.parse(early ?? ""), { a: { tests: [1] }, b: [2] });
   });
 
   await test("normalizeBrief moves reviewer-judged criteria to outcomes and renumbers", () => {
