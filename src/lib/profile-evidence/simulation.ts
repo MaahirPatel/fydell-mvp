@@ -1,4 +1,5 @@
 import type { CandidateReport } from "@/lib/eng/candidate-report";
+import type { AuthoredCandidateReport } from "@/lib/eng/authored/types";
 import type { SimulationCitation, SimulationReportSummary } from "./contract";
 
 const REQUIREMENT_UPDATE = "Response to the requirement update";
@@ -43,6 +44,35 @@ export function workSampleSummary(attemptId: string, title: string, report: Cand
       statement: f.statement,
       citations: f.citations.map(citationLabel).filter((c): c is SimulationCitation => c !== null),
     })),
+  };
+}
+
+/**
+ * The same Passport shape for an employer-authored work sample. Only what the
+ * shipped public tests showed is kept: criterion states, evaluation-check
+ * counts, the reviewer note and runner details are left out, as for the
+ * standard report.
+ */
+export function authoredWorkSampleSummary(attemptId: string, title: string, report: AuthoredCandidateReport): SimulationReportSummary {
+  const publicChecks = new Map<string, string>();
+  for (const a of report.acceptance) for (const t of a.publicTests) publicChecks.set(t.name, t.outcome);
+  return {
+    attemptId,
+    title,
+    releasedAt: report.releasedAt,
+    summary: report.summary,
+    investigated: [],
+    clarified: [],
+    changes: [],
+    checks: [...publicChecks].map(([name, outcome]) => `${name}: ${outcome}`),
+    feedbackEffect: [],
+    unresolved: report.notAssessed.map((label) => `Not assessed: ${label}`),
+    evidence: report.acceptance
+      .filter((a) => a.publicTests.length > 0)
+      .map((a) => ({
+        statement: a.text,
+        citations: a.publicTests.map((t) => ({ kind: "public_check" as const, label: `Public check: ${t.name} (${t.outcome})` })),
+      })),
   };
 }
 

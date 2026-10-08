@@ -1,11 +1,14 @@
 import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { engAdmin } from "@/lib/eng/context";
+import { engAdmin, type Admin } from "@/lib/eng/context";
 import { getAttemptForCandidate } from "@/lib/eng/attempts";
+import { buildAuthoredCandidateReport } from "@/lib/eng/authored/reports";
 import { loadCandidateContext } from "@/lib/eng/candidate-view";
 import { buildCandidateReport } from "@/lib/eng/candidate-report";
+import { resolveScenarioVersion } from "@/lib/eng/scenario-versions";
+import type { AttemptRow } from "@/lib/eng/types";
 import type { SimulationReportSummary } from "./contract";
-import { parseWorkSampleSummary, workSampleSummary } from "./simulation";
+import { authoredWorkSampleSummary, parseWorkSampleSummary, workSampleSummary } from "./simulation";
 import { UUID, type Failure } from "./ids";
 
 /** Work samples are selected for applications with this key prefix and the passport_work_samples id. */
@@ -69,13 +72,29 @@ export async function listIncludableReports(ownerId: string): Promise<Includable
     if (included.has(id) || !released.has(id)) continue;
     try {
       const row = await getAttemptForCandidate(db, id, ownerId);
-      const { scenario } = await loadCandidateContext(db, row);
-      out.push({ attemptId: id, title: scenario.title, releasedAt: released.get(id) ?? null });
+      out.push({ attemptId: id, title: await workSampleTitle(db, row), releasedAt: released.get(id) ?? null });
     } catch {
       continue;
     }
   }
   return out;
+}
+
+async function workSampleTitle(db: Admin, row: AttemptRow): Promise<string> {
+  const version = await resolveScenarioVersion(db, row.scenario_version_id);
+  return version.origin === "employer_authored" ? version.pkg.brief.title : version.definition.title;
+}
+
+/** The candidate-visible summary of a released report, for built-in and employer-authored work samples. Null until released. */
+async function releasedSummary(db: Admin, row: AttemptRow): Promise<SimulationReportSummary | null> {
+  const version = await resolveScenarioVersion(db, row.scenario_version_id);
+  if (version.origin === "employer_authored") {
+    const report = await buildAuthoredCandidateReport(db, row, version.pkg);
+    return report ? authoredWorkSampleSummary(row.id, version.pkg.brief.title, report) : null;
+  }
+  const { attempt, scenario } = await loadCandidateContext(db, row);
+  const report = await buildCandidateReport(db, attempt, scenario);
+  return report ? workSampleSummary(attempt.id, scenario.title, report) : null;
 }
 
 /** Adds the candidate-visible part of a released report. Idempotent per attempt. */
@@ -85,13 +104,12 @@ export async function includeWorkSample(ownerId: string, attemptId: string): Pro
   let reportId: string;
   try {
     const row = await getAttemptForCandidate(db, attemptId, ownerId);
-    const { attempt, scenario } = await loadCandidateContext(db, row);
-    const report = await buildCandidateReport(db, attempt, scenario);
-    if (!report) return { ok: false, status: 409, error: "This work sample has no released report yet." };
-    const { data: released } = await db.from("eng_reports").select("id").eq("attempt_id", attempt.id).eq("status", "released").maybeSingle();
+    const built = await releasedSummary(db, row);
+    if (!built) return { ok: false, status: 409, error: "This work sample has no released report yet." };
+    const { data: released } = await db.from("eng_reports").select("id").eq("attempt_id", row.id).eq("status", "released").maybeSingle();
     if (!released) return { ok: false, status: 409, error: "This work sample has no released report yet." };
     reportId = (released as { id: string }).id;
-    summary = workSampleSummary(attempt.id, scenario.title, report);
+    summary = built;
   } catch {
     return { ok: false, status: 404, error: "That work sample was not found." };
   }
