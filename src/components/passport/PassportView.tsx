@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { ArrowUpRight, FileCode2, ShieldCheck } from "lucide-react";
 import { CodeBlock } from "@/components/marketing/home/CodeBlock";
-import FydellMark from "@/components/brand/FydellMark";
+import PassportCover from "./PassportCover";
 import "./passport.css";
 import type { PassportData, PassportEvidence } from "@/lib/passport/view";
 import { COLLABORATION_LABEL, type ContributionContext, type EvidenceRef } from "@/lib/passport/context-contract";
@@ -74,13 +74,6 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
   const contributions = (passport.contributions ?? []).filter((c) => hasContribution(c));
   const decisions = passport.decisions ?? [];
 
-  const metaParts: string[] = [];
-  if (passport.githubLogin) metaParts.push(`github.com/${passport.githubLogin}`);
-  metaParts.push(`${passport.projects.length} project${passport.projects.length === 1 ? "" : "s"}`);
-  if (evidence.length > 0) metaParts.push(`${evidence.length} finding${evidence.length === 1 ? "" : "s"} cited to source lines`);
-  const updated = formatDate(passport.updatedAt);
-  if (updated) metaParts.push(`updated ${updated}`);
-
   const open = (id: string) => {
     setSelectedId(id);
     browserRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -89,16 +82,8 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
   return (
     <div className="pp">
       <header className="pp-head">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="pp-kicker">
-            <FydellMark width={22} />
-            Engineering Passport
-          </p>
-          <span className={`badge ${MODE_BADGE[mode]}`}>{MODE_LABEL[mode]}</span>
-        </div>
-        <h2 className="pp-name">{passport.displayName || passport.githubLogin || "Your passport"}</h2>
-        {passport.headline ? <p className="pp-headline">{passport.headline}</p> : null}
-        <p className="pp-meta">{metaParts.join(" · ")}</p>
+        <PassportCover passport={passport} badge={<span className={`badge ${MODE_BADGE[mode]}`}>{MODE_LABEL[mode]}</span>} />
+        {passport.githubLogin ? <p className="pp-meta">github.com/{passport.githubLogin}</p> : null}
         <div className="pp-trust">
           <span className="trust-item">
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden />

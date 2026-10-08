@@ -1,0 +1,296 @@
+/* The Passport as a physical document: warm paper, security lines drawn from
+   the two rings of the mark, a navy ink taken from the wordmark, and a
+   machine-readable strip. It stays light in every theme, like paper would. */
+
+.wrap {
+  container-type: inline-size;
+}
+
+.card {
+  --pp-ink: #1b1f3b;
+  --pp-ink-2: #2b3050;
+  --pp-label: rgba(27, 31, 59, 0.52);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+  border-radius: 22px;
+  background: linear-gradient(160deg, #fdfcf9 0%, #f6f4ee 100%);
+  box-shadow:
+    0 0 0 1px rgba(27, 31, 59, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  color: var(--pp-ink);
+  font-family: var(--font-geist-sans), -apple-system, "Segoe UI", sans-serif;
+  text-align: left;
+}
+
+.guilloche {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.sheen {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(112deg, transparent 32%, rgba(45, 212, 191, 0.09) 44%, rgba(139, 92, 246, 0.09) 54%, transparent 66%);
+  background-size: 220% 100%;
+  background-position: 100% 0;
+  animation: sheen 9s cubic-bezier(0.45, 0, 0.2, 1) 1.2s infinite alternate;
+}
+@keyframes sheen {
+  to {
+    background-position: 0% 0;
+  }
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 24px 30px 0;
+}
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.kind {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pp-label);
+}
+
+.body {
+  display: flex;
+  gap: 24px;
+  padding: 22px 30px 0;
+}
+
+.monogram {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 140px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #2b3163 0%, #1b1f3b 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.monoRings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.monogram span {
+  position: relative;
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  color: #fff;
+}
+
+.fields {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 10px 16px;
+  margin: 0;
+}
+.fields dt,
+.label {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pp-label);
+}
+.fields dd {
+  margin: 3px 0 0;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--pp-ink-2);
+  overflow-wrap: anywhere;
+}
+.holder,
+.wide {
+  grid-column: 1 / -1;
+}
+.name {
+  margin: 0;
+  font-size: 25px;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--pp-ink);
+}
+
+.ring {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 124px;
+}
+.ring svg {
+  width: 104px;
+  height: 104px;
+}
+.ring > span {
+  margin-top: 8px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pp-label);
+}
+.ringNum {
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -1px;
+  fill: var(--pp-ink);
+}
+.ringOf {
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 10px;
+  fill: var(--pp-label);
+}
+.ringArc {
+  animation: arc 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.5s both;
+}
+@keyframes arc {
+  from {
+    stroke-dasharray: 0 400;
+  }
+}
+
+.evidence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 30px 0;
+}
+.evidence .label {
+  margin-right: 4px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 0 1px rgba(27, 31, 59, 0.09);
+  font-size: 11px;
+  color: var(--pp-ink);
+}
+.chip i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fy-accent, #5b5bd6);
+}
+.chipLimit {
+  background: #fdf0f0;
+  box-shadow: none;
+  color: #a8282f;
+}
+.chipLimit i {
+  background: #e5484d;
+}
+.mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.mrz {
+  margin-top: auto;
+  padding: 12px 30px 14px;
+  border-top: 1px dashed rgba(27, 31, 59, 0.14);
+  background: rgba(27, 31, 59, 0.025);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  letter-spacing: 0.14em;
+  color: rgba(27, 31, 59, 0.5);
+  white-space: pre;
+  overflow: hidden;
+}
+.card > .evidence {
+  margin-bottom: 20px;
+}
+
+/* Narrow containers: the document reflows instead of shrinking. */
+@container (max-width: 560px) {
+  .card {
+    min-height: 0;
+  }
+  .top {
+    padding: 20px 20px 0;
+  }
+  .topRight .kind {
+    display: none;
+  }
+  .body {
+    flex-wrap: wrap;
+    gap: 18px;
+    padding: 18px 20px 0;
+  }
+  .monogram {
+    width: 72px;
+    height: 88px;
+  }
+  .monogram span {
+    font-size: 28px;
+  }
+  .fields {
+    flex-basis: calc(100% - 90px);
+    gap: 10px 12px;
+  }
+  .name {
+    font-size: 22px;
+  }
+  .ring {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+  .ring svg {
+    width: 72px;
+    height: 72px;
+  }
+  .ring > span {
+    margin-top: 0;
+  }
+  .evidence {
+    padding: 16px 20px 0;
+  }
+  .mrz {
+    padding: 10px 20px 12px;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheen,
+  .ringArc {
+    animation: none;
+  }
+}

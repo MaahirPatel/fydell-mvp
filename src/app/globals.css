@@ -1043,29 +1043,29 @@ a, button { -webkit-tap-highlight-color: transparent; }
   padding-inline: var(--l-gutter);
 }
 
-/* Display type is regular weight with tight tracking: large, light and
-   plain, so the size carries the hierarchy instead of the weight. */
+/* Display type is medium weight with very tight tracking, set large so the
+   size carries the hierarchy. Matches the homepage chapters. */
 .l-hero {
-  font-size: 64px;
-  line-height: 1.05;
-  font-weight: 400;
-  letter-spacing: -0.04em;
+  font-size: 72px;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.052em;
   color: var(--text-primary);
   text-wrap: balance;
 }
 .l-h2 {
-  font-size: 46px;
-  line-height: 1.08;
-  font-weight: 400;
-  letter-spacing: -0.035em;
+  font-size: 52px;
+  line-height: 1.04;
+  font-weight: 500;
+  letter-spacing: -0.045em;
   color: var(--text-primary);
   text-wrap: balance;
 }
 .l-cta {
-  font-size: 64px;
-  line-height: 1.04;
-  font-weight: 400;
-  letter-spacing: -0.04em;
+  font-size: 72px;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.052em;
   color: var(--text-primary);
   text-wrap: balance;
 }
@@ -1128,9 +1128,9 @@ a, button { -webkit-tap-highlight-color: transparent; }
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 .l-btn-lg {
-  height: 40px;
-  padding-inline: 16px;
-  font-size: 14px;
+  height: 48px;
+  padding-inline: 22px;
+  font-size: 15px;
 }
 .l-btn-solid {
   background: var(--control-solid);

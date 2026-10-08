@@ -13,6 +13,7 @@ import {
 } from "@/components/marketing/kit/Kit";
 import { FigConsent, FigDesktop, FigIncident, FigReport } from "@/components/marketing/kit/Figs";
 import { BriefShot } from "@/components/marketing/kit/Shots";
+import { ENGINEER_FAQ } from "@/lib/marketing/faq";
 
 export const metadata = {
   title: "For engineers",
@@ -95,6 +96,7 @@ export default function CandidatesPage() {
             { q: "Can I use AI tools?", a: "Fydell cannot see them and does not try to detect them. At the end you describe any AI help in your own words, and the report labels that as your statement." },
             { q: "Do I get feedback?", a: "You keep your receipt. Whether the employer shares their report with you is up to them." },
             { q: "What if something breaks?", a: "Use the Support link shown during the simulation. Problems outside your control are not held against you." },
+            ...ENGINEER_FAQ.filter((item) => item.q !== "How is AI used?"),
           ]}
         />
       </Section>

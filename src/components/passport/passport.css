@@ -12,14 +12,26 @@
   background: var(--surface-raised);
 }
 
+/* The cover sits on a soft studio ground, lit from above. */
 .pp-head {
   border-bottom: 1px solid var(--border-subtle);
-  padding: 24px 24px 0;
+  padding: 20px 20px 0;
+  background:
+    radial-gradient(70% 90% at 50% 0%, #ffffff 0%, transparent 70%),
+    linear-gradient(180deg, #eef0f4 0%, var(--surface-raised) 100%);
+}
+.pp-head > :first-child > div {
+  box-shadow:
+    0 0 0 1px rgba(27, 31, 59, 0.1),
+    0 30px 60px -32px rgba(27, 31, 59, 0.35);
 }
 @media (min-width: 640px) {
   .pp-head {
-    padding: 28px 28px 0;
+    padding: 32px 32px 0;
   }
+}
+.pp-head .pp-meta {
+  margin-top: 16px;
 }
 
 .pp-kicker {

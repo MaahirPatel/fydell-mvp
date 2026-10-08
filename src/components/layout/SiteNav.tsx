@@ -74,7 +74,7 @@ export default function SiteNav() {
     >
       <div className="l-container grid h-16 grid-cols-[1fr_auto] items-center gap-6 min-[900px]:grid-cols-[1fr_auto_1fr]">
         <Link href="/" className="inline-flex shrink-0 items-center justify-self-start rounded-[6px]" aria-label="Fydell home">
-          <FydellLogo height={20} />
+          <FydellLogo height={22} />
         </Link>
 
         <nav className="hidden items-center gap-1 min-[900px]:flex" aria-label="Primary">
