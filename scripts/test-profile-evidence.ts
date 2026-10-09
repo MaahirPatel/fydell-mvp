@@ -213,7 +213,7 @@ async function flowChecks() {
             {
               id: `${name.replace(/\W/g, "-")}-f2`,
               detector: "test",
-              category: "reliability",
+              category: "backend",
               finding: `Retries back off in ${name}`,
               basis: "repository_observation" as const,
               path: "retry.go",

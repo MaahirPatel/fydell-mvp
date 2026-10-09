@@ -1,7 +1,7 @@
 import { GithubClient, type Fetcher } from "../src/lib/passport/github/client";
 import { extractRepository } from "../src/lib/passport/github/extract";
 import { parseGithubInput } from "../src/lib/passport/github/parse";
-import { selectFiles } from "../src/lib/passport/github/select";
+import { isTestFile, selectFiles } from "../src/lib/passport/github/select";
 import { citationIsValid } from "../src/lib/passport/github/validate";
 import type { RepoFinding, TreeEntry } from "../src/lib/passport/github/types";
 
@@ -118,6 +118,11 @@ async function main() {
   ]);
   const picked = new Set(bigTree.selected.map((e) => e.path));
   ok("test files survive the file cap in a large source tree", picked.has("tests/api/test_items.py") && picked.has("web/src/login.spec.ts") && !picked.has("tests/__init__.py"));
+  ok(
+    "recognizes common test layouts",
+    ["test.js", "test.ts", "tests.py", "lib/util.test.mjs", "spec/user_spec.rb", "src/test/java/OrderServiceTest.java", "client_test.go"].every(isTestFile),
+  );
+  ok("does not mistake source for tests", !["contest.js", "src/latest.ts", "testing.py", "Testimonial.java"].some(isTestFile));
 
   console.log("\nExtraction");
   const client = new GithubClient(
@@ -127,6 +132,15 @@ async function main() {
       "octo/fork": { meta: { fork: true }, files: { "main.py": "print('hi')\n" } },
       "octo/empty": { files: {} },
       "octo/limited": { status: 403, headers: { "x-ratelimit-remaining": "0", "x-ratelimit-reset": String(Math.round(Date.now() / 1000) + 120) } },
+      "octo/pkg": {
+        meta: { language: "JavaScript" },
+        files: {
+          "package.json": '{"name":"pkg","scripts":{"test":"ava"}}\n',
+          "index.js": "export default function retry(fn) {\n  return fn();\n}\n",
+          "test.js":
+            "import test from 'ava';\nimport retry from './index.js';\n\ntest.serial('retries', async t => {\n  try {\n    t.is(await retry(() => 1), 1);\n  } catch (error) {\n    console.error(error);\n  }\n});\n",
+        },
+      },
       "octo/llm": { files: { "bot.py": "from openai import OpenAI\nclient = OpenAI()\nreply = client.chat.completions.create(model='x', messages=[])\n" } },
     }),
   );
@@ -138,6 +152,9 @@ async function main() {
   ok("every published citation resolves against retrieved content", good.findings.every((f) => f.excerpt.length > 0 && f.sourceUrl.includes(`/blob/${SHA}/`)));
   ok("README instructions never become findings", good.findings.every((f) => f.path !== "README.md") && !good.roleSuggestions.some((r) => r.family === "ml_engineering"));
   ok("dependency findings are labelled as declarations", good.findings.filter((f) => f.detector === "dependency_declaration").every((f) => f.basis === "dependency_declaration"));
+  const pkg = await extractRepository({ owner: "octo", repo: "pkg" }, client);
+  ok("a root-level test.js with ava is found as a test suite", pkg.findings.some((f) => f.detector === "test_suite" && f.path === "test.js"));
+  ok("error handling inside a test file is not cited as production practice", !pkg.findings.some((f) => f.detector === "explicit_error_handling"));
   ok("tests are not claimed to pass", good.findings.find((f) => f.detector === "test_suite")?.limitations.some((l) => /unknown/.test(l)) === true);
   ok("backend role suggested with evidence ids and gaps", good.roleSuggestions.some((r) => r.family === "backend" && r.evidenceIds.length > 0 && r.gaps.length > 0));
   ok("coverage reports analyzed and total files", good.coverage.analyzedFiles === Object.keys(FASTAPI_FILES).length && good.coverage.totalFiles === Object.keys(FASTAPI_FILES).length);

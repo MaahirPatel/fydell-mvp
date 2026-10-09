@@ -25,7 +25,7 @@ export default function DevelopmentFeedback({
         <span className="text-[13px] text-[var(--text-tertiary)]">Only you see this</span>
       </div>
       <p className="mt-1.5 max-w-[68ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
-        Suggestions from fixed rules over the analyzed files: Fydell found one practice without a companion practice that usually goes with it. They are not
+        Each rule looks for a practice in the analyzed files that appears without a companion practice that usually goes with it. Suggestions are not
         included in share links, applications or employer reviews, and they are not a score.
       </p>
       {items.length === 0 ? (

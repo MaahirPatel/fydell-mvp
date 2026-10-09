@@ -10,7 +10,8 @@ const TEXT = /\.(py|pyi|ts|tsx|js|jsx|mjs|cjs|go|rs|java|kt|rb|php|cs|swift|scal
 const MANIFEST = /(^|\/)(package\.json|pyproject\.toml|requirements[^/]*\.txt|setup\.py|setup\.cfg|go\.mod|Cargo\.toml|pom\.xml|build\.gradle(\.kts)?|Gemfile|composer\.json|environment\.ya?ml)$/;
 const CI = /^\.github\/workflows\/[^/]+\.ya?ml$/;
 const CONFIG = /(^|\/)(Dockerfile|docker-compose\.ya?ml|compose\.ya?ml|tsconfig\.json|mypy\.ini|action\.ya?ml)$/;
-const TEST = /(^|\/)(tests?|__tests__|spec)\/|(^|\/)test_[^/]+\.py$|_test\.(py|go)$|\.(test|spec)\.(ts|tsx|js|jsx)$/;
+const TEST =
+  /(^|\/)(tests?|__tests__|specs?)\/|(^|\/)test_[^/]+\.py$|(^|\/)tests?\.(py|[cm]?[jt]sx?)$|_test\.(py|go|rb)$|_spec\.rb$|\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)[A-Z]\w*Tests?\.(java|kt)$/;
 const README = /(^|\/)readme(\.[a-z]+)?$/i;
 
 const SIGNAL = /(route|router|api|view|controller|handler|endpoint|model|schema|service|worker|job|task|crud|migration|train|pipeline|agent|component)/i;

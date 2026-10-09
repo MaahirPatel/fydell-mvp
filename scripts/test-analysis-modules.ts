@@ -104,6 +104,15 @@ ok("parameterized query cites the execute line", cited(BACKEND, "parameterized_s
 
 console.log("Testing depth");
 for (const d of ["failure_path_test", "test_isolation", "parametrized_test", "test_suite"]) ok(`detects ${d}`, has(BACKEND, d));
+for (const [runner, line] of [
+  ["ava", "  await t.throwsAsync(retry(fail), {message: 'boom'});"],
+  ["node:test", "  await assert.rejects(retry(fail));"],
+  ["chai", "  expect(() => parse('')).to.throw(TypeError);"],
+  ["jest", "  expect(() => parse('')).toThrowError('empty');"],
+] as const) {
+  ok(`a failure-path assertion in ${runner} is recognized`, has({ "test/retry.test.js": `test('fails', async t => {\n${line}\n});` }, "failure_path_test"));
+}
+ok("asserting that code does not throw is not a failure path", !has({ "test/retry.test.js": "test('ok', t => {\n  t.notThrows(() => run());\n});" }, "failure_path_test"));
 
 console.log("Software design module");
 for (const d of ["ui_state_management", "concurrent_execution", "explicit_error_handling", "interface_contract", "strict_typing", "container_build", "container_non_root"]) {

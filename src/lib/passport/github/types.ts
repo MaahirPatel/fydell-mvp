@@ -1,4 +1,4 @@
-export const ANALYSIS_VERSION = "github-extract-v2";
+export const ANALYSIS_VERSION = "github-extract-v4";
 
 /**
  * Supported intake (GH-01). Passport import starts with explicitly selected

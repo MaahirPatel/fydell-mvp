@@ -25,7 +25,7 @@ function extraction(repoId: number, name: string, sha: string, finding: string, 
       {
         id: `${name.replace(/\W/g, "-")}-f1`,
         detector: "walkthrough",
-        category: "reliability",
+        category: "backend",
         finding,
         basis: "repository_observation",
         path,

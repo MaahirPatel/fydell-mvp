@@ -67,7 +67,7 @@ export function summarizeCommits(commits: AuthoredCommit[], capped: boolean): No
   return { byYou: authored.length, capped, activeWeeks: weeks.size, firstAt: first, lastAt: last, months, messages };
 }
 
-const TEST_PATH = /(^|\/)(tests?|__tests__|spec|e2e)(\/|$)|[._-](test|spec)\.[a-z]+$|(^|\/)test_[^/]+\.py$/i;
+const TEST_PATH = /(^|\/)(tests?|__tests__|specs?|e2e)(\/|$)|[._-](test|spec)\.[a-z]+$|(^|\/)test_[^/]+\.py$|(^|\/)tests?\.[a-z]+$/i;
 const SOURCE_EXT = /\.(ts|tsx|js|jsx|mjs|cjs|py|go|rs|java|kt|rb|php|cs|swift|c|cc|cpp|h|hpp|scala|ex|exs|dart|vue|svelte)$/i;
 const VENDORED = /(^|\/)(node_modules|vendor|dist|build|\.next|target|venv|\.venv|__pycache__)(\/|$)/;
 

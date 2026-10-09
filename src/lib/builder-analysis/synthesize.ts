@@ -336,15 +336,27 @@ function buildGrowth(input: SynthesisInput, practices: Practice[]): GrowthItem[]
   }
 
   const measured = input.activity.filter((a) => a.structure && a.structure.sourceFiles >= 10);
-  if (!has("tests_present") && (measured.length >= 2 || input.projects.length >= 1) && !grouped.has("tests_missing")) {
+  const testedImports = input.projects.filter((p) => p.evidence.some((e) => e.detector === "test_suite"));
+  const untestedImports = input.projects.length - testedImports.length;
+  const noTestFiles = measured.filter((a) => (a.structure?.testFiles ?? 0) === 0);
+  const fewTestFiles = measured.filter((a) => (a.structure?.testFiles ?? 0) > 0);
+  if (!has("tests_present") && (measured.length >= 2 || untestedImports >= 1) && !grouped.has("tests_missing")) {
+    const parts: string[] = [];
+    if (untestedImports > 0) {
+      parts.push(`Fydell's rules found no test suite in the analyzed files of ${untestedImports} imported project${untestedImports === 1 ? "" : "s"}`);
+    }
+    if (noTestFiles.length > 0) parts.push(`${noTestFiles.length} of ${measured.length} scanned repositories have no test files`);
+    if (fewTestFiles.length > 0) {
+      parts.push(`${fewTestFiles.length} ${fewTestFiles.length === 1 ? "has" : "have"} only a few test files relative to their source`);
+    }
     items.push({
       id: "growth:no_tests",
-      title: "No automated tests were found",
-      observation: `No test files or test suites were found in the ${measured.length + input.projects.length} sources checked.`,
+      title: "Little or no automated testing was detected",
+      observation: `${parts.join("; ")}.`,
       whyItMatters: "Tests are how a team trusts a change without re-reading everything. Their absence is the first thing most reviewers check.",
       nextStep: "Pick your most-used project and add tests for its core path and one failure case, then run them in CI.",
       basis: "observation",
-      repos: measured.map((a) => a.repo),
+      repos: [...input.projects.filter((p) => !testedImports.includes(p)).map((p) => p.repoFullName), ...measured.map((a) => a.repo)],
       refs: [],
     });
   }

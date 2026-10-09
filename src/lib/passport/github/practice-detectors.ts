@@ -217,7 +217,9 @@ const SPECS: Spec[] = [
     finding: "Tests a failure path by asserting an error or a rejected request.",
     limitations: ["Fydell does not run imported code, so whether this test passes is unknown."],
     files: isTestFile,
-    match: lineWith(/pytest\.raises\(|assertRaises\(|\.toThrow\(|\.rejects\.|status_code\s*==\s*4\d\d|\.status\)\.toBe\(4\d\d\)|toHaveStatus\(4\d\d\)/),
+    match: lineWith(
+      /pytest\.raises\(|assertRaises(Regex)?\(|\.toThrow\w*\(|\.rejects\.|\bt\.throws(Async)?\(|\bassert\.(throws|rejects)\(|\.to\.(be\.)?(throw|rejected)|\bassertThrows\(|\braise_error\b|#\[should_panic|status_code\s*==\s*4\d\d|\.status\)\.toBe\(4\d\d\)|toHaveStatus\(4\d\d\)/,
+    ),
   },
   {
     detector: "test_isolation",

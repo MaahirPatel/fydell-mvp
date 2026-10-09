@@ -125,7 +125,9 @@ function testSuites(files: Files): DraftFinding[] {
   if (tests.length === 0) return [];
   for (const path of tests) {
     const ls = lines(files.get(path) ?? "");
-    const i = ls.findIndex((l) => /^\s*(async\s+)?def\s+test_\w+|^\s*(it|test|describe)\(|^\s*func\s+Test\w+/.test(l));
+    const i = ls.findIndex((l) =>
+      /^\s*(async\s+)?def\s+test_\w+|^\s*(it|test|describe)(\.\w+)*\(|^\s*func\s+Test\w+|^\s*@Test\b|^\s*(it|describe|context)\s+["']/.test(l),
+    );
     if (i >= 0) {
       return [
         {

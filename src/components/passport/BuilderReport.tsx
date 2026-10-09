@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowUpRight, Check, ChevronDown, ChevronRight, GitBranch, GitCommitHorizontal, Link2, RotateCcw } from "lucide-react";
 import { CodeBlock } from "@/components/marketing/home/CodeBlock";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -9,10 +10,12 @@ import { DetailList, FigureRow, Notice, SectionHeader, Status, type StatusKind }
 import "./passport.css";
 import type { Correction, CorrectionKind } from "@/lib/passport/corrections";
 import { ANALYSIS_VERSION, type ManifestEntry } from "@/lib/passport/github/types";
+import { isActive, type ImportJobView } from "@/lib/passport/import-jobs";
 import type { ScopePreview } from "@/lib/passport/github/extract";
 import type { FindingDiff } from "@/lib/passport/versions";
 import type { ContributionContext, DecisionRecord } from "@/lib/passport/context-contract";
 import { ContributionSection, DecisionsSection } from "./ContributionContext";
+import { LocalDate, LocalTime } from "@/components/eng/LocalTime";
 import type { PassportEvidence, PassportProject } from "@/lib/passport/view";
 import {
   CATEGORY_LABEL,
@@ -21,8 +24,6 @@ import {
   REPORT_STATE,
   REPORT_VIEWS,
   SKIP_REASON_LABEL,
-  formatDate,
-  formatDateTime,
   parseReportView,
   reportState,
   shortSha,
@@ -88,8 +89,8 @@ function NoteList({ notes, onWithdraw, busyId }: { notes: Correction[]; onWithdr
         <li key={n.id} className={`border-l pl-3 ${n.kind === "context" ? "border-[var(--border-strong)]" : "border-[#e9c27a]"} ${n.withdrawnAt ? "opacity-60" : ""}`}>
           <div className="flex flex-wrap items-baseline gap-x-2">
             <span className="text-[13px] font-semibold text-[var(--text-primary)]">{KIND_LABEL[n.kind]}</span>
-            <span className="text-[13px] text-[var(--text-tertiary)]" title={formatDateTime(n.createdAt)}>
-              {formatDate(n.createdAt)}
+            <span className="text-[13px] text-[var(--text-tertiary)]">
+              <LocalDate iso={n.createdAt} />
               {n.withdrawnAt ? " · withdrawn" : n.status === "resolved" ? " · resolved" : ""}
             </span>
             {!n.withdrawnAt ? (
@@ -193,11 +194,47 @@ type RevisionCheck =
   | { status: "idle" | "checking" | "starting" }
   | { status: "same" }
   | { status: "new"; preview: Extract<ScopePreview, { ok: true }> }
-  | { status: "started" }
+  | { status: "started"; jobId: string }
+  | { status: "finished"; findings: number }
   | { status: "error"; message: string };
 
+const JOB_POLL_MS = 2500;
+const JOB_RESUME_EVERY_MS = 20_000;
+
 function NewRevision({ project, reanalysisBlockedBy }: { project: PassportProject; reanalysisBlockedBy: "pinned" | "notes" | null }) {
+  const router = useRouter();
   const [check, setCheck] = useState<RevisionCheck>({ status: "idle" });
+  const jobId = check.status === "started" ? check.jobId : null;
+
+  useEffect(() => {
+    if (!jobId) return;
+    let resumedAt = 0;
+    const timer = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/passport/imports/${jobId}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const { job } = (await res.json()) as { job: ImportJobView };
+        if (job.state === "succeeded") {
+          clearInterval(timer);
+          setCheck({ status: "finished", findings: job.result?.findings ?? 0 });
+          router.refresh();
+        } else if (!isActive(job.state)) {
+          clearInterval(timer);
+          setCheck({ status: "error", message: job.error ?? "The analysis did not finish." });
+        } else if (job.needsWorker && Date.now() - resumedAt > JOB_RESUME_EVERY_MS) {
+          resumedAt = Date.now();
+          void fetch(`/api/passport/imports/${jobId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "resume" }),
+          }).catch(() => undefined);
+        }
+      } catch {
+        // Transient; the next poll tries again.
+      }
+    }, JOB_POLL_MS);
+    return () => clearInterval(timer);
+  }, [jobId, router]);
 
   async function look() {
     setCheck({ status: "checking" });
@@ -229,9 +266,16 @@ function NewRevision({ project, reanalysisBlockedBy }: { project: PassportProjec
           contribution: project.contributionStatement,
         }),
       });
-      const data = (await res.json()) as { error?: string };
-      if (!res.ok) return setCheck({ status: "error", message: data.error ?? "Could not start the analysis." });
-      setCheck({ status: "started" });
+      const data = (await res.json()) as { job?: ImportJobView; error?: string };
+      if (!res.ok || !data.job) return setCheck({ status: "error", message: data.error ?? "Could not start the analysis." });
+      if (data.job.state === "succeeded") {
+        setCheck({ status: "finished", findings: data.job.result?.findings ?? 0 });
+        router.refresh();
+      } else if (!isActive(data.job.state)) {
+        setCheck({ status: "error", message: data.job.error ?? "The analysis did not finish." });
+      } else {
+        setCheck({ status: "started", jobId: data.job.id });
+      }
     } catch {
       setCheck({ status: "error", message: "Fydell could not be reached." });
     }
@@ -265,6 +309,12 @@ function NewRevision({ project, reanalysisBlockedBy }: { project: PassportProjec
           <Link href="/app/candidate/work-record#imports" className="font-medium text-[var(--accent-ink)] hover:underline hover:underline-offset-4">
             Track progress
           </Link>
+        </p>
+      );
+    case "finished":
+      return (
+        <p role="status" className={`${text} inline-flex items-center gap-1.5`}>
+          <Check className="h-4 w-4 text-[var(--badge-success-ink)]" aria-hidden /> Analysis finished with {check.findings} finding{check.findings === 1 ? "" : "s"}
         </p>
       );
     case "error":
@@ -612,7 +662,7 @@ export default function BuilderReport({
                 </a>
               </>
             )}
-            <span title={formatDateTime(project.analyzedAt)}>Analyzed {formatDate(project.analyzedAt)}</span>
+            <span>Analyzed <LocalDate iso={project.analyzedAt} /></span>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -830,8 +880,8 @@ export default function BuilderReport({
                   <span className="min-w-[140px] text-[14px] text-[var(--text-primary)]">
                     {v.revisionRef ?? "default"} <span className="font-mono text-[13px] text-[var(--text-secondary)]">{shortSha(v.commitSha)}</span>
                   </span>
-                  <span className="text-[14px] text-[var(--text-secondary)]" title={formatDateTime(v.analyzedAt)}>
-                    {formatDate(v.analyzedAt)}
+                  <span className="text-[14px] text-[var(--text-secondary)]">
+                    <LocalDate iso={v.analyzedAt} />
                   </span>
                   <span className="text-[14px] tabular-nums text-[var(--text-secondary)]">
                     {v.findings} finding{v.findings === 1 ? "" : "s"}
@@ -887,7 +937,7 @@ export default function BuilderReport({
                     ),
                   },
               ...(uploaded ? [] : [{ label: "Branch", value: project.revisionRef ?? "Default branch" }]),
-              { label: "Analyzed", value: formatDateTime(project.analyzedAt) },
+              { label: "Analyzed", value: <LocalTime iso={project.analyzedAt} /> },
               { label: "Files reviewed", value: <FileCoverage manifest={manifest} project={project} /> },
               ...(project.primaryLanguage ? [{ label: "Main language", value: project.primaryLanguage }] : []),
               ...(openNotes ? [{ label: "Open notes", value: <span className="tabular-nums">{openNotes}</span> }] : []),
