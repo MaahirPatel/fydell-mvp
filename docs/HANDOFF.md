@@ -32,3 +32,4 @@ Source of truth: `docs/IMPLEMENTATION_CHECKLIST.md`. Resume by reading it, then 
 ## After pause
 
 - Agent S finished (a1984e9, migration 094). Open: real-model chat evidence (needs Groq quota), desktop client submission id (agent F), authorization and cache templates.
+- Agent B finished (a092358, 8b90863; migrations 081, 092). Open: customized simulation template blocked by Groq rate limit; interrupted signup on a role link; teammate lacks decision permission in walk data; E9 (employer reading a share against a role) not walked.
