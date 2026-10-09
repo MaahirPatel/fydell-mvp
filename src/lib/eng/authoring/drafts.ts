@@ -79,34 +79,100 @@ function roleModelDraft(config: AuthoringConfig): { pkg: ScenarioPackage; prot: 
   return { pkg, prot: copy.prot, title: pkg.brief.title };
 }
 
-export async function createDraft(db: Admin, member: EngMember, raw: unknown): Promise<{ draftId: string; jobId: string | null }> {
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export type CreateDraftOptions = {
+  /** One id per form submission; a repeat returns the draft the first one created. */
+  requestId?: string | null;
+  /** Create another copy of a simulation template this workspace already has. */
+  allowDuplicate?: boolean;
+};
+
+export type CreateDraftResult = { draftId: string; jobId: string | null; existing?: boolean };
+
+/** Thrown when the workspace already has a copy of the chosen simulation template. */
+export class DuplicateTemplateError extends AuthoringError {
+  constructor(readonly existing: { id: string; title: string; status: string }) {
+    super(409, `This workspace already has “${existing.title}” from this simulation template.`);
+  }
+}
+
+async function draftForRequest(db: Admin, organizationId: string, requestId: string): Promise<string | null> {
+  const { data, error } = await db
+    .from("eng_scenario_drafts")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .eq("create_request_id", requestId)
+    .maybeSingle();
+  if (error) return null;
+  return (data?.id as string | undefined) ?? null;
+}
+
+async function existingTemplateCopy(db: Admin, organizationId: string, exemplarKey: string): Promise<{ id: string; title: string; status: string } | null> {
+  const { data } = await db
+    .from("eng_scenario_drafts")
+    .select("id, title, status")
+    .eq("organization_id", organizationId)
+    .eq("path", "template")
+    .neq("status", "archived")
+    .eq("package->config->simulation->>exemplarKey", exemplarKey)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data ? { id: data.id as string, title: data.title as string, status: data.status as string } : null;
+}
+
+export async function createDraft(db: Admin, member: EngMember, raw: unknown, options: CreateDraftOptions = {}): Promise<CreateDraftResult> {
   const { input, validation } = checkInput(raw);
   if (!validation.ok || !validation.resolved) {
     throw new AuthoringError(422, "Resolve the items in the summary before creating the draft.");
   }
+  const requestId = options.requestId && UUID_RE.test(options.requestId) ? options.requestId.toLowerCase() : null;
+  if (requestId) {
+    const prior = await draftForRequest(db, member.organizationId, requestId);
+    if (prior) return { draftId: prior, jobId: null, existing: true };
+  }
   const config = validation.resolved;
   const asIs = config.startingMaterial === "reviewed_template";
+  const exemplarKey = asIs ? config.simulation?.exemplarKey : undefined;
+  if (exemplarKey && !options.allowDuplicate) {
+    const copy = await existingTemplateCopy(db, member.organizationId, exemplarKey);
+    if (copy) throw new DuplicateTemplateError(copy);
+  }
   const roleModel = asIs ? roleModelDraft(config) : null;
   const title = roleModel?.title ?? placeholderTitle(config).padEnd(2, ".");
   const uploaded = config.startingMaterial === "uploaded";
   const skeleton = roleModel ?? (uploaded ? skeletonPackage(config) : null);
-  const { data, error } = await db
+  const row: Record<string, unknown> = {
+    organization_id: member.organizationId,
+    created_by: member.userId,
+    path: asIs ? "template" : uploaded ? "import" : "generated",
+    title,
+    family: config.family,
+    specialization: config.specialization,
+    level: config.level,
+    package: skeleton?.pkg ?? {},
+    input: input as unknown as Record<string, unknown>,
+    revision: 1,
+    status: "draft",
+  };
+  let inserted = await db
     .from("eng_scenario_drafts")
-    .insert({
-      organization_id: member.organizationId,
-      created_by: member.userId,
-      path: asIs ? "template" : uploaded ? "import" : "generated",
-      title,
-      family: config.family,
-      specialization: config.specialization,
-      level: config.level,
-      package: skeleton?.pkg ?? {},
-      input: input as unknown as Record<string, unknown>,
-      revision: 1,
-      status: "draft",
-    })
+    .insert(requestId ? { ...row, create_request_id: requestId } : row)
     .select("id")
     .single();
+  if (inserted.error && requestId) {
+    // A concurrent submit with the same id won the insert: return its draft.
+    if (inserted.error.code === "23505") {
+      const prior = await draftForRequest(db, member.organizationId, requestId);
+      if (prior) return { draftId: prior, jobId: null, existing: true };
+    }
+    // An environment without migration 080 has no request column; create the draft without it.
+    if (inserted.error.code === "42703" || inserted.error.code === "PGRST204") {
+      inserted = await db.from("eng_scenario_drafts").insert(row).select("id").single();
+    }
+  }
+  const { data, error } = inserted;
   if (error) throw new Error(`Could not create draft: ${error.message}`);
   const draftId = data.id as string;
   await db.from("eng_scenario_draft_protected").insert({ draft_id: draftId, organization_id: member.organizationId, content: skeleton?.prot ?? emptyProtected() });

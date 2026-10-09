@@ -1,4 +1,4 @@
-export type ApiResult<T> = { ok: true; status: number; data: T; error?: undefined } | { ok: false; status: number; error: string; data?: undefined };
+export type ApiResult<T> = { ok: true; status: number; data: T; error?: undefined; payload?: undefined } | { ok: false; status: number; error: string; data?: undefined; payload?: unknown };
 
 /** JSON fetch for the authoring API. Never throws; network failures come back as an error result. */
 export async function api<T>(url: string, init?: { method?: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown; signal?: AbortSignal }): Promise<ApiResult<T>> {
@@ -26,7 +26,7 @@ export async function api<T>(url: string, init?: { method?: "GET" | "POST" | "PA
       payload && typeof payload === "object" && typeof (payload as { error?: unknown }).error === "string"
         ? (payload as { error: string }).error
         : `The request failed (${res.status}).`;
-    return { ok: false, status: res.status, error: message };
+    return { ok: false, status: res.status, error: message, payload };
   }
   return { ok: true, status: res.status, data: payload as T };
 }

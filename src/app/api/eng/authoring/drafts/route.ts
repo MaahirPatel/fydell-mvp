@@ -1,6 +1,6 @@
 import { jsonError, readJson } from "@/lib/eng/context";
 import { ok } from "@/lib/eng/http";
-import { createDraft, listWorkSamples } from "@/lib/eng/authoring/drafts";
+import { createDraft, DuplicateTemplateError, listWorkSamples } from "@/lib/eng/authoring/drafts";
 import { authoringError, authoringGate, kickJob } from "@/lib/eng/authoring/http";
 import { limitByUser, ROUTE_LIMITS } from "@/lib/security/route-limits";
 
@@ -24,10 +24,14 @@ export async function POST(req: Request) {
   const body = await readJson(req);
   if (!body) return jsonError(400, "Send the form as JSON.");
   try {
-    const result = await createDraft(gate.value.db, gate.value.member, body.input);
+    const result = await createDraft(gate.value.db, gate.value.member, body.input, {
+      requestId: typeof body.requestId === "string" ? body.requestId : null,
+      allowDuplicate: body.allowDuplicate === true,
+    });
     if (result.jobId) kickJob(gate.value.db, result.jobId);
-    return ok(result, 201);
+    return ok(result, result.existing ? 200 : 201);
   } catch (err) {
+    if (err instanceof DuplicateTemplateError) return jsonError(err.status, err.message, { existing: err.existing });
     return authoringError(err, "create");
   }
 }

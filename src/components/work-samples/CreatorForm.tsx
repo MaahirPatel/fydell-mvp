@@ -19,6 +19,16 @@ type Clarification = FormValidation["clarifications"][number];
 type Assumption = FormValidation["assumptions"][number];
 type Issue = FormValidation["errors"][number];
 
+type ExistingDraft = { id: string; title: string; status: string };
+
+function existingDraftOf(payload: unknown): ExistingDraft | null {
+  if (!payload || typeof payload !== "object") return null;
+  const existing = (payload as { existing?: unknown }).existing;
+  if (!existing || typeof existing !== "object") return null;
+  const { id, title, status } = existing as Record<string, unknown>;
+  return typeof id === "string" && typeof title === "string" && typeof status === "string" ? { id, title, status } : null;
+}
+
 type Stored = {
   v: 1;
   fromDraft: string | null;
@@ -97,6 +107,9 @@ export default function CreatorForm({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
+  const inFlight = useRef(false);
+  const requestId = useRef<string | null>(null);
+  const [duplicate, setDuplicate] = useState<ExistingDraft | null>(null);
 
   const key = useMemo(() => JSON.stringify(input), [input]);
   const pending = !validation || validation.key !== key;
@@ -369,30 +382,42 @@ export default function CreatorForm({
   }
   const canSubmit = !usesTemplate && !generationBlocked && !pending && Boolean(result?.ok) && !submitting;
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (usesTemplate || generationBlocked) return;
+  async function submit(e: React.FormEvent | null, allowDuplicate = false) {
+    e?.preventDefault();
+    if (usesTemplate || generationBlocked || inFlight.current) return;
+    inFlight.current = true;
     setSubmitting(true);
     setSubmitError(null);
+    setDuplicate(null);
+    const finish = () => {
+      inFlight.current = false;
+      setSubmitting(false);
+    };
     const check = await api<{ validation: FormValidation }>("/api/eng/authoring/validate", { body: { input } });
     if (!check.ok) {
-      setSubmitting(false);
+      finish();
       setSubmitError(check.error);
       return;
     }
     setValidation({ key, result: check.data.validation });
     remember(check.data.validation);
     if (!check.data.validation.ok) {
-      setSubmitting(false);
+      finish();
       summaryRef.current?.focus();
       return;
     }
-    const res = await api<{ draftId: string; jobId: string | null }>("/api/eng/authoring/drafts", { body: { input } });
+    requestId.current ??= crypto.randomUUID();
+    const res = await api<{ draftId: string; jobId: string | null }>("/api/eng/authoring/drafts", {
+      body: { input, requestId: requestId.current, allowDuplicate },
+    });
     if (!res.ok) {
-      setSubmitting(false);
-      setSubmitError(res.error);
+      finish();
+      const existing = res.status === 409 ? existingDraftOf(res.payload) : null;
+      if (existing) setDuplicate(existing);
+      else setSubmitError(res.error);
       return;
     }
+    requestId.current = null;
     try {
       window.sessionStorage.removeItem(STORAGE_KEY);
     } catch {
@@ -765,6 +790,21 @@ export default function CreatorForm({
             ) : (
               <div className="grid gap-2">
                 <FormError>{submitError}</FormError>
+                {duplicate ? (
+                  <Banner tone="neutral">
+                    <p>
+                      You already have “{duplicate.title}” from this simulation template ({duplicate.status === "published" ? "published" : duplicate.status === "in_review" ? "in review" : "draft"}). Open it, or create another copy if you want two separate versions.
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <ButtonLink href={`/app/employer/work-samples/drafts/${duplicate.id}`} variant="primary" size="sm">
+                        Open existing
+                      </ButtonLink>
+                      <Button variant="secondary" size="sm" disabled={submitting} onClick={() => void submit(null, true)}>
+                        Create another copy
+                      </Button>
+                    </div>
+                  </Banner>
+                ) : null}
                 {generationBlocked ? (
                   <Button variant="secondary" onClick={() => setField("startingMaterial", "uploaded")}>
                     Switch to Upload starter files
