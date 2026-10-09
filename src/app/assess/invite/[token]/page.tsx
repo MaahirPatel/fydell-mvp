@@ -1,4 +1,4 @@
-import { CandidateShell } from "@/components/candidate/CandidateShell";
+import { CandidateShell, PublicHeaderLink } from "@/components/candidate/CandidateShell";
 import { ButtonLink } from "@/components/ui/Button";
 import AcceptEngInvitation from "@/components/eng/AcceptEngInvitation";
 import EngInvitationBrief from "@/components/eng/EngInvitationBrief";
@@ -15,9 +15,9 @@ import { isInboxVerified } from "@/lib/security/email-verification";
 export const metadata = { title: "Engineering task invitation" };
 export const dynamic = "force-dynamic";
 
-function Closed({ title, detail }: { title: string; detail: string }) {
+function Closed({ title, detail, signedIn }: { title: string; detail: string; signedIn: boolean }) {
   return (
-    <CandidateShell>
+    <CandidateShell action={signedIn ? undefined : <PublicHeaderLink />}>
       <h1 className="text-[22px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">{title}</h1>
       <p className="mt-3 text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">{detail}</p>
     </CandidateShell>
@@ -27,11 +27,10 @@ function Closed({ title, detail }: { title: string; detail: string }) {
 export default async function EngInvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const db = engAdmin();
-  const invitation = await getInvitationByToken(db, token);
+  const [invitation, user] = await Promise.all([getInvitationByToken(db, token), requireUser()]);
   if (!invitation) {
-    return <Closed title="This invitation link is not valid" detail="The link may be incomplete, or the employer sent a newer one. Check your latest email or ask them to resend it." />;
+    return <Closed signedIn={Boolean(user)} title="This invitation link is not valid" detail="The link may be incomplete, or the employer sent a newer one. Check your latest email or ask them to resend it." />;
   }
-  const user = await requireUser();
   if (invitation.accepted_by && user?.id === invitation.accepted_by) {
     const { data: attempt } = await db.from("eng_attempts").select("id").eq("invitation_id", invitation.id).maybeSingle();
     if (attempt) {
@@ -48,7 +47,7 @@ export default async function EngInvitePage({ params }: { params: Promise<{ toke
     }
   }
   const usable = invitationUsable(invitation);
-  if (usable.ok === false) return <Closed title="This invitation is closed" detail={usable.reason} />;
+  if (usable.ok === false) return <Closed signedIn={Boolean(user)} title="This invitation is closed" detail={usable.reason} />;
 
   const resolved = await resolveScenarioVersion(db, invitation.scenario_version_id);
   const here = `/assess/invite/${token}`;
@@ -77,7 +76,7 @@ export default async function EngInvitePage({ params }: { params: Promise<{ toke
         );
 
   return (
-    <CandidateShell>
+    <CandidateShell action={user ? undefined : <PublicHeaderLink />}>
       {resolved.origin === "employer_authored" ? (
         <AuthoredInvitationBrief
           task={candidateTask(resolved.pkg)}

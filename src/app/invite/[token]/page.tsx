@@ -9,7 +9,7 @@ import { requireUser } from "@/lib/simulations/auth";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
 import { AcceptInviteButton } from "@/components/sim/AcceptInviteButton";
-import { CandidateShell } from "@/components/candidate/CandidateShell";
+import { CandidateShell, PublicHeaderLink } from "@/components/candidate/CandidateShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { Surface } from "@/components/ui/Surface";
 import { ContactLink } from "@/components/ui/ContactLink";
@@ -19,9 +19,9 @@ import { isInboxVerified } from "@/lib/security/email-verification";
 export const metadata = { title: "You're invited | Fydell" };
 export const dynamic = "force-dynamic";
 
-function Dead({ title, detail, hint }: { title: string; detail: string; hint?: string }) {
+function Dead({ title, detail, hint, signedIn }: { title: string; detail: string; hint?: string; signedIn: boolean }) {
   return (
-    <CandidateShell width="narrow">
+    <CandidateShell width="narrow" action={signedIn ? undefined : <PublicHeaderLink />}>
       <h1 className="text-app-page font-medium tracking-[-0.02em] text-[var(--text-primary)]">
         {title}
       </h1>
@@ -43,11 +43,12 @@ export default async function InvitePage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const invitation = await getInvitationByToken(token);
+  const [invitation, user] = await Promise.all([getInvitationByToken(token), requireUser()]);
 
   if (!invitation) {
     return (
       <Dead
+        signedIn={Boolean(user)}
         title="This invitation link is not valid"
         detail="The link may have been copied incompletely. Check the one in your email, or ask the company that invited you to send a fresh invitation."
       />
@@ -74,6 +75,7 @@ export default async function InvitePage({
             : "This invitation is not active";
     return (
       <Dead
+        signedIn={Boolean(user)}
         title={title}
         detail={gate.reason}
         hint={`Ask ${orgName} to send a new invitation if you still need access. They can do that themselves.`}
@@ -84,7 +86,6 @@ export default async function InvitePage({
   await markInvitationOpened(invitation.id);
   const content = await getVersionContent(invitation.template_version_id);
   const role = ROLE_BY_KEY[content.roleKey];
-  const user = await requireUser();
 
   // If this invitation was already accepted by this user, surface the session.
   let existingSessionId: string | null = null;
@@ -130,7 +131,7 @@ export default async function InvitePage({
   ];
 
   return (
-    <CandidateShell>
+    <CandidateShell action={user ? undefined : <PublicHeaderLink />}>
       <p className="text-app-meta font-medium text-[var(--text-tertiary)]">
         Invitation from {orgName}
       </p>
