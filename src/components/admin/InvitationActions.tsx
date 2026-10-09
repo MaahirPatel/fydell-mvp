@@ -28,7 +28,7 @@ export default function InvitationActions({
   }
 
   if (status === "revoked" || status === "accepted") {
-    return <span className="text-app-meta text-[rgba(244,245,247,0.4)]">-</span>;
+    return <span className="text-app-meta text-[var(--text-tertiary)]">-</span>;
   }
 
   return (
@@ -37,7 +37,7 @@ export default function InvitationActions({
         type="button"
         disabled={busy}
         onClick={() => void run("resend")}
-        className="text-app-meta text-[rgba(244,245,247,0.75)] hover:underline"
+        className="text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline"
       >
         Resend
       </button>

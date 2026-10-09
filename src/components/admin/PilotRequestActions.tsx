@@ -66,11 +66,11 @@ export default function PilotRequestActions({
   return (
     <div className="space-y-4">
       <div>
-        <label className="mb-1.5 block text-app-meta text-[rgba(244,245,247,0.5)]">Status</label>
+        <label className="mb-1.5 block text-app-meta text-[var(--text-secondary)]">Status</label>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="h-10 w-full rounded-[8px] border border-[rgba(255,255,255,0.1)] bg-[#0B0D12] px-3 text-app-meta"
+          className="h-10 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] text-[var(--text-primary)] px-3 text-app-meta"
         >
           {STATUSES.map((s) => (
             <option key={s} value={s}>
@@ -80,14 +80,14 @@ export default function PilotRequestActions({
         </select>
       </div>
       <div>
-        <label className="mb-1.5 block text-app-meta text-[rgba(244,245,247,0.5)]">
+        <label className="mb-1.5 block text-app-meta text-[var(--text-secondary)]">
           Internal note
         </label>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           rows={3}
-          className="w-full rounded-[8px] border border-[rgba(255,255,255,0.1)] bg-[#0B0D12] px-3 py-2 text-app-meta"
+          className="w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] text-[var(--text-primary)] px-3 py-2 text-app-meta"
           placeholder="Add context for the team"
         />
       </div>
@@ -96,7 +96,7 @@ export default function PilotRequestActions({
           type="button"
           disabled={busy}
           onClick={() => run("status")}
-          className="h-9 rounded-[8px] bg-[#F1F2F4] px-3 text-app-meta text-[#08090C]"
+          className="h-9 rounded-[8px] bg-[var(--control-solid)] px-3 text-app-meta text-[var(--control-solid-ink)] disabled:opacity-50"
           style={{ fontWeight: 500 }}
         >
           Update status
@@ -105,7 +105,7 @@ export default function PilotRequestActions({
           type="button"
           disabled={busy || !note.trim()}
           onClick={() => run("note")}
-          className="h-9 rounded-[8px] border border-[rgba(255,255,255,0.12)] px-3 text-app-meta text-[rgba(244,245,247,0.8)]"
+          className="h-9 rounded-[8px] border border-[var(--border-default)] px-3 text-app-meta text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
         >
           Add note
         </button>
@@ -113,7 +113,7 @@ export default function PilotRequestActions({
           type="button"
           disabled={busy}
           onClick={() => run("process-email")}
-          className="h-9 rounded-[8px] border border-[rgba(255,255,255,0.12)] px-3 text-app-meta text-[rgba(244,245,247,0.8)]"
+          className="h-9 rounded-[8px] border border-[var(--border-default)] px-3 text-app-meta text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
         >
           Process email queue
         </button>
@@ -130,12 +130,12 @@ export default function PilotRequestActions({
             }
             void run("approve");
           }}
-          className="h-9 rounded-[8px] border border-[rgba(103,217,160,0.35)] px-3 text-app-meta text-[#67D9A0] disabled:opacity-40"
+          className="h-9 rounded-[8px] border border-[var(--border-default)] px-3 text-app-meta text-[var(--status-positive-ink)] hover:bg-[var(--surface-hover)] disabled:opacity-40"
         >
           {convertedOrganizationId ? "Workspace linked" : "Approve pilot"}
         </button>
       </div>
-      {message ? <p className="text-app-meta text-[rgba(244,245,247,0.62)]">{message}</p> : null}
+      {message ? <p className="text-app-meta text-[var(--text-secondary)]">{message}</p> : null}
     </div>
   );
 }

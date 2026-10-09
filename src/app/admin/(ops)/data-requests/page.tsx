@@ -50,7 +50,7 @@ export default async function AdminDataRequestsPage() {
         workspace deletions and interrupted deletions need someone to confirm and finish them. {open.length} open.
       </p>
 
-      <div className="mt-8 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+      <div className="mt-8 overflow-x-auto rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
         <table className="min-w-full text-left text-app-meta">
           <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-band)] text-app-meta font-medium text-[var(--text-secondary)]">
             <tr>
@@ -73,7 +73,7 @@ export default async function AdminDataRequestsPage() {
               rows.map((row) => {
                 const d = due(row);
                 return (
-                  <tr key={row.id} className="border-b border-[var(--border-subtle)]">
+                  <tr key={row.id} className="border-b border-[var(--border-subtle)] last:border-b-0">
                     <td className="px-4 py-3 tabular-nums text-[var(--text-secondary)]">{new Date(row.received_at).toLocaleString()}</td>
                     <td className="px-4 py-3 capitalize">
                       {row.request_type}

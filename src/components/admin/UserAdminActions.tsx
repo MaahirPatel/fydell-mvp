@@ -53,7 +53,7 @@ export default function UserAdminActions({
           if (!window.confirm(`Send password-reset email to ${email}?`)) return;
           void run("send-reset");
         }}
-        className="h-9 w-full rounded-[8px] border border-[rgba(255,255,255,0.12)] px-3 text-left text-[rgba(244,245,247,0.85)]"
+        className="h-9 w-full rounded-[8px] border border-[var(--border-default)] px-3 text-left text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
       >
         Send password-reset email
       </button>
@@ -63,7 +63,7 @@ export default function UserAdminActions({
           type="button"
           disabled={busy}
           onClick={() => void run("reactivate")}
-          className="h-9 w-full rounded-[8px] border border-[rgba(255,255,255,0.12)] px-3 text-left"
+          className="h-9 w-full rounded-[8px] border border-[var(--border-default)] px-3 text-left"
         >
           Reactivate access
         </button>
@@ -75,18 +75,18 @@ export default function UserAdminActions({
             if (!window.confirm("Suspend application access for this user?")) return;
             void run("suspend");
           }}
-          className="h-9 w-full rounded-[8px] border border-[rgba(242,107,130,0.35)] px-3 text-left text-[var(--fydell-risk)]"
+          className="h-9 w-full rounded-[8px] border border-[var(--danger-line)] hover:bg-[var(--danger-soft)] px-3 text-left text-[var(--fydell-risk)]"
         >
           Suspend access
         </button>
       )}
 
-      <div className="rounded-[8px] border border-[rgba(255,255,255,0.1)] p-3">
-        <p className="mb-2 text-app-meta text-[rgba(244,245,247,0.5)]">Grant platform role</p>
+      <div className="rounded-[8px] border border-[var(--border-default)] p-3">
+        <p className="mb-2 text-app-meta text-[var(--text-secondary)]">Grant platform role</p>
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          className="mb-2 h-9 w-full rounded-[8px] border border-[rgba(255,255,255,0.1)] bg-[#0B0D12] px-2"
+          className="mb-2 h-9 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] text-[var(--text-primary)] px-2"
         >
           {PLATFORM_ROLES.map((r) => (
             <option key={r} value={r}>
@@ -101,7 +101,7 @@ export default function UserAdminActions({
             if (!window.confirm(`Grant ${role} to ${email}?`)) return;
             void run("grant-role", { role });
           }}
-          className="h-9 w-full rounded-[8px] bg-[#F1F2F4] text-[#08090C]"
+          className="h-9 w-full rounded-[8px] bg-[var(--control-solid)] text-[var(--control-solid-ink)] disabled:opacity-50"
           style={{ fontWeight: 500 }}
         >
           Grant role
@@ -119,7 +119,7 @@ export default function UserAdminActions({
                 if (!window.confirm(`Revoke ${r} from ${email}?`)) return;
                 void run("revoke-role", { role: r });
               }}
-              className="h-9 w-full rounded-[8px] border border-[rgba(255,255,255,0.12)] px-3 text-left capitalize"
+              className="h-9 w-full rounded-[8px] border border-[var(--border-default)] px-3 text-left capitalize"
             >
               Revoke {r.replace("_", " ")}
             </button>
@@ -127,7 +127,7 @@ export default function UserAdminActions({
         </div>
       ) : null}
 
-      {message ? <p className="text-app-meta text-[rgba(244,245,247,0.62)]">{message}</p> : null}
+      {message ? <p className="text-app-meta text-[var(--text-secondary)]">{message}</p> : null}
     </div>
   );
 }
