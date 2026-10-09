@@ -140,9 +140,9 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
                   {ds.length > 0 ? (
                     <div className="mt-4">
                       <p className="text-app-meta font-medium text-[var(--text-primary)]">Decisions they describe</p>
-                      <ul className="mt-2 space-y-3">
+                      <ul className="mt-2 divide-y divide-[var(--border-subtle)]">
                         {ds.map((d) => (
-                          <li key={d.id} className="border-l-2 border-[var(--border-default)] pl-3">
+                          <li key={d.id} className="py-3 first:pt-0 last:pb-0">
                             <p className="text-app-body font-medium text-[var(--text-primary)]">{d.title}</p>
                             {d.problem ? <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">Problem: {d.problem}</p> : null}
                             {d.choice ? <p className="mt-1 text-app-meta leading-[1.55] text-[var(--text-secondary)]">Choice: {d.choice}</p> : null}

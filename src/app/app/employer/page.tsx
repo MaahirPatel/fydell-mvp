@@ -220,7 +220,7 @@ export default async function EmployerHomePage() {
       href: `/app/employer/engineering/attempts/${item.attemptId}`,
       candidate: item.candidate,
       context: item.roleTitle,
-      action: item.waitingOn === "decision" ? "Record a decision" : item.waitingOn === "hold" ? "On hold" : "Review and release",
+      action: item.waitingOn === "decision" ? "Record a decision" : item.waitingOn === "hold" ? "On hold: make a final decision" : "Review and release",
       since: item.since,
     })),
     ...applicationQueue.map((item) => ({

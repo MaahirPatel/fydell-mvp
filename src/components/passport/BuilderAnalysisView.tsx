@@ -56,7 +56,7 @@ function LevelMeter({ level }: { level: EvidenceLevel }) {
   return (
     <span className="inline-flex gap-[3px]" aria-hidden>
       {[1, 2, 3, 4].map((i) => (
-        <span key={i} className="h-[10px] w-[4px] rounded-[1px]" style={{ background: i <= LEVEL_FILL[level] ? "var(--accent-primary, #4F46E5)" : "var(--border-default)" }} />
+        <span key={i} className="h-[10px] w-[4px] rounded-[1px]" style={{ background: i <= LEVEL_FILL[level] ? "var(--accent)" : "var(--border-default)" }} />
       ))}
     </span>
   );
@@ -90,7 +90,7 @@ function DimensionBlock({ d }: { d: Dimension }) {
         </ul>
       ) : null}
       {d.practices.some((p) => p.refs.length > 2) ? (
-        <button type="button" onClick={() => setOpen((v) => !v)} className="mt-2 text-[13px] font-medium text-[var(--accent-primary,#4F46E5)] hover:underline">
+        <button type="button" onClick={() => setOpen((v) => !v)} className="mt-2 text-[13px] font-medium text-[var(--accent-ink)] hover:underline">
           {open ? "Show less evidence" : "Show all evidence"}
         </button>
       ) : null}
@@ -113,7 +113,7 @@ function ActivityBars({ months }: { months: BuilderAnalysisReport["activityByMon
       <div className="flex h-[96px] items-end gap-1.5" role="img" aria-label={`Commits per month: ${months.map((m) => `${m.month} ${m.commits}`).join(", ")}`}>
         {months.map((m) => (
           <div key={m.month} className="flex flex-1 flex-col items-center justify-end" title={`${m.month}: ${m.commits} commits`}>
-            <div className="w-full rounded-t-[2px]" style={{ height: `${Math.max(m.commits ? 4 : 1, (m.commits / max) * 88)}px`, background: m.commits ? "linear-gradient(180deg, #4F46E5, #0F9F9A)" : "var(--border-subtle)" }} />
+            <div className="w-full rounded-t-[2px]" style={{ height: `${Math.max(m.commits ? 4 : 1, (m.commits / max) * 88)}px`, background: m.commits ? "var(--accent)" : "var(--border-subtle)" }} />
           </div>
         ))}
       </div>
@@ -162,7 +162,7 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
             <p key={i} className="text-[15px] leading-[1.65] text-[var(--text-secondary)]">
               {p.text}{" "}
               {citations(p.refs).map((ref) => (
-                <a key={ref.label} href={`#${ref.anchor}`} className="mr-1 inline-flex rounded-[4px] bg-[var(--surface-sunken,#F1F3F6)] px-1.5 py-[1px] align-[1px] text-[11px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                <a key={ref.label} href={`#${ref.anchor}`} className="mr-1 inline-flex rounded-[4px] bg-[var(--surface-panel)] px-1.5 py-[1px] align-[1px] text-[11px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                   {ref.label}
                 </a>
               ))}
@@ -214,7 +214,7 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
           <ol className="space-y-5">
             {report.growth.map((g, i) => (
               <li key={g.id} id={anchorFor(g.id)} className="scroll-mt-24 grid grid-cols-[28px_minmax(0,1fr)] gap-x-3">
-                <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--surface-sunken,#F1F3F6)] text-[12px] font-semibold text-[var(--text-secondary)] tabular-nums">{i + 1}</span>
+                <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--surface-panel)] text-[12px] font-semibold text-[var(--text-secondary)] tabular-nums">{i + 1}</span>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-[15px] font-semibold text-[var(--text-primary)]">{g.title}</p>
@@ -338,7 +338,7 @@ export default function BuilderAnalysisView({ initial, lastReport, hasSources }:
           {shownReport ? (
             <>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[linear-gradient(90deg,rgba(15,159,154,0.12),rgba(79,70,229,0.12))] px-2.5 py-[3px] text-[12px] font-semibold text-[#3730A3]">{shownReport.workingStyle.label}</span>
+                <span className="rounded-full bg-[var(--accent-soft)] px-2.5 py-[3px] text-[12px] font-semibold text-[var(--accent-ink)]">{shownReport.workingStyle.label}</span>
                 <span className="text-[12px] text-[var(--text-tertiary)]">Inference from the evidence below</span>
               </div>
               <p className="mt-3 text-[20px] font-semibold leading-[1.35] tracking-[-0.02em] text-[var(--text-primary)]">{shownReport.headline}</p>

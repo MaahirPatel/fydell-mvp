@@ -105,16 +105,16 @@ export function DetailList({ rows, className }: { rows: Array<{ label: string; v
 }
 
 const NOTICE: Record<"info" | "attention" | "error", { icon: LucideIcon; ink: string; rule: string }> = {
-  info: { icon: Info, ink: "text-[var(--text-secondary)]", rule: "border-[var(--accent-line)]" },
-  attention: { icon: AlertTriangle, ink: "text-[var(--badge-attention-ink)]", rule: "border-[#e9c27a]" },
-  error: { icon: AlertTriangle, ink: "text-[var(--badge-failed-ink)]", rule: "border-[#ec9aa8]" },
+  info: { icon: Info, ink: "text-[var(--text-secondary)]", rule: "border-[var(--border-subtle)] bg-[var(--surface-panel)]" },
+  attention: { icon: AlertTriangle, ink: "text-[var(--badge-attention-ink)]", rule: "border-[var(--status-attention-line)] bg-[var(--status-attention-bg)]" },
+  error: { icon: AlertTriangle, ink: "text-[var(--badge-failed-ink)]", rule: "border-[var(--fy-red-line)] bg-[var(--fy-red-field)]" },
 };
 
 export function Notice({ tone = "info", children, action, className }: { tone?: "info" | "attention" | "error"; children: React.ReactNode; action?: React.ReactNode; className?: string }) {
   const n = NOTICE[tone];
   const Icon = n.icon;
   return (
-    <div role={tone === "error" ? "alert" : undefined} className={cn("flex items-start gap-2 border-l-2 py-0.5 pl-3 text-[14px] leading-[1.5]", n.rule, className)}>
+    <div role={tone === "error" ? "alert" : undefined} className={cn("flex items-start gap-2 rounded-[8px] border px-3 py-2 text-[14px] leading-[1.5]", n.rule, className)}>
       <Icon className={cn("mt-[3px] h-4 w-4 shrink-0", n.ink)} aria-hidden />
       <p className="text-[var(--text-body)]">
         {children}

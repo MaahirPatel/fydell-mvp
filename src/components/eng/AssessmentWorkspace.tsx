@@ -99,7 +99,7 @@ function Countdown({ view, now }: { view: View; now: number }) {
       aria-live="off"
       className={cn(
         "min-w-[200px] rounded-[12px] border bg-[var(--surface-raised)] px-4 py-3 shadow-[0_1px_2px_rgba(19,32,56,0.04)]",
-        late ? "border-[#f0d9a8]" : closed ? "border-[var(--fy-red-line)]" : "border-[var(--border-default)]"
+        late ? "border-[var(--status-attention-line)]" : closed ? "border-[var(--fy-red-line)]" : "border-[var(--border-default)]"
       )}
     >
       <p className="text-[13px] font-medium text-[var(--text-tertiary)]">{closed ? "Closed" : late ? "Grace period" : "Time left"}</p>

@@ -84,9 +84,9 @@ function listJoin(items: string[]): string {
 function NoteList({ notes, onWithdraw, busyId }: { notes: Correction[]; onWithdraw: (id: string) => void; busyId: string | null }) {
   if (notes.length === 0) return null;
   return (
-    <ul className="space-y-3">
+    <ul className="divide-y divide-[var(--border-subtle)]">
       {notes.map((n) => (
-        <li key={n.id} className={`border-l pl-3 ${n.kind === "context" ? "border-[var(--border-strong)]" : "border-[#e9c27a]"} ${n.withdrawnAt ? "opacity-60" : ""}`}>
+        <li key={n.id} className={`py-3 first:pt-0 last:pb-0 ${n.withdrawnAt ? "opacity-60" : ""}`}>
           <div className="flex flex-wrap items-baseline gap-x-2">
             <span className="text-[13px] font-semibold text-[var(--text-primary)]">{KIND_LABEL[n.kind]}</span>
             <span className="text-[13px] text-[var(--text-tertiary)]">
