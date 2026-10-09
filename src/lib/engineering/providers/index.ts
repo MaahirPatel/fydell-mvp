@@ -18,7 +18,7 @@ import { WORKER_PROVIDER_ID, createWorkerProvider, workerConfigured } from "./wo
 export async function selectExecutionProvider(
   env: NodeJS.ProcessEnv = process.env
 ): Promise<ExecutionProvider | null> {
-  switch (env.FYDELL_EXECUTION_PROVIDER) {
+  switch (env.FYDELL_EXECUTION_PROVIDER?.trim()) {
     case "vercel": {
       const { createVercelProvider, vercelConfigured } = await import("./vercel");
       return vercelConfigured(env) ? createVercelProvider(env) : null;

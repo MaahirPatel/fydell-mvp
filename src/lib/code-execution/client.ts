@@ -2,14 +2,16 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { executionResultSchema } from './contract';
 
+const useVercel = () => process.env.FYDELL_EXECUTION_PROVIDER?.trim() === 'vercel';
+
 export function executionConfigured() {
-  if (process.env.FYDELL_EXECUTION_PROVIDER === 'vercel') return Boolean(process.env.FYDELL_EXECUTION_SNAPSHOT_ID);
+  if (useVercel()) return Boolean(process.env.FYDELL_EXECUTION_SNAPSHOT_ID);
   return Boolean(process.env.FYDELL_EXECUTION_URL && process.env.FYDELL_EXECUTION_TOKEN);
 }
 
 export async function executeCode(source: string) {
   if (!executionConfigured()) throw new Error('Code execution is not configured. Your code can still be saved.');
-  if (process.env.FYDELL_EXECUTION_PROVIDER === 'vercel') {
+  if (useVercel()) {
     const { executeOnVercel } = await import('./vercel');
     return executionResultSchema.parse(await executeOnVercel(source));
   }
