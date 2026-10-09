@@ -32,6 +32,7 @@ import ListEditor from "./ListEditor";
 import RequirementsEditor from "./RequirementsEditor";
 import TagInput from "./TagInput";
 import type { IntakeDraft } from "./draft";
+import { clearLocalDraft, readLocalDraft, useHydrated, useKeepLocalDraft } from "./useLocalDraft";
 
 function Section({ id, title, description, children }: { id: string; title: string; description?: string; children: React.ReactNode }) {
   return (
@@ -57,26 +58,32 @@ function Radio<T extends string>({ name, value, checked, onChange, label, help }
   );
 }
 
-export default function RoleIntakeForm({
-  roleId,
-  initial,
-  members,
-  expectedUpdatedAt,
-  requirementsVersion,
-  stateLabel,
-}: {
+type FormProps = {
   roleId?: string;
   initial: IntakeDraft;
   members: MemberOption[];
   expectedUpdatedAt?: string;
   requirementsVersion?: number;
   stateLabel?: string;
-}) {
+};
+
+/** Renders once for hydration, then again on the client with any draft kept in this browser. */
+export default function RoleIntakeForm(props: FormProps) {
+  const hydrated = useHydrated();
+  return <IntakeForm key={hydrated ? "client" : "server"} {...props} hydrated={hydrated} />;
+}
+
+function IntakeForm({ roleId, initial, members, expectedUpdatedAt, requirementsVersion, stateLabel, hydrated }: FormProps & { hydrated: boolean }) {
   const router = useRouter();
-  const [draft, setDraft] = useState<IntakeDraft>(initial);
+  const draftKey = `fydell-role-draft:${roleId ?? "new"}:${initial.hiringOwner}`;
+  const base = expectedUpdatedAt ?? null;
+  const [stored] = useState(() => (hydrated ? readLocalDraft<IntakeDraft>(draftKey, base) : null));
+  const [restoredAt, setRestoredAt] = useState(stored?.savedAt ?? null);
+  const [draft, setDraft] = useState<IntakeDraft>(stored?.value ?? initial);
   const [changeReason, setChangeReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  useKeepLocalDraft(draftKey, base, draft, initial, hydrated);
   const set = <K extends keyof IntakeDraft>(key: K, value: IntakeDraft[K]) => setDraft((d) => ({ ...d, [key]: value }));
   const text = (key: "title" | "description" | "ownership" | "teamContext" | "location" | "employmentType" | "compensation" | "expectedEffort" | "applicationDeadline" | "contactEmail") =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => set(key, e.target.value);
@@ -106,13 +113,32 @@ export default function RoleIntakeForm({
     const result = await send<{ role: { id: string } }>(roleId ? `/api/employer/roles/${roleId}` : "/api/employer/roles/intake", roleId ? "PATCH" : "POST", body);
     setBusy(false);
     if (result.ok === false) return setError(result.error);
+    clearLocalDraft(draftKey);
     router.push(`/app/employer/openings/${result.data.role.id}`);
     router.refresh();
   }
 
   return (
     <form onSubmit={submit} className="grid gap-6" noValidate>
-      <JobDescriptionPaste draft={draft} onApply={setDraft} />
+      {restoredAt ? (
+        <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-3 text-app-meta text-[var(--text-secondary)]">
+          <span>
+            Restored what you entered on {new Date(restoredAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}. It is kept in this browser until you save.
+          </span>
+          <Button
+            size="sm"
+            variant="quiet"
+            onClick={() => {
+              setDraft(initial);
+              setRestoredAt(null);
+              clearLocalDraft(draftKey);
+            }}
+          >
+            Discard
+          </Button>
+        </div>
+      ) : null}
+      <JobDescriptionPaste key={restoredAt ?? "fresh"} draft={draft} onApply={setDraft} />
 
       <Section id="sec-role" title="The role" description="The title is what applicants see. It does not decide what reviewers look for; the requirements further down do.">
         <Field label="Role title" htmlFor="role-title">

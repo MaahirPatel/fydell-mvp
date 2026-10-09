@@ -89,6 +89,38 @@ console.log("Job description extraction");
   check("languages", ["React", "TypeScript", "Next.js"].every((l) => d.languages.includes(l)) && !d.languages.includes("Java"), d.languages);
 }
 {
+  const d = extractJobDescription(`Backend Engineer, Payments Reliability
+
+Walkthrough Co. runs a subscription billing platform for fitness studios. You will own the payment webhook pipeline and the ledger service.
+
+What you will do
+- Own the webhook receiver that processes payment provider events
+- Make retries and redeliveries safe so customers are never double-credited
+
+What we look for
+- You have built idempotent handlers for at-least-once delivery
+- You write tests for failure paths, not only the happy path
+- Nice to have: experience with Python and PostgreSQL
+
+Remote within North America. Mid-level. Full-time. Salary 130,000 to 155,000 USD.`);
+  check("summary from the opening paragraph", d.summary.startsWith("Walkthrough Co. runs"), d.summary);
+  check("'What we look for' is a requirements heading", d.responsibilities.length === 2, d.responsibilities);
+  check("requirements under it are suggested", d.requirements.filter((r) => r.kind === "required").length === 2, d.requirements);
+  check("inline 'Nice to have' is preferred", d.requirements.some((r) => r.kind === "preferred" && r.text.includes("Python")), d.requirements);
+  check("prose after a list ends the list", !d.requirements.some((r) => /Remote within/.test(r.text)) && !d.responsibilities.some((r) => /Remote within/.test(r)));
+  check("location from 'Remote within'", d.location === "North America", d.location);
+  check("salary without a currency symbol", d.compensation === "130,000 to 155,000 USD", d.compensation);
+}
+{
+  const d = extractJobDescription(`Backend Engineer
+What we are looking for
+- Experience debugging distributed systems in production
+Nice to have: Postgres performance tuning
+Remote within North America.`);
+  check("unbulleted 'Nice to have: x' keeps x as preferred", d.requirements.some((r) => r.kind === "preferred" && r.text === "Postgres performance tuning"), d.requirements);
+  check("prose after an inline label is not a requirement", d.requirements.length === 2, d.requirements);
+}
+{
   const d = extractJobDescription("Staff Platform Engineer\nOn-site in Berlin.\n");
   check("staff level", d.level === "staff", d.level);
   check("platform specialization", d.specialization === "platform_infrastructure", d.specialization);

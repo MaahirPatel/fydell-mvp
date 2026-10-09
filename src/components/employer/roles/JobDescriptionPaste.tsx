@@ -25,6 +25,10 @@ export default function JobDescriptionPaste({ draft, onApply }: { draft: IntakeD
       next.title = x.title;
       filled.push(`title "${x.title}"`);
     }
+    if (x.summary && !draft.description.trim()) {
+      next.description = x.summary;
+      filled.push("summary");
+    }
     if (x.family) {
       next.family = x.family;
       filled.push(`family ${FAMILY_LABEL[x.family]}`);

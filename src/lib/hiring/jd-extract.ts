@@ -12,6 +12,7 @@ export const JD_MAX_LENGTH = 20000;
 
 export type ExtractedDraft = {
   title: string;
+  summary: string;
   family: RoleFamily | null;
   specialization: Specialization | null;
   level: Level | null;
@@ -78,8 +79,8 @@ type Section = "responsibilities" | "required" | "preferred" | "other" | null;
 
 const HEADINGS: Array<{ section: Exclude<Section, null>; pattern: RegExp }> = [
   { section: "preferred", pattern: /^(nice[- ]to[- ]haves?|preferred( qualifications| skills| experience)?|bonus( points)?|good to have|extra credit|it'?s a plus|pluses)\b/i },
-  { section: "responsibilities", pattern: /^(responsibilities|key responsibilities|what you('|’)ll do|what you will do|what you('|’)ll work on|the role|your role|in this role|day[- ]to[- ]day|you will)\b/i },
-  { section: "required", pattern: /^(requirements|qualifications|minimum qualifications|basic qualifications|required( skills| experience)?|must[- ]haves?|what you('|’)ll need|what you need|what we('|’)re looking for|who you are|about you|you have|skills( and experience)?)\b/i },
+  { section: "responsibilities", pattern: /^(responsibilities|key responsibilities|what you('|’)ll do|what you will do|what you('|’)ll be doing|what you will be doing|what you('|’)ll work on|the role|your role|in this role|the job|day[- ]to[- ]day|you will)\b/i },
+  { section: "required", pattern: /^(requirements|qualifications|minimum qualifications|basic qualifications|required( skills| experience)?|must[- ]haves?|what you('|’)ll need|what you need|what we('|’)re looking for|what we are looking for|what we look for|who we('|’)re looking for|who you are|about you|you have|you bring|you should have|ideal candidate|the ideal candidate|skills( and experience)?)\b/i },
   { section: "other", pattern: /^(about us|about the (company|team)|who we are|benefits|perks|what we offer|compensation|salary|pay|location|how to apply|our stack|tech stack|equal (opportunity|employment)|eeo)\b/i },
 ];
 
@@ -157,7 +158,28 @@ function guessLocation(lines: string[]): string {
     const m = /^(?:location|based in|office)\s*[:：]\s*(.+)$/i.exec(stripBullet(l));
     if (m) return m[1].trim().slice(0, 120);
   }
+  for (const l of lines) {
+    const m = /\b(?:[Rr]emote|[Hh]ybrid|[Oo]n[- ]?[Ss]ite|[Bb]ased)\s+(?:within|in|from)\s+([A-Z][A-Za-z ,'-]{1,60}?)\s*(?:[.;(]|$)/.exec(stripBullet(l));
+    if (m) return m[1].trim().replace(/,$/, "").slice(0, 120);
+  }
   return "";
+}
+
+/** The first prose paragraph before any section heading, as a starting summary. */
+function guessSummary(lines: string[], title: string): string {
+  const parts: string[] = [];
+  for (const line of lines) {
+    if (headingOf(line)) break;
+    if (!line) {
+      if (parts.length) break;
+      continue;
+    }
+    if (BULLET.test(line) || line === title) continue;
+    if (/^(?:location|salary|compensation|pay)\s*[:：]/i.test(line)) continue;
+    parts.push(line);
+  }
+  const summary = parts.join(" ").trim();
+  return summary.length >= 60 ? summary.slice(0, 1200) : "";
 }
 
 const MONEY = String.raw`[$£€]\s?\d[\d,.]*\s?[kK]?`;
@@ -169,7 +191,9 @@ function guessCompensation(lines: string[], text: string): string {
     if (m) return m[1].trim().slice(0, 200);
   }
   const m = RANGE.exec(text);
-  return m ? m[0].trim().slice(0, 200) : "";
+  if (m) return m[0].trim().slice(0, 200);
+  const labeled = /\b(?:salary|compensation|pay range|base pay)\b(?:\s+(?:range|is|of))?\s*[:：]?\s*(\d[\d,.]*\s?[kK]?\s*(?:-|–|to)\s*\d[\d,.]*\s?[kK]?(?:\s*(?:USD|GBP|EUR|CAD|AUD))?)/i.exec(text);
+  return labeled ? labeled[1].trim().slice(0, 200) : "";
 }
 
 function uniquePush(list: string[], value: string, max: number) {
@@ -193,12 +217,32 @@ export function extractJobDescription(input: string): ExtractedDraft {
 
   let section: Section = null;
   let sawSection = false;
+  let sectionHasBullets = false;
   for (const line of lines) {
     if (!line) continue;
+    const inline = /^([^:：]{2,40})[:：]\s*(\S.*)$/.exec(line);
+    const inlineHeading = inline && !BULLET.test(line) ? headingOf(`${inline[1]}:`) : null;
+    if (inline && (inlineHeading === "preferred" || inlineHeading === "required")) {
+      sawSection = true;
+      const item = stripBullet(inline[2]);
+      addReq(item, inlineHeading === "required" && !PREFERRED_MARKER.test(item) ? "required" : "preferred");
+      // Treated like a one-item list so following prose does not join this section.
+      section = inlineHeading;
+      sectionHasBullets = true;
+      continue;
+    }
     const heading = headingOf(line);
     if (heading) {
       section = heading;
       sawSection = true;
+      sectionHasBullets = false;
+      continue;
+    }
+    // A prose line after a bulleted list ends that list.
+    if (BULLET.test(line)) sectionHasBullets = true;
+    else if (sectionHasBullets) {
+      section = null;
+      sectionHasBullets = false;
       continue;
     }
     const item = stripBullet(line);
@@ -226,6 +270,7 @@ export function extractJobDescription(input: string): ExtractedDraft {
   const { family, specialization } = guessFamily(title, text);
   return {
     title,
+    summary: guessSummary(lines, title),
     family,
     specialization,
     level: guessLevel(title, text),
