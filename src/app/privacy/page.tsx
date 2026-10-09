@@ -20,12 +20,33 @@ const FACTS: Array<[string, string | string[]]> = [
     ],
   ],
   [
+    "Who is responsible",
+    "Fydell is responsible for engineer accounts, Builder Profiles and the projects engineers add. When an employer invites someone to a work sample or reviews an application, that employer decides how the hiring data is used and Fydell processes it on the employer's behalf. Questions about a specific hiring decision go to the employer; Fydell helps them answer.",
+  ],
+  [
     "Why it is collected",
-    "To run the work samples and reviews people sign up for, to show engineers' own work back to them, and to keep accounts secure. It is not sold, not used to target advertising, and Fydell does not train models on your work.",
+    "To run the work samples and reviews people sign up for, to show engineers' own work back to them, and to keep accounts secure. It is not sold or shared for advertising, not used to target ads, and Fydell does not train models on your work.",
+  ],
+  [
+    "Legal bases",
+    [
+      "Providing the service you signed up for: your account, projects, reports, applications and work samples.",
+      "Legitimate interests: keeping accounts and the platform secure, preventing abuse, and fixing faults. These never override your rights.",
+      "Consent: optional things you choose to add or share, such as social profile links and share links. You can remove them at any time.",
+      "Legal obligations: records the law requires us or an employer to keep.",
+    ],
   ],
   [
     "AI processing",
     "Some summaries and drafts are written by an AI model from the project or submission they describe. They are labelled as drafts and cite the evidence they come from. Fydell does not score candidates, and a person on the hiring team makes every decision.",
+  ],
+  [
+    "Automated decisions",
+    "Fydell does not make hiring decisions and does not reject anyone automatically. It does not analyse faces, voices, video or emotions. If an employer used Fydell in a decision about you, you can ask that employer for a human explanation and review, and contest the outcome.",
+  ],
+  [
+    "Sensitive information",
+    "Fydell never asks for health, ethnicity, religion, sexual orientation, immigration status or similar details, and they play no part in any report. Please leave them out of what you upload. Files that look like credentials are left out of analysis, and secrets detected in code are redacted before anything is stored.",
   ],
   [
     "Who can see it",
@@ -33,7 +54,11 @@ const FACTS: Array<[string, string | string[]]> = [
   ],
   [
     "Service providers",
-    "Supabase (database, sign-in and file storage), Vercel (hosting and isolated code runs), Resend (email), an AI model provider (OpenAI or Groq) for drafts and summaries, GitHub (only when an engineer connects it) and Stripe (billing, for employers who pay online). They process data on Fydell's behalf to provide these services.",
+    "Supabase (database, sign-in and file storage), Vercel (hosting and isolated code runs), Resend (email), Groq (the AI model behind drafts and summaries), and GitHub (only to read public repositories an engineer chooses). When online billing is offered, Stripe will process payment details; Fydell never sees full card numbers. Providers process data on Fydell's behalf under their data processing terms and may not use it for their own purposes.",
+  ],
+  [
+    "International transfers",
+    "Fydell and its providers process data in the United States and other countries. Transfers from the EU, UK and Switzerland rely on the providers' data processing terms, which include the standard contractual clauses approved for that purpose.",
   ],
   [
     "Cookies and tracking",
@@ -49,7 +74,15 @@ const FACTS: Array<[string, string | string[]]> = [
   ],
   [
     "Your choices",
-    `Engineers can download their Passport and delete their account from Settings. Deletion erases their projects, reports, notes and profile, revokes share links and withdraws open applications. Employer members can delete their own account from Settings, and a workspace owner can request deletion of the whole workspace there. To see, correct or export anything else, email ${CONTACT_EMAIL} from the address on the account. We confirm who is asking, then answer within 45 days.`,
+    `Engineers can download their Passport and delete their account from Settings. Deletion erases their projects, reports, notes and profile, revokes share links and withdraws open applications. Employer members can delete their own account from Settings, and a workspace owner can request deletion of the whole workspace there. To see, correct or export anything else, email ${CONTACT_EMAIL} from the address on the account. We confirm who is asking, then answer within one month.`,
+  ],
+  [
+    "Your rights",
+    [
+      "Wherever you live, you can ask to see, correct, export or delete your data, and to stop optional processing. We do not treat you differently for using these rights.",
+      "In the EU, UK and Switzerland you can also restrict or object to processing, withdraw consent at any time, and complain to your local data protection authority.",
+      "In California and other US states with privacy laws, you can ask what personal information we hold and how it is used, and ask us to delete or correct it. Fydell does not sell or share personal information for cross-context advertising, and does not use sensitive information to infer characteristics. You may use an authorised agent; we verify both of you before acting.",
+    ],
   ],
   [
     "Security",

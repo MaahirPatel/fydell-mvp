@@ -9,6 +9,7 @@ import { publicErrorMessage } from "@/lib/security/public-error";
 import { limitByIp, ROUTE_LIMITS } from "@/lib/security/route-limits";
 import { checkEmailPath, emailConfirmationRequired } from "@/lib/auth/email-confirmation";
 import { passwordProblem } from "@/lib/auth/password-policy";
+import { acceptanceRecord } from "@/lib/legal";
 
 export async function POST(req: Request) {
   const limited = limitByIp(req, ROUTE_LIMITS.signup);
@@ -59,6 +60,7 @@ export async function POST(req: Request) {
           company_name: companyName || null,
           intent: intent || "hiring",
           account_type: intent === "candidate" ? "candidate" : "employer",
+          ...acceptanceRecord(),
         },
       },
     });

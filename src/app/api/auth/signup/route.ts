@@ -10,6 +10,7 @@ import { limitByIp, ROUTE_LIMITS } from "@/lib/security/route-limits";
 import { checkEmailPath, confirmationRedirect, emailConfirmationRequired } from "@/lib/auth/email-confirmation";
 import { safeNext } from "@/lib/auth/safe-next";
 import { passwordProblem } from "@/lib/auth/password-policy";
+import { acceptanceRecord } from "@/lib/legal";
 export const dynamic = "force-dynamic";
 
 type SignupPath = "employer" | "fde" | "partner";
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
     const admin = createAdminSupabaseClient();
     const nextPath = redirectForPath(path);
     const returnTo = safeNext(typeof body.next === "string" ? body.next : null);
-    const metadata = { full_name: name, account_type: path || "unresolved" };
+    const metadata = { full_name: name, account_type: path || "unresolved", ...acceptanceRecord() };
     const confirmByEmail = emailConfirmationRequired();
 
     // Production: signUp() emails a confirmation link and returns no session
