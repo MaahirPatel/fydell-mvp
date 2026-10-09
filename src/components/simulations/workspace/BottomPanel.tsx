@@ -108,7 +108,7 @@ export function BottomPanel({
   return (
     <div className="flex h-full min-h-0 flex-col border-t border-[var(--border-default)] bg-[var(--surface-panel)]">
       <div className="flex h-9 shrink-0 items-center gap-2 border-b border-[var(--border-subtle)] pl-1 pr-2">
-        <div role="tablist" aria-label="Panel" className="flex h-full items-stretch">
+        <div role="tablist" aria-label="Panel" className="flex h-full min-w-0 items-stretch overflow-x-auto [scrollbar-width:none]">
           {tabs.map((t, i) => {
             const selected = open && tab === t.value;
             return (
@@ -130,7 +130,7 @@ export function BottomPanel({
                 }}
                 onKeyDown={(e) => onKey(e, i)}
                 className={cn(
-                  "relative flex items-center gap-1.5 px-2.5 text-[12.5px] outline-offset-[-2px]",
+                  "relative flex shrink-0 items-center gap-1.5 px-2 text-[12.5px] outline-offset-[-2px] sm:px-2.5",
                   selected ? "text-[var(--text-primary)]" : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]",
                 )}
               >
@@ -141,7 +141,7 @@ export function BottomPanel({
             );
           })}
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           {runHint ? <span className="hidden text-[12px] tabular-nums text-[var(--text-tertiary)] md:inline">{runHint}</span> : null}
           {canRun ? (
             <Button size="sm" variant="secondary" onClick={onRun} loading={running} disabled={runBlocked} className="h-7">

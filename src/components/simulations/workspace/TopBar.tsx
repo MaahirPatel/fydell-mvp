@@ -101,15 +101,15 @@ export function TopBar({
   const attention = remaining !== null && remaining < 10 * 60_000;
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-3 border-b border-[var(--border-default)] bg-[var(--surface-panel)] px-3">
+    <header className="flex h-12 shrink-0 items-center gap-2 border-b border-[var(--border-default)] bg-[var(--surface-panel)] px-2 sm:gap-3 sm:px-3">
       <FydellLogo height={17} tone={theme === "dark" ? "dark" : "light"} />
-      <span aria-hidden className="h-5 w-px bg-[var(--border-default)]" />
-      <h1 className="min-w-0 truncate text-[14px] font-medium text-[var(--text-primary)]" title={title}>
+      <span aria-hidden className="hidden h-5 w-px bg-[var(--border-default)] sm:block" />
+      <h1 className="sr-only min-w-0 truncate text-[14px] font-medium text-[var(--text-primary)] sm:not-sr-only" title={title}>
         {title}
       </h1>
       {preview ? <span className="shrink-0 rounded-[4px] bg-[var(--surface-raised)] px-1.5 py-0.5 text-[12px] text-[var(--text-secondary)]">Preview</span> : null}
 
-      <div className="ml-auto flex shrink-0 items-center gap-3">
+      <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
         {!submitted ? (
           <div className="flex items-center gap-2 text-[12.5px]">
             <span
@@ -132,7 +132,7 @@ export function TopBar({
               ) : (
                 <Cloud aria-hidden size={13} />
               )}
-              {SAVE_LABEL[effective]}
+              <span className="sr-only sm:not-sr-only">{SAVE_LABEL[effective]}</span>
             </span>
             {effective === "error" ? (
               <button type="button" onClick={onRetrySave} className="text-[12.5px] font-medium text-[var(--text-primary)] underline underline-offset-2">
@@ -193,13 +193,14 @@ export function TopBar({
               )}
             >
               <PanelRight aria-hidden size={15} />
-              Team
+              <span className="sr-only sm:not-sr-only">Team</span>
             </button>
           ) : null}
         </div>
 
         <Button size="sm" variant="primary" onClick={onReview}>
-          {submitted ? "View receipt" : "Review submission"}
+          <span className="sm:hidden">{submitted ? "Receipt" : "Review"}</span>
+          <span className="hidden sm:inline">{submitted ? "View receipt" : "Review submission"}</span>
         </Button>
       </div>
     </header>
