@@ -91,7 +91,7 @@ function StatusDot({ tone, children }: { tone: "ok" | "attention"; children: Rea
   );
 }
 
-const linkClass = "text-[14px] font-medium text-[var(--text-primary)] underline decoration-[var(--border-strong)] underline-offset-[3px] hover:decoration-[var(--text-primary)]";
+const linkClass = "inline-flex min-h-8 items-center text-[14px] font-medium text-[var(--text-primary)] underline decoration-[var(--border-strong)] underline-offset-[3px] hover:decoration-[var(--text-primary)]";
 
 export default async function EmployerSettingsPage({
   searchParams,
@@ -176,9 +176,9 @@ export default async function EmployerSettingsPage({
 
   return (
     <div className="grid gap-x-12 gap-y-6 lg:grid-cols-[208px_minmax(0,720px)]">
-      <nav aria-label="Settings sections" className="lg:sticky lg:top-8 lg:h-fit">
+      <nav aria-label="Settings sections" className="min-w-0 lg:sticky lg:top-8 lg:h-fit">
         <p className="mb-3 hidden px-2.5 text-[13px] font-medium text-[var(--text-tertiary)] lg:block">Settings</p>
-        <ul className="flex gap-1 overflow-x-auto lg:flex-col">
+        <ul className="flex flex-wrap gap-1 lg:flex-col">
           {SECTIONS.map((s) => {
             const active = s.key === section;
             return (
@@ -352,7 +352,7 @@ export default async function EmployerSettingsPage({
                 <Value muted>Until deleted</Value>
               </Row>
               <Row label="Export or correct data" help="Email us from an address on this workspace and we confirm what we hold before acting.">
-                <ContactLink />
+                <ContactLink className={linkClass} />
               </Row>
             </Group>
             {memberRole === "owner" && !preview ? (
@@ -395,7 +395,7 @@ export default async function EmployerSettingsPage({
                 </Row>
               ) : (
                 <Row label="Invoices" help="Questions about an invoice or a pilot agreement.">
-                  <ContactLink />
+                  <ContactLink className={linkClass} />
                 </Row>
               )}
             </Group>

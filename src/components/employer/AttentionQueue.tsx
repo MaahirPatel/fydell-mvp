@@ -125,7 +125,7 @@ export default function AttentionQueue({ rows }: { rows: AttentionRow[] }) {
 
           return (
             <section key={group.severity}>
-              <div className="flex items-baseline gap-2 border-t border-[var(--border-subtle)] bg-[var(--surface-panel)] px-5 py-2 lg:px-6">
+              <div className="flex flex-wrap items-baseline gap-x-2 border-t border-[var(--border-subtle)] bg-[var(--surface-panel)] px-5 py-2 sm:flex-nowrap lg:px-6">
                 <span
                   aria-hidden
                   className="h-[6px] w-[6px] shrink-0 rounded-full"
@@ -137,7 +137,7 @@ export default function AttentionQueue({ rows }: { rows: AttentionRow[] }) {
                 <span className="text-app-meta tabular-nums text-[var(--text-tertiary)]">
                   {groupRows.length}
                 </span>
-                <span className="truncate text-app-meta text-[var(--text-tertiary)]">
+                <span className="w-full pl-[14px] text-app-meta text-[var(--text-tertiary)] sm:w-auto sm:truncate sm:pl-0">
                   {group.description}
                 </span>
               </div>
@@ -148,7 +148,7 @@ export default function AttentionQueue({ rows }: { rows: AttentionRow[] }) {
                   return (
                     <li
                       key={row.key}
-                      className="flex items-start gap-4 border-t border-[var(--border-subtle)] px-5 py-3 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] lg:px-6"
+                      className="flex flex-wrap items-start gap-x-4 gap-y-2.5 border-t border-[var(--border-subtle)] px-5 py-3 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] sm:flex-nowrap lg:px-6"
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline gap-2">
@@ -173,7 +173,7 @@ export default function AttentionQueue({ rows }: { rows: AttentionRow[] }) {
 
                       {/* Fixed width so time-in-state reads as a column rather
                           than drifting with each row's button widths. */}
-                      <div className="flex w-[176px] shrink-0 items-center justify-end gap-1.5">
+                      <div className="flex w-full shrink-0 items-center gap-1.5 sm:w-[176px] sm:justify-end">
                         {row.secondary ? (
                           <ActionControl
                             action={row.secondary}

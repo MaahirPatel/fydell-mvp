@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { LocalTime } from "@/components/eng/LocalTime";
+import { Button } from "@/components/ui/Button";
 
 type Decision = "none" | "advance" | "hold" | "decline";
 const OPTIONS: Array<{ value: Exclude<Decision, "none">; label: string }> = [
@@ -74,14 +75,15 @@ export default function PassportDecisionPanel({
         className="platform-input mt-1.5"
       />
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-        <button
+        <Button
+          size="sm"
+          variant="secondary"
           type="button"
           onClick={() => void save(decision)}
           disabled={status === "saving"}
-          className="text-app-meta font-medium underline underline-offset-4"
         >
           Save note
-        </button>
+        </Button>
         <p aria-live="polite" className="text-app-meta text-[var(--text-tertiary)]">
           {status === "saving" && "Saving"}
           {status === "error" && <span className="text-[var(--evidence-counter)]">Could not save. Try again.</span>}

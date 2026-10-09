@@ -101,7 +101,7 @@ export default async function OpeningPage({
       />
 
       <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="grid min-w-0 content-start gap-8">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-8">
           <section aria-labelledby="applicants-heading">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <h2 id="applicants-heading" className="text-[16px] font-semibold text-[var(--text-primary)]">Applications</h2>

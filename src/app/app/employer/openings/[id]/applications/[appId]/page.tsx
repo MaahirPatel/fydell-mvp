@@ -169,7 +169,7 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
           ) : (
             <ol className="mt-5 grid gap-5">
               {pinnedItems.map((p) => (
-                <li key={p.versionId} className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5">
+                <li key={p.versionId} className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-3 sm:p-5">
                   {p.content ? (
                     <EvidenceSnapshotView content={p.content} version={p.version} publishedAt={p.publishedAt} headingLevel={3} />
                   ) : (

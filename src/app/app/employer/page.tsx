@@ -324,9 +324,9 @@ export default async function EmployerHomePage() {
                 <li key={item.key} className="border-t border-[var(--border-subtle)]">
                   <Link
                     href={item.href}
-                    className="flex items-baseline gap-3 px-5 py-3 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] lg:px-6"
+                    className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-5 py-3 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] sm:flex-nowrap lg:px-6"
                   >
-                    <span className="min-w-0 flex-1 truncate">
+                    <span className="w-full min-w-0 truncate sm:w-auto sm:flex-1">
                       <span className="text-app-body font-medium text-[var(--text-primary)]">{item.candidate}</span>
                       <span className="text-app-meta text-[var(--text-tertiary)]"> · {item.context}</span>
                     </span>
