@@ -84,7 +84,20 @@ export default async function EmployerPassportReviewPage({ params }: { params: P
               </p>
             </div>
           )}
-          {review.passport && (
+          {review.passport && application ? (
+            <section className="mt-8 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5" aria-labelledby="role-review-heading">
+              <h2 id="role-review-heading" className="text-app-section text-[var(--text-primary)]">Review against the role&apos;s requirements</h2>
+              <p className="mt-1 text-app-meta text-[var(--text-secondary)]">
+                This Passport came with an application, so requirements are assessed on the application, beside the projects they chose to send and your questions.
+              </p>
+              <Link
+                href={`/app/employer/openings/${application.roleId}/applications/${application.id}#requirements-heading`}
+                className="mt-3 inline-block text-app-meta font-medium text-[var(--text-primary)] underline underline-offset-4"
+              >
+                Open the application review
+              </Link>
+            </section>
+          ) : review.passport && (
             <RoleReviewSection
               shareId={review.shareId}
               candidateName={candidateName}

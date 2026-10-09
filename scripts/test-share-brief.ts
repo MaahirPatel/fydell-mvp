@@ -230,7 +230,7 @@ async function main() {
     if (brief.status !== "ok") throw new Error(`brief ${brief.status}`);
     const b = brief.brief;
     check("requirement with accepted evidence is supported", b.requirements[0].outcome === "supported");
-    check("requirement without mapping is no evidence", b.requirements[1].outcome === "no_evidence");
+    check("requirement nobody assessed is not reviewed, not a negative", b.requirements[1].outcome === "not_reviewed");
     check("decision attributed to reviewer", b.decision.value === "advance" && b.decision.decidedBy === rev.user.email);
     check("answered question included", b.answered.length === 1 && b.openQuestions.length === 0);
     check("brief only covers shared project", b.projects.length === 1 && b.projects[0].repo === repoA);

@@ -12,6 +12,7 @@ const OUTCOME_TONE: Record<BriefRequirement["outcome"], string> = {
   insufficient: "text-[var(--text-secondary)]",
   no_evidence: "text-[var(--text-tertiary)]",
   concern: "text-[var(--status-attention-ink)]",
+  not_reviewed: "text-[var(--text-tertiary)]",
 };
 
 function date(iso: string | null): string {
@@ -127,7 +128,7 @@ export default async function DecisionBriefPage({
                 <p className={`text-[14px] font-medium ${OUTCOME_TONE[r.outcome]}`}>{r.outcomeLabel}</p>
               </div>
               {r.items.length === 0 ? (
-                <p className="mt-1.5 text-[14px] text-[var(--text-tertiary)]">Nobody has mapped evidence to this requirement yet.</p>
+                <p className="mt-1.5 text-[14px] text-[var(--text-tertiary)]">Nobody has assessed this requirement yet.</p>
               ) : (
                 <ul className="mt-2 space-y-3">
                   {r.items.map((item, i) => (
@@ -146,7 +147,7 @@ export default async function DecisionBriefPage({
                       ) : null}
                       {item.reviewerNote ? (
                         <p className="mt-1 text-[14px] text-[var(--text-secondary)]">
-                          Note from {item.noteBy ?? "a reviewer"}: {item.reviewerNote}
+                          Reason ({item.noteBy ?? "a reviewer"}): {item.reviewerNote}
                         </p>
                       ) : null}
                     </li>

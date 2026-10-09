@@ -12,6 +12,7 @@ import { getReview } from "@/lib/passport/store";
 import { WorkspacePageHeader } from "@/components/employer/WorkspacePage";
 import StageSelect from "@/components/hiring/StageSelect";
 import ApplicationReview from "@/components/employer/review/ApplicationReview";
+import PassportDecisionPanel from "@/components/employer/PassportDecisionPanel";
 import EvidenceSnapshotView from "@/components/evidence/EvidenceSnapshotView";
 import ApplicationQuestions, { type QuestionTarget } from "@/components/evidence/ApplicationQuestions";
 import { getApplicationEvidenceForOrg, listApplicationQuestionsForOrg } from "@/lib/profile-evidence/applications";
@@ -200,6 +201,20 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
         </div>
 
         <aside className="grid content-start gap-5">
+          {review ? (
+            <>
+              <PassportDecisionPanel reviewId={review.id} initialDecision={review.decision} initialNote={review.privateNote} decidedAt={review.decidedAt} />
+              {review.passport ? (
+                <Link
+                  href={`/app/employer/passports/${review.id}/brief?role=${role.id}`}
+                  className="flex items-center justify-between rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-3 text-[14px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+                >
+                  Decision brief
+                  <span className="text-[13px] font-normal text-[var(--text-tertiary)]">Print or export</span>
+                </Link>
+              ) : null}
+            </>
+          ) : null}
           <Panel id="app-heading" title="What they sent">
             {pinnedItems.length > 0 ? (
               <p className="text-app-meta text-[var(--text-body)]">
@@ -230,7 +245,7 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
             )}
             {app.reviewId && passport ? (
               <Link href={`/app/employer/passports/${app.reviewId}`} className="mt-4 inline-block text-app-meta font-medium text-[var(--text-primary)] underline underline-offset-4">
-                Open the full Passport and record a decision
+                Open their full Passport
               </Link>
             ) : null}
           </Panel>

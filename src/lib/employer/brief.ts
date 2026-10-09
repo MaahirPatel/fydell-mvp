@@ -3,6 +3,8 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getReview, type ReviewDecision } from "@/lib/passport/store";
 import type { PassportData, PassportEvidence } from "@/lib/passport/view";
 import { authorizeReviewScope, listMappings, listQuestions, type Assessment, type EvidenceMapping, type MappingStatus } from "./review";
+import { applicationForReview } from "@/lib/hiring/applications";
+import { listApplicationQuestionsForOrg } from "@/lib/profile-evidence/applications";
 
 /**
  * A decision brief for one shared passport reviewed against one role.
@@ -15,7 +17,7 @@ import { authorizeReviewScope, listMappings, listQuestions, type Assessment, typ
 
 export type BriefRequirement = {
   text: string;
-  outcome: "supported" | "insufficient" | "no_evidence" | "concern";
+  outcome: "supported" | "insufficient" | "no_evidence" | "concern" | "not_reviewed";
   outcomeLabel: string;
   items: Array<{
     status: MappingStatus;
@@ -59,6 +61,7 @@ const OUTCOME_LABEL: Record<BriefRequirement["outcome"], string> = {
   insufficient: "Relevant but not yet sufficient",
   no_evidence: "Not observed in the shared work",
   concern: "Concern",
+  not_reviewed: "Not reviewed yet",
 };
 
 const FROM_ASSESSMENT: Record<Assessment, BriefRequirement["outcome"]> = {
@@ -72,7 +75,7 @@ const FROM_ASSESSMENT: Record<Assessment, BriefRequirement["outcome"]> = {
 function outcomeFor(rows: EvidenceMapping[]): BriefRequirement["outcome"] {
   const assessed = rows.find((m) => m.assessment);
   if (assessed?.assessment) return FROM_ASSESSMENT[assessed.assessment];
-  if (rows.length === 0) return "no_evidence";
+  if (rows.length === 0) return "not_reviewed";
   if (rows.some((m) => m.status === "accepted" || m.status === "corrected")) return "supported";
   return "insufficient";
 }
@@ -110,10 +113,23 @@ export async function buildDecisionBrief(organizationId: string, reviewId: strin
 
   const scope = await authorizeReviewScope(organizationId, role.id, review.shareId);
   if (!scope) return { status: "revoked" };
-  const [mappings, questions] = await Promise.all([
+  const [mappings, reviewQuestions, application] = await Promise.all([
     listMappings(organizationId, role.id, review.shareId),
     listQuestions(organizationId, role.id, review.shareId),
+    applicationForReview(organizationId, review.id),
   ]);
+  const appQuestions = application && application.roleId === role.id ? await listApplicationQuestionsForOrg(organizationId, application.id) : [];
+  const questions: Array<{ question: string; response: string; status: string; askedBy: string | null; createdAt: string; answeredAt: string | null }> = [
+    ...reviewQuestions,
+    ...appQuestions.map((q) => ({
+      question: q.question,
+      response: q.response,
+      status: q.status,
+      askedBy: null,
+      createdAt: q.createdAt,
+      answeredAt: q.answeredAt,
+    })),
+  ];
 
   const decidedBy = (decidedRow as { decided_by: string | null } | null)?.decided_by ?? null;
   const people = await emailsFor([
@@ -204,7 +220,7 @@ export function briefToMarkdown(b: DecisionBrief): string {
     for (const i of r.items) {
       if (i.finding) out.push(`- ${i.finding.finding} (${i.finding.repo}: ${i.finding.path} lines ${lines(i.finding.startLine, i.finding.endLine)})`);
       if (i.finding?.limitations.length) out.push(`  - Limits: ${i.finding.limitations.join(" ")}`);
-      if (i.reviewerNote) out.push(`  - Note from ${i.noteBy ?? "a reviewer"}: ${i.reviewerNote}`);
+      if (i.reviewerNote) out.push(`  - Reason (${i.noteBy ?? "a reviewer"}): ${i.reviewerNote}`);
     }
     out.push("");
   }

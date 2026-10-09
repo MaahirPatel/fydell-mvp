@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { PassportEvidence } from "@/lib/passport/view";
-import type { EvidenceMapping, ReviewQuestion, MappingStatus } from "@/lib/employer/review";
+import type { Assessment, EvidenceMapping, ReviewQuestion, MappingStatus } from "@/lib/employer/review";
 
 /**
  * H06 - Requirement-to-evidence review screen.
@@ -39,6 +39,37 @@ const STATUS_LABEL: Record<MappingStatus, string> = {
   questioned: "Question asked",
   unresolved: "Not established",
 };
+
+const ASSESSMENT_LABEL: Record<Assessment, string> = {
+  supports: "Supports it",
+  insufficient: "Relevant but not enough",
+  not_observed: "Not observed",
+  concern: "Concern",
+};
+
+function MappingBadge({ mapping }: { mapping: EvidenceMapping | undefined }) {
+  if (!mapping) {
+    return (
+      <span style={{ display: "inline-flex", fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: "var(--radius-tag)", background: "var(--surface-subtle)", color: "var(--ink-secondary)" }}>
+        Not reviewed
+      </span>
+    );
+  }
+  if (mapping.assessment) {
+    const tone: React.CSSProperties =
+      mapping.assessment === "supports"
+        ? { background: "var(--confirmed-tint)", color: "var(--confirmed-ink)" }
+        : mapping.assessment === "not_observed"
+          ? { background: "var(--surface-subtle)", color: "var(--ink-secondary)" }
+          : { background: "var(--question-tint)", color: "var(--question-ink)" };
+    return (
+      <span style={{ display: "inline-flex", fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: "var(--radius-tag)", ...tone }}>
+        {ASSESSMENT_LABEL[mapping.assessment]}
+      </span>
+    );
+  }
+  return <StatusBadge status={mapping.status} />;
+}
 
 function StatusBadge({ status }: { status: MappingStatus }) {
   const styles: Record<MappingStatus, React.CSSProperties> = {
@@ -271,7 +302,6 @@ export default function RequirementEvidenceReview({
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {requirements.map((req, i) => {
               const m = mappingFor(i);
-              const status: MappingStatus = m?.status ?? "unresolved";
               const active = i === selectedReq;
               return (
                 <button
@@ -288,7 +318,7 @@ export default function RequirementEvidenceReview({
                   }}
                 >
                   <span style={{ display: "block", fontWeight: 500, marginBottom: 6 }}>{req}</span>
-                  <StatusBadge status={status} />
+                  <MappingBadge mapping={m} />
                 </button>
               );
             })}
@@ -302,7 +332,7 @@ export default function RequirementEvidenceReview({
               <h2 style={{ fontSize: 17, fontWeight: 600, margin: "0 0 8px" }}>
                 {requirements[selectedReq]}
               </h2>
-              {current ? <StatusBadge status={current.status} /> : <StatusBadge status="unresolved" />}
+              <MappingBadge mapping={current} />
             </div>
           </div>
 
@@ -348,7 +378,7 @@ export default function RequirementEvidenceReview({
               }}
             >
               <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 6px", color: "var(--question-ink)" }}>
-                Not established by the supplied evidence
+                No evidence linked yet
               </p>
               <p style={{ fontSize: 13, color: "var(--ink-secondary)", margin: 0 }}>
                 This is not a negative judgment. Select evidence below, or ask the candidate a follow-up question.
