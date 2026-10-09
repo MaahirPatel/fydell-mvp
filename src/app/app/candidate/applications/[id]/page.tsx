@@ -12,6 +12,7 @@ import StopSharingButton from "@/components/evidence/StopSharingButton";
 import AnswerQuestions from "@/components/evidence/AnswerQuestions";
 import { LocalDate, LocalTime } from "@/components/eng/LocalTime";
 import { getApplicationEvidenceForApplicant, listApplicationQuestionsForApplicant } from "@/lib/profile-evidence/applications";
+import { evidenceStatus } from "@/lib/profile-evidence/store";
 
 export const metadata = { title: "Application receipt" };
 export const dynamic = "force-dynamic";
@@ -41,6 +42,16 @@ export default async function ApplicationReceiptPage({
   const withdrawn = app.status === "withdrawn";
   const [pinned, questions] = await Promise.all([getApplicationEvidenceForApplicant(user.id, app.id), listApplicationQuestionsForApplicant(user.id, app.id)]);
   const pinnedItems = pinned ?? [];
+  const statuses = await Promise.all(pinnedItems.map((p) => (p.revokedAt || withdrawn ? null : evidenceStatus(user.id, p.projectKey).catch(() => null))));
+  const changedSinceSent = new Set(
+    pinnedItems.flatMap((p, i) => {
+      const s = statuses[i];
+      if (!s) return [];
+      const sentHash = s.versions.find((v) => v.id === p.versionId)?.contentHash ?? null;
+      const currentHash = s.versions.find((v) => v.version === s.currentVersion)?.contentHash ?? null;
+      return sentHash && sentHash !== currentHash ? [p.versionId] : [];
+    }),
+  );
   const titles = Object.fromEntries(pinnedItems.flatMap((p) => (p.content ? [[p.versionId, p.content.title] as const] : [])));
 
   return (
@@ -89,6 +100,14 @@ export default async function ApplicationReceiptPage({
                       Version {p.version}, prepared <LocalDate iso={p.publishedAt} />
                       {p.revokedAt ? <>. You stopped sharing it on <LocalDate iso={p.revokedAt} />.</> : ""}
                     </p>
+                    {changedSinceSent.has(p.versionId) ? (
+                      <p className="mt-2 rounded-[6px] bg-[var(--surface-panel)] px-3 py-2 text-app-meta text-[var(--text-body)]">
+                        This project has changed in your profile since you sent it, for example after a newer analysis. {app.organizationName} still sees version {p.version}.{" "}
+                        {app.roleState === "open"
+                          ? "To send the current version, withdraw this application and apply again."
+                          : "The role is no longer open, so this application keeps the version you sent."}
+                      </p>
+                    ) : null}
                     {p.content ? (
                       <details className="mt-2">
                         <summary className="cursor-pointer text-app-meta text-[var(--text-secondary)]">Preview what the team sees</summary>
