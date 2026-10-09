@@ -48,7 +48,7 @@ export function Sheet({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50">
-      <div aria-hidden className="absolute inset-0 bg-[rgba(16,20,32,0.28)]" onClick={onClose} />
+      <div aria-hidden className="absolute inset-0 bg-[var(--scrim)]" onClick={onClose} />
       <div
         ref={panel}
         role="dialog"

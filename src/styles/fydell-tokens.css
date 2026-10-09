@@ -264,8 +264,18 @@
   --danger: var(--fydell-risk);
   --warning: var(--fydell-changed);
 
+  /* Soft destructive control: tinted fill and line derived from the risk ink. */
+  --danger-soft: color-mix(in oklch, var(--fydell-risk) 8%, transparent);
+  --danger-soft-hover: color-mix(in oklch, var(--fydell-risk) 14%, transparent);
+  --danger-line: color-mix(in oklch, var(--fydell-risk) 32%, transparent);
+  --danger-line-hover: color-mix(in oklch, var(--fydell-risk) 46%, transparent);
+
   /* ---- Other ---- */
   --nav-scrim: rgba(247, 248, 250, 0.86);
+  /* Backdrop behind sheets and dialogs. */
+  --scrim: oklch(20% 0.02 265 / 0.28);
+  --shadow-control-solid: 0 1px 2px oklch(20% 0.02 265 / 0.2), inset 0 1px 0 oklch(100% 0 0 / 0.1);
+  --shadow-control: 0 1px 2px oklch(25% 0.03 265 / 0.05);
   --passport-cover: oklch(30% 0.06 var(--hue-evidence));
   --hero-panel: oklch(30% 0.14 var(--hue-brand));
   --hero-panel-ink: #d9ccff;

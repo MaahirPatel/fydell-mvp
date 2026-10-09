@@ -776,7 +776,7 @@ textarea.platform-input {
   transition: background-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease);
 }
 .evidence-row:hover { background: var(--surface-hover); }
-.evidence-row.is-active { background: var(--surface-selected); box-shadow: inset 2px 0 0 var(--accent); }
+.evidence-row.is-active { background: var(--surface-selected); }
 
 .report-row {
   display: block;
@@ -786,9 +786,8 @@ textarea.platform-input {
   transition: background-color var(--motion-fast) var(--ease);
 }
 .report-row:hover { background: var(--surface-hover); }
-.report-row.is-active { background: var(--surface-selected); box-shadow: inset 2px 0 0 var(--accent); }
+.report-row.is-active { background: var(--surface-selected); }
 .report-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.evidence-row.is-declaration.is-active { box-shadow: inset 2px 0 0 var(--border-strong); }
 
 .badge {
   display: inline-flex;

@@ -480,7 +480,7 @@ function MobileNavSheet({
         aria-label="Close navigation"
         tabIndex={-1}
         onClick={onClose}
-        className="absolute inset-0 bg-[rgba(15,17,23,0.28)]"
+        className="absolute inset-0 bg-[var(--scrim)]"
       />
       <div
         ref={panelRef}

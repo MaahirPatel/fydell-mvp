@@ -32,10 +32,10 @@ const SHAPE: Record<ButtonShape, string> = {
 const VARIANT: Record<ButtonVariant, string> = {
   // The single loudest control on any given screen.
   primary:
-    "bg-[var(--control-solid)] text-[var(--control-solid-ink)] shadow-[0_1px_2px_rgba(16,18,24,0.2),inset_0_1px_0_rgba(255,255,255,0.1)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]",
+    "bg-[var(--control-solid)] text-[var(--control-solid-ink)] shadow-[var(--shadow-control-solid)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]",
   // Bordered. Sits beside primary without competing.
   secondary:
-    "border border-[var(--border-default)] bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-[0_1px_2px_rgba(16,24,40,0.05)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-selected)]",
+    "border border-[var(--border-default)] bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-[var(--shadow-control)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-selected)]",
   // Filled, borderless companion to primary. Reads as a second button rather
   // than as an outline of one, which is what keeps a CTA pair balanced.
   soft: "bg-[var(--surface-selected)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-deep)]",
@@ -43,7 +43,7 @@ const VARIANT: Record<ButtonVariant, string> = {
   quiet:
     "bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] active:bg-[var(--surface-selected)]",
   destructive:
-    "border border-[rgba(194,64,90,0.32)] bg-[rgba(194,64,90,0.08)] text-[var(--fydell-risk)] hover:bg-[rgba(194,64,90,0.14)] hover:border-[rgba(194,64,90,0.46)]",
+    "border border-[var(--danger-line)] bg-[var(--danger-soft)] text-[var(--fydell-risk)] hover:bg-[var(--danger-soft-hover)] hover:border-[var(--danger-line-hover)]",
   // Primary action inside the candidate flow.
   accent:
     "bg-[var(--control-solid)] text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)]",

@@ -59,7 +59,7 @@ function SidebarBody({ current, onNavigate }: { current: CandidateSection; onNav
       <Link
         href={SHARE_HREF}
         onClick={onNavigate}
-        className="mt-2 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-[6px] bg-[var(--control-solid)] px-3 text-[13px] font-medium text-[var(--control-solid-ink)] shadow-[0_1px_2px_rgba(16,18,24,0.18)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--accent-line)]"
+        className="mt-2 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-[6px] bg-[var(--control-solid)] px-3 text-[13px] font-medium text-[var(--control-solid-ink)] shadow-[var(--shadow-control-solid)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--control-solid-hover)] active:bg-[var(--control-solid-active)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--accent-line)]"
       >
         <Link2 className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
         Share profile
@@ -162,7 +162,7 @@ function MobileNav({ current }: { current: CandidateSection }) {
       </button>
       {open ? (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div aria-hidden className="absolute inset-0 bg-[rgba(16,20,32,0.28)] animate-[fydell-fade-in_120ms_both]" onClick={close} />
+          <div aria-hidden className="absolute inset-0 bg-[var(--scrim)] animate-[fydell-fade-in_120ms_both]" onClick={close} />
           <div
             ref={panel}
             role="dialog"

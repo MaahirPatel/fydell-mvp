@@ -28,13 +28,11 @@ const KIND = {
     label: "Project",
     badge: "bg-[var(--field-teal)] text-[var(--ink-teal)]",
     icon: FileCode2,
-    rail: "shadow-[inset_2px_0_0_var(--brand-teal)]",
   },
   simulation: {
     label: "Simulation",
     badge: "bg-[var(--field-violet)] text-[var(--ink-violet)]",
     icon: FlaskConical,
-    rail: "shadow-[inset_2px_0_0_var(--brand-violet)]",
   },
 } as const;
 
@@ -123,7 +121,7 @@ function EvidenceList({
                     aria-pressed={active}
                     onClick={() => onSelect(item.id)}
                     className={`flex w-full items-start gap-2.5 rounded-[8px] px-2 py-2 text-left transition-colors duration-150 ${
-                      active ? `bg-[var(--surface-hover)] ${KIND[item.kind].rail}` : "hover:bg-[var(--surface-hover)]"
+                      active ? "bg-[var(--surface-hover)]" : "hover:bg-[var(--surface-hover)]"
                     }`}
                   >
                     <Icon
