@@ -29,6 +29,10 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/admin") ||
     path.startsWith("/account") ||
     path.startsWith("/app") ||
+    path.startsWith("/onboarding") ||
+    path.startsWith("/dashboard") ||
+    path.startsWith("/passport/") ||
+    path.startsWith("/auth/") ||
     path.startsWith("/sim/") ||
     path.startsWith("/simulations") ||
     path.startsWith("/invite/") ||
@@ -37,6 +41,8 @@ export async function middleware(request: NextRequest) {
     // Shared passports and receipts must stop rendering the moment access is revoked.
     path.startsWith("/p/") ||
     path.startsWith("/r/") ||
+    path.startsWith("/record/") ||
+    path.startsWith("/work/") ||
     path.startsWith("/receipts") ||
     path.startsWith("/api/")
   ) {

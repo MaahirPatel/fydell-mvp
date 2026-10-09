@@ -65,9 +65,12 @@ function check(label: string, ok: boolean, detail = "") {
   console.log(`${ok ? "PASS" : "FAIL"} ${label}${detail ? `: ${detail}` : ""}`);
 }
 
+const RESTART_CODES = new Set(["ECONNREFUSED", "ECONNRESET", "UND_ERR_SOCKET", "UND_ERR_HEADERS_TIMEOUT"]);
+
 function retryable(err: unknown): boolean {
+  if (err instanceof Error && err.name === "TimeoutError") return true;
   const cause = err instanceof Error ? (err.cause as { code?: string } | undefined) : undefined;
-  return cause?.code === "ECONNREFUSED" || (err instanceof Error && err.name === "TimeoutError");
+  return RESTART_CODES.has(cause?.code ?? "");
 }
 
 /** The shared dev server is restarted by a watchdog when it hangs; wait for it and retry. */
