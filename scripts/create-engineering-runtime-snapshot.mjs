@@ -28,19 +28,28 @@ if (packages.size === 0) throw new Error('No engineering scenario declares runti
 
 const sandbox = await Sandbox.create({ persistent: false, timeout: 10 * 60 * 1000, env: {}, ports: [] });
 try {
-  const run = async (cmd, args) => {
-    const result = await sandbox.runCommand(cmd, args);
-    if (result.exitCode !== 0) throw new Error(`${cmd} ${args.join(' ')} failed with ${result.exitCode}`);
+  const check = async (result, label) => {
+    if (result.exitCode !== 0) throw new Error(`${label} failed with ${result.exitCode}: ${(await result.stderr()).slice(-500)}`);
     return (await result.stdout()).trim();
   };
-  console.log(await run('python3', ['--version']));
-  await run('python3', ['-m', 'pip', 'install', '--no-cache-dir', ...packages]);
+  console.log(await check(await sandbox.runCommand('python3', ['--version']), 'python3 --version'));
+  // Candidate runs execute as an unprivileged user with `python3 -I`, which
+  // ignores per-user site-packages, so packages must be installed system-wide.
+  await check(
+    await sandbox.runCommand({ cmd: 'python3', args: ['-m', 'pip', 'install', '--no-cache-dir', ...packages], sudo: true }),
+    'pip install',
+  );
+  const probe = await sandbox.createUser('probe');
   for (const pkg of packages) {
     const [name, version] = pkg.split('==');
-    const installed = await run('python3', ['-c', `import importlib.metadata as m; print(m.version(${JSON.stringify(name)}))`]);
+    const installed = await check(
+      await probe.runCommand({ cmd: 'python3', args: ['-I', '-c', `import importlib.metadata as m; print(m.version(${JSON.stringify(name)}))`] }),
+      `version check for ${name}`,
+    );
     if (installed !== version) throw new Error(`${name} installed ${installed}, expected ${version}`);
   }
-  const snapshot = await sandbox.snapshot();
+  // Snapshots expire by default; a missing snapshot would turn every run into an infrastructure error.
+  const snapshot = await sandbox.snapshot({ expiration: 0 });
   if (!snapshot.snapshotId) throw new Error('Snapshot was not created');
   console.log(`Created engineering runtime snapshot ${snapshot.snapshotId} with ${[...packages].join(', ')}.`);
   console.log('Set FYDELL_ENGINEERING_SNAPSHOT_ID to this value and FYDELL_EXECUTION_PROVIDER=vercel.');

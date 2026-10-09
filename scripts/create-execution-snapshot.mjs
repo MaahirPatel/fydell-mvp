@@ -6,7 +6,8 @@ const sandbox = await Sandbox.create({ persistent: false, timeout: 60000, networ
 try {
   const version = await sandbox.runCommand('python3', ['--version']);
   if (version.exitCode !== 0) throw new Error('Python is unavailable in the base image');
-  const snapshot = await sandbox.snapshot();
+  // Snapshots expire by default; a missing snapshot would turn every run into an infrastructure error.
+  const snapshot = await sandbox.snapshot({ expiration: 0 });
   const id = snapshot.snapshotId;
   if (!id) throw new Error('Snapshot was not created');
   let local = await readFile('.env.local', 'utf8');
