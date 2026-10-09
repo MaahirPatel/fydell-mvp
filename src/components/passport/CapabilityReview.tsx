@@ -2,20 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, FileCode2, GitCommitHorizontal, MessageSquareQuote } from "lucide-react";
+import { ArrowUpRight, FileCode2, FolderGit2, GitCommitHorizontal, MessageSquareQuote, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/report";
 import { LocalDate } from "@/components/eng/LocalTime";
 import {
-  BASIS_LABEL,
   CONTRIBUTION_STATUS_LABEL,
-  COVERAGE_LABEL,
   type Attribution,
   type CapabilityEntry,
   type CapabilityEvidence,
   type CapabilityReview,
   type Coverage,
 } from "@/lib/passport/capability/types";
+import { BASIS_STYLE, BasisChip, BasisLegend, CoverageTag } from "./EvidenceTags";
 import { RELATIONSHIP_LABEL } from "@/lib/passport/context-contract";
 
 export type ReportVersionMeta = {
@@ -26,15 +25,6 @@ export type ReportVersionMeta = {
   versions: Array<{ version: number; reason: string; createdAt: string }>;
 };
 
-/** Coverage colours: indigo for support, neutral for gaps, red only for a contradiction. Green is reserved for checks that ran and passed. */
-const COVERAGE_STYLE: Record<Coverage, { dot: string; ink: string; bg: string }> = {
-  supports: { dot: "var(--accent)", ink: "var(--accent-ink)", bg: "var(--accent-soft)" },
-  partially_supports: { dot: "var(--fy-violet, var(--accent))", ink: "var(--accent-ink)", bg: "var(--surface-panel)" },
-  insufficient_evidence: { dot: "var(--text-tertiary)", ink: "var(--text-secondary)", bg: "var(--surface-panel)" },
-  contradicted: { dot: "var(--badge-failed-ink)", ink: "var(--badge-failed-ink)", bg: "var(--badge-failed-bg)" },
-  not_assessed: { dot: "var(--border-strong)", ink: "var(--text-tertiary)", bg: "transparent" },
-};
-
 const LEVEL_LABEL: Record<Attribution["level"], string> = {
   commit_signal: "Linked by commits",
   partial_commit_signal: "Partly linked by commits",
@@ -43,27 +33,38 @@ const LEVEL_LABEL: Record<Attribution["level"], string> = {
   not_assessable: "Contribution not assessed",
 };
 
-export function CoverageTag({ coverage }: { coverage: Coverage }) {
-  const s = COVERAGE_STYLE[coverage];
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-app-meta font-medium ${coverage === "not_assessed" ? "border border-dashed border-[var(--border-strong)]" : ""}`}
-      style={{ color: s.ink, background: s.bg }}
-    >
-      <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ background: s.dot }} />
-      {COVERAGE_LABEL[coverage]}
-    </span>
-  );
+export { BasisChip, CoverageTag };
+
+const SCOPE_TINT: Record<"person" | "project_only" | "narrowed", string> = {
+  person: "var(--accent-soft)",
+  project_only: "var(--surface-panel)",
+  narrowed: "var(--surface-uncertain)",
+};
+
+function scopeKey(entry: CapabilityEntry): keyof typeof SCOPE_TINT {
+  return entry.status === "narrowed" ? "narrowed" : entry.scope === "person" ? "person" : "project_only";
 }
 
 function ScopeTag({ entry }: { entry: CapabilityEntry }) {
-  if (entry.status === "narrowed") {
-    return <span className="rounded-full bg-[var(--badge-attention-bg)] px-2.5 py-0.5 text-app-meta font-medium text-[var(--badge-attention-ink)]">Narrowed</span>;
+  const key = scopeKey(entry);
+  if (key === "narrowed") {
+    return (
+      <span className="inline-flex items-center gap-1 text-app-meta font-semibold text-[var(--fy-amber-ink,var(--badge-attention-ink))]">
+        <TriangleAlert className="h-3.5 w-3.5" aria-hidden />
+        Narrowed
+      </span>
+    );
   }
-  return entry.scope === "person" ? (
-    <span className="rounded-full bg-[var(--accent-soft)] px-2.5 py-0.5 text-app-meta font-medium text-[var(--accent-ink)]">Linked by commits</span>
+  return key === "person" ? (
+    <span className="inline-flex items-center gap-1 text-app-meta font-semibold text-[var(--accent-ink)]">
+      <GitCommitHorizontal className="h-3.5 w-3.5" aria-hidden />
+      Linked by commits
+    </span>
   ) : (
-    <span className="rounded-full bg-[var(--surface-panel)] px-2.5 py-0.5 text-app-meta font-medium text-[var(--text-secondary)]">Project only</span>
+    <span className="inline-flex items-center gap-1 text-app-meta font-semibold text-[var(--text-secondary)]">
+      <FolderGit2 className="h-3.5 w-3.5" aria-hidden />
+      Project only
+    </span>
   );
 }
 
@@ -98,19 +99,22 @@ function EvidenceItem({ e, onOpenFinding }: { e: CapabilityEvidence; onOpenFindi
   if (e.kind === "statement") {
     return (
       <li className="flex min-w-0 items-start gap-2">
-        <MessageSquareQuote className="mt-0.5 h-4 w-4 shrink-0 text-[var(--text-tertiary)]" aria-hidden />
-        <span className="text-app-meta text-[var(--text-secondary)]">Engineer statement: {e.text}</span>
+        <MessageSquareQuote className="mt-0.5 h-4 w-4 shrink-0" style={{ color: BASIS_STYLE.engineer_statement.ink }} aria-hidden />
+        <span className="text-app-body text-[var(--text-body)]">&ldquo;{e.text}&rdquo;</span>
       </li>
     );
   }
   return (
-    <li className="text-app-meta text-[var(--text-secondary)]">Task demonstration: {e.outcome}</li>
+    <li className="flex min-w-0 flex-wrap items-center gap-2">
+      <BasisChip basis="task_demonstration" />
+      <span className="text-app-body text-[var(--text-body)]">{e.outcome}</span>
+    </li>
   );
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-1 border-t border-[var(--border-subtle)] py-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4">
+    <div className="grid gap-1 border-t border-[var(--border-subtle)] py-3 first:border-t-0 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4">
       <dt className="text-app-control font-medium text-[var(--text-secondary)]">{label}</dt>
       <dd className="min-w-0 text-app-prose text-[var(--text-body)]">{children}</dd>
     </div>
@@ -119,17 +123,19 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 export function CapabilityCard({ entry, onOpenFinding, compact = false }: { entry: CapabilityEntry; onOpenFinding: (id: string) => void; compact?: boolean }) {
   return (
-    <article className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
-      <div className="flex flex-wrap items-center gap-2">
-        <ScopeTag entry={entry} />
-        {entry.basis.map((b) => (
-          <span key={b} className="text-app-meta text-[var(--text-tertiary)]">
-            {BASIS_LABEL[b]}
+    <article className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+      <header className="px-5 pb-4 pt-4" style={{ background: SCOPE_TINT[scopeKey(entry)] }}>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <ScopeTag entry={entry} />
+          <span className="flex flex-wrap gap-1.5">
+            {entry.basis.map((b) => (
+              <BasisChip key={b} basis={b} />
+            ))}
           </span>
-        ))}
-      </div>
-      <h4 className="mt-2 text-[18px] font-semibold leading-[1.35] tracking-[-0.01em] text-[var(--text-primary)]">{entry.title}</h4>
-      <dl className="mt-3">
+        </div>
+        <h4 className="mt-2 text-[19px] font-semibold leading-[1.35] tracking-[-0.01em] text-[var(--text-primary)]">{entry.title}</h4>
+      </header>
+      <dl className="px-5 pb-2">
         <Row label="Specific work">{entry.specificWork}</Row>
         <Row label="Evidence">
           <ul className="space-y-1.5">
@@ -272,31 +278,41 @@ function AttributionPanel({ review }: { review: CapabilityReview }) {
   const a = review.attribution;
   const statement = review.layers.engineerStatements.find((s) => s.kind === "contribution");
   return (
-    <section aria-labelledby="contribution-heading" className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id="contribution-heading" className="text-app-control font-semibold text-[var(--text-primary)]">
-          Contribution
-        </h3>
-        <span className={`rounded-full px-2.5 py-0.5 text-app-meta font-medium ${a.personClaimsAllowed ? "bg-[var(--accent-soft)] text-[var(--accent-ink)]" : "bg-[var(--surface-panel)] text-[var(--text-secondary)]"}`}>{LEVEL_LABEL[a.level]}</span>
+    <section aria-labelledby="attribution-heading" className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+      <div className="px-5 pb-4 pt-4" style={{ background: a.personClaimsAllowed ? "var(--accent-soft)" : "var(--surface-panel)" }}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 id="attribution-heading" className="text-app-control font-semibold text-[var(--text-primary)]">
+            Contribution
+          </h3>
+          <span className={`inline-flex items-center gap-1 text-app-meta font-semibold ${a.personClaimsAllowed ? "text-[var(--accent-ink)]" : "text-[var(--text-secondary)]"}`}>
+            {a.personClaimsAllowed ? <GitCommitHorizontal className="h-3.5 w-3.5" aria-hidden /> : <FolderGit2 className="h-3.5 w-3.5" aria-hidden />}
+            {LEVEL_LABEL[a.level]}
+          </span>
+        </div>
+        <p className="mt-2 text-app-prose text-[var(--text-body)]">{a.summary}</p>
       </div>
-      <p className="mt-2 text-app-prose text-[var(--text-body)]">{a.summary}</p>
-      {a.automatic.length ? (
-        <ul className="mt-3 space-y-1">
-          {a.automatic.map((r) => (
-            <li key={r.reason} className="text-app-body text-[var(--text-secondary)]">
-              {r.detail}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      <div className="mt-4 border-t border-[var(--border-subtle)] pt-3">
-        <p className="text-app-meta font-medium text-[var(--text-secondary)]">In the engineer&apos;s words, shown separately from source evidence</p>
-        <p className="mt-1 text-app-body text-[var(--text-body)]">
-          {a.relationship !== "unspecified" ? <span className="font-medium text-[var(--text-primary)]">{RELATIONSHIP_LABEL[a.relationship]}. </span> : null}
-          {statement ? statement.text : a.relationship === "unspecified" ? "Nothing stated yet." : null}
-        </p>
+      <div className="px-5 pb-5">
+        {a.automatic.length ? (
+          <ul className="mt-3 space-y-1">
+            {a.automatic.map((r) => (
+              <li key={r.reason} className="text-app-body text-[var(--text-secondary)]">
+                {r.detail}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <div className="mt-4 rounded-[var(--radius-control)] p-3" style={{ background: BASIS_STYLE.engineer_statement.bg }}>
+          <div className="flex flex-wrap items-center gap-2">
+            <BasisChip basis="engineer_statement" />
+            <span className="text-app-meta text-[var(--text-secondary)]">Shown separately from source evidence</span>
+          </div>
+          <p className="mt-2 text-app-body text-[var(--text-body)]">
+            {a.relationship !== "unspecified" ? <span className="font-semibold text-[var(--text-primary)]">{RELATIONSHIP_LABEL[a.relationship]}. </span> : null}
+            {statement ? statement.text : a.relationship === "unspecified" ? "Nothing stated yet." : null}
+          </p>
+        </div>
+        {a.limits[0] ? <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">{a.limits[0]}</p> : null}
       </div>
-      {a.limits[0] ? <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">{a.limits[0]}</p> : null}
     </section>
   );
 }
@@ -345,10 +361,15 @@ export function CapabilityOverview({
                 const first = c.evidence.find((e) => e.kind === "source_lines" || e.kind === "test_file");
                 return (
                   <li key={c.id} className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                       <ScopeTag entry={c} />
+                      <span className="flex flex-wrap gap-1.5">
+                        {c.basis.map((b) => (
+                          <BasisChip key={b} basis={b} />
+                        ))}
+                      </span>
                     </div>
-                    <p className="mt-1.5 text-[17px] font-semibold leading-[1.4] text-[var(--text-primary)]">{c.title}</p>
+                    <p className="mt-2 text-[18px] font-semibold leading-[1.4] text-[var(--text-primary)]">{c.title}</p>
                     <p className="mt-1 text-app-body text-[var(--text-secondary)]">{c.result}</p>
                     {first && (first.kind === "source_lines" || first.kind === "test_file") ? (
                       <button type="button" onClick={() => onOpenFinding(first.findingId)} className="mt-2 inline-flex items-center gap-1 text-app-control font-medium text-[var(--accent-ink)] hover:underline hover:underline-offset-4">
@@ -438,6 +459,10 @@ export function CapabilityList({ review, onOpenFinding }: { review: CapabilityRe
           <p className="mt-1 max-w-[70ch] text-app-body text-[var(--text-secondary)]">
             Coverage says what the evidence means for one requirement. It is separate from how the evidence was observed, and it is never a score.
           </p>
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="text-app-meta font-medium text-[var(--text-secondary)]">How evidence was obtained</span>
+            <BasisLegend />
+          </div>
           <ul className="mt-4 divide-y divide-[var(--border-subtle)] rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
             {s.requirements.map((r) => (
               <li key={r.id} className="grid gap-2 px-5 py-4 md:grid-cols-[minmax(0,220px)_minmax(0,1fr)] md:gap-6">
@@ -529,21 +554,38 @@ export function CapabilityList({ review, onOpenFinding }: { review: CapabilityRe
 export function FindingAttribution({ review, findingId }: { review: CapabilityReview; findingId: string }) {
   const entry = review.capabilities.find((c) => c.findingIds.includes(findingId));
   if (!entry) return null;
+  const person = entry.scope === "person" && entry.status !== "narrowed";
+  const commits = entry.evidence.filter((e): e is Extract<CapabilityEvidence, { kind: "commit" }> => e.kind === "commit");
   return (
-    <div className="mt-5 grid gap-4 border-t border-[var(--border-subtle)] pt-4">
-      <div>
-        <p className="text-app-control font-medium text-[var(--text-primary)]">Code behaviour</p>
-        <p className="mt-1 text-app-body text-[var(--text-body)]">{entry.result}</p>
+    <div className="mt-5 grid gap-3">
+      <div className="grid gap-3">
+        <section aria-label="Code behaviour" className="rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-app-control font-semibold text-[var(--text-primary)]">Code behaviour</h4>
+            <BasisChip basis="inspected_code" />
+          </div>
+          <p className="mt-2 text-app-body text-[var(--text-body)]">{entry.result}</p>
+        </section>
+        <section aria-label="Attribution" className="rounded-[var(--radius-control)] p-4" style={{ background: person ? "var(--accent-soft)" : "var(--surface-panel)" }}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-app-control font-semibold text-[var(--text-primary)]">Attribution</h4>
+            <ScopeTag entry={entry} />
+          </div>
+          <p className="mt-2 text-app-body text-[var(--text-body)]">
+            <span className="font-semibold text-[var(--text-primary)]">{CONTRIBUTION_STATUS_LABEL[entry.contribution.status]}.</span> {entry.contribution.text}
+          </p>
+          {commits.length ? (
+            <ul className="mt-2 space-y-1">
+              {commits.slice(0, 3).map((c) => (
+                <EvidenceItem key={c.sha} e={c} onOpenFinding={() => undefined} />
+              ))}
+            </ul>
+          ) : null}
+          {entry.contribution.limits[0] ? <p className="mt-2 text-app-meta text-[var(--text-secondary)]">{entry.contribution.limits[0]}</p> : null}
+        </section>
       </div>
-      <div className="rounded-[var(--radius-control)] bg-[var(--surface-panel)] p-3">
-        <p className="text-app-control font-medium text-[var(--text-primary)]">Attribution</p>
-        <p className="mt-1 text-app-body text-[var(--text-body)]">
-          <span className="font-medium">{CONTRIBUTION_STATUS_LABEL[entry.contribution.status]}.</span> {entry.contribution.text}
-        </p>
-        {entry.contribution.limits[0] ? <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">{entry.contribution.limits[0]}</p> : null}
-      </div>
-      <div>
-        <p className="text-app-control font-medium text-[var(--text-primary)]">Employer follow-up</p>
+      <div className="rounded-[var(--radius-control)] bg-[var(--surface-panel)] p-4">
+        <p className="text-app-control font-semibold text-[var(--text-primary)]">Employer follow-up</p>
         <p className="mt-1 text-app-body text-[var(--text-body)]">{entry.followUp}</p>
       </div>
     </div>

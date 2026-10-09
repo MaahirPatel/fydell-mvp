@@ -10,7 +10,7 @@
  *   capability synthesis   a bounded conclusion from linked evidence
  *
  * Evidence basis and requirement coverage are separate dimensions: "Executed
- * test" says how something was observed; "Supports this requirement" says
+ * test" says how something was observed; "Supports" says
  * what it means for one requirement. Nothing here is a single "Observed" flag.
  */
 import type { RoleKey } from "@/lib/simulations/types";
@@ -31,10 +31,10 @@ export const BASIS_LABEL: Record<EvidenceBasis, string> = {
 export type Coverage = "supports" | "partially_supports" | "insufficient_evidence" | "contradicted" | "not_assessed";
 
 export const COVERAGE_LABEL: Record<Coverage, string> = {
-  supports: "Supports this requirement",
-  partially_supports: "Partly supports this requirement",
+  supports: "Supports",
+  partially_supports: "Partially supports",
   insufficient_evidence: "Insufficient evidence",
-  contradicted: "Contradicted by the source",
+  contradicted: "Contradicted",
   not_assessed: "Not assessed",
 };
 
@@ -107,12 +107,15 @@ export type TaskDemonstration = {
 };
 
 export type EngineerStatement = {
-  kind: "relationship" | "contribution" | "decision";
+  kind: "relationship" | "contribution" | "decision" | "correction";
   label: string;
   text: string;
   findingIds: string[];
   version: number | null;
   updatedAt: string | null;
+  /** Corrections only: the note's state. The finding it refers to is never edited. */
+  status?: "open" | "resolved" | "withdrawn";
+  noteId?: string;
 };
 
 export type ReviewerJudgment = {
@@ -132,7 +135,7 @@ export type CapabilityEvidence =
 export type ContributionStatus = "linked_by_commits" | "stated_only" | "not_linked" | "reference_project" | "no_history";
 
 export const CONTRIBUTION_STATUS_LABEL: Record<ContributionStatus, string> = {
-  linked_by_commits: "Commits by the connected account",
+  linked_by_commits: "Commits by the named GitHub account",
   stated_only: "Engineer statement only",
   not_linked: "Not linked to the engineer",
   reference_project: "Reference project",

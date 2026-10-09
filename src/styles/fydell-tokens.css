@@ -116,6 +116,8 @@
   --ink-coral: #b4213f;
   --field-warm: oklch(96% 0.04 var(--hue-warm));
   --ink-warm: oklch(45% 0.13 var(--hue-warm));
+  --field-sky: oklch(95% 0.035 225);
+  --ink-sky: oklch(43% 0.11 225);
   --brand-warm: oklch(70% 0.17 var(--hue-warm));
   /* Marketing section tints: equal lightness so a row of them reads evenly. */
   --tint-teal: oklch(93.5% 0.045 var(--hue-evidence));
@@ -397,6 +399,8 @@
   --ink-violet: oklch(83% 0.11 var(--hue-brand));
   --ink-coral: oklch(82% 0.1 18);
   --ink-warm: oklch(86% 0.1 64);
+  --field-sky: oklch(72% 0.12 225 / 0.13);
+  --ink-sky: oklch(84% 0.09 225);
   --action-ink: oklch(83% 0.11 var(--hue-brand));
   --action-ink-ring: oklch(70% 0.16 var(--hue-brand) / 0.4);
   --status-positive-bg: oklch(76% 0.12 150 / 0.12);

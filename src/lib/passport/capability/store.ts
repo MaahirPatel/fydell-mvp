@@ -3,9 +3,9 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { sha256 } from "@/lib/builder-analysis/hash";
 import { getContribution, listDecisions } from "../context-store";
 import { currentSnapshots } from "../snapshots";
-import { getOwnerPassport } from "../store";
+import { getOwnerPassport, listCorrections } from "../store";
 import { buildEnrichedReview } from "./enrich";
-import { profileCapabilityGroups, type ProfileCapabilityGroup } from "./profile";
+import { profileCapabilityGroups, profileProjectDigest, type ProfileCapabilityGroup, type ProfileProjectDigest } from "./profile";
 import { buildCapabilityReview, type ReviewInput } from "./synthesize";
 import { CAPABILITY_SCHEMA_VERSION, type CapabilityReview } from "./types";
 
@@ -66,11 +66,16 @@ export async function reviewInputFor(ownerId: string, snapshotId: string): Promi
   const passport = await getOwnerPassport(ownerId);
   const project = passport?.projects.find((p) => p.id === snapshotId);
   if (!passport || !project) return null;
-  const [contribution, decisions] = await Promise.all([getContribution(ownerId, project.repoFullName), listDecisions(ownerId, project.repoFullName)]);
+  const [contribution, decisions, corrections] = await Promise.all([
+    getContribution(ownerId, project.repoFullName),
+    listDecisions(ownerId, project.repoFullName),
+    listCorrections(ownerId),
+  ]);
   return {
     project,
     contribution,
     decisions,
+    corrections,
     otherProjects: currentSnapshots(passport.projects).filter((p) => p.id !== snapshotId),
   };
 }
@@ -102,12 +107,25 @@ export async function latestReportsForOwner(ownerId: string): Promise<Map<string
  * cannot see must never reach this function.
  */
 export async function profileGroupsForSnapshots(snapshotIds: string[]): Promise<ProfileCapabilityGroup[]> {
+  return (await profileReportsForSnapshots(snapshotIds)).groups;
+}
+
+/** Capability groups plus one digest per project card, from the latest stored report of each snapshot. Same visibility rule as above. */
+export async function profileReportsForSnapshots(
+  snapshotIds: string[],
+): Promise<{ groups: ProfileCapabilityGroup[]; digests: Record<string, ProfileProjectDigest> }> {
   const ids = [...new Set(snapshotIds.filter((id) => UUID.test(id)))].slice(0, 100);
-  if (!ids.length) return [];
+  if (!ids.length) return { groups: [], digests: {} };
   const { data } = await createAdminSupabaseClient().from("passport_capability_reports").select(COLUMNS).in("snapshot_id", ids).order("version", { ascending: false });
-  const latest = new Map<string, CapabilityReview>();
-  for (const r of (data ?? []) as Row[]) if (!latest.has(r.snapshot_id)) latest.set(r.snapshot_id, r.report);
-  return profileCapabilityGroups(ids.map((id) => latest.get(id)).filter((r): r is CapabilityReview => !!r));
+  const latest = new Map<string, Row>();
+  for (const r of (data ?? []) as Row[]) if (!latest.has(r.snapshot_id)) latest.set(r.snapshot_id, r);
+  const rows = ids.map((id) => latest.get(id)).filter((r): r is Row => !!r);
+  const digests: Record<string, ProfileProjectDigest> = {};
+  for (const r of rows) {
+    const d = profileProjectDigest({ ...r.report, subject: { ...r.report.subject, snapshotId: r.snapshot_id } }, r.version);
+    if (d) digests[r.snapshot_id] = d;
+  }
+  return { groups: profileCapabilityGroups(rows.map((r) => r.report)), digests };
 }
 
 export async function capabilityReportVersion(ownerId: string, snapshotId: string, version: number): Promise<StoredCapabilityReport | null> {

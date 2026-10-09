@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Github, Globe, Instagram, Link2, Linkedin, MapPin, Twitter } from "lucide-react";
+import { ArrowUpRight, Check, FolderGit2, GitCommitHorizontal, Github, Globe, Instagram, Link2, Linkedin, MapPin, MessageSquareQuote, Twitter } from "lucide-react";
 import type { CapabilitySummary, PassportProject } from "@/lib/passport/view";
 import { PROJECT_STATE_LABEL, TEAM_LABEL, formatPeriod, type ProjectPresentation } from "@/lib/passport/presentation";
 import type { RoleSuggestion } from "@/lib/passport/github/types";
@@ -10,8 +10,12 @@ import { socialDisplay } from "@/lib/profile/social";
 import { Status } from "@/components/ui/report";
 import Avatar from "@/components/profile/Avatar";
 import HowIBuildEditor from "@/components/profile/HowIBuildEditor";
-import { CoverageTag } from "@/components/passport/CapabilityReview";
-import type { ProfileCapabilityGroup } from "@/lib/passport/capability/profile";
+import { BASIS_STYLE, BasisChip, BasisLegend, CoverageTag } from "@/components/passport/EvidenceTags";
+import type { ProfileCapabilityGroup, ProfileProjectDigest } from "@/lib/passport/capability/profile";
+import type { ProjectRelationship } from "@/lib/passport/context-contract";
+
+/** A released work-sample report the engineer added to their Passport. Owner view only. */
+export type TaskDemonstrationItem = { id: string; title: string; organization: string | null; summary: string; checks: string[]; unresolved: string[]; releasedAt: string | null; href: string };
 
 type Account = { provider: keyof typeof PROVIDER_LABELS; label: string };
 
@@ -104,14 +108,145 @@ const ORIGIN: Record<ProjectPresentation["sourceKind"], string> = {
   manual: "Engineer's description, no source analyzed",
 };
 
+/** Conventional language colours, used only as a small identity dot. */
+const LANGUAGE_DOT: Record<string, string> = {
+  TypeScript: "#3178c6",
+  JavaScript: "#b08800",
+  Python: "#3572a5",
+  Go: "#00838f",
+  Rust: "#a0522d",
+  Java: "#b07219",
+  Ruby: "#a91401",
+  "C#": "#178600",
+  Kotlin: "#7f52ff",
+  Swift: "#e05d44",
+};
+
+function relationshipLine(r: ProjectRelationship, mode: "owner" | "shared"): string | null {
+  const you = mode === "owner";
+  const map: Record<ProjectRelationship, string | null> = {
+    unspecified: null,
+    maintained: you ? "You maintain this project" : "Maintained by the engineer",
+    contributor: you ? "You contributed to it" : "The engineer contributed to it",
+    team_project: "Team project",
+    fork: you ? "Your fork of another project" : "The engineer's fork of another project",
+    learning_exercise: "Learning exercise",
+    reference: you ? "Reference only, not your work" : "Reference only, not the engineer's work",
+  };
+  return map[r];
+}
+
+function ProjectCardBody({
+  digest,
+  mode,
+  reportHref,
+  fallbackStatement,
+}: {
+  digest: ProfileProjectDigest | undefined;
+  mode: "owner" | "shared";
+  reportHref: string | null;
+  fallbackStatement: string;
+}) {
+  const relationship = digest ? relationshipLine(digest.relationship, mode) : null;
+  const statement = digest?.statement ?? (fallbackStatement || null);
+  return (
+    <>
+      {digest ? (
+        <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-app-meta">
+          <span className={`inline-flex items-center gap-1 font-semibold ${digest.personClaimsAllowed ? "text-[var(--accent-ink)]" : "text-[var(--text-secondary)]"}`}>
+            {digest.personClaimsAllowed ? <GitCommitHorizontal className="h-3.5 w-3.5" aria-hidden /> : <FolderGit2 className="h-3.5 w-3.5" aria-hidden />}
+            {digest.personClaimsAllowed ? (digest.attribution === "partial_commit_signal" ? "Partly linked by commits" : "Linked by commits") : "Project findings only"}
+          </span>
+          {relationship ? <span className="text-[var(--text-secondary)]">{relationship}</span> : null}
+        </p>
+      ) : null}
+      {statement ? (
+        <p className="mt-2 flex max-w-[68ch] items-start gap-2 text-app-body leading-[1.55] text-[var(--text-body)]">
+          <MessageSquareQuote className="mt-[3px] h-4 w-4 shrink-0" style={{ color: BASIS_STYLE.engineer_statement.ink }} aria-label="Engineer statement" />
+          <span>{statement}</span>
+        </p>
+      ) : null}
+      {digest?.top.length ? (
+        <ul className="mt-3 space-y-2">
+          {digest.top.map((t) => {
+            const href = mode === "owner" ? `/app/candidate/projects/${digest.snapshotId}${t.findingId ? `?finding=${encodeURIComponent(t.findingId)}` : ""}` : null;
+            return (
+              <li key={t.title} className="flex items-start gap-2">
+                {t.scope === "person" ? (
+                  <GitCommitHorizontal className="mt-[3px] h-4 w-4 shrink-0 text-[var(--accent)]" aria-label="Linked by commits" />
+                ) : (
+                  <FolderGit2 className="mt-[3px] h-4 w-4 shrink-0 text-[var(--text-tertiary)]" aria-label="Project only" />
+                )}
+                {href ? (
+                  <Link href={href} className="text-app-prose font-medium leading-[1.45] text-[var(--text-primary)] hover:underline hover:underline-offset-4">
+                    {t.title}
+                  </Link>
+                ) : (
+                  <span className="text-app-prose font-medium leading-[1.45] text-[var(--text-primary)]">{t.title}</span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      ) : digest ? (
+        <p className="mt-3 text-app-body text-[var(--text-secondary)]">
+          {digest.narrowed ? `No finding supports a capability on its own; ${plural(digest.narrowed, "finding")} narrowed.` : "No capability found in the analyzed files."}
+        </p>
+      ) : null}
+      {digest && (digest.narrowed || digest.contradictions) ? (
+        <p className="mt-2 flex flex-wrap gap-x-3 text-app-meta">
+          {digest.narrowed ? <span className="font-medium text-[var(--badge-attention-ink)]">{plural(digest.narrowed, "finding")} narrowed</span> : null}
+          {digest.contradictions ? <span className="font-medium text-[var(--badge-failed-ink)]">{plural(digest.contradictions, "comment")} the code contradicts</span> : null}
+        </p>
+      ) : null}
+      {reportHref && digest ? (
+        <Link href={reportHref} className="mt-3 inline-flex items-center gap-1 text-app-control font-medium text-[var(--accent-ink)] hover:underline hover:underline-offset-4">
+          Builder Report{digest.reportVersion ? `, version ${digest.reportVersion}` : ""}
+          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+        </Link>
+      ) : null}
+    </>
+  );
+}
+
+function ProjectBand({ owner, name, href, language, linked }: { owner: string | null; name: string; href: string | null; language: string | null; linked: boolean | null }) {
+  return (
+    <div
+      className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1 px-4 pb-3 pt-3.5"
+      style={{ background: linked ? "linear-gradient(120deg, var(--accent-soft), var(--surface-intelligence))" : "var(--surface-panel)" }}
+    >
+      <div className="min-w-0">
+        {owner ? <p className="truncate font-mono text-app-meta text-[var(--text-secondary)]">{owner}/</p> : null}
+        <h3 className="break-words text-[18px] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)] [overflow-wrap:anywhere]">
+          {href ? (
+            <Link href={href} className="hover:underline hover:underline-offset-4">
+              {name}
+            </Link>
+          ) : (
+            name
+          )}
+        </h3>
+      </div>
+      {language ? (
+        <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-raised)] px-2 py-0.5 text-app-meta font-medium text-[var(--text-primary)]">
+          <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: LANGUAGE_DOT[language] ?? "var(--text-tertiary)" }} />
+          {language}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 function ProjectEntry({
   item,
   project,
+  digest,
   mode,
   featured,
 }: {
   item: ProjectPresentation;
   project: PassportProject | undefined;
+  digest: ProfileProjectDigest | undefined;
   mode: "owner" | "shared";
   featured: boolean;
 }) {
@@ -125,80 +260,60 @@ function ProjectEntry({
   const reportHref = mode === "owner" && project?.id ? `/app/candidate/projects/${project.id}` : null;
   const contribution = item.sourceKind === "manual" ? item.contribution : project?.contributionStatement ?? "";
   const image = featured && item.image?.url ? item.image : null;
+  const owner = project && project.sourceKind !== "upload" ? project.repoFullName.split("/")[0] : null;
   return (
-    <article
-      className={featured ? "flex h-full flex-col overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]" : "py-4"}
-    >
+    <article className="flex h-full flex-col overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
       {image ? (
         <div className="aspect-[16/9] w-full shrink-0 border-b border-[var(--border-subtle)] bg-[var(--surface-deep)]">
           {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed storage URL; next/image would cache it past expiry */}
           <img src={image.url} alt={image.alt} width={1600} height={900} loading="lazy" decoding="async" className="h-full w-full object-cover" />
         </div>
       ) : null}
-      <div className={featured ? "flex flex-1 flex-col p-4" : ""}>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="text-[14px] font-semibold tracking-[-0.006em] text-[var(--text-primary)]">
-          {reportHref ? (
-            <Link href={reportHref} className="hover:underline hover:underline-offset-4">
-              {item.title}
-            </Link>
-          ) : (
-            item.title
-          )}
-        </h3>
-        {project ? <span className="text-[13px] tabular-nums text-[var(--text-tertiary)]">{plural(project.evidence.length, "cited finding")}</span> : null}
-      </div>
-      <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
-        {meta.join(" · ")}
-        {mode === "owner" && item.visibility === "private" ? " · Private, never shared" : ""}
-        {mode === "owner" && !item.confirmedAt ? " · Draft from the analysis, not confirmed" : ""}
-      </p>
-      {item.summary ? (
-        <p className={`mt-2.5 max-w-[68ch] leading-[1.6] text-[var(--text-body)] ${featured && !image ? "text-[15px]" : "text-[14px]"}`}>{item.summary}</p>
-      ) : null}
-      {item.purpose ? <p className="mt-1.5 max-w-[68ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">{item.purpose}</p> : null}
-      {contribution ? (
-        <p className="mt-2.5 max-w-[68ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
-          <span className="font-medium text-[var(--text-primary)]">{mode === "owner" ? "Your part: " : "Engineer's part: "}</span>
-          {contribution}
+      <ProjectBand owner={owner} name={item.title} href={reportHref} language={project?.primaryLanguage ?? null} linked={digest ? digest.personClaimsAllowed : null} />
+      <div className="flex flex-1 flex-col px-4 pb-4 pt-2">
+        <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
+          {[...meta, project ? plural(project.evidence.length, "cited finding") : null].filter(Boolean).join(" · ")}
+          {mode === "owner" && item.visibility === "private" ? " · Private, never shared" : ""}
+          {mode === "owner" && !item.confirmedAt ? " · Draft from the analysis, not confirmed" : ""}
         </p>
-      ) : null}
-      {item.sourceKind === "manual" && item.outcomes ? (
-        <p className="mt-1.5 max-w-[68ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
-          <span className="font-medium text-[var(--text-primary)]">Outcomes, as stated: </span>
-          {item.outcomes}
-        </p>
-      ) : null}
-      {item.technologies.length ? (
-        <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Technologies">
-          {item.technologies.map((t) => (
-            <li key={t} className="rounded-[6px] bg-[var(--surface-selected)] px-2 py-0.5 text-app-meta text-[var(--text-secondary)]">
-              {t}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {item.links.length || reportHref ? (
-        <p className={`flex flex-wrap gap-x-4 gap-y-1 text-[13px] ${featured ? "mt-auto pt-4" : "mt-3"}`}>
-          {reportHref ? (
-            <Link href={reportHref} className="font-medium text-[var(--text-primary)] hover:underline hover:underline-offset-4">
-              Builder Report
-            </Link>
-          ) : null}
-          {item.links.map((l) => (
-            <a
-              key={l.url}
-              href={l.url}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="inline-flex items-center gap-1 font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline hover:underline-offset-4"
-            >
-              {l.label || host(l.url)}
-              <ArrowUpRight className="h-3 w-3" aria-hidden />
-            </a>
-          ))}
-        </p>
-      ) : null}
+        {item.summary ? <p className="mt-2 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-body)]">{item.summary}</p> : null}
+        <ProjectCardBody digest={digest} mode={mode} reportHref={reportHref} fallbackStatement={contribution} />
+        {item.sourceKind === "manual" && item.outcomes ? (
+          <p className="mt-1.5 max-w-[68ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
+            <span className="font-medium text-[var(--text-primary)]">Outcomes, as stated: </span>
+            {item.outcomes}
+          </p>
+        ) : null}
+        {item.technologies.some((t) => t !== project?.primaryLanguage) ? (
+          <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Technologies">
+            {item.technologies.filter((t) => t !== project?.primaryLanguage).map((t) => (
+              <li key={t} className="rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-2 py-0.5 text-app-meta font-medium text-[var(--text-secondary)]">
+                {t}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {item.links.length || (reportHref && !digest) ? (
+          <p className="mt-auto flex flex-wrap gap-x-4 gap-y-1 pt-4 text-[13px]">
+            {reportHref && !digest ? (
+              <Link href={reportHref} className="font-medium text-[var(--text-primary)] hover:underline hover:underline-offset-4">
+                Builder Report
+              </Link>
+            ) : null}
+            {item.links.map((l) => (
+              <a
+                key={l.url}
+                href={l.url}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="inline-flex items-center gap-1 font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline hover:underline-offset-4"
+              >
+                {l.label || host(l.url)}
+                <ArrowUpRight className="h-3 w-3" aria-hidden />
+              </a>
+            ))}
+          </p>
+        ) : null}
       </div>
     </article>
   );
@@ -216,51 +331,164 @@ function CapabilityGroups({ groups, mode, projectCount }: { groups: ProfileCapab
       </p>
     );
   }
+  const you = mode === "owner" ? "you" : "the engineer";
+  const supported = groups.filter((g) => g.coverage === "supports");
+  const rest = groups.filter((g) => g.coverage !== "supports");
+  const linked = groups.reduce((n, g) => n + g.linked, 0);
+  const projectOnly = groups.reduce((n, g) => n + g.projectOnly, 0);
+  const contradicted = groups.filter((g) => g.contradictedIn.length).length;
+  const tiles = [
+    { label: "Requirements the code supports", value: supported.length, tone: { bg: "var(--accent)", ink: "#ffffff", sub: "rgba(255,255,255,0.86)" } },
+    { label: "Partly supported", value: groups.filter((g) => g.coverage === "partially_supports").length, tone: { bg: "var(--accent-soft)", ink: "var(--accent-ink)", sub: "var(--text-secondary)" } },
+    { label: `Linked to ${you} by commits`, value: linked, tone: { bg: "var(--surface-intelligence)", ink: "var(--ink-violet)", sub: "var(--text-secondary)" } },
+    { label: "Seen in a project only", value: projectOnly, tone: { bg: "var(--surface-panel)", ink: "var(--text-primary)", sub: "var(--text-secondary)" } },
+    ...(contradicted ? [{ label: "Contradicted in a project", value: contradicted, tone: { bg: "var(--badge-failed-bg)", ink: "var(--badge-failed-ink)", sub: "var(--text-secondary)" } }] : []),
+  ];
+  return (
+    <div className="mt-4">
+      <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
+        {tiles.map((t) => (
+          <div key={t.label} className="rounded-[8px] px-3.5 py-3" style={{ background: t.tone.bg }}>
+            <dd className="text-[26px] font-semibold leading-none tabular-nums tracking-[-0.02em]" style={{ color: t.tone.ink }}>
+              {t.value}
+            </dd>
+            <dt className="mt-1.5 text-app-meta font-medium leading-[1.35]" style={{ color: t.tone.sub }}>
+              {t.label}
+            </dt>
+          </div>
+        ))}
+      </dl>
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+        <span className="text-app-meta text-[var(--text-secondary)]">Evidence kinds</span>
+        <BasisLegend />
+      </div>
+
+      {supported.length ? (
+        <ul className="mt-5 grid gap-3 md:grid-cols-2">
+          {supported.map((g) => (
+            <GroupCard key={g.requirementId} g={g} mode={mode} />
+          ))}
+        </ul>
+      ) : null}
+      {rest.length ? (
+        <>
+          <h3 className="mt-6 text-app-control font-semibold text-[var(--text-primary)]">Partly covered or contradicted</h3>
+          <ul className="mt-2 grid gap-3 md:grid-cols-2">
+            {rest.map((g) => (
+              <GroupCard key={g.requirementId} g={g} mode={mode} />
+            ))}
+          </ul>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function GroupCard({ g, mode }: { g: ProfileCapabilityGroup; mode: "owner" | "shared" }) {
+  const you = mode === "owner" ? "you" : "the engineer";
+  return (
+    <li className="flex flex-col overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+      <div className="px-4 pb-3 pt-3.5" style={{ background: g.linked ? "var(--accent-soft)" : "var(--surface-panel)" }}>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <h3 className="text-[19px] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)]">{g.label}</h3>
+          <CoverageTag coverage={g.coverage} />
+        </div>
+        <p className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-app-meta">
+          {g.linked ? (
+            <span className="inline-flex items-center gap-1 font-semibold text-[var(--accent-ink)]">
+              <GitCommitHorizontal className="h-3.5 w-3.5" aria-hidden />
+              {g.linked} linked to {you} by commits
+            </span>
+          ) : null}
+          {g.projectOnly ? (
+            <span className="inline-flex items-center gap-1 font-medium text-[var(--text-secondary)]">
+              <FolderGit2 className="h-3.5 w-3.5" aria-hidden />
+              {g.projectOnly} in a project only
+            </span>
+          ) : null}
+        </p>
+      </div>
+      <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
+        <ul className="space-y-2">
+          {g.examples.map((e) => {
+            const href =
+              mode === "owner" && e.snapshotId
+                ? `/app/candidate/projects/${e.snapshotId}${e.findingId ? `?finding=${encodeURIComponent(e.findingId)}` : "?view=capabilities"}`
+                : null;
+            return (
+              <li key={`${e.project}-${e.title}`} className="flex items-start gap-2">
+                {e.scope === "person" ? (
+                  <GitCommitHorizontal className="mt-[3px] h-4 w-4 shrink-0 text-[var(--accent)]" aria-label="Linked by commits" />
+                ) : (
+                  <FolderGit2 className="mt-[3px] h-4 w-4 shrink-0 text-[var(--text-tertiary)]" aria-label="Project only" />
+                )}
+                <span className="min-w-0">
+                  {href ? (
+                    <Link href={href} className="text-app-body font-medium leading-[1.5] text-[var(--text-primary)] hover:underline hover:underline-offset-4">
+                      {e.title}
+                    </Link>
+                  ) : (
+                    <span className="text-app-body font-medium leading-[1.5] text-[var(--text-primary)]">{e.title}</span>
+                  )}
+                  <span className="block font-mono text-app-meta text-[var(--text-tertiary)]">{e.project}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+        {g.contradictedIn.length ? (
+          <p className="mt-3 text-app-meta font-medium text-[var(--badge-failed-ink)]">Contradicted in {g.contradictedIn.join(", ")}: comments claim behaviour the code does not have.</p>
+        ) : null}
+        {g.followUp ? (
+          <div className="mt-auto pt-3">
+            <p className="rounded-[6px] bg-[var(--surface-panel)] px-3 py-2 text-app-control leading-[1.5] text-[var(--text-body)]">
+              <span className="font-semibold text-[var(--text-primary)]">Ask: </span>
+              {g.followUp}
+            </p>
+          </div>
+        ) : null}
+      </div>
+    </li>
+  );
+}
+
+function TaskDemonstrations({ items }: { items: TaskDemonstrationItem[] }) {
   return (
     <ul className="mt-4 grid gap-3 md:grid-cols-2">
-      {groups.map((g) => {
-        const counts = [
-          g.linked ? `${g.linked} linked to ${mode === "owner" ? "you" : "the engineer"} by commits` : null,
-          g.projectOnly ? `${g.projectOnly} seen in the project only` : null,
-        ].filter(Boolean);
-        return (
-          <li key={g.requirementId} className="flex flex-col rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <h3 className="text-app-finding font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)]">{g.label}</h3>
-              <CoverageTag coverage={g.coverage} />
+      {items.map((t) => (
+        <li key={t.id} className="overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+          <div className="px-4 pb-3 pt-3.5" style={{ background: BASIS_STYLE.task_demonstration.bg }}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <BasisChip basis="task_demonstration" />
+              {t.releasedAt ? <span className="text-app-meta text-[var(--text-secondary)]">Released {shortDate(t.releasedAt)}</span> : null}
             </div>
-            <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
-              {[counts.join(", "), g.projects.join(", ")].filter(Boolean).join(" · ")}
-            </p>
-            <ul className="mt-3 space-y-1.5">
-              {g.examples.map((e) => {
-                const href =
-                  mode === "owner" && e.snapshotId
-                    ? `/app/candidate/projects/${e.snapshotId}${e.findingId ? `?finding=${encodeURIComponent(e.findingId)}` : "?view=capabilities"}`
-                    : null;
-                return (
-                  <li key={`${e.project}-${e.title}`} className="text-app-body leading-[1.5] text-[var(--text-body)]">
-                    {href ? (
-                      <Link href={href} className="hover:underline hover:underline-offset-4">
-                        {e.title}
-                      </Link>
-                    ) : (
-                      e.title
-                    )}
-                    <span className="text-app-meta text-[var(--text-tertiary)]"> · {e.project}</span>
-                  </li>
-                );
-              })}
-            </ul>
-            {g.followUp ? (
-              <p className="mt-auto pt-3 text-app-control leading-[1.5] text-[var(--text-secondary)]">
-                <span className="font-medium text-[var(--text-primary)]">Ask: </span>
-                {g.followUp}
-              </p>
-            ) : null}
-          </li>
-        );
-      })}
+            <h3 className="mt-2 text-[18px] font-semibold leading-[1.3] text-[var(--text-primary)]">
+              <Link href={t.href} className="hover:underline hover:underline-offset-4">
+                {t.title}
+              </Link>
+            </h3>
+            {t.organization ? <p className="mt-0.5 text-app-meta text-[var(--text-secondary)]">{t.organization}</p> : null}
+          </div>
+          <div className="px-4 pb-4 pt-3">
+            {t.checks.length ? (
+              <ul className="space-y-1.5">
+                {t.checks.slice(0, 4).map((c) => {
+                  const passed = /:\s*passed$/i.test(c);
+                  return (
+                    <li key={c} className="flex min-w-0 items-start gap-2 text-app-body leading-[1.5] text-[var(--text-body)]">
+                      {passed ? <Check className="mt-[3px] h-4 w-4 shrink-0 text-[var(--badge-success-ink)]" aria-label="Passed in a recorded run" /> : null}
+                      <span className="min-w-0 [overflow-wrap:anywhere]">{c}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="text-app-body text-[var(--text-secondary)]">{t.summary}</p>
+            )}
+            {t.unresolved.length ? <p className="mt-2 text-app-meta text-[var(--text-tertiary)] [overflow-wrap:anywhere]">{t.unresolved.slice(0, 2).join(" ")}</p> : null}
+          </div>
+        </li>
+      ))}
     </ul>
   );
 }
@@ -268,36 +496,27 @@ function CapabilityGroups({ groups, mode, projectCount }: { groups: ProfileCapab
 function PresentedProjects({
   presentations,
   projects,
+  digests,
   mode,
 }: {
   presentations: ProjectPresentation[];
   projects: PassportProject[];
+  digests: Record<string, ProfileProjectDigest>;
   mode: "owner" | "shared";
 }) {
   const byRepo = new Map(projects.map((p) => [p.repoFullName.toLowerCase(), p]));
-  const featured = presentations.filter((p) => p.featured);
-  const rest = presentations.filter((p) => !p.featured);
+  const ordered = [...presentations.filter((p) => p.featured), ...presentations.filter((p) => !p.featured)];
   return (
-    <div>
-      {featured.length ? (
-        <ul className="mt-4 grid gap-3 md:grid-cols-2" aria-label="Featured projects">
-          {featured.map((item) => (
-            <li key={item.projectKey}>
-              <ProjectEntry item={item} project={byRepo.get(item.projectKey.toLowerCase())} mode={mode} featured />
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {rest.length ? (
-        <ul className={`divide-y divide-[var(--border-subtle)] ${featured.length ? "mt-4" : ""}`}>
-          {rest.map((item) => (
-            <li key={item.projectKey}>
-              <ProjectEntry item={item} project={byRepo.get(item.projectKey.toLowerCase())} mode={mode} featured={false} />
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
+    <ul className="mt-4 grid gap-3 md:grid-cols-2" aria-label="Projects">
+      {ordered.map((item) => {
+        const project = byRepo.get(item.projectKey.toLowerCase());
+        return (
+          <li key={item.projectKey}>
+            <ProjectEntry item={item} project={project} digest={project?.id ? digests[project.id] : undefined} mode={mode} featured={item.featured} />
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -314,9 +533,15 @@ export default function ProfileOverview({
   emptyAbout,
   presentations,
   capabilityGroups,
+  projectDigests = {},
+  taskDemonstrations,
 }: {
   /** Capability groups from stored project reports. When given, they replace the older project-scoped statements. */
   capabilityGroups?: ProfileCapabilityGroup[];
+  /** Latest stored report per snapshot id, for the project cards. */
+  projectDigests?: Record<string, ProfileProjectDigest>;
+  /** Owner view only: released work-sample reports the engineer added to their Passport. */
+  taskDemonstrations?: TaskDemonstrationItem[];
   profile: EngineerProfile;
   accounts: Account[];
   /** Current (not superseded) projects. */
@@ -528,52 +753,47 @@ export default function ProfileOverview({
               Projects
             </SectionTitle>
             {presentations && presentations.length ? (
-              <PresentedProjects presentations={presentations} projects={projects} mode={mode} />
+              <PresentedProjects presentations={presentations} projects={projects} digests={projectDigests} mode={mode} />
             ) : ordered.length ? (
-              <ul className="divide-y divide-[var(--border-subtle)]">
+              <ul className="mt-4 grid gap-3 md:grid-cols-2">
                 {ordered.map((p) => {
                   const top = topAreas(p);
-                  const href = mode === "owner" && p.id ? `/app/candidate/projects/${p.id}` : p.htmlUrl;
-                  const external = !(mode === "owner" && p.id);
+                  const internal = mode === "owner" && p.id ? `/app/candidate/projects/${p.id}` : null;
+                  const digest = p.id ? projectDigests[p.id] : undefined;
                   return (
-                    <li key={p.repoFullName} className="py-4">
-                      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                        {href ? (
-                          <a
-                            href={href}
-                            {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                            className="inline-flex items-center gap-1 text-[14px] font-semibold text-[var(--text-primary)] hover:underline hover:underline-offset-4"
-                          >
-                            {repoName(p.repoFullName)}
-                            {external ? <ArrowUpRight className="h-3.5 w-3.5 text-[var(--text-tertiary)]" aria-hidden /> : null}
-                          </a>
-                        ) : (
-                          <span className="text-[14px] font-semibold text-[var(--text-primary)]">
-                            {repoName(p.repoFullName)}
-                          </span>
-                        )}
-                        <span className="text-[13px] tabular-nums text-[var(--text-tertiary)]">
-                          {plural(p.evidence.length, "finding")}
-                          {shortDate(p.analyzedAt) ? ` · Analyzed ${shortDate(p.analyzedAt)}` : ""}
-                        </span>
-                      </div>
-                      <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
-                        {p.sourceKind === "upload" ? "Uploaded by the engineer, source not checked" : p.repoFullName.split("/")[0]}
-                        {p.primaryLanguage ? ` · ${p.primaryLanguage}` : ""}
-                      </p>
-                      {p.contributionStatement ? (
-                        <p className="mt-2 max-w-[68ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">{p.contributionStatement}</p>
-                      ) : null}
-                      {top.length ? (
-                        <ul className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-[var(--text-secondary)]">
-                          {top.map((k) => (
-                            <li key={k} className="inline-flex items-center gap-1.5">
-                              <span aria-hidden className="h-2 w-2 rounded-[2px]" style={{ background: CATEGORY_TONE[k] ?? "var(--text-tertiary)" }} />
-                              {CATEGORY_LABEL[k] ?? k}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
+                    <li key={p.repoFullName}>
+                      <article className="flex h-full flex-col overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+                        <ProjectBand
+                          owner={p.sourceKind === "upload" ? null : p.repoFullName.split("/")[0]}
+                          name={repoName(p.repoFullName)}
+                          href={internal}
+                          language={p.primaryLanguage}
+                          linked={digest ? digest.personClaimsAllowed : null}
+                        />
+                        <div className="flex flex-1 flex-col px-4 pb-4 pt-2">
+                          <p className="mt-1 text-app-meta tabular-nums text-[var(--text-tertiary)]">
+                            {p.sourceKind === "upload" ? "Uploaded by the engineer · " : ""}
+                            {plural(p.evidence.length, "cited finding")}
+                            {shortDate(p.analyzedAt) ? ` · Analyzed ${shortDate(p.analyzedAt)}` : ""}
+                          </p>
+                          <ProjectCardBody digest={digest} mode={mode} reportHref={internal} fallbackStatement={p.contributionStatement ?? ""} />
+                          {!digest && top.length ? (
+                            <ul className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-[var(--text-secondary)]">
+                              {top.map((k) => (
+                                <li key={k} className="inline-flex items-center gap-1.5">
+                                  <span aria-hidden className="h-2 w-2 rounded-[2px]" style={{ background: CATEGORY_TONE[k] ?? "var(--text-tertiary)" }} />
+                                  {CATEGORY_LABEL[k] ?? k}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                          {!internal && p.htmlUrl ? (
+                            <a href={p.htmlUrl} target="_blank" rel="noopener noreferrer" className="mt-auto inline-flex items-center gap-1 pt-3 text-app-meta font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline">
+                              Source on GitHub <ArrowUpRight className="h-3 w-3" aria-hidden />
+                            </a>
+                          ) : null}
+                        </div>
+                      </article>
                     </li>
                   );
                 })}
@@ -597,6 +817,16 @@ export default function ProfileOverview({
               </div>
             )}
           </section>
+
+          {mode === "owner" && taskDemonstrations?.length ? (
+            <section aria-labelledby="tasks-heading">
+              <SectionTitle id="tasks-heading">Task demonstrations</SectionTitle>
+              <p className="mt-3 max-w-[68ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">
+                Work samples whose released reports you added to your Passport. What they show comes from the recorded runs in the report, and is kept apart from what your repositories show.
+              </p>
+              <TaskDemonstrations items={taskDemonstrations} />
+            </section>
+          ) : null}
 
           {mode === "owner" && simulations ? (
             <section aria-labelledby="simulations-heading">

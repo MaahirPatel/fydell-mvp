@@ -95,12 +95,16 @@ export async function enqueueImport(input: EnqueueInput): Promise<EnqueueResult>
     return { ok: false, status: 409, code: "too_many_active", error: `Up to ${IMPORT_MAX_ACTIVE_PER_OWNER} imports can run at once. Wait for one to finish.` };
   }
 
+  // Commits are checked against the GitHub username on the engineer's profile,
+  // not whichever username was typed to browse repositories.
+  const { data: passportRow } = await admin.from("passports").select("github_login").eq("owner_id", input.ownerId).maybeSingle();
+  const profileLogin = (passportRow as { github_login: string | null } | null)?.github_login ?? null;
   const payload: ImportPayload = {
     repository: `${ref.ref.owner}/${ref.ref.repo}`,
     commitSha: input.commitSha,
     revisionRef: input.revisionRef.slice(0, 200),
     contribution: input.contribution.slice(0, 1000),
-    githubLogin: input.githubLogin,
+    githubLogin: profileLogin ?? input.githubLogin,
     displayName: input.displayName.slice(0, 120),
   };
   const { error } = await admin.from("durable_jobs").insert({
@@ -194,7 +198,7 @@ async function cancelRequested(jobId: string): Promise<boolean> {
  * (heartbeat older than IMPORT_LEASE_SECONDS) can be replaced. Every write
  * is fenced on locked_by, so a replaced worker cannot overwrite the result.
  */
-export async function runImportJob(jobId: string): Promise<ImportJobView | null> {
+export async function runImportJob(jobId: string, deps: { client?: GithubClient } = {}): Promise<ImportJobView | null> {
   const admin = createAdminSupabaseClient();
   const worker = workerId();
   const { data: claimed } = await admin.rpc("claim_durable_job", { p_job_id: jobId, p_worker: worker, p_lease_seconds: IMPORT_LEASE_SECONDS });
@@ -227,7 +231,7 @@ export async function runImportJob(jobId: string): Promise<ImportJobView | null>
 
   let result: Awaited<ReturnType<typeof extractRepository>>;
   try {
-    result = await extractRepository(ref.ref, new GithubClient(), { commitSha: payload.commitSha, onProgress, contributorLogin: payload.githubLogin });
+    result = await extractRepository(ref.ref, deps.client ?? new GithubClient(), { commitSha: payload.commitSha, onProgress, contributorLogin: payload.githubLogin });
   } catch {
     await scheduleOrFail(row, worker, "worker_interrupted");
     return getImportJob(row.owner_id, jobId);

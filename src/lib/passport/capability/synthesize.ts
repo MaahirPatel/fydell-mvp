@@ -4,6 +4,7 @@ import { claimDetectors } from "../github/entailment";
 import type { ContributionContext, DecisionRecord } from "../context-contract";
 import { RELATIONSHIP_LABEL } from "../context-contract";
 import type { PassportEvidence, PassportProject } from "../view";
+import type { Correction, CorrectionKind } from "../corrections";
 import { assessAttribution, pathSignal } from "./attribution";
 import { READ_ONLY_CHECKS, ROLE_REQUIREMENTS, TEST_DETECTORS, phrase, requirementsFor } from "./catalog";
 import {
@@ -31,6 +32,8 @@ export type ReviewInput = {
   project: PassportProject;
   contribution: ContributionContext | null;
   decisions?: DecisionRecord[];
+  /** The engineer's notes and corrections on this snapshot's findings. Shown beside a finding; they never change it. */
+  corrections?: Correction[];
   taskDemonstrations?: TaskDemonstration[];
   reviewerJudgments?: ReviewerJudgment[];
   /** Other current projects of the same engineer, used to count identical code once. */
@@ -44,6 +47,12 @@ export type ReviewInput = {
 export type ReviewOverrides = {
   entries: Record<string, { title?: string; what?: string; followUp?: string; narrowed?: string }>;
   record: EnrichmentRecord;
+};
+
+const CORRECTION_LABEL: Record<CorrectionKind, string> = {
+  context: "Context from the engineer",
+  inaccurate: "Engineer says this finding is inaccurate",
+  correction: "Correction proposed by the engineer",
 };
 
 const NOT_RUN = "Fydell read this code and did not run it.";
@@ -107,7 +116,7 @@ function layers(input: ReviewInput, attribution: Attribution) {
     contributionEvidence.push({ kind: "not_checked", path: null, detail: attribution.summary, commit: null, strength: "none" });
   } else {
     if (!signals.ownerMatchesLogin) {
-      contributionEvidence.push({ kind: "repository_owner", path: null, detail: `Repository owner ${signals.repositoryOwner} is not the connected account ${signals.login ?? ""}.`, commit: null, strength: "none" });
+      contributionEvidence.push({ kind: "repository_owner", path: null, detail: `Repository owner ${signals.repositoryOwner} is not the engineer's named GitHub account ${signals.login ?? ""}.`, commit: null, strength: "none" });
     }
     if (signals.fork || project.isFork) {
       contributionEvidence.push({ kind: "fork", path: null, detail: "The repository is a fork of another project.", commit: null, strength: "none" });
@@ -141,6 +150,20 @@ function layers(input: ReviewInput, attribution: Attribution) {
   for (const d of input.decisions ?? []) {
     if (d.withdrawnAt) continue;
     engineerStatements.push({ kind: "decision", label: d.title, text: [d.problem, d.choice].filter(Boolean).join(" "), findingIds: d.evidenceRefs.flatMap((r) => (r.findingId ? [r.findingId] : [])), version: d.version, updatedAt: d.updatedAt });
+  }
+  const findingIds = new Set(project.evidence.map((e) => e.id));
+  for (const c of input.corrections ?? []) {
+    if (!findingIds.has(c.findingId) || (c.projectId && project.id && c.projectId !== project.id)) continue;
+    engineerStatements.push({
+      kind: "correction",
+      label: CORRECTION_LABEL[c.kind],
+      text: c.proposedInterpretation ? `${c.reason} Should read: ${c.proposedInterpretation}` : c.reason,
+      findingIds: [c.findingId],
+      version: null,
+      updatedAt: c.resolvedAt ?? c.withdrawnAt ?? c.createdAt,
+      status: c.withdrawnAt ? "withdrawn" : c.status,
+      noteId: c.id,
+    });
   }
 
   return {
@@ -181,7 +204,7 @@ function narrowedQuestion(checks: string[], symbol: string | null): string {
 
 function capabilities(input: ReviewInput, attribution: Attribution, statements: EngineerStatement[], overrides: ReviewOverrides | null): CapabilityEntry[] {
   const { project } = input;
-  const login = attribution.login ?? "the connected account";
+  const login = attribution.login ?? "the named GitHub account";
   const elsewhere = new Map<string, string[]>();
   for (const other of input.otherProjects ?? []) {
     if (other.id && other.id === project.id) continue;
@@ -400,6 +423,10 @@ function reviewInputHash(input: ReviewInput, roles: SupportedRole[], alsoSeenIn:
     contribution: input.contribution ? { v: input.contribution.version, refs: input.contribution.evidenceRefs } : null,
     statement: p.contributionStatement,
     decisions: (input.decisions ?? []).map((d) => ({ id: d.id, v: d.version, w: d.withdrawnAt })),
+    corrections: (input.corrections ?? [])
+      .filter((c) => p.evidence.some((e) => e.id === c.findingId))
+      .map((c) => ({ id: c.id, s: c.status, w: c.withdrawnAt, r: c.resolvedAt }))
+      .sort((a, b) => a.id.localeCompare(b.id)),
     tasks: input.taskDemonstrations ?? [],
     judgments: input.reviewerJudgments ?? [],
     // Other projects matter only where they hold identical code, so unrelated imports do not make this report stale.

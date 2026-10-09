@@ -17,6 +17,7 @@ import type { FindingDiff } from "@/lib/passport/versions";
 import type { ContributionContext, DecisionRecord } from "@/lib/passport/context-contract";
 import { ContributionSection, DecisionsSection } from "./ContributionContext";
 import { CapabilityList, CapabilityOverview, FindingAttribution, NoReview, ReportVersionLine, type ReportVersionMeta } from "./CapabilityReview";
+import { BasisChip } from "./EvidenceTags";
 import type { CapabilityReview } from "@/lib/passport/capability/types";
 import { LocalDate, LocalTime } from "@/components/eng/LocalTime";
 import type { PassportEvidence, PassportProject } from "@/lib/passport/view";
@@ -104,12 +105,24 @@ function NoteList({ notes, onWithdraw, busyId }: { notes: Correction[]; onWithdr
   return (
     <ul className="divide-y divide-[var(--border-subtle)]">
       {notes.map((n) => (
-        <li key={n.id} className={`py-3 first:pt-0 last:pb-0 ${n.withdrawnAt ? "opacity-60" : ""}`}>
-          <div className="flex flex-wrap items-baseline gap-x-2">
-            <span className="text-[13px] font-semibold text-[var(--text-primary)]">{KIND_LABEL[n.kind]}</span>
+        <li key={n.id} className="py-3 first:pt-0 last:pb-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="rounded-[6px] px-2 py-0.5 text-[13px] font-semibold" style={{ color: "var(--ink-warm)", background: "var(--field-warm)" }}>
+              {KIND_LABEL[n.kind]}
+            </span>
+            <span
+              className={`rounded-full px-2 py-0.5 text-[13px] font-semibold ${
+                n.withdrawnAt
+                  ? "border border-[var(--border-default)] text-[var(--text-tertiary)]"
+                  : n.status === "resolved"
+                    ? "bg-[var(--badge-neutral-bg)] text-[var(--badge-neutral-ink)]"
+                    : "bg-[var(--badge-attention-bg)] text-[var(--badge-attention-ink)]"
+              }`}
+            >
+              {n.withdrawnAt ? "Withdrawn" : n.status === "resolved" ? "Resolved" : "Open"}
+            </span>
             <span className="text-[13px] text-[var(--text-tertiary)]">
               <LocalDate iso={n.createdAt} />
-              {n.withdrawnAt ? " · withdrawn" : n.status === "resolved" ? " · resolved" : " · open, shown beside the original finding"}
             </span>
             {!n.withdrawnAt ? (
               <button
@@ -122,7 +135,7 @@ function NoteList({ notes, onWithdraw, busyId }: { notes: Correction[]; onWithdr
               </button>
             ) : null}
           </div>
-          <p className="mt-1 text-[14px] leading-[1.55] text-[var(--text-body)]">{n.reason}</p>
+          <p className={`mt-1.5 text-[15px] leading-[1.55] ${n.withdrawnAt ? "text-[var(--text-tertiary)] line-through" : "text-[var(--text-body)]"}`}>{n.reason}</p>
           {n.proposedInterpretation ? (
             <p className="mt-1 text-[14px] leading-[1.55] text-[var(--text-secondary)]">
               <span className="font-medium text-[var(--text-primary)]">Should read: </span>
@@ -132,6 +145,7 @@ function NoteList({ notes, onWithdraw, busyId }: { notes: Correction[]; onWithdr
           {n.resolutionNote ? <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">Resolution: {n.resolutionNote}</p> : null}
         </li>
       ))}
+      <li className="pt-3 text-[13px] text-[var(--text-secondary)]">The finding above is unchanged. Notes are stored beside it with their status.</li>
     </ul>
   );
 }
@@ -660,14 +674,14 @@ export default function BuilderReport({
   function inspector(f: PassportEvidence, inSheet = false) {
     return (
       <>
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-app-meta text-[var(--text-secondary)]">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-app-meta text-[var(--text-secondary)]">
+          {f.basis === "repository_observation" ? <BasisChip basis="inspected_code" /> : <span className="font-medium">Declared dependency</span>}
           <span className="inline-flex items-center gap-1.5 font-medium">
             <span aria-hidden className="h-2 w-2 rounded-[2px]" style={{ background: CATEGORY_TONE[f.category] ?? "var(--text-quaternary)" }} />
             {CATEGORY_LABEL[f.category] ?? f.category}
           </span>
-          <span aria-hidden className="text-[var(--text-quaternary)]">·</span>
-          <span>{f.basis === "repository_observation" ? "Inspected code, not run" : "Declared dependency"}</span>
-          {f.entailment?.status === "narrowed" ? <span className="font-medium text-[var(--badge-attention-ink)]">Narrowed</span> : null}
+          {f.basis === "repository_observation" ? <span>Read, not run</span> : null}
+          {f.entailment?.status === "narrowed" ? <span className="font-semibold text-[var(--badge-attention-ink)]">Narrowed</span> : null}
           <button type="button" onClick={() => void copyLink()} className="ml-auto inline-flex min-h-8 items-center gap-1 font-medium hover:text-[var(--text-primary)]">
             {copied === "ok" ? <Check className="h-3.5 w-3.5" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />}
             {copied === "ok" ? "Copied" : copied === "failed" ? "Copy blocked; the address bar has this link" : "Copy link"}
@@ -675,7 +689,11 @@ export default function BuilderReport({
         </div>
         {inSheet ? null : <h3 className="mt-2 text-app-finding text-[var(--text-primary)]">{f.finding}</h3>}
         <div className="mt-4">
-          <CodeBlock path={f.path} lines={f.excerpt.map((text, i) => ({ n: f.startLine + i, text, mark: "cited" as const }))} />
+          <CodeBlock
+            path={f.path}
+            meta={`${f.endLine > f.startLine ? `L${f.startLine}-${f.endLine}` : `L${f.startLine}`} at ${shortSha(project.commitSha)}`}
+            lines={f.excerpt.map((text, i) => ({ n: f.startLine + i, text, mark: "cited" as const }))}
+          />
         </div>
         {f.sourceUrl ? (
           <a
@@ -690,9 +708,9 @@ export default function BuilderReport({
           <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">From your uploaded files. There is no hosted copy to open.</p>
         )}
         {f.entailment?.status === "narrowed" ? (
-          <div className="mt-4">
-            <p className="text-app-control font-medium text-[var(--text-primary)]">Why this was narrowed</p>
-            <ul className="mt-1 space-y-1 text-app-body text-[var(--text-secondary)]">
+          <div className="mt-4 rounded-[var(--radius-control)] bg-[var(--surface-uncertain)] p-4">
+            <p className="text-app-control font-semibold text-[var(--text-primary)]">Why this was narrowed</p>
+            <ul className="mt-1 space-y-1 text-app-body text-[var(--text-body)]">
               {f.entailment.checks
                 .filter((c) => c.check !== "not_executed")
                 .map((c) => (

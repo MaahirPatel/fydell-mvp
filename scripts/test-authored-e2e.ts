@@ -14,6 +14,7 @@
  *
  * The walk file has whitespace-separated `employer <email>`, `engineer <email>`
  * and `password <password>` lines. Passwords and tokens are never printed.
+ * FYDELL_WALK_ENGINEER_KEY picks another engineer line (e.g. `showcase`).
  * Invitation email is not sent: the dev server has no mail provider, and the
  * script fails if an invitation reports `sent`. Rows created here stay in the
  * development database, like the other live scripts.
@@ -65,11 +66,12 @@ function readWalkFile(): { employer: string; engineer: string; password: string 
     const m = /^(\w+)\s+(\S+)\s*$/.exec(line.trim());
     if (m) fields.set(m[1].toLowerCase(), m[2]);
   }
+  const engineerKey = process.env.FYDELL_WALK_ENGINEER_KEY ?? "engineer";
   const employer = fields.get("employer");
-  const engineer = fields.get("engineer");
+  const engineer = fields.get(engineerKey);
   const password = fields.get("password");
-  if (!employer || !engineer || !password) throw new Error(`The walk file at ${path} needs employer, engineer and password lines.`);
-  for (const email of [employer, engineer]) if (!email.endsWith("@example.com")) throw new Error("Only synthetic @example.com accounts may be used.");
+  if (!employer || !engineer || !password) throw new Error(`The walk file at ${path} needs employer, ${engineerKey} and password lines.`);
+  for (const email of [employer, engineer]) if (!/@(example\.com|resend\.dev)$/.test(email)) throw new Error("Only synthetic @example.com or @resend.dev accounts may be used.");
   return { employer, engineer, password };
 }
 
@@ -207,7 +209,7 @@ async function main() {
   await expectStatus(employer, "PATCH", `/api/eng/roles/${roleId}`, [200], { status: "published" });
   const invite = await expectStatus(employer, "POST", `/api/eng/roles/${roleId}/invitations`, [201], { email: engineer.email, name: "E2E Engineer", scenarioVersionId: versionId });
   const invitationId = strField(invite, "invitationId");
-  assert.notEqual(invite.emailDelivery, "sent", "no email leaves the development server");
+  if (!engineer.email.endsWith("@resend.dev")) assert.notEqual(invite.emailDelivery, "sent", "no email leaves the development server except to Resend test addresses");
   pass("role published and engineer invited", `${invitationId}, email ${String(invite.emailDelivery)}`);
 
   /* ---------------------------------------------------------------- 3 */

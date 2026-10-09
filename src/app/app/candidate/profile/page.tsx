@@ -5,8 +5,9 @@ import { accountDisplayName } from "@/lib/auth/account-name";
 import { getOwnerPassport, listShares } from "@/lib/passport/store";
 import { getProfileHub } from "@/lib/profile/store";
 import { getPresentations } from "@/lib/passport/presentation-store";
-import { profileGroupsForSnapshots } from "@/lib/passport/capability/store";
+import { profileReportsForSnapshots } from "@/lib/passport/capability/store";
 import { listProfileSimulations } from "@/lib/profile/simulations";
+import { listWorkSamples } from "@/lib/profile-evidence/work-samples";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
 import { SHARE_HREF } from "@/components/candidate/nav";
 import { ButtonLink } from "@/components/ui/Button";
@@ -32,16 +33,27 @@ export default async function CandidateProfilePage({ searchParams }: { searchPar
   const user = await requireUser();
   if (!user) redirect(`/login?next=${encodeURIComponent("/app/candidate/profile")}`);
 
-  const [hub, passport, shares, simulations] = await Promise.all([
+  const [hub, passport, shares, simulations, workSamples] = await Promise.all([
     getProfileHub(user.id, await accountDisplayName(user.id, user.email)),
     getOwnerPassport(user.id),
     listShares(user.id),
     listProfileSimulations(user.id),
+    listWorkSamples(user.id),
   ]);
+  const taskDemonstrations = workSamples.map((w) => ({
+    id: w.id,
+    title: w.summary.title,
+    organization: null,
+    summary: w.summary.summary,
+    checks: w.summary.checks,
+    unresolved: w.summary.unresolved,
+    releasedAt: w.summary.releasedAt,
+    href: `/assess/${w.attemptId}`,
+  }));
   const projects = (passport?.projects ?? []).filter((p) => p.status !== "stale");
-  const [presentations, capabilityGroups] = await Promise.all([
+  const [presentations, reports] = await Promise.all([
     getPresentations(user.id, passport?.projects ?? []),
-    profileGroupsForSnapshots(projects.map((p) => p.id).filter((id): id is string => !!id)),
+    profileReportsForSnapshots(projects.map((p) => p.id).filter((id): id is string => !!id)),
   ]);
   const liveShares = shares.filter((s) => !s.revokedAt).length;
   const githubLogin = passport?.githubLogin ?? null;
@@ -57,7 +69,9 @@ export default async function CandidateProfilePage({ searchParams }: { searchPar
         accounts={accounts}
         projects={projects}
         presentations={presentations}
-        capabilityGroups={capabilityGroups}
+        capabilityGroups={reports.groups}
+        projectDigests={reports.digests}
+        taskDemonstrations={taskDemonstrations}
         capabilities={passport?.capabilities ?? null}
         roleSuggestions={passport?.roleSuggestions ?? []}
         simulations={simulations}

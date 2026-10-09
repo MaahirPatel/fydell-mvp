@@ -3,12 +3,12 @@ import type { ProjectRelationship } from "../context-contract";
 import type { Attribution } from "./types";
 
 const COMMIT_LIMIT =
-  "Commit authorship is a signal, not proof: commits can be squashed, rebased, co-authored or made on someone's behalf, and the account connection proves control of the account, not who typed each line.";
+  "Commit authorship is a signal, not proof: commits can be squashed, rebased, co-authored or made on someone's behalf. The GitHub account is the one the engineer named on their profile; Fydell has not verified that it belongs to them.";
 
 /**
  * Derives contribution status from what was recorded at import and what the
  * engineer stated. The engineer's relationship is shown as theirs; it never
- * raises the level. Forks, an owner other than the connected login, and
+ * raises the level. Forks, an owner other than the named GitHub login, and
  * missing history lower it automatically.
  */
 export function assessAttribution(input: {
@@ -84,11 +84,11 @@ export function assessAttribution(input: {
   const automatic: Attribution["automatic"] = [];
   const login = signals.login ?? "";
   if (signals.fork || input.isFork) automatic.push({ reason: "fork", detail: "This repository is a fork, so most of its history belongs to the upstream project." });
-  if (!signals.ownerMatchesLogin) automatic.push({ reason: "owner_mismatch", detail: `The repository belongs to ${signals.repositoryOwner}, not the connected account ${login}.` });
+  if (!signals.ownerMatchesLogin) automatic.push({ reason: "owner_mismatch", detail: `The repository belongs to ${signals.repositoryOwner}, not the engineer's named GitHub account ${login}.` });
   const linked = signals.paths.filter((p) => p.commitsByLogin > 0);
   const checked = signals.paths.length;
   const limits = [COMMIT_LIMIT];
-  if (signals.fork || input.isFork) limits.push("Only commits by the connected account count; upstream authors wrote the rest of the fork.");
+  if (signals.fork || input.isFork) limits.push("Only commits by the named GitHub account count; upstream authors wrote the rest of the fork.");
   if (relationship === "team_project") limits.push("Team project: other people may have changed the same files.");
   if (relationship === "learning_exercise") limits.push("Described by the engineer as a learning exercise.");
 
@@ -111,7 +111,7 @@ export function assessAttribution(input: {
       automatic,
       summary: thirdParty
         ? `Owned by ${signals.repositoryOwner}${signals.fork || input.isFork ? " (a fork)" : ""}, and no commits by ${login} touch the ${checked} cited files. Treated as a third-party project: findings describe the project only.${claimsOwnership ? " The engineer's stated relationship is shown separately and does not change this." : ""}`
-        : `The connected account owns this repository, but none of the ${checked} cited files have commits by ${login}. Owning a repository does not show who wrote it.${statementNote}`,
+        : `${login} owns this repository, but none of the ${checked} cited files have commits by ${login}. Owning a repository does not show who wrote it.${statementNote}`,
       limits,
     };
   }
