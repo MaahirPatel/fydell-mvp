@@ -147,7 +147,7 @@ export default async function BuilderReportPage({
         </p>
       ) : null}
       <DevelopmentFeedback projectId={project.id} items={developmentFeedback(project)} evidence={project.evidence} />
-      <RemoveProject repoFullName={project.repoFullName} versionCount={versions.length} impact={removalImpact} />
+      <RemoveProject repoFullName={project.repoFullName} uploaded={project.sourceKind === "upload"} versionCount={versions.length} impact={removalImpact} />
     </CandidateShell>
   );
 }

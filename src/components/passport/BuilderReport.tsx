@@ -744,7 +744,7 @@ export default function BuilderReport({
     <article>
       <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[13px] text-[var(--text-tertiary)]">
         <Link href="/app/candidate/work-record" className="hover:text-[var(--text-primary)]">
-          Passport
+          Projects
         </Link>
         <ChevronRight className="h-3.5 w-3.5" aria-hidden />
         <span>{project.sourceKind === "upload" ? "Uploaded project" : owner || "Project"}</span>

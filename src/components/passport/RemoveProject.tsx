@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { FormError } from "@/components/ui/Field";
 import type { RemovalImpact } from "@/lib/passport/store";
 
-export default function RemoveProject({ repoFullName, versionCount, impact }: { repoFullName: string; versionCount: number; impact: RemovalImpact }) {
+export default function RemoveProject({ repoFullName, uploaded, versionCount, impact }: { repoFullName: string; uploaded: boolean; versionCount: number; impact: RemovalImpact }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -38,7 +38,7 @@ export default function RemoveProject({ repoFullName, versionCount, impact }: { 
         Remove this project
       </h2>
       <p className="mt-1 max-w-[68ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
-        Deletes {versionCount === 1 ? "this report and its findings" : `all ${versionCount} versions of this report and their findings`} from Fydell. Your repository on GitHub is not touched.
+        Deletes {versionCount === 1 ? "this report and its findings" : `all ${versionCount} versions of this report and their findings`} from Fydell. {uploaded ? "The files on your computer are not touched." : "Your repository on GitHub is not touched."}
       </p>
 
       {!confirming ? (
@@ -67,7 +67,7 @@ export default function RemoveProject({ repoFullName, versionCount, impact }: { 
             <p className="text-[14px] text-[var(--text-primary)]">No active share link or open application shows this project.</p>
           )}
           <p className="mt-3 text-[13px] leading-[1.5] text-[var(--text-tertiary)]">
-            Employers keep notes and decisions they already recorded, and copies they already downloaded. This can&apos;t be undone; you can import the repository again later.
+            Employers keep notes and decisions they already recorded, and copies they already downloaded. This can&apos;t be undone; {uploaded ? "you can upload the project again later." : "you can import the repository again later."}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button variant="destructive" size="sm" onClick={remove} loading={busy}>
