@@ -11,7 +11,8 @@ import { ensureEmployerOnboardingRow } from "@/lib/pilot/lifecycle";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isSupabaseAuthConfigured } from "@/lib/supabase";
 import { publicErrorMessage } from "@/lib/security/public-error";
-import { loginIdentities, loginLockout, recordLoginFailure } from "@/lib/security/route-limits";
+import { loginIdentities } from "@/lib/security/route-limits";
+import { checkLoginLockout, recordFailedLogin } from "@/lib/security/login-lockout";
 
 export async function POST(req: Request) {
   try {
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
 
     const normalized = email.trim().toLowerCase();
     const identities = loginIdentities(req, normalized);
-    const locked = loginLockout(identities);
+    const locked = await checkLoginLockout(identities);
     if (locked) return locked;
 
     if (verifyAdminCredentials(normalized, password)) {
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
     }
 
     if (error || !data.user) {
-      recordLoginFailure(identities);
+      await recordFailedLogin(identities);
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
     }
 
