@@ -44,7 +44,7 @@ export default function TermsPage() {
         lead="Effective 14 August 2026."
       />
 
-      <section className="mkt-section border-t border-[var(--border-subtle)] pb-24">
+      <section className="pb-24">
         <div className="mkt-content max-w-[720px]">
           <dl className="divide-y divide-[var(--border-subtle)] border-y border-[var(--border-subtle)]">
             {TERMS.map(([title, detail]) => (

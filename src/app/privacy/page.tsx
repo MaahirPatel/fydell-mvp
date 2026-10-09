@@ -10,10 +10,14 @@ export const metadata = {
   alternates: { canonical: "/privacy" },
 };
 
-const FACTS: Array<[string, string]> = [
+const FACTS: Array<[string, string | string[]]> = [
   [
     "What is collected",
-    "For an employer: name, work email, company name, the roles and work samples the team creates, and the notes and decisions it records. For an engineer: account email, the profile details and photo they add, projects they import from GitHub or upload, their applications and submissions, and activity recorded during a work sample, such as files opened, tests run and prompts sent to the built-in assistant. For everyone: sign-in records, and the IP address and request details our hosting keeps for security.",
+    [
+      "For an employer: name, work email, company name, the roles and work samples the team creates, and the notes and decisions it records.",
+      "For an engineer: account email, the profile details and photo they add, projects they import from GitHub or upload, their applications and submissions, and activity recorded during a work sample, such as files opened, tests run and prompts sent to the built-in assistant.",
+      "For everyone: sign-in records, and the IP address and request details our hosting keeps for security.",
+    ],
   ],
   [
     "Why it is collected",
@@ -69,7 +73,7 @@ export default function PrivacyPage() {
         lead="Effective 9 October 2026. What Fydell holds, why, and what you can do about it."
       />
 
-      <section className="mkt-section border-t border-[var(--border-subtle)] pb-24">
+      <section className="pb-24">
         <div className="mkt-content max-w-[760px]">
           <dl className="divide-y divide-[var(--border-subtle)] border-y border-[var(--border-subtle)]">
             {FACTS.map(([title, detail]) => (
@@ -80,8 +84,10 @@ export default function PrivacyPage() {
                 <dt className="text-app-body font-medium text-[var(--text-primary)]">
                   {title}
                 </dt>
-                <dd className="text-app-body leading-[1.7] text-[var(--text-secondary)]">
-                  {detail}
+                <dd className="space-y-3 text-app-body leading-[1.7] text-[var(--text-secondary)]">
+                  {Array.isArray(detail)
+                    ? detail.map((line) => <p key={line}>{line}</p>)
+                    : detail}
                 </dd>
               </div>
             ))}

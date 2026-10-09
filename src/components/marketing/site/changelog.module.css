@@ -46,8 +46,10 @@
   color: var(--text-secondary);
 }
 .link {
-  display: inline-block;
-  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  margin-top: 12px;
   font-size: 15px;
   font-weight: 500;
   color: var(--text-primary);

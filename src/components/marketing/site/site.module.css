@@ -112,6 +112,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 32px;
   font-size: 14.5px;
   font-weight: 500;
   color: var(--mk-indigo);
@@ -226,6 +227,7 @@
   font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -363,9 +365,10 @@
 
 .availability {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-size: 14px;
+  line-height: 21px;
   font-weight: 500;
   color: var(--mk-success);
 }
@@ -374,8 +377,10 @@
   color: var(--mk-attention);
 }
 .availabilityMark {
+  flex-shrink: 0;
   width: 7px;
   height: 7px;
+  margin-top: 7px;
   border-radius: 50%;
   background: currentColor;
 }
@@ -779,7 +784,7 @@
     padding-block: 112px 88px;
   }
   .frameBar {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 10px;
   }
   .frameTitle {
