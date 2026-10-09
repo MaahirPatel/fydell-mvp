@@ -78,10 +78,10 @@ export default function PricingPage() {
       <section className={s.section} aria-labelledby="engineers-title">
         <div className={s.container}>
           <h2 id="engineers-title" className={s.h2}>
-            For engineers
+            For engineers. <span className={s.muted}>Applying to a role never requires a subscription.</span>
           </h2>
-          <p className={s.sectionLead}>Applying to a role never requires a subscription.</p>
-          <div className={s.engineerGrid}>
+          <div className={s.field} data-tint="teal">
+            <div className={s.engineerGrid}>
             <article className={s.plan}>
               <p className={s.planName}>Free</p>
               <p className={s.price}>
@@ -126,6 +126,7 @@ export default function PricingPage() {
                 <ProWaitlistForm />
               </div>
             </article>
+            </div>
           </div>
         </div>
       </section>
@@ -133,12 +134,13 @@ export default function PricingPage() {
       <section className={s.section} aria-labelledby="teams-title">
         <div className={s.container}>
           <h2 id="teams-title" className={s.h2}>
-            For hiring teams
+            For hiring teams. <span className={s.muted}>Applications are never billed.</span>
           </h2>
           <p className={s.sectionLead}>
             Card checkout is not open yet. Create a workspace and set up your first role now; to activate a paid plan, contact sales.
           </p>
-          <div className={s.hiringGrid}>
+          <div className={s.field} data-tint="violet">
+            <div className={s.hiringGrid}>
             {HIRING.map((plan) => (
               <article key={plan.name} className={s.plan}>
                 <p className={s.planName}>{plan.name}</p>
@@ -156,6 +158,7 @@ export default function PricingPage() {
                 </Link>
               </article>
             ))}
+            </div>
           </div>
         </div>
       </section>
