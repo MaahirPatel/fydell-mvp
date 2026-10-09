@@ -44,9 +44,9 @@ reviews it against a role.
 | --- | --- | --- | --- | --- | --- |
 | E1 | Import public repo | `/app/candidate/work-record` | Preview scope (files, limits, exclusions), start a durable job, survive reload | Verified | live DB, browser (`.scratch/acceptance/engineer/walk/`) |
 | E2 | Upload project | same | Zip upload with limits, same pipeline | Verified | live DB, browser |
-| E3 | Relationship and contribution | project page | Engineer states relationship (maintained, contributor, team, fork, learning, reference); statement shown separately from source evidence; "make this evidence yours" removed | In progress (agent G) | |
-| E4 | Accurate report | report page | Overview, capability review, evidence inspection; each capability has specific work, evidence, contribution, result, limits, follow-up | In progress (agent G) | |
-| E5 | Third-party code | report page | Third-party or reference repo gives project findings only, no personal capability claim | In progress (agent G) | |
+| E3 | Relationship and contribution | project page | Engineer states relationship (maintained, contributor, team, fork, learning, reference); statement shown separately from source evidence; "make this evidence yours" removed | Partial: built and copy removed (e49e04c); browser confirmation pending | unit |
+| E4 | Accurate report | report page | Overview, capability review, evidence inspection; each capability has specific work, evidence, contribution, result, limits, follow-up | Partial: built with immutable versions (migration 093); dev data shows no linked capability yet; showcase profile and colour pass in progress | unit, live DB (7/7), browser |
+| E5 | Third-party code | report page | Third-party or reference repo gives project findings only, no personal capability claim | Verified | real model (capability differential 15/15: same code gives 6 linked capabilities when attributable, 0 when third-party) |
 | E6 | Report stability | report page | Same report on every read; re-analysis creates a new version with a reason | Verified | live DB (52/52) |
 | E7 | Corrections | report page | Correction stored with status, never overwrites the original | In progress (agent G) | |
 | E8 | Curate and share | `/app/candidate/profile`, share links | Choose projects and versions, recipient preview, revoke; revoked links fail everywhere | Verified | live DB, browser |
@@ -73,7 +73,7 @@ Invitation, simulation, submission, analysis, employer report.
 
 | # | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
-| A1 | Correct, defective, limited and third-party inputs give materially different reports | In progress (agent G) | `.scratch/acceptance/capabilities/` |
+| A1 | Correct, defective, limited and third-party inputs give materially different reports | Verified (fixtures); real-repo confirmation via showcase profile pending | `.scratch/acceptance/capabilities/` |
 | A2 | Work-sample differential: correct, partial, superficial, alternative, missing evidence, execution failure differ | Verified | real model (15/15) |
 | A3 | Claims cite existing source lines at a pinned revision; tests that did not run never support a runtime claim | Partial | unit |
 | A4 | README and repository text cannot change analyzer policy | Verified | unit (injection suite) |
