@@ -1,29 +1,11 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { svixHeaders, verifySvixSignature } from "@/lib/security/webhook-signature";
+import { providerStatusFor, statusesBelow } from "@/lib/ops/email-status";
 
 export const runtime = "nodejs";
 
 const MAX_WEBHOOK_BYTES = 256 * 1024;
-
-function mapEventStatus(type: string): string | null {
-  switch (type) {
-    case "email.sent":
-      return "sent";
-    case "email.delivered":
-      return "delivered";
-    case "email.delivery_delayed":
-      return "delayed";
-    case "email.bounced":
-      return "bounced";
-    case "email.failed":
-      return "failed";
-    case "email.complained":
-      return "failed";
-    default:
-      return null;
-  }
-}
 
 export async function POST(req: Request) {
   const secret = process.env.RESEND_WEBHOOK_SECRET || "";
@@ -85,9 +67,9 @@ export async function POST(req: Request) {
       .maybeSingle();
     outboxId = outbox?.id || null;
 
-    const status = mapEventStatus(eventType);
+    const status = providerStatusFor(eventType);
     if (outbox && status) {
-      await admin
+      const { data: advanced } = await admin
         .from("email_outbox")
         .update({
           status,
@@ -96,9 +78,12 @@ export async function POST(req: Request) {
               ? body.data?.bounce?.message || eventType
               : null,
         })
-        .eq("id", outbox.id);
+        .eq("id", outbox.id)
+        .in("status", statusesBelow(status))
+        .select("id");
 
       if (
+        advanced?.length &&
         outbox.related_entity_type === "pilot_request" &&
         outbox.related_entity_id &&
         (eventType === "email.delivered" || eventType === "email.bounced" || eventType === "email.failed")
