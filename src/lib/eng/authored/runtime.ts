@@ -5,8 +5,8 @@ import { AttemptError } from "../attempts";
 import { recordEngEvent } from "../events";
 import type { PackageFile, ScenarioPackage } from "../authoring/package";
 import { displayCommand, selectRunner, type TestCaseResult } from "../authoring/runner";
-import { enqueueEvaluation } from "../evaluation/queue";
 import { resolveScenarioVersion } from "../scenario-versions";
+import { completeSubmission } from "../submissions";
 import { effectiveDueAt, submissionWindow } from "../state";
 import { SUBMISSION_BUCKET } from "../uploads";
 import type { AttemptRow, AuthoredHandoff, InvitationRow, RunRow, ScenarioVersionRow, SubmissionRow } from "../types";
@@ -304,9 +304,36 @@ export function validateAuthoredHandoff(
 }
 
 /**
- * Seals the candidate's files into a ZIP in private storage, records an
- * accepted upload and the immutable submission, and queues evaluation. One
- * submission per attempt: a repeat returns the original receipt.
+ * Accepts the sealed upload behind a recorded submission, then closes the
+ * attempt, logs the acceptance and queues evaluation. Every step is guarded
+ * or keyed, so this is re-run whenever the submission is seen again and
+ * finishes the work of a request that died part way.
+ */
+async function followThrough(db: Admin, attempt: AttemptRow, submission: SubmissionRow, userId: string | null): Promise<void> {
+  await db
+    .from("eng_uploads")
+    .update({ status: "accepted", validated_at: new Date().toISOString() })
+    .eq("id", submission.upload_id)
+    .eq("status", "initiated");
+  await completeSubmission(db, attempt, submission, userId);
+}
+
+/** A sealed archive that never became the submission is marked failed and its stored copy removed. */
+async function discardSealed(db: Admin, uploadId: string, storagePath: string, detail: string): Promise<void> {
+  await db
+    .from("eng_uploads")
+    .update({ status: "failed", rejection_code: "not_submitted", rejection_detail: detail })
+    .eq("id", uploadId)
+    .eq("status", "initiated");
+  await db.storage.from(SUBMISSION_BUCKET).remove([storagePath]);
+}
+
+/**
+ * Seals the candidate's files into a ZIP in private storage, records the
+ * upload and the immutable submission, and queues evaluation. The upload is
+ * accepted only once the submission exists, so a failed or lost race leaves
+ * no accepted archive behind. One submission per attempt: a repeat returns the
+ * original receipt and completes anything the first request left undone.
  */
 export async function submitAuthored(
   db: Admin,
@@ -316,7 +343,10 @@ export async function submitAuthored(
 ): Promise<AuthoredReceipt> {
   const { attempt, pkg } = authored;
   const { data: existing } = await db.from("eng_submissions").select("*").eq("attempt_id", attempt.id).maybeSingle();
-  if (existing) return receiptOf(existing as SubmissionRow, true);
+  if (existing) {
+    await followThrough(db, attempt, existing as SubmissionRow, userId);
+    return receiptOf(existing as SubmissionRow, true);
+  }
   requireWorking(attempt);
   const window = submissionWindow(attempt, AUTHORED_GRACE_MINUTES);
   const checked = validateCandidateFiles(pkg, input.files);
@@ -333,11 +363,10 @@ export async function submitAuthored(
   const storagePath = `attempts/${attempt.id}/${uploadId}.zip`;
   const { error: storageError } = await db.storage.from(SUBMISSION_BUCKET).upload(storagePath, bytes, { contentType: "application/zip", upsert: false });
   if (storageError) throw new AttemptError("File storage is unavailable right now. Your files are saved in the workspace; try submitting again in a minute.", 503);
-  const now = new Date().toISOString();
   const { error: uploadError } = await db.from("eng_uploads").insert({
     id: uploadId,
     attempt_id: attempt.id,
-    status: "accepted",
+    status: "initiated",
     storage_path: storagePath,
     original_filename: "workspace.zip",
     byte_size: bytes.length,
@@ -345,9 +374,11 @@ export async function submitAuthored(
     entry_count: files.length,
     uncompressed_bytes: files.reduce((n, f) => n + Buffer.byteLength(f.content, "utf8"), 0),
     file_list: files.map((f) => ({ path: f.path, size: Buffer.byteLength(f.content, "utf8") })),
-    validated_at: now,
   });
-  if (uploadError) throw new AttemptError("Could not record your files. They are saved in the workspace; try again.", 500);
+  if (uploadError) {
+    await db.storage.from(SUBMISSION_BUCKET).remove([storagePath]);
+    throw new AttemptError("Could not record your files. They are saved in the workspace; try again.", 500);
+  }
 
   const { data, error } = await db
     .from("eng_submissions")
@@ -364,22 +395,27 @@ export async function submitAuthored(
     .single();
   if (error) {
     if (error.code === "23505") {
+      await discardSealed(db, uploadId, storagePath, "Another request submitted this attempt first.");
       const { data: raced } = await db.from("eng_submissions").select("*").eq("attempt_id", attempt.id).single();
+      await followThrough(db, attempt, raced as SubmissionRow, userId);
       return receiptOf(raced as SubmissionRow, true);
     }
+    await discardSealed(db, uploadId, storagePath, "The submission could not be recorded.");
     throw new AttemptError("Could not record the submission. Your files are saved; try again.", 500);
   }
   const submission = data as SubmissionRow;
-  await db.from("eng_attempts").update({ status: "submitted", submitted_at: submission.submitted_at }).eq("id", attempt.id).eq("status", "in_progress");
-  await recordEngEvent(db, attempt.id, {
-    type: "submission_accepted",
-    actor: "candidate",
-    actorUserId: userId,
-    payload: { submissionId: submission.id, sha256, late: submission.late, files: files.length },
-    clientEventId: "submission_accepted",
-  });
-  await enqueueEvaluation(db, submission, attempt.scenario_version_id);
+  await followThrough(db, attempt, submission, userId);
   return receiptOf(submission, false);
+}
+
+/** A submission recorded by a request that died before closing the attempt is completed on the next load. */
+async function settleRecordedSubmission(db: Admin, attempt: AttemptRow): Promise<AttemptRow> {
+  if (attempt.status !== "in_progress") return attempt;
+  const { data: submission } = await db.from("eng_submissions").select("*").eq("attempt_id", attempt.id).maybeSingle();
+  if (!submission) return attempt;
+  await followThrough(db, attempt, submission as SubmissionRow, attempt.candidate_user_id);
+  const { data: settled } = await db.from("eng_attempts").select("*").eq("id", attempt.id).single();
+  return (settled as AttemptRow | null) ?? attempt;
 }
 
 /* ------------------------------------------------------------------ */
@@ -395,7 +431,8 @@ export function evaluationStatus(run: Pick<RunRow, "status"> | null, released: b
 }
 
 export async function buildAuthoredCandidateView(db: Admin, authored: AuthoredAttempt): Promise<AuthoredCandidateView> {
-  const { attempt, pkg } = authored;
+  const { pkg } = authored;
+  const attempt = await settleRecordedSubmission(db, authored.attempt);
   const { data: inv } = await db.from("eng_invitations").select("role_snapshot, is_preview").eq("id", attempt.invitation_id).single();
   const invitation = inv as Pick<InvitationRow, "role_snapshot" | "is_preview">;
   const working = attempt.status === "in_progress";

@@ -99,6 +99,35 @@ export async function processAuthoredRun(db: Admin, run: RunRow): Promise<RunRow
   if (outcome.kind === "infrastructure_error") return failRun(db, run, outcome.code, outcome.detail, true);
   const evaluation = outcome.evaluation;
 
+  // The evaluation record and the draft report are written before the run is
+  // handed to review, so a crash never leaves a run in review with nothing to
+  // review. Both writes are keyed by the run and safe to repeat.
+  const { data: held } = await db
+    .from("eng_evaluation_runs")
+    .select("id")
+    .eq("id", run.id)
+    .eq("lease_owner", run.lease_owner ?? "")
+    .eq("status", "running")
+    .maybeSingle();
+  if (!held) return "running";
+
+  const { error: evalError } = await db.from("eng_authored_evaluations").insert({
+    run_id: run.id,
+    attempt_id: run.attempt_id,
+    scenario_version_id: version.id,
+    runner: evaluation.runner,
+    suite: evaluation.suite,
+    tests: evaluation.tests,
+    acceptance: evaluation.acceptance,
+    criteria: evaluation.criteria,
+    limitations: evaluation.limitations,
+    output: evaluation.output,
+  });
+  if (evalError && evalError.code !== "23505") {
+    return failRun(db, run, "evaluation_record_failed", "The evaluation result could not be stored.", true);
+  }
+  await writeDraftReport(db, run, version, reportBriefFor(run.id, evaluation));
+
   const { data: saved } = await db
     .from("eng_evaluation_runs")
     .update({
@@ -120,20 +149,6 @@ export async function processAuthoredRun(db: Admin, run: RunRow): Promise<RunRow
     .maybeSingle();
   if (!saved) return "running";
 
-  const { error: evalError } = await db.from("eng_authored_evaluations").insert({
-    run_id: run.id,
-    attempt_id: run.attempt_id,
-    scenario_version_id: version.id,
-    runner: evaluation.runner,
-    suite: evaluation.suite,
-    tests: evaluation.tests,
-    acceptance: evaluation.acceptance,
-    criteria: evaluation.criteria,
-    limitations: evaluation.limitations,
-    output: evaluation.output,
-  });
-  if (evalError && evalError.code !== "23505") console.error(`[eng:authored] run ${run.id} evaluation record failed: ${evalError.message}`);
-  await writeDraftReport(db, run, version, reportBriefFor(run.id, evaluation));
   await recordEngEvent(db, run.attempt_id, {
     type: "evaluation_completed",
     actor: "system",
