@@ -144,16 +144,57 @@ export async function processDueJobs(db: Admin, limit: number): Promise<{ attemp
   return { attempted: ids.length };
 }
 
+/**
+ * Every graceful exit clears lease_owner, and the time budget is shorter than
+ * the lease, so a job still "running" under an expired lease means its worker
+ * was killed (timeout, out of memory, deploy). That counts as an attempt; once
+ * max_attempts is reached the job fails visibly instead of being reclaimed
+ * forever. The claim is a compare-and-set on the previous owner.
+ */
 async function claim(db: Admin, jobId: string, owner: string): Promise<JobRow | null> {
   const nowIso = new Date().toISOString();
-  const { data } = await db
+  const { data: current } = await db
     .from("eng_authoring_jobs")
-    .update({ status: "running", lease_owner: owner, lease_expires_at: new Date(Date.now() + LEASE_MS).toISOString(), updated_at: nowIso })
+    .select("status, lease_owner, lease_expires_at, attempt_count, max_attempts, stages")
+    .eq("id", jobId)
+    .maybeSingle();
+  if (!current || (current.status !== "queued" && current.status !== "running")) return null;
+  if (current.lease_expires_at && (current.lease_expires_at as string) >= nowIso) return null;
+  const priorOwner = (current.lease_owner as string | null) ?? null;
+  const workerLost = current.status === "running" && priorOwner !== null;
+  const attempts = (current.attempt_count as number) + (workerLost ? 1 : 0);
+
+  if (workerLost && attempts >= (current.max_attempts as number)) {
+    const stages = current.stages as JobStage[];
+    const running = stages.find((s) => s.status === "running" || s.status === "waiting")?.id;
+    const detail = "The worker running this job stopped responding several times. Start the job again.";
+    await db
+      .from("eng_authoring_jobs")
+      .update({
+        status: "failed",
+        attempt_count: attempts,
+        lease_owner: null,
+        lease_expires_at: null,
+        error_code: "worker_lost",
+        error_detail: detail,
+        finished_at: nowIso,
+        updated_at: nowIso,
+        stages: running ? setStage(stages, running, "failed", detail) : stages,
+      })
+      .eq("id", jobId)
+      .eq("status", "running")
+      .eq("lease_owner", priorOwner);
+    return null;
+  }
+
+  let update = db
+    .from("eng_authoring_jobs")
+    .update({ status: "running", lease_owner: owner, lease_expires_at: new Date(Date.now() + LEASE_MS).toISOString(), attempt_count: attempts, updated_at: nowIso })
     .eq("id", jobId)
     .in("status", ["queued", "running"])
-    .or(`lease_expires_at.is.null,lease_expires_at.lt.${nowIso}`)
-    .select("*")
-    .maybeSingle();
+    .or(`lease_expires_at.is.null,lease_expires_at.lt.${nowIso}`);
+  update = priorOwner ? update.eq("lease_owner", priorOwner) : update.is("lease_owner", null);
+  const { data } = await update.select("*").maybeSingle();
   if (!data) return null;
   const job = data as JobRow;
   if (!job.started_at) await db.from("eng_authoring_jobs").update({ started_at: nowIso }).eq("id", jobId);

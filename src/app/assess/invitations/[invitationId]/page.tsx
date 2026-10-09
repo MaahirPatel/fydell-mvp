@@ -16,12 +16,17 @@ import { isInboxVerified } from "@/lib/security/email-verification";
 export const metadata = { title: "Engineering task invitation" };
 export const dynamic = "force-dynamic";
 
-function Closed({ title, detail }: { title: string; detail: string }) {
+function Closed({ title, detail, switchTo }: { title: string; detail: string; switchTo?: string }) {
   return (
     <CandidateShell>
       <h1 className="text-[22px] font-medium tracking-[-0.02em] text-[var(--text-primary)]">{title}</h1>
       <p className="mt-3 text-[14.5px] leading-[1.65] text-[var(--text-secondary)]">{detail}</p>
-      <div className="mt-6">
+      <div className="mt-6 flex flex-wrap gap-3">
+        {switchTo ? (
+          <ButtonLink href={withNext("/login", switchTo)} variant="accent" size="lg">
+            Sign in with another account
+          </ButtonLink>
+        ) : null}
         <ButtonLink href="/app/candidate" variant="secondary" size="lg">
           Back to your evaluations
         </ButtonLink>
@@ -38,7 +43,13 @@ export default async function CandidateInvitationPage({ params }: { params: Prom
   const db = engAdmin();
   const invitation = await getInvitationForCandidate(db, invitationId, user.email);
   if (!invitation) {
-    return <Closed title="Invitation not found" detail={`No invitation for ${user.email} matches this page. If you were invited with another address, sign in with that one.`} />;
+    return (
+      <Closed
+        title="Invitation not found"
+        detail={`No invitation for ${user.email} matches this page. If you were invited with another address, sign in with that one.`}
+        switchTo={`/assess/invitations/${invitationId}`}
+      />
+    );
   }
 
   const { data: attempt } = await db.from("eng_attempts").select("id, candidate_user_id").eq("invitation_id", invitation.id).maybeSingle();

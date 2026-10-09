@@ -22,6 +22,7 @@ export function verifyStripeSignature(rawBody: string, signature: string, secret
 }
 
 export interface WebhookDeps {
+  /** True once an event was handled (applied or ignored). A failed attempt does not count, so Stripe's retry runs it again. */
   hasProcessed(eventId: string): Promise<boolean>;
   markProcessed(eventId: string, eventType: string, result: "applied" | "duplicate" | "ignored" | "failed", error?: string): Promise<void>;
   syncSubscription(subscription: Stripe.Subscription, config: BillingConfig): Promise<void>;
@@ -39,7 +40,13 @@ export function liveWebhookDeps(config: BillingConfig): WebhookDeps {
   return {
     config,
     async hasProcessed(eventId) {
-      const { data } = await admin().from("stripe_webhook_events").select("event_id").eq("event_id", eventId).maybeSingle();
+      // "duplicate" is accepted for rows written before redeliveries stopped overwriting the result.
+      const { data } = await admin()
+        .from("stripe_webhook_events")
+        .select("event_id")
+        .eq("event_id", eventId)
+        .in("processing_result", ["applied", "ignored", "duplicate"])
+        .maybeSingle();
       return !!data;
     },
     async markProcessed(eventId, eventType, result, error) {
@@ -85,10 +92,8 @@ function customerIdOf(obj: { customer?: string | { id: string } | null }): strin
  * always reconciled from the event's own object (authoritative snapshot).
  */
 export async function processWebhookEvent(event: Stripe.Event, deps: WebhookDeps): Promise<"applied" | "duplicate" | "ignored"> {
-  if (await deps.hasProcessed(event.id)) {
-    await deps.markProcessed(event.id, event.type, "duplicate");
-    return "duplicate";
-  }
+  // A redelivery leaves the recorded result alone; overwriting "applied" would hide what happened.
+  if (await deps.hasProcessed(event.id)) return "duplicate";
 
   try {
     if (SUBSCRIPTION_EVENTS.has(event.type)) {

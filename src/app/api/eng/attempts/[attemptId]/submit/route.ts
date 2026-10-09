@@ -17,7 +17,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ attempt
   if (handoff.ok === false) return jsonError(400, handoff.error);
   try {
     const receipt = await submitAttempt(db, attempt, scenario, { uploadId, handoff: handoff.handoff, aiDisclosure: handoff.aiDisclosure }, user.id);
-    if (!receipt.alreadySubmitted) scheduleEvaluationWork();
+    // Also on a repeat: the original request may have died before its run was picked up.
+    scheduleEvaluationWork();
     return ok({ receipt });
   } catch (err) {
     return errorResponse(err, "submit");

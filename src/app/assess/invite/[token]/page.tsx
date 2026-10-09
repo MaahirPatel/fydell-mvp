@@ -63,9 +63,16 @@ export default async function EngInvitePage({ params }: { params: Promise<{ toke
             </ButtonLink>
           </div>
         ) : emailMismatch ? (
-          <p className="rounded-[var(--radius-panel)] border border-[var(--border-default)] px-4 py-3 text-[14px] leading-[1.6] text-[var(--text-secondary)]">
-            This invitation was sent to a different email address than the one you are signed in with ({user.email}). Sign out and sign in with the invited address, or ask the employer to invite this one.
-          </p>
+          <div>
+            <p className="rounded-[var(--radius-panel)] border border-[var(--border-default)] px-4 py-3 text-[14px] leading-[1.6] text-[var(--text-secondary)]">
+              You are signed in as {user.email}, and this invitation was sent to {invitation.candidate_email}. Sign in with that address to accept it, or ask the employer to invite this one.
+            </p>
+            <div className="mt-3">
+              <ButtonLink href={withNext("/login", here)} variant="accent" size="lg">
+                Sign in as {invitation.candidate_email}
+              </ButtonLink>
+            </div>
+          </div>
         ) : (
           <InboxVerificationGate
             email={user.email.toLowerCase()}

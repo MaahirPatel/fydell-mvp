@@ -4,8 +4,8 @@ import { getDrafts, listMessages, releaseUpdateIfDue } from "./attempts";
 import { scenarioForVersionId } from "./scenario-versions";
 import type { ScenarioDefinition } from "./scenarios/types";
 import { effectiveDueAt, submissionWindow } from "./state";
-import { getReceipt, type Receipt } from "./submissions";
-import type { AttemptRow, InvitationRow, MessageRow, RoleSnapshot, UploadRow } from "./types";
+import { completeSubmission, getReceipt, type Receipt } from "./submissions";
+import type { AttemptRow, InvitationRow, MessageRow, RoleSnapshot, SubmissionRow, UploadRow } from "./types";
 import { listUploads } from "./uploads";
 
 export interface CandidateView {
@@ -62,8 +62,22 @@ export async function loadCandidateContext(db: Admin, attempt: AttemptRow): Prom
   return { attempt: current, scenario: definition };
 }
 
+/**
+ * A submission recorded by a request that died before closing the attempt
+ * (lost acknowledgment) is completed here, so a reload shows the receipt and
+ * the work is evaluated instead of reappearing as "in progress".
+ */
+async function settleRecordedSubmission(db: Admin, attemptRow: AttemptRow): Promise<AttemptRow> {
+  if (attemptRow.status !== "in_progress") return attemptRow;
+  const { data: submission } = await db.from("eng_submissions").select("*").eq("attempt_id", attemptRow.id).maybeSingle();
+  if (!submission) return attemptRow;
+  await completeSubmission(db, attemptRow, submission as SubmissionRow, attemptRow.candidate_user_id);
+  const { data: settled } = await db.from("eng_attempts").select("*").eq("id", attemptRow.id).single();
+  return (settled as AttemptRow | null) ?? attemptRow;
+}
+
 export async function buildCandidateView(db: Admin, attemptRow: AttemptRow): Promise<CandidateView> {
-  const { attempt, scenario } = await loadCandidateContext(db, attemptRow);
+  const { attempt, scenario } = await loadCandidateContext(db, await settleRecordedSubmission(db, attemptRow));
   const { data: inv } = await db.from("eng_invitations").select("role_snapshot").eq("id", attempt.invitation_id).single();
   const opened = attempt.status === "in_progress" || attempt.status === "submitted";
   const [messages, drafts, uploads, receipt] = await Promise.all([

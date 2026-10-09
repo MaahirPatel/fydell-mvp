@@ -134,7 +134,8 @@ function makeDeps(): { deps: WebhookDeps; seen: Map<string, string>; orgs: Map<s
   const deps: WebhookDeps = {
     config,
     async hasProcessed(eventId) {
-      return seen.has(eventId);
+      const result = seen.get(eventId);
+      return result !== undefined && result !== "failed";
     },
     async markProcessed(eventId, _type, result) {
       seen.set(eventId, result);
@@ -175,7 +176,29 @@ function makeDeps(): { deps: WebhookDeps; seen: Map<string, string>; orgs: Map<s
   ok("first delivery applied", first === "applied");
   ok("duplicate delivery detected", second === "duplicate");
   ok("duplicate not applied twice", orgs.get("cus_FAKE_org1")?.syncCalls === 1);
-  ok("event log records both", seen.get("evt_dup_1") === "duplicate");
+  ok("event log keeps the applied result after a redelivery", seen.get("evt_dup_1") === "applied");
+}
+
+{
+  // A handler failure must not swallow the event: Stripe's retry applies it.
+  const { deps, orgs } = makeDeps();
+  const { event } = stripeEvent({ id: "evt_retry_1", type: "customer.subscription.created", object: subscriptionObject() });
+  const realSync = deps.syncSubscription;
+  let failOnce = true;
+  deps.syncSubscription = async (subscription, cfg) => {
+    if (failOnce) {
+      failOnce = false;
+      throw new Error("database unavailable");
+    }
+    await realSync(subscription, cfg);
+  };
+  const firstTry = await processWebhookEvent(event, deps).then(
+    () => "returned",
+    () => "threw",
+  );
+  ok("failed delivery reports an error so Stripe retries", firstTry === "threw");
+  ok("Stripe's retry of a failed event is applied", (await processWebhookEvent(event, deps)) === "applied");
+  ok("retried event applied exactly once", orgs.get("cus_FAKE_org1")?.syncCalls === 1);
 }
 
 {

@@ -19,6 +19,9 @@ function fromAddress(): string {
   );
 }
 
+const MAX_ATTEMPTS = 5;
+const STALE_LOCK_MS = 10 * 60 * 1000;
+
 export async function processEmailOutbox(limit = 20): Promise<{
   processed: number;
   sent: number;
@@ -31,13 +34,16 @@ export async function processEmailOutbox(limit = 20): Promise<{
   const admin = getSupabaseAdmin();
   const workerId = `worker-${process.pid}-${Date.now()}`;
   const now = new Date().toISOString();
+  // A worker killed after claiming leaves its row in "processing"; after this
+  // long the row is taken over. The provider idempotency key below makes the
+  // takeover safe even if the first worker did send.
+  const staleLock = new Date(Date.now() - STALE_LOCK_MS).toISOString();
+  const claimable = `status.in.(pending,failed),and(status.eq.processing,locked_at.lt.${staleLock})`;
 
   const { data: pending, error } = await admin
     .from("email_outbox")
     .select("*")
-    .in("status", ["pending", "failed"])
-    .lte("scheduled_for", now)
-    .lt("attempt_count", 5)
+    .or(`and(status.in.(pending,failed),scheduled_for.lte.${now},attempt_count.lt.${MAX_ATTEMPTS}),and(status.eq.processing,locked_at.lt.${staleLock})`)
     .order("priority", { ascending: true })
     .order("scheduled_for", { ascending: true })
     .limit(limit);
@@ -50,6 +56,22 @@ export async function processEmailOutbox(limit = 20): Promise<{
   let failed = 0;
 
   for (const row of pending) {
+    if (row.status === "processing" && (row.attempt_count || 0) >= MAX_ATTEMPTS) {
+      await admin
+        .from("email_outbox")
+        .update({
+          status: "failed",
+          last_error: "The worker sending this email stopped responding on its last attempt. Check the provider log before resending.",
+          locked_at: null,
+          locked_by: null,
+        })
+        .eq("id", row.id)
+        .eq("status", "processing")
+        .lt("locked_at", staleLock);
+      failed += 1;
+      continue;
+    }
+
     // Claim
     const { data: claimed } = await admin
       .from("email_outbox")
@@ -60,7 +82,7 @@ export async function processEmailOutbox(limit = 20): Promise<{
         attempt_count: (row.attempt_count || 0) + 1,
       })
       .eq("id", row.id)
-      .in("status", ["pending", "failed"])
+      .or(claimable)
       .select("id")
       .maybeSingle();
 
@@ -99,13 +121,16 @@ export async function processEmailOutbox(limit = 20): Promise<{
     try {
       const rendered = renderEmailTemplate(row.template_key, row.payload || {});
       const subject = row.subject_override || rendered.subject;
-      const result = await client.emails.send({
-        from: fromAddress(),
-        to: route.to,
-        replyTo: row.reply_to || process.env.EMAIL_REPLY_TO || undefined,
-        subject,
-        html: rendered.html,
-      });
+      const result = await client.emails.send(
+        {
+          from: fromAddress(),
+          to: route.to,
+          replyTo: row.reply_to || process.env.EMAIL_REPLY_TO || undefined,
+          subject,
+          html: rendered.html,
+        },
+        { idempotencyKey: `outbox-${row.id}` },
+      );
       if (result.error) throw new Error(result.error.message || "The email provider rejected the message.");
 
       const messageId =

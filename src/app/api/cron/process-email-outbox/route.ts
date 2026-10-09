@@ -6,8 +6,9 @@ export const runtime = "nodejs";
 /**
  * Cron / manual worker for email outbox.
  * Protect with CRON_SECRET header: Authorization: Bearer <CRON_SECRET>
+ * Vercel Cron calls GET with that header; POST is kept for manual runs.
  */
-export async function POST(req: Request) {
+async function run(req: Request) {
   const secret = process.env.CRON_SECRET;
   const auth = req.headers.get("authorization") || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
@@ -25,4 +26,12 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+}
+
+export async function GET(req: Request) {
+  return run(req);
+}
+
+export async function POST(req: Request) {
+  return run(req);
 }

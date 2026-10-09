@@ -80,6 +80,26 @@ function redirectsToLogin(reply: Reply): boolean {
   return /NEXT_REDIRECT[^"]*\/login|http-equiv="refresh"[^>]*\/login/.test(reply.text);
 }
 
+const RESTART_CODES = new Set(["ECONNREFUSED", "ECONNRESET", "UND_ERR_SOCKET", "UND_ERR_HEADERS_TIMEOUT"]);
+
+function serverRestarting(err: unknown): boolean {
+  if (err instanceof Error && err.name === "TimeoutError") return true;
+  const cause = err instanceof Error ? (err.cause as { code?: string } | undefined) : undefined;
+  return RESTART_CODES.has(cause?.code ?? "");
+}
+
+/** The shared dev server is restarted by a watchdog when it stops responding: wait 60 seconds and retry. */
+async function send(url: string, init: RequestInit): Promise<Response> {
+  for (let tries = 0; ; tries += 1) {
+    try {
+      return await fetch(url, { ...init, signal: AbortSignal.timeout(180000) });
+    } catch (err) {
+      if (!serverRestarting(err) || tries >= 10) throw err;
+      await new Promise((r) => setTimeout(r, 60000));
+    }
+  }
+}
+
 function fakeIp(): string {
   return `10.${(randomBytes(1)[0] % 250) + 1}.${randomBytes(1)[0]}.${randomBytes(1)[0]}`;
 }
@@ -89,7 +109,7 @@ async function http(method: string, route: string, who: Session | null, opts: { 
   if (who && opts.bearer) headers.authorization = `Bearer ${who.token}`;
   else if (who) headers.cookie = who.cookie;
   if (opts.body !== undefined) headers["content-type"] = "application/json";
-  const res = await fetch(`${base}${route}`, {
+  const res = await send(`${base}${route}`, {
     method,
     headers,
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
@@ -124,7 +144,7 @@ function cookieHeader(setCookies: string[]): string {
 }
 
 async function login(email: string, password: string, userId: string): Promise<Session> {
-  const res = await fetch(`${base}/api/platform/login`, {
+  const res = await send(`${base}/api/platform/login`, {
     method: "POST",
     headers: { "content-type": "application/json", "x-forwarded-for": fakeIp() },
     body: JSON.stringify({ email, password }),
@@ -160,7 +180,22 @@ function submissionArchive(starter: Uint8Array): Uint8Array {
   return zipSync(files);
 }
 
+async function waitForServer() {
+  const deadline = Date.now() + 300000;
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(`${base}/login`, { signal: AbortSignal.timeout(60000) });
+      if (res.status === 200) return;
+    } catch {
+      // Still compiling or restarting.
+    }
+    await new Promise((r) => setTimeout(r, 5000));
+  }
+  throw new Error(`No server answering on ${base}.`);
+}
+
 async function main() {
+  await waitForServer();
   const { engAdmin } = await import("../src/lib/eng/context");
   const roles = await import("../src/lib/eng/roles");
   const invitations = await import("../src/lib/eng/invitations");

@@ -60,6 +60,31 @@ export async function getReceipt(db: Admin, attemptId: string): Promise<Receipt 
 }
 
 /**
+ * Everything that must follow a recorded submission: the attempt is closed,
+ * the acceptance is logged, and evaluation is queued. Each step is idempotent
+ * (status guard, fixed client event id, unique run key), so this is re-run
+ * whenever a submission is seen again. A process that died between recording
+ * the submission and queueing its evaluation is completed by the next retry or
+ * page load instead of leaving the work unevaluated.
+ */
+export async function completeSubmission(db: Admin, attempt: AttemptRow, submission: SubmissionRow, userId: string | null): Promise<void> {
+  const { error } = await db
+    .from("eng_attempts")
+    .update({ status: "submitted", submitted_at: submission.submitted_at })
+    .eq("id", attempt.id)
+    .eq("status", "in_progress");
+  if (error) throw new Error(`Could not close the attempt after submission: ${error.message}`);
+  await recordEngEvent(db, attempt.id, {
+    type: "submission_accepted",
+    actor: "candidate",
+    actorUserId: userId,
+    payload: { submissionId: submission.id, sha256: submission.archive_sha256, late: submission.late },
+    clientEventId: "submission_accepted",
+  });
+  await enqueueEvaluation(db, submission, attempt.scenario_version_id);
+}
+
+/**
  * One accepted operation per attempt: the unique constraint on attempt_id makes
  * double clicks and retries return the original receipt.
  */
@@ -71,7 +96,10 @@ export async function submitAttempt(
   userId: string
 ): Promise<Receipt> {
   const { data: existing } = await db.from("eng_submissions").select("*").eq("attempt_id", attempt.id).maybeSingle();
-  if (existing) return receiptFor(db, existing as SubmissionRow, true);
+  if (existing) {
+    await completeSubmission(db, attempt, existing as SubmissionRow, userId);
+    return receiptFor(db, existing as SubmissionRow, true);
+  }
 
   if (attempt.status !== "in_progress") throw new AttemptError("This attempt is not open for submission.", 409);
   const window = submissionWindow(attempt, scenario.submissionGraceMinutes);
@@ -106,19 +134,12 @@ export async function submitAttempt(
   if (error) {
     if (error.code === "23505") {
       const { data: raced } = await db.from("eng_submissions").select("*").eq("attempt_id", attempt.id).single();
+      await completeSubmission(db, attempt, raced as SubmissionRow, userId);
       return receiptFor(db, raced as SubmissionRow, true);
     }
     throw new AttemptError("Could not record the submission. Your archive is saved; try again.", 500);
   }
   const submission = data as SubmissionRow;
-  await db.from("eng_attempts").update({ status: "submitted", submitted_at: submission.submitted_at }).eq("id", attempt.id).eq("status", "in_progress");
-  await recordEngEvent(db, attempt.id, {
-    type: "submission_accepted",
-    actor: "candidate",
-    actorUserId: userId,
-    payload: { submissionId: submission.id, sha256: submission.archive_sha256, late: submission.late },
-    clientEventId: "submission_accepted",
-  });
-  await enqueueEvaluation(db, submission, attempt.scenario_version_id);
+  await completeSubmission(db, attempt, submission, userId);
   return receiptFor(db, submission, false);
 }
