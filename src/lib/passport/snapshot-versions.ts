@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { sha256 } from "@/lib/builder-analysis/hash";
+import type { Entailment } from "./github/types";
 import type { PassportEvidence } from "./view";
 
 /**
@@ -22,6 +23,7 @@ type EvidenceDb = {
   excerpt: string[];
   source_url: string;
   limitations: string[] | null;
+  entailment: Entailment | null;
 };
 
 export type SnapshotDb = {
@@ -97,7 +99,7 @@ export async function loadSnapshot(snapshotId: string): Promise<SnapshotDb | nul
   const { data } = await createAdminSupabaseClient()
     .from("passport_projects")
     .select(
-      "id,passport_id,repo_full_name,commit_sha,analysis_version,importer_version,source_kind,status,contribution_statement,coverage,notices,manifest,passport_evidence(id,detector,category,finding,basis,path,start_line,end_line,excerpt,source_url,limitations)",
+      "id,passport_id,repo_full_name,commit_sha,analysis_version,importer_version,source_kind,status,contribution_statement,coverage,notices,manifest,passport_evidence(id,detector,category,finding,basis,path,start_line,end_line,excerpt,source_url,limitations,entailment)",
     )
     .eq("id", snapshotId)
     .maybeSingle();
@@ -116,7 +118,8 @@ export function snapshotHash(s: SnapshotDb): string {
     analysisVersion: s.analysis_version,
     manifest: manifestHash(s),
     findings: [...s.passport_evidence]
-      .map((e) => ({ id: e.id, detector: e.detector, path: e.path, startLine: e.start_line, endLine: e.end_line, excerpt: e.excerpt }))
+      // Entailment joins the hash only where it was recorded, so snapshots stored before it keep their hashes.
+      .map((e) => ({ id: e.id, detector: e.detector, path: e.path, startLine: e.start_line, endLine: e.end_line, excerpt: e.excerpt, ...(e.entailment ? { entailment: e.entailment } : {}) }))
       .sort((a, b) => a.id.localeCompare(b.id)),
   });
 }
@@ -137,6 +140,7 @@ function findingsOf(s: SnapshotDb): PassportEvidence[] {
       excerpt: e.excerpt,
       sourceUrl: e.source_url,
       limitations: e.limitations ?? [],
+      entailment: e.entailment ?? null,
     }));
 }
 

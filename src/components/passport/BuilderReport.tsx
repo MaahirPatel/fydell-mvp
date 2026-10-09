@@ -16,6 +16,8 @@ import type { ScopePreview } from "@/lib/passport/github/extract";
 import type { FindingDiff } from "@/lib/passport/versions";
 import type { ContributionContext, DecisionRecord } from "@/lib/passport/context-contract";
 import { ContributionSection, DecisionsSection } from "./ContributionContext";
+import { CapabilityList, CapabilityOverview, FindingAttribution, NoReview, ReportVersionLine, type ReportVersionMeta } from "./CapabilityReview";
+import type { CapabilityReview } from "@/lib/passport/capability/types";
 import { LocalDate, LocalTime } from "@/components/eng/LocalTime";
 import type { PassportEvidence, PassportProject } from "@/lib/passport/view";
 import {
@@ -107,7 +109,7 @@ function NoteList({ notes, onWithdraw, busyId }: { notes: Correction[]; onWithdr
             <span className="text-[13px] font-semibold text-[var(--text-primary)]">{KIND_LABEL[n.kind]}</span>
             <span className="text-[13px] text-[var(--text-tertiary)]">
               <LocalDate iso={n.createdAt} />
-              {n.withdrawnAt ? " · withdrawn" : n.status === "resolved" ? " · resolved" : ""}
+              {n.withdrawnAt ? " · withdrawn" : n.status === "resolved" ? " · resolved" : " · open, shown beside the original finding"}
             </span>
             {!n.withdrawnAt ? (
               <button
@@ -467,6 +469,8 @@ export default function BuilderReport({
   decisions,
   initialView,
   pinnedByShare,
+  review,
+  reviewMeta,
 }: {
   project: PassportProject & { id: string };
   versions: VersionSummary[];
@@ -481,6 +485,9 @@ export default function BuilderReport({
   decisions: DecisionRecord[];
   initialView: ReportView;
   pinnedByShare: boolean;
+  /** The stored capability report for this snapshot; null only for snapshots saved before reports existed. */
+  review: CapabilityReview | null;
+  reviewMeta: ReportVersionMeta | null;
 }) {
   const [view, setView] = useState<ReportView>(initialView);
   const [area, setArea] = useState<string | null>(null);
@@ -548,7 +555,7 @@ export default function BuilderReport({
     setCopied("idle");
     const url = new URL(window.location.href);
     url.searchParams.set("finding", id);
-    url.searchParams.delete("view");
+    url.searchParams.set("view", "findings");
     window.history.pushState(null, "", url);
     if (focus) document.getElementById(`finding-${id}`)?.focus();
   }
@@ -565,7 +572,7 @@ export default function BuilderReport({
     if (next === view) return;
     setView(next);
     const url = new URL(window.location.href);
-    if (next === "findings") url.searchParams.delete("view");
+    if (next === "overview") url.searchParams.delete("view");
     else url.searchParams.set("view", next);
     window.history.pushState(null, "", url);
   }
@@ -591,7 +598,7 @@ export default function BuilderReport({
     if (!selected) return;
     const url = new URL(window.location.href);
     url.searchParams.set("finding", selected.id);
-    url.searchParams.delete("view");
+    url.searchParams.set("view", "findings");
     try {
       await navigator.clipboard.writeText(url.toString());
       setCopied("ok");
@@ -639,7 +646,9 @@ export default function BuilderReport({
 
   const activeDecisions = decisions.filter((d) => !d.withdrawnAt).length;
   const tabs: Array<{ key: ReportView; label: string; count: number }> = [
-    { key: "findings", label: "Findings", count: evidence.length },
+    { key: "overview", label: "Overview", count: 0 },
+    { key: "capabilities", label: "Capability review", count: review?.capabilities.length ?? 0 },
+    { key: "findings", label: "Evidence inspection", count: evidence.length },
     { key: "decisions", label: "Decisions", count: activeDecisions },
     { key: "versions", label: "Versions", count: versions.length },
   ];
@@ -657,7 +666,8 @@ export default function BuilderReport({
             {CATEGORY_LABEL[f.category] ?? f.category}
           </span>
           <span aria-hidden className="text-[var(--text-quaternary)]">·</span>
-          <span>{f.basis === "repository_observation" ? "Observed in code" : "Declared dependency"}</span>
+          <span>{f.basis === "repository_observation" ? "Inspected code, not run" : "Declared dependency"}</span>
+          {f.entailment?.status === "narrowed" ? <span className="font-medium text-[var(--badge-attention-ink)]">Narrowed</span> : null}
           <button type="button" onClick={() => void copyLink()} className="ml-auto inline-flex min-h-8 items-center gap-1 font-medium hover:text-[var(--text-primary)]">
             {copied === "ok" ? <Check className="h-3.5 w-3.5" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />}
             {copied === "ok" ? "Copied" : copied === "failed" ? "Copy blocked; the address bar has this link" : "Copy link"}
@@ -679,6 +689,19 @@ export default function BuilderReport({
         ) : (
           <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">From your uploaded files. There is no hosted copy to open.</p>
         )}
+        {f.entailment?.status === "narrowed" ? (
+          <div className="mt-4">
+            <p className="text-app-control font-medium text-[var(--text-primary)]">Why this was narrowed</p>
+            <ul className="mt-1 space-y-1 text-app-body text-[var(--text-secondary)]">
+              {f.entailment.checks
+                .filter((c) => c.check !== "not_executed")
+                .map((c) => (
+                  <li key={c.check}>{c.detail}</li>
+                ))}
+            </ul>
+          </div>
+        ) : null}
+        {review ? <FindingAttribution review={review} findingId={f.id} /> : null}
         {f.limitations.length ? (
           <div className="mt-5 border-t border-[var(--border-subtle)] pt-4">
             <p className="text-app-control font-medium text-[var(--text-primary)]">What this does not show</p>
@@ -772,6 +795,7 @@ export default function BuilderReport({
       </p>
 
       {figures.length > 1 ? <FigureRow className="mt-5" figures={figures} active={area} onSelect={filterArea} /> : null}
+      {reviewMeta ? <ReportVersionLine meta={reviewMeta} projectId={project.id} canReanalyze={isLatest} /> : null}
 
       {!isLatest || project.notices.length ? (
         <div className="mt-5 space-y-2">
@@ -816,6 +840,24 @@ export default function BuilderReport({
       </div>
 
       <div className="mt-6">
+        {view === "overview" ? (
+          <div id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+            <h2 className="sr-only">Overview</h2>
+            {review ? (
+              <CapabilityOverview review={review} onOpenFinding={(id) => select(id)} onOpenCapabilities={() => go("capabilities")} />
+            ) : (
+              <NoReview projectId={project.id} />
+            )}
+          </div>
+        ) : null}
+
+        {view === "capabilities" ? (
+          <div id="panel-capabilities" role="tabpanel" aria-labelledby="tab-capabilities">
+            <h2 className="sr-only">Capability review</h2>
+            {review ? <CapabilityList review={review} onOpenFinding={(id) => select(id)} /> : <NoReview projectId={project.id} />}
+          </div>
+        ) : null}
+
         {view === "findings" ? (
           <div id="panel-findings" role="tabpanel" aria-labelledby="tab-findings">
             <h2 className="sr-only">Findings</h2>
@@ -866,7 +908,8 @@ export default function BuilderReport({
                                     {e.path}:{e.startLine}
                                   </span>
                                   <span aria-hidden className="text-[var(--text-quaternary)]">·</span>
-                                  <span>{e.basis === "repository_observation" ? "Observed in code" : "Declared dependency"}</span>
+                                  <span>{e.basis === "repository_observation" ? "Inspected code" : "Declared dependency"}</span>
+                                  {e.entailment?.status === "narrowed" ? <span className="text-[var(--badge-attention-ink)]">· Narrowed</span> : null}
                                   {count ? (
                                     <span className="text-[var(--badge-attention-ink)]">
                                       · {count} note{count === 1 ? "" : "s"}
@@ -924,7 +967,7 @@ export default function BuilderReport({
                   <span className="text-[14px] tabular-nums text-[var(--text-secondary)]">
                     {v.findings} finding{v.findings === 1 ? "" : "s"}
                   </span>
-                  {v.id === latestId ? <span className="text-[13px] font-medium text-[var(--badge-success-ink)]">Latest</span> : null}
+                  {v.id === latestId ? <span className="text-[13px] font-medium text-[var(--accent-ink)]">Latest</span> : null}
                   {v.id === project.id ? (
                     <span className="ml-auto text-[14px] text-[var(--text-tertiary)]">Viewing</span>
                   ) : (
@@ -982,7 +1025,7 @@ export default function BuilderReport({
               { label: "Analyzer", value: <span className="font-mono text-[13px] text-[var(--text-secondary)]">{project.analysisVersion ?? "unversioned"}</span> },
             ]}
           />
-          <p className="mt-3 text-[13px] leading-[1.5] text-[var(--text-tertiary)]">Static code review. Runtime behavior and authorship were not verified.</p>
+          <p className="mt-3 text-[13px] leading-[1.5] text-[var(--text-tertiary)]">Static code review. Nothing was run, and commit history is a contribution signal, not proof of authorship.</p>
         </section>
       </div>
     </article>

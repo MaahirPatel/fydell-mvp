@@ -12,7 +12,7 @@ export const metadata = { title: "Work receipt" };
 export const dynamic = "force-dynamic";
 
 const STATE: Record<FacetState, { label: string; kind: StatusKind }> = {
-  observed: { label: "Observed", kind: "success" },
+  observed: { label: "Found in the snapshot", kind: "pending" },
   not_observed: { label: "Not observed", kind: "neutral" },
   claimed: { label: "Claimed by you", kind: "pending" },
   not_assessed: { label: "Not assessed", kind: "neutral" },

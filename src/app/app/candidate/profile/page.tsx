@@ -5,6 +5,7 @@ import { accountDisplayName } from "@/lib/auth/account-name";
 import { getOwnerPassport, listShares } from "@/lib/passport/store";
 import { getProfileHub } from "@/lib/profile/store";
 import { getPresentations } from "@/lib/passport/presentation-store";
+import { profileGroupsForSnapshots } from "@/lib/passport/capability/store";
 import { listProfileSimulations } from "@/lib/profile/simulations";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
 import { SHARE_HREF } from "@/components/candidate/nav";
@@ -38,7 +39,10 @@ export default async function CandidateProfilePage({ searchParams }: { searchPar
     listProfileSimulations(user.id),
   ]);
   const projects = (passport?.projects ?? []).filter((p) => p.status !== "stale");
-  const presentations = await getPresentations(user.id, passport?.projects ?? []);
+  const [presentations, capabilityGroups] = await Promise.all([
+    getPresentations(user.id, passport?.projects ?? []),
+    profileGroupsForSnapshots(projects.map((p) => p.id).filter((id): id is string => !!id)),
+  ]);
   const liveShares = shares.filter((s) => !s.revokedAt).length;
   const githubLogin = passport?.githubLogin ?? null;
   const accounts = [
@@ -53,6 +57,7 @@ export default async function CandidateProfilePage({ searchParams }: { searchPar
         accounts={accounts}
         projects={projects}
         presentations={presentations}
+        capabilityGroups={capabilityGroups}
         capabilities={passport?.capabilities ?? null}
         roleSuggestions={passport?.roleSuggestions ?? []}
         simulations={simulations}

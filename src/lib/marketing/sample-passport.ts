@@ -125,6 +125,7 @@ export const SAMPLE_PASSPORT: PassportData = {
   contributions: [
     {
       repoFullName: REPO,
+      relationship: "maintained",
       problem: "Webhook deliveries were lost when the receiving service was briefly unavailable.",
       checkedHow: "Delivery tests cover retries, permanent failures and duplicate events.",
       workedOn: "Delivery loop, retry policy, the deduplication insert and the delivery tests.",

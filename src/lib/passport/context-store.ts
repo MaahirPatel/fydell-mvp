@@ -6,12 +6,14 @@ import {
   type ContributionContext,
   type ContributionInput,
   type DecisionInput,
+  type ProjectRelationship,
   type DecisionRecord,
   type EvidenceRef,
 } from "./context-contract";
 
 type ContributionRow = {
   repo_full_name: string;
+  relationship: ProjectRelationship | null;
   problem: string | null;
   worked_on: string;
   inherited: string;
@@ -44,13 +46,14 @@ type DecisionRow = {
 };
 
 const CONTRIBUTION_COLUMNS =
-  "repo_full_name,problem,worked_on,inherited,collaboration,collaboration_note,constraints_faced,checked_how,results,improvements,evidence_refs,version,updated_at";
+  "repo_full_name,relationship,problem,worked_on,inherited,collaboration,collaboration_note,constraints_faced,checked_how,results,improvements,evidence_refs,version,updated_at";
 const DECISION_COLUMNS =
   "id,repo_full_name,title,problem,constraints_faced,alternatives,choice,tradeoffs,outcome,evidence_refs,version,withdrawn_at,created_at,updated_at";
 
 function toContribution(r: ContributionRow): ContributionContext {
   return {
     repoFullName: r.repo_full_name,
+    relationship: r.relationship ?? "unspecified",
     problem: r.problem ?? "",
     workedOn: r.worked_on,
     inherited: r.inherited,
@@ -173,6 +176,7 @@ async function recordContributionRevision(passportId: string, saved: Contributio
     repo_full_name: saved.repoFullName,
     version: saved.version,
     content: {
+      relationship: saved.relationship,
       problem: saved.problem,
       workedOn: saved.workedOn,
       inherited: saved.inherited,
@@ -208,6 +212,7 @@ export async function saveContribution(
   }
   const admin = createAdminSupabaseClient();
   const row = {
+    relationship: input.relationship,
     problem: input.problem,
     worked_on: input.workedOn,
     inherited: input.inherited,
@@ -269,6 +274,7 @@ export async function adoptContributionStatement(ownerId: string, repoFullName: 
     const current = await getContribution(ownerId, repoFullName);
     if (current.workedOn.trim() === text) return current;
     const input: ContributionInput = {
+      relationship: current.relationship,
       problem: current.problem,
       workedOn: text,
       inherited: current.inherited,

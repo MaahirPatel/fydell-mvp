@@ -29,6 +29,7 @@ import {
 import { saveProjectVersion } from "./store";
 import { issueSnapshotReceipt } from "@/lib/receipts/store";
 import { adoptContributionStatement } from "./context-store";
+import { ensureCapabilityReport } from "./capability/store";
 
 const JOB_COLUMNS =
   "id,state,payload,attempt_count,max_attempts,next_attempt_at,stage,progress,error_code,safe_error,retryable,result_ref,analysis_version,created_at,started_at,finished_at,heartbeat_at,cancel_requested_at,owner_id";
@@ -226,7 +227,7 @@ export async function runImportJob(jobId: string): Promise<ImportJobView | null>
 
   let result: Awaited<ReturnType<typeof extractRepository>>;
   try {
-    result = await extractRepository(ref.ref, new GithubClient(), { commitSha: payload.commitSha, onProgress });
+    result = await extractRepository(ref.ref, new GithubClient(), { commitSha: payload.commitSha, onProgress, contributorLogin: payload.githubLogin });
   } catch {
     await scheduleOrFail(row, worker, "worker_interrupted");
     return getImportJob(row.owner_id, jobId);
@@ -257,6 +258,9 @@ export async function runImportJob(jobId: string): Promise<ImportJobView | null>
       throw new Error("Could not save the contribution statement.");
     }
     const receipt = await issueSnapshotReceipt(row.owner_id, saved.projectId, jobId);
+    if (!(await ensureCapabilityReport(row.owner_id, saved.projectId, `Imported ${result.repository?.fullName ?? "repository"} at ${(result.commitSha ?? "").slice(0, 7)}`))) {
+      throw new Error("Could not save the capability report.");
+    }
     ref2 = {
       projectId: saved.projectId,
       findings: result.findings.length,

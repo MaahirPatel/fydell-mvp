@@ -13,6 +13,24 @@ export const COLLABORATION_LABEL: Record<Collaboration, string> = {
   open_source: "Open-source contribution",
 };
 
+/**
+ * How the engineer relates to a project, as they state it. Stored apart from
+ * evidence strength: saying "maintained" does not make the evidence stronger,
+ * and a reference project contributes project findings only.
+ */
+export const RELATIONSHIPS = ["unspecified", "maintained", "contributor", "team_project", "fork", "learning_exercise", "reference"] as const;
+export type ProjectRelationship = (typeof RELATIONSHIPS)[number];
+
+export const RELATIONSHIP_LABEL: Record<ProjectRelationship, string> = {
+  unspecified: "Not stated",
+  maintained: "I maintain this project",
+  contributor: "I contributed to it",
+  team_project: "Team project",
+  fork: "My fork of another project",
+  learning_exercise: "Learning exercise",
+  reference: "Reference only, not my work",
+};
+
 /** A pointer from a statement to evidence: a finding, or a file range in a snapshot. */
 export type EvidenceRef = {
   projectId: string;
@@ -24,6 +42,7 @@ export type EvidenceRef = {
 
 export type ContributionContext = {
   repoFullName: string;
+  relationship: ProjectRelationship;
   problem: string;
   workedOn: string;
   inherited: string;
@@ -61,6 +80,7 @@ export const MAX_REFS = 12;
 export function emptyContribution(repoFullName: string): ContributionContext {
   return {
     repoFullName,
+    relationship: "unspecified",
     problem: "",
     workedOn: "",
     inherited: "",
@@ -123,7 +143,9 @@ export function parseContribution(raw: unknown): ContributionInput | { error: st
     b.collaboration === "solo" || b.collaboration === "team" || b.collaboration === "open_source" ? b.collaboration : "unspecified";
   const refs = parseEvidenceRefs(b.evidenceRefs);
   if ("error" in refs) return refs;
+  const relationship: ProjectRelationship = (RELATIONSHIPS as readonly string[]).includes(String(b.relationship)) ? (b.relationship as ProjectRelationship) : "unspecified";
   return {
+    relationship,
     problem: fields.problem as string,
     workedOn: fields.workedOn as string,
     inherited: fields.inherited as string,
@@ -171,6 +193,6 @@ export function parseDecision(raw: unknown): DecisionInput | { error: string } {
 /** True when the engineer has said anything about their contribution. */
 export function hasContribution(c: ContributionContext): boolean {
   return Boolean(
-    c.problem || c.workedOn || c.inherited || c.collaboration !== "unspecified" || c.constraintsFaced || c.checkedHow || c.results || c.improvements,
+    c.relationship !== "unspecified" || c.problem || c.workedOn || c.inherited || c.collaboration !== "unspecified" || c.constraintsFaced || c.checkedHow || c.results || c.improvements,
   );
 }

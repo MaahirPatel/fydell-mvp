@@ -1,4 +1,4 @@
-import type { RoleSuggestion } from "./github/types";
+import type { AnalysisChecks, ContributionSignals, Entailment, RoleSuggestion } from "./github/types";
 import { markSuperseded } from "./snapshots";
 import type { ContributionContext, DecisionRecord, EvidenceRef } from "./context-contract";
 import type { ProjectPresentation } from "./presentation";
@@ -16,6 +16,8 @@ export type PassportEvidence = {
   excerpt: string[];
   sourceUrl: string;
   limitations: string[];
+  /** Absent on findings stored before entailment checks existed. */
+  entailment?: Entailment | null;
 };
 
 export type PassportProject = {
@@ -52,11 +54,17 @@ export type PassportProject = {
   analyzedAt: string;
   notices: string[];
   evidence: PassportEvidence[];
+  /** Contribution evidence captured at import. Absent on snapshots imported before it was recorded. */
+  contributionSignals?: ContributionSignals | null;
+  /** Comment contradictions, rejected claims and ignored instructions from the analysis. */
+  checks?: AnalysisChecks | null;
 };
 
 export type Capability = { statement: string; evidenceIds: string[] };
 
 export type CapabilitySummary = {
+  /** "project": statements describe what the code shows, never the person. Summaries without it predate that rule. */
+  scope?: "project";
   source: "model" | "rules";
   model?: string;
   capabilities: Capability[];

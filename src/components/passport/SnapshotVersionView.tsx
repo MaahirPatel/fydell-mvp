@@ -41,7 +41,7 @@ export default function SnapshotVersionView({
         <dt className="text-[var(--text-tertiary)]">Analysis rules</dt>
         <dd className="font-mono text-[var(--text-primary)]">{version.analysisVersion}</dd>
         <dt className="text-[var(--text-tertiary)]">Outcome</dt>
-        <dd className="text-[var(--text-primary)]">{version.status === "partial" ? "Partial: some files could not be read" : "Complete"}</dd>
+        <dd className="text-[var(--text-primary)]">{version.status === "partial" ? "Partial: some files could not be read" : "Analysis complete"}</dd>
         <dt className="text-[var(--text-tertiary)]">Findings</dt>
         <dd className="text-[var(--text-primary)]">{version.findings.length}</dd>
         <dt className="text-[var(--text-tertiary)]">Content hash</dt>

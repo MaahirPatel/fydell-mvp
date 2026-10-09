@@ -1,9 +1,8 @@
 import { createHash } from "node:crypto";
 import { readProjectArchive, type ZipRejection } from "../eng/zip";
-import { runDetectors } from "./github/detectors";
+import { analyzeFiles } from "./github/analyze";
 import { redactSecrets } from "./github/redact";
 import { selectFiles } from "./github/select";
-import { citationIsValid } from "./github/validate";
 import { suggestRoles } from "./rules";
 import {
   ANALYSIS_VERSION,
@@ -11,14 +10,12 @@ import {
   MANIFEST_MAX_ENTRIES,
   type ExtractionResult,
   type ManifestEntry,
-  type RepoFinding,
   type SkippedFile,
   type TreeEntry,
 } from "./github/types";
 
 export const UPLOAD_IMPORTER_VERSION = "local-upload-v1";
 export const UPLOAD_REPO_PREFIX = "upload/";
-const MAX_EXCERPT_LINES = 8;
 
 export const UPLOAD_NOTICE =
   "Uploaded by the engineer. Fydell has not checked where this code came from or who wrote it.";
@@ -144,22 +141,10 @@ export function analyzeUpload(buf: Uint8Array, input: { ownerId: string; name: s
     limits: LIMITS,
   };
 
-  const findings: RepoFinding[] = [];
-  let rejected = 0;
-  for (const draft of runDetectors(files)) {
-    const text = files.get(draft.path) ?? "";
-    const endLine = Math.min(draft.endLine, draft.startLine + MAX_EXCERPT_LINES - 1);
-    const finding: RepoFinding = {
-      ...draft,
-      endLine,
-      id: findingId(hash, draft),
-      excerpt: text.split(/\r?\n/).slice(draft.startLine - 1, endLine),
-      sourceUrl: "",
-      attribution: "unverified",
-    };
-    if (citationIsValid(finding, files)) findings.push(finding);
-    else rejected += 1;
-  }
+  const { findings, rejected, checks } = analyzeFiles(files, {
+    idFor: (draft) => findingId(hash, draft),
+    sourceUrl: () => "",
+  });
 
   const manifest: ManifestEntry[] = [
     ...selected.filter((e) => files.has(e.path)).map((e) => ({ path: e.path, size: e.size ?? null, blobSha: e.sha ?? null, included: true })),
@@ -170,6 +155,7 @@ export function analyzeUpload(buf: Uint8Array, input: { ownerId: string; name: s
   ].slice(0, MANIFEST_MAX_ENTRIES);
 
   const notices = [UPLOAD_NOTICE];
+  if (checks.untrustedInstructions.length) notices.push("Some documentation addresses an automated reviewer. Fydell recorded it and did not follow it.");
   if (findings.length === 0) notices.push("No supported patterns were found in the analyzed files. This does not mean the work lacks quality.");
 
   const analyzedBytes = [...files.values()].reduce((n, t) => n + Buffer.byteLength(t, "utf8"), 0);
@@ -202,6 +188,16 @@ export function analyzeUpload(buf: Uint8Array, input: { ownerId: string; name: s
     roleSuggestions: suggestRoles(findings),
     notices,
     error: null,
+    checks,
+    contributionSignals: {
+      login: null,
+      repositoryOwner: "",
+      ownerMatchesLogin: false,
+      fork: false,
+      checked: "upload_no_history",
+      paths: [],
+      checkedAt: new Date(0).toISOString(),
+    },
   };
   return { ok: true, preview, result };
 }

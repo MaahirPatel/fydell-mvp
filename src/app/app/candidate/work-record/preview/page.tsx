@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/simulations/auth";
 import { getSharePreview } from "@/lib/profile/store";
 import { shareableProjectKeys } from "@/lib/profile-evidence/store";
 import { SHAREABLE_FIELDS } from "@/lib/passport/view";
+import { profileGroupsForSnapshots } from "@/lib/passport/capability/store";
 import { CandidateShell } from "@/components/candidate/CandidateShell";
 import PassportView from "@/components/passport/PassportView";
 import ProfileOverview from "@/components/profile/ProfileOverview";
@@ -40,6 +41,9 @@ export default async function SharePreviewPage({
     label: (params.label ?? "").slice(0, 80),
   });
 
+  const shownProjects = (preview?.passport.projects ?? []).filter((p) => p.status !== "stale");
+  const capabilityGroups = await profileGroupsForSnapshots(shownProjects.filter((p) => p.evidence.length).map((p) => p.id).filter((id): id is string => !!id));
+
   return (
     <CandidateShell width="wide">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-default)] pb-4">
@@ -58,8 +62,9 @@ export default async function SharePreviewPage({
           <ProfileOverview
             profile={preview.profile}
             accounts={preview.accounts}
-            projects={preview.passport.projects.filter((p) => p.status !== "stale")}
+            projects={shownProjects}
             presentations={preview.passport.presentations}
+            capabilityGroups={capabilityGroups}
             capabilities={preview.passport.capabilities}
             roleSuggestions={preview.passport.roleSuggestions}
             timeline={preview.timeline}

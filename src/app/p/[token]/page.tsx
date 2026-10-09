@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPublicProfile } from "@/lib/profile/store";
+import { profileGroupsForSnapshots } from "@/lib/passport/capability/store";
 import { CandidateShell, PublicHeaderLink } from "@/components/candidate/CandidateShell";
 import PassportView from "@/components/passport/PassportView";
 import ProfileOverview from "@/components/profile/ProfileOverview";
@@ -36,6 +37,9 @@ export default async function SharedProfilePage({ params }: { params: Promise<{ 
   }
 
   const { profile, accounts, timeline, passport } = shared.public;
+  const shownProjects = passport.projects.filter((p) => p.status !== "stale");
+  // Reports are shown only for projects whose evidence this link shares.
+  const capabilityGroups = await profileGroupsForSnapshots(shownProjects.filter((p) => p.evidence.length).map((p) => p.id).filter((id): id is string => !!id));
   const shownAccounts = [
     ...accounts.filter((a) => a.provider !== "github"),
     ...(passport.githubLogin ? [{ provider: "github" as const, label: passport.githubLogin }] : []),
@@ -46,8 +50,9 @@ export default async function SharedProfilePage({ params }: { params: Promise<{ 
       <ProfileOverview
         profile={profile}
         accounts={shownAccounts}
-        projects={passport.projects.filter((p) => p.status !== "stale")}
+        projects={shownProjects}
         presentations={passport.presentations}
+        capabilityGroups={capabilityGroups}
         capabilities={passport.capabilities}
         roleSuggestions={passport.roleSuggestions}
         timeline={timeline}

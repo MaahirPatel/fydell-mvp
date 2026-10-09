@@ -7,6 +7,7 @@ import { analyzeUpload } from "@/lib/passport/upload";
 import { saveProjectVersion } from "@/lib/passport/store";
 import { accountDisplayName } from "@/lib/auth/account-name";
 import { issueSnapshotReceipt } from "@/lib/receipts/store";
+import { ensureCapabilityReport } from "@/lib/passport/capability/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -87,6 +88,7 @@ export async function POST(req: Request) {
       "",
     );
     const receipt = await issueSnapshotReceipt(user.id, saved.projectId, null);
+    if (!(await ensureCapabilityReport(user.id, saved.projectId, `Uploaded ${preview.name}`))) throw new Error("report not saved");
     return NextResponse.json(
       { projectId: saved.projectId, reusedExistingVersion: saved.reusedExistingVersion, receiptId: receipt.id },
       { status: saved.reusedExistingVersion ? 200 : 201 },

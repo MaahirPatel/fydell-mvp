@@ -1,14 +1,15 @@
 import { createHash } from "node:crypto";
+import { analyzeFiles } from "./analyze";
 import { GithubClient, GithubError } from "./client";
-import { runDetectors, type DraftFinding } from "./detectors";
+import type { DraftFinding } from "./detectors";
 import { redactSecrets } from "./redact";
 import { selectFiles } from "./select";
-import { citationIsValid } from "./validate";
 import { suggestRoles } from "../rules";
 import {
   ANALYSIS_VERSION,
   LIMITS,
   MANIFEST_MAX_ENTRIES,
+  type ContributionSignals,
   type ExtractionError,
   type ExtractionProgress,
   type ExtractionResult,
@@ -20,7 +21,6 @@ import {
   type TreeEntry,
 } from "./types";
 
-const MAX_EXCERPT_LINES = 8;
 const CONCURRENCY = 4;
 
 function emptyResult(error: ExtractionError | null = null): ExtractionResult {
@@ -75,7 +75,50 @@ export type ExtractOptions = {
   /** Analyze exactly this commit (from a scope preview) instead of the branch head. */
   commitSha?: string;
   onProgress?: (progress: ExtractionProgress) => void | Promise<void>;
+  /** Connected GitHub login. Commits it authored on cited paths become contribution signals. */
+  contributorLogin?: string | null;
 };
+
+/** Cited paths checked against history; each costs one request. */
+const MAX_SIGNAL_PATHS = 8;
+
+/**
+ * Contribution evidence for the connected login: whether it owns the
+ * repository, whether the repository is a fork, and how many commits it
+ * authored on each cited path up to the analyzed revision. A failure here
+ * never fails the import; the signals are recorded as unavailable.
+ */
+async function contributionSignals(
+  client: GithubClient,
+  ref: RepoRef,
+  meta: { fullName: string; fork: boolean },
+  sha: string,
+  findings: RepoFinding[],
+  login: string | null,
+): Promise<ContributionSignals> {
+  const owner = meta.fullName.split("/")[0] ?? ref.owner;
+  const base: ContributionSignals = {
+    login,
+    repositoryOwner: owner,
+    ownerMatchesLogin: !!login && owner.toLowerCase() === login.toLowerCase(),
+    fork: meta.fork,
+    checked: login ? "checked" : "no_login",
+    paths: [],
+    checkedAt: new Date().toISOString(),
+  };
+  if (!login) return base;
+  const paths = [...new Set(findings.filter((f) => f.basis === "repository_observation").map((f) => f.path))].slice(0, MAX_SIGNAL_PATHS);
+  try {
+    for (const path of paths) {
+      const commits = await client.listCommitsForPath(ref, { author: login, path, sha });
+      const latest = commits[0] ?? null;
+      base.paths.push({ path, commitsByLogin: commits.length, latest: latest ? { sha: latest.sha, subject: latest.subject, authoredAt: latest.authoredAt } : null });
+    }
+  } catch {
+    return { ...base, checked: "unavailable", paths: [] };
+  }
+  return base;
+}
 
 function buildManifest(
   selected: TreeEntry[],
@@ -260,30 +303,21 @@ export async function extractRepository(ref: RepoRef, client = new GithubClient(
   }
 
   await progress({ stage: "analyzing", filesFetched: selected.length, filesSelected: selected.length });
-  const drafts = runDetectors(files);
-  const findings: RepoFinding[] = [];
-  let rejected = 0;
-  for (const draft of drafts) {
-    const text = files.get(draft.path) ?? "";
-    const endLine = Math.min(draft.endLine, draft.startLine + MAX_EXCERPT_LINES - 1);
-    const finding: RepoFinding = {
-      ...draft,
-      endLine,
-      id: findingId(sha, draft),
-      excerpt: text.split(/\r?\n/).slice(draft.startLine - 1, endLine),
-      sourceUrl: `${meta.htmlUrl}/blob/${sha}/${draft.path.split("/").map(encodeURIComponent).join("/")}#L${draft.startLine}-L${endLine}`,
-      attribution: "unverified",
-    };
-    // The snapshot text was redacted at ingestion, so the excerpt stored
-    // here is already safe to display and send to the model (GH-07), and
-    // the citation validates byte-identical against the same snapshot.
-    if (citationIsValid(finding, files)) {
-      findings.push(finding);
-    } else rejected += 1;
-  }
+  // The snapshot text was redacted at ingestion, so excerpts are already safe
+  // to display and send to the model (GH-07), and citations validate
+  // byte-identical against the same snapshot.
+  const { findings, rejected, checks } = analyzeFiles(files, {
+    idFor: (draft) => findingId(sha, draft),
+    sourceUrl: (path, start, end) => `${meta.htmlUrl}/blob/${sha}/${path.split("/").map(encodeURIComponent).join("/")}#L${start}-L${end}`,
+  });
 
   result.findings = findings;
   result.rejectedFindings = rejected;
+  result.checks = checks;
+  if (checks.untrustedInstructions.length) {
+    result.notices.push("Some documentation addresses an automated reviewer. Fydell recorded it and did not follow it.");
+  }
+  result.contributionSignals = await contributionSignals(client, ref, meta, sha, findings, options.contributorLogin ?? null);
   result.roleSuggestions = suggestRoles(findings);
   result.coverage = {
     totalFiles,

@@ -10,6 +10,8 @@ import { socialDisplay } from "@/lib/profile/social";
 import { Status } from "@/components/ui/report";
 import Avatar from "@/components/profile/Avatar";
 import HowIBuildEditor from "@/components/profile/HowIBuildEditor";
+import { CoverageTag } from "@/components/passport/CapabilityReview";
+import type { ProfileCapabilityGroup } from "@/lib/passport/capability/profile";
 
 type Account = { provider: keyof typeof PROVIDER_LABELS; label: string };
 
@@ -202,6 +204,67 @@ function ProjectEntry({
   );
 }
 
+function CapabilityGroups({ groups, mode, projectCount }: { groups: ProfileCapabilityGroup[]; mode: "owner" | "shared"; projectCount: number }) {
+  if (!groups.length) {
+    return (
+      <p className="mt-3 max-w-[68ch] text-app-prose leading-[1.6] text-[var(--text-secondary)]">
+        {mode === "shared"
+          ? "No project report is shared with this link yet. The projects below still show their cited findings."
+          : projectCount
+            ? "No project report has a capability yet. Open a project and build its report to see what the code shows."
+            : "Import a project to see what its code shows."}
+      </p>
+    );
+  }
+  return (
+    <ul className="mt-4 grid gap-3 md:grid-cols-2">
+      {groups.map((g) => {
+        const counts = [
+          g.linked ? `${g.linked} linked to ${mode === "owner" ? "you" : "the engineer"} by commits` : null,
+          g.projectOnly ? `${g.projectOnly} seen in the project only` : null,
+        ].filter(Boolean);
+        return (
+          <li key={g.requirementId} className="flex flex-col rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <h3 className="text-app-finding font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)]">{g.label}</h3>
+              <CoverageTag coverage={g.coverage} />
+            </div>
+            <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
+              {[counts.join(", "), g.projects.join(", ")].filter(Boolean).join(" · ")}
+            </p>
+            <ul className="mt-3 space-y-1.5">
+              {g.examples.map((e) => {
+                const href =
+                  mode === "owner" && e.snapshotId
+                    ? `/app/candidate/projects/${e.snapshotId}${e.findingId ? `?finding=${encodeURIComponent(e.findingId)}` : "?view=capabilities"}`
+                    : null;
+                return (
+                  <li key={`${e.project}-${e.title}`} className="text-app-body leading-[1.5] text-[var(--text-body)]">
+                    {href ? (
+                      <Link href={href} className="hover:underline hover:underline-offset-4">
+                        {e.title}
+                      </Link>
+                    ) : (
+                      e.title
+                    )}
+                    <span className="text-app-meta text-[var(--text-tertiary)]"> · {e.project}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            {g.followUp ? (
+              <p className="mt-auto pt-3 text-app-control leading-[1.5] text-[var(--text-secondary)]">
+                <span className="font-medium text-[var(--text-primary)]">Ask: </span>
+                {g.followUp}
+              </p>
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function PresentedProjects({
   presentations,
   projects,
@@ -250,7 +313,10 @@ export default function ProfileOverview({
   actions,
   emptyAbout,
   presentations,
+  capabilityGroups,
 }: {
+  /** Capability groups from stored project reports. When given, they replace the older project-scoped statements. */
+  capabilityGroups?: ProfileCapabilityGroup[];
   profile: EngineerProfile;
   accounts: Account[];
   /** Current (not superseded) projects. */
@@ -271,7 +337,6 @@ export default function ProfileOverview({
   const findings = projects.reduce((n, p) => n + p.evidence.length, 0);
   const areas = strengths(projects);
   const langs = languages(projects);
-  const maxFindings = areas[0]?.findings ?? 0;
   const ordered = [...projects].sort((a, b) => b.evidence.length - a.evidence.length);
   const activity = timeline.filter((t) => t.kind !== "editor-import" || mode === "owner").slice(0, 6);
   const open = profile.openTo && profile.openTo !== "not_looking";
@@ -420,9 +485,11 @@ export default function ProfileOverview({
               id="experience-heading"
               aside={mode === "shared" ? <a href="#evidence" className={quietLink}>See the code</a> : null}
             >
-              Experience from code
+              What the code shows
             </SectionTitle>
-            {experience.length ? (
+            {capabilityGroups ? (
+              <CapabilityGroups groups={capabilityGroups} mode={mode} projectCount={projects.length} />
+            ) : experience.length ? (
               <>
                 <p className="mt-4 max-w-[68ch] text-[14px] leading-[1.6] text-[var(--text-secondary)]">
                   What Fydell found across {projects.length} {projects.length === 1 ? "project" : "projects"}. Every line is backed by cited source lines, not by what the engineer says about the work.
@@ -592,23 +659,21 @@ export default function ProfileOverview({
 
         <aside className="space-y-8 lg:sticky lg:top-20">
           <section aria-labelledby="strengths-heading">
-            <SideTitle id="strengths-heading">Seen in the code</SideTitle>
+            <SideTitle id="strengths-heading">Findings by area</SideTitle>
             {areas.length ? (
               <>
-                <ul className="mt-3 space-y-3">
+                <ul className="mt-3 space-y-2">
                   {areas.map((a) => (
-                    <li key={a.key}>
-                      <div className="flex items-baseline justify-between gap-3 text-[14px]">
-                        <span className="text-[var(--text-primary)]">{CATEGORY_LABEL[a.key] ?? a.key}</span>
-                        <span className="tabular-nums text-[var(--text-secondary)]">{a.findings}</span>
-                      </div>
-                      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-[var(--surface-deep)]" aria-hidden>
-                        <div className="h-full rounded-full" style={{ width: `${Math.max(8, (a.findings / maxFindings) * 100)}%`, background: CATEGORY_TONE[a.key] ?? "var(--accent)" }} />
-                      </div>
+                    <li key={a.key} className="flex items-baseline justify-between gap-3 text-[14px]">
+                      <span className="inline-flex items-center gap-2 text-[var(--text-primary)]">
+                        <span aria-hidden className="h-2 w-2 rounded-[2px]" style={{ background: CATEGORY_TONE[a.key] ?? "var(--accent)" }} />
+                        {CATEGORY_LABEL[a.key] ?? a.key}
+                      </span>
+                      <span className="tabular-nums text-[var(--text-secondary)]">{a.findings}</span>
                     </li>
                   ))}
                 </ul>
-                <p className="mt-3 text-[13px] leading-[1.5] text-[var(--text-tertiary)]">Findings per area. A count of evidence, not a skill rating.</p>
+                <p className="mt-3 text-[13px] leading-[1.5] text-[var(--text-tertiary)]">A count of cited findings in the projects, not a rating of the engineer.</p>
               </>
             ) : (
               <p className="mt-2 text-[14px] leading-[1.6] text-[var(--text-secondary)]">Areas appear once a repository has been analyzed.</p>
@@ -647,7 +712,7 @@ export default function ProfileOverview({
               </div>
               <div>
                 <dt className="font-medium text-[var(--text-primary)]">Read from the code</dt>
-                <dd className="text-[var(--text-secondary)]">Experience, cited findings, areas and languages, each linked to source lines. Authorship is the engineer&apos;s claim.</dd>
+                <dd className="text-[var(--text-secondary)]">What each project&apos;s code shows, cited findings, areas and languages, each linked to source lines. A capability is linked to the engineer only where their commits touch the cited files, and commits are a signal, not proof of authorship.</dd>
               </div>
             </dl>
           </section>

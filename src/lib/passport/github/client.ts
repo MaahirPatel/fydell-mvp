@@ -242,6 +242,27 @@ export class GithubClient {
     return commits;
   }
 
+  /**
+   * Commits GitHub attributes to `author` that touched `path`, walking history
+   * back from `sha` (one page of at most 20, newest first). A contribution
+   * signal only: commit metadata can be rewritten and does not name co-authors.
+   */
+  async listCommitsForPath({ owner, repo }: RepoRef, opts: { author: string; path: string; sha: string }): Promise<AuthoredCommit[]> {
+    const q = new URLSearchParams({ author: opts.author, path: opts.path, sha: opts.sha, per_page: "20" });
+    const res = await this.request(`${API}/repos/${seg(owner)}/${seg(repo)}/commits?${q.toString()}`);
+    const body = (await res.json()) as Array<Record<string, unknown>>;
+    const commits: AuthoredCommit[] = [];
+    for (const c of Array.isArray(body) ? body : []) {
+      const commit = (c.commit ?? {}) as Record<string, unknown>;
+      const author = (commit.author ?? {}) as Record<string, unknown>;
+      const message = typeof commit.message === "string" ? commit.message : "";
+      const date = typeof author.date === "string" ? author.date : null;
+      if (typeof c.sha !== "string" || !date) continue;
+      commits.push({ sha: c.sha, subject: message.split("\n")[0].slice(0, 200), authoredAt: date, parents: Array.isArray(c.parents) ? c.parents.length : 1 });
+    }
+    return commits;
+  }
+
   /** Number of published releases, counted from one page (capped at 100). */
   async countReleases({ owner, repo }: RepoRef): Promise<number> {
     const res = await this.request(`${API}/repos/${seg(owner)}/${seg(repo)}/releases?per_page=100`);

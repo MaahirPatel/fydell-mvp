@@ -23,6 +23,7 @@ import WorkSamplesPanel from "@/components/evidence/WorkSamplesPanel";
 import EvidenceVersionPanel from "@/components/evidence/EvidenceVersionPanel";
 import { listIncludableReports, listWorkSamples } from "@/lib/profile-evidence/work-samples";
 import { evidenceStatus, shareableProjectKeys } from "@/lib/profile-evidence/store";
+import { latestReportsForOwner } from "@/lib/passport/capability/store";
 
 export const metadata = { title: "Projects" };
 export const dynamic = "force-dynamic";
@@ -59,7 +60,8 @@ export default async function WorkRecordPage({
   const initialRepos = (params.repos ?? "").split(",").filter((r) => /^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/.test(r)).slice(0, 3);
   const initialLogin = /^[A-Za-z0-9-]{1,39}$/.test(params.github ?? "") ? (params.github as string) : (passport?.githubLogin ?? "");
   const projects = passport?.projects ?? [];
-  const presentations = await getPresentations(user.id, projects);
+  const [presentations, storedReports] = await Promise.all([getPresentations(user.id, projects), latestReportsForOwner(user.id)]);
+  const reports = Object.fromEntries([...storedReports].map(([snapshotId, r]) => [snapshotId, { version: r.version, review: r.report }]));
   const manualStatuses = (
     await Promise.all(presentations.filter((p) => p.sourceKind === "manual").map((p) => evidenceStatus(user.id, p.projectKey)))
   ).filter((s): s is NonNullable<typeof s> => s !== null);
@@ -132,7 +134,7 @@ export default async function WorkRecordPage({
             <h2 id="projects-heading" className="mb-3 text-[15px] font-semibold tracking-[-0.01em]">
               Projects
             </h2>
-            <WorkRecordProjects projects={projects} corrections={corrections} />
+            <WorkRecordProjects projects={projects} corrections={corrections} reports={reports} />
           </section>
 
           <section id="showcase" aria-labelledby="showcase-heading" className="scroll-mt-24">

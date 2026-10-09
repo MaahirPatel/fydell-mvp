@@ -4,7 +4,16 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { assemblePassport } from "./assemble";
 import { listContributions, listDecisionsForPassport } from "./context-store";
 import { validateCorrectionReason, type Correction, type CorrectionStatus } from "./corrections";
-import { ANALYSIS_VERSION, IMPORTER_VERSION, type ExtractionResult, type ManifestEntry } from "./github/types";
+import {
+  ANALYSIS_VERSION,
+  IMPORTER_VERSION,
+  type AnalysisChecks,
+  type ContributionSignals,
+  type Entailment,
+  type ExtractionResult,
+  type ManifestEntry,
+} from "./github/types";
+import { ruleSummary } from "./rules";
 import { githubDisconnectExplanation } from "./removal";
 import { accountDisplayName } from "@/lib/auth/account-name";
 import { UPLOAD_IMPORTER_VERSION } from "./upload";
@@ -63,6 +72,8 @@ type ProjectRow = {
   revision_ref: string | null;
   importer_version: string | null;
   source_kind: "github" | "upload" | null;
+  contribution_signals: ContributionSignals | null;
+  analysis_checks: AnalysisChecks | null;
   passport_evidence: Array<{
     id: string;
     detector: string;
@@ -75,6 +86,7 @@ type ProjectRow = {
     excerpt: string[];
     source_url: string;
     limitations: string[];
+    entailment: Entailment | null;
   }>;
 };
 
@@ -92,7 +104,7 @@ async function loadPassportCore(passportId: string): Promise<PassportData | null
   const { data: projects } = await admin
     .from("passport_projects")
     .select(
-      "id,repo_full_name,html_url,commit_sha,primary_language,is_fork,contribution_statement,status,coverage,notices,analyzed_at,analysis_version,revision_ref,importer_version,source_kind, passport_evidence(*)",
+      "id,repo_full_name,html_url,commit_sha,primary_language,is_fork,contribution_statement,status,coverage,notices,analyzed_at,analysis_version,revision_ref,importer_version,source_kind,contribution_signals,analysis_checks, passport_evidence(*)",
     )
     .eq("passport_id", passportId)
     .order("analyzed_at", { ascending: false });
@@ -139,15 +151,25 @@ async function loadPassportCore(passportId: string): Promise<PassportData | null
         excerpt: e.excerpt,
         sourceUrl: e.source_url,
         limitations: e.limitations ?? [],
+        entailment: e.entailment ?? null,
       })),
+    contributionSignals: p.contribution_signals ?? null,
+    checks: p.analysis_checks ?? null,
   }));
+  const roleSuggestions = row.role_suggestions ?? [];
+  // Summaries written before statements were scoped to the project described
+  // the person; they are rebuilt from the cited findings instead of shown.
+  const capabilities =
+    summary && "source" in summary && summary.scope === "project"
+      ? summary
+      : ruleSummary(currentSnapshots(projectList).flatMap((p) => p.evidence), roleSuggestions);
   return {
     displayName: profileName || row.display_name,
     headline: row.headline,
     githubLogin: row.github_login,
     updatedAt: row.updated_at,
-    roleSuggestions: row.role_suggestions ?? [],
-    capabilities: summary && "source" in summary ? summary : { source: "rules", capabilities: [], notShown: [] },
+    roleSuggestions,
+    capabilities,
     // Older snapshots of a reimported repository are marked stale so they
     // keep provenance without feeding new summaries or shares (GH-10).
     projects: markSuperseded(projectList),
@@ -344,6 +366,8 @@ export async function saveProject(
         source_kind: isUpload ? "upload" : "github",
         imported_at: new Date().toISOString(),
         job_id: jobId,
+        contribution_signals: result.contributionSignals ?? null,
+        analysis_checks: result.checks ?? null,
       },
       { onConflict: "passport_id,repo_id,commit_sha" },
     )
@@ -374,6 +398,7 @@ export async function saveProject(
         excerpt: f.excerpt,
         source_url: f.sourceUrl,
         limitations: f.limitations,
+        entailment: f.entailment ?? null,
       })),
     );
     if (error) throw new Error("Could not save the evidence.");

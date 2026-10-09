@@ -16,6 +16,7 @@ import { receiptIdsForSnapshots } from "@/lib/receipts/store";
 import Link from "next/link";
 import { listSnapshotVersions } from "@/lib/passport/snapshot-versions";
 import SnapshotVersionView from "@/components/passport/SnapshotVersionView";
+import { capabilityReportState, listCapabilityReportVersions } from "@/lib/passport/capability/store";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Builder Report" };
@@ -67,14 +68,17 @@ export default async function BuilderReportPage({
     }
   }
 
-  const [contribution, decisions, shares, removalImpact, evidence, receipts] = await Promise.all([
+  const [contribution, decisions, shares, removalImpact, evidence, receipts, reportState, reportVersions] = await Promise.all([
     getContribution(user.id, project.repoFullName),
     listDecisions(user.id, project.repoFullName),
     listShares(user.id),
     projectRemovalImpact(user.id, project.repoFullName),
     evidenceStatus(user.id, project.repoFullName),
     receiptIdsForSnapshots(user.id, [project.id]),
+    capabilityReportState(user.id, project.id),
+    listCapabilityReportVersions(user.id, project.id),
   ]);
+  const latestReport = reportState.latest;
   const receiptId = receipts.get(project.id) ?? null;
   const pinnedByShare = shares.some((s) => !s.revokedAt && (s.pinnedProjectIds ?? []).includes(project.id));
 
@@ -83,7 +87,7 @@ export default async function BuilderReportPage({
   const previous = index >= 0 ? (versions[index + 1] ?? null) : null;
   const findingIds = new Set(project.evidence.map((e) => e.id));
   const notes = corrections.filter((c) => findingIds.has(c.findingId) && (c.projectId === null || c.projectId === project.id));
-  const initialView = parseReportView(view);
+  const initialView = typeof finding === "string" && !view ? "findings" : parseReportView(view);
 
   return (
     <CandidateShell width="wide" current="work" crumbs={[{ label: project.repoFullName.split("/").pop() ?? project.repoFullName }]}>
@@ -101,6 +105,18 @@ export default async function BuilderReportPage({
         decisions={decisions}
         initialView={initialView}
         pinnedByShare={pinnedByShare}
+        review={latestReport?.report ?? null}
+        reviewMeta={
+          latestReport
+            ? {
+                version: latestReport.version,
+                reason: latestReport.reason,
+                createdAt: latestReport.createdAt,
+                stale: reportState.stale,
+                versions: reportVersions.map((v) => ({ version: v.version, reason: v.reason, createdAt: v.createdAt })),
+              }
+            : null
+        }
       />
       {evidence ? <EvidenceVersionPanel initial={evidence} /> : null}
       <p className="mt-8 text-[14px] text-[var(--text-secondary)]">

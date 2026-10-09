@@ -7,8 +7,11 @@ import { Sheet } from "@/components/ui/Sheet";
 import { Byline, Notice, SectionHeader, SourceRef } from "@/components/ui/report";
 import {
   COLLABORATION_LABEL,
+  RELATIONSHIPS,
+  RELATIONSHIP_LABEL,
   hasContribution,
   type Collaboration,
+  type ProjectRelationship,
   type ContributionContext,
   type DecisionRecord,
   type EvidenceRef,
@@ -181,7 +184,15 @@ export function ContributionSection({
         <div>
           <Byline
             className="mt-1"
-            at={[saved.updatedAt ? formatDate(saved.updatedAt) : null, saved.collaboration !== "unspecified" ? COLLABORATION_LABEL[saved.collaboration] : null].filter(Boolean).join(" · ") || null}
+            at={
+              [
+                saved.updatedAt ? formatDate(saved.updatedAt) : null,
+                saved.relationship !== "unspecified" ? RELATIONSHIP_LABEL[saved.relationship] : null,
+                saved.collaboration !== "unspecified" ? COLLABORATION_LABEL[saved.collaboration] : null,
+              ]
+                .filter(Boolean)
+                .join(" · ") || null
+            }
             title={saved.collaborationNote || undefined}
           />
           <dl className="mt-4 space-y-4">
@@ -196,7 +207,7 @@ export function ContributionSection({
         </div>
       ) : (
         <div className="mt-2">
-          <p className="text-[15px] leading-[1.6] text-[var(--text-secondary)]">Explain what you built, changed, or maintained.</p>
+          <p className="text-[15px] leading-[1.6] text-[var(--text-secondary)]">Describe your contribution. We&apos;ll show your statement separately from source evidence.</p>
           <Button size="md" variant="secondary" className="mt-3" onClick={() => setEditing(true)}>
             <Plus className="h-3.5 w-3.5" aria-hidden /> Add contribution
           </Button>
@@ -207,7 +218,7 @@ export function ContributionSection({
         open={editing}
         onClose={close}
         title="Your contribution"
-        description="Reviewers see this as your statement, beside the findings."
+        description="Describe your contribution. We'll show your statement separately from source evidence."
         footer={
           <div className="flex items-center justify-end gap-2">
             <Button
@@ -230,6 +241,21 @@ export function ContributionSection({
         }
       >
         <div className="space-y-5">
+          <div>
+            <label htmlFor="c-relationship" className="text-[13.5px] font-medium text-[var(--text-primary)]">
+              Your relationship to this project
+            </label>
+            <p id="c-relationship-hint" className="text-app-meta text-[var(--text-tertiary)]">
+              Shown as your statement. It does not change what the code or commit history shows.
+            </p>
+            <select id="c-relationship" aria-describedby="c-relationship-hint" value={draft.relationship} onChange={(e) => set("relationship", e.target.value as ProjectRelationship)} className={`${field} mt-1.5`}>
+              {RELATIONSHIPS.map((k) => (
+                <option key={k} value={k}>
+                  {RELATIONSHIP_LABEL[k]}
+                </option>
+              ))}
+            </select>
+          </div>
           <TextArea id="c-problem" label="What problem were you solving?" hint="Who had it and why it mattered." value={draft.problem} onChange={(v) => set("problem", v)} rows={3} />
           <TextArea id="c-worked" label="What did you build or change?" hint="The parts that were yours." value={draft.workedOn} onChange={(v) => set("workedOn", v)} rows={4} />
           <TextArea id="c-inherited" label="What was already there?" hint="Code, design or infrastructure you inherited." value={draft.inherited} onChange={(v) => set("inherited", v)} rows={2} />

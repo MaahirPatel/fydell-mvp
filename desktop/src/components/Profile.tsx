@@ -62,7 +62,7 @@ function ProjectCard({
       {project.contributionStatement ? (
         <p className="project-contrib">“{project.contributionStatement}”</p>
       ) : (
-        <p className="muted">No contribution note yet — add one to make this evidence yours.</p>
+        <p className="muted">Describe your contribution. We'll show your statement separately from source evidence.</p>
       )}
       {project.url && (
         <a
