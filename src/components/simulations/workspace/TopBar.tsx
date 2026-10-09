@@ -54,7 +54,7 @@ function remainingText(ms: number): string {
 }
 
 const SAVE_LABEL: Record<SaveState, string> = {
-  saved: "Saved",
+  saved: "Saved to workspace",
   saving: "Saving",
   unsaved: "Unsaved changes",
   offline: "Offline, retrying",
