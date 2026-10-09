@@ -77,7 +77,16 @@ export default async function CandidateSettingsPage() {
           </Row>
         </Group>
 
-        <Group id="data-heading" title="Your data">
+        <Group id="data-heading" title="Data & privacy">
+          <Row label="Download all my data" detail="Your account, profile, Passport, applications, assessments, submissions and notifications as one JSON file.">
+            <a
+              href="/api/account/export"
+              download
+              className="inline-flex h-8 items-center rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-app-meta font-medium text-[var(--text-primary)] shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
+            >
+              Download
+            </a>
+          </Row>
           <Row label="Download my Passport" detail="Everything in your Passport, including notes and corrections, as one JSON file.">
             <a
               href="/api/passport/export"

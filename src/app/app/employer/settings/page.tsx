@@ -351,7 +351,12 @@ export default async function EmployerSettingsPage({
               <Row label="How long it is kept" help="Evaluation data stays until it is deleted on request. Agree a fixed retention period with us before running a cohort.">
                 <Value muted>Until deleted</Value>
               </Row>
-              <Row label="Export or correct data" help="Email us from an address on this workspace and we confirm what we hold before acting.">
+              <Row label="Download your account data" help="Your own account, memberships and notifications as one JSON file. Candidate work stays with the candidate.">
+                <a href="/api/account/export" download className={linkClass}>
+                  Download
+                </a>
+              </Row>
+              <Row label="Export or correct workspace data" help="Email us from an address on this workspace and we confirm what we hold before acting.">
                 <ContactLink className={linkClass} />
               </Row>
             </Group>
