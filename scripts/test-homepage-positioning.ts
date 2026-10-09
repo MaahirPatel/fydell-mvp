@@ -27,11 +27,10 @@ const applicants = read("src/components/marketing/site/ApplicantReview.tsx");
 const simHero = read("src/components/marketing/site/SimulationHero.tsx");
 const desktopBand = read("src/components/marketing/site/DesktopBand.tsx");
 const downloadButton = read("src/components/marketing/site/DownloadButton.tsx");
-const navDownload = read("src/components/marketing/site/NavDownload.tsx");
+const picker = read("src/components/marketing/site/DownloadPicker.tsx");
 const releases = read("src/components/marketing/site/releases.ts");
 const navData = read("src/components/marketing/site/nav-data.ts");
 const products = read("src/components/marketing/site/products.tsx");
-const demoOption = read("src/components/marketing/site/DemoWorkspaceOption.tsx");
 const shell = read("src/components/layout/MarketingShell.tsx");
 const nav = read("src/components/layout/SiteNav.tsx");
 const footer = read("src/components/layout/SiteFooter.tsx");
@@ -57,7 +56,10 @@ ok(
   "hero lead names real projects, simulations and hiring teams",
   /lead="Fydell turns real projects and realistic simulations into evidence hiring teams can read\."/.test(hero),
 );
-ok("hero actions: Download and Sign up", /<DownloadButton \/>/.test(hero) && /href="\/signup"[^>]*>\s*Sign up/.test(hero));
+ok(
+  "hero actions: Sign up and Sign in, no download",
+  /href="\/signup"[^>]*>\s*Sign up/.test(hero) && /href="\/login"[^>]*>\s*Sign in/.test(hero) && !/DownloadButton/.test(hero),
+);
 ok("hero leads straight into the simulation", /<ProductFrame[\s\S]*?size="hero"[\s\S]*?<SimulationHero \/>/.test(hero));
 ok(
   "hero simulation is built from the shipped scenario and labelled as an example",
@@ -67,37 +69,29 @@ ok(
 // Desktop downloads: Windows and macOS only.
 ok("desktop builds are Windows and macOS only", /export type DesktopOs = "macos" \| "windows";/.test(releases) && !/\blinux:\s*\{/i.test(releases));
 ok(
-  "download buttons offer Windows and macOS, never Linux",
-  /<DownloadButton os="windows" \/>/.test(download) &&
-    /<DownloadButton os="macos"/.test(download) &&
-    /<DownloadButton os="windows" \/>/.test(desktopBand) &&
-    /<DownloadButton os="macos"/.test(desktopBand) &&
-    ![downloadButton, navDownload, desktopBand].some((f) => /linux/i.test(f)) &&
+  "downloads live on /download, for Windows and macOS only",
+  /<DownloadPicker \/>/.test(download) &&
+    /href="\/download"/.test(desktopBand) &&
+    /label: "Download", href: "\/download"/.test(navData) &&
+    ![downloadButton, picker, desktopBand].some((f) => /linux/i.test(f)) &&
     !/os="linux"/.test([download, page].join("\n")),
 );
 
-// Demo gating: offered at sign-up only.
+// Demo gating: only inside the signed-in app.
 const demoHref = /href[=:]\s*\{?\s*["'`]\/(demo|sandbox)\b/;
 ok("no demo or sandbox link in the nav, footer or product menu", ![navData, nav, footer].some((f) => demoHref.test(f) || /Interactive demo/.test(f)));
 ok("no demo or sandbox link on the homepage or public pages", !publicSurfaces.some((f) => demoHref.test(f)));
-ok("/demo still exists and sends visitors to the sign-up demo choice", /redirect\("\/signup\?intent=demo"\)/.test(demoPage));
-ok("/sandbox route is kept", existsSync(resolve("src/app/sandbox/page.tsx")));
+ok("/demo sends signed-out visitors to sign up first", /getAuthenticatedUser/.test(demoPage) && /redirect\(`\/signup\?as=employer/.test(demoPage));
 ok(
-  "sign-up offers the demo workspace with honest copy",
-  /DEMO_WORKSPACE_HREF = "\/sandbox"/.test(demoOption) &&
-    /Explore the demo workspace first/.test(demoOption) &&
-    /Synthetic data\. Nothing you do there is sent to anyone\./.test(demoOption) &&
-    /<DemoWorkspaceOption/.test(signupView) &&
-    /params\.intent\) === "demo"/.test(signup) &&
-    /audience !== "open" \? "none"/.test(signup),
+  "sign-up and get-started never offer the demo",
+  !/DemoWorkspaceOption/.test(signupView + getStarted) && /isDemoDestination\(next\) \? "entry" : "none"/.test(signup),
 );
 ok(
-  "audience choice offers developer and employer paths, plus the demo",
+  "audience choice offers developer and employer paths",
   /I'm a developer/.test(getStarted) &&
     /I'm hiring/.test(getStarted) &&
     /\/signup\?as=developer/.test(getStarted) &&
     /\/signup\?as=employer/.test(getStarted) &&
-    /<DemoWorkspaceOption \/>/.test(getStarted) &&
     /as === "developer"/.test(signup),
 );
 
@@ -130,7 +124,7 @@ ok("closing offers sign-up and sales", /Sign up free/.test(page) && /Contact sal
 
 // Navigation and honesty.
 ok("official lockup is used in the site header and footer", /FydellLogo/.test(nav) && /FydellLogo/.test(footer));
-ok("navigation labels", /For Engineers[\s\S]*For Employers[\s\S]*Pricing/.test(navData) && /aria-expanded=\{productOpen\}/.test(nav) && /Log in/.test(nav) && /Open workspace/.test(nav));
+ok("navigation labels", /For Engineers[\s\S]*For Employers[\s\S]*Pricing/.test(navData) && /aria-expanded=\{productOpen\}/.test(nav) && /Sign in/.test(nav) && /Sign up/.test(nav) && /Open workspace/.test(nav));
 ok(
   "every Product menu item has a product page",
   [...navData.matchAll(/href: "\/products\/([a-z-]+)"/g)].every((m) => products.includes(`"${m[1]}": {`) || products.includes(`\n  ${m[1]}: {`)),

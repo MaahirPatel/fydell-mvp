@@ -31,7 +31,17 @@ export default async function CheckEmailPage({ searchParams }: { searchParams: S
         </p>
       }
     >
-      <p className="mb-4 text-app-meta text-[var(--text-secondary)]">Nothing arrived? Check spam, then ask for a new link.</p>
+      <p className="mb-4 text-app-meta text-[var(--text-secondary)]">
+        Nothing arrived? Check spam, then ask for a new link. If this email already has a Fydell account, no new link is sent:{" "}
+        <Link href={withNext("/login", next)} className="font-medium text-[var(--text-primary)] underline-offset-2 hover:underline">
+          sign in
+        </Link>{" "}
+        or{" "}
+        <Link href="/forgot-password" className="font-medium text-[var(--text-primary)] underline-offset-2 hover:underline">
+          reset your password
+        </Link>
+        .
+      </p>
       <ResendConfirmation initialEmail={email} next={next} />
     </AuthShell>
   );

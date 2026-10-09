@@ -9,6 +9,7 @@ import { publicErrorMessage } from "@/lib/security/public-error";
 import { limitByIp, ROUTE_LIMITS } from "@/lib/security/route-limits";
 import { checkEmailPath, confirmationRedirect, emailConfirmationRequired } from "@/lib/auth/email-confirmation";
 import { safeNext } from "@/lib/auth/safe-next";
+import { passwordProblem } from "@/lib/auth/password-policy";
 export const dynamic = "force-dynamic";
 
 type SignupPath = "employer" | "fde" | "partner";
@@ -59,14 +60,12 @@ export async function POST(req: Request) {
     if (!email || !password || !name) {
       return NextResponse.json({ error: "Name, email, and password are required." }, { status: 400 });
     }
-    if (password.length > 256) {
-      return NextResponse.json({ error: "Password must be at most 256 characters." }, { status: 400 });
+    const weak = passwordProblem(password, email);
+    if (weak) {
+      return NextResponse.json({ error: weak }, { status: 400 });
     }
     if (companyWebsite === null) {
       return NextResponse.json({ error: "Enter the company website as an https:// address." }, { status: 400 });
-    }
-    if (password.length < 8) {
-      return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
     }
     if (path === "employer") {
       if (employerSelfSignupMode() === "disabled") {
@@ -100,8 +99,11 @@ export async function POST(req: Request) {
       ? await supabase.auth.signUp({ email, password, options: { data: metadata, emailRedirectTo: confirmationRedirect(returnTo ?? nextPath) } })
       : await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: metadata });
 
-    if (!error && confirmByEmail && data.user && (data.user.identities ?? []).length === 0) {
-      return NextResponse.json({ error: "An account with this email already exists. Sign in instead." }, { status: 400 });
+    // With confirmation on, an existing address gets the same answer as a new
+    // one, so the form cannot be used to learn who has an account.
+    const existing = confirmByEmail && (error ? /already|registered|exists/i.test(error.message) : !!data.user && (data.user.identities ?? []).length === 0);
+    if (existing) {
+      return NextResponse.json({ ok: true, needsConfirmation: true, redirectTo: checkEmailPath(email, returnTo ?? nextPath) });
     }
 
     if (error) {

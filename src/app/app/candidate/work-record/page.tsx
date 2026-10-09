@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronRight, Plus } from "lucide-react";
 import { requireUser } from "@/lib/simulations/auth";
@@ -41,7 +42,7 @@ function Section({ title, hint, children, id }: { title: string; hint?: string; 
 export default async function WorkRecordPage({
   searchParams,
 }: {
-  searchParams: Promise<{ github?: string; repos?: string; removed?: string }>;
+  searchParams: Promise<{ github?: string; repos?: string; removed?: string; connected?: string }>;
 }) {
   const user = await requireUser();
   if (!user) redirect(`/login?next=${encodeURIComponent("/app/candidate/work-record")}`);
@@ -60,6 +61,14 @@ export default async function WorkRecordPage({
   const initialRepos = (params.repos ?? "").split(",").filter((r) => /^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/.test(r)).slice(0, 3);
   const initialLogin = /^[A-Za-z0-9-]{1,39}$/.test(params.github ?? "") ? (params.github as string) : (passport?.githubLogin ?? "");
   const projects = passport?.projects ?? [];
+  const githubLogin = passport?.githubLogin ?? null;
+  const accounts =
+    githubLogin && !hub.accounts.some((a) => a.provider === "github")
+      ? [
+          ...hub.accounts,
+          { id: "passport-github", provider: "github" as const, label: githubLogin, status: "connected" as const, connectedAt: "", lastSyncedAt: null, meta: {} },
+        ]
+      : hub.accounts;
   const [presentations, storedReports] = await Promise.all([getPresentations(user.id, projects), latestReportsForOwner(user.id)]);
   const reports = Object.fromEntries([...storedReports].map(([snapshotId, r]) => [snapshotId, { version: r.version, review: r.report }]));
   const manualStatuses = (
@@ -123,6 +132,15 @@ export default async function WorkRecordPage({
           Project removed. Share links and applications no longer show it.
         </Notice>
       ) : null}
+      {params.connected === "1" && passport?.githubLogin ? (
+        <Notice className="mt-4">
+          {passport.githubLogin} is connected. Choose its repositories under Add a repository and start the import. When the imports finish, open{" "}
+          <Link href="/app/candidate/reports" className="font-medium underline underline-offset-2">
+            Builder Analysis
+          </Link>{" "}
+          and create a new report from them.
+        </Notice>
+      ) : null}
 
       <div className="mt-8 grid grid-cols-1 items-start gap-x-10 gap-y-10 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-10">
@@ -161,7 +179,7 @@ export default async function WorkRecordPage({
             <h2 id="add-heading" className="mb-3 text-[15px] font-semibold tracking-[-0.01em]">
               Add a repository
             </h2>
-            <PassportConnectSection initialLogin={initialLogin} initialRepos={initialRepos} />
+            <PassportConnectSection initialLogin={initialLogin} initialRepos={initialRepos} autoFind={params.connected === "1" && !!params.github} />
             <details id="upload-project" className="group mt-6 scroll-mt-24 border-t border-[var(--border-subtle)]">
               <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-0.5 py-3 text-[14px] font-semibold tracking-[-0.01em]">
                 <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)] transition-transform group-open:rotate-90" aria-hidden />
@@ -204,8 +222,8 @@ export default async function WorkRecordPage({
             </Section>
           )}
 
-          <Section title="Connected accounts">
-            <ConnectedAccounts initial={hub.accounts} />
+          <Section id="connected-accounts" title="Connected accounts">
+            <ConnectedAccounts initial={accounts} repositories={[...new Set(projects.map((p) => p.repoFullName))]} />
           </Section>
 
           {hasProjects ? (

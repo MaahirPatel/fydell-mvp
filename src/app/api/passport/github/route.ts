@@ -96,11 +96,20 @@ export async function PUT(req: Request) {
   return NextResponse.json({ githubLogin: result.githubLogin });
 }
 
-/** Disconnect GitHub from the passport (GH-11): removes the linked login and stops future association. */
+/**
+ * Disconnect GitHub from the passport (GH-11): removes the linked login and stops future association.
+ * `?removeProjects=1` also removes the imported projects whose repository belongs to that account.
+ * A JSON body `{ removeRepositories: ["owner/name"] }` removes those imported projects too.
+ */
 export async function DELETE(req: Request) {
   const blocked = csrfGuard(req);
   if (blocked) return blocked;
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
-  return NextResponse.json(await disconnectGithub(user.id));
+  const removeProjects = new URL(req.url).searchParams.get("removeProjects") === "1";
+  const body = (await req.json().catch(() => null)) as { removeRepositories?: unknown } | null;
+  const removeRepositories = Array.isArray(body?.removeRepositories)
+    ? body.removeRepositories.filter((r): r is string => typeof r === "string" && /^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/.test(r)).slice(0, 100)
+    : [];
+  return NextResponse.json(await disconnectGithub(user.id, { removeProjects, removeRepositories }));
 }

@@ -27,7 +27,7 @@ export default function EmployersPage() {
         title={["See how they work", "before you hire them."]}
         lead="Give candidates a task that reflects your role. Review their changes, tests, and task communication in one place."
         primary={{ href: "/signup?as=employer", label: "Create a workspace" }}
-        supporting={{ href: "/demo", label: "Explore employer sandbox" }}
+        supporting={{ href: "/login", label: "Sign in" }}
       >
         <TintStage tint="violet">
           <ProductFrame size="hero" title="Fydell · Submission review" label="A hiring team's review of one submission: a criterion, the changed lines and checks behind it, the one item left open, and the next step.">

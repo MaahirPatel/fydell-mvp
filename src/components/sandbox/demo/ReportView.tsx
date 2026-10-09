@@ -139,7 +139,20 @@ function ExampleReport({ scenario }: { scenario: DemoScenario }) {
   );
 }
 
-export function ReportView({ scenario, attempt, mode }: { scenario: DemoScenario; attempt: Attempt; mode: "yours" | "example" }) {
+export function ReportView({
+  scenario,
+  attempt,
+  mode,
+  links,
+}: {
+  scenario: DemoScenario;
+  attempt: Attempt;
+  mode: "yours" | "example";
+  /** Where "back to the workspace" and the employer view go; null hides the employer view. */
+  links?: { workspace: string; employerView: string | null };
+}) {
+  const workspaceLink = links?.workspace ?? workspaceHref(scenario.key);
+  const employerLink = links ? links.employerView : `/sandbox/${scenario.key}/review`;
   const report = useMemo(() => deriveReport(scenario, attempt.files, attempt.run.results), [scenario, attempt]);
   const [highlight, setHighlight] = useState<Highlight | null>(null);
   const example = mode === "example";
@@ -173,14 +186,16 @@ export function ReportView({ scenario, attempt, mode }: { scenario: DemoScenario
         <div className={s.actions}>
           {example ? null : (
             <>
-              <Link href={workspaceHref(scenario.key)} className="l-btn l-btn-quiet">
+              <Link href={workspaceLink} className="l-btn l-btn-quiet">
                 <ArrowLeft size={14} aria-hidden />
                 Back to the workspace
               </Link>
-              <Link href={`/sandbox/${scenario.key}/review`} className="l-btn l-btn-solid">
-                Employer view of your submission
-                <ArrowRight size={14} aria-hidden />
-              </Link>
+              {employerLink ? (
+                <Link href={employerLink} className="l-btn l-btn-solid">
+                  Employer view of your submission
+                  <ArrowRight size={14} aria-hidden />
+                </Link>
+              ) : null}
             </>
           )}
         </div>

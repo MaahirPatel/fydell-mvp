@@ -162,12 +162,15 @@ export default function PassportBuilder({
   initialLogin = "",
   initialRepos = [],
   showPreview = true,
+  autoFind = false,
   onImportsStarted,
 }: {
   signedIn: boolean;
   initialLogin?: string;
   initialRepos?: string[];
   showPreview?: boolean;
+  /** Look up initialLogin's repositories on mount, for a freshly connected account. */
+  autoFind?: boolean;
   /** Called after imports are accepted by the server. */
   onImportsStarted?: (repositories: string[], githubLogin: string | null) => void;
 }) {
@@ -260,16 +263,15 @@ export default function PassportBuilder({
     return () => clearTimeout(timer);
   }, [initialRepos, signedIn, reviewScope, runAllPreviews]);
 
-  async function findRepositories(e: React.FormEvent) {
-    e.preventDefault();
-    if (loading) return;
+  async function lookUp(query: string) {
+    if (loading || !query.trim()) return;
     setError(null);
     setLoading(true);
     try {
       const res = await fetch("/api/passport/github", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input, preview: true }),
+        body: JSON.stringify({ input: query, preview: true }),
       });
       const data = (await res.json()) as { kind?: string; user?: string; repositories?: Repo[]; preview?: OkPreview; error?: string };
       if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
@@ -298,6 +300,21 @@ export default function PassportBuilder({
       setLoading(false);
     }
   }
+
+  async function findRepositories(e: React.FormEvent) {
+    e.preventDefault();
+    await lookUp(input);
+  }
+
+  const autoFound = useRef(false);
+  useEffect(() => {
+    if (!autoFind || autoFound.current || !initialLogin || initialRepos.length) return;
+    autoFound.current = true;
+    const timer = setTimeout(() => void lookUp(initialLogin), 0);
+    return () => clearTimeout(timer);
+    // Runs once for a freshly connected account; lookUp only reads its argument and state setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFind, initialLogin, initialRepos.length]);
 
   const ready = selected.filter((n) => scopes[n]?.status === "ready");
   const anyLoading = selected.some((n) => scopes[n]?.status === "loading");
@@ -401,6 +418,15 @@ export default function PassportBuilder({
           {start.status === "started" ? (
             <p role="status" className="mt-3 flex items-center gap-1.5 text-app-meta text-[var(--fydell-good)]">
               <Check className="h-4 w-4" aria-hidden /> Import started. Progress is shown under Imports.
+              {signedIn ? (
+                <>
+                  {" "}
+                  <Link href="/app/candidate/reports" className="font-medium underline underline-offset-2">
+                    Create a Builder Analysis
+                  </Link>{" "}
+                  once it finishes.
+                </>
+              ) : null}
             </p>
           ) : null}
         </form>

@@ -7,11 +7,10 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field, FormError, Input, PasswordInput } from "@/components/ui/Field";
 import { isEmployerDestination, safeNext, withNext } from "@/lib/auth/safe-next";
+import { MIN_PASSWORD, passwordProblem } from "@/lib/auth/password-policy";
 import s from "./auth.module.css";
 
 export type SignupPath = "employer" | "fde" | "partner";
-
-const MIN_PASSWORD = 8;
 
 /** Where a new account goes when no destination was carried in. */
 export const FIRST_RUN: Record<SignupPath, string | null> = {
@@ -25,8 +24,8 @@ function humanizeAuthError(raw: string): string {
   if (lower.includes("already registered") || lower.includes("already been registered") || lower.includes("already exists")) {
     return "An account with this email already exists. Sign in instead.";
   }
-  if (lower.includes("password") && (lower.includes("weak") || lower.includes("least"))) {
-    return `Use a password with at least ${MIN_PASSWORD} characters.`;
+  if (lower.includes("password") && lower.includes("weak")) {
+    return "That password is too easy to guess. Choose a less common one.";
   }
   if (lower.includes("reserved")) {
     return "That company name is reserved. Use your company's full name.";
@@ -92,7 +91,9 @@ export default function SignupForm({
   const hydrated = useHydrated();
 
   const choices = partnerEnabled ? [...CHOICES, PARTNER_CHOICE] : CHOICES;
-  const passwordOk = password.length >= MIN_PASSWORD;
+  const longEnough = password.length >= MIN_PASSWORD;
+  const passwordIssue = longEnough ? passwordProblem(password, email) : null;
+  const passwordOk = longEnough && !passwordIssue;
   const remaining = Math.max(0, MIN_PASSWORD - password.length);
 
   function validate(): boolean {
@@ -100,7 +101,8 @@ export default function SignupForm({
     if (chooseRole && !path) nextErrors.path = "Choose how you'll use Fydell.";
     if (!name.trim()) nextErrors.name = "Enter your full name.";
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) nextErrors.email = "Enter a valid email address.";
-    if (!passwordOk) nextErrors.password = `Use at least ${MIN_PASSWORD} characters.`;
+    const weak = passwordProblem(password, email);
+    if (weak) nextErrors.password = weak;
     if (path === "employer" && !companyName.trim()) nextErrors.companyName = "Enter your company name.";
     if (!acceptedTerms) nextErrors.acceptedTerms = "Accept the terms and privacy notice to continue.";
     setFieldErrors(nextErrors);
@@ -279,7 +281,7 @@ export default function SignupForm({
         <p
           id="signup-password-rule"
           className={`mt-1.5 flex items-center gap-1.5 text-app-meta leading-[1.5] ${
-            fieldErrors.password ? "text-[var(--fydell-risk)]" : passwordOk ? "text-[var(--status-positive-ink)]" : "text-[var(--text-secondary)]"
+            fieldErrors.password || passwordIssue ? "text-[var(--fydell-risk)]" : passwordOk ? "text-[var(--status-positive-ink)]" : "text-[var(--text-secondary)]"
           }`}
           aria-live="polite"
         >
@@ -291,8 +293,8 @@ export default function SignupForm({
           >
             {passwordOk ? <Check className="h-2.5 w-2.5" strokeWidth={3} /> : null}
           </span>
-          {`At least ${MIN_PASSWORD} characters`}
-          {!passwordOk && password.length > 0 ? ` · ${remaining} more` : null}
+          {fieldErrors.password ?? passwordIssue ?? `At least ${MIN_PASSWORD} characters, not a common password`}
+          {!longEnough && password.length > 0 && !fieldErrors.password ? ` · ${remaining} more` : null}
         </p>
       </div>
 

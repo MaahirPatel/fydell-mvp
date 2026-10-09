@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
 import FydellLogo from "@/components/brand/FydellLogo";
 import { PRIMARY_LINKS, PRODUCT_ITEMS, RESOURCE_ITEMS } from "@/components/marketing/site/nav-data";
-import NavDownload from "@/components/marketing/site/NavDownload";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 const linkClass = (active: boolean) =>
@@ -215,22 +214,19 @@ export default function SiteNav() {
 
         <div className="flex items-center justify-self-end gap-1">
           {signedIn ? (
-            <Link href="/app" className="l-btn l-btn-quiet h-9 px-4 text-[14px]">
+            <Link href="/app" className="l-btn l-btn-solid h-9 px-4 text-[14px]">
               Open workspace
             </Link>
           ) : (
             <>
               <Link href="/login" className={`${linkClass(pathname === "/login")} hidden sm:inline-flex`}>
-                Log in
+                Sign in
               </Link>
-              <Link href="/signup" className="l-btn l-btn-quiet ml-1 h-9 px-4 text-[14px]">
+              <Link href="/signup" className="l-btn l-btn-solid ml-1 h-9 px-4 text-[14px]">
                 Sign up
               </Link>
             </>
           )}
-          <span className="hidden min-[960px]:flex">
-            <NavDownload />
-          </span>
           <button
             type="button"
             onClick={() => setMobileOn(mobileOpen ? null : pathname)}
@@ -258,7 +254,7 @@ export default function SiteNav() {
               ))}
             </ul>
             <ul className="mt-4 border-t border-[var(--border-default)]">
-              {[...PRIMARY_LINKS, { label: "Download", href: "/download" }, ...RESOURCE_ITEMS.slice(0, 2)].map((item) => (
+              {[...PRIMARY_LINKS, ...RESOURCE_ITEMS.slice(0, 2)].map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
@@ -282,7 +278,7 @@ export default function SiteNav() {
                     Sign up
                   </Link>
                   <Link href="/login" onClick={() => setMobileOn(null)} className="l-btn l-btn-lg l-btn-ghost">
-                    Log in
+                    Sign in
                   </Link>
                 </>
               )}

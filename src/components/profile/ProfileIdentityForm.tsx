@@ -2,7 +2,9 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Instagram, Linkedin, Plus, Twitter, X } from "lucide-react";
+import { Camera, Plus, X } from "lucide-react";
+import { SOCIAL_INK, SOCIAL_LOGO } from "@/components/profile/SocialIcons";
+import { normalizeSocial, socialDisplay } from "@/lib/profile/social";
 import { Sheet } from "@/components/ui/Sheet";
 import { Notice } from "@/components/ui/report";
 import Avatar from "@/components/profile/Avatar";
@@ -18,10 +20,10 @@ import {
   type SocialProfiles,
 } from "@/lib/profile/types";
 
-const SOCIAL_FIELDS: { kind: SocialKind; Icon: typeof Linkedin; placeholder: string }[] = [
-  { kind: "linkedin", Icon: Linkedin, placeholder: "linkedin.com/in/your-name" },
-  { kind: "x", Icon: Twitter, placeholder: "@handle" },
-  { kind: "instagram", Icon: Instagram, placeholder: "@handle" },
+const SOCIAL_FIELDS: { kind: SocialKind; placeholder: string }[] = [
+  { kind: "x", placeholder: "@handle or x.com/handle" },
+  { kind: "instagram", placeholder: "@handle or instagram.com/handle" },
+  { kind: "linkedin", placeholder: "linkedin.com/in/your-name" },
 ];
 
 const inputClass =
@@ -275,24 +277,50 @@ export default function ProfileIdentityForm({
           </Field>
           <fieldset className="space-y-3">
             <legend className={labelClass}>Social profiles</legend>
-            {SOCIAL_FIELDS.map((f) => (
-              <div key={f.kind} className="grid grid-cols-[110px_minmax(0,1fr)] items-center gap-3">
-                <label htmlFor={`profile-social-${f.kind}`} className="inline-flex items-center gap-2 text-app-body text-[var(--text-primary)]">
-                  <f.Icon className="h-4 w-4 text-[var(--text-tertiary)]" aria-hidden />
-                  {SOCIAL_LABEL[f.kind]}
-                </label>
-                <input
-                  id={`profile-social-${f.kind}`}
-                  className={inputClass}
-                  value={form.social[f.kind]}
-                  onChange={(e) => set("social", { ...form.social, [f.kind]: e.target.value })}
-                  maxLength={200}
-                  placeholder={f.placeholder}
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-              </div>
-            ))}
+            {SOCIAL_FIELDS.map((f) => {
+              const Logo = SOCIAL_LOGO[f.kind];
+              const value = form.social[f.kind];
+              const parsed = value.trim() ? normalizeSocial(f.kind, value) : null;
+              return (
+                <div key={f.kind} className="grid grid-cols-[110px_minmax(0,1fr)] items-start gap-3">
+                  <label htmlFor={`profile-social-${f.kind}`} className="inline-flex h-9 items-center gap-2 text-app-body text-[var(--text-primary)]">
+                    <Logo className="h-4 w-4" />
+                    {SOCIAL_LABEL[f.kind]}
+                  </label>
+                  <div>
+                    <input
+                      id={`profile-social-${f.kind}`}
+                      className={inputClass}
+                      value={value}
+                      onChange={(e) => set("social", { ...form.social, [f.kind]: e.target.value })}
+                      maxLength={200}
+                      placeholder={f.placeholder}
+                      autoComplete="off"
+                      spellCheck={false}
+                      aria-describedby={`profile-social-${f.kind}-preview`}
+                    />
+                    <div id={`profile-social-${f.kind}-preview`} aria-live="polite" className="min-h-0">
+                      {parsed?.ok && parsed.url ? (
+                        <a
+                          href={parsed.url}
+                          target="_blank"
+                          rel="noopener noreferrer nofollow"
+                          className="mt-1.5 inline-flex h-7 items-center gap-1.5 rounded-full border border-[var(--border-default)] bg-[var(--surface-raised)] pl-1 pr-2.5 text-app-meta font-medium text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+                        >
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--surface-panel)]" style={{ color: SOCIAL_INK[f.kind] }}>
+                            <Logo className="h-3 w-3" />
+                          </span>
+                          {socialDisplay(f.kind, parsed.url)}
+                          <span className="font-normal text-[var(--text-tertiary)]">Open</span>
+                        </a>
+                      ) : parsed && parsed.ok === false ? (
+                        <p className="mt-1.5 text-app-meta text-[var(--fydell-risk)]">{parsed.error}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
             <p className="text-app-meta text-[var(--text-tertiary)]">Paste the profile address or type your handle. Leave a field empty to hide it.</p>
           </fieldset>
           {githubLogin !== undefined ? (

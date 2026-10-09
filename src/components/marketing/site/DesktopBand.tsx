@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import DownloadButton from "./DownloadButton";
 import { hasPainting } from "./PaintedStage";
 import RevealObserver from "./RevealObserver";
 import { LATEST } from "./releases";
@@ -22,8 +21,9 @@ export default function DesktopBand() {
               </h2>
               <p className={s.desktopBody}>Take simulations in a native workspace on Windows or macOS.</p>
               <div className={s.desktopCtas}>
-                <DownloadButton os="windows" />
-                <DownloadButton os="macos" variant="quiet" />
+                <Link href="/download" className="l-btn l-btn-lg l-btn-solid">
+                  See download options
+                </Link>
               </div>
               <p className={s.desktopMeta}>
                 Version {LATEST.version} · Beta · <Link href="/changelog">Changelog</Link>

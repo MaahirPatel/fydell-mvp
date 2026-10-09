@@ -20,4 +20,5 @@ export const PRIMARY_LINKS: readonly NavItem[] = [
   { label: "For Engineers", href: "/developers" },
   { label: "For Employers", href: "/employers" },
   { label: "Pricing", href: "/pricing" },
+  { label: "Download", href: "/download" },
 ];

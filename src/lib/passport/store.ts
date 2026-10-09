@@ -1011,13 +1011,35 @@ export async function withdrawCorrection(ownerId: string, correctionId: string):
  * and stops future imports from associating with it. Already-imported
  * projects are kept until removed individually.
  */
-export async function disconnectGithub(ownerId: string): Promise<{ disconnected: boolean; explanation: string }> {
+export async function disconnectGithub(
+  ownerId: string,
+  opts: { removeProjects?: boolean; removeRepositories?: readonly string[] } = {},
+): Promise<{ disconnected: boolean; explanation: string; removedProjects: string[] }> {
   const passportId = await passportIdFor(ownerId);
   await syncGithubAccount(ownerId, null);
-  if (!passportId) return { disconnected: false, explanation: githubDisconnectExplanation() };
+  if (!passportId) return { disconnected: false, explanation: githubDisconnectExplanation(), removedProjects: [] };
   const admin = createAdminSupabaseClient();
+  const { data: row } = await admin.from("passports").select("github_login").eq("id", passportId).maybeSingle();
+  const previous = (row as { github_login: string | null } | null)?.github_login ?? null;
+  const owned = opts.removeProjects && previous ? await githubAccountRepositories(passportId, previous) : [];
+  const imported = new Set(await importedRepositories(passportId));
+  const chosen = (opts.removeRepositories ?? []).filter((r) => imported.has(r));
+  const removedProjects = [...new Set([...owned, ...chosen])];
+  for (const repo of removedProjects) await removeProject(ownerId, repo);
   await admin.from("passports").update({ github_login: null }).eq("id", passportId);
-  return { disconnected: true, explanation: githubDisconnectExplanation() };
+  return { disconnected: true, explanation: githubDisconnectExplanation(), removedProjects };
+}
+
+/** Imported repositories owned by a GitHub account: owner/name where owner matches the login, case-insensitively. */
+async function githubAccountRepositories(passportId: string, login: string): Promise<string[]> {
+  const prefix = `${login.toLowerCase()}/`;
+  return (await importedRepositories(passportId)).filter((n) => n.toLowerCase().startsWith(prefix));
+}
+
+async function importedRepositories(passportId: string): Promise<string[]> {
+  const admin = createAdminSupabaseClient();
+  const { data } = await admin.from("passport_projects").select("repo_full_name").eq("passport_id", passportId);
+  return [...new Set(((data ?? []) as { repo_full_name: string }[]).map((r) => r.repo_full_name))];
 }
 
 export const GITHUB_LOGIN_PATTERN = /^[A-Za-z0-9-]{1,39}$/;

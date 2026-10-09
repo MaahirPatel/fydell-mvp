@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Github } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -158,6 +159,13 @@ export default function GithubUsernameControl({ initial }: { initial: string | n
             {invalid
               ? "Use up to 39 letters, numbers or single hyphens, not starting or ending with a hyphen."
               : "Shown on your profile with a link to github.com/<name>. Fydell does not verify that the account is yours."}
+          </p>
+          <p className="mt-1 text-app-meta leading-[1.5] text-[var(--text-secondary)]">
+            Replacing the account and its projects?{" "}
+            <Link href="/app/candidate/work-record#connected-accounts" className="font-medium text-[var(--text-primary)] underline underline-offset-2">
+              Switch account on Projects
+            </Link>
+            .
           </p>
         </div>
       ) : null}

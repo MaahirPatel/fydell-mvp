@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, FormError, PasswordInput } from "@/components/ui/Field";
 import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { withNext } from "@/lib/auth/safe-next";
+import { passwordProblem } from "@/lib/auth/password-policy";
 
 type LinkState = "checking" | "valid" | "invalid";
 
@@ -63,7 +64,8 @@ function ResetPasswordContent() {
     if (loading) return;
 
     const errors: Record<string, string> = {};
-    if (password.length < 8) errors.password = "Use at least 8 characters.";
+    const weak = passwordProblem(password);
+    if (weak) errors.password = weak;
     if (password !== confirm) errors.confirm = "Both passwords must match.";
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;

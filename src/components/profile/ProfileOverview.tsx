@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowUpRight, Check, FolderGit2, GitCommitHorizontal, Github, Globe, Instagram, Link2, Linkedin, MapPin, MessageSquareQuote, Twitter } from "lucide-react";
+import { ArrowUpRight, Check, FolderGit2, GitCommitHorizontal, Globe, Link2, MapPin, MessageSquareQuote } from "lucide-react";
+import { GitHubLogo, SOCIAL_INK, SOCIAL_LOGO } from "@/components/profile/SocialIcons";
 import type { CapabilitySummary, PassportProject } from "@/lib/passport/view";
 import { PROJECT_STATE_LABEL, TEAM_LABEL, formatPeriod, type ProjectPresentation } from "@/lib/passport/presentation";
 import type { RoleSuggestion } from "@/lib/passport/github/types";
@@ -26,8 +27,6 @@ const ROLE_LABEL: Record<RoleSuggestion["family"], string> = {
   applied_ai: "Applied AI engineering",
   ml_engineering: "ML engineering",
 };
-
-const SOCIAL_ICON: Record<SocialKind, typeof Linkedin> = { linkedin: Linkedin, x: Twitter, instagram: Instagram };
 
 function shortDate(iso: string | null): string {
   if (!iso) return "";
@@ -577,11 +576,14 @@ export default function ProfileOverview({
     .filter((c) => c.cited > 0);
   const roles = roleSuggestions.filter((r) => r.evidenceIds.length > 0);
 
-  const profileLinks: { key: string; label: string; href: string; Icon: typeof Linkedin }[] = [
-    ...(profile.social.linkedin ? [{ key: "linkedin", label: socialDisplay("linkedin", profile.social.linkedin), href: profile.social.linkedin, Icon: SOCIAL_ICON.linkedin }] : []),
-    ...(github ? [{ key: "github", label: github, href: `https://github.com/${github}`, Icon: Github }] : []),
-    ...(profile.social.x ? [{ key: "x", label: socialDisplay("x", profile.social.x), href: profile.social.x, Icon: SOCIAL_ICON.x }] : []),
-    ...(profile.social.instagram ? [{ key: "instagram", label: socialDisplay("instagram", profile.social.instagram), href: profile.social.instagram, Icon: SOCIAL_ICON.instagram }] : []),
+  type ProfileLinkItem = { key: string; label: string; href: string; Icon: (p: { className?: string }) => React.ReactNode; ink?: string };
+  const socialLink = (kind: SocialKind): ProfileLinkItem[] =>
+    profile.social[kind] ? [{ key: kind, label: socialDisplay(kind, profile.social[kind]), href: profile.social[kind], Icon: SOCIAL_LOGO[kind], ink: SOCIAL_INK[kind] }] : [];
+  const profileLinks: ProfileLinkItem[] = [
+    ...socialLink("x"),
+    ...socialLink("instagram"),
+    ...socialLink("linkedin"),
+    ...(github ? [{ key: "github", label: github, href: `https://github.com/${github}`, Icon: GitHubLogo, ink: SOCIAL_INK.github }] : []),
     ...(profile.website ? [{ key: "website", label: host(profile.website), href: profile.website, Icon: Globe }] : []),
     ...profile.links.map((l, i) => ({ key: `link-${i}`, label: l.label || host(l.url), href: l.url, Icon: Link2 })),
   ];
@@ -613,17 +615,22 @@ export default function ProfileOverview({
               {profile.openTo ? <Status kind={open ? "success" : "neutral"}>{OPEN_TO_LABEL[profile.openTo]}</Status> : null}
             </p>
             {profileLinks.length ? (
-              <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Profiles and links">
-                {profileLinks.map(({ key, label, href, Icon }) => (
+              <ul className="mt-3 flex flex-wrap gap-2" aria-label="Profiles and links">
+                {profileLinks.map(({ key, label, href, Icon, ink }) => (
                   <li key={key}>
                     <a
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer nofollow"
-                      className="inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-2 text-app-meta font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
-                      aria-label={key in SOCIAL_LABEL ? `${SOCIAL_LABEL[key as SocialKind]}: ${label}` : undefined}
+                      className="inline-flex h-8 items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--surface-raised)] pl-1 pr-3 text-app-meta font-medium text-[var(--text-primary)] shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
+                      aria-label={key in SOCIAL_LABEL ? `${SOCIAL_LABEL[key as SocialKind]}: ${label}` : key === "github" ? `GitHub: ${label}` : undefined}
                     >
-                      <Icon className="h-3.5 w-3.5 text-[var(--text-secondary)]" aria-hidden />
+                      <span
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--surface-panel)]"
+                        style={ink ? { color: ink } : undefined}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                      </span>
                       {label}
                     </a>
                   </li>

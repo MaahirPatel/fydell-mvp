@@ -28,9 +28,8 @@ export default async function SignupPage({
         ? "fde"
         : null;
 
-  // The demo workspace is offered only on open sign-up, never to someone arriving with an invitation or application.
-  const demo: SignupDemo =
-    audience !== "open" ? "none" : isDemoDestination(next) ? "entry" : one(params.intent) === "demo" ? "first" : "offer";
+  // The demo workspace is shown only after signing in; sign-up mentions it only on the way to a demo page.
+  const demo: SignupDemo = audience === "open" && isDemoDestination(next) ? "entry" : "none";
 
   return <SignupView audience={audience} initialPath={initialPath} next={next} partnerEnabled={partnerSignupEnabled()} demo={demo} />;
 }

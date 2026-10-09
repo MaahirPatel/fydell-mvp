@@ -7,7 +7,6 @@ import SimulationHero from "@/components/marketing/site/SimulationHero";
 import HeroReview from "@/components/marketing/site/HeroReview";
 import PaintedStage from "@/components/marketing/site/PaintedStage";
 import TintStage from "@/components/marketing/site/TintStage";
-import DownloadButton from "@/components/marketing/site/DownloadButton";
 import DesktopBand from "@/components/marketing/site/DesktopBand";
 import EvidenceGrid from "@/components/marketing/site/EvidenceGrid";
 import { Announcement, CenteredClosing, CenteredHero, ShowcaseSection, Tiles } from "@/components/marketing/site/Home";
@@ -29,9 +28,11 @@ export default function HomePage() {
         lead="Engineers share real projects and work samples. Hiring teams read the evidence behind every claim, then make the call."
         actions={
           <>
-            <DownloadButton />
-            <Link href="/demo" className="l-btn l-btn-quiet">
-              Explore employer sandbox
+            <Link href="/signup" className="l-btn l-btn-lg l-btn-solid">
+              Sign up free
+            </Link>
+            <Link href="/login" className="l-btn l-btn-lg l-btn-quiet">
+              Sign in
             </Link>
           </>
         }

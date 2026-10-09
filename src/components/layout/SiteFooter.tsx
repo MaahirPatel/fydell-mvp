@@ -24,7 +24,7 @@ const COLUMNS: { title: string; links: readonly { label: string; href: string }[
     title: "Company",
     links: [
       { label: "Contact", href: "/contact" },
-      { label: "Log in", href: "/login" },
+      { label: "Sign in", href: "/login" },
       { label: "Sign up", href: "/signup" },
     ],
   },
