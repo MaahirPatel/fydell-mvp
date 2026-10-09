@@ -318,6 +318,8 @@ type ShellIdentity = {
   userName: string;
   userAvatarUrl: string | null;
   contexts: WorkspaceContexts | null;
+  /** Reviewers and viewers cannot invite, so they get no invite control. */
+  canInvite: boolean;
 };
 
 /** Everything the rail holds. The phone sheet renders the same thing. */
@@ -335,7 +337,7 @@ function SidebarContent({
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-1.5">
         <WorkspaceSwitcher workspaceName={identity.workspaceName} onNavigate={onNavigate} />
-        {showInvite ? <InviteIconButton onBeforeOpen={onNavigate} /> : null}
+        {showInvite && identity.canInvite ? <InviteIconButton onBeforeOpen={onNavigate} /> : null}
       </div>
 
       <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
@@ -534,7 +536,7 @@ function MobileTopBar({ identity }: { identity: ShellIdentity }) {
         <span className="min-w-0 truncate text-[14px] text-[var(--text-secondary)]">{section.label}</span>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           <NotificationBell />
-          <InviteIconButton />
+          {identity.canInvite ? <InviteIconButton /> : null}
         </div>
       </header>
       {open ? <MobileNavSheet identity={identity} onClose={close} /> : null}
@@ -582,6 +584,7 @@ export default function EmployerShell({
   userAvatarUrl = null,
   contexts,
   catalog,
+  canInvite = true,
   children,
 }: {
   workspaceName: string;
@@ -590,12 +593,13 @@ export default function EmployerShell({
   userAvatarUrl?: string | null;
   contexts: WorkspaceContexts | null;
   catalog: CatalogRole[];
+  canInvite?: boolean;
   children: React.ReactNode;
 }) {
-  const identity: ShellIdentity = { workspaceName, userEmail, userName, userAvatarUrl, contexts };
+  const identity: ShellIdentity = { workspaceName, userEmail, userName, userAvatarUrl, contexts, canInvite };
   return (
     <ToastProvider>
-      <InviteModalProvider catalog={catalog}>
+      <InviteModalProvider catalog={catalog} canInvite={canInvite}>
         <div className="min-h-screen bg-[var(--surface-raised)] text-[var(--text-primary)] [--radius-frame:9px] [--radius-panel:8px] md:flex md:h-dvh md:min-h-0 md:overflow-hidden md:bg-[var(--surface-panel)]">
           <aside className="hidden w-[244px] shrink-0 flex-col px-2 pb-2 pt-2.5 md:flex">
             <SidebarContent identity={identity} showInvite />

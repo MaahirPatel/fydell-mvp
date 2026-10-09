@@ -167,9 +167,10 @@ export function TeamManager({ members, canManage, actorIsOwner }: { members: Tea
   );
 }
 
-export function PendingMemberships({ items }: { items: { id: string; organizationName: string; roleLabel: string }[] }) {
+export function PendingMemberships({ items, afterAccept }: { items: { id: string; organizationName: string; roleLabel: string }[]; afterAccept?: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [accepting, setAccepting] = useState<string | null>(null);
   if (items.length === 0) return null;
   return (
     <div className="grid gap-2">
@@ -182,10 +183,20 @@ export function PendingMemberships({ items }: { items: { id: string; organizatio
           <Button
             size="sm"
             variant="primary"
+            loading={accepting === item.id}
+            disabled={accepting !== null && accepting !== item.id}
             onClick={async () => {
+              setError(null);
+              setAccepting(item.id);
               const res = await engFetch("/api/eng/members/accept", { body: { membershipId: item.id } });
-              if (res.ok === false) setError(res.error);
-              else router.refresh();
+              if (res.ok === false) {
+                setError(res.error);
+                setAccepting(null);
+              } else if (afterAccept) router.push(afterAccept);
+              else {
+                setAccepting(null);
+                router.refresh();
+              }
             }}
           >
             Accept and switch

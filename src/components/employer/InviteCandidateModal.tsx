@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Drawer } from "@/components/ui/Dialog";
 import { Field, FormError, Input, Select } from "@/components/ui/Field";
+import { capabilityDeniedMessage } from "@/lib/orgs/capabilities";
 import type { CatalogRole } from "./catalog-types";
 
 interface OpenOptions {
@@ -57,9 +58,11 @@ function defaultSlugFor(role: CatalogRole | undefined): string {
 
 export function InviteModalProvider({
   catalog,
+  canInvite = true,
   children,
 }: {
   catalog: CatalogRole[];
+  canInvite?: boolean;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -174,7 +177,7 @@ export function InviteModalProvider({
     <InviteModalContext.Provider value={contextValue}>
       {children}
       <Drawer
-        open={isOpen}
+        open={isOpen && canInvite}
         onClose={close}
         title={sent ? "Invitation created" : "Invite a candidate"}
         description={
@@ -340,6 +343,21 @@ export function InviteModalProvider({
             <button type="submit" className="hidden" aria-hidden tabIndex={-1} />
           </form>
         )}
+      </Drawer>
+      <Drawer
+        open={isOpen && !canInvite}
+        onClose={close}
+        title="Your role cannot invite candidates"
+        description={capabilityDeniedMessage("manage_candidates")}
+        footer={
+          <Button variant="primary" onClick={close}>
+            Close
+          </Button>
+        }
+      >
+        <p className="text-app-body leading-[1.6] text-[var(--text-secondary)]">
+          A workspace owner or admin can change your role on the Team page.
+        </p>
       </Drawer>
     </InviteModalContext.Provider>
   );

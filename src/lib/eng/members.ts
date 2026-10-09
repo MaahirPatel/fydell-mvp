@@ -226,5 +226,7 @@ export async function acceptMembership(db: Admin, user: { id: string; email: str
     .select("organization_id")
     .maybeSingle();
   if (error || !data) throw new Error("That invitation is no longer available.");
+  // Joining a hiring team answers the account's open "how will you use Fydell" question.
+  await db.from("profiles").update({ account_type: "employer" }).eq("id", user.id).eq("account_type", "unresolved");
   return data.organization_id as string;
 }

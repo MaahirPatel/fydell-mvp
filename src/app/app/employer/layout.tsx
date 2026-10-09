@@ -12,6 +12,7 @@ import { memberIdentity } from "@/lib/workspace/identity";
 import { loadWorkspaceContexts } from "@/lib/workspace/contexts";
 import { isPreviewMode, PREVIEW_ORG, PREVIEW_USER } from "@/lib/dev/preview";
 import { getEmployerCatalog } from "./_lib/catalog";
+import { orgCan } from "@/lib/orgs/capabilities";
 
 export const metadata = { title: "Workspace" };
 export const dynamic = "force-dynamic";
@@ -130,6 +131,7 @@ export default async function EmployerAppLayout({ children }: { children: React.
   }
 
   let workspaceName = "Your workspace";
+  let canInvite = true;
   let identity = memberIdentity(user.email || "", null, user.user_metadata);
   {
     const admin = createAdminSupabaseClient();
@@ -144,6 +146,15 @@ export default async function EmployerAppLayout({ children }: { children: React.
       (memberships ?? []).find((m) => m.organization_id === activeOrg) ?? (memberships ?? [])[0] ?? null;
 
     if (!membership?.organization_id) {
+      // A teammate invitation takes precedence over role setup, so the invitee
+      // joins that workspace instead of being offered a new one of their own.
+      const { count: invitedCount } = await admin
+        .from("organization_members")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("status", "invited");
+      if (invitedCount) redirect("/account/workspace-invitations");
+
       // No org yet. Route by account type; employers (or missing type) get a
       // default workspace instead of a missing onboarding route.
       const { data: profile } = await admin
@@ -181,6 +192,7 @@ export default async function EmployerAppLayout({ children }: { children: React.
     } else {
       const org = membership.organizations as { name?: string } | null;
       workspaceName = org?.name || workspaceName;
+      canInvite = orgCan(membership.role as string, "manage_candidates");
 
       const { data: profile } = await admin
         .from("profiles")
@@ -204,6 +216,7 @@ export default async function EmployerAppLayout({ children }: { children: React.
       userAvatarUrl={identity.avatarUrl}
       contexts={contexts}
       catalog={catalog}
+      canInvite={canInvite}
     >
       {children}
     </EmployerShell>

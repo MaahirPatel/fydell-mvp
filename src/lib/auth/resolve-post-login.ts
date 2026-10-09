@@ -11,6 +11,7 @@ export type PostLoginDestination =
   | { kind: "fde"; path: "/app/candidate" }
   | { kind: "employer_app"; path: "/app/employer" }
   | { kind: "role_pending"; path: "/signup/role" }
+  | { kind: "workspace_invitation"; path: "/account/workspace-invitations" }
   | { kind: "setup"; path: "/account/setup-required"; reason: string };
 
 /**
@@ -55,6 +56,12 @@ export async function resolvePostLoginDestination(
     .maybeSingle();
 
   if (profile?.account_type === "unresolved") {
+    const { count: invited } = await admin
+      .from("organization_members")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("status", "invited");
+    if (invited) return { kind: "workspace_invitation", path: "/account/workspace-invitations" };
     return { kind: "role_pending", path: "/signup/role" };
   }
 
