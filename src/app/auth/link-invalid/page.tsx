@@ -26,7 +26,7 @@ function LinkInvalidContent() {
           Resend confirmation
         </ButtonLink>
         <ButtonLink href={withNext("/login", next)} variant="secondary" size="lg">
-          Back to sign in
+          Back to log in
         </ButtonLink>
       </div>
     </AuthShell>

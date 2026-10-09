@@ -46,7 +46,7 @@ function humanizeAuthError(raw: string): string {
   if (raw.length > 160 || lower.includes("json") || lower.includes("stack")) {
     return "We could not create your account. Check your details and try again.";
   }
-  return raw;
+  return raw.replace(/\b(S|s)ign(ing)? in\b/g, (_m, s: string, ing: string | undefined) => `${s === "S" ? "L" : "l"}og${ing ? "ging" : ""} in`);
 }
 
 const CHOICES: { path: SignupPath; title: string; body: string }[] = [
@@ -293,7 +293,7 @@ export default function SignupForm({
           >
             {passwordOk ? <Check className="h-2.5 w-2.5" strokeWidth={3} /> : null}
           </span>
-          {fieldErrors.password ?? passwordIssue ?? `At least ${MIN_PASSWORD} characters, not a common password`}
+          {fieldErrors.password ?? passwordIssue ?? `At least ${MIN_PASSWORD} characters, not a common password, and not your email address`}
           {!longEnough && password.length > 0 && !fieldErrors.password ? ` · ${remaining} more` : null}
         </p>
       </div>

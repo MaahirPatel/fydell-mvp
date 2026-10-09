@@ -115,16 +115,21 @@ function ProjectsSection({ projects }: { projects: PassportProject[] }) {
   return (
     <section className={s.section} aria-labelledby="home-projects">
       <div className={s.sectionHead}>
-        <h2 id="home-projects" className={s.sectionTitle}>
+        <h2 id="home-projects" className={`${s.sectionTitle} whitespace-nowrap`}>
           Your projects
         </h2>
         <span className={s.sectionCount}>{recent.length}</span>
-        <span className="ml-auto flex items-center gap-4 text-app-meta font-medium">
+        <span className="ml-auto flex items-center gap-4 whitespace-nowrap text-app-meta font-medium">
           <Link href="/app/candidate/work-record" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline hover:underline-offset-4">
             All projects
           </Link>
-          <Link href="/app/candidate/work-record/preview" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline hover:underline-offset-4">
-            Preview what you share
+          <Link
+            href="/app/candidate/work-record/preview"
+            aria-label="Preview what you share"
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline hover:underline-offset-4"
+          >
+            <span className="sm:hidden">Preview</span>
+            <span className="hidden sm:inline">Preview what you share</span>
           </Link>
         </span>
       </div>

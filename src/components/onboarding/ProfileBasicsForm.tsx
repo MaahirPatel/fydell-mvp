@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Field, FormError, Input } from "@/components/ui/Field";
@@ -18,7 +18,9 @@ export default function ProfileBasicsForm({ initial, complete }: { initial: Prof
   const [values, setValues] = useState<ProfileBasics>(initial);
   const [errors, setErrors] = useState<Partial<Record<keyof ProfileBasics, string>>>({});
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [refreshing, startRefresh] = useTransition();
+  const busy = saving || refreshing;
 
   function set<K extends keyof ProfileBasics>(key: K, value: string) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -34,7 +36,7 @@ export default function ProfileBasicsForm({ initial, complete }: { initial: Prof
     if (!values.headline.trim()) next.headline = "Add a one-line headline.";
     setErrors(next);
     if (Object.keys(next).length) return;
-    setBusy(true);
+    setSaving(true);
     setError(null);
     try {
       const res = await fetch("/api/profile", {
@@ -55,12 +57,16 @@ export default function ProfileBasicsForm({ initial, complete }: { initial: Prof
         return;
       }
       if (data.profile?.handle) setValues((v) => ({ ...v, handle: data.profile?.handle ?? v.handle }));
-      setEditing(false);
-      router.refresh();
+      // Close the form in the same transition as the refreshed checklist, so
+      // the step never shows "Next" with the form already gone.
+      startRefresh(() => {
+        router.refresh();
+        setEditing(false);
+      });
     } catch {
       setError("Fydell could not be reached. Your changes are kept; try again.");
     } finally {
-      setBusy(false);
+      setSaving(false);
     }
   }
 

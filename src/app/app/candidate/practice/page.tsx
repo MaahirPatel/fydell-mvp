@@ -33,8 +33,7 @@ export default async function PracticePage() {
           <h2 id="practice-brief" className="text-[15px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
             The brief
           </h2>
-          <p className="mt-2 text-app-body leading-[1.6] text-[var(--text-secondary)]">{scenario.summary}</p>
-          <p className="mt-3 text-app-body leading-[1.6] text-[var(--text-primary)]">{scenario.brief.task}</p>
+          <p className="mt-2 text-app-body leading-[1.6] text-[var(--text-primary)]">{scenario.summary}</p>
           {scenario.criteria.length ? (
             <>
               <h3 className="mt-5 text-app-meta font-medium text-[var(--text-primary)]">What the report checks</h3>

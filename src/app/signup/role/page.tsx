@@ -35,15 +35,16 @@ function SignupRoleContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role, ...extra }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Request failed");
+      const data = (await res.json().catch(() => ({}))) as { error?: string; redirectTo?: string };
+      if (res.status === 401) throw new Error("Your session has ended. Log in again to continue.");
+      if (!res.ok) throw new Error(data.error || "We could not save your choice. Try again.");
       if (role === "fde") {
         router.push(next ?? "/onboarding/engineer");
         return;
       }
       router.push(data.redirectTo || "/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error && !/fetch|network/i.test(err.message) ? err.message : "We could not reach Fydell. Check your connection and try again.");
       setLoading(false);
     }
   }

@@ -64,7 +64,7 @@ function LatestReport({ userId, scenario }: { userId: string; scenario: DemoScen
   if (!attempt) {
     return (
       <div className="rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-5 py-5">
-        <p className="text-app-body font-medium text-[var(--text-primary)]">No practice run yet</p>
+        <h1 className="text-app-body font-medium text-[var(--text-primary)]">No practice run yet</h1>
         <p className="mt-1 text-app-body text-[var(--text-secondary)]">Submit from the workspace and your report appears here, built from the tests that ran on your files.</p>
         <Link href={PRACTICE_WORKSPACE} className="l-btn l-btn-solid mt-4 inline-flex">
           <Play size={14} aria-hidden />

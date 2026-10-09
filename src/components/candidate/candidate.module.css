@@ -112,6 +112,13 @@
   border-right: 0;
   margin-right: 0;
 }
+@media (max-width: 639px) {
+  .metaItem {
+    border-right: 0;
+    margin-right: 0;
+    padding-right: 28px;
+  }
+}
 .metaLabel {
   font-size: 0.8125rem;
   font-weight: 500;

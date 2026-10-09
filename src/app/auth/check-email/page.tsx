@@ -20,7 +20,7 @@ export default async function CheckEmailPage({ searchParams }: { searchParams: S
       description={
         email
           ? `We sent a confirmation link to ${email}. Open it to finish setting up your account. The link works once and expires after one hour.`
-          : "Your account needs a confirmed email address before you can sign in. Enter it below and we will send a new link."
+          : "Your account needs a confirmed email address before you can log in. Enter it below and we will send a new link."
       }
       footer={
         <p className="text-app-meta text-[var(--text-secondary)]">
@@ -34,7 +34,7 @@ export default async function CheckEmailPage({ searchParams }: { searchParams: S
       <p className="mb-4 text-app-meta text-[var(--text-secondary)]">
         Nothing arrived? Check spam, then ask for a new link. If this email already has a Fydell account, no new link is sent:{" "}
         <Link href={withNext("/login", next)} className="font-medium text-[var(--text-primary)] underline-offset-2 hover:underline">
-          sign in
+          log in
         </Link>{" "}
         or{" "}
         <Link href="/forgot-password" className="font-medium text-[var(--text-primary)] underline-offset-2 hover:underline">

@@ -24,6 +24,7 @@ function humanizeLoginError(raw: string): string {
   const lower = raw.toLowerCase();
   if (
     lower.includes("invalid login") ||
+    lower.includes("invalid email or password") ||
     lower.includes("invalid credentials") ||
     lower.includes("not found") ||
     lower.includes("incorrect")
@@ -46,10 +47,10 @@ function humanizeLoginError(raw: string): string {
     // itself cannot complete right now.
     lower.includes("workspace is temporarily unavailable")
   ) {
-    return "Sign-in is temporarily unavailable. Try again shortly.";
+    return "Logging in is temporarily unavailable. Try again shortly.";
   }
   if (raw.length > 160 || lower.includes("json") || lower.includes("stack")) {
-    return "We could not sign you in. Try again.";
+    return "We could not log you in. Try again.";
   }
   return raw;
 }
@@ -128,7 +129,7 @@ export default function LoginForm() {
     return (
       <div className="grid gap-4">
         <FormSuccess>
-          You are signed in. Your browser will ask to open the Fydell app; allow it, then
+          You are logged in. Your browser will ask to open the Fydell app; allow it, then
           return to the app. You can close this tab.
         </FormSuccess>
         <Button

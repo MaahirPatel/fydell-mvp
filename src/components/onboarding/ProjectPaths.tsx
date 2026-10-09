@@ -11,10 +11,10 @@ import ManualProjectForm from "./ManualProjectForm";
 
 type PathKey = "github" | "upload" | "describe";
 
-const PATHS: { key: PathKey; label: string; hint: string }[] = [
-  { key: "github", label: "Public GitHub", hint: "Fydell reads a pinned commit and cites the code behind each finding." },
-  { key: "upload", label: "Upload a folder or ZIP", hint: "For code that isn't public, like a VS Code or Cursor project. You review every file before it's read." },
-  { key: "describe", label: "Describe it", hint: "For work you can't share. Shown as your description, not analyzed." },
+const PATHS: { key: PathKey; label: string; short: string }[] = [
+  { key: "github", label: "Public GitHub", short: "GitHub" },
+  { key: "upload", label: "Upload a folder or ZIP", short: "Upload" },
+  { key: "describe", label: "Describe it", short: "Describe" },
 ];
 
 /**
@@ -44,8 +44,6 @@ export default function ProjectPaths({
     setPath(next);
     tabs.current[next]?.focus();
   }
-
-  const active = PATHS.find((p) => p.key === path) ?? PATHS[0];
 
   return (
     <div className="grid gap-5">
@@ -80,17 +78,18 @@ export default function ProjectPaths({
                 tabIndex={path === p.key ? 0 : -1}
                 onClick={() => setPath(p.key)}
                 onKeyDown={(e) => onKey(e, i)}
-                className={`h-9 min-w-0 truncate rounded-[7px] px-2 text-[13px] font-medium transition-colors duration-100 sm:px-3.5 ${
+                aria-label={p.label}
+                className={`h-9 min-w-0 rounded-[7px] px-2 text-[13px] font-medium transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-line)] sm:px-3.5 ${
                   path === p.key
                     ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-[0_0_0_1px_var(--border-default)]"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
-                {p.label}
+                <span className="sm:hidden">{p.short}</span>
+                <span className="hidden sm:inline">{p.label}</span>
               </button>
             ))}
           </div>
-          <p className="text-app-meta text-[var(--text-secondary)]">{active.hint}</p>
 
           {uploaded && path === "upload" ? (
             <FormSuccess>

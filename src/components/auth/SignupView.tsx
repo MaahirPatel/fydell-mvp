@@ -74,7 +74,7 @@ export default function SignupView({
           <p className="mt-1">
             Create an employer account, or{" "}
             <Link href={withNext("/login", next)} className="font-medium text-[var(--text-primary)] underline underline-offset-2">
-              sign in
+              log in
             </Link>
             , and you land in a demo workspace with a fictional role and applicants. No job, billing or candidate invitation is needed, and nothing you do there is
             sent to anyone.

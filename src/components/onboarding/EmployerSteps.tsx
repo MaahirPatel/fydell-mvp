@@ -10,7 +10,7 @@ import CreateRoleForm from "@/components/eng/CreateRoleForm";
 function humanizeWorkspaceError(raw: string): string {
   const lower = raw.toLowerCase();
   if (lower.includes("reserved")) return "That name is reserved. Choose a different workspace name.";
-  if (lower.includes("unauthorized") || lower.includes("401")) return "Your session expired. Sign in again to finish setting up your workspace.";
+  if (lower.includes("unauthorized") || lower.includes("401")) return "Your session expired. Log in again to finish setting up your workspace.";
   if (lower.includes("not configured") || lower.includes("503")) return "Workspace creation is temporarily unavailable. Try again shortly.";
   if (lower.includes("network") || lower.includes("fetch")) return "We could not reach Fydell. Check your connection and try again.";
   if (raw.length > 160 || lower.includes("json") || lower.includes("stack")) return "We could not create your workspace. Try again.";

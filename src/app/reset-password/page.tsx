@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/Button";
 import { Field, FormError, PasswordInput } from "@/components/ui/Field";
 import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { withNext } from "@/lib/auth/safe-next";
-import { passwordProblem } from "@/lib/auth/password-policy";
+import { MIN_PASSWORD, passwordProblem } from "@/lib/auth/password-policy";
+
+const PASSWORD_RULE = `At least ${MIN_PASSWORD} characters, not a common password, and not your email address.`;
 
 type LinkState = "checking" | "valid" | "invalid";
 
@@ -21,6 +23,7 @@ function ResetPasswordContent() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [linkState, setLinkState] = useState<LinkState>("checking");
   const [loading, setLoading] = useState(false);
+  const [accountEmail, setAccountEmail] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -30,6 +33,7 @@ function ResetPasswordContent() {
       if (cancelled) return;
       if (event === "PASSWORD_RECOVERY" || (session && event === "SIGNED_IN")) {
         setLinkState("valid");
+        setAccountEmail(session?.user.email ?? "");
         setError(null);
       }
     });
@@ -41,12 +45,14 @@ function ResetPasswordContent() {
         if (cancelled) return;
         if (data.session) {
           setLinkState("valid");
+          setAccountEmail(data.session.user.email ?? "");
           return;
         }
         window.setTimeout(async () => {
           if (cancelled) return;
           const again = await supabase.auth.getSession();
           setLinkState(again.data.session ? "valid" : "invalid");
+          setAccountEmail(again.data.session?.user.email ?? "");
         }, 400);
       } catch {
         if (!cancelled) setLinkState("invalid");
@@ -64,7 +70,7 @@ function ResetPasswordContent() {
     if (loading) return;
 
     const errors: Record<string, string> = {};
-    const weak = passwordProblem(password);
+    const weak = passwordProblem(password, accountEmail);
     if (weak) errors.password = weak;
     if (password !== confirm) errors.confirm = "Both passwords must match.";
     setFieldErrors(errors);
@@ -76,7 +82,7 @@ function ResetPasswordContent() {
       const supabase = getBrowserSupabase();
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) throw updateError;
-      // Sign out so the new password is used deliberately on the next sign-in.
+      // Sign out so the new password is used deliberately on the next log in.
       await supabase.auth.signOut();
       router.push(withNext("/login?reset=1", next));
     } catch (err) {
@@ -112,7 +118,7 @@ function ResetPasswordContent() {
             href={withNext("/login", next)}
             className="font-medium text-[var(--text-primary)] underline underline-offset-2"
           >
-            Back to sign in
+            Back to log in
           </Link>
         }
       >
@@ -129,23 +135,24 @@ function ResetPasswordContent() {
   return (
     <AuthShell
       title="Choose a new password"
-      description="You will be signed out of other sessions and asked to sign in with the new password."
+      description="You will be logged out of other sessions and asked to log in with the new password."
     >
-      <form method="post" onSubmit={submit} className="grid gap-4">
+      <form method="post" onSubmit={submit} className="grid gap-4" noValidate>
         <Field
           label="New password"
           htmlFor="new-password"
           error={fieldErrors.password}
-          help="At least 8 characters."
+          help={PASSWORD_RULE}
         >
           <PasswordInput
             id="new-password"
             name="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            minLength={8}
+            minLength={MIN_PASSWORD}
             autoComplete="new-password"
             invalid={Boolean(fieldErrors.password)}
+            aria-describedby={fieldErrors.password ? "new-password-error" : "new-password-help"}
             autoFocus
             required
           />
@@ -161,9 +168,10 @@ function ResetPasswordContent() {
             name="confirm-password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            minLength={8}
+            minLength={MIN_PASSWORD}
             autoComplete="new-password"
             invalid={Boolean(fieldErrors.confirm)}
+            aria-describedby={fieldErrors.confirm ? "confirm-password-error" : undefined}
             required
           />
         </Field>

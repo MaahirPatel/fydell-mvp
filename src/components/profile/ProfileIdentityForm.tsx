@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Plus, X } from "lucide-react";
 import { SOCIAL_INK, SOCIAL_LOGO } from "@/components/profile/SocialIcons";
@@ -79,7 +79,9 @@ export default function ProfileIdentityForm({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(() => formFrom(initial));
-  const [saving, setSaving] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [refreshing, startRefresh] = useTransition();
+  const saving = sending || refreshing;
   const [error, setError] = useState<string | null>(null);
   const [photo, setPhoto] = useState(initial.avatarUrl);
   const [photoBusy, setPhotoBusy] = useState(false);
@@ -134,7 +136,7 @@ export default function ProfileIdentityForm({
 
   async function save() {
     if (saving) return;
-    setSaving(true);
+    setSending(true);
     setError(null);
     try {
       const res = await fetch("/api/profile", {
@@ -147,12 +149,14 @@ export default function ProfileIdentityForm({
         setError(data.error ?? "Could not save your profile.");
         return;
       }
-      setOpen(false);
-      router.refresh();
+      startRefresh(() => {
+        router.refresh();
+        setOpen(false);
+      });
     } catch {
       setError("Fydell could not be reached. Check your connection; your edits are still here.");
     } finally {
-      setSaving(false);
+      setSending(false);
     }
   }
 
@@ -182,7 +186,7 @@ export default function ProfileIdentityForm({
               Cancel
             </button>
             <button type="button" className={primaryClass} disabled={saving} aria-busy={saving} onClick={() => void save()}>
-              {saving ? "Savingâ€¦" : "Save profile"}
+              {saving ? "Saving" : "Save profile"}
             </button>
           </div>
         }
@@ -215,7 +219,7 @@ export default function ProfileIdentityForm({
                 />
                 <button type="button" className={quietClass} disabled={photoBusy} aria-busy={photoBusy} onClick={() => fileRef.current?.click()}>
                   <Camera className="h-4 w-4" aria-hidden />
-                  {photoBusy ? "Uploadingâ€¦" : photo ? "Replace photo" : "Upload photo"}
+                  {photoBusy ? "Uploading" : photo ? "Replace photo" : "Upload photo"}
                 </button>
                 {photo ? (
                   <button type="button" aria-label="Remove photo" className="inline-flex h-9 items-center rounded-[8px] px-3 text-[14px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]" disabled={photoBusy} onClick={() => void removePhoto()}>
@@ -282,8 +286,8 @@ export default function ProfileIdentityForm({
               const value = form.social[f.kind];
               const parsed = value.trim() ? normalizeSocial(f.kind, value) : null;
               return (
-                <div key={f.kind} className="grid grid-cols-[110px_minmax(0,1fr)] items-start gap-3">
-                  <label htmlFor={`profile-social-${f.kind}`} className="inline-flex h-9 items-center gap-2 text-app-body text-[var(--text-primary)]">
+                <div key={f.kind} className="grid grid-cols-1 items-start gap-1.5 sm:grid-cols-[110px_minmax(0,1fr)] sm:gap-3">
+                  <label htmlFor={`profile-social-${f.kind}`} className="inline-flex items-center gap-2 text-app-body text-[var(--text-primary)] sm:h-9">
                     <Logo className="h-4 w-4" />
                     {SOCIAL_LABEL[f.kind]}
                   </label>
@@ -305,13 +309,13 @@ export default function ProfileIdentityForm({
                           href={parsed.url}
                           target="_blank"
                           rel="noopener noreferrer nofollow"
-                          className="mt-1.5 inline-flex h-7 items-center gap-1.5 rounded-full border border-[var(--border-default)] bg-[var(--surface-raised)] pl-1 pr-2.5 text-app-meta font-medium text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+                          className="mt-1.5 inline-flex h-7 max-w-full items-center gap-1.5 rounded-full border border-[var(--border-default)] bg-[var(--surface-raised)] pl-1 pr-2.5 text-app-meta font-medium text-[var(--text-primary)] hover:border-[var(--border-strong)]"
                         >
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--surface-panel)]" style={{ color: SOCIAL_INK[f.kind] }}>
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--surface-panel)]" style={{ color: SOCIAL_INK[f.kind] }}>
                             <Logo className="h-3 w-3" />
                           </span>
-                          {socialDisplay(f.kind, parsed.url)}
-                          <span className="font-normal text-[var(--text-tertiary)]">Open</span>
+                          <span className="min-w-0 truncate">{socialDisplay(f.kind, parsed.url)}</span>
+                          <span className="shrink-0 font-normal text-[var(--text-tertiary)]">Open</span>
                         </a>
                       ) : parsed && parsed.ok === false ? (
                         <p className="mt-1.5 text-app-meta text-[var(--fydell-risk)]">{parsed.error}</p>

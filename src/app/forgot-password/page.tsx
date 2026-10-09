@@ -58,12 +58,12 @@ function ForgotPasswordContent() {
     }
   }
 
-  const backToSignIn = (
+  const backToLogIn = (
     <Link
       href={withNext("/login", next)}
       className="font-medium text-[var(--text-primary)] underline underline-offset-2"
     >
-      Back to sign in
+      Back to log in
     </Link>
   );
 
@@ -72,7 +72,7 @@ function ForgotPasswordContent() {
       <AuthShell
         title="Check your email"
         description="If an account exists for that address, we have sent a link to choose a new password. The link expires in one hour."
-        footer={backToSignIn}
+        footer={backToLogIn}
       >
         <div className="grid gap-4">
           {/* Neutral by design: the response is identical whether or not the
@@ -97,8 +97,8 @@ function ForgotPasswordContent() {
   return (
     <AuthShell
       title="Reset your password"
-      description="Enter the email you sign in with and we will send you a link to choose a new password."
-      footer={backToSignIn}
+      description="Enter the email you log in with and we will send you a link to choose a new password."
+      footer={backToLogIn}
     >
       <form onSubmit={submit} className="grid gap-4">
         <Field label="Email" htmlFor="reset-email">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Field, FormError, FormSuccess, Input, Textarea } from "@/components/ui/Field";
@@ -23,7 +23,9 @@ export default function ManualProjectForm() {
   const [contribution, setContribution] = useState("");
   const [technologies, setTechnologies] = useState("");
   const [link, setLink] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [refreshing, startRefresh] = useTransition();
+  const busy = sending || refreshing;
   const [error, setError] = useState<string | null>(null);
   const [titleError, setTitleError] = useState<string | null>(null);
   const [duplicate, setDuplicate] = useState<string | null>(null);
@@ -38,7 +40,7 @@ export default function ManualProjectForm() {
       return;
     }
     setTitleError(null);
-    setBusy(true);
+    setSending(true);
     setError(null);
     setSaved(null);
     pending.current ??= requestId();
@@ -76,7 +78,7 @@ export default function ManualProjectForm() {
         setError(data.error ?? "Could not add the project. Your text is kept; try again.");
         return;
       }
-      setSaved(data.presentation.title ?? title.trim());
+      const added = data.presentation.title ?? title.trim();
       setDuplicate(null);
       pending.current = null;
       setTitle("");
@@ -84,11 +86,14 @@ export default function ManualProjectForm() {
       setContribution("");
       setTechnologies("");
       setLink("");
-      router.refresh();
+      startRefresh(() => {
+        router.refresh();
+        setSaved(added);
+      });
     } catch {
       setError("Fydell could not be reached. Your text is kept; try again.");
     } finally {
-      setBusy(false);
+      setSending(false);
     }
   }
 

@@ -17,7 +17,7 @@ import { ButtonLink } from "@/components/ui/Button";
 
 export const dynamic = "force-dynamic";
 
-const PASSPORT = "/app/candidate/work-record";
+const PROJECTS = "/app/candidate/work-record";
 
 type Invitation = { id: string; title: string; organization: string; href: string; action: string; expiresAt: string | null };
 
@@ -105,7 +105,7 @@ export default async function OnboardingEngineerPage({ searchParams }: { searchP
   const importing = jobs.filter((j) => isActive(j.state)).length;
   const liveShares = shares.filter((s) => !s.revokedAt).length;
 
-  const projectNames = [...analyzed.map((p) => p.repoFullName), ...described.map((p) => p.title)];
+  const projectNames = [...analyzed.map((p) => p.repoFullName.replace(/^upload\//, "")), ...described.map((p) => p.title)];
   const projectDetail =
     projectCount > 0
       ? `${projectCount} on your profile: ${projectNames.slice(0, 3).join(", ")}${projectNames.length > 3 ? `, and ${projectNames.length - 3} more` : ""}.`
@@ -141,13 +141,13 @@ export default async function OnboardingEngineerPage({ searchParams }: { searchP
       state: liveShares > 0 ? "done" : projectCount > 0 ? "current" : "todo",
       detail:
         liveShares > 0
-          ? `${liveShares} active share link${liveShares === 1 ? "" : "s"}. You can revoke any of them from your Passport.`
+          ? `${liveShares} active share link${liveShares === 1 ? "" : "s"}. You can revoke any of them from Projects.`
           : projectCount > 0
             ? "Your profile is private. A share link shows the projects you pick, and you can revoke it any time."
             : "Your profile stays private until you create a share link. Available once you have a project.",
       children:
         projectCount > 0 && liveShares === 0 ? (
-          <ButtonLink href={`${PASSPORT}#share`} variant="secondary" size="md">
+          <ButtonLink href={`${PROJECTS}#share`} variant="secondary" size="md">
             Create a share link
           </ButtonLink>
         ) : null,
@@ -170,8 +170,8 @@ export default async function OnboardingEngineerPage({ searchParams }: { searchP
           {doneCount} of {items.length} done
         </p>
       }
-      skipHref={PASSPORT}
-      skipLabel={ready ? "Go to your Passport" : "Skip for now"}
+      skipHref={PROJECTS}
+      skipLabel={ready ? "Go to your projects" : "Skip for now"}
     >
       {invitations.length ? (
         <section aria-labelledby="invites-heading" className="mb-12 max-w-[760px]">
@@ -214,8 +214,8 @@ export default async function OnboardingEngineerPage({ searchParams }: { searchP
             <p className="mt-1">Only you, until you create a share link. You can revoke a link at any time.</p>
           </div>
           {ready ? (
-            <ButtonLink href={PASSPORT} variant="primary" size="md" className="justify-self-start">
-              Go to your Passport
+            <ButtonLink href={PROJECTS} variant="primary" size="md" className="justify-self-start">
+              Go to your projects
             </ButtonLink>
           ) : null}
         </aside>
