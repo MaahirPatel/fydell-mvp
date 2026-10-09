@@ -7,6 +7,9 @@
  * - "groq": hosted Groq API, OpenAI-compatible (requires GROQ_API_KEY). Its
  *   free plan has small daily token limits; when a request is refused, callers
  *   fall back to authored replies exactly as they do for any provider error.
+ * - "gemini": Google Gemini through its OpenAI-compatible endpoint (requires
+ *   GEMINI_API_KEY). Google's free tier may use prompts to improve its
+ *   products, so production must use a billed key before engineers' code is sent.
  *
  * There is deliberately NO mock provider here. Mock responses exist only in
  * test scripts under scripts/test-*.ts and are never a runtime fallback.
@@ -20,12 +23,14 @@
  * locally (`npm run dev`), so that `localhost` means the same machine as the
  * Ollama server. Do not set MODEL_PROVIDER=ollama on a deployed environment.
  */
-export type ModelProvider = "openai" | "ollama" | "groq";
+export type ModelProvider = "openai" | "ollama" | "groq" | "gemini";
 
 export interface ProviderConfig {
   provider: ModelProvider;
   /** Base URL for the OpenAI-compatible chat completions API (no trailing path). */
   baseUrl: string;
+  /** Path appended to baseUrl for chat completions. */
+  chatPath: string;
   /** Null for providers that need no key (local Ollama). */
   apiKey: string | null;
   model: string;
@@ -39,6 +44,8 @@ const DEFAULT_OLLAMA_URL = "http://localhost:11434";
 const DEFAULT_OLLAMA_MODEL = "qwen2.5:7b";
 const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
 const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+const CHAT_PATH = "/v1/chat/completions";
 
 /**
  * Resolve the active provider from the environment.
@@ -52,6 +59,7 @@ export function getProviderConfig(): ProviderConfig | null {
     return {
       provider: "ollama",
       baseUrl: (process.env.OLLAMA_BASE_URL ?? DEFAULT_OLLAMA_URL).replace(/\/+$/, ""),
+      chatPath: CHAT_PATH,
       apiKey: null,
       model: process.env.OLLAMA_MODEL ?? DEFAULT_OLLAMA_MODEL,
       supportsJsonSchema: false,
@@ -65,6 +73,7 @@ export function getProviderConfig(): ProviderConfig | null {
     return {
       provider: "groq",
       baseUrl: "https://api.groq.com/openai",
+      chatPath: CHAT_PATH,
       apiKey,
       model: process.env.GROQ_MODEL ?? DEFAULT_GROQ_MODEL,
       // Structured-output support differs by Groq model; JSON mode plus the
@@ -74,12 +83,27 @@ export function getProviderConfig(): ProviderConfig | null {
     };
   }
 
+  if (provider === "gemini") {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return null;
+    return {
+      provider: "gemini",
+      baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+      chatPath: "/chat/completions",
+      apiKey,
+      model: process.env.GEMINI_MODEL ?? DEFAULT_GEMINI_MODEL,
+      supportsJsonSchema: false,
+      timeoutMs: 30_000,
+    };
+  }
+
   if (provider === "openai" || provider === "") {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return null;
     return {
       provider: "openai",
       baseUrl: "https://api.openai.com",
+      chatPath: CHAT_PATH,
       apiKey,
       model: process.env.OPENAI_MODEL ?? DEFAULT_OPENAI_MODEL,
       supportsJsonSchema: true,
@@ -104,6 +128,7 @@ export function describeProvider(): string {
     return `ollama (${config.model} at ${config.baseUrl})`;
   }
   if (config.provider === "groq") return `groq (${config.model})`;
+  if (config.provider === "gemini") return `gemini (${config.model})`;
   return `openai (${config.model})`;
 }
 
@@ -226,7 +251,7 @@ export async function postChatCompletion(
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (config.apiKey) headers.Authorization = `Bearer ${config.apiKey}`;
 
-    const res = await fetch(`${config.baseUrl}/v1/chat/completions`, {
+    const res = await fetch(`${config.baseUrl}${config.chatPath}`, {
       method: "POST",
       signal: controller.signal,
       headers,
