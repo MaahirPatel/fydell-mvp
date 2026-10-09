@@ -127,7 +127,7 @@ function Desktop() {
           <i />
           <i />
         </span>
-        <span className={s.dim}>Fydell Desktop</span>
+        <span className={s.dim}>Fydell app</span>
       </p>
       <p className={`${s.mono} ${s.sep}`}>
         <Terminal size={11} aria-hidden /> python3 -m unittest -v

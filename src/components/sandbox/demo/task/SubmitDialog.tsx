@@ -208,7 +208,7 @@ export function SubmitDialog({
               </ul>
               <p className="text-app-meta leading-[1.5] text-[var(--text-secondary)]">
                 {consequence?.kept ??
-                  "A browser preview, saved in this browser only. Nothing is sent to an employer. A real assessment runs in the Fydell desktop app, where results come from the isolated runner rather than the browser."}
+                  "A browser preview, saved in this browser only. Nothing is sent to an employer. In a real assessment, results come from Fydell's isolated runner rather than the browser."}
               </p>
             </Card>
           </aside>

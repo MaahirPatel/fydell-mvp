@@ -15,7 +15,7 @@ export const CANDIDATE_JUMP_TARGETS: readonly JumpTarget[] = [
   { label: "Settings", hint: "Account, sharing and data", href: "/app/candidate/settings", keywords: "account password email" },
   { label: "Export your data", hint: "Download everything Fydell holds about you", href: "/app/candidate/settings#data-heading", keywords: "export download data privacy gdpr" },
   { label: "Delete account", hint: "Permanently remove your account and data", href: "/app/candidate/settings#delete-heading", keywords: "delete remove close account" },
-  { label: "Download the desktop app", hint: "Windows and macOS", href: "/download", keywords: "install windows mac desktop app" },
+  { label: "Install the app", hint: "Its own window on Windows or Mac", href: "/download", keywords: "install download windows mac desktop app" },
   { label: "Help and support", hint: "Contact the Fydell team", href: "/contact", keywords: "help support contact" },
 ];
 

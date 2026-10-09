@@ -5,7 +5,7 @@ import s from "@/components/marketing/site/site.module.css";
 
 export const metadata = {
   title: "Product",
-  description: "Builder Profiles, the Engineering Passport, Builder Reports, the Hiring Workspace, Simulations and Fydell Desktop.",
+  description: "Builder Profiles, the Engineering Passport, Builder Reports, the Hiring Workspace, Simulations and the Fydell app.",
   alternates: { canonical: "/products" },
 };
 

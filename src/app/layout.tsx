@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s | Fydell",
   },
   description:
-    "Hire software engineers on real engineering work. Candidates work a real incident in the Fydell desktop app; your team reviews cited evidence and decides.",
+    "Hire software engineers on real engineering work. Candidates work a real incident in the browser or their own editor; your team reviews cited evidence and decides.",
   applicationName: "Fydell",
   openGraph: {
     siteName: "Fydell",

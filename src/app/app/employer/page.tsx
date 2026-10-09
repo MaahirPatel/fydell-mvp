@@ -155,7 +155,7 @@ const SETUP_STEPS = [
   {
     title: "Invite candidates",
     detail:
-      "Invite from the assessment. Candidates work in the Fydell desktop app, in their own editor. Your team reviews the evidence before anything is released.",
+      "Invite from the assessment. Candidates work in the browser or in their own editor. Your team reviews the evidence before anything is released.",
     href: "/app/employer/engineering",
     cta: "View assessments",
   },

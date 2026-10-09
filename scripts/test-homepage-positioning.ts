@@ -26,8 +26,8 @@ const profile = read("src/components/marketing/site/ProfileWorkspace.tsx");
 const applicants = read("src/components/marketing/site/ApplicantReview.tsx");
 const simHero = read("src/components/marketing/site/SimulationHero.tsx");
 const desktopBand = read("src/components/marketing/site/DesktopBand.tsx");
-const downloadButton = read("src/components/marketing/site/DownloadButton.tsx");
-const picker = read("src/components/marketing/site/DownloadPicker.tsx");
+const installButton = read("src/components/marketing/site/InstallAppButton.tsx");
+const manifest = read("src/app/manifest.ts");
 const releases = read("src/components/marketing/site/releases.ts");
 const navData = read("src/components/marketing/site/nav-data.ts");
 const products = read("src/components/marketing/site/products.tsx");
@@ -57,8 +57,8 @@ ok(
   /lead="Fydell turns real projects and realistic simulations into evidence hiring teams can read\."/.test(hero),
 );
 ok(
-  "hero actions: Download for Windows opens /download, then Create an account",
-  /href="\/download"[^>]*>[\s\S]*?Download for Windows/.test(hero) && /href="\/signup"[^>]*>\s*Create an account/.test(hero) && !/DownloadButton/.test(hero),
+  "hero actions: Install for Windows opens /download, then Create an account",
+  /href="\/download"[^>]*>[\s\S]*?Install for Windows/.test(hero) && /href="\/signup"[^>]*>\s*Create an account/.test(hero),
 );
 ok("hero leads straight into the simulation", /<ProductFrame[\s\S]*?size="hero"[\s\S]*?<SimulationHero \/>/.test(hero));
 ok(
@@ -66,15 +66,18 @@ ok(
   /backend-webhook-retry\/definition/.test(simHero) && /SCENARIO\.teammates/.test(simHero) && />Example</.test(simHero),
 );
 
-// Desktop downloads: Windows and macOS only.
-ok("desktop builds are Windows and macOS only", /export type DesktopOs = "macos" \| "windows";/.test(releases) && !/\blinux:\s*\{/i.test(releases));
+// The app installs from the browser; there is no installer to download.
 ok(
-  "downloads live on /download, for Windows and macOS only",
-  /<DownloadPicker \/>/.test(download) &&
+  "the site is installable: manifest with standalone display and 192/512 icons",
+  /display: "standalone"/.test(manifest) && /icon-192\.png/.test(manifest) && /icon-512\.png/.test(manifest) && /start_url: "\/app"/.test(manifest),
+);
+ok(
+  "/download installs the web app, linked from the nav and desktop band",
+  /<InstallAppButton \/>/.test(download) &&
+    /beforeinstallprompt/.test(installButton) &&
     /href="\/download"/.test(desktopBand) &&
-    /label: "Download", href: "\/download"/.test(navData) &&
-    ![downloadButton, picker, desktopBand].some((f) => /linux/i.test(f)) &&
-    !/os="linux"/.test([download, page].join("\n")),
+    /label: "Install app", href: "\/download"/.test(navData) &&
+    !/\.exe|\.dmg|DownloadPicker/.test([download, page, desktopBand].join("\n")),
 );
 
 // Demo gating: only inside the signed-in app.

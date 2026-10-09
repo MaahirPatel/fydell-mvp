@@ -46,7 +46,7 @@ function EmployerView({ scenario }: { scenario: DemoScenario }) {
                 </span>
               </div>
               <h1 className={s.h1}>Employer view of your submission</h1>
-              <p className={s.lead}>Your submission from {formatTime(attempt.at)}, as a hiring team would review it. Nothing here is sent to anyone. In a real assessment these results come from the desktop app&apos;s isolated runner.</p>
+              <p className={s.lead}>Your submission from {formatTime(attempt.at)}, as a hiring team would review it. Nothing here is sent to anyone. In a real assessment these results come from Fydell&apos;s isolated runner.</p>
             </div>
             <div className={s.actions}>
               <Link href={`/sandbox/${scenario.key}/report`} className="l-btn l-btn-quiet">

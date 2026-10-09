@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import EvaluationList from "@/components/employer/EvaluationList";
@@ -75,8 +76,11 @@ export default async function EmployerEvaluationsPage() {
           />
         </div>
         <p className="mt-8 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
-          Simulation templates for Solutions Engineer and Sales Engineer roles are coming later.
-          They are not published yet.
+          Engineering tasks, including the Webhook retry incident and simulations you create, are in{" "}
+          <Link href="/app/employer/engineering" className="font-medium text-[var(--text-primary)] underline underline-offset-2">
+            engineering assessments
+          </Link>
+          . Simulation templates for Solutions Engineer and Sales Engineer roles are coming later.
         </p>
       </div>
     );

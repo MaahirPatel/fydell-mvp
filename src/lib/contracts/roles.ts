@@ -9,14 +9,15 @@ export const WAVE1_WORKING_ROLE = "data_analyst" as const;
 
 export const WAVE1_EVALUATION_SLUG = "ops-yield-investigation" as const;
 
-/** The engineering simulation candidates take in the Fydell desktop app. */
+/**
+ * The retired desktop-app version of the webhook incident. Employers invite to
+ * the same incident through Assessments, which runs in the browser and the
+ * candidate's own editor, so it is not invitable from this catalog.
+ */
 export const DESKTOP_ENGINEERING_SLUG = "webhook-retry-incident" as const;
 
 /** Published templates an employer may invite candidates to. */
-export const EMPLOYER_INVITABLE_SLUGS: readonly string[] = [
-  DESKTOP_ENGINEERING_SLUG,
-  WAVE1_EVALUATION_SLUG,
-];
+export const EMPLOYER_INVITABLE_SLUGS: readonly string[] = [WAVE1_EVALUATION_SLUG];
 
 export const WAVE1_COMING_SOON_ROLES = [
   "solutions_engineer",

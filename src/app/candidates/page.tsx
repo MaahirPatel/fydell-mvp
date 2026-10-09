@@ -102,7 +102,7 @@ export default function CandidatesPage() {
       <Closing
         title={["Show the work.", "Keep the receipt."]}
         primary={{ href: "/signup", label: "Create an account" }}
-        secondary={{ href: "/download", label: "Download the app" }}
+        secondary={{ href: "/download", label: "Install the app" }}
       />
     </MarketingShell>
   );

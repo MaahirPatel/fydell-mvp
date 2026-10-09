@@ -52,7 +52,7 @@ export function DemoAttemptNote({ example = false }: { example?: boolean }) {
   return (
     <Note>
       {example
-        ? "Illustrative example. Built from the scenario's reference solution, run through the real tests in your browser just now. It is not your result and no candidate wrote it. Real assessment results come from the isolated runner in the Fydell desktop app."
+        ? "Illustrative example. Built from the scenario's reference solution, run through the real tests in your browser just now. It is not your result and no candidate wrote it. Real assessment results come from Fydell's isolated runner."
         : "Browser preview, not a candidate assessment. It was built in this browser from your own work, and nothing was sent to an employer. A real assessment runs in the Fydell desktop app, where results come from the isolated runner rather than the browser."}
     </Note>
   );

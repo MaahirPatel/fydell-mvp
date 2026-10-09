@@ -317,9 +317,9 @@ export default async function EmployerSettingsPage({
                   <StatusDot tone="attention">Not configured, share links by hand</StatusDot>
                 )}
               </Row>
-              <Row label="Where candidates work" help="Simulations run in the Fydell desktop app on the candidate's own computer, in their own editor.">
+              <Row label="Where candidates work" help="Candidates work in the browser editor or in their own editor. Tests run in Fydell's isolated runner, never on your systems.">
                 <Link href="/download" className={linkClass}>
-                  Desktop app
+                  Install the app
                 </Link>
               </Row>
             </Group>

@@ -99,7 +99,7 @@ export default function GuidedDemo() {
 
       <CenteredClosing
         title="Run it with your own role."
-        lead="This is a browser preview. Real assessments run in the Fydell desktop app on the candidate's machine, with an isolated test runner."
+        lead="This is a browser preview. Real assessments run tests in Fydell's isolated runner, not in the browser."
         actions={
           <>
             <Link href="/signup?as=employer" className="l-btn l-btn-solid">
@@ -107,7 +107,7 @@ export default function GuidedDemo() {
             </Link>
             <Link href="/download" className="l-btn l-btn-quiet">
               <Download size={14} aria-hidden />
-              Get the desktop app
+              Install the app
             </Link>
           </>
         }

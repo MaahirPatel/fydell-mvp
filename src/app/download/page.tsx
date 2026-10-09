@@ -1,17 +1,16 @@
 import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
-import DownloadPicker from "@/components/marketing/site/DownloadPicker";
+import InstallAppButton from "@/components/marketing/site/InstallAppButton";
 import PaintedStage from "@/components/marketing/site/PaintedStage";
 import ProductFrame from "@/components/marketing/site/ProductFrame";
 import SimulationHero from "@/components/marketing/site/SimulationHero";
 import { AppleIcon, WindowsIcon } from "@/components/marketing/site/OsIcons";
-import { Announcement, CenteredHero, ShowcaseSection, Tiles } from "@/components/marketing/site/Home";
+import { CenteredHero, ShowcaseSection, Tiles } from "@/components/marketing/site/Home";
 import { SiteFaq } from "@/components/marketing/site/Sections";
-import { LATEST, RELEASES, RELEASES_URL, formatReleaseDate } from "@/components/marketing/site/releases";
 
 export const metadata = {
-  title: "Download",
-  description: `Fydell Desktop ${LATEST.version} for Windows and macOS (Apple silicon). Optional: everything also works in the browser.`,
+  title: "Install the app",
+  description: "Install Fydell from your browser on Windows or Mac. It opens in its own window, with no installer to download.",
   alternates: { canonical: "/download" },
 };
 
@@ -19,53 +18,37 @@ const INSTALL = [
   {
     os: "Windows",
     icon: <WindowsIcon size={18} />,
-    requirement: "Windows 10 or 11, 64-bit",
+    requirement: "Microsoft Edge or Google Chrome",
     steps: [
-      "Download the .exe installer and open it.",
-      "If Windows SmartScreen appears, choose More info, then Run anyway. Beta builds are not code-signed yet.",
-      "Follow the installer. Fydell opens when it finishes and appears in the Start menu.",
-      "Sign in. Your browser opens to finish, then hands you back to the app.",
+      "Open fydell.com in Edge or Chrome.",
+      "Select Install Fydell on this page, or the install icon at the right end of the address bar.",
+      "Confirm Install. Fydell opens in its own window and is added to the Start menu.",
+      "Pin it to the taskbar if you like. Log in once and it remembers you.",
     ],
   },
   {
-    os: "macOS",
+    os: "Mac",
     icon: <AppleIcon size={18} />,
-    requirement: "Apple silicon (M1 or later)",
+    requirement: "Chrome, Edge or Safari",
     steps: [
-      "Download the .dmg and open it.",
-      "Drag Fydell into Applications.",
-      "On first launch, right-click Fydell in Applications and choose Open. Beta builds are not notarized yet.",
-      "Sign in. Your browser opens to finish, then hands you back to the app.",
+      "Open fydell.com in Chrome, Edge or Safari.",
+      "In Chrome or Edge, select the install icon in the address bar. In Safari, choose File, then Add to Dock.",
+      "Fydell opens in its own window and appears in Launchpad and the Dock.",
+      "Log in once and it remembers you.",
     ],
   },
 ] as const;
 
 export default function DownloadPage() {
-  const recent = RELEASES.slice(0, 3);
   return (
     <MarketingShell>
       <CenteredHero
-        announcement={<Announcement href="/changelog" label={`Version ${LATEST.version}`} action="Read the changelog" />}
-        title="Download Fydell"
-        lead="Take simulations in a native workspace on your computer, with a command palette, keyboard shortcuts and drafts saved locally. Everything also works in the browser."
-        actions={
-          <a href="#install" className="l-btn l-btn-quiet">
-            Installation steps
-          </a>
-        }
-      >
-        <div id="all-downloads" className="mx-auto max-w-[880px] scroll-mt-28">
-          <DownloadPicker />
-          <p className="mt-4 text-center text-[14px] text-[var(--text-tertiary)]">
-            Released {formatReleaseDate(LATEST.date)} ·{" "}
-            <a href={RELEASES_URL} target="_blank" rel="noopener noreferrer" className="underline decoration-[var(--border-strong)] underline-offset-4 hover:text-[var(--text-primary)]">
-              Every release on GitHub
-            </a>
-          </p>
-        </div>
-      </CenteredHero>
+        title="Install Fydell"
+        lead="Fydell installs straight from your browser and opens in its own window, with its own icon in the Start menu and taskbar. There is no installer to download and no security warning to click through."
+        actions={<InstallAppButton />}
+      />
 
-      <ShowcaseSection id="install" title="Install in a minute." aside="Beta builds are not signed yet, so the first launch takes one extra step.">
+      <ShowcaseSection id="install" title="Install in a minute." aside="Works on Windows and Mac. Updates arrive on their own.">
         <div className="grid gap-4 md:grid-cols-2">
           {INSTALL.map((o) => (
             <section
@@ -97,9 +80,9 @@ export default function DownloadPage() {
         </div>
       </ShowcaseSection>
 
-      <ShowcaseSection id="app" title="The same workspace, on your machine." aside="A brief, a real codebase, tests and a team to ask.">
+      <ShowcaseSection id="app" title="Your whole workspace, in its own window." aside="Projects, reports, simulations and the team thread.">
         <PaintedStage painting="field">
-          <ProductFrame size="hero" chrome="none" title="Fydell · Simulation" label="The Fydell desktop app with a simulation open: the incident, its activity and the team thread.">
+          <ProductFrame size="hero" chrome="none" title="Fydell · Simulation" label="Fydell with a simulation open: the incident, its activity and the team thread.">
             <SimulationHero />
           </ProductFrame>
         </PaintedStage>
@@ -107,68 +90,43 @@ export default function DownloadPage() {
 
       <ShowcaseSection
         id="details"
-        title="Before you install."
-        aside="What the app needs and what it does on your computer."
+        title="What the app does on your computer."
+        aside="Very little, on purpose."
         after={
           <Tiles
             items={[
-              { title: "Internet connection", body: "Sign-in, simulations and submissions go through fydell.com. The app keeps a local draft if the connection drops." },
+              { title: "Nothing to install from a file", body: "Your browser adds Fydell as an app. Nothing is copied into system folders and no extra permissions are requested." },
               { title: "Nothing runs in the background", body: "Fydell records activity only inside an open simulation, and tells you what it records before you start." },
-              { title: "Updates", body: "Automatic updates are off in beta builds. New versions are published on this page and in the changelog." },
+              { title: "Always up to date", body: "Every change to fydell.com reaches the app the next time you open it." },
             ]}
           />
         }
       >
-        <div className="rounded-[14px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
-          <div className="flex items-baseline justify-between gap-4 border-b border-[var(--border-subtle)] px-6 py-4">
-            <h3 className="text-[16px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">Recent releases</h3>
-            <Link href="/changelog" className="text-[14px] font-medium text-[var(--text-primary)] underline decoration-[var(--border-strong)] underline-offset-4">
-              Full changelog
-            </Link>
-          </div>
-          <ul className="divide-y divide-[var(--border-subtle)]">
-            {recent.map((r) => (
-              <li key={r.version} className="grid gap-1 px-6 py-4 sm:grid-cols-[160px_minmax(0,1fr)] sm:gap-6">
-                <div>
-                  <p className="text-[15px] font-semibold tabular-nums text-[var(--text-primary)]">{r.version}</p>
-                  <p className="text-[13.5px] text-[var(--text-tertiary)]">{formatReleaseDate(r.date)}</p>
-                </div>
-                <div>
-                  <p className="text-[15px] font-medium text-[var(--text-primary)]">{r.title}</p>
-                  <ul className="mt-1 space-y-1">
-                    {r.notes.map((n) => (
-                      <li key={n} className="text-[14.5px] leading-[1.55] text-[var(--text-secondary)]">
-                        {n}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <p className="max-w-[68ch] text-[15.5px] leading-[1.65] text-[var(--text-body)]">
+          Engineering tasks open in the browser editor, or you can download the starter project and work in VS Code or Cursor, then submit from Fydell. Projects can be added from GitHub or uploaded as a folder or ZIP.
+        </p>
       </ShowcaseSection>
 
       <SiteFaq
         items={[
-          { q: "Do I need the desktop app?", a: "No. Invitations, your profile, projects and every simulation also work in the browser." },
-          { q: "Is there a Linux, Intel Mac or Windows on ARM build?", a: "Not yet. Use Fydell in the browser on those systems." },
-          { q: "Why does my computer warn me about the installer?", a: "Beta builds are not code-signed yet, so Windows and macOS ask you to confirm the first launch. The steps above show how." },
+          { q: "Do I need to install anything?", a: "No. Everything works in a normal browser tab. Installing only gives Fydell its own window and icon." },
+          { q: "What happened to the Windows installer?", a: "The separate desktop app has been retired. The installed web app does everything it did, without an unsigned installer or a security warning." },
+          { q: "How do I uninstall it?", a: "On Windows, right-click Fydell in the Start menu and choose Uninstall. On Mac, open the app and choose Uninstall from its menu, or remove it from the Dock." },
           { q: "Where do I report a problem?", a: "Use Contact on this site, or the Support link inside a simulation." },
         ]}
       />
 
       <section className="pb-32 pt-24 text-center">
         <p className="text-[15px] text-[var(--text-secondary)]">
-          Prefer the browser?{" "}
+          Prefer a browser tab?{" "}
           <Link href="/signup" className="font-medium text-[var(--text-primary)] underline decoration-[var(--border-strong)] underline-offset-4">
             Sign up
           </Link>{" "}
           or{" "}
           <Link href="/login" className="font-medium text-[var(--text-primary)] underline decoration-[var(--border-strong)] underline-offset-4">
             log in
-          </Link>{" "}
-          on the web.
+          </Link>
+          .
         </p>
       </section>
     </MarketingShell>

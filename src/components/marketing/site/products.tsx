@@ -9,8 +9,6 @@ import ApplicantReview from "./ApplicantReview";
 import SimulationWorkspace from "./SimulationWorkspace";
 import SimulationHero from "./SimulationHero";
 import s from "./site.module.css";
-import ReleasePanel from "./ReleasePanel";
-import { LATEST } from "./releases";
 import type { Cta } from "./Sections";
 
 export type ProductSlug = "builder-profiles" | "engineering-passport" | "builder-reports" | "hiring-workspace" | "simulations" | "desktop";
@@ -147,32 +145,27 @@ export const PRODUCTS: Record<ProductSlug, ProductPage> = {
   desktop: {
     name: "Desktop",
     title: ["Fydell on", "your computer."],
-    lead: "Fydell Desktop opens invited simulations in a workspace on your computer: an editor with the brief, tests and team thread beside the code. Sign-in hands off from your browser, and your Passport is in the app too.",
-    availability: { state: "beta", text: `Beta. Version ${LATEST.version}, unsigned test builds for macOS and Windows.` },
-    primary: { href: "/download", label: "Download Fydell" },
+    lead: "Install Fydell from your browser and it opens in its own window, with its own icon in the Start menu, taskbar or Dock. Projects, reports, simulations and your hiring workspace are all there, and it updates itself.",
+    availability: { state: "available", text: "Available on Windows and Mac in Microsoft Edge, Google Chrome and Safari." },
+    primary: { href: "/download", label: "Install the app" },
     secondary: { href: "/changelog", label: "Read the changelog" },
     visual: (
-      <>
-        <ProductFrame
-          size="hero"
-          chrome="none"
-          title="Fydell Desktop · Simulation"
-          label="Fydell Desktop with an invited simulation open: the incident and its activity beside the team thread, with the changed files ready to test."
-          caption="Fydell Desktop with an example simulation open. Fictional company and teammates."
-        >
-          <SimulationHero />
-        </ProductFrame>
-        <div className={s.secondVisual}>
-          <ReleasePanel />
-        </div>
-      </>
+      <ProductFrame
+        size="hero"
+        chrome="none"
+        title="Fydell · Simulation"
+        label="Fydell with an invited simulation open: the incident and its activity beside the team thread, with the changed files ready to test."
+        caption="Fydell with an example simulation open. Fictional company and teammates."
+      >
+        <SimulationHero />
+      </ProductFrame>
     ),
     sections: [
-      { title: "An editor, not a form", body: "The workspace puts the brief, public tests, team thread and submission beside the code, with a command palette and keyboard shortcuts." },
-      { title: "Browser sign-in", body: "Sign-in completes in your browser and hands back to the app. Opening a Fydell link focuses the running app." },
-      { title: "Optional", body: "Nothing requires the desktop app. Every invitation also works in the browser." },
+      { title: "An editor, not a form", body: "The workspace puts the brief, public tests, team thread and submission beside the code. Press Ctrl K to jump anywhere." },
+      { title: "Your own editor too", body: "For engineering tasks you can download the starter project, work in VS Code or Cursor, and submit from Fydell." },
+      { title: "Nothing to download", body: "No installer, no security warning and no manual updates. Uninstall it like any other app." },
     ],
-    limits: ["Builds are not yet code-signed: macOS and Windows warn on first launch.", "There are no automatic updates yet. Install new versions from the download page."],
+    limits: ["The app needs an internet connection. Unsaved text in an open simulation is kept in the browser if the connection drops."],
     related: ["simulations", "builder-profiles"],
   },
 };

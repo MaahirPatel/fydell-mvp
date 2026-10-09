@@ -10,7 +10,6 @@ import TintStage from "@/components/marketing/site/TintStage";
 import DesktopBand from "@/components/marketing/site/DesktopBand";
 import EvidenceGrid from "@/components/marketing/site/EvidenceGrid";
 import { Announcement, CenteredClosing, CenteredHero, ShowcaseSection, Tiles } from "@/components/marketing/site/Home";
-import { LATEST } from "@/components/marketing/site/releases";
 import { WindowsIcon } from "@/components/marketing/site/OsIcons";
 
 export const metadata = {
@@ -24,14 +23,14 @@ export default function HomePage() {
   return (
     <MarketingShell>
       <CenteredHero
-        announcement={<Announcement href="/changelog" label={`Fydell Desktop ${LATEST.version}`} action="See what's new" />}
+        announcement={<Announcement href="/download" label="Install Fydell as an app" action="No installer needed" />}
         title="Engineering work, ready to be seen."
         lead="Engineers share real projects and work samples. Hiring teams read the evidence behind every claim, then make the call."
         actions={
           <>
             <Link href="/download" className="l-btn l-btn-lg l-btn-solid">
               <WindowsIcon size={16} />
-              Download for Windows
+              Install for Windows
             </Link>
             <Link href="/signup" className="l-btn l-btn-lg l-btn-quiet">
               Create an account
@@ -82,7 +81,7 @@ export default function HomePage() {
           steps={[
             { name: "Disclosed.", body: "The brief, the time and what is recorded are shown before you start." },
             { name: "Ask.", body: "Simulated teammates answer from the same facts for every candidate." },
-            { name: "Change.", body: "Work in a real codebase, in the browser or in Fydell Desktop." },
+            { name: "Change.", body: "Work in a real codebase, in the browser or in your own editor." },
             { name: "Checked.", body: "Checks run on the submitted code. Reviewers read the results with your handoff." },
           ]}
         >

@@ -85,7 +85,7 @@ function BriefBody({ scenario }: { scenario: DemoScenario }) {
           <li>
             <span className={s.doNum}>2</span>
             <span>
-              Edit the files and run the public tests. They run in your browser, as a preview of the isolated runner in the desktop app. Message your teammates whenever it
+              Edit the files and run the public tests. They run in your browser, as a preview of Fydell&apos;s isolated runner. Message your teammates whenever it
               helps.
             </span>
           </li>

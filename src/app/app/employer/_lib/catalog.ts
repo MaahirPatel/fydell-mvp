@@ -1,7 +1,7 @@
 import "server-only";
 /**
  * Builds the employer-facing catalog: the published templates listed in
- * EMPLOYER_INVITABLE_SLUGS (the desktop engineering simulation and DA-01).
+ * EMPLOYER_INVITABLE_SLUGS. Engineering tasks are invited from Assessments.
  * Other authored micros stay out of the production list. Preview data is
  * candidate-safe.
  */

@@ -293,7 +293,7 @@ function TaskWorkspace({ scenario, embed }: { scenario: DemoScenario; embed?: Ta
           <h1 className="min-w-0 truncate text-[14px] font-medium text-[var(--text-primary)]" title={scenario.title}>
             {scenario.title}
           </h1>
-          <span className={t.demoBadge} title="Not a candidate assessment. Real assessments run in the Fydell desktop app.">
+          <span className={t.demoBadge} title="Not a candidate assessment. Real assessments run tests in Fydell's isolated runner.">
             Browser preview
           </span>
 
