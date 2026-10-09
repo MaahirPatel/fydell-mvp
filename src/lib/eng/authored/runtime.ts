@@ -329,6 +329,17 @@ async function discardSealed(db: Admin, uploadId: string, storagePath: string, d
 }
 
 /**
+ * The receipt of an attempt that was already submitted, after completing any
+ * follow-through, so a retry gets it back whatever its body holds.
+ */
+export async function existingAuthoredReceipt(db: Admin, authored: AuthoredAttempt, userId: string): Promise<AuthoredReceipt | null> {
+  const { data } = await db.from("eng_submissions").select("*").eq("attempt_id", authored.attempt.id).maybeSingle();
+  if (!data) return null;
+  await followThrough(db, authored.attempt, data as SubmissionRow, userId);
+  return receiptOf(data as SubmissionRow, true);
+}
+
+/**
  * Seals the candidate's files into a ZIP in private storage, records the
  * upload and the immutable submission, and queues evaluation. The upload is
  * accepted only once the submission exists, so a failed or lost race leaves

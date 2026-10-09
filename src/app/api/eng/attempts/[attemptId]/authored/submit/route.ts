@@ -2,7 +2,7 @@ import { jsonError, readJson } from "@/lib/eng/context";
 import { errorResponse, ok } from "@/lib/eng/http";
 import { scheduleEvaluationWork } from "@/lib/eng/route-helpers";
 import { authoredCandidateAttempt } from "@/lib/eng/authored/route-helpers";
-import { submitAuthored, validateAuthoredHandoff } from "@/lib/eng/authored/runtime";
+import { existingAuthoredReceipt, submitAuthored, validateAuthoredHandoff } from "@/lib/eng/authored/runtime";
 
 export const maxDuration = 300;
 
@@ -10,6 +10,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ attempt
   const gate = await authoredCandidateAttempt((await params).attemptId);
   if (gate.ok === false) return gate.response;
   const { db, user, authored } = gate.value;
+  try {
+    const previous = await existingAuthoredReceipt(db, authored, user.id);
+    if (previous) {
+      scheduleEvaluationWork();
+      return ok({ receipt: previous }, 200);
+    }
+  } catch (err) {
+    return errorResponse(err, "authored-submit");
+  }
   const body = await readJson(req);
   if (!body) return jsonError(400, "Invalid request.");
   const handoff = validateAuthoredHandoff(authored.pkg, body);
