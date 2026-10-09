@@ -2,7 +2,7 @@ import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getReview, type ReviewDecision } from "@/lib/passport/store";
 import type { PassportData, PassportEvidence } from "@/lib/passport/view";
-import { authorizeReviewScope, listMappings, listQuestions, type MappingStatus } from "./review";
+import { authorizeReviewScope, listMappings, listQuestions, type Assessment, type EvidenceMapping, type MappingStatus } from "./review";
 
 /**
  * A decision brief for one shared passport reviewed against one role.
@@ -57,15 +57,23 @@ const DECISION_LABEL: Record<ReviewDecision, string> = {
 const OUTCOME_LABEL: Record<BriefRequirement["outcome"], string> = {
   supported: "Supporting evidence",
   insufficient: "Relevant but not yet sufficient",
-  no_evidence: "No evidence supplied",
-  concern: "Open concern",
+  no_evidence: "Not observed in the shared work",
+  concern: "Concern",
 };
 
-/** Accepted or corrected evidence supports; a question is a concern; anything else is unconfirmed. */
-function outcomeFor(statuses: MappingStatus[]): BriefRequirement["outcome"] {
-  if (statuses.length === 0) return "no_evidence";
-  if (statuses.some((s) => s === "accepted" || s === "corrected")) return "supported";
-  if (statuses.some((s) => s === "questioned")) return "concern";
+const FROM_ASSESSMENT: Record<Assessment, BriefRequirement["outcome"]> = {
+  supports: "supported",
+  insufficient: "insufficient",
+  not_observed: "no_evidence",
+  concern: "concern",
+};
+
+/** The reviewer's recorded assessment wins; without one, linked evidence supports and anything else is unsettled. */
+function outcomeFor(rows: EvidenceMapping[]): BriefRequirement["outcome"] {
+  const assessed = rows.find((m) => m.assessment);
+  if (assessed?.assessment) return FROM_ASSESSMENT[assessed.assessment];
+  if (rows.length === 0) return "no_evidence";
+  if (rows.some((m) => m.status === "accepted" || m.status === "corrected")) return "supported";
   return "insufficient";
 }
 
@@ -117,7 +125,7 @@ export async function buildDecisionBrief(organizationId: string, reviewId: strin
 
   const requirements: BriefRequirement[] = scope.requirements.map((text, index) => {
     const rows = mappings.filter((m) => m.requirementIndex === index);
-    const outcome = outcomeFor(rows.map((m) => m.status));
+    const outcome = outcomeFor(rows);
     return {
       text,
       outcome,

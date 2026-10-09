@@ -800,6 +800,7 @@ textarea.platform-input {
 }
 .badge-teal { background: var(--field-teal); color: var(--ink-teal); }
 .badge-violet { background: var(--field-violet); color: var(--ink-violet); }
+.badge-coral { background: var(--field-coral); color: var(--ink-coral); }
 .badge-attention { background: var(--status-attention-bg); color: var(--status-attention-ink); }
 .badge-neutral { background: var(--surface-selected); color: var(--text-secondary); }
 

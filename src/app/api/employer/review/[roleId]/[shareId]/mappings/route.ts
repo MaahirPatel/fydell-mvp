@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
-import { authorizeReviewScope, evidenceBelongsToScope, resolveEvidenceProject, upsertMapping, type MappingStatus } from "@/lib/employer/review";
+import { authorizeReviewScope, evidenceBelongsToScope, isAssessment, resolveEvidenceProject, upsertMapping, type Assessment, type MappingStatus } from "@/lib/employer/review";
 import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 import { csrfGuard } from "@/lib/security/csrf";
 
@@ -12,7 +12,8 @@ const STATUSES: MappingStatus[] = ["suggested", "accepted", "corrected", "questi
 /**
  * POST /api/employer/review/[roleId]/[shareId]/mappings
  * Create or update the reviewer's assessment of one requirement.
- * Body: { requirementIndex, evidenceProjectId?, evidenceId?, status, reviewerNote? }
+ * Body: { requirementIndex, evidenceProjectId?, evidenceId?, status, assessment?, reviewerNote? }
+ * An assessment needs a reason unless it is "supports" with a linked finding.
  * The requirement text is taken from the stored role.
  */
 export async function POST(
@@ -37,6 +38,7 @@ export async function POST(
     evidenceProjectId?: unknown;
     evidenceId?: unknown;
     status?: unknown;
+    assessment?: unknown;
     reviewerNote?: unknown;
   };
   try {
@@ -59,7 +61,16 @@ export async function POST(
   if (!(await evidenceBelongsToScope(scope, evidenceProjectId, evidenceId))) {
     return NextResponse.json({ error: "That evidence is not part of the shared Passport." }, { status: 400 });
   }
-  const reviewerNote = typeof body.reviewerNote === "string" ? body.reviewerNote.slice(0, 2000) : "";
+  const reviewerNote = typeof body.reviewerNote === "string" ? body.reviewerNote.trim().slice(0, 2000) : "";
+  let assessment: Assessment | null | undefined;
+  if (body.assessment !== undefined) {
+    if (body.assessment === null) assessment = null;
+    else if (isAssessment(body.assessment)) assessment = body.assessment;
+    else return NextResponse.json({ error: "Choose how the evidence relates to this requirement." }, { status: 400 });
+    if (assessment && !(assessment === "supports" && evidenceId) && reviewerNote.length < 3) {
+      return NextResponse.json({ error: "Add a short reason so the rest of the team can follow your judgment." }, { status: 400 });
+    }
+  }
 
   try {
     const mapping = await upsertMapping({
@@ -71,6 +82,7 @@ export async function POST(
       evidenceProjectId,
       evidenceId,
       status,
+      assessment,
       reviewerNote,
       createdBy: user.id,
     });

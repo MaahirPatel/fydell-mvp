@@ -6,6 +6,13 @@ import { notifyUser } from "@/lib/notifications/store";
 export type MappingStatus = "suggested" | "accepted" | "corrected" | "questioned" | "unresolved";
 export type QuestionStatus = "open" | "answered" | "closed";
 
+/** A reviewer's judgment of one requirement. The reason is kept in `reviewerNote`. */
+export const ASSESSMENTS = ["supports", "insufficient", "not_observed", "concern"] as const;
+export type Assessment = (typeof ASSESSMENTS)[number];
+export function isAssessment(v: unknown): v is Assessment {
+  return typeof v === "string" && (ASSESSMENTS as readonly string[]).includes(v);
+}
+
 export interface EvidenceMapping {
   id: string;
   organizationId: string;
@@ -16,6 +23,7 @@ export interface EvidenceMapping {
   evidenceProjectId: string | null;
   evidenceId: string | null;
   status: MappingStatus;
+  assessment: Assessment | null;
   reviewerNote: string;
   createdBy: string | null;
   createdAt: string;
@@ -49,6 +57,7 @@ type MappingRow = {
   evidence_project_id: string | null;
   evidence_id: string | null;
   status: MappingStatus;
+  assessment: string | null;
   reviewer_note: string;
   created_by: string | null;
   created_at: string;
@@ -83,6 +92,7 @@ function toMapping(r: MappingRow): EvidenceMapping {
     evidenceProjectId: r.evidence_project_id,
     evidenceId: r.evidence_id,
     status: r.status,
+    assessment: isAssessment(r.assessment) ? r.assessment : null,
     reviewerNote: r.reviewer_note,
     createdBy: r.created_by,
     createdAt: r.created_at,
@@ -252,6 +262,7 @@ export async function upsertMapping(input: {
   evidenceProjectId?: string | null;
   evidenceId?: string | null;
   status: MappingStatus;
+  assessment?: Assessment | null;
   reviewerNote?: string;
   createdBy: string;
 }): Promise<EvidenceMapping> {
@@ -268,6 +279,7 @@ export async function upsertMapping(input: {
         evidence_project_id: input.evidenceProjectId ?? null,
         evidence_id: input.evidenceId ?? null,
         status: input.status,
+        ...(input.assessment !== undefined ? { assessment: input.assessment } : {}),
         reviewer_note: input.reviewerNote ?? "",
         created_by: input.createdBy,
         updated_at: new Date().toISOString(),

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Field, FormError, FormSuccess, Input, Textarea } from "@/components/ui/Field";
-import type { EvidenceMapping, ReviewQuestion } from "@/lib/employer/review";
+import type { Assessment, EvidenceMapping, ReviewQuestion } from "@/lib/employer/review";
 import type { ApplicationInvitation } from "@/lib/hiring/work-samples";
 import WorkSampleInviteForm from "./WorkSampleInviteForm";
 import type { EvidenceItem, ReviewData, ReviewRequirement } from "./types";
@@ -14,7 +14,7 @@ type Path = "review" | "ask" | "invite";
 const PREVIEW_FINDINGS = 3;
 
 const PATHS: Array<{ key: Path; label: string; help: string }> = [
-  { key: "review", label: "Review existing evidence", help: "Map a finding from their Passport, or record that it is not established." },
+  { key: "review", label: "Assess the existing evidence", help: "Record whether their work supports this, with a reason and the finding it rests on." },
   { key: "ask", label: "Ask a question or request an artifact", help: "A targeted question, or a design doc, pull request or write-up they are permitted to share." },
   { key: "invite", label: "Invite to a work sample", help: "Only when the gap remains after their existing work. You name the gap first." },
 ];
@@ -34,7 +34,16 @@ async function postJson<T>(url: string, body: unknown): Promise<{ ok: true; data
   }
 }
 
+const ASSESSMENT_OPTIONS: Array<{ value: Assessment; label: string; help: string; badge: string }> = [
+  { value: "supports", label: "Supports it", help: "A finding, answer or artifact shows this.", badge: "badge-teal" },
+  { value: "insufficient", label: "Relevant but not enough", help: "Related work, but it doesn't settle the requirement yet.", badge: "badge-attention" },
+  { value: "not_observed", label: "Not observed", help: "The shared work doesn't cover this. It says nothing either way.", badge: "badge-neutral" },
+  { value: "concern", label: "Concern", help: "Something in the work points the other way. Say what.", badge: "badge-coral" },
+];
+
 function status(mapping: EvidenceMapping | undefined, questions: ReviewQuestion[], invites: ApplicationInvitation[]): { label: string; badge: string } {
+  const assessed = mapping?.assessment ? ASSESSMENT_OPTIONS.find((o) => o.value === mapping.assessment) : undefined;
+  if (assessed) return { label: assessed.label, badge: assessed.badge };
   if (mapping?.status === "accepted" && mapping.evidenceId) return { label: "Evidence mapped", badge: "badge-teal" };
   if (invites.some((i) => i.status === "invited" || i.status === "accepted")) return { label: "Work sample invited", badge: "badge-violet" };
   if (questions.some((q) => q.status === "open")) return { label: "Waiting on applicant", badge: "badge-attention" };
@@ -90,7 +99,11 @@ function ExistingEvidence({
     <div className="grid content-start gap-3">
       <h4 className="text-app-meta font-medium text-[var(--text-primary)]">Existing evidence</h4>
       {mapped ? <EvidenceCard item={mapped} /> : null}
-      {mapping?.reviewerNote && mapping.reviewerNote !== "Mapping removed by reviewer." ? <p className="text-app-meta text-[var(--text-secondary)]">Reviewer note: {mapping.reviewerNote}</p> : null}
+      {mapping?.reviewerNote && mapping.reviewerNote !== "Mapping removed by reviewer." ? (
+        <p className="whitespace-pre-wrap text-app-meta leading-[1.5] text-[var(--text-secondary)]">
+          {mapping.assessment ? "Reason" : "Reviewer note"}: {mapping.reviewerNote}
+        </p>
+      ) : null}
       {questions.map((q) => (
         <div key={q.id} className="rounded-[8px] border border-[var(--border-subtle)] p-3 text-app-meta">
           <p className="text-[var(--text-tertiary)]">
@@ -136,62 +149,118 @@ function ExistingEvidence({
   );
 }
 
-function ReviewPath({ data, req, mapped, onSaved }: { data: ReviewData; req: ReviewRequirement; mapped: EvidenceItem | undefined; onSaved: () => void }) {
-  const [busy, setBusy] = useState<string | null>(null);
+function ReviewPath({
+  data,
+  req,
+  mapping,
+  mapped,
+  onSaved,
+}: {
+  data: ReviewData;
+  req: ReviewRequirement;
+  mapping: EvidenceMapping | undefined;
+  mapped: EvidenceItem | undefined;
+  onSaved: () => void;
+}) {
+  const [assessment, setAssessment] = useState<Assessment | null>(mapping?.assessment ?? null);
+  const [findingId, setFindingId] = useState<string | null>(mapped?.id ?? null);
+  const [reason, setReason] = useState(mapping?.assessment ? mapping.reviewerNote : "");
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   if (!data.share) {
     return <p className="text-app-meta leading-[1.5] text-[var(--text-secondary)]">There are no Passport findings to review. Read the note and links, then ask a question if something is unclear.</p>;
   }
-  if (data.evidence.length === 0) {
-    return <p className="text-app-meta text-[var(--text-secondary)]">The shared projects have no analyzed findings. Ask a question or request a permitted artifact instead.</p>;
+  if (req.mappingIndex === null) {
+    return <p className="text-app-meta text-[var(--text-secondary)]">Preferred requirements are read as context and not assessed one by one.</p>;
   }
-  const canMap = data.canAsk && req.mappingIndex !== null;
-  async function map(item: EvidenceItem | null) {
-    if (!data.share || req.mappingIndex === null) return;
-    setBusy(item?.id ?? "unresolved");
+  if (!data.canAsk) {
+    return <p className="text-app-meta text-[var(--text-secondary)]">Your workspace role can read evidence but not record assessments.</p>;
+  }
+  const finding = data.evidence.find((e) => e.id === findingId) ?? null;
+  const reasonNeeded = !(assessment === "supports" && finding);
+  const canSave = assessment !== null && (!reasonNeeded || reason.trim().length >= 3);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (!data.share || req.mappingIndex === null || !assessment || busy) return;
+    setBusy(true);
     setError(null);
     const r = await postJson(`/api/employer/review/${data.roleId}/${data.share.shareId}/mappings`, {
       requirementIndex: req.mappingIndex,
-      evidenceProjectId: item?.projectId ?? null,
-      evidenceId: item?.id ?? null,
-      status: item ? "accepted" : "unresolved",
-      reviewerNote: item ? "" : "Not established by the shared evidence.",
+      evidenceProjectId: finding?.projectId ?? null,
+      evidenceId: finding?.id ?? null,
+      status: assessment === "supports" && finding ? "accepted" : "unresolved",
+      assessment,
+      reviewerNote: reason.trim(),
     });
-    setBusy(null);
+    setBusy(false);
     if (r.ok === false) return setError(r.error);
     onSaved();
   }
+
   return (
-    <div className="grid gap-3">
-      {!canMap ? (
-        <p className="text-app-meta text-[var(--text-secondary)]">
-          {req.mappingIndex === null ? "Preferred requirements are read as context and not mapped." : "Your workspace role can read evidence but not record review notes."}
-        </p>
-      ) : null}
-      <div className="grid max-h-[420px] gap-2 overflow-y-auto pr-1">
-        {data.evidence.map((item) => (
-          <EvidenceCard
-            key={item.id}
-            item={item}
-            action={
-              canMap ? (
-                <Button size="sm" variant={mapped?.id === item.id ? "primary" : "secondary"} onClick={() => map(item)} loading={busy === item.id} disabled={busy !== null || mapped?.id === item.id}>
-                  {mapped?.id === item.id ? "Mapped" : "Map to this requirement"}
-                </Button>
-              ) : undefined
-            }
-          />
+    <form onSubmit={save} className="grid gap-4" noValidate>
+      <fieldset className="grid gap-2">
+        <legend className="mb-1 text-app-meta font-medium text-[var(--text-primary)]">How does their work relate to this requirement?</legend>
+        {ASSESSMENT_OPTIONS.map((o) => (
+          <label
+            key={o.value}
+            className={`grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] gap-x-2.5 rounded-[8px] border px-3 py-2 ${
+              assessment === o.value ? "border-[var(--border-strong)] bg-[var(--surface-selected)]" : "border-[var(--border-default)] hover:bg-[var(--surface-hover)]"
+            }`}
+          >
+            <input type="radio" name={`assess-${req.id}`} value={o.value} checked={assessment === o.value} onChange={() => setAssessment(o.value)} className="mt-[3px]" />
+            <span className="text-app-meta font-medium text-[var(--text-primary)]">{o.label}</span>
+            <span className="col-start-2 text-app-meta leading-[1.45] text-[var(--text-secondary)]">{o.help}</span>
+          </label>
         ))}
-      </div>
-      {canMap ? (
-        <div>
-          <Button size="sm" variant="quiet" onClick={() => map(null)} loading={busy === "unresolved"} disabled={busy !== null}>
-            Not established by this evidence
-          </Button>
+      </fieldset>
+
+      {data.evidence.length > 0 ? (
+        <div className="grid gap-2">
+          <p className="text-app-meta font-medium text-[var(--text-primary)]">
+            Finding this rests on <span className="font-normal text-[var(--text-tertiary)]">(optional)</span>
+          </p>
+          <div className="grid max-h-[360px] gap-2 overflow-y-auto pr-1">
+            {data.evidence.map((item) => (
+              <EvidenceCard
+                key={item.id}
+                item={item}
+                action={
+                  <Button size="sm" variant={findingId === item.id ? "primary" : "secondary"} aria-pressed={findingId === item.id} onClick={() => setFindingId(findingId === item.id ? null : item.id)}>
+                    {findingId === item.id ? "Linked" : "Link this finding"}
+                  </Button>
+                }
+              />
+            ))}
+          </div>
         </div>
-      ) : null}
+      ) : (
+        <p className="text-app-meta text-[var(--text-secondary)]">The shared projects have no analyzed findings. Base the assessment on their note, links or answers.</p>
+      )}
+
+      <Field
+        label="Reason"
+        htmlFor={`reason-${req.id}`}
+        optional={!reasonNeeded}
+        help="Visible to your team and in the decision brief. Not shown to the applicant."
+      >
+        <Textarea
+          id={`reason-${req.id}`}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          maxLength={2000}
+          rows={3}
+          placeholder="The retry loop is idempotent per write, but nothing shows how they debugged it in production."
+        />
+      </Field>
       <FormError>{error}</FormError>
-    </div>
+      <div>
+        <Button type="submit" size="sm" variant="primary" loading={busy} disabled={!canSave}>
+          {mapping?.assessment ? "Update assessment" : "Save assessment"}
+        </Button>
+      </div>
+    </form>
   );
 }
 
@@ -368,7 +437,18 @@ function RequirementCard({ data, req }: { data: ReviewData; req: ReviewRequireme
                   Other paths
                 </Button>
               </div>
-              {path === "review" ? <ReviewPath data={data} req={req} mapped={mapped} onSaved={refresh} /> : null}
+              {path === "review" ? (
+                <ReviewPath
+                  data={data}
+                  req={req}
+                  mapping={mapping}
+                  mapped={mapped}
+                  onSaved={() => {
+                    setPath(null);
+                    refresh();
+                  }}
+                />
+              ) : null}
               {path === "ask" ? <AskPath data={data} req={req} mapping={mapping} onSaved={refresh} /> : null}
               {path === "invite" ? (
                 <WorkSampleInviteForm
