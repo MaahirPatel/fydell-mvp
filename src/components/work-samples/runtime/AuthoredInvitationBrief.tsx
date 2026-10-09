@@ -36,7 +36,7 @@ export function AuthoredInvitationBrief({
           { label: "Window", value: `${allowedMinutes} min, from Start` },
           { label: "Expires", value: <LocalTime iso={expiresAt} /> },
         ]}
-        rail={<JourneyRail at="invitation" />}
+        rail={<JourneyRail at="invitation" submitValue="Your files and handoff" />}
       />
       <Panel>
         <PanelSection title={task.title} description={task.summary}>

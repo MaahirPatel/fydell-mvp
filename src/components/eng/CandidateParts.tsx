@@ -23,10 +23,11 @@ const JOURNEY_COPY: Record<JourneyStage, { label: string; done: string; current:
 };
 
 /** The five stages every engineering task moves through, in the shared rail. */
-export function journeySteps(at: JourneyStage, opts: { complete?: boolean; value?: string } = {}): RailStep[] {
+export function journeySteps(at: JourneyStage, opts: { complete?: boolean; value?: string; submitValue?: string } = {}): RailStep[] {
   const index = JOURNEY.indexOf(at);
   return JOURNEY.map((stage, i) => {
-    const copy = JOURNEY_COPY[stage];
+    const base = JOURNEY_COPY[stage];
+    const copy = stage === "submit" && opts.submitValue ? { ...base, current: opts.submitValue, pending: opts.submitValue } : base;
     const done = i < index || (i === index && Boolean(opts.complete));
     const current = i === index && !done;
     return {
@@ -37,8 +38,9 @@ export function journeySteps(at: JourneyStage, opts: { complete?: boolean; value
   });
 }
 
-export function JourneyRail({ at, complete, value }: { at: JourneyStage; complete?: boolean; value?: string }) {
-  return <EvidenceRail steps={journeySteps(at, { complete, value })} />;
+/** `submitValue` names what this task's candidates hand in, when it is not a ZIP. */
+export function JourneyRail({ at, complete, value, submitValue }: { at: JourneyStage; complete?: boolean; value?: string; submitValue?: string }) {
+  return <EvidenceRail steps={journeySteps(at, { complete, value, submitValue })} />;
 }
 
 export function Facts({ items }: { items: { label: string; value: ReactNode }[] }) {
