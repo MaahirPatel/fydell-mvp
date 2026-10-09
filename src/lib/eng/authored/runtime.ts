@@ -74,7 +74,12 @@ async function ensureWorkspace(db: Admin, attemptId: string, pkg: ScenarioPackag
   return (await getWorkspace(db, attemptId)) ?? { files, revision: 1 };
 }
 
-/** Compare-and-set on the revision, so two tabs cannot silently overwrite each other. */
+/**
+ * Compare-and-set on the revision, so two tabs cannot silently overwrite each
+ * other. A retry of a save that already landed (its response was lost to a
+ * dropped connection) finds the same files on the server and succeeds instead
+ * of reporting a conflict with itself.
+ */
 export async function saveWorkspace(
   db: Admin,
   { attempt, pkg }: AuthoredAttempt,
@@ -92,9 +97,11 @@ export async function saveWorkspace(
     .eq("revision", baseRevision)
     .select("revision")
     .maybeSingle();
-  if (data) return { ok: true, revision: data.revision as number, filesSha256: filesFingerprint(checked.files) };
+  const sha = filesFingerprint(checked.files);
+  if (data) return { ok: true, revision: data.revision as number, filesSha256: sha };
   const current = await getWorkspace(db, attempt.id);
   if (!current) throw new AttemptError("Could not save your files. Try again.", 500);
+  if (filesFingerprint(current.files) === sha) return { ok: true, revision: current.revision, filesSha256: sha };
   return { ok: false, current };
 }
 

@@ -147,15 +147,28 @@ function firstSentence(text: string): string {
   return m ? m[1] : t.slice(0, 220);
 }
 
+/** Two messages ask much the same thing: at least two shared words, covering half of the shorter one. */
+export function similarQuestion(a: string, b: string): boolean {
+  const x = new Set(contentTokens(a));
+  const y = new Set(contentTokens(b));
+  if (x.size === 0 || y.size === 0) return false;
+  let shared = 0;
+  for (const w of x) if (y.has(w)) shared += 1;
+  return shared >= 2 && shared / Math.min(x.size, y.size) >= 0.5;
+}
+
 /**
- * A question this teammate has already answered: every fact it concerns was
- * given earlier in the thread. The reply restates the key fact in one
- * sentence, so a candidate who asks again gets the same answer, shorter,
- * and no new knowledge is disclosed.
+ * A question this teammate has already answered: the candidate asked this
+ * teammate much the same thing before, and every fact it concerns was given
+ * earlier in the thread. The reply restates the key fact in one sentence, so
+ * a candidate who asks again gets the same answer, shorter, and no new
+ * knowledge is disclosed. A different question that merely shares a topic
+ * word with a fact already given goes to the model instead.
  */
 export function repeatedQuestionReply(question: string, facts: Fact[], thread: Turn[], selfId: string): { body: string; factIds: string[] } | null {
   const picked = relevantFacts(question, facts);
   if (picked.length === 0) return null;
+  if (!thread.some((t) => t.sender === "candidate" && t.teammateId === selfId && similarQuestion(question, t.body))) return null;
   const given = disclosedFactIds(thread, selfId);
   if (!picked.every((f) => given.has(f.id))) return null;
   return { body: noDashes(`As I said earlier, ${lowerFirst(firstSentence(picked[0].text))}`), factIds: [picked[0].id] };

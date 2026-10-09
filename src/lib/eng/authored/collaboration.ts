@@ -1,5 +1,5 @@
 import "server-only";
-import { getProviderConfig, postChatCompletion } from "@/lib/ai/provider";
+import { getProviderConfig, ModelApiError, postChatCompletion } from "@/lib/ai/provider";
 import type { Admin } from "../context";
 import { AttemptError } from "../attempts";
 import { recordEngEvent } from "../events";
@@ -142,15 +142,23 @@ export async function releaseDueEvents(db: Admin, authored: AuthoredAttempt, opt
 /* Team messages                                                       */
 /* ------------------------------------------------------------------ */
 
+type ProviderErrorDetail = { status: number | null; code: string | null; timeout: boolean };
+
+/** The provider's HTTP status and error code for the event log; never the request or the key. */
+function providerErrorDetail(error: unknown): ProviderErrorDetail {
+  if (error instanceof ModelApiError) return { status: error.status, code: error.code, timeout: false };
+  return { status: null, code: null, timeout: error instanceof Error && /timed out/.test(error.message) };
+}
+
 async function composeReply(
   pkg: ScenarioPackage,
   prot: ProtectedMaterials,
   self: Coworker,
   thread: Turn[],
   question: string,
-): Promise<{ body: string; factIds: string[]; mode: "model" | "scenario_notes"; reason: string | null }> {
+): Promise<{ body: string; factIds: string[]; mode: "model" | "scenario_notes"; reason: string | null; providerError?: ProviderErrorDetail }> {
   const facts = factsFor(prot, self.id);
-  const notes = (reason: string) => ({ ...scenarioNotesReply(self, pkg.coworkers, facts, question, thread), mode: "scenario_notes" as const, reason });
+  const notes = (reason: string, providerError?: ProviderErrorDetail) => ({ ...scenarioNotesReply(self, pkg.coworkers, facts, question, thread), mode: "scenario_notes" as const, reason, providerError });
   const repeat = repeatedQuestionReply(question, facts, thread, self.id);
   if (repeat) return { ...repeat, mode: "scenario_notes", reason: "repeated_question" };
   const config = getProviderConfig();
@@ -173,7 +181,7 @@ async function composeReply(
         await new Promise((r) => setTimeout(r, 6_000));
         continue;
       }
-      return notes(error instanceof SyntaxError ? "invalid_json" : "provider_error");
+      return error instanceof SyntaxError ? notes("invalid_json") : notes("provider_error", providerErrorDetail(error));
     }
     const checked = checkTeammateDraft(raw, facts, prot);
     if (checked.ok === false) {
@@ -241,7 +249,7 @@ export async function sendTeamMessage(
     await recordEngEvent(db, attempt.id, {
       type: "teammate_replied",
       actor: "system",
-      payload: { teammateId: addressed.id, mode: reply.mode, factIds: reply.factIds, fallbackReason: reply.reason },
+      payload: { teammateId: addressed.id, mode: reply.mode, factIds: reply.factIds, fallbackReason: reply.reason, ...(reply.providerError ? { providerError: reply.providerError } : {}) },
       clientEventId: replyId,
     });
   }

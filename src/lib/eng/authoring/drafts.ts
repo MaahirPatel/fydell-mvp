@@ -175,7 +175,11 @@ export async function createDraft(db: Admin, member: EngMember, raw: unknown, op
   const { data, error } = inserted;
   if (error) throw new Error(`Could not create draft: ${error.message}`);
   const draftId = data.id as string;
-  await db.from("eng_scenario_draft_protected").insert({ draft_id: draftId, organization_id: member.organizationId, content: skeleton?.prot ?? emptyProtected() });
+  const { error: protError } = await db.from("eng_scenario_draft_protected").insert({ draft_id: draftId, organization_id: member.organizationId, content: skeleton?.prot ?? emptyProtected() });
+  if (protError) {
+    await db.from("eng_scenario_drafts").delete().eq("id", draftId);
+    throw new Error(`Could not store the draft's protected materials: ${protError.code ?? "no code"} ${protError.message.slice(0, 120)}`);
+  }
   if (uploaded || asIs) return { draftId, jobId: null };
   const checkpoint: GenerateCheckpoint = { scope: "all", config };
   const job = await enqueueJob(db, { draftId, organizationId: member.organizationId, kind: "generate", revision: 1, requestedBy: member.userId, checkpoint: checkpoint as unknown as Record<string, unknown> });

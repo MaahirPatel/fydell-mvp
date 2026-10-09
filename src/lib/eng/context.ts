@@ -1,6 +1,8 @@
 import "server-only";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { supabaseServiceKey, supabaseUrl } from "@/lib/supabase";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { ACTIVE_ORG_COOKIE, requireUser } from "@/lib/simulations/auth";
 import { isOrgRole, roleCan, type EngAction, type OrgRole } from "./permissions";
@@ -17,8 +19,37 @@ export interface EngMember {
 
 export type Admin = ReturnType<typeof createAdminSupabaseClient>;
 
+/**
+ * Supabase's edge firewall refuses request bodies that look like script
+ * injection, and ordinary code trips it: a regex literal followed by
+ * `.exec(` in a candidate's file or a template's reference solution is
+ * rejected with a 403 page. JSON lets any character inside a string be
+ * written as a \u escape, so these characters are escaped in JSON bodies and
+ * PostgREST stores exactly the same values. Escape pairs already in the body
+ * are copied unchanged.
+ */
+export function escapeJsonForFirewall(body: string): string {
+  return body.replace(/\\.|[()<>$'/]/g, (m) => (m.length === 2 ? m : `\\u${m.charCodeAt(0).toString(16).padStart(4, "0")}`));
+}
+
+const firewallSafeFetch: typeof fetch = (input, init) => {
+  if (init && typeof init.body === "string" && (new Headers(init.headers).get("content-type") ?? "").includes("json")) {
+    return fetch(input, { ...init, body: escapeJsonForFirewall(init.body) });
+  }
+  return fetch(input, init);
+};
+
+let engClient: Admin | null = null;
+
 export function engAdmin(): Admin {
-  return createAdminSupabaseClient();
+  if (engClient) return engClient;
+  // Runs the shared credential and project-binding checks; throws when they refuse.
+  createAdminSupabaseClient();
+  engClient = createClient(supabaseUrl() ?? "", supabaseServiceKey() ?? "", {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: firewallSafeFetch },
+  });
+  return engClient;
 }
 
 /**

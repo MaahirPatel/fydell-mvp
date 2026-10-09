@@ -352,8 +352,10 @@ async function journey8(ctx: Ctx) {
 
   /* Files and public tests */
   const { edited, revision } = await saveReference(ctx, A, view);
-  const stale = await call(engineer, "PUT", `${A}/files`, { baseRevision: Number(ws.revision), files: edited });
-  assert.equal(stale.status, 409, "a stale save is refused");
+  // Identical files on a stale revision are a retried save and succeed, so the conflict case sends different files.
+  const diverged = edited.map((f, i) => (i === 0 ? { ...f, content: `${f.content}\n// other tab\n` } : f));
+  const stale = await call(engineer, "PUT", `${A}/files`, { baseRevision: Number(ws.revision), files: diverged });
+  assert.equal(stale.status, 409, "a stale save with different files is refused");
   pass(J, "files saved with revision check; stale save refused", "live DB", `revision ${revision}`);
   const authored = await loadCandidate(ctx, attemptId);
   const pub = await lib.runPublicTests(db, authored, "workspace", edited, engineer.userId);
