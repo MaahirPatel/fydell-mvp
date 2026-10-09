@@ -4,6 +4,7 @@ import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
 import { ExampleReviewModule } from "@/components/employer/ExampleReviewModule";
+import { LocalDate } from "@/components/eng/LocalTime";
 import { getOutcomeRecords, type OutcomeRecord } from "../_lib/data";
 
 export const metadata = { title: "Outcomes" };
@@ -58,11 +59,8 @@ function OutcomeRow({ outcome }: { outcome: OutcomeRecord }) {
           ? (INFLUENCE_LABEL[outcome.evidenceInfluence] ?? outcome.evidenceInfluence)
           : "Influence not recorded"}
       </span>
-      <span
-        className="hidden text-right font-mono text-app-meta tabular-nums text-[var(--text-tertiary)] sm:block"
-        title={new Date(outcome.decidedAt).toLocaleString()}
-      >
-        {new Date(outcome.decidedAt).toLocaleDateString()}
+      <span className="hidden text-right font-mono text-app-meta tabular-nums text-[var(--text-tertiary)] sm:block">
+        <LocalDate iso={outcome.decidedAt} />
       </span>
     </li>
   );

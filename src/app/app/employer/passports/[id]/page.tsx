@@ -6,6 +6,7 @@ import { listRoles } from "@/lib/hiring/roles";
 import { applicationForReview } from "@/lib/hiring/applications";
 import PassportView from "@/components/passport/PassportView";
 import PassportDecisionPanel from "@/components/employer/PassportDecisionPanel";
+import { LocalDate } from "@/components/eng/LocalTime";
 import RoleReviewSection from "@/components/employer/RoleReviewSection";
 
 export const metadata = { title: "Passport review" };
@@ -51,7 +52,7 @@ export default async function EmployerPassportReviewPage({ params }: { params: P
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 id="application-heading" className="text-app-section text-[var(--text-primary)]">Application from {application.name}</h2>
                 <p className="text-app-meta text-[var(--text-tertiary)]">
-                  {application.status === "withdrawn" ? "Withdrawn · " : ""}Applied {new Date(application.submittedAt).toLocaleDateString()}
+                  {application.status === "withdrawn" ? "Withdrawn · " : ""}Applied <LocalDate iso={application.submittedAt} />
                 </p>
               </div>
               <p className="mt-1 text-app-meta text-[var(--text-secondary)]">

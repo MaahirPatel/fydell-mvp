@@ -273,7 +273,8 @@ export default function PassportBuilder({
         setPhase("select");
       } else if (data.kind === "preview" && data.preview) {
         const full = data.preview.repository.fullName;
-        setLogin(full.split("/")[0]);
+        // A repository's owner may be an organization or someone else; it is not the engineer's account.
+        setLogin(null);
         setSelected([full]);
         if (signedIn) {
           setPhase("scope");

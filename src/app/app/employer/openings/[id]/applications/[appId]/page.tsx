@@ -13,6 +13,7 @@ import { WorkspacePageHeader } from "@/components/employer/WorkspacePage";
 import StageSelect from "@/components/hiring/StageSelect";
 import ApplicationReview from "@/components/employer/review/ApplicationReview";
 import PassportDecisionPanel from "@/components/employer/PassportDecisionPanel";
+import { LocalDate } from "@/components/eng/LocalTime";
 import EvidenceSnapshotView from "@/components/evidence/EvidenceSnapshotView";
 import ApplicationQuestions, { type QuestionTarget } from "@/components/evidence/ApplicationQuestions";
 import { getApplicationEvidenceForOrg, listApplicationQuestionsForOrg } from "@/lib/profile-evidence/applications";
@@ -138,7 +139,12 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
       <WorkspacePageHeader
         className="mt-4"
         title={app.name}
-        description={`${app.email} · Applied ${new Date(app.submittedAt).toLocaleDateString()}${app.status === "withdrawn" ? " · Withdrawn" : ""}`}
+        description={
+          <>
+            {app.email} · Applied <LocalDate iso={app.submittedAt} />
+            {app.status === "withdrawn" ? " · Withdrawn" : ""}
+          </>
+        }
         action={
           orgCan(org.role, "record_decisions") && app.status === "submitted" ? (
             <StageSelect applicationId={app.id} stage={app.stage} applicantName={app.name} />
@@ -166,7 +172,7 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
                   {p.content ? (
                     <EvidenceSnapshotView content={p.content} version={p.version} publishedAt={p.publishedAt} headingLevel={3} />
                   ) : (
-                    <p className="text-app-meta text-[var(--text-secondary)]">The applicant stopped sharing this project{p.revokedAt ? ` on ${new Date(p.revokedAt).toLocaleDateString()}` : ""}.</p>
+                    <p className="text-app-meta text-[var(--text-secondary)]">The applicant stopped sharing this project{p.revokedAt ? <> on <LocalDate iso={p.revokedAt} /></> : null}.</p>
                   )}
                 </li>
               ))}

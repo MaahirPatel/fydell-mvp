@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { buildDecisionBrief, type BriefRequirement } from "@/lib/employer/brief";
 import BriefActions from "@/components/employer/BriefActions";
+import { LocalDate } from "@/components/eng/LocalTime";
 
 export const metadata = { title: "Decision brief" };
 export const dynamic = "force-dynamic";
@@ -15,8 +16,8 @@ const OUTCOME_TONE: Record<BriefRequirement["outcome"], string> = {
   not_reviewed: "text-[var(--text-tertiary)]",
 };
 
-function date(iso: string | null): string {
-  return iso ? new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "";
+function date(iso: string | null) {
+  return <LocalDate iso={iso} />;
 }
 
 export default async function DecisionBriefPage({
@@ -92,7 +93,7 @@ export default async function DecisionBriefPage({
         <h2 className="text-[19px] font-semibold tracking-[-0.014em]">Decision</h2>
         <p className="mt-2 text-[16px] text-[var(--text-body)]">
           <span className="font-semibold text-[var(--text-primary)]">{b.decision.label}</span>
-          {b.decision.decidedAt ? ` on ${date(b.decision.decidedAt)}` : ""}
+          {b.decision.decidedAt ? <> on {date(b.decision.decidedAt)}</> : null}
           {b.decision.decidedBy ? `, recorded by ${b.decision.decidedBy}` : ""}.
         </p>
       </section>

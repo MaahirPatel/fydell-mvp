@@ -16,6 +16,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/employer/Workspace
 import RoleStatusControls from "@/components/hiring/RoleStatusControls";
 import StageSelect from "@/components/hiring/StageSelect";
 import CoveragePanel from "@/components/employer/roles/CoveragePanel";
+import { LocalDate } from "@/components/eng/LocalTime";
 
 export const metadata = { title: "Role" };
 export const dynamic = "force-dynamic";
@@ -187,7 +188,7 @@ export default async function OpeningPage({
                           {a.decision !== "none" ? <span className="block text-[var(--text-tertiary)]">Decision: {DECISION_LABEL[a.decision] ?? a.decision}</span> : null}
                         </TD>
                         <TD align="right" className="text-app-meta text-[var(--text-tertiary)]">
-                          {new Date(a.submittedAt).toLocaleDateString()}
+                          <LocalDate iso={a.submittedAt} />
                         </TD>
                       </TR>
                     ))}
@@ -282,7 +283,7 @@ export default async function OpeningPage({
                     <li key={v.version} className="rounded-[6px] border border-[var(--border-subtle)] px-3 py-2">
                       <span className="font-medium text-[var(--text-primary)]">Version {v.version}</span>
                       <span className="text-[var(--text-tertiary)]">
-                        {" "}· {new Date(v.createdAt).toLocaleDateString()} · {v.requirements.length} requirement{v.requirements.length === 1 ? "" : "s"}
+                        {" "}· <LocalDate iso={v.createdAt} /> · {v.requirements.length} requirement{v.requirements.length === 1 ? "" : "s"}
                         {v.changedBy ? ` · ${memberName(v.changedBy)}` : ""}
                       </span>
                       {v.changeReason ? <span className="mt-0.5 block text-[var(--text-secondary)]">{v.changeReason}</span> : null}

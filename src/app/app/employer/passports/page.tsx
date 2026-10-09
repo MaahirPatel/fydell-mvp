@@ -5,6 +5,7 @@ import { listReviews } from "@/lib/passport/store";
 import { questionsAwaitingReview } from "@/lib/employer/review";
 import { PageHeader } from "@/components/ui/PageHeader";
 import AddPassportForm from "@/components/employer/AddPassportForm";
+import { LocalDate } from "@/components/eng/LocalTime";
 
 export const metadata = { title: "Reviews" };
 export const dynamic = "force-dynamic";
@@ -79,7 +80,7 @@ export default async function EmployerPassportsPage() {
                     <span className={`badge ${DECISION_BADGE[r.decision]}`}>{DECISION_LABEL[r.decision]}</span>
                   </td>
                   <td className="hidden px-4 py-3 text-right text-app-meta text-[var(--text-tertiary)] sm:table-cell">
-                    {new Date(r.createdAt).toLocaleDateString()}
+                    <LocalDate iso={r.createdAt} />
                   </td>
                 </tr>
               ))}

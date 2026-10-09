@@ -8,6 +8,7 @@ import { FAMILY_LABEL, LEVEL_LABEL, SPECIALIZATION_LABEL } from "@/lib/eng/taxon
 import { ButtonLink } from "@/components/ui/Button";
 import { WorkspacePageHeader } from "@/components/employer/WorkspacePage";
 import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/employer/WorkspaceTable";
+import { LocalDate } from "@/components/eng/LocalTime";
 
 export const metadata = { title: "Roles" };
 export const dynamic = "force-dynamic";
@@ -118,7 +119,7 @@ export default async function OpeningsPage({ searchParams }: { searchParams: Pro
                       )}
                     </TD>
                     <TD align="right" className="tabular-nums text-[var(--text-tertiary)]">
-                      {new Date(r.updatedAt).toLocaleDateString()}
+                      <LocalDate iso={r.updatedAt} />
                     </TD>
                   </TR>
                 );
