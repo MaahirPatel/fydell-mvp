@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { requireUser } from "@/lib/simulations/auth";
@@ -11,6 +12,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Status, type StatusKind } from "@/components/ui/report";
 import { CONTACT_EMAIL, CONTACT_MAILTO } from "@/lib/contact";
 import { getOwnerPassport } from "@/lib/passport/store";
+import type { PassportProject } from "@/lib/passport/view";
 import type { AttemptRow, AttemptStatus, InvitationRow } from "@/lib/eng/types";
 import { LocalDate } from "@/components/eng/LocalTime";
 import s from "@/components/candidate/candidate.module.css";
@@ -97,6 +99,63 @@ function Row({
   );
 }
 
+const PROJECT_STATUS: Record<"complete" | "partial" | "failed", { label: string; kind: StatusKind }> = {
+  complete: { label: "Report ready", kind: "success" },
+  partial: { label: "Partial report", kind: "attention" },
+  failed: { label: "Import failed", kind: "neutral" },
+};
+
+const RECENT_PROJECTS = 3;
+
+function ProjectsSection({ projects }: { projects: PassportProject[] }) {
+  const recent = projects
+    .filter((p): p is PassportProject & { id: string; status: "complete" | "partial" | "failed" } => Boolean(p.id) && p.status !== "stale")
+    .sort((a, b) => b.analyzedAt.localeCompare(a.analyzedAt));
+  if (recent.length === 0) return null;
+  return (
+    <section className={s.section} aria-labelledby="home-projects">
+      <div className={s.sectionHead}>
+        <h2 id="home-projects" className={s.sectionTitle}>
+          Your projects
+        </h2>
+        <span className={s.sectionCount}>{recent.length}</span>
+        <span className="ml-auto flex items-center gap-4 text-app-meta font-medium">
+          <Link href="/app/candidate/work-record" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline hover:underline-offset-4">
+            All projects
+          </Link>
+          <Link href="/app/candidate/work-record/preview" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline hover:underline-offset-4">
+            Preview what you share
+          </Link>
+        </span>
+      </div>
+      <ul>
+        {recent.slice(0, RECENT_PROJECTS).map((p) => {
+          const st = PROJECT_STATUS[p.status];
+          const name = p.repoFullName.split("/").pop() ?? p.repoFullName;
+          return (
+            <li key={p.id} className="border-t border-[var(--border-subtle)] first:border-t-0">
+              <Link
+                href={`/app/candidate/projects/${p.id}`}
+                className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-[6px] px-3 py-3 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)]"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-app-control font-medium text-[var(--text-primary)]">{name}</span>
+                  <span className="block truncate text-app-meta text-[var(--text-tertiary)]">
+                    {p.evidence.length} finding{p.evidence.length === 1 ? "" : "s"}
+                    {p.primaryLanguage ? ` · ${p.primaryLanguage}` : ""} · Analyzed <LocalDate iso={p.analyzedAt} />
+                  </span>
+                </span>
+                <Status kind={st.kind}>{st.label}</Status>
+                <ChevronRight className="hidden h-4 w-4 shrink-0 text-[var(--text-tertiary)] sm:block" strokeWidth={1.75} aria-hidden />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 const HOW_IT_WORKS = [
   { title: "Accept the invitation", body: "A hiring team sends it. You cannot start one on your own." },
   { title: "Set up, untimed", body: "Download the project and run one setup check." },
@@ -166,7 +225,7 @@ export default async function CandidateHomePage() {
 
   return (
     <CandidateShell width="wide" current="assessments">
-      <CandidatePageHead title="Overview" lead="Evaluations hiring teams have invited you to, with each one's deadline and next step." />
+      <CandidatePageHead title="Overview" lead="What needs your attention, your recent projects, and the evaluations hiring teams have invited you to." />
 
       <div className="mt-6 grid gap-8">
         <div className="grid gap-6">
@@ -281,6 +340,8 @@ export default async function CandidateHomePage() {
                 })}
               </Table>
             ) : null}
+
+            <ProjectsSection projects={passport?.projects ?? []} />
 
             {submitted > 0 ? (
               <Table title="Submitted" count={submitted} dateHeading="Submitted">
