@@ -74,6 +74,19 @@ async function pure() {
     assert.deepEqual(routeRecipient("Engineer+walk@Example.com", false), { to: RESEND_TEST_INBOX, redirected: true });
     assert.deepEqual(routeRecipient("delivered@resend.dev", false), { to: "delivered@resend.dev", redirected: false });
   });
+  await check("outside production, real addresses go to the Resend test inbox unless allowlisted", () => {
+    const saved = process.env.FYDELL_DEV_EMAIL_ALLOWLIST;
+    delete process.env.FYDELL_DEV_EMAIL_ALLOWLIST;
+    assert.deepEqual(routeRecipient("someone@gmail.com", false), { to: RESEND_TEST_INBOX, redirected: true });
+    process.env.FYDELL_DEV_EMAIL_ALLOWLIST = "Owner@Fydell.com, other@fydell.com";
+    assert.deepEqual(routeRecipient("owner@fydell.com", false), { to: "owner@fydell.com", redirected: false });
+    assert.deepEqual(routeRecipient("someone@gmail.com", false), { to: RESEND_TEST_INBOX, redirected: true });
+    if (saved === undefined) delete process.env.FYDELL_DEV_EMAIL_ALLOWLIST;
+    else process.env.FYDELL_DEV_EMAIL_ALLOWLIST = saved;
+  });
+  await check("in production, real addresses pass through", () => {
+    assert.deepEqual(routeRecipient("someone@gmail.com", true), { to: "someone@gmail.com", redirected: false });
+  });
   await check("in production, reserved domains are refused", () => {
     const route = routeRecipient("a@example.com", true);
     assert.ok("refused" in route);

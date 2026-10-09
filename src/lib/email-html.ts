@@ -34,14 +34,26 @@ export function isReservedEmailDomain(email: string): boolean {
 /** Resend's sink that accepts and reports delivery without reaching anyone. */
 export const RESEND_TEST_INBOX = "delivered@resend.dev";
 
+/** Addresses development may email as written: comma-separated FYDELL_DEV_EMAIL_ALLOWLIST. */
+function devAllowlist(): string[] {
+  return (process.env.FYDELL_DEV_EMAIL_ALLOWLIST ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 /**
- * Where an email may actually go. Synthetic addresses never reach the real
- * provider as written: outside production they are redirected to Resend's
- * test inbox, and in production they are refused.
+ * Where an email may actually go. In production, synthetic addresses are
+ * refused. Outside production nothing reaches a real inbox by accident: only
+ * Resend test addresses and the dev allowlist pass through, and everything
+ * else is redirected to Resend's test inbox.
  */
 export function routeRecipient(email: string, production: boolean): { to: string; redirected: boolean } | { refused: string } {
   const to = email.trim().toLowerCase();
-  if (!isReservedEmailDomain(to)) return { to, redirected: false };
-  if (production) return { refused: "This address uses a reserved test domain and cannot receive email." };
+  if (production) {
+    if (isReservedEmailDomain(to)) return { refused: "This address uses a reserved test domain and cannot receive email." };
+    return { to, redirected: false };
+  }
+  if (to.endsWith("@resend.dev") || devAllowlist().includes(to)) return { to, redirected: false };
   return { to: RESEND_TEST_INBOX, redirected: true };
 }
