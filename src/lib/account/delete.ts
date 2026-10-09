@@ -42,9 +42,69 @@ export async function deleteEngineerAccount(userId: string): Promise<DeletionRes
   if (await requireOrgMember(userId)) {
     return { ok: false, status: 409, error: "You're a member of a hiring team. Ask an admin to remove you from the team first, then delete your account." };
   }
+  return eraseAccount(userId, []);
+}
+
+type Membership = { id: string; organization_id: string; role: string; status: string; organizations: { name?: string } | null };
+
+/**
+ * Why this user cannot delete their account yet, or null. The last active owner
+ * of a workspace would leave it with nobody able to manage members, billing or
+ * candidate records, so ownership has to move first, or the workspace itself
+ * has to be deleted on request.
+ */
+async function soleOwnerBlocker(admin: AdminClient, memberships: Membership[]): Promise<string | null> {
+  for (const m of memberships) {
+    if (m.role !== "owner" || m.status !== "active") continue;
+    const { count } = await admin
+      .from("organization_members")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", m.organization_id)
+      .eq("role", "owner")
+      .eq("status", "active");
+    if ((count ?? 0) <= 1) {
+      const name = m.organizations?.name || "your workspace";
+      return `You're the only owner of ${name}. Make a teammate an owner on the Team page first, or request deletion of the whole workspace under Settings, Data & privacy.`;
+    }
+  }
+  return null;
+}
+
+/**
+ * Deletes any account, employer or engineer.
+ *
+ * Employer members leave every hiring team first. What they recorded for a
+ * workspace (decisions, notes, reviews, invitations) belongs to that workspace
+ * and stays with it; their own identity and content are then erased exactly as
+ * for an engineer.
+ */
+export async function deleteAccount(userId: string): Promise<DeletionResult> {
+  const admin = createAdminSupabaseClient();
+  const { data } = await admin
+    .from("organization_members")
+    .select("id, organization_id, role, status, organizations(name)")
+    .eq("user_id", userId)
+    .in("status", ["invited", "active", "suspended"]);
+  const memberships = (data ?? []) as unknown as Membership[];
+
+  const blocker = await soleOwnerBlocker(admin, memberships);
+  if (blocker) return { ok: false, status: 409, error: blocker };
+
+  const done: string[] = [];
+  if (memberships.length) {
+    const { error } = await admin
+      .from("organization_members")
+      .update({ status: "removed" })
+      .in("id", memberships.map((m) => m.id));
+    if (error) return { ok: false, status: 500, error: "Could not remove you from your hiring team. Nothing was deleted; try again." };
+    done.push("hiring teams left");
+  }
+  return eraseAccount(userId, done);
+}
+
+async function eraseAccount(userId: string, done: string[]): Promise<DeletionResult> {
   const admin = createAdminSupabaseClient();
   const now = new Date().toISOString();
-  const done: string[] = [];
   const step = async (label: string, run: () => PromiseLike<{ error: { message: string } | null }>) => {
     const { error } = await run();
     if (error) throw new Error(`${label}: ${error.message}`);
@@ -87,6 +147,12 @@ export async function deleteEngineerAccount(userId: string): Promise<DeletionRes
       await step(`${table} deleted`, () => admin.from(table).delete().eq(table === "user_notifications" ? "user_id" : "owner_id", userId));
     }
     await step("import jobs deleted", () => admin.from("durable_jobs").delete().eq("owner_id", userId).eq("job_type", "passport_import"));
+    await step("account profile cleared", () =>
+      admin
+        .from("profiles")
+        .update({ email: `deleted+${userId}@deleted.invalid`, full_name: null, display_name: null, company_name: null, account_status: "deactivated", updated_at: now })
+        .eq("id", userId),
+    );
 
     const { error: scrubError } = await admin.auth.admin.updateUserById(userId, {
       email: `deleted+${userId}@deleted.invalid`,

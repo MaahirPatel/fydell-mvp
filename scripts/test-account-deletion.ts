@@ -16,7 +16,8 @@ import { ANALYSIS_VERSION, type ExtractionResult } from "@/lib/passport/github/t
 import { parseApplicationInput, parseRoleInput } from "@/lib/hiring/role-contract";
 import { createRole, transitionRole } from "@/lib/hiring/roles";
 import { submitApplication } from "@/lib/hiring/applications";
-import { confirmPhraseMatches, deleteEngineerAccount } from "@/lib/account/delete";
+import { confirmPhraseMatches, deleteAccount, deleteEngineerAccount } from "@/lib/account/delete";
+import { openWorkspaceDeletion, requestWorkspaceDeletion } from "@/lib/account/workspace-deletion";
 import { parsePresentationInput } from "@/lib/passport/presentation";
 import { IMAGE_BUCKET, createManualProject, setPresentationImage } from "@/lib/passport/presentation-store";
 
@@ -76,12 +77,16 @@ async function main() {
   };
   const engineer = await mkUser("del-eng");
   const reviewer = await mkUser("del-rev");
+  const owner = await mkUser("del-own");
   const orgId = randomUUID();
 
   try {
     console.log("setup");
     await admin.from("organizations").insert({ id: orgId, name: `Deletion test ${tag}`, status: "active", pilot_stage: "setup" });
-    await admin.from("organization_members").insert({ organization_id: orgId, user_id: reviewer.id, role: "reviewer", status: "active", joined_at: new Date().toISOString() });
+    await admin.from("organization_members").insert([
+      { organization_id: orgId, user_id: reviewer.id, role: "reviewer", status: "active", joined_at: new Date().toISOString() },
+      { organization_id: orgId, user_id: owner.id, role: "owner", status: "active", joined_at: new Date().toISOString() },
+    ]);
     const repo = `delete-test/${tag}`;
     await saveProject({ id: engineer.id, displayName: "Delete Test" }, null, extraction(repo), "");
     await admin.from("engineer_profiles").upsert({ owner_id: engineer.id, display_name: "Delete Test", headline: "Backend" }, { onConflict: "owner_id" });
@@ -166,6 +171,40 @@ async function main() {
     const { data: dsr } = await admin.from("data_subject_requests").select("status,checklist").eq("requester_user_id", engineer.id).maybeSingle();
     const d = dsr as { status: string; checklist: string[] } | null;
     check("deletion is recorded as fulfilled", d?.status === "fulfilled" && d.checklist.includes("sign-in disabled"));
+    const { data: engProfile } = await admin.from("profiles").select("email,full_name").eq("id", engineer.id).maybeSingle();
+    const ep = engProfile as { email: string; full_name: string | null } | null;
+    check("the profile row no longer holds their email", !ep || (ep.email.toLowerCase() !== engineer.email.toLowerCase() && ep.full_name === null));
+
+    console.log("employer accounts");
+    const soleOwner = await deleteAccount(owner.id);
+    check("the only owner of a workspace is refused", soleOwner.ok === false && soleOwner.status === 409 && /only owner/.test(soleOwner.error));
+    const member = await deleteAccount(reviewer.id);
+    check("a teammate can delete their own account", member.ok, member.ok ? "" : member.error);
+    const { data: left } = await admin.from("organization_members").select("status").eq("organization_id", orgId).eq("user_id", reviewer.id).maybeSingle();
+    check("they leave the workspace", (left as { status: string } | null)?.status === "removed");
+    const { data: keptReview } = await admin.from("employer_passport_reviews").select("decision,private_note").eq("id", reviewId).maybeSingle();
+    const kr = keptReview as { decision: string; private_note: string } | null;
+    check("the decision they recorded stays with the workspace", kr?.decision === "advance" && kr.private_note === "Strong retry tests.");
+    const { data: revProfile } = await admin.from("profiles").select("email").eq("id", reviewer.id).maybeSingle();
+    const rp = revProfile as { email: string } | null;
+    check("their email is gone from the profile", !rp || rp.email.toLowerCase() !== reviewer.email.toLowerCase());
+    const { error: revSignIn } = await anon.auth.signInWithPassword({ email: reviewer.email, password });
+    check("their old password no longer signs in", !!revSignIn);
+    const { data: ownerStill } = await admin.from("organization_members").select("status").eq("organization_id", orgId).eq("user_id", owner.id).maybeSingle();
+    check("the owner's membership is untouched", (ownerStill as { status: string } | null)?.status === "active");
+
+    console.log("workspace deletion request");
+    delete process.env.ADMIN_NOTIFICATION_EMAIL;
+    const orgCtx = { organizationId: orgId, organizationName: `Deletion test ${tag}`, role: "owner" };
+    const notOwner = await requestWorkspaceDeletion(engineer, { ...orgCtx, role: "admin" });
+    check("only an owner can request it", notOwner.ok === false && notOwner.status === 403);
+    const first = await requestWorkspaceDeletion(owner, orgCtx);
+    check("the owner's request is recorded", first.ok && !first.alreadyOpen);
+    const second = await requestWorkspaceDeletion(owner, orgCtx);
+    check("asking again returns the open request", second.ok && second.alreadyOpen && first.ok && second.request.id === first.request.id);
+    check("the open request is found for the settings page", (await openWorkspaceDeletion(orgId))?.id === (first.ok ? first.request.id : ""));
+    const { count: orgRows } = await admin.from("organizations").select("id", { count: "exact", head: true }).eq("id", orgId);
+    check("nothing is deleted until Fydell confirms", orgRows === 1);
   } finally {
     const { data: folders } = await admin.storage.from(IMAGE_BUCKET).list(engineer.id);
     for (const folder of folders ?? []) {
@@ -177,9 +216,10 @@ async function main() {
     await admin.from("passports").delete().eq("owner_id", engineer.id);
     await admin.from("engineer_profiles").delete().eq("owner_id", engineer.id);
     await admin.from("user_notifications").delete().in("user_id", [engineer.id, reviewer.id]);
-    await admin.from("data_subject_requests").delete().eq("requester_user_id", engineer.id);
+    await admin.from("data_subject_requests").delete().in("requester_user_id", [engineer.id, reviewer.id, owner.id]);
     await admin.auth.admin.deleteUser(engineer.id).catch(() => undefined);
-    await admin.auth.admin.deleteUser(reviewer.id);
+    await admin.auth.admin.deleteUser(reviewer.id).catch(() => undefined);
+    await admin.auth.admin.deleteUser(owner.id).catch(() => undefined);
   }
 
   console.log(failures ? `\n${failures} check(s) failed.` : "\nAll account deletion checks passed.");

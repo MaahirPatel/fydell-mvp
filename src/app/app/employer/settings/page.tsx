@@ -11,6 +11,9 @@ import PlanControls from "@/components/employer/PlanControls";
 import { billingConfig } from "@/lib/billing/stripe";
 import { getBilling, getMembership, type OrganizationBilling } from "@/lib/billing/db";
 import { cn } from "@/lib/cn";
+import DeleteAccount from "@/components/account/DeleteAccount";
+import WorkspaceDeletionRequest from "@/components/account/WorkspaceDeletionRequest";
+import { openWorkspaceDeletion } from "@/lib/account/workspace-deletion";
 
 export const metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
@@ -107,6 +110,8 @@ export default async function EmployerSettingsPage({
   let workspaceName = preview ? PREVIEW_ORG.organizationName : "Your workspace";
   let memberRole = preview ? "owner" : "member";
   let memberCount: number | null = null;
+  let soleOwner = false;
+  let deletionRequestedAt: string | null = null;
   let identity = memberIdentity(
     user?.email || "",
     preview ? { full_name: PREVIEW_USER.fullName, avatar_url: PREVIEW_USER.avatarUrl } : null,
@@ -130,6 +135,16 @@ export default async function EmployerSettingsPage({
         .eq("organization_id", membership.organization_id)
         .eq("status", "active");
       memberCount = count ?? null;
+      if (membership.role === "owner") {
+        const { count: owners } = await admin
+          .from("organization_members")
+          .select("user_id", { count: "exact", head: true })
+          .eq("organization_id", membership.organization_id)
+          .eq("role", "owner")
+          .eq("status", "active");
+        soleOwner = (owners ?? 0) <= 1;
+        if (section === "privacy") deletionRequestedAt = (await openWorkspaceDeletion(membership.organization_id))?.receivedAt ?? null;
+      }
     }
     const { data: profile } = await admin.from("profiles").select("full_name, display_name, avatar_url").eq("id", user.id).maybeSingle();
     identity = memberIdentity(user.email || "", profile, (user as { user_metadata?: AuthIdentityMetadata }).user_metadata);
@@ -249,6 +264,29 @@ export default async function EmployerSettingsPage({
                 <SignOutButton className="inline-flex h-8 items-center rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-[13.5px] font-medium text-[var(--text-primary)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] disabled:opacity-50" />
               </Row>
             </Group>
+            {preview ? null : (
+              <Group label="Delete account">
+                {soleOwner ? (
+                  <Row
+                    label="Delete your account"
+                    help={`You're the only owner of ${workspaceName}. Make a teammate an owner on the Team page first, or request deletion of the whole workspace.`}
+                  >
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 sm:justify-end">
+                      <Link href="/app/employer/team" className={linkClass}>
+                        Open Team
+                      </Link>
+                      <Link href="/app/employer/settings?section=privacy" className={linkClass}>
+                        Data & privacy
+                      </Link>
+                    </div>
+                  </Row>
+                ) : (
+                  <Row label="Delete your account" help="Permanent. You can sign up again later with the same email." stack>
+                    <DeleteAccount kind="employer" workspaceName={workspaceName} />
+                  </Row>
+                )}
+              </Group>
+            )}
           </>
         ) : null}
 
@@ -313,10 +351,21 @@ export default async function EmployerSettingsPage({
               <Row label="How long it is kept" help="Evaluation data stays until it is deleted on request. Agree a fixed retention period with us before running a cohort.">
                 <Value muted>Until deleted</Value>
               </Row>
-              <Row label="Export or delete" help="Email us from an address on this workspace and we confirm what we hold before acting.">
+              <Row label="Export or correct data" help="Email us from an address on this workspace and we confirm what we hold before acting.">
                 <ContactLink />
               </Row>
             </Group>
+            {memberRole === "owner" && !preview ? (
+              <Group label="Delete workspace">
+                <Row
+                  label={`Delete ${workspaceName}`}
+                  help="Erases the workspace and everything in it for every member. Fydell confirms with you by email before acting."
+                  stack
+                >
+                  <WorkspaceDeletionRequest workspaceName={workspaceName} requestedAt={deletionRequestedAt} />
+                </Row>
+              </Group>
+            ) : null}
             <Group label="Responsibility">
               <Row label="Hiring decisions" help="Fydell produces evidence, not decisions. Your organization remains responsible for the decisions it makes using these reports." />
             </Group>
