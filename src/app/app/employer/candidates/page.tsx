@@ -5,6 +5,7 @@ import CandidatesTable from "@/components/employer/CandidatesTable";
 import InviteActionButton from "@/components/employer/InviteActionButton";
 import { WorkspacePageHeader, WorkspaceSection } from "@/components/employer/WorkspacePage";
 import { Panel } from "@/components/ui/Panel";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { LocalDate } from "@/components/eng/LocalTime";
 import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
 import { engAdmin } from "@/lib/eng/context";
@@ -53,7 +54,10 @@ export default async function EmployerCandidatesPage({
     .filter(({ role, row }) => matches(q, row.invitation.candidate_name, row.invitation.candidate_email, role.title))
     .sort((a, b) => b.row.invitation.created_at.localeCompare(a.row.invitation.created_at));
   const applicationRows = applications.filter((a) => matches(q, a.name, a.email, a.roleTitle));
-  const empty = records.length === 0 && applicationRows.length === 0 && assessmentRows.length === 0;
+  const recordRows = records.filter((r) => matches(q, r.name, r.email, r.roleTitle));
+  const nothingShown = recordRows.length === 0 && applicationRows.length === 0 && assessmentRows.length === 0;
+  const empty = !q && nothingShown;
+  const noMatch = Boolean(q) && nothingShown;
 
   return (
     <div>
@@ -64,11 +68,45 @@ export default async function EmployerCandidatesPage({
         action={!empty ? <InviteActionButton label="Invite candidate" size="sm" /> : undefined}
       />
 
+      {!empty ? (
+        <form method="get" role="search" className="mt-6 flex flex-wrap items-center gap-2">
+          <label htmlFor="candidate-search" className="sr-only">
+            Search candidates
+          </label>
+          <input
+            id="candidate-search"
+            type="search"
+            name="q"
+            defaultValue={initialQuery}
+            placeholder="Search by name, email or role"
+            autoComplete="off"
+            className="platform-input h-9 w-full max-w-[320px] text-app-control"
+          />
+          <Button type="submit" variant="secondary">
+            Search
+          </Button>
+          {q ? (
+            <>
+              <ButtonLink href="/app/employer/candidates" variant="quiet">
+                Clear
+              </ButtonLink>
+              <p role="status" className="w-full text-app-meta text-[var(--text-tertiary)]">
+                Showing candidates matching &ldquo;{initialQuery.trim()}&rdquo;.
+              </p>
+            </>
+          ) : null}
+        </form>
+      ) : null}
+
+      {noMatch ? (
+        <p className="mt-6 text-app-body text-[var(--text-secondary)]">No candidate matches &ldquo;{initialQuery.trim()}&rdquo;.</p>
+      ) : null}
+
       {applicationRows.length > 0 ? (
         <Panel className="mt-6">
           <WorkspaceSection
             title="Applications"
-            description="Applied through a role page with their Passport."
+            description={`${applicationRows.length} applied through a role page with their Passport.`}
             bodyClassName="-mx-5 -mb-4 lg:-mx-6 lg:-mb-5"
           >
             <Table>
@@ -85,11 +123,13 @@ export default async function EmployerCandidatesPage({
                       <Link href={`/app/employer/openings/${a.roleId}/applications/${a.id}`} className="hover:underline">
                         {a.name}
                       </Link>
-                      <span className="block text-app-meta font-normal text-[var(--text-tertiary)]">{a.email}</span>
+                      <span className="block max-w-[260px] truncate text-app-meta font-normal text-[var(--text-tertiary)]" title={a.email}>
+                        {a.email}
+                      </span>
                     </TDPrimary>
                     <TD>{a.roleTitle}</TD>
                     <TD>{a.stageLabel}</TD>
-                    <TD align="right">
+                    <TD align="right" className="whitespace-nowrap">
                       <LocalDate iso={a.submittedAt} />
                     </TD>
                   </TR>
@@ -104,7 +144,7 @@ export default async function EmployerCandidatesPage({
         <Panel className="mt-6">
           <WorkspaceSection
             title="Assessments"
-            description="Invited to a work sample from an assessment."
+            description={`${assessmentRows.length} invited to a work sample from an assessment.`}
             bodyClassName="-mx-5 -mb-4 lg:-mx-6 lg:-mb-5"
           >
             <Table>
@@ -124,11 +164,15 @@ export default async function EmployerCandidatesPage({
                         <Link href={href} className="hover:underline">
                           {who.primary}
                         </Link>
-                        {who.secondary ? <span className="block text-app-meta font-normal text-[var(--text-tertiary)]">{who.secondary}</span> : null}
+                        {who.secondary ? (
+                          <span className="block max-w-[260px] truncate text-app-meta font-normal text-[var(--text-tertiary)]" title={who.secondary}>
+                            {who.secondary}
+                          </span>
+                        ) : null}
                       </TDPrimary>
                       <TD>{role.title}</TD>
                       <TD>{OPERATIONAL_STATES[row.state].label}</TD>
-                      <TD align="right">
+                      <TD align="right" className="whitespace-nowrap">
                         <LocalDate iso={row.invitation.created_at} />
                       </TD>
                     </TR>
@@ -140,12 +184,12 @@ export default async function EmployerCandidatesPage({
         </Panel>
       ) : null}
 
-      {records.length > 0 || empty ? (
+      {recordRows.length > 0 || empty ? (
         <div className="mt-6">
-          {records.length > 0 && (applicationRows.length > 0 || assessmentRows.length > 0) ? (
-            <h2 className="mb-3 text-[16px] font-semibold leading-[1.35] tracking-[-0.011em] text-[var(--text-primary)]">Simulations</h2>
+          {recordRows.length > 0 && (applicationRows.length > 0 || assessmentRows.length > 0) ? (
+            <h2 className="mb-3 text-app-section font-semibold text-[var(--text-primary)]">Simulations</h2>
           ) : null}
-          <CandidatesTable rows={records} initialQuery={initialQuery} />
+          <CandidatesTable rows={recordRows} searchable={false} />
         </div>
       ) : null}
     </div>

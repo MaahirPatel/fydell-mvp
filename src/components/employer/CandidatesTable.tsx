@@ -54,10 +54,13 @@ function stageOf(r: CandidateRow): { label: string; tone: StatusTone } {
 export default function CandidatesTable({
   rows,
   initialQuery = "",
+  searchable = true,
 }: {
   rows: CandidateRow[];
   /** Prefilled when another surface linked here about one candidate. */
   initialQuery?: string;
+  /** Off when the page already searches every section, so there is one search box. */
+  searchable?: boolean;
 }) {
   const { open } = useInviteModal();
   const { act, busyId, notice } = useInvitationActions();
@@ -99,7 +102,7 @@ export default function CandidatesTable({
     <div className="space-y-3">
       {/* Search appears once the list is long enough to need it, and whenever a
           filter is actually applied, so an incoming link can always be cleared. */}
-      {rows.length > 8 || query ? (
+      {searchable && (rows.length > 8 || query) ? (
         <Input
           type="search"
           value={query}
