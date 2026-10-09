@@ -5,7 +5,8 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 export async function POST() {
   try {
     const supabase = await createServerSupabaseClient();
-    await supabase.auth.signOut();
+    // Local scope: a global sign-out would also revoke the desktop app's own session.
+    await supabase.auth.signOut({ scope: "local" });
   } catch {
     /* ignore */
   }

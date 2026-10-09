@@ -567,7 +567,7 @@ function AppScreens({
       } catch (e: unknown) {
         if (isAuthRequired(e)) {
           setScreen("signin");
-          setError("Your sign-in expired — please sign in again.");
+          setError("Your sign-in expired. Please sign in again.");
         } else {
           setError(messageOf(e));
           setScreen("home");
@@ -593,7 +593,7 @@ function AppScreens({
       } catch (e: unknown) {
         if (isAuthRequired(e)) {
           setScreen("signin");
-          setError("Your sign-in expired — please sign in again.");
+          setError("Your sign-in expired. Please sign in again.");
         } else {
           setError(messageOf(e));
           setScreen("home");
@@ -703,7 +703,7 @@ function AppScreens({
         onContinueSession={continueSession}
         onAuthExpired={() => {
           setScreen("signin");
-          setError("Your sign-in expired — please sign in again.");
+          setError("Your sign-in expired. Please sign in again.");
         }}
         onTimedChange={onEngTimedChange}
       />

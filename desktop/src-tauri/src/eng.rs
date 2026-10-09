@@ -535,6 +535,22 @@ pub(crate) fn local_project_dir(state: &EngLocalState) -> AppResult<PathBuf> {
     Ok(expected)
 }
 
+/// Write-then-rename with the data flushed to disk first, so a crash leaves
+/// either the previous file or the new one, never a torn write.
+pub(crate) fn write_durable(path: &Path, bytes: &[u8]) -> AppResult<()> {
+    use std::io::Write;
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let tmp = path.with_extension("json.tmp");
+    let mut f = std::fs::File::create(&tmp)?;
+    f.write_all(bytes)?;
+    f.sync_all()?;
+    drop(f);
+    std::fs::rename(&tmp, path)?;
+    Ok(())
+}
+
 pub(crate) fn now_iso() -> String {
     chrono::Utc::now().to_rfc3339()
 }
@@ -835,7 +851,7 @@ pub async fn eng_acknowledge_update(attempt_id: String) -> AppResult<Option<Stri
 }
 
 /// Mirrors DRAFT_FIELDS in src/lib/eng/attempts.ts.
-const DRAFT_FIELDS: &[&str] = &["what_changed", "testing", "risks", "next_steps", "ai_use", "message"];
+pub(crate) const DRAFT_FIELDS: &[&str] = &["what_changed", "testing", "risks", "next_steps", "ai_use", "message"];
 const ANSWER_FIELDS: &[&str] = &["what_changed", "testing", "risks", "next_steps", "ai_use"];
 
 #[derive(Debug, Clone, Serialize)]
@@ -898,6 +914,9 @@ pub async fn eng_save_draft(
         .json()
         .await
         .map_err(|e| AppError::Platform(format!("save draft: unexpected response ({})", e.without_url())))?;
+    // Fydell has the text; a stale local entry is reconciled on next open
+    // because its body matches the server copy.
+    let _ = crate::eng_drafts::mark_accepted(&id, &field, &body, ok.revision);
     Ok(EngDraftSave::Saved { revision: ok.revision })
 }
 

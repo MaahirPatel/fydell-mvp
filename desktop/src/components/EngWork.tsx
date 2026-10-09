@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { engApi, isAuthRequired } from "../lib/tauri";
 import {
   AI_USE_FIELD,
+  draftStatusText,
   EngAttemptDetail,
   EngLocalState,
   EngMessage,
@@ -14,6 +15,8 @@ import {
   handoffBlockers,
   handoffFields,
   packageSummary,
+  ReconciledDraft,
+  reconcileDraft,
   senderName,
   setupCommandFor,
   sortMessages,
@@ -27,26 +30,24 @@ import { Bullets, CopyLine, WorkspaceCard } from "./EngAssessment";
 type Tab = "brief" | "team" | "submit";
 
 /* ---------------- handoff drafts ----------------
-   Saved to the platform (PUT drafts) as the candidate types, fenced by
-   revision. A conflict (the same field edited elsewhere) is shown with both
-   versions; nothing is overwritten without an explicit choice. */
+   Every change is first written to this computer (eng_draft_store, fsync
+   then rename), then sent to the platform (PUT drafts) fenced by revision.
+   Unsent text survives a crash or an offline spell and is resent on the
+   next open. A conflict (the same field edited elsewhere) is shown with
+   both versions; nothing is overwritten without an explicit choice. */
 
-interface DraftState {
-  body: string;
-  revision: number;
-  status: "saved" | "dirty" | "saving" | "conflict" | "error";
-  conflict: { body: string; revision: number } | null;
-}
+type DraftState = ReconciledDraft;
+type Restore = "loading" | "ok" | "failed";
+
+const DRAFT_RETRY_MS = 20_000;
 
 function useDrafts(attemptId: string, initial: Record<string, { body: string; revision: number }>, fields: string[]) {
   const [drafts, setDrafts] = useState<Record<string, DraftState>>(() =>
-    Object.fromEntries(
-      fields.map((f) => [f, { body: initial[f]?.body ?? "", revision: initial[f]?.revision ?? 0, status: "saved", conflict: null }])
-    )
+    Object.fromEntries(fields.map((f) => [f, reconcileDraft(initial[f], undefined)]))
   );
+  const [restore, setRestore] = useState<Restore>("loading");
   const ref = useRef(drafts);
   const timers = useRef<Record<string, number>>({});
-  const saveRef = useRef<(field: string) => Promise<void>>(async () => {});
 
   // The ref is the source of truth so save() sees a patch made in the same tick.
   const patch = useCallback((field: string, next: Partial<DraftState>) => {
@@ -55,29 +56,84 @@ function useDrafts(attemptId: string, initial: Record<string, { body: string; re
     setDrafts(merged);
   }, []);
 
+  const inFlight = useRef(new Set<string>());
+
+  // One request per field at a time: two sends on the same base revision
+  // would make the second look like an edit from elsewhere.
   const save = useCallback(
-    async (field: string) => {
+    async (field: string): Promise<void> => {
       const d = ref.current[field];
-      if (!d || d.status !== "dirty") return;
+      if (!d || !(d.status === "local" || d.status === "error") || inFlight.current.has(field)) return;
+      inFlight.current.add(field);
       const sent = d.body;
       patch(field, { status: "saving" });
+      let again = false;
       try {
         const r = await engApi.saveDraft(attemptId, field, sent, d.revision);
         if (r.kind === "conflict") {
           patch(field, { status: "conflict", conflict: { body: r.body, revision: r.revision } });
-          return;
+        } else if (ref.current[field].body === sent) {
+          patch(field, { revision: r.revision, status: "saved" });
+        } else {
+          patch(field, { revision: r.revision, status: ref.current[field].status === "conflict" ? "conflict" : "local" });
+          again = true;
         }
-        const still = ref.current[field].body === sent;
-        patch(field, { revision: r.revision, status: still ? "saved" : "dirty" });
-        if (!still) timers.current[field] = window.setTimeout(() => void saveRef.current(field), 800);
       } catch {
-        patch(field, { status: "error" });
+        if (ref.current[field].status === "saving") patch(field, { status: "error" });
+      } finally {
+        inFlight.current.delete(field);
       }
+      if (again) await save(field);
     },
     [attemptId, patch]
   );
+
+  const persist = useCallback(
+    async (field: string) => {
+      const d = ref.current[field];
+      if (!d) return;
+      try {
+        await engApi.storeDraft(attemptId, field, d.body, d.revision, false);
+      } catch {
+        // The platform copy below is still attempted; the status says what is missing.
+      }
+      const now = ref.current[field];
+      if (now.body !== d.body || now.status === "conflict") return;
+      if (now.status === "dirty") patch(field, { status: "local" });
+      await save(field);
+    },
+    [attemptId, patch, save]
+  );
+
   useEffect(() => {
-    saveRef.current = save;
+    let cancelled = false;
+    engApi
+      .localDrafts(attemptId)
+      .then((journal) => {
+        if (cancelled) return;
+        const merged = Object.fromEntries(fields.map((f) => [f, reconcileDraft(initial[f], journal.fields[f])]));
+        ref.current = merged;
+        setDrafts(merged);
+        setRestore("ok");
+        fields.forEach((f) => void save(f));
+      })
+      .catch(() => {
+        if (!cancelled) setRestore("failed");
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Restores once per attempt; later server copies arrive through saves.
+  }, [attemptId]);
+
+  useEffect(() => {
+    const resend = () => Object.keys(ref.current).forEach((f) => void save(f));
+    const id = window.setInterval(resend, DRAFT_RETRY_MS);
+    window.addEventListener("online", resend);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("online", resend);
+    };
   }, [save]);
 
   const change = useCallback(
@@ -85,9 +141,9 @@ function useDrafts(attemptId: string, initial: Record<string, { body: string; re
       const cur = ref.current[field];
       patch(field, { body, status: cur?.status === "conflict" ? "conflict" : "dirty" });
       window.clearTimeout(timers.current[field]);
-      if (cur?.status !== "conflict") timers.current[field] = window.setTimeout(() => void save(field), 1000);
+      timers.current[field] = window.setTimeout(() => void persist(field), 600);
     },
-    [patch, save]
+    [patch, persist]
   );
 
   const keepMine = useCallback(
@@ -95,9 +151,9 @@ function useDrafts(attemptId: string, initial: Record<string, { body: string; re
       const c = ref.current[field]?.conflict;
       if (!c) return;
       patch(field, { revision: c.revision, conflict: null, status: "dirty" });
-      void save(field);
+      void persist(field);
     },
-    [patch, save]
+    [patch, persist]
   );
 
   const takeSaved = useCallback(
@@ -105,36 +161,16 @@ function useDrafts(attemptId: string, initial: Record<string, { body: string; re
       const c = ref.current[field]?.conflict;
       if (!c) return;
       patch(field, { body: c.body, revision: c.revision, conflict: null, status: "saved" });
+      void engApi.storeDraft(attemptId, field, c.body, c.revision, true).catch(() => {});
     },
-    [patch]
+    [attemptId, patch]
   );
 
-  const retry = useCallback(
-    (field: string) => {
-      patch(field, { status: "dirty" });
-      void save(field);
-    },
-    [patch, save]
-  );
+  const retry = useCallback((field: string) => void save(field), [save]);
 
   useEffect(() => () => Object.values(timers.current).forEach((t) => window.clearTimeout(t)), []);
 
-  return { drafts, change, keepMine, takeSaved, retry };
-}
-
-function draftStatusText(s: DraftState["status"]): string {
-  switch (s) {
-    case "saved":
-      return "Saved to Fydell";
-    case "dirty":
-      return "Unsaved";
-    case "saving":
-      return "Saving…";
-    case "conflict":
-      return "Changed elsewhere";
-    case "error":
-      return "Not saved";
-  }
+  return { drafts, restore, change, keepMine, takeSaved, retry };
 }
 
 /* ---------------- team thread ---------------- */
@@ -408,7 +444,7 @@ export default function EngWork({
   }
 
   const fields = useMemo(() => handoffFields(view.scenario.handoffPrompts), [view.scenario.handoffPrompts]);
-  const { drafts, change, keepMine, takeSaved, retry } = useDrafts(attemptId, view.drafts, fields);
+  const { drafts, restore, change, keepMine, takeSaved, retry } = useDrafts(attemptId, view.drafts, fields);
   const answers = useMemo(() => Object.fromEntries(fields.map((f) => [f, drafts[f]?.body ?? ""])), [fields, drafts]);
   const blockers = handoffBlockers(view.scenario.handoffPrompts, answers);
   const chosen = submittableUpload(view.uploads, detail.local);
@@ -534,12 +570,17 @@ export default function EngWork({
 
             <section>
               <h3 className="eng-h3">2. Handoff</h3>
-              <p className="muted">Saved to Fydell as you type, so you can close the app and come back.</p>
+              <p className="muted">
+                {restore === "failed"
+                  ? "Answers saved earlier on this computer could not be read. What you type now is still sent to Fydell."
+                  : "Saved on this computer as you type, then sent to Fydell. You can close the app and come back."}
+              </p>
               {view.scenario.handoffPrompts.map((p) => (
                 <HandoffField
                   key={p.field}
                   label={p.label}
                   help={p.help}
+                  loading={restore === "loading"}
                   draft={drafts[p.field]}
                   onChange={(b) => change(p.field, b)}
                   onKeepMine={() => keepMine(p.field)}
@@ -550,6 +591,7 @@ export default function EngWork({
               <HandoffField
                 label="AI assistance (optional)"
                 help="If you used an AI assistant, say how. This is recorded as your statement; it is not checked or scored on its own."
+                loading={restore === "loading"}
                 draft={drafts[AI_USE_FIELD]}
                 onChange={(b) => change(AI_USE_FIELD, b)}
                 onKeepMine={() => keepMine(AI_USE_FIELD)}
@@ -616,6 +658,7 @@ export default function EngWork({
 function HandoffField({
   label,
   help,
+  loading,
   draft,
   onChange,
   onKeepMine,
@@ -624,6 +667,7 @@ function HandoffField({
 }: {
   label: string;
   help: string;
+  loading: boolean;
   draft: DraftState | undefined;
   onChange: (body: string) => void;
   onKeepMine: () => void;
@@ -636,9 +680,11 @@ function HandoffField({
       <div className="row">
         <label className="strong">{label}</label>
         <div className="spacer" />
-        {draft.status === "error" ? (
+        {loading ? (
+          <span className="muted">Loading what this computer saved…</span>
+        ) : draft.status === "error" ? (
           <button className="btn ghost sm" onClick={onRetry}>
-            Not saved — retry
+            {draftStatusText(draft.status)}. Send again
           </button>
         ) : (
           <span className="muted">{draftStatusText(draft.status)}</span>
@@ -650,6 +696,7 @@ function HandoffField({
         rows={4}
         value={draft.body}
         maxLength={8000}
+        disabled={loading}
         aria-label={label}
         onChange={(e) => onChange(e.target.value)}
       />

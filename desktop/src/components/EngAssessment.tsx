@@ -481,13 +481,12 @@ export default function EngAssessment({
       </div>
       <header className="page-head mt-3">
         <div>
-          <div className="eyebrow">
-            {view.role.organizationName}
-            {view.role.organizationName && " · "}
-            {view.role.title}
-          </div>
           <h1 className="page-title">{view.scenario.title}</h1>
           <p className="page-sub">{view.scenario.summary}</p>
+          <p className="muted mt-2">
+            {view.role.title}
+            {view.role.organizationName && ` at ${view.role.organizationName}`}
+          </p>
         </div>
       </header>
 

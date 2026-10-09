@@ -1,7 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
+  DraftJournal,
   EngAttemptDetail,
   EngDraftSave,
+  LocalDraft,
   EngLocalState,
   EngMessage,
   EngPackagePlan,
@@ -394,6 +396,9 @@ export const engApi = {
   acknowledgeUpdate: (attemptId: string) => invoke<string | null>("eng_acknowledge_update", { attemptId }),
   saveDraft: (attemptId: string, field: string, body: string, baseRevision: number) =>
     invoke<EngDraftSave>("eng_save_draft", { attemptId, field, body, baseRevision }),
+  localDrafts: (attemptId: string) => invoke<DraftJournal>("eng_drafts_local", { attemptId }),
+  storeDraft: (attemptId: string, field: string, body: string, baseRevision: number, accepted: boolean) =>
+    invoke<LocalDraft>("eng_draft_store", { attemptId, field, body, baseRevision, accepted }),
   packagePreview: (attemptId: string) => invoke<EngPackagePlan>("eng_package_preview", { attemptId }),
   uploadPackage: (attemptId: string) => invoke<EngUploadOutcome>("eng_upload_package", { attemptId }),
   submit: (attemptId: string, uploadId: string, answers: Record<string, string>) =>

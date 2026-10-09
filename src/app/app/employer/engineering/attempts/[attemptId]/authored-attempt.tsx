@@ -119,6 +119,16 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
           <span>
             Evaluation <Mono>{attempt.id.slice(0, 8)}</Mono>
           </span>
+          {view.submission ? (
+            <>
+              <span>
+                Receipt <Mono>{view.submission.id}</Mono>
+              </span>
+              <span>
+                Archive <Mono>sha256:{view.submission.archive_sha256.slice(0, 16)}</Mono>
+              </span>
+            </>
+          ) : null}
           <span className="text-[var(--text-secondary)]">{state.label}</span>
           {preview ? <Status kind="pending">Preview</Status> : null}
           {view.submission?.late ? <Status kind="attention">Submitted late</Status> : null}

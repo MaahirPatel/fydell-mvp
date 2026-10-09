@@ -13,6 +13,7 @@ import {
   handoffFields,
   packageSummary,
   receiptProgress,
+  reconcileDraft,
   senderName,
   serverOffsetMs,
   setupCommandFor,
@@ -170,6 +171,32 @@ describe("packaging", () => {
     assert.equal(submittableUpload(uploads, { lastPackage: { ...pkg, sha256: "def" } })?.verifiedLocally, false);
     assert.equal(submittableUpload(uploads, { lastPackage: { ...pkg, uploadId: "other" } })?.verifiedLocally, false);
     assert.equal(submittableUpload(uploads, null)?.verifiedLocally, false);
+  });
+});
+
+describe("local handoff drafts", () => {
+  const local = (body: string, baseRevision: number, accepted = false) => ({ body, baseRevision, savedAt: "t", accepted });
+
+  it("uses the server copy when nothing unsent is on this computer", () => {
+    assert.deepEqual(reconcileDraft({ body: "a", revision: 2 }, undefined), { body: "a", revision: 2, status: "saved", conflict: null });
+    assert.equal(reconcileDraft({ body: "a", revision: 3 }, local("old", 2, true)).body, "a");
+  });
+
+  it("treats text the server already has as accepted", () => {
+    assert.equal(reconcileDraft({ body: "same", revision: 4 }, local("same", 3)).status, "saved");
+  });
+
+  it("restores and resends unsent text when the server copy has not moved", () => {
+    const r = reconcileDraft({ body: "a", revision: 2 }, local("a and more", 2));
+    assert.deepEqual(r, { body: "a and more", revision: 2, status: "local", conflict: null });
+    assert.equal(reconcileDraft(undefined, local("first words", 0)).status, "local");
+  });
+
+  it("keeps unsent text and shows both when the answer changed elsewhere", () => {
+    const r = reconcileDraft({ body: "from the website", revision: 5 }, local("from the desktop", 3));
+    assert.equal(r.status, "conflict");
+    assert.equal(r.body, "from the desktop");
+    assert.deepEqual(r.conflict, { body: "from the website", revision: 5 });
   });
 });
 

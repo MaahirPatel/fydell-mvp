@@ -277,18 +277,7 @@ fn load_outbox(attempt_id: &str) -> AppResult<AuthoredOutbox> {
 }
 
 fn save_outbox(attempt_id: &str, outbox: &AuthoredOutbox) -> AppResult<()> {
-    use std::io::Write;
-    let path = state_file(attempt_id, "outbox.json")?;
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)?;
-    }
-    let tmp = path.with_extension("json.tmp");
-    let mut f = std::fs::File::create(&tmp)?;
-    f.write_all(&serde_json::to_vec_pretty(outbox)?)?;
-    f.sync_all()?;
-    drop(f);
-    std::fs::rename(&tmp, &path)?;
-    Ok(())
+    crate::eng::write_durable(&state_file(attempt_id, "outbox.json")?, &serde_json::to_vec_pretty(outbox)?)
 }
 
 fn entries_fingerprint(entries: &[(String, String)]) -> String {

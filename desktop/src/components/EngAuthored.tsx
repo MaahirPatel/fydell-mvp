@@ -782,6 +782,10 @@ function Submitted({ view }: { view: AuthoredView }) {
             </div>
             <dl className="eng-facts">
               <div className="eng-fact">
+                <dt>ID</dt>
+                <dd className="mono">{r.submissionId}</dd>
+              </div>
+              <div className="eng-fact">
                 <dt>Submitted</dt>
                 <dd>{new Date(r.submittedAt).toLocaleString()}</dd>
               </div>
@@ -961,13 +965,12 @@ export default function EngAuthored({
       </div>
       <header className="page-head mt-3">
         <div>
-          <div className="eyebrow">
-            {view.role.organizationName}
-            {view.role.organizationName && " · "}
-            {view.role.title}
-          </div>
           <h1 className="page-title">{view.task.title}</h1>
           <p className="page-sub">{view.task.summary}</p>
+          <p className="muted mt-2">
+            {view.role.title}
+            {view.role.organizationName && ` at ${view.role.organizationName}`}
+          </p>
         </div>
       </header>
 

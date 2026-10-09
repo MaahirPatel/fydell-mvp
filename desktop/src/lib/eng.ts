@@ -209,6 +209,62 @@ export type EngDraftSave =
   | { kind: "saved"; revision: number }
   | { kind: "conflict"; body: string; revision: number };
 
+/** One handoff answer as recorded on this computer (`<attemptId>.drafts.json`). */
+export interface LocalDraft {
+  body: string;
+  baseRevision: number;
+  savedAt: string;
+  accepted: boolean;
+}
+
+export interface DraftJournal {
+  fields: Record<string, LocalDraft>;
+}
+
+/** dirty: typed, not yet on disk. local: on this computer, not yet accepted by Fydell. */
+export type DraftStatus = "saved" | "dirty" | "local" | "saving" | "conflict" | "error";
+
+export interface ReconciledDraft {
+  body: string;
+  revision: number;
+  status: DraftStatus;
+  conflict: { body: string; revision: number } | null;
+}
+
+/**
+ * Combines the server copy with what this computer recorded. Text Fydell never
+ * accepted is kept: resent when the server copy has not moved since, shown as
+ * a conflict when it was changed elsewhere in the meantime.
+ */
+export function reconcileDraft(server: { body: string; revision: number } | undefined, local: LocalDraft | undefined): ReconciledDraft {
+  const serverBody = server?.body ?? "";
+  const serverRevision = server?.revision ?? 0;
+  if (!local || local.accepted || local.body === serverBody) {
+    return { body: serverBody, revision: serverRevision, status: "saved", conflict: null };
+  }
+  if (local.baseRevision === serverRevision) {
+    return { body: local.body, revision: serverRevision, status: "local", conflict: null };
+  }
+  return { body: local.body, revision: local.baseRevision, status: "conflict", conflict: { body: serverBody, revision: serverRevision } };
+}
+
+export function draftStatusText(s: DraftStatus): string {
+  switch (s) {
+    case "saved":
+      return "Accepted by Fydell";
+    case "dirty":
+      return "Saving on this computer…";
+    case "local":
+      return "Saved on this computer, not yet accepted by Fydell";
+    case "saving":
+      return "Saved on this computer, sending to Fydell…";
+    case "conflict":
+      return "Changed elsewhere";
+    case "error":
+      return "Saved on this computer. Fydell has not accepted it yet";
+  }
+}
+
 export type EngUploadPhase = "packaging" | "uploading" | "validating";
 
 export type EngCitation =

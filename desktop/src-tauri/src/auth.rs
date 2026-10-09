@@ -170,7 +170,12 @@ pub fn auth_sign_in(app: AppHandle) -> AppResult<()> {
     // Lets a developer finish sign-in in another browser. The state is a
     // one-time nonce and the S256 challenge is public; the verifier stays here.
     #[cfg(debug_assertions)]
-    eprintln!("fydell (dev): sign-in page {url}");
+    {
+        eprintln!("fydell (dev): sign-in page {url}");
+        if std::env::var("FYDELL_DEV_NO_BROWSER").is_ok_and(|v| v == "1") {
+            return Ok(());
+        }
+    }
     app.opener()
         .open_url(&url, None::<&str>)
         .map_err(|e| AppError::Execution(format!("could not open system browser: {e}")))?;

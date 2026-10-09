@@ -23,7 +23,7 @@ export default function SignOutButton({
       // The server clears the Supabase session cookies plus the company and
       // admin cookies; the client sign-out drops any in-memory session.
       await fetch("/api/platform/logout", { method: "POST" }).catch(() => undefined);
-      await createBrowserSupabaseClient().auth.signOut().catch(() => undefined);
+      await createBrowserSupabaseClient().auth.signOut({ scope: "local" }).catch(() => undefined);
     } finally {
       router.push("/login");
       router.refresh();

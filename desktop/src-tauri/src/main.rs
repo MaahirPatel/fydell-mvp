@@ -30,6 +30,7 @@ mod config;
 mod diagnostics;
 mod eng;
 mod eng_authored;
+mod eng_drafts;
 mod eng_package;
 mod error;
 mod events;
@@ -75,11 +76,24 @@ fn main() {
 
             // fydell://auth/callback → auth::handle_callback_url.
             // Installers register the scheme from the `deep-link` config in
-            // tauri.conf.json; an unbundled dev binary registers itself
-            // (per-user) so the browser handoff reaches it.
+            // tauri.conf.json. A dev binary would take the handler away from
+            // the installed app, so it registers only when asked to; without
+            // that, pass the callback URL to a second launch of the binary
+            // and single-instance forwards it here.
             #[cfg(all(debug_assertions, any(windows, target_os = "linux")))]
-            if let Err(e) = app.deep_link().register_all() {
-                eprintln!("fydell: could not register the fydell:// scheme: {e}");
+            if std::env::var("FYDELL_DEV_REGISTER_SCHEME").is_ok_and(|v| v == "1") {
+                if let Err(e) = app.deep_link().register_all() {
+                    eprintln!("fydell: could not register the fydell:// scheme: {e}");
+                }
+            }
+            // Automated dev checks drive the window over a debugging port; it
+            // still renders off-screen but stays off the developer's desktop.
+            #[cfg(debug_assertions)]
+            if std::env::var("FYDELL_DEV_OFFSCREEN").is_ok_and(|v| v == "1") {
+                if let Some(w) = app.get_webview_window("main") {
+                    let _ = w.set_skip_taskbar(true);
+                    let _ = w.set_position(tauri::PhysicalPosition::new(-32000, -32000));
+                }
             }
             let handle = app.handle().clone();
             app.deep_link().on_open_url(move |event| {
@@ -133,6 +147,8 @@ fn main() {
             eng::eng_send_message,
             eng::eng_acknowledge_update,
             eng::eng_save_draft,
+            eng_drafts::eng_drafts_local,
+            eng_drafts::eng_draft_store,
             eng::eng_package_preview,
             eng::eng_upload_package,
             eng::eng_submit,

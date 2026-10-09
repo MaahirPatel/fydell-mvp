@@ -75,7 +75,10 @@ implements exactly that (`src-tauri/src/auth.rs`):
    The session sealed into the one-time code is minted for the desktop
    (`src/lib/auth/desktop-session.ts`), not copied from the browser's
    cookies, so the two refresh tokens rotate independently and signing out
-   in one place does not invalidate the other through token reuse.
+   in one place does not invalidate the other through token reuse. Website
+   sign-out (`/api/platform/logout`, `SignOutButton`) uses
+   `signOut({ scope: "local" })`; the default global scope would revoke the
+   desktop session too. Desktop sign-out only clears its own keychain entry.
    Refresh is serialized; a network error or Supabase 5xx/429 keeps the
    session (`platform_error`), and only a rejected refresh token signs out.
    A 401 from the platform triggers one forced refresh before giving up.
@@ -207,8 +210,18 @@ Supabase Storage signed-upload endpoint for the `eng-submissions` bucket
 **Local bookkeeping.** `app_data/eng/<attemptId>.json` (atomic
 write-then-rename) records the project path, starter hash and file list, the
 last package and its upload status, and the receipt. It never lives inside
-the project folder. The draft handoff answers are server-side
-(`PUT …/drafts`); there is no local sync journal for this flow.
+the project folder.
+
+**Handoff drafts in the standard flow** (`eng_drafts.rs`). Each answer is
+written to `app_data/eng/<attemptId>.drafts.json` (fsync, then rename) about
+600 ms after typing stops, with the server revision it was based on, and only
+then sent to `PUT …/drafts`. A reply marks the entry accepted. Unsent answers
+are retried every 20 seconds and when the network returns, and on reopening
+the journal is reconciled with the server copy (`reconcileDraft` in
+`lib/eng.ts`): an accepted or identical entry yields the server copy, an entry
+based on the current server revision is restored and resent, and an entry
+based on an older revision is shown as "Changed elsewhere" for the candidate
+to choose. The UI says "Saved on this computer" until Fydell accepts it.
 
 **Authored work samples: local outbox and file sync** (`eng_authored.rs`).
 The project folder is the source of truth on this computer. While the task
@@ -552,6 +565,17 @@ uses `https://www.fydell.com`. Local development sets
 public Supabase URL and anon key come from `GET /api/desktop/config`;
 `FYDELL_SUPABASE_URL` + `FYDELL_SUPABASE_ANON_KEY` override them.
 
+Debug builds only (ignored in release builds):
+
+- `FYDELL_DEV_REGISTER_SCHEME=1` registers the `fydell://` handler. Without
+  it a debug build leaves the installed app's handler alone; complete a
+  sign-in by launching the debug exe a second time with the callback URL as
+  its argument (single-instance forwards it to the running app).
+- `FYDELL_DEV_NO_BROWSER=1` prints the sign-in URL instead of opening the
+  system browser.
+- `FYDELL_DEV_OFFSCREEN=1` places the window off-screen without a taskbar
+  button, for automated checks over WebView2 remote debugging.
+
 ## 14. Phased integrity (explicit, not silent)
 
 - **V1 (this build):** honest local app. No lockdown claims. Evidence value
@@ -573,9 +597,15 @@ We will not claim proctoring we do not perform.
   platform shown as a connection error rather than a sign-out, authored
   task setup and start, edits and handoff answers surviving a forced kill
   and delivered on restart, and a duplicate delivery after a lost
-  acknowledgement creating no new revision. Submitting from the desktop and
-  comparing the receipt with the website and employer views was not
-  completed. macOS and Linux keychains are untested.
+  acknowledgement creating no new revision. macOS and Linux keychains are
+  untested.
+- Verified the same way, 2026-10-09 (isolated local server): an authored
+  submission from the desktop shows the same receipt id and archive SHA-256
+  on the desktop, the website candidate view and the employer view; a
+  standard-flow handoff answer typed while the server was down survived a
+  forced kill and was accepted after restart; signing out on the website no
+  longer signs the desktop out (website sign-out is local-scoped), and
+  signing out on the desktop leaves the website signed in.
 - Verified on Windows, 2026-10-07: the desktop TypeScript project
   type-checks and `vite build` succeeds; `lib/eng.test.ts` passes; `cargo
   check` is clean; `cargo test` passes 42 tests; `tauri build` produces
