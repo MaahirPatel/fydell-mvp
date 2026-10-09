@@ -21,6 +21,7 @@ import { scheduleIfRunnable } from "@/lib/eng/route-helpers";
 import { observedSentence } from "@/lib/eng/criteria";
 import { listResponses } from "@/lib/eng/candidate-report";
 import CandidateResponsesReview from "@/components/eng/CandidateResponsesReview";
+import { responseTargetLabels } from "@/lib/eng/response-labels";
 import { getAttemptForOrg } from "@/lib/eng/attempts";
 import { candidateIdentity } from "@/lib/eng/candidate-label";
 import { engAdmin } from "@/lib/eng/context";
@@ -238,7 +239,7 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
               title={`Report, version ${view.report.version}`}
               description={
                 <>
-                  Reviewed by {view.report.reviewer_email}
+                  Reviewed by {view.reviewerNames[view.report.reviewer_email] ?? view.report.reviewer_email}
                   {view.report.released_at ? <>, released <LocalTime iso={view.report.released_at} /></> : null}. Rubric {view.report.rubric_version}, checks {view.run.suite_version}, executor {view.run.executor ?? "unknown"}.
                 </>
               }
@@ -277,7 +278,7 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
             </PanelSection>
           )}
         </Panel>
-        {canSeeEvidence && responses.length ? <CandidateResponsesReview attemptId={attempt.id} initial={responses} canResolve={canWrite} /> : null}
+        {canSeeEvidence && responses.length ? <CandidateResponsesReview attemptId={attempt.id} initial={responses} canResolve={canWrite} targetLabels={responseTargetLabels(view.report?.brief, view.report?.findings)} /> : null}
         {view.report && canWrite && view.run?.results && view.submission ? (
           <details className="group">
             <summary className="cursor-pointer text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]">

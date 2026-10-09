@@ -28,6 +28,7 @@ import {
 import { CAPABILITIES, DURATION_LIMITS, parseInput, placeholderTitle, validateConfig, type AuthoringConfig, type AuthoringInput } from "./registry";
 import { buildExemplar, validatedExemplars } from "../exemplars/registry";
 import { isProductionRuntime } from "./runner";
+import { namesByEmail } from "../people";
 
 export type DraftRow = {
   id: string;
@@ -148,6 +149,8 @@ export async function getDraft(db: Admin, member: EngMember, draftId: string, in
   const previewedBySelf = Boolean(sha && (previews ?? []).some((p) => p.package_sha256 === sha && p.viewer_id === member.userId));
   const approvalCurrent = Boolean(approval && sha && approval.package_sha256 === sha && approval.decision === "approved");
   const { input } = parseInput(row.input);
+  const reviewerEmail = approval ? (approval.reviewer_email as string) : null;
+  const reviewerNames = reviewerEmail ? await namesByEmail(db, [reviewerEmail]) : {};
   return {
     draft: {
       id: row.id,
@@ -169,7 +172,7 @@ export async function getDraft(db: Admin, member: EngMember, draftId: string, in
     packageSha256: sha,
     validation: record ? { id: (validation as ValidationRow).id, ...record, current: validationCurrent, staleCheckIds: stale } : null,
     approval: approval
-      ? { id: approval.id as string, decision: approval.decision as string, reviewerEmail: approval.reviewer_email as string, notes: approval.notes as string, createdAt: approval.created_at as string, current: approvalCurrent }
+      ? { id: approval.id as string, decision: approval.decision as string, reviewerEmail: approval.reviewer_email as string, reviewerName: (reviewerEmail && reviewerNames[reviewerEmail]) || (approval.reviewer_email as string), notes: approval.notes as string, createdAt: approval.created_at as string, current: approvalCurrent }
       : null,
     previewedCurrentVersion: previewedBySelf,
     job: publicJob(job),

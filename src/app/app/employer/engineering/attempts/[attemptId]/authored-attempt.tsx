@@ -21,6 +21,7 @@ import { sealedSubmissionFiles } from "@/lib/eng/authored/employer";
 import { employerEvaluation } from "@/lib/eng/authored/reports";
 import { listResponses } from "@/lib/eng/candidate-report";
 import CandidateResponsesReview from "@/components/eng/CandidateResponsesReview";
+import { responseTargetLabels } from "@/lib/eng/response-labels";
 import { candidateIdentity } from "@/lib/eng/candidate-label";
 import type { Admin, EngMember } from "@/lib/eng/context";
 import { EVENT_LABELS, type OrgAttemptView } from "@/lib/eng/employer-view";
@@ -149,7 +150,7 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
                   title={`Released to the candidate, version ${view.report.version}`}
                   description={
                     <>
-                      Released by {view.report.reviewer_email}
+                      Released by {view.reviewerNames[view.report.reviewer_email] ?? view.report.reviewer_email}
                       {view.report.released_at ? (
                         <>
                           , <LocalTime iso={view.report.released_at} />
@@ -177,7 +178,7 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
             </Panel>
           ) : null}
 
-          {canSeeEvidence && responses.length ? <CandidateResponsesReview attemptId={attempt.id} initial={responses} canResolve={canWrite} /> : null}
+          {canSeeEvidence && responses.length ? <CandidateResponsesReview attemptId={attempt.id} initial={responses} canResolve={canWrite} targetLabels={responseTargetLabels(view.report?.brief, view.report?.findings)} /> : null}
 
           {canSeeEvidence && view.submission ? (
             <Panel>

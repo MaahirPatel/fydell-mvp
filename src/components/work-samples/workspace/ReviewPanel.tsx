@@ -65,15 +65,15 @@ export function ReviewPanel({
         <div className="grid gap-3">
           {approval ? (
             approval.current && approval.decision === "approved" ? (
-              <StatusText tone="good">Approved by {approval.reviewerEmail}</StatusText>
+              <StatusText tone="good">Approved by {approval.reviewerName}</StatusText>
             ) : approval.decision === "changes_requested" ? (
               <div className="text-[14px] leading-[1.5]">
-                <StatusText tone="warn">Changes requested by {approval.reviewerEmail}</StatusText>
+                <StatusText tone="warn">Changes requested by {approval.reviewerName}</StatusText>
                 {approval.notes ? <p className="mt-1 whitespace-pre-line text-[var(--text-body)]">{approval.notes}</p> : null}
                 <p className="mt-0.5 text-[12.5px] text-[var(--text-tertiary)]"><LocalTime iso={approval.createdAt} /></p>
               </div>
             ) : (
-              <StatusText tone="neutral">Approved by {approval.reviewerEmail} for an earlier version</StatusText>
+              <StatusText tone="neutral">Approved by {approval.reviewerName} for an earlier version</StatusText>
             )
           ) : (
             <StatusText tone="pending">Not reviewed yet</StatusText>

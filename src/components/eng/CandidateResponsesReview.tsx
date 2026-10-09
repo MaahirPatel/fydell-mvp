@@ -8,9 +8,11 @@ import { StatusTag } from "@/components/ui/StatusTag";
 import type { CandidateResponse } from "@/lib/eng/candidate-report";
 import { engFetch } from "./api";
 
-function target(r: CandidateResponse): string {
+function target(r: CandidateResponse, labels: Record<string, string>): string {
   if (r.targetKind === "report") return "the report as a whole";
-  return r.targetKind === "finding" ? `finding ${r.targetId}` : `criterion ${r.targetId.replace(/_/g, " ")}`;
+  const label = labels[r.targetId];
+  if (label) return `“${label}”`;
+  return r.targetKind === "finding" ? "a finding" : "a criterion";
 }
 
 function Resolve({ attemptId, response, onDone }: { attemptId: string; response: CandidateResponse; onDone: (r: CandidateResponse) => void }) {
@@ -60,7 +62,17 @@ function Resolve({ attemptId, response, onDone }: { attemptId: string; response:
   );
 }
 
-export default function CandidateResponsesReview({ attemptId, initial, canResolve }: { attemptId: string; initial: CandidateResponse[]; canResolve: boolean }) {
+export default function CandidateResponsesReview({
+  attemptId,
+  initial,
+  canResolve,
+  targetLabels = {},
+}: {
+  attemptId: string;
+  initial: CandidateResponse[];
+  canResolve: boolean;
+  targetLabels?: Record<string, string>;
+}) {
   const [items, setItems] = useState(initial);
   const open = items.filter((r) => r.status === "open").length;
   return (
@@ -75,7 +87,7 @@ export default function CandidateResponsesReview({ attemptId, initial, canResolv
               <div className="flex flex-wrap items-center gap-2">
                 <StatusTag tone={r.status === "open" ? "changed" : "neutral"}>{r.status === "open" ? "Open" : "Resolved"}</StatusTag>
                 <span className="text-app-meta text-[var(--text-tertiary)]">
-                  {r.kind === "inaccurate" ? "Flagged as inaccurate" : "Added context"} on {target(r)}, report v{r.reportVersion}
+                  {r.kind === "inaccurate" ? "Flagged as inaccurate" : "Added context"} on {target(r, targetLabels)}, report v{r.reportVersion}
                 </span>
               </div>
               <p className="whitespace-pre-wrap text-app-body text-[var(--text-primary)]">{r.body}</p>

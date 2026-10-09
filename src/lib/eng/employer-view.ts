@@ -5,6 +5,7 @@ import { listMessages } from "./attempts";
 import { candidateIdentity } from "./candidate-label";
 import { submissionFor } from "./evidence";
 import { listReports } from "./reports";
+import { namesByEmail, namesById } from "./people";
 import { effectiveDueAt, operationalState, type OperationalState } from "./state";
 import type { AttemptRow, InvitationRow, MessageRow, ReportRow, RoleRow, RunRow, SubmissionRow, UploadRow } from "./types";
 
@@ -175,15 +176,8 @@ export interface OrgAttemptView {
   decisions: { id: string; decision: string; notes: string; reportVersion: number | null; by: string | null; at: string }[];
   notes: { id: string; body: string; by: string | null; at: string }[];
   flags: { id: string; findingId: string; reason: string; by: string | null; at: string; resolvedAt: string | null }[];
-}
-
-async function emailMap(db: Admin, ids: string[]): Promise<Map<string, string>> {
-  const unique = [...new Set(ids.filter(Boolean))];
-  const out = new Map<string, string>();
-  if (unique.length === 0) return out;
-  const { data } = await db.from("profiles").select("id, email").in("id", unique);
-  for (const row of data ?? []) if (row.email) out.set(row.id as string, row.email as string);
-  return out;
+  /** Display name for each reviewer email on this attempt's reports, falling back to the email. */
+  reviewerNames: Record<string, string>;
 }
 
 /**
@@ -232,10 +226,13 @@ export async function orgAttemptView(db: Admin, member: EngMember, attempt: Atte
         db.from("eng_finding_flags").select("id, finding_id, reason, flagged_by, created_at, resolved_at").eq("attempt_id", attempt.id).order("created_at", { ascending: false }),
       ])
     : [{ data: [] }, { data: [] }, { data: [] }];
-  const emails = await emailMap(db, [
-    ...(decisions ?? []).map((d) => d.decided_by as string),
-    ...(notes ?? []).map((n) => n.author_id as string),
-    ...(flags ?? []).map((f) => f.flagged_by as string),
+  const [names, reviewerNames] = await Promise.all([
+    namesById(db, [
+      ...(decisions ?? []).map((d) => d.decided_by as string),
+      ...(notes ?? []).map((n) => n.author_id as string),
+      ...(flags ?? []).map((f) => f.flagged_by as string),
+    ]),
+    canSeeEvidence ? namesByEmail(db, reports.map((r) => r.reviewer_email)) : Promise.resolve({}),
   ]);
   const versionById = new Map(reports.map((r) => [r.id, r.version]));
 
@@ -270,18 +267,19 @@ export async function orgAttemptView(db: Admin, member: EngMember, attempt: Atte
       decision: d.decision as string,
       notes: (d.notes as string) ?? "",
       reportVersion: versionById.get(d.report_id as string) ?? null,
-      by: emails.get(d.decided_by as string) ?? null,
+      by: names.get(d.decided_by as string) ?? null,
       at: d.created_at as string,
     })),
-    notes: (notes ?? []).map((n) => ({ id: n.id as string, body: n.body as string, by: emails.get(n.author_id as string) ?? null, at: n.created_at as string })),
+    notes: (notes ?? []).map((n) => ({ id: n.id as string, body: n.body as string, by: names.get(n.author_id as string) ?? null, at: n.created_at as string })),
     flags: (flags ?? []).map((f) => ({
       id: f.id as string,
       findingId: f.finding_id as string,
       reason: f.reason as string,
-      by: emails.get(f.flagged_by as string) ?? null,
+      by: names.get(f.flagged_by as string) ?? null,
       at: f.created_at as string,
       resolvedAt: (f.resolved_at as string) ?? null,
     })),
+    reviewerNames,
   };
 }
 
