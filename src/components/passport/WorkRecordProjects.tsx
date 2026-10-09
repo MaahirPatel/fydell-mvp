@@ -51,7 +51,7 @@ export default function WorkRecordProjects({
     );
   }
   return (
-    <ul className="grid gap-4">
+    <ul className="grid grid-cols-[minmax(0,1fr)] gap-4">
       {current.map((p) => {
         const id = p.id as string;
         const state = REPORT_STATE[reportState(p)];
@@ -71,7 +71,7 @@ export default function WorkRecordProjects({
                   {name}
                 </Link>
                 <p className="mt-1 max-w-[70ch] text-app-prose text-[var(--text-body)]">{review?.overview.purpose ?? "No description yet."}</p>
-                <p className="mt-1 truncate text-app-meta text-[var(--text-tertiary)]" title={formatDateTime(p.analyzedAt)}>
+                <p className="mt-1 text-app-meta text-[var(--text-tertiary)] [overflow-wrap:anywhere]" title={formatDateTime(p.analyzedAt)}>
                   {p.sourceKind === "upload" ? (
                     <>
                       Uploaded <span className="font-mono">{shortSha(p.commitSha)}</span>

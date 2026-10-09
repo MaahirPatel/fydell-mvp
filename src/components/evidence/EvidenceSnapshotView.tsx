@@ -62,7 +62,7 @@ function ListBlock({ title, items, empty }: { title: string; items: string[]; em
       {items.length === 0 ? (
         <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">{empty}</p>
       ) : (
-        <ul className="mt-1 grid gap-1 text-app-meta leading-[1.5] text-[var(--text-body)]">
+        <ul className="mt-1 grid grid-cols-[minmax(0,1fr)] gap-1 text-app-meta leading-[1.5] text-[var(--text-body)] [overflow-wrap:anywhere]">
           {items.map((t, i) => (
             <li key={`${i}-${t.slice(0, 24)}`}>{t}</li>
           ))}
@@ -83,7 +83,7 @@ export function SimulationReport({ report }: { report: SimulationReportSummary }
         <summary className="cursor-pointer text-app-meta font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
           {authored ? "What the public tests checked" : "What was investigated, changed and checked"}
         </summary>
-        <div className="mt-3 grid gap-3">
+        <div className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-3">
           {authored ? null : (
             <>
               <ListBlock title="Investigated" items={report.investigated} empty="Not recorded in this report." />
@@ -254,7 +254,7 @@ export default function EvidenceSnapshotView({
         {content.simulations.length > 0 ? (
           <section>
             <h4 className="text-[15px] font-medium text-[var(--text-primary)]">Work sample report</h4>
-            <div className="mt-3 grid gap-3">
+            <div className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-3">
               {content.simulations.map((s) => (
                 <SimulationReport key={s.attemptId} report={s} />
               ))}

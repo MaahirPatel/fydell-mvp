@@ -94,7 +94,7 @@ export default function EditorImport({ onImported }: { onImported?: () => void }
             This data is self-supplied: it is labeled as such everywhere and never treated as observed work.
           </strong>
         </p>
-        <div className="mt-3 grid gap-2 text-app-meta leading-[1.55] text-[var(--text-tertiary)] sm:grid-cols-3">
+        <div className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-2 text-app-meta leading-[1.55] text-[var(--text-tertiary)] [overflow-wrap:anywhere] sm:grid-cols-3">
           <p><span className="font-medium text-[var(--text-secondary)]">macOS</span><br />~/{paths.mac}</p>
           <p><span className="font-medium text-[var(--text-secondary)]">Linux</span><br />~/{paths.linux}</p>
           <p><span className="font-medium text-[var(--text-secondary)]">Windows</span><br />%APPDATA%/{paths.windows}</p>

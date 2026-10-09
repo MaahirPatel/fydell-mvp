@@ -41,7 +41,7 @@ export function CandidatePageHead({
           ) : null}
           {lead ? <p className={s.lead}>{lead}</p> : null}
         </div>
-        {aside ? <div className="flex shrink-0 flex-wrap items-center gap-2">{aside}</div> : null}
+        {aside ? <div className="flex max-w-full flex-wrap items-center gap-2 sm:shrink-0">{aside}</div> : null}
       </div>
       {meta.length ? (
         <dl className={s.meta}>
