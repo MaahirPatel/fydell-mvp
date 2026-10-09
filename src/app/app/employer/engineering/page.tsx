@@ -82,7 +82,7 @@ export default async function EngineeringRolesPage() {
           <Panel>
             <PanelSection title="Simulations" description="Roles attach a published simulation from Work samples.">
               <p className="text-app-body leading-[1.6] text-[var(--text-secondary)]">
-                Start from a validated role model, use it as reviewed or adapt it to your product, then publish it once the checks pass.
+                Start from a simulation template reviewed by Fydell, use it as it is or adapt it to your product, then publish it once the checks pass.
               </p>
               <Link
                 href="/app/employer/work-samples"

@@ -48,7 +48,7 @@ export default async function NewWorkSamplePage({ searchParams }: { searchParams
       <PageHeader
         className="mt-2"
         title="Create work sample"
-        description="Start from a validated role-model simulation for the track you are hiring for. Run it as reviewed, or have Fydell adapt it to your business context. Every draft is run and checked, and your team reviews it before anything reaches a candidate."
+        description="Start from a simulation template reviewed by Fydell for the track you are hiring for. Run it as reviewed, or have Fydell adapt it to your business context. Every draft is run and checked, and your team reviews it before anything reaches a candidate."
       />
       <div className="mt-7">
         <CreatorForm registry={registryPayload()} tracks={trackAvailability()} capabilities={capabilities} prefill={prefill} fromDraft={prefill ? (from ?? null) : null} />

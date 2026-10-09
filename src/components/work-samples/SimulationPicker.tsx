@@ -11,7 +11,7 @@ const DIFFICULTY_LABEL: Record<ExemplarSummary["difficulty"], string> = { introd
 
 const MODES: Array<{ id: SimulationMode; label: string; description: string }> = [
   { id: "adapt", label: "Adapt to my context", description: "Fydell writes a new scenario of the same kind, set in your business, then runs every check on it." },
-  { id: "as_is", label: "Use as reviewed", description: "The role model exactly as validated. You can still edit any section in the draft." },
+  { id: "as_is", label: "Use as reviewed", description: "The simulation template exactly as Fydell reviewed it. You can still edit any section in the draft." },
   { id: "upload", label: "Upload my own files", description: "Your starter, tests and reference solution, checked by the same runner." },
 ];
 
@@ -42,7 +42,7 @@ export function SimulationPicker({
   tracks: TrackAvailability[];
   input: AuthoringInput;
   error: string | null;
-  /** Picks a role model and applies the configuration it was validated with. */
+  /** Picks a simulation template and applies the configuration it was reviewed with. */
   onSelect: (exemplar: ExemplarSummary, track: TrackAvailability) => void;
   onChange: (patch: Partial<Simulation>) => void;
   onMode: (mode: SimulationMode) => void;
@@ -78,7 +78,7 @@ export function SimulationPicker({
 
       <fieldset>
         <legend className="text-app-meta font-medium text-[var(--text-primary)]">Primary track</legend>
-        <p className="mt-0.5 text-[13px] leading-[1.5] text-[var(--text-secondary)]">The kind of engineering work the simulation is built around. A track is offered once it has a validated role-model simulation.</p>
+        <p className="mt-0.5 text-[13px] leading-[1.5] text-[var(--text-secondary)]">The kind of engineering work the simulation is built around. A track is offered once it has a simulation template reviewed by Fydell.</p>
         <div className="mt-2 grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Primary track">
           {available.map((t) => {
             const on = t.track === sim?.track;
@@ -87,7 +87,7 @@ export function SimulationPicker({
                 <span className="block text-[15px] font-semibold text-[var(--text-primary)]">{t.label}</span>
                 <span className="mt-0.5 block text-[13px] leading-[1.45] text-[var(--text-secondary)]">{t.roles.slice(0, 3).join(", ")}</span>
                 <span className="mt-1.5 block text-[12px] font-medium text-[var(--accent)]">
-                  {t.exemplars.length} role-model {t.exemplars.length === 1 ? "simulation" : "simulations"}
+                  {t.exemplars.length} simulation {t.exemplars.length === 1 ? "template" : "templates"}
                 </span>
               </button>
             );
@@ -138,15 +138,15 @@ export function SimulationPicker({
 
       {models.length ? (
         <fieldset>
-          <legend className="text-app-meta font-medium text-[var(--text-primary)]">Role-model simulation</legend>
-          <div className="mt-2 grid gap-2" role="radiogroup" aria-label="Role-model simulation">
+          <legend className="text-app-meta font-medium text-[var(--text-primary)]">Simulation template</legend>
+          <div className="mt-2 grid gap-2" role="radiogroup" aria-label="Simulation template">
             {models.map((m) => {
               const on = m.key === sim?.exemplarKey;
               return (
                 <button key={m.key} type="button" role="radio" aria-checked={on} onClick={() => track && onSelect(m, track)} className={choiceClass(on)}>
                   <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <span className="text-[15px] font-semibold text-[var(--text-primary)]">{m.title}</span>
-                    <span className="text-[12px] font-medium text-[var(--status-positive-ink)]">Validated</span>
+                    <span className="text-[12px] font-medium text-[var(--status-positive-ink)]">Reviewed by Fydell</span>
                   </span>
                   <span className="mt-1 block text-[14px] leading-[1.5] text-[var(--text-body)]">{m.summary}</span>
                   <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[var(--text-secondary)]">
@@ -165,7 +165,7 @@ export function SimulationPicker({
       {sim ? (
         <fieldset>
           <legend className="text-app-meta font-medium text-[var(--text-primary)]">How to use it</legend>
-          <div className="mt-2 grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label="How to use the role model">
+          <div className="mt-2 grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label="How to use the simulation template">
             {MODES.map((m) => (
               <button key={m.id} type="button" role="radio" aria-checked={mode === m.id} onClick={() => onMode(m.id)} className={choiceClass(mode === m.id)}>
                 <span className="block text-[14px] font-semibold text-[var(--text-primary)]">{m.label}</span>

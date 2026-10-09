@@ -449,7 +449,7 @@ function parseSimulation(raw: unknown, invalid: ConfigIssue[]): SimulationIntent
   const taskFamily = typeof s.taskFamily === "string" ? s.taskFamily : "";
   const exemplarKey = typeof s.exemplarKey === "string" && /^[a-z0-9-]{2,60}$/.test(s.exemplarKey) ? s.exemplarKey : "";
   if (!taskFamilyOf(s.track, taskFamily)) invalid.push({ field: "simulation", message: "Choose a task family for this track." });
-  if (!exemplarKey) invalid.push({ field: "simulation", message: "Choose the role-model simulation to start from." });
+  if (!exemplarKey) invalid.push({ field: "simulation", message: "Choose the simulation template to start from." });
   return {
     track: s.track,
     taskFamily,
@@ -624,13 +624,13 @@ export function validateConfig(input: AuthoringInput, invalid: ConfigIssue[] = [
     if (simulation.jobTitle.length < 2) errors.push({ field: "simulation", message: "Add the job title you are hiring for." });
     if (exemplars) {
       const chosen = exemplars.find((e) => e.key === simulation.exemplarKey);
-      if (!chosen) errors.push({ field: "simulation", message: "That role-model simulation is not validated right now. Choose another one." });
+      if (!chosen) errors.push({ field: "simulation", message: "That simulation template is not available right now. Choose another one." });
       else if (chosen.track !== simulation.track || chosen.taskFamily !== simulation.taskFamily) {
-        errors.push({ field: "simulation", message: "The role-model simulation does not belong to the chosen track and task family." });
+        errors.push({ field: "simulation", message: "The simulation template does not belong to the chosen track and task family." });
       } else if (input.language !== OTHER && input.language !== chosen.language && simulation.mode === "as_is") {
-        errors.push({ field: "language", message: "Running a role model as is keeps its language. Choose Adapt to generate it in another validated language." });
+        errors.push({ field: "language", message: "Running a simulation template as is keeps its language. Choose Adapt to generate it in another supported language." });
       } else if (input.language !== OTHER && !exemplars.some((e) => e.track === simulation.track && e.taskFamily === simulation.taskFamily && e.language === input.language)) {
-        errors.push({ field: "language", message: `No validated ${TRACK_LABEL[simulation.track]} simulation of this task family runs in that language yet. Choose a language a role model uses.` });
+        errors.push({ field: "language", message: `No reviewed ${TRACK_LABEL[simulation.track]} simulation of this task family runs in that language yet. Choose a language a simulation template uses.` });
       }
     }
     if (simulation.mode === "adapt" && input.startingMaterial !== "uploaded" && simulation.businessContext.length < 20) {
@@ -738,7 +738,7 @@ export function validateConfig(input: AuthoringInput, invalid: ConfigIssue[] = [
   if (material && !material.supported) errors.push({ field: "startingMaterial", message: material.reason ?? "Not available.", alternative: material.alternative });
   if (simulation) startingMaterial = simulation.mode === "as_is" ? "reviewed_template" : startingMaterial === "uploaded" ? "uploaded" : "generated";
   else if (startingMaterial === "reviewed_template") {
-    errors.push({ field: "startingMaterial", message: "Choose a primary track and a role-model simulation to use a reviewed scenario.", alternative: "generated" });
+    errors.push({ field: "startingMaterial", message: "Choose a primary track and a simulation template to use a reviewed scenario.", alternative: "generated" });
   }
 
   const capabilities = input.capabilities.filter((c): c is CapabilityId => c !== OTHER);
@@ -856,8 +856,8 @@ export function validateConfig(input: AuthoringInput, invalid: ConfigIssue[] = [
           { label: "Primary track", value: TRACK_LABEL[simulation.track] },
           { label: "Task family", value: taskFamilyOf(simulation.track, simulation.taskFamily)?.label ?? "Unset" },
           { label: "Secondary capability", value: simulation.secondaryCapability || "None" },
-          { label: "Business context", value: simulation.businessContext || "Role model's own context" },
-          { label: "Simulation", value: simulation.mode === "as_is" ? "Role model as reviewed" : "Adapted from the role model" },
+          { label: "Business context", value: simulation.businessContext || "The template's own context" },
+          { label: "Simulation", value: simulation.mode === "as_is" ? "Simulation template as reviewed" : "Adapted from the simulation template" },
         ]
       : [{ label: "Role", value: `${familyLabel}${specLabel ? `, ${specLabel}` : ""}` }]),
     { label: "Level", value: LEVEL_LABEL[input.level] },

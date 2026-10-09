@@ -458,7 +458,7 @@ export default function CreatorForm({
           {asIs ? (
             <PanelSection title="What the candidate gets">
               <p className="text-[14px] leading-[1.6] text-[var(--text-body)]">
-                The role model exactly as validated: its brief, starter project, tests, teammates, time limit and AI policy. After the draft is created you can edit any section, and the checks run again before it can be published.
+                The simulation template exactly as Fydell reviewed it: its brief, starter project, tests, teammates, time limit and AI policy. After the draft is created you can edit any section, and the checks run again before it can be published.
               </p>
             </PanelSection>
           ) : (
@@ -783,7 +783,7 @@ export default function CreatorForm({
                   ) : (
                     <p className="text-[13px] leading-[1.45] text-[var(--text-secondary)]">
                       {asIs
-                        ? "Copies the validated role model into a draft you can review, edit and publish."
+                        ? "Copies the simulation template into a draft you can review, edit and publish."
                         : uploadPath
                         ? "Creates an empty draft. Add your starter, tests and reference solution, then run the checks."
                         : "Generation takes several minutes. You can leave this page; it continues on the server."}

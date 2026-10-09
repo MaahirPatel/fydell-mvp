@@ -64,7 +64,7 @@ async function protectedFor(db: Admin, draftId: string): Promise<ProtectedMateri
 export function checkInput(raw: unknown) {
   const { input, invalid } = parseInput(raw);
   const exemplars = validatedExemplars().map((e) => ({ key: e.key, track: e.track, taskFamily: e.taskFamily, language: e.language }));
-  if (!input.simulation) invalid.push({ field: "simulation", message: "Choose a primary track and a role-model simulation." });
+  if (!input.simulation) invalid.push({ field: "simulation", message: "Choose a primary track and a simulation template." });
   return { input, validation: validateConfig(input, invalid, exemplars) };
 }
 
@@ -72,7 +72,7 @@ export function checkInput(raw: unknown) {
 function roleModelDraft(config: AuthoringConfig): { pkg: ScenarioPackage; prot: ProtectedMaterials; title: string } {
   const key = config.simulation?.exemplarKey;
   const built = key ? buildExemplar(key) : null;
-  if (!built) throw new AuthoringError(422, "That role-model simulation is not available.");
+  if (!built) throw new AuthoringError(422, "That simulation template is not available.");
   const copy = structuredClone(built);
   const pkg: ScenarioPackage = { ...copy.pkg, config: { ...copy.pkg.config, simulation: config.simulation } };
   return { pkg, prot: copy.prot, title: pkg.brief.title };
