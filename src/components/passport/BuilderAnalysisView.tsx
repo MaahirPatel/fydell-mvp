@@ -217,7 +217,7 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
       ) : null}
 
       <section aria-labelledby="ba-projects">
-        <H2 id="ba-projects" hint="Imported projects were analysed at code level; scanned repositories by structure and history only.">Projects</H2>
+        <H2 id="ba-projects" hint="Imported projects were analyzed at code level; scanned repositories by structure and history only.">Projects</H2>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-left text-[14px]">
             <thead>
@@ -236,7 +236,7 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
                     {p.url ? <a href={p.url} target="_blank" rel="noreferrer noopener" className="font-mono text-[13px] text-[var(--text-primary)] hover:underline">{p.repo}</a> : <span className="font-mono text-[13px]">{p.repo}</span>}
                     {p.language ? <span className="ml-2 text-[12px] text-[var(--text-tertiary)]">{p.language}</span> : null}
                   </td>
-                  <td className="py-2.5 pr-4 text-[var(--text-secondary)]">{p.depth === "deep" ? "Code analysed" : "Scanned"}</td>
+                  <td className="py-2.5 pr-4 text-[var(--text-secondary)]">{p.depth === "deep" ? "Code analyzed" : "Scanned"}</td>
                   <td className="py-2.5 pr-4 text-[var(--text-secondary)]">{p.practices.length ? p.practices.slice(0, 3).join(", ") + (p.practices.length > 3 ? ` +${p.practices.length - 3}` : "") : "None observed"}</td>
                   <td className="py-2.5 pr-4 tabular-nums text-[var(--text-secondary)]">{p.commitsByYou ?? "Not read"}</td>
                   <td className="py-2.5 text-[var(--text-secondary)]">{formatDate(p.lastActiveAt) || "Unknown"}</td>
@@ -337,7 +337,7 @@ export default function BuilderAnalysisView({ initial, lastReport, hasSources }:
         </div>
         <Button onClick={start} disabled={starting || running || !hasSources} variant={shownReport ? "secondary" : "primary"} size="sm">
           <RotateCcw className={`h-3.5 w-3.5 ${running ? "animate-spin" : ""}`} aria-hidden />
-          {running ? "Analysing" : shownReport ? "Run again" : "Run analysis"}
+          {running ? "Analyzing" : shownReport ? "Run again" : "Run analysis"}
         </Button>
       </div>
 

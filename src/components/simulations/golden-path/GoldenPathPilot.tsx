@@ -398,7 +398,7 @@ function DefenseStep(props: {
       <p className="mt-3 text-app-body leading-6 text-[var(--text-secondary)]">
         Pass A read the work and produced a provisional claim. Before it becomes evidence, the
         candidate explains the judgement behind it. The answers are recorded as candidate events and
-        re-analysed in pass B.
+        re-analyzed in pass B.
       </p>
       <div className="mt-6 divide-y divide-[var(--border-subtle)] border-y border-[var(--border-subtle)]">
         <FactRow label="Provisional claim" value={claim.statement} />

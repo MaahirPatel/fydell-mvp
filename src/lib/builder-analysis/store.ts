@@ -59,7 +59,7 @@ export type StartResult =
 export async function beginAnalysis(ownerId: string, opts: { sourcesChanged: boolean }): Promise<StartResult> {
   const latest = await latestAnalysis(ownerId);
   if (latest?.status === "running") return { started: false, reason: "running", id: latest.id };
-  if (latest?.status === "complete" && !opts.sourcesChanged) {
+  if (latest?.status === "complete" && latest.report && !opts.sourcesChanged) {
     const wait = new Date(latest.createdAt).getTime() + ANALYSIS_LIMITS.cooldownMinutes * 60_000 - Date.now();
     if (wait > 0) return { started: false, reason: "cooldown", retryAfterSeconds: Math.ceil(wait / 1000) };
   }

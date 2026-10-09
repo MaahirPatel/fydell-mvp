@@ -88,7 +88,7 @@ function HealthPanel({ health }: { health: WorkspaceHealth }) {
   if (health.awaitingAnalysis > 0) {
     rows.push({
       key: "awaiting",
-      label: `${health.awaitingAnalysis} submitted ${health.awaitingAnalysis === 1 ? "attempt is" : "attempts are"} still being analysed`,
+      label: `${health.awaitingAnalysis} submitted ${health.awaitingAnalysis === 1 ? "attempt is" : "attempts are"} still being analyzed`,
       detail: "No action needed yet. Reports appear here when analysis completes.",
       tone: "attention",
     });
@@ -395,7 +395,7 @@ export default async function EmployerHomePage() {
               {reports.length === 0 ? (
                 <p className="px-5 pb-1 text-app-body text-[var(--text-secondary)] lg:px-6">
                   No candidate evidence is ready yet. It appears here after
-                  submitted work has been analysed.
+                  submitted work has been analyzed.
                 </p>
               ) : (
                 <ul>
@@ -412,7 +412,7 @@ export default async function EmployerHomePage() {
                           {r.candidate}
                         </span>
                         <span className="shrink-0 text-app-meta text-[var(--text-secondary)]">
-                          {r.bandLabel || "Analysed"}
+                          {r.bandLabel || "Analyzed"}
                         </span>
                         <span
                           className="w-9 shrink-0 text-right font-mono text-app-meta tabular-nums text-[var(--text-tertiary)]"

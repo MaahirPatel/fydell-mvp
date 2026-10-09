@@ -5,6 +5,12 @@ import type { Narrative, NarrativeParagraph } from "./types";
 /** Words that would turn an evidence report into a judgment of the person. */
 const BANNED = /\b(personality|culture fit|cultural fit|introvert|extrovert|lazy|genius|rockstar|ninja|10x|smart|intelligent|talented|passionate|hire|reject|score|rating|percentile|best|worst|senior|junior)\b/i;
 
+/** Imported repositories may be other people's work; the analysis never establishes authorship. */
+const AUTHORSHIP = /\b(you (wrote|authored|built|created|developed|implemented)|(code|tests?) you (wrote|authored)|your (own )?code)\b/i;
+
+/** Phrases that turn a handful of findings into a trait of the person. */
+const TRAIT = /\b(you demonstrate|you are|consistently|always|habitually|mindset)\b|[-\u2011]oriented\b/i;
+
 /** Internal evidence ids must never appear in prose shown to the engineer. */
 const RAW_ID = /\b(dimension|growth|pattern|strength|act|finding):[\w./:-]+/i;
 
@@ -39,11 +45,11 @@ export function templateNarrative(s: Synthesis): Narrative {
 function compactSynthesis(s: Synthesis): string {
   const lines: string[] = [];
   lines.push(`Working style (inference): ${s.workingStyle.label}. ${s.workingStyle.description}`);
-  lines.push(`Sources: ${s.scope.deepProjects} imported projects analysed in depth, ${s.scope.scannedRepos} public repositories scanned.`);
+  lines.push(`Sources: ${s.scope.deepProjects} imported projects analyzed in depth, ${s.scope.scannedRepos} public repositories scanned.`);
   for (const d of s.dimensions) {
     lines.push(`[dimension:${d.id}] ${d.label}: ${LEVEL_LABEL[d.level]}.`);
     for (const p of d.practices.slice(0, 5)) {
-      lines.push(`  - ${p.label} in ${p.repos.length} project(s). Evidence: ${p.refs.slice(0, 2).map((r) => `[${r.id}] ${r.label.slice(0, 90)}`).join("; ")}`);
+      lines.push(`  - ${p.label} in ${p.repos.length} project(s): ${p.repos.slice(0, 4).join(", ")}. Evidence: ${p.refs.slice(0, 2).map((r) => `[${r.id}] ${r.label.slice(0, 90)}`).join("; ")}`);
     }
     if (d.notObserved.length) lines.push(`  Not observed: ${d.notObserved.slice(0, 4).join(", ")}`);
     for (const l of d.limits) lines.push(`  Not assessed: ${l}`);
@@ -60,6 +66,9 @@ const SYSTEM = [
   "Describe observable work and practices. Never judge the person, their personality, seniority or hireability, and never invent numbers.",
   "Treat missing evidence as missing, not as absence. Anything listed as not assessed must not be described at all except to say it was not assessed.",
   "Call something an inference only when the facts mark it as an inference; observations are stated plainly.",
+  "Imported projects can be other people's repositories. Never say the engineer wrote, built or authored the code; say what the analyzed projects contain.",
+  "When practices are listed in the same project, say they are in the same project; never imply separate projects.",
+  "Do not turn findings into traits or habits. Say how many projects showed a practice instead of calling it an approach or saying it happens consistently.",
   "Write in second person, plain sentences, no headings, no lists, no em dashes.",
   'Return JSON only: {"summary": "one or two sentences", "paragraphs": [{"text": "...", "refs": ["id"]}]} with 3 to 5 paragraphs.',
 ].join("\n");
@@ -75,19 +84,21 @@ function parseNarrative(raw: string, allowed: Set<string>): ModelNarrative | nul
   }
   if (!data || typeof data !== "object") return null;
   const obj = data as Record<string, unknown>;
-  const summary = typeof obj.summary === "string" ? obj.summary.trim() : "";
-  if (summary.length < 20 || summary.length > 400 || BANNED.test(summary)) return null;
+  const clean = (t: string) => t.replace(/\u2014/g, ",").replace(/\u2011/g, "-");
+  const overclaims = (t: string) => BANNED.test(t) || AUTHORSHIP.test(t) || TRAIT.test(t);
+  const summary = typeof obj.summary === "string" ? clean(obj.summary.trim()) : "";
+  if (summary.length < 20 || summary.length > 400 || overclaims(summary)) return null;
   const paragraphs: NarrativeParagraph[] = [];
   for (const p of Array.isArray(obj.paragraphs) ? obj.paragraphs : []) {
     if (!p || typeof p !== "object") continue;
     const rec = p as Record<string, unknown>;
-    const text = typeof rec.text === "string" ? rec.text.replace(/\s*\[[^\]]{2,60}\]/g, "").replace(/\u2014/g, ",").trim() : "";
+    const text = typeof rec.text === "string" ? clean(rec.text.replace(/\s*\[[^\]]{2,60}\]/g, "").trim()) : "";
     const refs = (Array.isArray(rec.refs) ? rec.refs : []).filter((r): r is string => typeof r === "string" && allowed.has(r));
-    if (text.length < 30 || text.length > 900 || BANNED.test(text) || RAW_ID.test(text) || refs.length === 0) continue;
+    if (text.length < 30 || text.length > 900 || overclaims(text) || RAW_ID.test(text) || refs.length === 0) continue;
     paragraphs.push({ text, refs: [...new Set(refs)].slice(0, 6) });
   }
   if (paragraphs.length < 2) return null;
-  return { summary: summary.replace(/\u2014/g, ","), paragraphs: paragraphs.slice(0, 5) };
+  return { summary, paragraphs: paragraphs.slice(0, 5) };
 }
 
 /**

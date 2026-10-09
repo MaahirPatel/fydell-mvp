@@ -151,6 +151,13 @@ async function main() {
     assert.match(templateNarrative(empty).summary, /Not enough/);
   });
 
+  await test("synthesis: one project cannot earn a working style", () => {
+    const single = synthesize({ ...input, githubLogin: null, activity: [], projects: [project("other/lib", ["test_suite", "failure_path_test", "ci_checks"])], scope: { ...SCOPE, deepProjects: 1 } });
+    assert.notEqual(single.workingStyle.id, "test_minded");
+    assert.equal(single.workingStyle.id, "early_record");
+    assert.equal(single.strengths.length, 0, "a strength needs evidence from more than one project");
+  });
+
   await test("template narrative cites only real ids", () => {
     const ids = citableIds(s);
     const n = templateNarrative(s);
@@ -175,6 +182,25 @@ async function main() {
     assert.equal(leaked, null, "paragraph with a raw id is dropped, leaving too few");
     assert.equal(__test.parseNarrative("not json", ids), null);
     assert.equal(__test.parseNarrative(JSON.stringify({ summary: "A great culture fit with strong evidence.", paragraphs: [good, good] }), ids), null);
+  });
+
+  await test("model narrative: authorship and trait claims are dropped", () => {
+    const ids = citableIds(s);
+    const good = { text: "Retries with timeouts appear in two of the analyzed service projects.", refs: ["pattern:retries"] };
+    const parsed = __test.parseNarrative(JSON.stringify({
+      summary: "Most evidence is in reliability across two projects.",
+      paragraphs: [
+        good,
+        { text: "You include automated tests in the code you wrote, as shown by one test file.", refs: ["pattern:retries"] },
+        { text: "You consistently add retries around every outbound call in these projects.", refs: ["pattern:retries"] },
+        { ...good, text: "Both analyzed projects run their checks in a CI workflow on each change." },
+      ],
+    }), ids);
+    assert.equal(parsed?.paragraphs.length, 2);
+    assert.equal(
+      __test.parseNarrative(JSON.stringify({ summary: "You demonstrate a test\u2011oriented approach across your projects.", paragraphs: [good, good] }), ids),
+      null,
+    );
   });
 
   await test("scan reuses unchanged repositories and stops cleanly at a rate limit", async () => {

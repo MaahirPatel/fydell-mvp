@@ -142,7 +142,7 @@ export function NorthlineEvidenceFlow({
           Northline evidence review
         </h1>
         <p className="mt-2 max-w-[70ch] text-app-body leading-6 text-[var(--text-secondary)]">
-          Pass A is provisional. Candidate defense is analysed in Pass B, then a human decides
+          Pass A is provisional. Candidate defense is analyzed in Pass B, then a human decides
           whether the claims are fit to publish.
         </p>
       </header>

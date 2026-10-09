@@ -228,7 +228,7 @@ function buildDimensions(practices: Practice[], input: SynthesisInput): Dimensio
     const notObserved = PRACTICES.filter((p) => p.dimension === d.id && !own.some((o) => o.key === p.key)).map((p) => p.label);
     const summary =
       level === "insufficient_evidence"
-        ? `None of the practices this area looks for were observed in the ${deep + scanned > 0 ? "projects analysed" : "available sources"}. That is missing evidence, not proof they are absent.`
+        ? `None of the practices this area looks for were observed in the ${deep + scanned > 0 ? "projects analyzed" : "available sources"}. That is missing evidence, not proof they are absent.`
         : `${joinLabels(own.slice(0, 3).map((p) => p.label))} ${own.length > 3 ? `and ${own.length - 3} more ` : ""}observed across ${repos.size} project${repos.size === 1 ? "" : "s"}.`;
     const limits: string[] = [];
     const codeLevel = PRACTICES.some((p) => p.dimension === d.id && p.detectors && !p.activity);
@@ -242,7 +242,7 @@ function buildDimensions(practices: Practice[], input: SynthesisInput): Dimensio
 
 function buildStrengths(dimensions: Dimension[]): Strength[] {
   return dimensions
-    .filter((d) => d.level === "strong" || d.level === "developing")
+    .filter((d) => (d.level === "strong" || d.level === "developing") && new Set(d.practices.flatMap((p) => p.repos.map(repoKey))).size >= 2)
     .sort((a, b) => LEVEL_RANK[b.level] - LEVEL_RANK[a.level] || b.practices.length - a.practices.length)
     .slice(0, 4)
     .map((d) => {
@@ -266,7 +266,7 @@ function buildPatterns(practices: Practice[], totalProjects: number): RecurringP
     .map((p) => ({
       id: `pattern:${p.key}`,
       title: p.label,
-      detail: `Seen in ${p.repos.length} of ${totalProjects} projects analysed, so it is a habit rather than a one-off.`,
+      detail: `Seen in ${p.repos.length} of ${totalProjects} projects analyzed, not just one.`,
       repos: p.repos,
       refs: p.refs.slice(0, 4),
     }));
@@ -401,28 +401,33 @@ function buildWorkingStyle(dimensions: Dimension[], practices: Practice[], input
     [...input.activity.map((a) => a.language), ...input.projects.map((p) => p.primaryLanguage)].filter((l): l is string => !!l),
   );
 
+  const projectsIn = (id: DimensionId) => new Set((dim(id)?.practices ?? []).flatMap((p) => p.repos.map(repoKey))).size;
+
   const candidates: Array<WorkingStyle & { score: number }> = [];
-  const add = (score: number, id: string, label: string, description: string, reasons: string[]) =>
+  const add = (score: number, id: string, label: string, description: string, reasons: string[], from?: DimensionId) => {
+    // A style names something that recurs; one project cannot show that.
+    if (from && projectsIn(from) < 2) return;
     candidates.push({ id, label, description, reasons, basis: "inference", score });
+  };
 
   if (rank("reliability") >= 2)
     add(rank("reliability") * 10 + (dim("reliability")?.practices.length ?? 0), "reliability_minded", "Reliability-minded builder",
-      "Writes code that expects failure: retries, timeouts and guarded writes show up repeatedly.", reasonsFor("reliability"));
+      "Writes code that expects failure: retries, timeouts and guarded writes show up repeatedly.", reasonsFor("reliability"), "reliability");
   if (rank("quality") >= 2 && has("failure_tests"))
     add(rank("quality") * 10 + (dim("quality")?.practices.length ?? 0), "test_minded", "Test-minded engineer",
-      "Checks work with tests, including the paths where things go wrong.", reasonsFor("quality"));
+      "Checks work with tests, including the paths where things go wrong.", reasonsFor("quality"), "quality");
   if (rank("delivery") >= 2 && has("ci") && (has("releases") || has("sustained")))
     add(rank("delivery") * 10 + (dim("delivery")?.practices.length ?? 0), "steady_shipper", "Steady shipper",
-      "Ships work through automated checks and keeps coming back to it.", reasonsFor("delivery"));
+      "Ships work through automated checks and keeps coming back to it.", reasonsFor("delivery"), "delivery");
   if (rank("communication") >= 3)
     add(30 + (dim("communication")?.practices.length ?? 0), "clear_communicator", "Clear communicator",
-      "Leaves work that others can pick up: documented setup and readable history.", reasonsFor("communication"));
+      "Leaves work that others can pick up: documented setup and readable history.", reasonsFor("communication"), "communication");
   if (rank("applied_ai") >= 2)
     add(rank("applied_ai") * 10 + (dim("applied_ai")?.practices.length ?? 0) + (has("llm_validation") || has("ml_evaluation") ? 2 : 0), "applied_ai", "Applied AI builder",
-      "Builds with models and puts checks around them.", reasonsFor("applied_ai"));
+      "Builds with models and puts checks around them.", reasonsFor("applied_ai"), "applied_ai");
   if (rank("architecture") >= 3)
     add(30 + (dim("architecture")?.practices.length ?? 0), "structurer", "Systems structurer",
-      "Gives growing projects a clear structure: validated boundaries, contracts and modules.", reasonsFor("architecture"));
+      "Gives growing projects a clear structure: validated boundaries, contracts and modules.", reasonsFor("architecture"), "architecture");
   if (input.activity.length >= 5 && languages.size >= 3 && !dimensions.some((d) => d.level === "strong"))
     add(15, "explorer", "Broad explorer",
       "Tries many tools and languages across many projects, with depth still forming.",
@@ -434,11 +439,14 @@ function buildWorkingStyle(dimensions: Dimension[], practices: Practice[], input
     void _score;
     return style;
   }
-  if (practices.length < 3)
+  const projectsWithPractices = new Set(practices.flatMap((p) => p.repos.map(repoKey))).size;
+  if (practices.length < 3 || projectsWithPractices < 2)
     return {
       id: "early_record", label: "Early record",
       description: "There is not yet enough observable work to describe a working style.",
-      reasons: [`${practices.length} practice${practices.length === 1 ? "" : "s"} observed across all sources`],
+      reasons: [
+        `${practices.length} practice${practices.length === 1 ? "" : "s"} observed in ${projectsWithPractices} project${projectsWithPractices === 1 ? "" : "s"}`,
+      ],
       basis: "inference",
     };
   return {

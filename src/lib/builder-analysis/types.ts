@@ -1,4 +1,4 @@
-export const BUILDER_ANALYSIS_VERSION = "builder-analysis-v1";
+export const BUILDER_ANALYSIS_VERSION = "builder-analysis-v2";
 
 export const ANALYSIS_LIMITS = {
   /** Public repositories scanned per run (GitHub unauthenticated quota is 60 requests an hour). */
