@@ -128,14 +128,29 @@ function ActivityBars({ months }: { months: BuilderAnalysisReport["activityByMon
 }
 
 function Report({ report }: { report: BuilderAnalysisReport }) {
-  const refText = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const d of report.dimensions) map.set(`dimension:${d.id}`, d.label);
-    for (const s of report.strengths) map.set(s.id, s.title);
-    for (const p of report.patterns) map.set(p.id, p.title);
-    for (const g of report.growth) map.set(g.id, g.title);
+  const refs = useMemo(() => {
+    const map = new Map<string, { label: string; anchor: string }>();
+    for (const d of report.dimensions) {
+      const anchor = anchorFor(`dimension:${d.id}`);
+      map.set(`dimension:${d.id}`, { label: d.label, anchor });
+      for (const p of d.practices) for (const r of p.refs) if (!map.has(r.id)) map.set(r.id, { label: p.label, anchor });
+    }
+    for (const s of report.strengths) map.set(s.id, { label: s.title, anchor: anchorFor(s.id) });
+    for (const p of report.patterns) map.set(p.id, { label: p.title, anchor: anchorFor(p.id) });
+    for (const g of report.growth) {
+      map.set(g.id, { label: g.title, anchor: anchorFor(g.id) });
+      for (const r of g.refs) if (!map.has(r.id)) map.set(r.id, { label: g.title, anchor: anchorFor(g.id) });
+    }
     return map;
   }, [report]);
+  const citations = (ids: string[]) => {
+    const byLabel = new Map<string, { label: string; anchor: string }>();
+    for (const id of ids) {
+      const ref = refs.get(id);
+      if (ref && !byLabel.has(ref.label)) byLabel.set(ref.label, ref);
+    }
+    return [...byLabel.values()];
+  };
 
   return (
     <div className="space-y-12">
@@ -146,9 +161,9 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
           {report.narrative.paragraphs.map((p, i) => (
             <p key={i} className="text-[15px] leading-[1.65] text-[var(--text-secondary)]">
               {p.text}{" "}
-              {p.refs.map((id) => (
-                <a key={id} href={`#${anchorFor(id)}`} className="mr-1 inline-flex rounded-[4px] bg-[var(--surface-sunken,#F1F3F6)] px-1.5 py-[1px] align-[1px] text-[11px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
-                  {refText.get(id) ?? "evidence"}
+              {citations(p.refs).map((ref) => (
+                <a key={ref.label} href={`#${ref.anchor}`} className="mr-1 inline-flex rounded-[4px] bg-[var(--surface-sunken,#F1F3F6)] px-1.5 py-[1px] align-[1px] text-[11px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                  {ref.label}
                 </a>
               ))}
             </p>
