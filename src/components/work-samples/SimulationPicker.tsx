@@ -68,10 +68,19 @@ export function SimulationPicker({
   return (
     <div className="grid gap-5">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Job title" htmlFor="f-job-title" help="As it appears on your posting, for example Founding Engineer or Senior Backend Engineer.">
+        <Field
+          label="Job title"
+          htmlFor="f-job-title"
+          help={sim ? "As it appears on your posting, for example Founding Engineer or Senior Backend Engineer." : "Choose a primary track below first, then name the job as it appears on your posting."}
+        >
           <Input id="f-job-title" maxLength={120} value={sim?.jobTitle ?? ""} disabled={!sim} onChange={(e) => onChange({ jobTitle: e.target.value })} />
         </Field>
-        <Field label="Secondary capability" htmlFor="f-secondary" optional help="Something adjacent you also care about, for example API design or mobile client constraints.">
+        <Field
+          label="Secondary capability"
+          htmlFor="f-secondary"
+          optional
+          help={sim ? "Something adjacent you also care about, for example API design or mobile client constraints." : "Available once you choose a primary track."}
+        >
           <Input id="f-secondary" maxLength={200} value={sim?.secondaryCapability ?? ""} disabled={!sim} onChange={(e) => onChange({ secondaryCapability: e.target.value })} />
         </Field>
       </div>
