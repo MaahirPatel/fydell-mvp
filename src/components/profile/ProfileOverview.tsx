@@ -617,12 +617,12 @@ export default function ProfileOverview({
 
           {roles.length ? (
             <section aria-labelledby="roles-heading">
-              <SideTitle id="roles-heading">Roles the code supports</SideTitle>
+              <SideTitle id="roles-heading">Role areas with cited examples</SideTitle>
               <ul className="mt-3 space-y-2.5">
                 {roles.map((r) => (
                   <li key={r.family} className="flex items-center justify-between gap-3 text-[14px]">
                     <span className="text-[var(--text-primary)]">{ROLE_LABEL[r.family] ?? r.family}</span>
-                    <span className="text-[13px] text-[var(--text-tertiary)]">{r.status === "supported" ? "Fits well" : "Partly fits"}</span>
+                    <span className="text-[13px] text-[var(--text-tertiary)]">{r.status === "supported" ? "Examples cover it" : "Gaps remain"}</span>
                   </li>
                 ))}
               </ul>

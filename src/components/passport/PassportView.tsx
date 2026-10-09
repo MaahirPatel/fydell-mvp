@@ -303,7 +303,7 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
       {passport.roleSuggestions.length > 0 ? (
         <section aria-labelledby="roles-heading" className="pp-section">
           <h3 id="roles-heading" className="pp-title">
-            Roles this fits
+            Role areas with cited examples
           </h3>
           <ul className="pp-rows mt-4">
             {passport.roleSuggestions.map((role) => (
@@ -311,7 +311,7 @@ export default function PassportView({ passport, mode }: { passport: PassportDat
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-app-body font-semibold">{ROLE_LABEL[role.family] ?? role.family}</p>
                   <span className={`badge ${role.status === "supported" ? "badge-teal" : "badge-attention"}`}>
-                    {role.status === "supported" ? "Fits well" : "Partly fits"}
+                    {role.status === "supported" ? "Examples cover it" : "Gaps remain"}
                   </span>
                 </div>
                 <p className="mt-1.5 text-app-meta leading-[1.5] text-[var(--text-secondary)]">{role.requirement}</p>
