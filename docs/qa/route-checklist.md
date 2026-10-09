@@ -7,7 +7,7 @@ Verification key: **Verified** means rendered and exercised in a browser at 390,
 | Route | Purpose | Audience | Layout family | Components | Data source | Permission boundary | Primary action | Responsive behaviour | Verification |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | / | Explain Fydell and route visitors to sign up | Visitors | Marketing | MarketingShell, site Sections, ProductFrame | Static content and example fixtures | Public | Sign up / Create a workspace | Hero, sections and footer recompose at 390/768/1440; no overflow; no essential text below 13px | Verified (390, 768, 1440 after; 1280 before only) |
-| /products, /products/[slug] | Explain each product with an example view | Visitors | Marketing | MarketingShell, site Sections, ProductFrame | Static content and example fixtures | Public | Sign up or Create a role | No overflow at 390/768/1440; mockup text at 13px or larger | Partial: builder-reports, hiring-workspace, simulations rendered; headings not yet shortened |
+| /products, /products/[slug] | Explain each product with an example view | Visitors | Marketing | MarketingShell, site Sections, ProductFrame | Static content and example fixtures | Public | Sign up or Create a role | No overflow at 390/768/1440; mockup text at 13px or larger | Verified (1280): builder-reports and hiring-workspace lead with a short headline, one sentence, one labelled example view and three concrete features |
 | /developers | What engineers get | Visitors | Marketing | MarketingShell, site Sections, ProductFrame | Static content and example fixtures | Public | Sign up | No overflow at 390/768/1440 | Partial: rendered after token pass; section composition not yet revisited |
 | /employers | What hiring teams get | Visitors | Marketing | MarketingShell, site Sections, ProductFrame | Static content and example fixtures | Public | Create a workspace | No overflow at 390/768/1440 | Partial: rendered after token pass; section composition not yet revisited |
 | /candidates | What candidates experience in a simulation | Visitors | Marketing | MarketingShell, site Sections, ProductFrame | Static content and example fixtures | Public | Read more / Sign up | Not checked | Unverified: not rendered in this pass |
@@ -20,35 +20,35 @@ Verification key: **Verified** means rendered and exercised in a browser at 390,
 | /product, /how-it-works, /roles, /simulations, /evidence-report | Legacy URLs | Visitors | Marketing | MarketingShell, site Sections, ProductFrame | Static content and example fixtures | Public | Redirect to current page | Not checked | Unverified: not rendered in this pass |
 | /get-started, /pilot/* | Pilot intake flow | Visitors | Marketing | MarketingShell, site Sections, ProductFrame | Static content and example fixtures | Public | Submit pilot details | Not checked | Unverified: not rendered in this pass |
 | /login | Sign in | Visitors | Auth | AuthShell, Field, PasswordInput | Supabase Auth | Public; signed-in users are redirected | Sign in | No overflow at 390/768/1440; showcase is inert and out of the tab order | Verified (sign-in exercised by the walk accounts) |
-| /signup, /signup/role | Create an account and choose engineer or employer | Visitors | Auth | AuthShell, Field, PasswordInput | Supabase Auth | Public; signed-in users are redirected | Create account | No overflow at 390/768/1440 | Partial: rendered; no account created |
+| /signup, /signup/role | Create an account and choose engineer or employer | Visitors | Auth | AuthShell, Field, PasswordInput | Supabase Auth | Public; signed-in users are redirected | Create account | No overflow at 390/768/1440 | Verified (390, 1280): labelled fields, password reveal, sandbox entry routed through sign-up; no account created |
 | /forgot-password, /reset-password, /auth/update-password | Password recovery | Visitors | Auth | AuthShell, Field, PasswordInput | Supabase Auth | Public; signed-in users are redirected | Send link / Save password | No overflow at 390/768/1440 | Partial: /forgot-password rendered; reset flow not exercised |
 | /auth/confirmation-required, /auth/link-invalid | Email confirmation notices | Visitors | Auth | AuthShell, Field, PasswordInput | Supabase Auth | Public; signed-in users are redirected | Resend / Back to sign in | Not checked | Unverified: not rendered in this pass |
 | /onboarding/engineer | First project import and profile basics | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Import a project | Not checked | Unverified: not rendered in this pass |
 | /onboarding/employer | Create the workspace | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Create workspace | Not checked | Unverified: not rendered in this pass |
 | /account/setup-required, /account/workspace-invitations, /account-deleted | Account state notices | Anyone | System | RouteError, notices | None | Public | Accept invitation / Contact | Not checked | Unverified: not rendered in this pass |
 | /app, /dashboard, /app/candidates, /app/reports, /app/templates, /app/fde | Role-based redirects | Anyone | System | RouteError, notices | None | Public | Redirect | Not checked | Unverified: not rendered in this pass |
-| /app/candidate | Builder home: work, attention, invitations | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Open next action | Table switches to columns by its own width (container query); 768 overflow fixed | Verified (390, 768, 1280) |
-| /app/candidate/work-record | Projects and import | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Import a project | No overflow at 390/768/1280 | Verified (390, 768, 1280) |
+| /app/candidate | Builder home: work, attention, invitations | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Open next action | Table switches to columns by its own width (container query); 768 overflow fixed | Verified (390, 768, 1280): evaluations needing attention, then the three most recent projects with report status, links to all projects and the share preview |
+| /app/candidate/work-record | Projects and import | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Import a project | 1280 clean. 390 and 768 overflow from the uncommitted project-card redesign in WorkRecordProjects.tsx (routed) | Partial: repository picker search, no-match and selected count verified at 1280; revoked and expired links folded; work sample reports beyond two behind a disclosure |
 | /app/candidate/work-record/preview | Preview Passport as a recipient | Share recipient | Report/profile | PassportView, EvidenceSnapshotView | Share grant token | Valid unrevoked token | Back to edit | No overflow at 390/768/1280 | Verified (390, 768, 1280) |
 | /app/candidate/projects/[projectId] | Builder Report for one project | Engineer | Report/profile | CandidateShell, BuilderReport, CodeBlock | Passport snapshots and corrections | Signed-in owner | Open finding source / Add contribution | Reading column capped at 800px; source inspector beside from 1400px, drawer (Sheet) below with Escape and focus return | Verified (390, 768, 1280, 1440; drawer exercised at 390 and 1280) |
-| /app/candidate/profile | Edit profile | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Save | No overflow at 390/768/1280 | Verified (390, 768, 1280) |
+| /app/candidate/profile | Edit profile | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Save | No overflow at 390/768/1280 | Verified (390, 768, 1280); role areas described by cited-example coverage, not fit |
 | /app/candidate/passport | Passport sharing and links | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Share Passport | Redirects to work-record | Verified |
 | /app/candidate/applications, /app/candidate/applications/[id] | Applications and their status | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Open application / Respond | Grouped list no longer overflows at 768 | Partial: list verified; detail not rendered |
 | /app/candidate/reports | Released work-sample reports | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Open report | No overflow at 390/768/1280; citation chips at 13px | Verified (390, 768, 1280) |
 | /app/candidate/receipts, /app/candidate/receipts/[id] | Work receipts | Engineer | Report/profile | CandidateShell, BuilderReport, CodeBlock | Passport snapshots and corrections | Signed-in owner | Open receipt | Not checked | Unverified: not rendered in this pass |
-| /app/candidate/settings | Account, connections, delete | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Save | No overflow at 390/768/1280 | Partial: rendered; disconnect and delete not exercised |
+| /app/candidate/settings | Account, connections, delete | Engineer | Workspace | CandidateShell, Panel, Status | Supabase via src/lib/passport, profile, hiring | Signed-in engineer; own records only | Save | No overflow at 390/768/1280 | Verified (1280): grouped account, sharing, data and delete with consequences listed; delete not exercised |
 | /app/employer | Employer home: attention, roles, progress | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Open the item needing attention | No overflow at 390/1280 | Verified (390, 1280); queue heading states the real count |
 | /app/employer/roles, /app/employer/roles/[roleKey] | Roles list and role detail | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Create role / Open role | No overflow at 390/1280 | Partial: list rendered |
 | /app/employer/openings, /new, /[id], /[id]/edit | Openings people apply to | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Publish / Review applicants | Not checked | Unverified: not rendered in this pass |
 | /app/employer/openings/[id]/applications/[appId] | Review one applicant against the role's requirements | Employer member | Workspace (review) | ApplicationReview, PassportDecisionPanel, EvidenceSnapshotView | Applications, mappings, questions | Org member with review scope | Record decision | Requirement list 300px beside detail from 1024px; stacked with scroll-to-detail below | Verified (390, 768, 1280, 1440) |
-| /app/employer/candidates, /candidates/[sessionId] | Everyone across roles, assessments and simulations | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Open candidate | No overflow at 390/1280 | Partial: list rendered |
-| /app/employer/assessments, /assessments/report/[sessionId] | Work-sample invitations | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | New assessment | No overflow at 390/1280 | Partial: list rendered; 1280 New assessment squeeze still open |
+| /app/employer/candidates, /candidates/[sessionId] | Everyone across roles, assessments and simulations | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Open candidate | No page overflow at 390/768/1280; tables scroll inside their frame at 768 | Verified (390, 768, 1280): one search across applications, assessments and simulations, match and no-match states, counts per section |
+| /app/employer/assessments, /assessments/report/[sessionId] | Work-sample invitations | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | New assessment | No overflow at 390/1280 | Partial: list rendered; the earlier 1280 squeeze no longer reproduces |
 | /app/employer/engineering, /roles/[roleId], /attempts/[attemptId] | Engineering roles, attempts and attempt review | Employer member | Workspace (review) | ApplicationReview, PassportDecisionPanel, EvidenceSnapshotView | Applications, mappings, questions | Org member with review scope | Review submission | No overflow at 390/1280 | Partial: role and attempt rendered |
-| /app/employer/work-samples, /new, /drafts/[draftId] | Simulation creator | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Validate and publish | No overflow at 390/1280 | Partial: list rendered; creator not walked |
+| /app/employer/work-samples, /new, /drafts/[draftId] | Simulation creator | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Validate and publish | No overflow at 390/1280 | Partial: creator rendered at 390/1280; summary shows defaults before a track is chosen (routed) |
 | /app/simulations/new | Create a simulation | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Create | Redirects to assessments | Verified |
 | /app/employer/passports, /[id], /[id]/brief | Shared Passports and decision brief | Employer member | Workspace (review) | ApplicationReview, PassportDecisionPanel, EvidenceSnapshotView | Applications, mappings, questions | Org member with review scope | Record decision | Not checked | Unverified: not rendered in this pass |
-| /app/employer/team | Members and invitations | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Invite member | No overflow at 390/1280 | Partial: rendered |
-| /app/employer/settings | Workspace settings, plan and billing | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Save / Contact us | No overflow at 390/1280 | Partial: rendered, plan section included |
+| /app/employer/team | Members and invitations | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Invite member | No overflow at 390/1280 | Verified (1280): members, roles and add-member with consequences; no member added |
+| /app/employer/settings | Workspace settings, plan and billing | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Save / Contact us | No overflow at 390/1280 | Verified (1280): grouped sections, disabled Save until a change |
 | /app/employer/receipts, /reports, /proof, /proof/[runId], /proof/calibration | Receipts, reports, Solutions Engineer shortlist | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Open | Not checked | Unverified: not rendered in this pass |
 | /app/employer/workbench, /workbench/[scenarioId], /analysis | Scenario workbench (legacy engine) | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Open scenario | Not checked | Unverified: not rendered in this pass |
 | /app/employer/compare, /cohort, /outcomes, /evidence, /work | Secondary analysis views | Employer member | Workspace | Employer layout, WorkspacePageHeader, Table | Supabase via src/lib/hiring, eng, employer | Org member; capabilities from orgCan | Open | Not checked | Unverified: not rendered in this pass |
@@ -70,29 +70,40 @@ Verification key: **Verified** means rendered and exercised in a browser at 390,
 
 ## UI contract progress
 
-Captures live in `%TEMP%\fydell-audit\ui-contract\before\` (baseline, same accounts and data) and `...\after\`, grouped by public, engineer and employer, named `<route>-<width>.png`.
+Captures live in `%TEMP%\fydell-audit\ui-contract\before\` (baseline, same accounts and data) and `...\after\`, grouped by public, engineer and employer, named `<route>-<width>.png` (viewport crops add `-y<offset>`).
 
 | Contract section | State | Commits |
 | --- | --- | --- |
 | 1 Route inventory | This checklist | this file |
 | 2-4 Tokens, type scale, colour | Done: light palette mapped onto Fydell tokens with measured contrast, rem type steps, 3:1 control borders | 7d48592 |
 | 3 Nothing essential below 13px | Done across workspace, simulation, work samples, demo task and marketing mockups; 12px kept for line numbers and counts | 7d48592, 5300511 |
+| 8 Builder home | Done: what needs attention, recent projects with report status, share preview | 23399a6 |
+| 8 Profile and Passport | Done: role areas described by cited-example coverage, never "fits" | 30a93fb |
+| 9 Import | Repository search, selected count, no-match state; share links and work samples no longer bury the page | e24522a, eb407cb |
 | 10 Builder Report | Done: reading column, source inspector from 1400px, drawer below, limitations beside each finding | 7d48592 |
 | 11 Employer review | Done: requirement list beside evidence detail with distinct, explained states; never numbered criteria | d4a218c |
-| 15 Marketing headings | Homepage done (one short title, one supporting sentence); product pages pending | 5300511 |
-| Claims and commercial honesty | Done: no "verified" on inspected work; Starter and Team labelled not purchasable; import limits match the server | 8e00250 |
+| 11 Candidates | Done: one search across all sections, counts, no mid-value wrapping | 979d45b |
+| 14 Settings, team, auth | Inspected at 1280 (and 390 for auth): no changes needed | none |
+| 15 Marketing headings | Homepage and product pages: one short title, one supporting sentence | 5300511 |
+| Claims and commercial honesty | Done: no "verified" or "fits" on inspected work; Starter and Team labelled not purchasable; import limits match the server | 8e00250, 30a93fb |
+
+### Contrast (WCAG, measured from tokens)
+
+Primary text 16.19; secondary 6.42 (5.77 on panel, 6.04 on canvas); tertiary 5.65 (5.08 on panel); neutral badge 6.59; attention badge 6.84; risk on white 6.47; accent 6.29; CTA 18.74; control border 3.06; focus ring 5.92.
 
 ### Next steps
 
-1. Assessments at 1280: the New assessment form squeezes the list.
-2. Assessment invitation page review with a fresh dev invitation.
-3. Settings, billing, admin and auth visual pass.
-4. Product page headings and one-moment visuals.
-5. Control inventory crawl (docs/qa/control-inventory.md).
+1. Projects page at 390 and 768 once the project-card redesign in `WorkRecordProjects.tsx` lands (see routed).
+2. Simulation workbench save-state wording and panel collapse once `SimulationWorkspace.tsx` edits land.
+3. Creator summary before a track is chosen once `SimulationPicker.tsx` edits land.
+4. Assessment invitation page review with a fresh dev invitation.
 
 ### Routed to other owners
 
+- Owner of the uncommitted `WorkRecordProjects.tsx` and `work-record/page.tsx` edits: at 390 and 768 the project cards are 524px wide and the header action row is 441px, so content is cut off on the right. The contribution row and finding rows need `min-w-0` and wrapping.
+- Owner of the uncommitted `SimulationPicker.tsx` edits: the creator Summary lists Backend/API, Python and other defaults while the form says no track is chosen yet.
 - Agent A (`src/lib`): "verified server-side" in `src/lib/profile/store.ts` and `types.ts`; "verified findings" in `src/lib/passport/interpret.ts`; `maxRepositoriesPerImport` in `github/types.ts` is never enforced.
+- `src/lib/workspace/navigation.ts`: `/app/employer/assessments` is not in the nav, so its breadcrumb reads Overview.
 - Field `Input` does not wire `aria-describedby` to help and error text automatically.
 - Team plan simulation allowance is only enforceable once Stripe checkout is live.
 
@@ -100,3 +111,4 @@ Captures live in `%TEMP%\fydell-audit\ui-contract\before\` (baseline, same accou
 
 - Native desktop app: not run in this pass.
 - Admin routes: no admin credentials were available to this workstream.
+- Failed import and unavailable chat states: not reproducible without breaking shared data.
