@@ -1,6 +1,7 @@
 import { AdminPageHeader } from "@/components/admin/AdminUi";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import PilotFeedbackExplorer, { type PilotFeedbackRow } from "./PilotFeedbackExplorer";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 // Auth: the (ops) layout wraps every page in requirePlatformRole, so this
 // page is only reachable by signed-in platform admins.
@@ -23,6 +24,7 @@ async function loadRows(): Promise<{ rows: PilotFeedbackRow[]; loadError: string
 }
 
 export default async function AdminPilotFeedbackPage() {
+  await requireAdminPermission("commercial.view");
   const { rows, loadError } = await loadRows();
 
   return (

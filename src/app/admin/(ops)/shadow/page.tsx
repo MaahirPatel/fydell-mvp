@@ -4,6 +4,7 @@ import {
   AdminPanel,
 } from "@/components/admin/AdminUi";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ type RevealRow = {
  * BEFORE Fydell's report was revealed.
  */
 export default async function AdminShadowAuditPage() {
+  await requireAdminPermission("reports.review");
   let locks: LockRow[] = [];
   let reveals: RevealRow[] = [];
   let orgNames: Record<string, string> = {};

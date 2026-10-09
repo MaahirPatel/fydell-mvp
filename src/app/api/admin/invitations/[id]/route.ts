@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { readJsonObject } from "@/lib/security/request-body";
-import { requirePlatformRoleApi } from "@/lib/ops/require-platform-role";
+import { requireAdminPermissionApi } from "@/lib/ops/require-platform-role";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { writeAudit } from "@/lib/ops/platform-roles";
 import { enqueueEmail } from "@/lib/ops/email-outbox";
@@ -13,7 +13,7 @@ export async function POST(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const auth = await requirePlatformRoleApi(["super_admin", "admin", "operator", "support"]);
+  const auth = await requireAdminPermissionApi("invitations.manage");
   if ("error" in auth) return auth.error;
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ error: "Supabase required" }, { status: 503 });
@@ -103,9 +103,7 @@ export async function POST(
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Action failed" },
-      { status: 500 }
-    );
+    console.error("[admin/invitations]", action, err);
+    return NextResponse.json({ error: "The action did not complete. Reload the invitation before retrying." }, { status: 500 });
   }
 }

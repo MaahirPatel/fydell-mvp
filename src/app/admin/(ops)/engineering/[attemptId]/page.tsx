@@ -10,17 +10,20 @@ import { engAdmin } from "@/lib/eng/context";
 import { isUuid } from "@/lib/eng/http";
 import { reviewerAttemptView } from "@/lib/eng/reviewer-view";
 import { scenarioForVersionId } from "@/lib/eng/scenario-versions";
-import { requirePlatformRole } from "@/lib/ops/require-platform-role";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
+import { activeCodeAccess } from "@/lib/ops/admin-cases";
+import CasesConsole from "@/components/admin/CasesConsole";
 import type { AttemptRow } from "@/lib/eng/types";
 
 export const metadata = { title: "Review engineering attempt" };
 export const dynamic = "force-dynamic";
 
 export default async function ReviewAttemptPage({ params }: { params: Promise<{ attemptId: string }> }) {
-  const reviewer = await requirePlatformRole(["super_admin", "admin", "reviewer"]);
+  const reviewer = await requireAdminPermission("reports.review");
   const { attemptId } = await params;
   if (!isUuid(attemptId)) notFound();
   const db = engAdmin();
+  const codeAccess = await activeCodeAccess(db, reviewer, attemptId);
   const { data } = await db.from("eng_attempts").select("*").eq("id", attemptId).maybeSingle();
   if (!data) notFound();
   const attempt = data as AttemptRow;
@@ -49,6 +52,34 @@ export default async function ReviewAttemptPage({ params }: { params: Promise<{ 
           </>
         }
       />
+
+      <Panel className="mt-6">
+        <PanelSection
+          title="Code access"
+          description={
+            codeAccess
+              ? `Open until ${new Date(codeAccess.expiresAt).toUTCString()}. Every file you open is recorded. Reason: ${codeAccess.justification}`
+              : "The candidate's files stay closed until you give a reason. Access covers this attempt only, expires, and every file you open is recorded."
+          }
+        >
+          {codeAccess ? null : (
+            <CasesConsole
+              forms={[
+                {
+                  action: "code_access.grant",
+                  title: "Open code access",
+                  description: "Up to 60 minutes.",
+                  fields: [
+                    { name: "attemptId", label: "Attempt id", defaultValue: attempt.id },
+                    { name: "minutes", label: "Minutes (5–60)", defaultValue: "30" },
+                    { name: "justification", label: "Why you need the code", multiline: true },
+                  ],
+                },
+              ]}
+            />
+          )}
+        </PanelSection>
+      </Panel>
 
       {view.flags.filter((f) => !f.resolvedAt).length ? (
         <Panel className="mt-6">

@@ -3,6 +3,7 @@
  * Run via `npm run test:unit`.
  */
 import {
+  safeAdminNext,
   safeNext,
   safeNextOr,
   isCandidateDestination,
@@ -119,6 +120,18 @@ check(
   withNext("/login?reset=1", "/app/employer"),
   "/login?reset=1&next=%2Fapp%2Femployer",
 );
+
+console.log("\nadmin deep links (operators only)");
+check("admin page", safeAdminNext("/admin/operations?tab=stuck"), "/admin/operations?tab=stuck");
+check("not root-relative before decoding", safeAdminNext("%2Fadmin%2Fusers"), null);
+check("bare admin word", safeAdminNext("admin"), null);
+check("non-admin path", safeAdminNext("/app/employer"), null);
+check("admin prefix lookalike", safeAdminNext("/administrator"), null);
+check("dot segments", safeAdminNext("/admin/../app"), null);
+check("protocol-relative", safeAdminNext("//evil.com/admin/x"), null);
+check("scheme", safeAdminNext("https://evil.com/admin/x"), null);
+check("backslash", safeAdminNext("/admin\\..\\evil"), null);
+check("general validator still rejects admin", safeNext("/admin/overview"), null);
 
 if (failures > 0) {
   console.error(`\n${failures} safe-next check(s) failed.`);

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getPilotRequest } from "@/lib/ops/pilot-requests";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import PilotRequestActions from "@/components/admin/PilotRequestActions";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ export default async function AdminPilotRequestDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireAdminPermission("commercial.view");
   const { id } = await params;
   const row = await getPilotRequest(id);
   if (!row) notFound();

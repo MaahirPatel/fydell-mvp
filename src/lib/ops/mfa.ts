@@ -6,18 +6,17 @@ export function isMfaEnforcementEnabled(): boolean {
 }
 
 /**
- * Transitional admin sessions use a signed cookie (env credentials), not Supabase AAL2.
- * When ADMIN_MFA_REQUIRED=true, sensitive mutations must be blocked until admins
- * authenticate via Supabase Auth with TOTP (AAL2) - track via ctx.mfaVerified.
+ * When ADMIN_MFA_REQUIRED=true, sensitive mutations need a Supabase session at
+ * AAL2. The transitional env-credential cookie can never satisfy this.
  */
 export function requireAal2ForSensitiveAction(
-  ctx: PlatformAdminContext & { mfaVerified?: boolean }
+  ctx: PlatformAdminContext
 ): { ok: true } | { ok: false; error: string } {
   if (!isMfaEnforcementEnabled()) return { ok: true };
   if (ctx.mfaVerified) return { ok: true };
   return {
     ok: false,
     error:
-      "MFA (AAL2) is required for this action. Enroll TOTP for admin@fydell.com and sign in with Supabase Auth MFA before retrying.",
+      "Multi-factor verification is required for this action. Sign in with your Fydell account and complete the authenticator check, then retry.",
   };
 }

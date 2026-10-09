@@ -6,10 +6,12 @@ import { getVersionContent } from "@/lib/simulations/db";
 import { isMicroContent } from "@/lib/simulations/micro-types";
 import { EngineeringResults } from "@/components/sim/EngineeringResults";
 import ReportReviewActions from "./ReportReviewActions";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReportReviewDetail({ params }: { params: Promise<{ sessionId: string }> }) {
+  await requireAdminPermission("reports.review");
   const { sessionId } = await params;
   const admin = createAdminSupabaseClient();
   const { data: session } = await admin

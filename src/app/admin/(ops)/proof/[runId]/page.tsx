@@ -1,10 +1,12 @@
 import { proofAdmin } from "@/lib/sim-engine/proof/db";
 import { notFound } from "next/navigation";
 import AdminReviewClient from "./AdminReviewClient";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminProofRun({ params }: { params: Promise<{ runId: string }> }) {
+  await requireAdminPermission("reports.review");
   const { runId } = await params;
   const admin = proofAdmin();
   const { data: run } = await admin.from("proof_runs").select("*").eq("id", runId).maybeSingle();

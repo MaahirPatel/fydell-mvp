@@ -1,39 +1,32 @@
-"use client";
+import RepairConsole, { type RepairActionOption } from "@/components/admin/RepairConsole";
+import { hasPermission, type AdminPermission } from "@/lib/ops/admin-permissions";
+import { requirePlatformRole } from "@/lib/ops/require-platform-role";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/Button";
+export const dynamic = "force-dynamic";
 
-const ACTIONS = [
-  { id: "approve_organization", label: "Approve organization", fields: ["organizationId"] },
-  { id: "connect_user_to_org", label: "Connect user to org", fields: ["userId", "organizationId"] },
-  { id: "extend_invitation", label: "Extend invitation", fields: ["invitationId", "days"] },
-  { id: "revoke_invitation", label: "Revoke invitation", fields: ["invitationId"] },
-  { id: "cancel_session", label: "Cancel unsubmitted session", fields: ["sessionId", "reason"] },
-  { id: "retry_email", label: "Retry failed email", fields: ["outboxId"] },
-  { id: "requeue_report", label: "Requeue report review", fields: ["reportId"] },
-  { id: "explain_setup_required", label: "Explain setup-required routing", fields: ["userId"] },
+const ACTIONS: readonly (RepairActionOption & { permission: AdminPermission })[] = [
+  { id: "approve_organization", label: "Approve organization", fields: ["organizationId"], permission: "commercial.edit" },
+  {
+    id: "connect_user_to_org",
+    label: "Connect user to org",
+    fields: ["userId", "organizationId", "role", "reason"],
+    permission: "accounts.membership",
+  },
+  { id: "extend_invitation", label: "Extend invitation", fields: ["invitationId", "days"], permission: "invitations.manage" },
+  { id: "revoke_invitation", label: "Revoke invitation", fields: ["invitationId"], permission: "invitations.manage" },
+  { id: "cancel_session", label: "Cancel unsubmitted session", fields: ["sessionId", "reason"], permission: "ops.act" },
+  { id: "retry_email", label: "Retry failed email", fields: ["outboxId"], permission: "ops.act" },
+  { id: "requeue_report", label: "Requeue report review", fields: ["reportId"], permission: "reports.review" },
+  { id: "explain_setup_required", label: "Explain setup-required routing", fields: ["userId"], permission: "accounts.view" },
 ];
 
-export default function AdminRepairPage() {
-  const [action, setAction] = useState(ACTIONS[0].id);
-  const [fields, setFields] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
-
-  async function run() {
-    setError(null);
-    setResult("");
-    const res = await fetch("/api/admin/repair", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, ...fields }),
-    });
-    const data = await res.json();
-    if (!res.ok) setError(data.error || "Failed");
-    else setResult(JSON.stringify(data, null, 2));
-  }
-
-  const meta = ACTIONS.find((a) => a.id === action)!;
+export default async function AdminRepairPage() {
+  const admin = await requirePlatformRole(["super_admin", "admin", "operator", "support", "reviewer"]);
+  const actions = ACTIONS.filter((a) => hasPermission(admin.roles, a.permission)).map(({ id, label, fields }) => ({
+    id,
+    label,
+    fields,
+  }));
 
   return (
     <div>
@@ -41,43 +34,10 @@ export default function AdminRepairPage() {
         Repair console
       </h1>
       <p className="mt-2 text-app-body text-[var(--text-secondary)]">
-        Audited recovery tools for pilot edge cases. Never assigns passwords.
+        Audited recovery tools for pilot edge cases. Each action records who ran it, the state before and after, and
+        why. Never assigns passwords and never edits submitted evidence.
       </p>
-      <div className="mt-8 max-w-xl space-y-3">
-        <select
-          className="platform-input"
-          value={action}
-          onChange={(e) => {
-            setAction(e.target.value);
-            setFields({});
-          }}
-        >
-          {ACTIONS.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.label}
-            </option>
-          ))}
-        </select>
-        {meta.fields.map((f) => (
-          <label key={f} className="block text-app-meta font-medium text-[var(--text-primary)]">
-            {f.replace(/([A-Z])/g, " $1").replace(/^./, (value) => value.toUpperCase())}
-            <input
-              className="platform-input mt-1.5"
-              value={fields[f] || ""}
-              onChange={(e) => setFields((prev) => ({ ...prev, [f]: e.target.value }))}
-            />
-          </label>
-        ))}
-        <Button type="button" variant="primary" size="cta" onClick={run}>
-          Run repair
-        </Button>
-        {error ? <p className="text-app-meta text-[var(--fydell-risk)]">{error}</p> : null}
-        {result ? (
-          <pre className="overflow-auto rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-band)] p-3 text-app-caption text-[var(--text-secondary)]">
-            {result}
-          </pre>
-        ) : null}
-      </div>
+      <RepairConsole actions={actions} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { createCompanySession } from "@/lib/auth";
 import {
   isCandidateDestination,
   isEmployerDestination,
+  safeAdminNext,
   safeNext,
   withNext,
 } from "@/lib/auth/safe-next";
@@ -37,7 +38,9 @@ export async function GET(req: Request) {
   // Operators are always routed by the server. Otherwise an invited candidate
   // returns to their evaluation, and an employer returns to where they left.
   let target = dest.path;
-  if (next && dest.kind !== "admin") {
+  if (dest.kind === "admin") {
+    target = safeAdminNext(rawNext) ?? dest.path;
+  } else if (next) {
     if (isCandidateDestination(next) || isEmployerDestination(next)) {
       target = next;
     } else if (dest.path === "/app/employer") {

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { hasEngineeringEvaluation } from "@/lib/engineering/descriptor";
 import { scenarioIdForTemplateSlug } from "@/lib/simulations/scenario-package";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 /** Engineering reports waiting for (or past) human QA before employer release (AI-12). */
 export default async function ReportReviewQueue() {
+  await requireAdminPermission("reports.review");
   const admin = createAdminSupabaseClient();
   const { data } = await admin
     .from("sim_sessions")

@@ -5,36 +5,42 @@ import { usePathname } from "next/navigation";
 import FydellBrand from "@/components/brand/FydellBrand";
 import LogoutButton from "@/components/admin/LogoutButton";
 import type { PlatformAdminContext } from "@/lib/ops/platform-roles";
+import { hasPermission, type AdminPermission } from "@/lib/ops/admin-permissions";
 
-const NAV_GROUPS = [
+type NavItem = { href: string; label: string; permission: AdminPermission | null };
+
+const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "Ops",
     items: [
-      { href: "/admin/overview", label: "Overview" },
-      { href: "/admin/pilot-requests", label: "Pilot requests" },
-      { href: "/admin/organizations", label: "Organizations" },
-      { href: "/admin/users", label: "Users" },
-      { href: "/admin/invitations", label: "Invitations" },
-      { href: "/admin/data-requests", label: "Data requests" },
-      { href: "/admin/repair", label: "Repair console" },
+      { href: "/admin/overview", label: "Overview", permission: null },
+      { href: "/admin/activity", label: "Activity", permission: "ops.view" },
+      { href: "/admin/operations", label: "Stuck work", permission: "ops.view" },
+      { href: "/admin/cases", label: "Cases", permission: "ops.view" },
+      { href: "/admin/pilot-requests", label: "Pilot requests", permission: "commercial.view" },
+      { href: "/admin/organizations", label: "Organizations", permission: "accounts.view" },
+      { href: "/admin/users", label: "Users", permission: "accounts.view" },
+      { href: "/admin/invitations", label: "Invitations", permission: "invitations.manage" },
+      { href: "/admin/data-requests", label: "Data requests", permission: "data_requests.handle" },
+      { href: "/admin/repair", label: "Repair console", permission: null },
     ],
   },
   {
     label: "Delivery",
     items: [
-      { href: "/admin/email", label: "Email center" },
-      { href: "/admin/audit", label: "Audit log" },
-      { href: "/admin/shadow", label: "Shadow-pilot audit" },
-      { href: "/admin/proof", label: "Proof review" },
-      { href: "/admin/engineering", label: "Engineering review" },
-      { href: "/admin/reviews", label: "Report reviews" },
+      { href: "/admin/email", label: "Email center", permission: "notifications.view" },
+      { href: "/admin/audit", label: "Audit log", permission: "audit.view" },
+      { href: "/admin/shadow", label: "Shadow-pilot audit", permission: "reports.review" },
+      { href: "/admin/proof", label: "Proof review", permission: "reports.review" },
+      { href: "/admin/engineering", label: "Engineering review", permission: "reports.review" },
+      { href: "/admin/reviews", label: "Report reviews", permission: "reports.review" },
     ],
   },
   {
     label: "Account",
     items: [
-      { href: "/admin/settings", label: "Settings" },
-      { href: "/admin/settings/security", label: "Security" },
+      { href: "/admin/settings", label: "Settings", permission: "settings.manage" },
+      { href: "/admin/settings/security", label: "Security", permission: null },
     ],
   },
 ];
@@ -47,7 +53,11 @@ export default function AdminShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const role = (admin.roles[0] || "admin").replaceAll("_", " ");
+  const role = admin.roles.map((r) => r.replaceAll("_", " ")).join(", ") || "admin";
+  const groups = NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => item.permission === null || hasPermission(admin.roles, item.permission)),
+  })).filter((group) => group.items.length > 0);
 
   return (
     <div className="min-h-screen bg-[var(--surface-canvas)] text-[var(--text-primary)]">
@@ -58,7 +68,7 @@ export default function AdminShell({
           </div>
 
           <nav className="mt-8 flex flex-1 flex-col gap-6 overflow-y-auto pb-4">
-            {NAV_GROUPS.map((group) => (
+            {groups.map((group) => (
               <div key={group.label}>
                 <p className="mb-2 px-3 text-app-meta font-medium text-[var(--text-tertiary)]">
                   {group.label}

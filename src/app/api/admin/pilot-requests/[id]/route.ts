@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { readJsonObject } from "@/lib/security/request-body";
-import { requirePlatformRoleApi } from "@/lib/ops/require-platform-role";
+import { requireAdminPermissionApi } from "@/lib/ops/require-platform-role";
 import { updatePilotRequestStatus } from "@/lib/ops/pilot-requests";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { processEmailOutbox } from "@/lib/ops/process-outbox";
@@ -13,17 +13,13 @@ export async function POST(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const auth = await requirePlatformRoleApi([
-    "super_admin",
-    "admin",
-    "operator",
-    "support",
-  ]);
+  const body = await readJsonObject(req);
+  const action = String(body.action || "");
+  // Approval provisions an organization; notes and status are support work.
+  const auth = await requireAdminPermissionApi(action === "approve" ? "commercial.edit" : "commercial.view");
   if ("error" in auth) return auth.error;
 
   const { id } = await context.params;
-  const body = await readJsonObject(req);
-  const action = String(body.action || "");
 
   try {
     if (action === "status") {
@@ -84,9 +80,7 @@ export async function POST(
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Action failed" },
-      { status: 500 }
-    );
+    console.error("[admin/pilot-requests]", action, err);
+    return NextResponse.json({ error: "The action did not complete. Reload the request before retrying." }, { status: 500 });
   }
 }

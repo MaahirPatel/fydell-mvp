@@ -8,7 +8,10 @@ export type PlatformAdminContext = {
   email: string;
   userId: string | null;
   roles: PlatformRole[];
-  source: "platform_role" | "bootstrap_env";
+  /** env_cookie: transitional env-credential login; supabase_session: a normal account with platform roles. */
+  source: "supabase_session" | "env_cookie";
+  /** True only for a Supabase session at AAL2 (TOTP verified). */
+  mfaVerified: boolean;
 };
 
 const OPS_ROLES: PlatformRole[] = ["super_admin", "admin", "operator", "reviewer", "support"];
@@ -35,31 +38,55 @@ export function hashIp(ip: string | null | undefined): string | null {
   return createHash("sha256").update(`${salt}:${ip}`).digest("hex").slice(0, 32);
 }
 
-export async function listActiveRolesForEmail(email: string): Promise<PlatformRole[]> {
-  if (!isSupabaseConfigured()) return [];
+const LIST_USERS_PAGE = 1000;
+const LIST_USERS_MAX_PAGES = 50;
+
+/** Resolve an auth user id by email without the first-page cap of listUsers. */
+export async function findAuthUserIdByEmail(email: string): Promise<string | null> {
+  if (!isSupabaseConfigured()) return null;
   const admin = getSupabaseAdmin();
   const normalized = email.trim().toLowerCase();
+  if (!normalized) return null;
 
-  const { data: usersData, error: usersError } = await admin.auth.admin.listUsers({
-    page: 1,
-    perPage: 200,
-  });
-  if (usersError) throw usersError;
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("id")
+    .ilike("email", normalized)
+    .limit(1)
+    .maybeSingle();
+  if (profile?.id) {
+    const { data: byId } = await admin.auth.admin.getUserById(profile.id as string);
+    if ((byId?.user?.email || "").toLowerCase() === normalized) return byId.user.id;
+  }
 
-  const users = (usersData?.users || []) as Array<{ id: string; email?: string | null }>;
-  const user = users.find((u) => (u.email || "").toLowerCase() === normalized);
-  if (!user) return [];
+  for (let page = 1; page <= LIST_USERS_MAX_PAGES; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: LIST_USERS_PAGE });
+    if (error) throw error;
+    const users = (data?.users || []) as Array<{ id: string; email?: string | null }>;
+    const match = users.find((u) => (u.email || "").toLowerCase() === normalized);
+    if (match) return match.id;
+    if (users.length < LIST_USERS_PAGE) break;
+  }
+  return null;
+}
 
-  const { data, error } = await admin
+export async function listActiveRolesForUserId(userId: string): Promise<PlatformRole[]> {
+  if (!isSupabaseConfigured()) return [];
+  const { data, error } = await getSupabaseAdmin()
     .from("platform_user_roles")
     .select("role")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .eq("is_active", true);
-
   if (error) throw error;
   return (data || [])
     .map((row) => row.role as PlatformRole)
     .filter((role) => OPS_ROLES.includes(role));
+}
+
+export async function listActiveRolesForEmail(email: string): Promise<PlatformRole[]> {
+  const userId = await findAuthUserIdByEmail(email);
+  if (!userId) return [];
+  return listActiveRolesForUserId(userId);
 }
 
 export async function ensureBootstrapRole(email: string): Promise<PlatformRole[]> {
@@ -76,9 +103,10 @@ export async function ensureBootstrapRole(email: string): Promise<PlatformRole[]
   if (existing.length > 0) return existing;
 
   const admin = getSupabaseAdmin();
-  const { data: listed } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
-  const listedUsers = (listed?.users || []) as Array<{ id: string; email?: string | null }>;
-  let user = listedUsers.find((u) => (u.email || "").toLowerCase() === normalized);
+  const existingId = await findAuthUserIdByEmail(normalized);
+  let user: { id: string; email?: string | null } | undefined = existingId
+    ? { id: existingId, email: normalized }
+    : undefined;
 
   if (!user) {
     const created = await admin.auth.admin.createUser({

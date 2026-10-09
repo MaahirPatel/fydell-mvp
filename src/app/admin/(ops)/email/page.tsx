@@ -1,5 +1,6 @@
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { processEmailOutbox } from "@/lib/ops/process-outbox";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +9,7 @@ export default async function AdminEmailCenterPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
+  await requireAdminPermission("notifications.view");
   const { tab = "outbox" } = await searchParams;
   const statusFilter =
     tab === "sent"

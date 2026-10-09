@@ -20,8 +20,10 @@ export default function SignOutButton({
   async function signOut() {
     setLoading(true);
     try {
-      const supabase = createBrowserSupabaseClient();
-      await supabase.auth.signOut();
+      // The server clears the Supabase session cookies plus the company and
+      // admin cookies; the client sign-out drops any in-memory session.
+      await fetch("/api/platform/logout", { method: "POST" }).catch(() => undefined);
+      await createBrowserSupabaseClient().auth.signOut().catch(() => undefined);
     } finally {
       router.push("/login");
       router.refresh();

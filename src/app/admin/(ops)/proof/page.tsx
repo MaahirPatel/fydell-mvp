@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { proofAdmin } from "@/lib/sim-engine/proof/db";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminProofList() {
+  await requireAdminPermission("reports.review");
   const admin = proofAdmin();
   const { data: runs } = await admin
     .from("proof_runs")

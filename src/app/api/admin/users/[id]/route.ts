@@ -1,35 +1,49 @@
 import { NextResponse } from "next/server";
 import { readJsonObject } from "@/lib/security/request-body";
-import { requirePlatformRoleApi } from "@/lib/ops/require-platform-role";
+import { requireAdminPermissionApi, requirePlatformRoleApi } from "@/lib/ops/require-platform-role";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
-import { writeAudit, type PlatformRole } from "@/lib/ops/platform-roles";
+import { listActiveRolesForUserId, writeAudit, type PlatformRole } from "@/lib/ops/platform-roles";
+import { ADMIN_SHELL_ROLES, hasPermission, type AdminPermission } from "@/lib/ops/admin-permissions";
 import { requireAal2ForSensitiveAction } from "@/lib/ops/mfa";
 import { appUrl } from "@/lib/app-url";
 
 export const runtime = "nodejs";
 
 const ROLES: PlatformRole[] = ["super_admin", "admin", "operator", "reviewer", "support"];
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Supabase Auth has no permanent ban; a century is effectively one, and "none" lifts it. */
+const SUSPEND_BAN_DURATION = "876000h";
 
-export async function POST(
-  req: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  const auth = await requirePlatformRoleApi(["super_admin", "admin", "support"]);
+const ACTION_PERMISSION: Record<string, AdminPermission> = {
+  "send-reset": "accounts.support",
+  suspend: "accounts.suspend",
+  reactivate: "accounts.suspend",
+  "grant-role": "roles.manage",
+  "revoke-role": "roles.manage",
+};
+
+function fail(error: string, status: number) {
+  return NextResponse.json({ error }, { status });
+}
+
+export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
+  const shell = await requirePlatformRoleApi(ADMIN_SHELL_ROLES);
+  if ("error" in shell) return shell.error;
+  const body = await readJsonObject(req);
+  const action = typeof body.action === "string" ? body.action : "";
+  const permission = ACTION_PERMISSION[action];
+  if (!permission) return fail("Unknown action", 400);
+  const auth = await requireAdminPermissionApi(permission);
   if ("error" in auth) return auth.error;
-  if (!isSupabaseConfigured()) {
-    return NextResponse.json({ error: "Supabase required" }, { status: 503 });
-  }
+  if (!isSupabaseConfigured()) return fail("Supabase required", 503);
 
   const { id } = await context.params;
-  const body = await readJsonObject(req);
-  const action = String(body.action || "");
+  if (!UUID.test(id)) return fail("User not found", 404);
   const admin = getSupabaseAdmin();
-
   const { data: userData, error: userError } = await admin.auth.admin.getUserById(id);
-  if (userError || !userData.user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
+  if (userError || !userData.user) return fail("User not found", 404);
   const targetEmail = userData.user.email || "";
+  const isSelf = auth.userId === id || auth.email.toLowerCase() === targetEmail.toLowerCase();
 
   try {
     if (action === "send-reset") {
@@ -40,90 +54,88 @@ export async function POST(
       if (error) throw error;
       await writeAudit({
         actorEmail: auth.email,
+        actorUserId: auth.userId,
         action: "password_reset_sent",
         entityType: "user",
         entityId: id,
-        after: { email: targetEmail },
       });
       return NextResponse.json({ ok: true, message: "Reset email requested" });
     }
 
     if (action === "suspend" || action === "reactivate") {
-      const status = action === "suspend" ? "suspended" : "active";
-      await admin.from("profiles").upsert({
-        id,
-        email: targetEmail,
-        account_status: status,
+      const suspend = action === "suspend";
+      if (suspend && isSelf) return fail("You cannot suspend your own account.", 409);
+      const targetRoles = await listActiveRolesForUserId(id);
+      if (targetRoles.length > 0 && !hasPermission(auth.roles, "roles.manage")) {
+        return fail("Only a super admin can suspend or reactivate a platform admin.", 403);
+      }
+      const { data: before } = await admin.from("profiles").select("account_status").eq("id", id).maybeSingle();
+      // The ban stops sign-in and token refresh; requireUser also rejects a
+      // banned user's still-valid access token, so suspension is immediate.
+      const { error: banError } = await admin.auth.admin.updateUserById(id, {
+        ban_duration: suspend ? SUSPEND_BAN_DURATION : "none",
       });
+      if (banError) throw banError;
+      const status = suspend ? "suspended" : "active";
+      const { error: profileError } = await admin.from("profiles").update({ account_status: status }).eq("id", id);
+      if (profileError) throw profileError;
       await writeAudit({
         actorEmail: auth.email,
-        action: action === "suspend" ? "user_suspended" : "user_reactivated",
+        actorUserId: auth.userId,
+        action: suspend ? "user_suspended" : "user_reactivated",
         entityType: "user",
         entityId: id,
-        after: { account_status: status },
+        before: { account_status: (before?.account_status as string | undefined) ?? null },
+        after: { account_status: status, auth_banned: suspend },
       });
       return NextResponse.json({ ok: true, message: `User ${status}` });
     }
 
-    if (action === "grant-role" || action === "revoke-role") {
-      if (!auth.roles.includes("super_admin")) {
-        return NextResponse.json(
-          { error: "Only super_admin can change platform roles." },
-          { status: 403 }
-        );
-      }
-      const mfa = requireAal2ForSensitiveAction(auth);
-      if (mfa.ok === false && process.env.ADMIN_MFA_REQUIRED === "true") {
-        return NextResponse.json({ error: mfa.error }, { status: 403 });
-      }
+    const mfa = requireAal2ForSensitiveAction(auth);
+    if (mfa.ok === false) return fail(mfa.error, 403);
+    const role = typeof body.role === "string" ? (body.role as PlatformRole) : null;
+    if (!role || !ROLES.includes(role)) return fail("Invalid role", 400);
+    if (action === "revoke-role" && isSelf && role === "super_admin") {
+      return fail("Ask another super admin to remove your super admin role.", 409);
+    }
 
-      const role = String(body.role || "") as PlatformRole;
-      if (!ROLES.includes(role)) {
-        return NextResponse.json({ error: "Invalid role" }, { status: 400 });
-      }
-
-      if (action === "grant-role") {
-        const { error } = await admin.from("platform_user_roles").insert({
-          user_id: id,
-          role,
-          is_active: true,
-        });
-        if (error && !error.message.toLowerCase().includes("duplicate")) throw error;
+    if (action === "grant-role") {
+      const { error } = await admin.from("platform_user_roles").insert({ user_id: id, role, is_active: true });
+      if (error && error.code !== "23505") throw error;
+      if (!error) {
         await writeAudit({
           actorEmail: auth.email,
+          actorUserId: auth.userId,
           action: "platform_role_granted",
           entityType: "platform_user_roles",
           entityId: id,
           after: { role },
         });
-        return NextResponse.json({ ok: true, message: `Granted ${role}` });
       }
+      return NextResponse.json({ ok: true, message: error ? `${role} was already active` : `Granted ${role}` });
+    }
 
-      const { error } = await admin
-        .from("platform_user_roles")
-        .update({
-          is_active: false,
-          revoked_at: new Date().toISOString(),
-        })
-        .eq("user_id", id)
-        .eq("role", role)
-        .eq("is_active", true);
-      if (error) throw error;
+    const { data: revoked, error } = await admin
+      .from("platform_user_roles")
+      .update({ is_active: false, revoked_at: new Date().toISOString() })
+      .eq("user_id", id)
+      .eq("role", role)
+      .eq("is_active", true)
+      .select("id");
+    if (error) throw error;
+    if ((revoked ?? []).length > 0) {
       await writeAudit({
         actorEmail: auth.email,
+        actorUserId: auth.userId,
         action: "platform_role_revoked",
         entityType: "platform_user_roles",
         entityId: id,
-        after: { role },
+        before: { role },
       });
-      return NextResponse.json({ ok: true, message: `Revoked ${role}` });
     }
-
-    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+    return NextResponse.json({ ok: true, message: (revoked ?? []).length > 0 ? `Revoked ${role}` : `${role} was not active` });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Action failed" },
-      { status: 500 }
-    );
+    console.error("[admin/users]", action, err);
+    return fail("The action did not complete. Check the account's current state before retrying.", 500);
   }
 }

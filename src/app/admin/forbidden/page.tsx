@@ -12,7 +12,7 @@ export default function AdminForbiddenPage() {
           Contact a Fydell super administrator.
         </p>
         <Link
-          href="/login?next=admin"
+          href="/login?next=%2Fadmin%2Foverview"
           className="mt-6 inline-flex h-9 items-center rounded-[8px] bg-[var(--control-solid)] px-4 text-app-meta text-[var(--control-solid-ink)]"
           style={{ fontWeight: 500 }}
         >

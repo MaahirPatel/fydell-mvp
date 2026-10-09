@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getAdminSession } from "@/lib/auth";
+import { resolveAdminIdentity } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
  * or into the ops overview when already authenticated.
  */
 export default async function AdminEntryPage() {
-  const session = await getAdminSession();
-  if (session) redirect("/admin/overview");
-  redirect("/login?next=admin");
+  const admin = await resolveAdminIdentity();
+  if (admin) redirect("/admin/overview");
+  redirect(`/login?next=${encodeURIComponent("/admin/overview")}`);
 }

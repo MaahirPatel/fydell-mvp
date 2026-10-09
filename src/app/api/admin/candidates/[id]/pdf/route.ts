@@ -1,4 +1,4 @@
-import { getAdminSession } from "@/lib/auth";
+import { requireAdminPermissionApi } from "@/lib/ops/require-platform-role";
 import { getCandidateFull } from "@/lib/db";
 import { RUBRIC_FIELDS, type Score, type Stage } from "@/lib/types";
 import { STAGE_LABELS } from "@/lib/scenario";
@@ -14,8 +14,8 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getAdminSession();
-  if (!session) return new Response("Unauthorized", { status: 401 });
+  const session = await requireAdminPermissionApi("reports.review");
+  if ("error" in session) return session.error;
 
   const { id } = await params;
   const full = await getCandidateFull(id);
@@ -158,7 +158,8 @@ export async function GET(
   return new Response(Buffer.from(bytes), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${filename}"`
+      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Cache-Control": "private, no-store"
     }
   });
 }

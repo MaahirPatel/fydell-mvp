@@ -1,9 +1,11 @@
 import { getOpsMetrics } from "@/lib/ops/metrics";
 import { isSupabaseConfigured } from "@/lib/supabase";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
+  await requireAdminPermission("settings.manage");
   const metrics = await getOpsMetrics();
   const checks = [
     {

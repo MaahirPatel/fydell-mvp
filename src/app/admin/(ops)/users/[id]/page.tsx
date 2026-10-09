@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import UserAdminActions from "@/components/admin/UserAdminActions";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,7 @@ export default async function AdminUserDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireAdminPermission("accounts.view");
   if (!isSupabaseConfigured()) notFound();
   const { id } = await params;
   const admin = getSupabaseAdmin();

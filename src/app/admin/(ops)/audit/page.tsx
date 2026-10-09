@@ -1,8 +1,10 @@
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminAuditPage() {
+  await requireAdminPermission("audit.view");
   let rows: Array<{
     id: string;
     actor_email: string | null;

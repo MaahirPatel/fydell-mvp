@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {
+  await requireAdminPermission("accounts.view");
   if (!isSupabaseConfigured()) {
     return <p className="text-app-body text-[var(--text-secondary)]">Supabase is not configured.</p>;
   }

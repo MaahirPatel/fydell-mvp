@@ -86,6 +86,19 @@ export function safeNext(raw: string | null | undefined): string | null {
   return allowed ? decoded : null;
 }
 
+/**
+ * An admin deep link. Only honoured after the server has routed the user as an
+ * operator; ordinary sign-ins never return to /admin.
+ */
+export function safeAdminNext(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const decoded = fullyDecode(raw);
+  if (!decoded) return null;
+  if (isRejected(raw) || isRejected(decoded)) return null;
+  const pathOnly = decoded.split(/[?#]/)[0];
+  return pathOnly.startsWith("/admin/") && !pathOnly.includes("/..") ? decoded : null;
+}
+
 /** Same check, resolved to a usable destination. */
 export function safeNextOr(
   raw: string | null | undefined,

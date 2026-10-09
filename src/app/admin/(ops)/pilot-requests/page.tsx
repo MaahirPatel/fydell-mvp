@@ -5,10 +5,12 @@ import {
   AdminStatusBadge,
 } from "@/components/admin/AdminUi";
 import { listPilotRequests } from "@/lib/ops/pilot-requests";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPilotRequestsPage() {
+  await requireAdminPermission("commercial.view");
   const rows = await listPilotRequests(200);
 
   return (

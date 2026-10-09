@@ -1,7 +1,7 @@
 import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
-import { listActiveRolesForEmail } from "@/lib/ops/platform-roles";
+import { listActiveRolesForEmail, listActiveRolesForUserId } from "@/lib/ops/platform-roles";
 import { getAdminSession } from "@/lib/auth";
 export type PostLoginDestination =
   | { kind: "admin"; path: "/admin/overview" }
@@ -31,7 +31,7 @@ export async function resolvePostLoginDestination(
   }
 
   try {
-    const roles = await listActiveRolesForEmail(normalized);
+    const roles = userId ? await listActiveRolesForUserId(userId) : await listActiveRolesForEmail(normalized);
     if (roles.length > 0) {
       return { kind: "admin", path: "/admin/overview" };
     }

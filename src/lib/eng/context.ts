@@ -2,10 +2,10 @@ import "server-only";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { requireUser } from "@/lib/simulations/auth";
+import { ACTIVE_ORG_COOKIE, requireUser } from "@/lib/simulations/auth";
 import { isOrgRole, roleCan, type EngAction, type OrgRole } from "./permissions";
 
-export const ACTIVE_ORG_COOKIE = "fydell_active_org";
+export { ACTIVE_ORG_COOKIE };
 
 export interface EngMember {
   userId: string;

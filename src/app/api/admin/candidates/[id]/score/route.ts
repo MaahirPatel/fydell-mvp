@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { readJsonObject } from "@/lib/security/request-body";
-import { getAdminSession } from "@/lib/auth";
+import { requireAdminPermissionApi } from "@/lib/ops/require-platform-role";
 import { upsertScore } from "@/lib/db";
 import type { Score } from "@/lib/types";
 
@@ -17,10 +17,8 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
-  }
+  const session = await requireAdminPermissionApi("reports.review");
+  if ("error" in session) return session.error;
 
   const { id } = await params;
   const body = await readJsonObject(req);

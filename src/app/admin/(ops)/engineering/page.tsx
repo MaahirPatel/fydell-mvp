@@ -8,7 +8,7 @@ import { RequeueButton, RunWorkerButton } from "@/components/eng/ReviewerControl
 import { engAdmin } from "@/lib/eng/context";
 import { selectExecutor } from "@/lib/eng/evaluation/queue";
 import { listReviewQueue } from "@/lib/eng/reviewer-view";
-import { requirePlatformRole } from "@/lib/ops/require-platform-role";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 import type { RunStatus } from "@/lib/eng/types";
 
 export const metadata = { title: "Engineering review" };
@@ -25,7 +25,7 @@ const RUN_STATUS: Record<RunStatus, { label: string; tone: StatusTone }> = {
 };
 
 export default async function EngineeringReviewQueuePage() {
-  await requirePlatformRole(["super_admin", "admin", "reviewer"]);
+  await requireAdminPermission("reports.review");
   const queue = await listReviewQueue(engAdmin());
   const executor = selectExecutor();
 

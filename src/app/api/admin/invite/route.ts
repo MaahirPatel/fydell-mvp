@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
 import { readJsonObject } from "@/lib/security/request-body";
-import { getAdminSession } from "@/lib/auth";
+import { requireAdminPermissionApi } from "@/lib/ops/require-platform-role";
 import { createInvite } from "@/lib/db";
 import { sendInviteEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { appUrl } from "@/lib/app-url";
 
 export async function POST(req: Request) {
-  const session = await getAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
-  }
+  const session = await requireAdminPermissionApi("invitations.manage");
+  if ("error" in session) return session.error;
   const rl = rateLimit(`invite:${session.email}`, 10, 60 * 60 * 1000);
   if (!rl.ok) return NextResponse.json({ error: "Too many invites. Try again later." }, { status: 429 });
 
@@ -52,8 +50,7 @@ export async function POST(req: Request) {
       emailed
     });
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Could not create the invite.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[admin/invite]", err);
+    return NextResponse.json({ error: "Could not create the invite." }, { status: 500 });
   }
 }

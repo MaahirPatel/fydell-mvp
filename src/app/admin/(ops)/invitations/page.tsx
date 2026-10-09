@@ -1,5 +1,6 @@
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import InvitationActions from "@/components/admin/InvitationActions";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ async function loadInvitations() {
 }
 
 export default async function AdminInvitationsPage() {
+  await requireAdminPermission("invitations.manage");
   const { rows, now } = await loadInvitations();
 
   return (

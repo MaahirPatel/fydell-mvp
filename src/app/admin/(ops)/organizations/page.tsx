@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminOrganizationsPage() {
+  await requireAdminPermission("accounts.view");
   let rows: Array<{
     id: string;
     name: string;

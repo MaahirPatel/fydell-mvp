@@ -12,7 +12,7 @@ import {
   Input,
   PasswordInput,
 } from "@/components/ui/Field";
-import { safeNext, withNext } from "@/lib/auth/safe-next";
+import { safeAdminNext, safeNext, withNext } from "@/lib/auth/safe-next";
 import { desktopAuthorizePath, isValidDesktopState } from "@/lib/auth/desktop-state";
 
 /**
@@ -99,6 +99,11 @@ export default function LoginForm() {
         window.location.assign(desktopAuthorizePath(desktopState, desktopChallenge));
         setHandedOff(true);
         setLoading(false);
+        return;
+      }
+      const adminReturn = isOperator ? safeAdminNext(rawNext) : null;
+      if (adminReturn) {
+        router.push(adminReturn);
         return;
       }
       if (returnPath && !isOperator) {

@@ -1,4 +1,5 @@
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
+import { requireAdminPermission } from "@/lib/ops/require-platform-role";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ function due(row: Row): { label: string; overdue: boolean } {
 }
 
 export default async function AdminDataRequestsPage() {
+  await requireAdminPermission("data_requests.handle");
   let rows: Row[] = [];
   if (isSupabaseConfigured()) {
     const { data } = await getSupabaseAdmin()
