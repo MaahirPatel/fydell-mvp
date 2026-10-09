@@ -100,31 +100,31 @@ export default async function OpeningPage({
         action={editable ? <ButtonLink href={`/app/employer/openings/${role.id}/edit`} variant="secondary" size="sm">Edit role</ButtonLink> : undefined}
       />
 
-      <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="mt-8 grid grid-cols-1 gap-8 min-[1600px]:grid-cols-[minmax(0,1fr)_340px]">
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-8">
           <section aria-labelledby="applicants-heading">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <h2 id="applicants-heading" className="text-[16px] font-semibold text-[var(--text-primary)]">Applications</h2>
+            <div className="grid gap-3">
+              <h2 id="applicants-heading" className="text-app-section font-semibold text-[var(--text-primary)]">Applications</h2>
               {applications.length > 0 || filtered ? (
                 <form method="get" className="flex flex-wrap items-center gap-2" role="search">
                   <label htmlFor="applicant-search" className="sr-only">Search applicants</label>
-                  <div className="w-48">
-                    <input id="applicant-search" name="q" defaultValue={q} placeholder="Name or email" className="platform-input h-8 text-app-meta" />
+                  <div className="w-full max-w-[260px]">
+                    <input id="applicant-search" name="q" defaultValue={q} placeholder="Name or email" className="platform-input h-9 text-app-control" />
                   </div>
                   <label htmlFor="stage-filter" className="sr-only">Stage</label>
-                  <div className="w-40">
-                    <select id="stage-filter" name="stage" defaultValue={stage} className="platform-select h-8 text-app-meta">
+                  <div className="w-44">
+                    <select id="stage-filter" name="stage" defaultValue={stage} className="platform-select h-9 text-app-control">
                       <option value="all">All stages</option>
                       {(Object.keys(STAGE_LABEL) as ApplicationStage[]).map((s) => (
                         <option key={s} value={s}>{STAGE_LABEL[s]}</option>
                       ))}
                     </select>
                   </div>
-                  <label className="flex items-center gap-1.5 text-app-meta text-[var(--text-secondary)]">
+                  <label className="flex h-9 items-center gap-1.5 px-1 text-app-control text-[var(--text-secondary)]">
                     <input type="checkbox" name="withdrawn" value="1" defaultChecked={includeWithdrawn} className="accent-[var(--control-solid)]" />
                     Show withdrawn
                   </label>
-                  <button type="submit" className="h-8 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-app-meta font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]">
+                  <button type="submit" className="h-9 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-app-control font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]">
                     Apply filters
                   </button>
                 </form>
@@ -160,7 +160,9 @@ export default async function OpeningPage({
                           <Link href={`/app/employer/openings/${role.id}/applications/${a.id}`} className="font-medium text-[var(--text-primary)] hover:underline hover:underline-offset-4">
                             {a.name}
                           </Link>
-                          <span className="block text-app-meta text-[var(--text-tertiary)]">{a.email}</span>
+                          <span className="block max-w-[260px] truncate text-app-meta text-[var(--text-tertiary)]" title={a.email}>
+                            {a.email}
+                          </span>
                         </TD>
                         <TD className="text-app-meta">
                           {a.status === "withdrawn"
@@ -187,7 +189,7 @@ export default async function OpeningPage({
                           {a.nextAction}
                           {a.decision !== "none" ? <span className="block text-[var(--text-tertiary)]">Decision: {DECISION_LABEL[a.decision] ?? a.decision}</span> : null}
                         </TD>
-                        <TD align="right" className="text-app-meta text-[var(--text-tertiary)]">
+                        <TD align="right" className="whitespace-nowrap text-app-meta text-[var(--text-tertiary)]">
                           <LocalDate iso={a.submittedAt} />
                         </TD>
                       </TR>
@@ -202,7 +204,7 @@ export default async function OpeningPage({
           </section>
 
           <section aria-labelledby="work-heading" className="grid gap-4">
-            <h2 id="work-heading" className="text-[16px] font-semibold text-[var(--text-primary)]">The work</h2>
+            <h2 id="work-heading" className="text-app-section font-semibold text-[var(--text-primary)]">The work</h2>
             {role.description ? (
               <p className="max-w-[72ch] whitespace-pre-wrap text-app-body leading-[1.6] text-[var(--text-body)]">{role.description}</p>
             ) : (
@@ -243,7 +245,7 @@ export default async function OpeningPage({
           </section>
         </div>
 
-        <aside className={`grid content-start gap-5 ${role.state === "draft" ? "order-first xl:order-none" : ""}`}>
+        <aside className={`grid content-start gap-5 md:max-[1599px]:grid-cols-2 ${role.state === "draft" ? "order-first min-[1600px]:order-none" : ""}`}>
           <Panel id="page-heading" title="Role page">
             {canManage ? (
               <RoleStatusControls roleId={role.id} state={role.state} publicUrl={publicUrl} problems={publishProblems(role, false)} />
