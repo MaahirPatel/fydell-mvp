@@ -69,7 +69,7 @@ ok(
 // The app installs from the browser; there is no installer to download.
 ok(
   "the site is installable: manifest with standalone display and 192/512 icons",
-  /display: "standalone"/.test(manifest) && /icon-192\.png/.test(manifest) && /icon-512\.png/.test(manifest) && /start_url: "\/app"/.test(manifest),
+  /display: "standalone"/.test(manifest) && /icon-192\.png/.test(manifest) && /icon-512\.png/.test(manifest) && /start_url: "\/app\/desk"/.test(manifest),
 );
 ok(
   "/download installs the web app, linked from the nav and desktop band",

@@ -230,7 +230,7 @@ export default async function CandidateHomePage() {
 
   return (
     <CandidateShell width="wide" current="assessments">
-      <CandidatePageHead title="Overview" lead="What needs your attention, your recent projects, and the evaluations hiring teams have invited you to." />
+      <CandidatePageHead title="Overview and tasks" lead="What needs your attention, your recent projects, and the simulations and tasks hiring teams have invited you to." />
 
       <div className="mt-6 grid gap-8">
         <div className="grid gap-6">

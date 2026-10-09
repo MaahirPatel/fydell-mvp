@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { FormError, Input } from "@/components/ui/Field";
+import { FormError, FormSuccess, Input } from "@/components/ui/Field";
 import { Panel, PanelSection } from "@/components/ui/Panel";
 import { CONTACT_EMAIL, CONTACT_MAILTO } from "@/lib/contact";
 import type { CandidateView } from "@/lib/eng/candidate-view";
 import { engFetch } from "./api";
 import { BulletList, Disclosure, EnvironmentList, Facts, PolicyDisclosures } from "./CandidateParts";
 import { CommandBlock } from "./CommandBlock";
+import { FolderError, setUpProjectFolder, useFolderAccess, type FolderSetup } from "./projectFolder";
 
 type View = CandidateView;
 
@@ -93,6 +94,22 @@ export function SetupStep({ view, onView }: { view: View; onView: (v: View) => v
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const root = view.scenario.starterRoot;
+  const folderAccess = useFolderAccess();
+  const [folder, setFolder] = useState<FolderSetup | null>(null);
+  const [folderBusy, setFolderBusy] = useState(false);
+  const [folderError, setFolderError] = useState<string | null>(null);
+
+  async function setUpFolder() {
+    setFolderBusy(true);
+    setFolderError(null);
+    try {
+      setFolder(await setUpProjectFolder(view.attempt.id, root));
+    } catch (err) {
+      setFolderError(err instanceof FolderError ? err.message : "The project folder could not be set up. Try again, or download the ZIP instead.");
+    } finally {
+      setFolderBusy(false);
+    }
+  }
 
   async function confirm() {
     setBusy(true);
@@ -107,24 +124,47 @@ export function SetupStep({ view, onView }: { view: View; onView: (v: View) => v
     <Panel>
       <PanelSection title="Set up on your computer" description="Setup time does not count. The timer starts only when you press Start." />
       <ol className="divide-y divide-[var(--border-subtle)]">
-        <Step n={1} title="Download and extract the starter project">
-          <div>
-            <a
-              href={`/api/eng/attempts/${view.attempt.id}/starter`}
-              download
-              className="inline-flex h-9 items-center rounded-[8px] border border-[var(--border-strong)] px-3.5 text-[13.5px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
-            >
-              Download {root}.zip
-            </a>
-          </div>
-          <p>
-            Extract it anywhere you like. On Windows, right-click the ZIP and choose <span className="text-[var(--text-primary)]">Extract All</span>; on macOS, double-click it.
-            Opening the ZIP without extracting it will not work.
-          </p>
-        </Step>
+        {folderAccess ? (
+          <Step n={1} title="Set up the project folder" done={Boolean(folder)}>
+            <p>
+              Choose where the project should live, for example Documents. Fydell creates a <code className="font-mono text-[13px] text-[var(--text-primary)]">{root}</code> folder there with the starter files,
+              and packages that same folder when you submit. Fydell can only see the folder you choose.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant={folder ? "secondary" : "accent"} loading={folderBusy} onClick={() => void setUpFolder()}>
+                {folder ? "Choose another folder" : "Set up project folder"}
+              </Button>
+              <a href={`/api/eng/attempts/${view.attempt.id}/starter`} download className="text-app-meta font-medium text-[var(--text-secondary)] underline-offset-4 hover:text-[var(--text-primary)] hover:underline">
+                Download {root}.zip instead
+              </a>
+            </div>
+            {folder ? (
+              <FormSuccess>
+                {folder.created ? `${folder.fileCount} starter files written to ${folder.location}.` : `${folder.location} already has this project, so nothing was overwritten.`}
+              </FormSuccess>
+            ) : null}
+            <FormError>{folderError}</FormError>
+          </Step>
+        ) : (
+          <Step n={1} title="Download and extract the starter project">
+            <div>
+              <a
+                href={`/api/eng/attempts/${view.attempt.id}/starter`}
+                download
+                className="inline-flex h-9 items-center rounded-[8px] border border-[var(--border-strong)] px-3.5 text-[13.5px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+              >
+                Download {root}.zip
+              </a>
+            </div>
+            <p>
+              Extract it anywhere you like. On Windows, right-click the ZIP and choose <span className="text-[var(--text-primary)]">Extract All</span>; on macOS, double-click it.
+              Opening the ZIP without extracting it will not work.
+            </p>
+          </Step>
+        )}
         <Step n={2} title="Open the folder in your editor and run the setup check">
           <p>
-            In VS Code or Cursor, choose <span className="text-[var(--text-primary)]">File → Open Folder</span> and pick the extracted <code className="font-mono text-[13px] text-[var(--text-primary)]">{root}</code> folder (the one containing{" "}
+            In VS Code or Cursor, choose <span className="text-[var(--text-primary)]">File → Open Folder</span> and pick the <code className="font-mono text-[13px] text-[var(--text-primary)]">{root}</code> folder (the one containing{" "}
             <code className="font-mono text-[13px] text-[var(--text-primary)]">preflight.py</code>). Open a terminal there with <span className="text-[var(--text-primary)]">Terminal → New Terminal</span> and run:
           </p>
           <CommandBlock label="Setup check command" commands={view.scenario.setupCommands} />

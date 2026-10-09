@@ -95,7 +95,7 @@ export default function DownloadPage() {
         after={
           <Tiles
             items={[
-              { title: "Nothing to install from a file", body: "Your browser adds Fydell as an app. Nothing is copied into system folders and no extra permissions are requested." },
+              { title: "Nothing to install from a file", body: "Your browser adds Fydell as an app. Nothing is copied into system folders. The only permission it asks for is the one project folder you choose for an engineering task." },
               { title: "Nothing runs in the background", body: "Fydell records activity only inside an open simulation, and tells you what it records before you start." },
               { title: "Always up to date", body: "Every change to fydell.com reaches the app the next time you open it." },
             ]}
@@ -103,14 +103,15 @@ export default function DownloadPage() {
         }
       >
         <p className="max-w-[68ch] text-[15.5px] leading-[1.65] text-[var(--text-body)]">
-          Engineering tasks open in the browser editor, or you can download the starter project and work in VS Code or Cursor, then submit from Fydell. Projects can be added from GitHub or uploaded as a folder or ZIP.
+
+          The app opens on your own home: invitations sent to your email arrive in the inbox in the corner, and your tasks, reports and profile sit in the sidebar with your name at the bottom. For an engineering task, Fydell writes the starter project into a folder you pick, you work on it in VS Code or Cursor, and Fydell packages that folder when you submit, leaving out caches and credentials. Writing to a folder needs Edge or Chrome; in other browsers you download and upload a ZIP instead.
         </p>
       </ShowcaseSection>
 
       <SiteFaq
         items={[
           { q: "Do I need to install anything?", a: "No. Everything works in a normal browser tab. Installing only gives Fydell its own window and icon." },
-          { q: "What happened to the Windows installer?", a: "The separate desktop app has been retired. The installed web app does everything it did, without an unsigned installer or a security warning." },
+          { q: "What happened to the Windows installer?", a: "The separate desktop app has been retired. The installed app has the same inbox, tasks, reports and profile, and sets up and packages project folders the way the desktop app did, without an unsigned installer or a security warning." },
           { q: "How do I uninstall it?", a: "On Windows, right-click Fydell in the Start menu and choose Uninstall. On Mac, open the app and choose Uninstall from its menu, or remove it from the Dock." },
           { q: "Where do I report a problem?", a: "Use Contact on this site, or the Support link inside a simulation." },
         ]}

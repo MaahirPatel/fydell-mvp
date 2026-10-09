@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/Button";
 import { FormError } from "@/components/ui/Field";
 import { engFetch } from "./api";
 
-type AcceptTarget = { token: string } | { invitationId: string };
+type AcceptTarget = ({ token: string } | { invitationId: string }) & {
+  /** Where accepted tasks open; the installed app keeps them in its own window. */
+  taskBase?: string;
+};
 
 export default function AcceptEngInvitation(target: AcceptTarget) {
   const router = useRouter();
@@ -30,7 +33,8 @@ export default function AcceptEngInvitation(target: AcceptTarget) {
               setError(res.error);
               return;
             }
-            router.push(`/assess/${res.data.attemptId}`);
+            router.push(`${target.taskBase ?? "/assess"}/${res.data.attemptId}`);
+            router.refresh();
           }}
         >
           Accept invitation

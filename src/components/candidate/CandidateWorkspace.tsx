@@ -51,13 +51,14 @@ function SidebarBody({ current, onNavigate }: { current: CandidateSection; onNav
   const account = useCandidateAccount();
   return (
     <div className="flex h-full flex-col px-2 pb-2 pt-2">
-      <AccountMenu
-        person={account ? { name: account.name, email: account.email, avatarUrl: account.avatarUrl } : null}
-        context="personal"
-        contexts={account?.contexts ?? null}
-        placement="below"
-        onNavigate={onNavigate}
-      />
+      <Link
+        href={PERSONAL_HOME}
+        onClick={onNavigate}
+        aria-label="Fydell, personal workspace overview"
+        className="hidden h-10 items-center rounded-[6px] px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-line)] md:flex"
+      >
+        <FydellLogo height={18} />
+      </Link>
       <Link
         href={SHARE_HREF}
         onClick={onNavigate}
@@ -76,6 +77,15 @@ function SidebarBody({ current, onNavigate }: { current: CandidateSection; onNav
       <div className="mt-auto flex flex-col gap-px pt-6">
         <NavRow href={SECTION_HREF.settings} label="Settings" icon={Settings} active={current === "settings"} onNavigate={onNavigate} />
         <NavRow href={HELP_HREF} label="Help" icon={CircleHelp} onNavigate={onNavigate} />
+      </div>
+      <div className="mt-2 border-t border-[var(--border-subtle)] pt-2">
+        <AccountMenu
+          person={account ? { name: account.name, email: account.email, avatarUrl: account.avatarUrl } : null}
+          context="personal"
+          contexts={account?.contexts ?? null}
+          placement="above"
+          onNavigate={onNavigate}
+        />
       </div>
     </div>
   );

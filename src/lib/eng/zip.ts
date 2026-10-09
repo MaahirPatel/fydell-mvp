@@ -179,6 +179,14 @@ function isIgnored(path: string): boolean {
 
 export type ProjectArchiveExclusion = { path: string; reason: "ignored_folder" | "possible_secret" | "nested_archive" };
 
+/** Why a project file stays out of a submission package, or null when it goes in. Shared with the browser packager. */
+export function packagingExclusion(path: string): ProjectArchiveExclusion["reason"] | null {
+  if (isIgnored(path)) return "ignored_folder";
+  if (CREDENTIAL.test(path)) return "possible_secret";
+  if (NESTED_ARCHIVE.test(path)) return "nested_archive";
+  return null;
+}
+
 export interface ProjectArchive {
   ok: true;
   entryCount: number;

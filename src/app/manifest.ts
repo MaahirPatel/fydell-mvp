@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Fydell",
     short_name: "Fydell",
     description: "Proof-of-work hiring: show real work, review real evidence.",
-    start_url: "/app",
+    start_url: "/app/desk",
     scope: "/",
     display: "standalone",
     background_color: "#ffffff",
@@ -19,7 +19,8 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
-      { name: "Projects", url: "/app/candidate/work-record" },
+      { name: "Inbox", url: "/app/desk/inbox" },
+      { name: "Profile", url: "/app/desk/profile" },
       { name: "Hiring workspace", url: "/app/employer" },
     ],
   };

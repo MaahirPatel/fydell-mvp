@@ -12,6 +12,7 @@ import type { CandidateView } from "@/lib/eng/candidate-view";
 import { engFetch, formatBytes } from "./api";
 import { BulletList, Disclosure, JourneyRail, PolicyDisclosures } from "./CandidateParts";
 import { CommandBlock } from "./CommandBlock";
+import { chooseExistingFolder, ensureAccess, FolderError, packageProjectFolder, recallFolder, useFolderAccess, type FolderPackage } from "./projectFolder";
 import { LocalTime } from "./LocalTime";
 import type { DraftKey, DraftState } from "./useDrafts";
 
@@ -439,12 +440,52 @@ function putWithProgress(url: string, file: File, onProgress: (fraction: number)
   });
 }
 
-function UploadCard({ attemptId, uploads, onUploaded, disabled }: { attemptId: string; uploads: Upload[]; onUploaded: (u: Upload) => void; disabled: boolean }) {
+const EXCLUSION_LABEL: Record<FolderPackage["excluded"][number]["reason"], string> = {
+  ignored_folder: "cache or dependency folder",
+  possible_secret: "possible credentials",
+  nested_archive: "archive file",
+};
+
+function UploadCard({
+  attemptId,
+  root,
+  uploads,
+  onUploaded,
+  disabled,
+}: {
+  attemptId: string;
+  root: string;
+  uploads: Upload[];
+  onUploaded: (u: Upload) => void;
+  disabled: boolean;
+}) {
   const [progress, setProgress] = useState<number | null>(null);
-  const [phase, setPhase] = useState<"idle" | "uploading" | "validating">("idle");
+  const [phase, setPhase] = useState<"idle" | "packaging" | "uploading" | "validating">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [left, setLeft] = useState<FolderPackage["excluded"]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const folderAccess = useFolderAccess();
   const latest = uploads[0] ?? null;
+
+  async function packageFolder(chooseAnother: boolean) {
+    setError(null);
+    setLeft([]);
+    try {
+      let folder = chooseAnother ? null : await recallFolder(attemptId);
+      if (!folder) folder = await chooseExistingFolder(attemptId);
+      else if (!(await ensureAccess(folder, "read"))) {
+        setError("Fydell needs permission to read the project folder. Allow it when the browser asks, or choose the folder again.");
+        return;
+      }
+      setPhase("packaging");
+      const pkg = await packageProjectFolder(folder, root);
+      setLeft(pkg.excluded);
+      await handle(pkg.file);
+    } catch (err) {
+      setPhase("idle");
+      setError(err instanceof FolderError ? err.message : "The project folder could not be read. Choose it again, or upload a ZIP instead.");
+    }
+  }
 
   async function handle(file: File) {
     setError(null);
@@ -495,8 +536,18 @@ function UploadCard({ attemptId, uploads, onUploaded, disabled }: { attemptId: s
             if (file) void handle(file);
           }}
         />
-        <Button variant="secondary" disabled={disabled || phase !== "idle"} onClick={() => inputRef.current?.click()}>
-          {latest?.status === "accepted" ? "Replace ZIP" : "Choose ZIP file"}
+        {folderAccess ? (
+          <>
+            <Button variant="accent" disabled={disabled || phase !== "idle"} loading={phase === "packaging"} onClick={() => void packageFolder(false)}>
+              {latest?.status === "accepted" ? "Package the folder again" : "Package project folder"}
+            </Button>
+            <Button variant="quiet" disabled={disabled || phase !== "idle"} onClick={() => void packageFolder(true)}>
+              Use a different folder
+            </Button>
+          </>
+        ) : null}
+        <Button variant={folderAccess ? "quiet" : "secondary"} disabled={disabled || phase !== "idle"} onClick={() => inputRef.current?.click()}>
+          {folderAccess ? "Upload a ZIP instead" : latest?.status === "accepted" ? "Replace ZIP" : "Choose ZIP file"}
         </Button>
         {phase === "uploading" && progress !== null ? (
           <div className="flex min-w-[220px] items-center gap-2" role="progressbar" aria-label="Uploading" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
@@ -507,6 +558,11 @@ function UploadCard({ attemptId, uploads, onUploaded, disabled }: { attemptId: s
             <span className="text-app-meta tabular-nums text-[var(--text-secondary)]">{Math.round(progress * 100)}%</span>
           </div>
         ) : null}
+        {phase === "packaging" ? (
+          <span role="status" className="text-app-meta text-[var(--text-secondary)]">
+            Packaging the project folder…
+          </span>
+        ) : null}
         {phase === "validating" ? (
           <span role="status" className="text-app-meta text-[var(--text-secondary)]">
             Validating the ZIP…
@@ -514,6 +570,20 @@ function UploadCard({ attemptId, uploads, onUploaded, disabled }: { attemptId: s
         ) : null}
       </div>
       <FormError>{error}</FormError>
+      {left.length > 0 && phase === "idle" ? (
+        <details className="text-app-meta text-[var(--text-secondary)]">
+          <summary className="cursor-pointer">
+            {left.length} {left.length === 1 ? "item was" : "items were"} left out of the package
+          </summary>
+          <ul className="mt-1 grid max-h-40 gap-0.5 overflow-auto font-mono text-[13px]">
+            {left.map((x) => (
+              <li key={x.path}>
+                {x.path} <span className="opacity-70">({EXCLUSION_LABEL[x.reason]})</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
       {latest && phase === "idle" ? (
         latest.status === "accepted" ? (
           <FormSuccess>
@@ -580,7 +650,7 @@ function SubmitTab({
           {windowClosed ? (
             <FormError>The submission window has closed. Contact the employer if you need an extension; extensions appear here automatically.</FormError>
           ) : (
-            <UploadCard attemptId={view.attempt.id} uploads={uploads} onUploaded={(u) => setUploads((prev) => [u, ...prev])} disabled={windowClosed} />
+            <UploadCard attemptId={view.attempt.id} root={view.scenario.starterRoot} uploads={uploads} onUploaded={(u) => setUploads((prev) => [u, ...prev])} disabled={windowClosed} />
           )}
           <div>
             <Disclosure summary="How to make the ZIP">

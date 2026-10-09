@@ -1,4 +1,4 @@
-import { FolderGit2, House, IdCard, Send, SquareTerminal, type LucideIcon } from "lucide-react";
+import { FileChartColumn, FolderGit2, House, IdCard, Send, SquareTerminal, type LucideIcon } from "lucide-react";
 import type { CandidateSection } from "./section";
 
 export type CandidateNavItem = {
@@ -14,16 +14,18 @@ export type CandidateNavItem = {
  * foot of the sidebar.
  */
 export const CANDIDATE_NAV: readonly CandidateNavItem[] = [
-  { key: "assessments", label: "Overview", href: "/app/candidate", icon: House },
+  { key: "assessments", label: "Overview and tasks", href: "/app/candidate", icon: House },
   { key: "work", label: "Projects", href: "/app/candidate/work-record", icon: FolderGit2 },
+  { key: "reports", label: "Reports", href: "/app/candidate/reports", icon: FileChartColumn },
   { key: "profile", label: "Profile & Passport", href: "/app/candidate/profile", icon: IdCard },
   { key: "applications", label: "Applications", href: "/app/candidate/applications", icon: Send },
   { key: "practice", label: "Practice simulation", href: "/app/candidate/practice", icon: SquareTerminal },
 ];
 
 export const SECTION_LABEL: Record<CandidateSection, string> = {
-  assessments: "Overview",
+  assessments: "Overview and tasks",
   work: "Projects",
+  reports: "Reports",
   profile: "Profile & Passport",
   applications: "Applications",
   practice: "Practice simulation",
@@ -33,6 +35,7 @@ export const SECTION_LABEL: Record<CandidateSection, string> = {
 export const SECTION_HREF: Record<CandidateSection, string> = {
   assessments: "/app/candidate",
   work: "/app/candidate/work-record",
+  reports: "/app/candidate/reports",
   profile: "/app/candidate/profile",
   applications: "/app/candidate/applications",
   practice: "/app/candidate/practice",
