@@ -4,6 +4,7 @@ import { getSessionForCandidate } from "@/lib/simulations/db";
 import { evaluatePreflight, recordPreflight } from "@/lib/pilot/consent";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 
@@ -16,17 +17,14 @@ export async function POST(
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: {
-    viewportWidth?: number;
-    viewportHeight?: number;
-    userAgent?: string;
-    localStorageOk?: boolean;
-  };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, {
+    viewportWidth: { type: "number", min: 0, max: 100000 },
+    viewportHeight: { type: "number", min: 0, max: 100000 },
+    userAgent: { type: "string", max: 1000 },
+    localStorageOk: { type: "boolean" },
+  });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
 
   try {
     const session = await getSessionForCandidate(id, user.id);

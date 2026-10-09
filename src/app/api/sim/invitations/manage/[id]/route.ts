@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { resendInvitation, revokeInvitation } from "@/lib/simulations/db";
-import { fydellEmailShell, isResendConfigured, sendResendHtml } from "@/lib/email";
+import { escapeHtml, fydellEmailShell, isResendConfigured, safeHref, sendTrackedEmail } from "@/lib/email";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { appUrl } from "@/lib/app-url";
-import { escapeHtml } from "@/lib/simulations/submission-files";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 
@@ -23,12 +23,9 @@ export async function POST(
   if (!orgCan(org.role, "manage_candidates"))
     return NextResponse.json({ error: capabilityDeniedMessage("manage_candidates") }, { status: 403 });
 
-  let body: { action?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, { action: { type: "string", max: 20 } });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
 
   try {
     if (body.action === "revoke") {
@@ -40,15 +37,20 @@ export async function POST(
       const inviteUrl = `${appUrl()}/invite/${token}`;
       let delivery = "not_configured";
       if (isResendConfigured()) {
-        const sent = await sendResendHtml({
+        const sent = await sendTrackedEmail({
           to: invitation.candidate_email,
           subject: `Reminder: ${org.organizationName} invited you to a Fydell work simulation`,
           html: fydellEmailShell(
             `<p style="margin:0 0 12px">This is a fresh link for your Fydell work simulation from <strong>${escapeHtml(org.organizationName)}</strong>. Any earlier link no longer works.</p>
-             <p style="margin:0 0 20px"><a href="${escapeHtml(inviteUrl)}" style="background:#111827;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Review the invitation</a></p>`
+             <p style="margin:0 0 20px"><a href="${safeHref(inviteUrl)}" style="background:#111827;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Review the invitation</a></p>`
           ),
+          template: "sim_invitation_resend",
+          eventType: "candidate_invite_resent",
+          idempotencyKey: `sim_invitation:${id}:resend:${Date.now()}`,
+          relatedEntityType: "sim_invitation",
+          relatedEntityId: id,
         });
-        delivery = sent.ok ? "sent" : "failed";
+        delivery = sent.delivery;
       }
       await createAdminSupabaseClient()
         .from("sim_invitations")

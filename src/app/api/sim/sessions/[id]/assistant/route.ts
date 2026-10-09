@@ -12,6 +12,7 @@ import {
 } from "@/lib/simulations/db";
 import { publicErrorMessage } from "@/lib/security/public-error";
 import { limitByUser, ROUTE_LIMITS } from "@/lib/security/route-limits";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 
@@ -39,12 +40,12 @@ export async function POST(
       { status: 503 }
     );
 
-  let body: { prompt?: string; contextResourceIds?: string[] };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, {
+    prompt: { type: "string", max: 20000 },
+    contextResourceIds: { type: "stringArray", maxItems: 50, maxLength: 200 },
+  });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
   const prompt = (body.prompt || "").trim();
   if (!prompt) return NextResponse.json({ error: "Prompt cannot be empty" }, { status: 400 });
   if (prompt.length > 4000)
@@ -131,12 +132,12 @@ export async function PATCH(
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: { interactionId?: string; insertedInto?: "notes" | "deliverable" };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, {
+    interactionId: { type: "string", max: 100 },
+    insertedInto: { type: "enum", values: ["notes", "deliverable"] as const },
+  });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
   if (!body.interactionId || !body.insertedInto)
     return NextResponse.json({ error: "interactionId and insertedInto required" }, { status: 400 });
 

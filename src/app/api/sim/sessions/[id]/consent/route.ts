@@ -8,6 +8,7 @@ import {
   recordConsent,
 } from "@/lib/pilot/consent";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 
@@ -42,12 +43,12 @@ export async function POST(
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: { accepted?: boolean; policyVersion?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, {
+    accepted: { type: "boolean" },
+    policyVersion: { type: "string", max: 60 },
+  });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
   if (body.accepted !== true) {
     return NextResponse.json({ error: "Consent must be explicitly accepted" }, { status: 400 });
   }

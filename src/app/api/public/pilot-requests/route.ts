@@ -45,9 +45,14 @@ export async function POST(req: Request) {
 
   let body: PilotBody;
   try {
-    body = await req.json();
+    const raw: unknown = await req.json();
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("not an object");
+    body = raw as PilotBody;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+  if (body.captchaToken !== undefined && (typeof body.captchaToken !== "string" || body.captchaToken.length > 4096)) {
+    return NextResponse.json({ error: "Invalid CAPTCHA token." }, { status: 400 });
   }
 
   const name = clean(body.name, 120);

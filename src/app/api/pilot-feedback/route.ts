@@ -86,11 +86,12 @@ export async function POST(req: NextRequest) {
 
   let body: Payload;
   try {
-    body = await req.json();
+    const raw: unknown = await req.json();
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("not an object");
+    body = raw as Payload;
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
-
   const clarity = asRating(body.ratings?.clarity);
   const taskEase = asRating(body.ratings?.taskEase);
   const realism = asRating(body.ratings?.realism);

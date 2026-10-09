@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
+import { readJsonObject } from "@/lib/security/request-body";
 import { getAdminSession } from "@/lib/auth";
 import { createInvite } from "@/lib/db";
 import { sendInviteEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/security/rate-limit";
-
-function appUrl(): string {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
-}
+import { appUrl } from "@/lib/app-url";
 
 export async function POST(req: Request) {
   const session = await getAdminSession();
@@ -16,7 +14,7 @@ export async function POST(req: Request) {
   const rl = rateLimit(`invite:${session.email}`, 10, 60 * 60 * 1000);
   if (!rl.ok) return NextResponse.json({ error: "Too many invites. Try again later." }, { status: 429 });
 
-  const body = await req.json().catch(() => ({}));
+  const body = await readJsonObject(req);
   const name = (body.name ?? "").toString().trim();
   const email = (body.email ?? "").toString().trim();
   const employerName = (body.employerName ?? "").toString().trim();

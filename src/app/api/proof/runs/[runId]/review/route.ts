@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import { requirePlatformRoleApi } from "@/lib/ops/require-platform-role";
 import { proofAdmin, audit } from "@/lib/sim-engine/proof/db";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export async function POST(request: Request, context: { params: Promise<{ runId: string }> }) {
   const auth = await requirePlatformRoleApi(["super_admin", "admin", "operator", "reviewer"]);
   if ("error" in auth) return auth.error;
   const { runId } = await context.params;
-  const body = (await request.json()) as {
-    claimId?: string;
-    action?: "approve" | "reject" | "publish" | "shortlist";
-    reason?: string;
-  };
+  const parsed = await parseJsonBody(request, {
+    claimId: { type: "string", max: 100 },
+    action: { type: "enum", values: ["approve", "reject", "publish", "shortlist"] as const },
+    reason: { type: "string", max: 4000 },
+  });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
   const admin = proofAdmin();
 
   if (body.action === "shortlist") {

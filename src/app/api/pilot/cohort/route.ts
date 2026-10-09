@@ -12,6 +12,8 @@ import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 
 export const runtime = "nodejs";
 
+const COHORT_STATUSES: readonly CohortStatus[] = ["draft", "open", "paused", "closed"];
+
 export async function GET() {
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -76,15 +78,15 @@ export async function PATCH(req: NextRequest) {
   if (!orgCan(org.role, "manage_candidates"))
     return NextResponse.json({ error: capabilityDeniedMessage("manage_candidates") }, { status: 403 });
 
-  let body: { status?: CohortStatus };
-  try {
-    body = await req.json();
-  } catch {
+  const raw: unknown = await req.json().catch(() => undefined);
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
-  if (!body.status || !["draft", "open", "paused", "closed"].includes(body.status)) {
+  const status = (raw as Record<string, unknown>).status;
+  if (typeof status !== "string" || !COHORT_STATUSES.includes(status as CohortStatus)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
+  const body = { status: status as CohortStatus };
 
   const existing = (await getOrgPilotCohort(org.organizationId)) ||
     (await ensureOrgPilotCohort(org.organizationId, user.id));

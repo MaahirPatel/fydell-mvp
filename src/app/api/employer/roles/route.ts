@@ -8,6 +8,7 @@ import { defineRole } from "@/lib/employer/roles";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 import { csrfGuard } from "@/lib/security/csrf";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,18 +43,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: capabilityDeniedMessage("manage_candidates") }, { status: 403 });
   }
 
-  let body: {
-    title?: string;
-    family?: string;
-    stack?: string[];
-    responsibilities?: string[];
-    evaluationCriteria?: string[];
-  };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, {
+    title: { type: "string", max: 1000 },
+    family: { type: "string", max: 200 },
+    stack: { type: "stringArray", maxItems: 100, maxLength: 200 },
+    responsibilities: { type: "stringArray", maxItems: 100, maxLength: 2000 },
+    evaluationCriteria: { type: "stringArray", maxItems: 100, maxLength: 2000 },
+  });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
 
   const result = defineRole(org.organizationId, user.id, {
     title: String(body.title ?? ""),

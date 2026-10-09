@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isReservedOrganizationName } from "@/lib/org/reserved";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 
@@ -14,12 +15,9 @@ export async function PATCH(req: NextRequest) {
   const org = await requireOrgMember(user.id);
   if (!org) return NextResponse.json({ error: "No organization" }, { status: 403 });
 
-  let body: { name?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, { name: { type: "string", max: 400 } });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
 
   const name = String(body.name ?? "").trim();
   if (name.length < 2) {

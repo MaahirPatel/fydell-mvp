@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { createInvitation, getVersionContent, validateInviteRows } from "@/lib/simulations/db";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { fydellEmailShell, isResendConfigured, sendResendHtml } from "@/lib/email";
+import { fydellEmailShell, isResendConfigured, sendTrackedEmail } from "@/lib/email";
 import { appUrl } from "@/lib/app-url";
 import { ensureOrgPilotCohort } from "@/lib/pilot/cohort";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
@@ -194,12 +194,18 @@ export async function POST(req: NextRequest) {
           inviteUrl,
           expiresAt: invitation.expires_at,
         });
-        const sent = await sendResendHtml({
+        const sent = await sendTrackedEmail({
           to: candidate.email,
           subject: copy.subject,
           html: fydellEmailShell(copy.html),
+          template: "sim_invitation",
+          eventType: "candidate_invited",
+          idempotencyKey: `sim_invitation:${invitation.id}:0`,
+          relatedEntityType: "sim_invitation",
+          relatedEntityId: invitation.id,
+          recipientName: candidate.name,
         });
-        delivery = sent.ok ? "sent" : "failed";
+        delivery = sent.delivery;
       }
       await admin
         .from("sim_invitations")

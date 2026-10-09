@@ -11,6 +11,7 @@ import {
 } from "@/lib/pilot/receipt-share";
 import { isPreviewMode, previewReceiptShares } from "@/lib/dev/preview";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 
@@ -110,16 +111,17 @@ export async function POST(
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: {
-    allowedFields?: string[];
-    audienceLabel?: string;
-    expiresInDays?: number;
-  } = {};
-  try {
-    body = await req.json();
-  } catch {
-    body = {};
-  }
+  const parsed = await parseJsonBody(
+    req,
+    {
+      allowedFields: { type: "stringArray", maxItems: 50, maxLength: 80 },
+      audienceLabel: { type: "string", max: 200 },
+      expiresInDays: { type: "number" },
+    },
+    { optional: true }
+  );
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
 
   const admin = createAdminSupabaseClient();
   const { data: session } = await admin
@@ -203,8 +205,9 @@ export async function DELETE(
 
   let shareId: string | null = null;
   try {
-    const body = await req.json();
-    shareId = typeof body.shareId === "string" ? body.shareId : null;
+    const body: unknown = await req.json();
+    const value = body && typeof body === "object" ? (body as Record<string, unknown>).shareId : undefined;
+    shareId = typeof value === "string" && value.length <= 100 ? value : null;
   } catch {
     shareId = null;
   }

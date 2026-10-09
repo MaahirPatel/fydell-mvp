@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { readJsonObject } from "@/lib/security/request-body";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import { requirePlatformRoleApi } from "@/lib/ops/require-platform-role";
@@ -13,7 +14,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   }
 
-  const body = await req.json();
+  const body = await readJsonObject(req);
   const admin = createAdminSupabaseClient();
   const actor = gate;
 
@@ -46,6 +47,12 @@ export async function POST(req: Request) {
       }
       case "connect_user_to_org": {
         const { userId, organizationId, role } = body;
+        if (typeof userId !== "string" || typeof organizationId !== "string" || userId.length > 64 || organizationId.length > 64) {
+          return NextResponse.json({ error: "userId and organizationId are required." }, { status: 400 });
+        }
+        if (role !== undefined && role !== null && role !== "" && (typeof role !== "string" || role.length > 40)) {
+          return NextResponse.json({ error: "role must be a role name." }, { status: 400 });
+        }
         await admin.from("organization_members").upsert({
           user_id: userId,
           organization_id: organizationId,

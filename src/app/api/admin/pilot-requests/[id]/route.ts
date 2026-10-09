@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { readJsonObject } from "@/lib/security/request-body";
 import { requirePlatformRoleApi } from "@/lib/ops/require-platform-role";
 import { updatePilotRequestStatus } from "@/lib/ops/pilot-requests";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
@@ -21,7 +22,7 @@ export async function POST(
   if ("error" in auth) return auth.error;
 
   const { id } = await context.params;
-  const body = await req.json().catch(() => ({}));
+  const body = await readJsonObject(req);
   const action = String(body.action || "");
 
   try {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 
@@ -12,22 +13,19 @@ export async function POST(req: NextRequest) {
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: {
-    sessionId?: string;
-    realism?: number;
-    revealsBeyondResume?: string;
-    usefulEvidence?: string[];
-    unrealistic?: string;
-    additions?: string;
-    rolesHired?: string;
-    pilotInterest?: string;
-    organizationName?: string;
-  };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, {
+    sessionId: { type: "string", max: 100 },
+    realism: { type: "number" },
+    revealsBeyondResume: { type: "string", max: 80 },
+    usefulEvidence: { type: "stringArray", maxItems: 50, maxLength: 200 },
+    unrealistic: { type: "string", max: 20000 },
+    additions: { type: "string", max: 20000 },
+    rolesHired: { type: "string", max: 5000 },
+    pilotInterest: { type: "string", max: 80 },
+    organizationName: { type: "string", max: 2000 },
+  });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
 
   const realism = Number(body.realism);
   if (!Number.isInteger(realism) || realism < 1 || realism > 5)

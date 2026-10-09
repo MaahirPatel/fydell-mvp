@@ -7,6 +7,7 @@ import { accountDisplayName, seedEngineerProfileName } from "@/lib/auth/account-
 import { employerSelfSignupMode, isReservedOrganizationName } from "@/lib/org/reserved";
 import { partnerSignupEnabled } from "@/lib/auth/flags";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const parsed = await parseJsonBody(req, {
+      role: { type: "string", max: 20 },
+      companyName: { type: "string", max: 1000 },
+      companyWebsite: { type: "string", max: 1000 },
+      firmName: { type: "string", max: 1000 },
+    });
+    if (parsed.ok === false) return parsed.response;
+    const body = parsed.body;
     const role = String(body.role || "") as Role;
     if (!["employer", "fde", "partner"].includes(role)) {
       return NextResponse.json({ error: "Invalid role." }, { status: 400 });
@@ -46,8 +54,8 @@ export async function POST(req: Request) {
     let redirectTo = "/";
 
     if (role === "employer") {
-      const companyName = String(body.companyName || "").trim();
-      const companyWebsite = body.companyWebsite ? String(body.companyWebsite).trim() : "";
+      const companyName = String(body.companyName || "").trim().slice(0, 160);
+      const companyWebsite = body.companyWebsite ? String(body.companyWebsite).trim().slice(0, 300) : "";
       if (!companyName) {
         return NextResponse.json({ error: "Company name is required." }, { status: 400 });
       }
@@ -79,7 +87,7 @@ export async function POST(req: Request) {
         .eq("id", userId);
       redirectTo = "/app/candidate";
     } else {
-      const firmName = body.firmName ? String(body.firmName).trim() : "";
+      const firmName = body.firmName ? String(body.firmName).trim().slice(0, 160) : "";
       await admin
         .from("profiles")
         .update({

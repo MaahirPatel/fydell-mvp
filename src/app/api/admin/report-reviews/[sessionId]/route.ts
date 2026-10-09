@@ -3,6 +3,7 @@ import { requirePlatformRoleApi } from "@/lib/ops/require-platform-role";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { engineeringReportFor, evaluationStateOf } from "@/lib/engineering/submission-eval";
 import { applyReviewAction, type ReviewAction, type ReviewStatus } from "@/lib/engineering/report-review";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 function reviewSaveFailed(error: { message: string; code?: string }): NextResponse {
   console.error("[report-review] save failed", error.code, error.message);
@@ -25,12 +26,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ses
   if ("error" in ctx) return ctx.error;
   const { sessionId } = await params;
 
-  let body: { action?: string; notes?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, { action: { type: "string", max: 40 }, notes: { type: "string", max: 8000 } });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
   const action = body.action as ReviewAction;
   if (!ACTIONS.has(action)) return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   const notes = String(body.notes ?? "").slice(0, 4000);

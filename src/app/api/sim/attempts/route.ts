@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { createSelfServeAttempt } from "@/lib/simulations/db";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 
@@ -10,12 +11,9 @@ export async function POST(req: NextRequest) {
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: { slug?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, { slug: { type: "string", max: 120 } });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
   if (!body.slug) return NextResponse.json({ error: "slug is required" }, { status: 400 });
 
   try {

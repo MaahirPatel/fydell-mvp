@@ -42,7 +42,9 @@ export async function POST(
     reviewerNote?: unknown;
   };
   try {
-    body = await req.json();
+    const raw: unknown = await req.json();
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("not an object");
+    body = raw as typeof body;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }

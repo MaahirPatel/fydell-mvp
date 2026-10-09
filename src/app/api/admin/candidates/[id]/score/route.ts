@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { readJsonObject } from "@/lib/security/request-body";
 import { getAdminSession } from "@/lib/auth";
 import { upsertScore } from "@/lib/db";
 import type { Score } from "@/lib/types";
@@ -22,7 +23,7 @@ export async function POST(
   }
 
   const { id } = await params;
-  const body = await req.json().catch(() => ({}));
+  const body = await readJsonObject(req);
 
   const patch: Partial<Score> = {};
   for (const key of BOOL_KEYS) {

@@ -9,6 +9,7 @@ import {
 import { isMicroContent, type MicroSimContent } from "@/lib/simulations/micro-types";
 import { maybePresentCurveball } from "@/lib/simulations/curveball-present";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 
@@ -25,12 +26,13 @@ export async function POST(
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: { action?: string; checkpointSaved?: boolean } = {};
-  try {
-    body = await req.json();
-  } catch {
-    body = {};
-  }
+  const parsed = await parseJsonBody(
+    req,
+    { action: { type: "string", max: 40 }, checkpointSaved: { type: "boolean" } },
+    { optional: true }
+  );
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
 
   try {
     const session = await getSessionForCandidate(id, user.id);

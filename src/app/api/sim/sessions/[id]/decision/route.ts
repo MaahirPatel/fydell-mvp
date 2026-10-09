@@ -4,6 +4,7 @@ import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 import { getSessionForOrgMember } from "@/lib/simulations/db";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 
@@ -18,17 +19,14 @@ export async function POST(
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: {
-    decision?: string;
-    notes?: string;
-    evidenceInfluence?: "changed" | "confirmed" | "no_effect";
-    reviewStatus?: "unreviewed" | "in_review" | "follow_up_needed" | "reviewed";
-  };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, {
+    decision: { type: "string", max: 40 },
+    notes: { type: "string", max: 8000 },
+    evidenceInfluence: { type: "enum", values: ["changed", "confirmed", "no_effect"] as const },
+    reviewStatus: { type: "enum", values: ["unreviewed", "in_review", "follow_up_needed", "reviewed"] as const },
+  });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
   if (!body.decision || !DECISIONS.has(body.decision))
     return NextResponse.json({ error: "Invalid decision" }, { status: 400 });
   if (

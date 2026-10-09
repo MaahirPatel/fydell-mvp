@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/simulations/auth";
 import { listQuestionsForCandidate, answerQuestion, notifyQuestionAnswered } from "@/lib/employer/review";
 import { csrfGuard } from "@/lib/security/csrf";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,12 +31,12 @@ export async function POST(req: NextRequest) {
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: { questionId?: string; response?: string; organizationId?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, {
+    questionId: { type: "string", max: 100 },
+    response: { type: "string", max: 20000 },
+  });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
   if (!body.questionId) {
     return NextResponse.json({ error: "questionId is required." }, { status: 400 });
   }

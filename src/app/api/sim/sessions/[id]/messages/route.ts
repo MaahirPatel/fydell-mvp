@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { csrfGuard } from "@/lib/security/csrf";
+import { parseJsonBody } from "@/lib/security/request-body";
 import {
   extendSessionEndsAt,
   getSessionForCandidate,
@@ -97,12 +98,13 @@ export async function POST(
   const rl = rateLimit(`sim-chat:${user.id}`, 150, 60 * 60 * 1000);
   if (!rl.ok) return NextResponse.json({ error: "Too many messages this hour. Your draft is kept; try again shortly." }, { status: 429 });
 
-  let body: { stakeholderId?: string; text?: string; clientMsgId?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, {
+    stakeholderId: { type: "string", max: 100 },
+    text: { type: "string", max: 20000 },
+    clientMsgId: { type: "string", max: 100 },
+  });
+  if (parsed.ok === false) return parsed.response;
+  const body = parsed.body;
   const text = (body.text || "").trim();
   if (!text) return NextResponse.json({ error: "Message cannot be empty" }, { status: 400 });
   if (text.length > 2000)

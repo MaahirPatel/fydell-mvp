@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/simulations/auth";
 import { createShare, listShares } from "@/lib/passport/store";
 import { csrfGuard } from "@/lib/security/csrf";
 import { shareableProjectKeys } from "@/lib/profile-evidence/store";
+import { appUrl } from "@/lib/app-url";
 
 export async function GET() {
   const user = await requireUser();
@@ -33,6 +34,5 @@ export async function POST(req: Request) {
     const status = /expiry|choose/i.test(created.error) ? 400 : 409;
     return NextResponse.json({ error: created.error }, { status });
   }
-  const origin = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
-  return NextResponse.json({ url: `${origin}/p/${created.token}`, shares: await listShares(user.id) });
+  return NextResponse.json({ url: `${appUrl()}/p/${created.token}`, shares: await listShares(user.id) });
 }

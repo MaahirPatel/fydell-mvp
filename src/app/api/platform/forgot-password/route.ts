@@ -19,14 +19,18 @@ const GENERIC_OK = {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const raw: unknown = await req.json().catch(() => null);
+    const body = raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-    const captchaToken = typeof body.captchaToken === "string" ? body.captchaToken : "";
+    const captchaToken = typeof body.captchaToken === "string" ? body.captchaToken.slice(0, 4096) : "";
     const ip = clientIp(req);
     const ipKey = hashIp(ip) || "unknown";
 
     if (!email) {
       return NextResponse.json({ error: "Email is required." }, { status: 400 });
+    }
+    if (email.length > 254) {
+      return NextResponse.json({ error: "Enter a valid email." }, { status: 400 });
     }
 
     if (!rateLimit(`forgot:ip:${ipKey}`, 10).ok || !rateLimit(`forgot:email:${email}`, 5).ok) {
