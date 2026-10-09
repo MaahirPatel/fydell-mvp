@@ -183,7 +183,7 @@ async function main() {
   check("GH-09 coverage line gives skip reasons", /skipped/.test(covLine), covLine);
   const partialProj = (await import("@/lib/passport/assemble")).projectFromResult(brokenRes, "");
   const partialLine = partialProj ? describeCoverage(partialProj) : "";
-  check("GH-09 partial never presented as complete", !!partialProj && partialProj.status === "partial" && /partial analysis/.test(partialLine), partialLine);
+  check("GH-09 partial never presented as complete", !!partialProj && partialProj.status === "partial" && /partial analysis/i.test(partialLine), partialLine);
 
   report("extract (GH-01..GH-09)");
 }

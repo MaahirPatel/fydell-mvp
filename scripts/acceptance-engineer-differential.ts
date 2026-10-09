@@ -19,7 +19,7 @@ import { analyzeUpload } from "@/lib/passport/upload";
 import { buildReport } from "@/lib/builder-analysis/run";
 import { getProviderConfig } from "@/lib/ai/provider";
 import type { PassportProject } from "@/lib/passport/view";
-import type { ExtractionResult } from "@/lib/passport/github/types";
+import { ANALYSIS_VERSION, type ExtractionResult } from "@/lib/passport/github/types";
 import type { BuilderAnalysisReport } from "@/lib/builder-analysis/types";
 
 const OUT = join(process.cwd(), ".scratch", "acceptance", "engineer");
@@ -160,6 +160,70 @@ const alternative: Files = {
   ].join("\n"),
 };
 
+/** Retry with backoff where the wait is far below the loop header, a seen-set guard and a dedupe table claim. */
+const deepRetryAndDedupe: Files = {
+  "README.md": "# relay\n",
+  "src/relay.ts": [
+    "const seenIds = new Set<string>();",
+    "",
+    "export async function relay(events: Array<{ id: string; url: string }>) {",
+    "  for (const event of events) {",
+    "    if (seenIds.has(event.id)) continue;",
+    "    seenIds.add(event.id);",
+    "    await deliver(event.url);",
+    "  }",
+    "}",
+    "",
+    "async function deliver(url: string) {",
+    "  for (let attempt = 0; attempt < 6; attempt++) {",
+    "    try {",
+    "      const res = await fetch(url);",
+    "      if (res.status >= 500) throw new Error(`upstream ${res.status}`);",
+    "      await record(url, res.status);",
+    "      await audit(url);",
+    "      await metrics(url);",
+    "      return res.status;",
+    "    } catch (err) {",
+    "      console.error('delivery failed', attempt, err);",
+    "      const wait = 200 * Math.pow(2, attempt);",
+    "      await new Promise((r) => setTimeout(r, wait));",
+    "    }",
+    "  }",
+    "  throw new Error('delivery failed after retries');",
+    "}",
+    "",
+  ].join("\n"),
+  "src/store.ts": [
+    "import { pool } from './db';",
+    "",
+    "export async function record(url: string, status: number) {",
+    "  await pool.query('INSERT INTO deliveries (url, status) VALUES ($1, $2) ON CONFLICT (url) DO NOTHING', [url, status]);",
+    "}",
+    "",
+  ].join("\n"),
+};
+
+/** Near misses: a counter loop that waits only after the loop, and dedupe words that appear only in comments and return values. */
+const nearMiss: Files = {
+  "README.md": "# batch\n",
+  "src/batch.ts": [
+    "// We should dedupe events if they were already processed, but do not yet.",
+    "export async function runBatch(items: string[]) {",
+    "  let processedCount = 0;",
+    "  for (let attempt = 0; attempt < 3; attempt++) {",
+    "    processedCount += items.length;",
+    "  }",
+    "  await new Promise((r) => setTimeout(r, 1000));",
+    "  if (items.length === 0) return processedCount;",
+    "  for (const entry of items) {",
+    "    await new Promise((r) => setTimeout(r, 10));",
+    "  }",
+    "  return processedCount;",
+    "}",
+    "",
+  ].join("\n"),
+};
+
 /** A real project directory with nothing any rule can cite. */
 const missing: Files = {
   "README.md": "# notes\n\nPersonal notes.\n",
@@ -244,23 +308,36 @@ async function main() {
   results.push(await runCase("missing", "Notes and a trivial file; nothing a rule can cite.", zip(missing)));
   const broken = zip(correct).slice(0, 200);
   results.push(await runCase("execution-failure", "A truncated archive: the import cannot be read.", broken));
+  results.push(await runCase("deep-retry-and-dedupe", "Backoff 11 lines into the retry loop, a seen-set guard and an ON CONFLICT DO NOTHING claim.", zip(deepRetryAndDedupe)));
+  results.push(await runCase("near-miss", "A counter loop that waits only after the loop, a loop over entries, dedupe words only in comments and return values.", zip(nearMiss)));
 
-  const [c, p, s, a, m, f] = results;
+  const [c, p, s, a, m, f, d, n] = results;
   const checks: Array<[string, () => void]> = [
-    ["correct cites timeout, logged error handling, tests, a failure-path test and CI", () => {
-      for (const d of ["outbound_timeout", "explicit_error_handling", "test_suite", "failure_path_test", "ci_checks"]) assert.ok(detectorsOf(c).has(d), `correct missing ${d}`);
+    ["correct cites retries, dedupe, timeout, logged error handling, tests, a failure-path test and CI", () => {
+      for (const x of ["retry_with_backoff", "idempotency_guard", "outbound_timeout", "explicit_error_handling", "test_suite", "failure_path_test", "ci_checks"]) assert.ok(detectorsOf(c).has(x), `correct missing ${x}`);
+      const retry = c.findings?.find((x) => x.detector === "retry_with_backoff");
+      assert.equal(retry?.lines, "8-15", "the citation spans the loop header to the wait");
     }],
-    ["partial keeps retries but loses timeout, dedupe and tests", () => {
-      assert.ok(detectorsOf(p).has("retry_with_backoff"));
-      for (const d of ["outbound_timeout", "idempotency_guard", "test_suite", "failure_path_test"]) assert.ok(!detectorsOf(p).has(d), `partial should not have ${d}`);
+    ["partial keeps exactly the retry finding: no timeout, dedupe or tests", () => {
+      assert.deepEqual([...detectorsOf(p)].sort(), ["retry_with_backoff"]);
     }],
-    ["superficial: a test file exists but no failure-path test, no retries, no error handling cited", () => {
-      assert.ok(detectorsOf(s).has("test_suite"));
-      for (const d of ["failure_path_test", "retry_with_backoff", "explicit_error_handling"]) assert.ok(!detectorsOf(s).has(d), `superficial should not have ${d}`);
+    ["superficial gains no findings from the new rules: only the test file is cited", () => {
+      assert.deepEqual([...detectorsOf(s)].sort(), ["test_suite"]);
     }],
-    ["alternative valid solution is recognized in another language and library", () => {
-      for (const d of ["retry_with_backoff", "outbound_timeout", "explicit_error_handling", "failure_path_test", "test_isolation"]) assert.ok(detectorsOf(a).has(d), `alternative missing ${d}`);
+    ["alternative valid solution is recognized in another language and library, including its dedupe check", () => {
+      for (const x of ["retry_with_backoff", "idempotency_guard", "outbound_timeout", "explicit_error_handling", "failure_path_test", "test_isolation"]) assert.ok(detectorsOf(a).has(x), `alternative missing ${x}`);
       assert.equal(level(a, "reliability"), "developing");
+    }],
+    ["deep retry, seen-set guard and dedupe claim are all cited", () => {
+      for (const x of ["retry_with_backoff", "idempotency_guard"]) assert.ok(detectorsOf(d).has(x), `deep case missing ${x}`);
+      const guards = d.findings?.filter((x) => x.detector === "idempotency_guard").map((x) => x.path).sort();
+      assert.deepEqual(guards, ["src/relay.ts", "src/store.ts"]);
+    }],
+    ["near misses produce neither a retry nor a dedupe finding", () => {
+      for (const x of ["retry_with_backoff", "idempotency_guard"]) assert.ok(!detectorsOf(n).has(x), `near-miss should not have ${x}`);
+    }],
+    ["every finding is bound to the new analysis version", () => {
+      for (const r of [c, p, s, a, d]) for (const e of r.report?.ledger ?? []) assert.equal(e.source.analysisVersion, ANALYSIS_VERSION);
     }],
     ["partial and correct differ in testing evidence, not just wording", () => {
       assert.equal(level(p, "quality"), "insufficient_evidence");
@@ -334,16 +411,14 @@ async function main() {
     narrative: r.report ? { source: r.report.narrative.source, model: r.report.narrative.model ?? null, summary: r.report.narrative.summary, claimCheck: r.report.narrative.claimCheck ?? null } : null,
     inputHash: r.report?.run?.inputHash ?? null,
   }));
-  const knownMisses = [
-    { case: "correct", detector: "retry_with_backoff", present: !detectorsOf(c).has("retry_with_backoff"), cause: "The backoff sleep is 7 lines below the loop header; the rule looks 6 lines ahead." },
-    { case: "correct", detector: "idempotency_guard", present: !detectorsOf(c).has("idempotency_guard"), cause: "alreadyProcessed() in camelCase is not one of the rule's keywords (already_processed, dedup, idempot...)." },
-    { case: "alternative", detector: "idempotency_guard", present: !detectorsOf(a).has("idempotency_guard"), cause: "`if job_id in PROCESSED` uses none of the rule's keywords." },
-  ].filter((k) => k.present);
   writeFileSync(
     join(OUT, "differential-summary.json"),
-    JSON.stringify({ generatedAt: new Date().toISOString(), narrativeProvider: provider ? `${provider.provider}:${provider.model}` : "template", knownMisses, cases: summary }, null, 2),
+    JSON.stringify(
+      { generatedAt: new Date().toISOString(), analysisVersion: ANALYSIS_VERSION, narrativeProvider: provider ? `${provider.provider}:${provider.model}` : "template", passed: checks.length - failed, total: checks.length, cases: summary },
+      null,
+      2,
+    ),
   );
-  for (const k of knownMisses) console.log(`known miss: ${k.case} ${k.detector}: ${k.cause}`);
   console.log(`\n${checks.length - failed}/${checks.length} differential checks passed. Output: ${OUT}`);
   if (failed) process.exit(1);
 }

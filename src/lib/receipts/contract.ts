@@ -29,6 +29,8 @@ export type ManifestRef = {
   findings?: number;
   manifestHash?: string;
   inputHash?: string;
+  /** Which immutable analysis of the snapshot this receipt accepted. */
+  snapshotVersion?: number;
 };
 
 export type ReceiptRow = {
@@ -38,6 +40,7 @@ export type ReceiptRow = {
   projectKey: string | null;
   sourceRevision: string | null;
   snapshotId: string | null;
+  snapshotVersionId: string | null;
   evidenceVersionId: string | null;
   analysisId: string | null;
   importJobId: string | null;
@@ -161,7 +164,7 @@ export function receiptExport(view: ReceiptView, exportedAt: string) {
       manifest: view.manifestRef,
       contentHash: view.contentHash,
       acceptedAt: view.acceptedAt,
-      links: { snapshotId: view.snapshotId, evidenceVersionId: view.evidenceVersionId, analysisId: view.analysisId, importJobId: view.importJobId },
+      links: { snapshotId: view.snapshotId, snapshotVersionId: view.snapshotVersionId, evidenceVersionId: view.evidenceVersionId, analysisId: view.analysisId, importJobId: view.importJobId },
       verificationScope: view.verificationScope,
     },
     status: { processing: view.processing, integrity: view.integrity },

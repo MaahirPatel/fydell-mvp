@@ -9,6 +9,11 @@
  *   - a Builder Analysis run is versioned, immutable once finished, receipted
  *   - a failed reanalysis keeps the previous report current
  *   - a later run records what it supersedes and compares to the earlier one
+ *   - analyzing a revision again under new rules appends a stored version;
+ *     the old receipt and the old report's citations still resolve to it
+ *   - a contribution written at import (or kept on an older snapshot) is the
+ *     statement the engineer confirms and publishes
+ *   - a public GitHub repository imports through the dev server
  *   - a share link shows the profile to an anonymous visitor, without owner
  *     controls, and stops working when revoked
  *
@@ -26,7 +31,9 @@ import { beginAnalysis, failAnalysis, getAnalysis, latestCompleteReport, listAna
 import { runAnalysis } from "../src/lib/builder-analysis/run";
 import { compareVersions } from "../src/lib/builder-analysis/ledger";
 import { confirmContribution, publishEvidenceVersion } from "../src/lib/profile-evidence/store";
-import { saveContribution } from "../src/lib/passport/context-store";
+import { getContribution, saveContribution } from "../src/lib/passport/context-store";
+import { listSnapshotVersions } from "../src/lib/passport/snapshot-versions";
+import { ANALYSIS_VERSION } from "../src/lib/passport/github/types";
 import { parseContribution } from "../src/lib/passport/context-contract";
 import type { BuilderAnalysisReport } from "../src/lib/builder-analysis/types";
 
@@ -221,6 +228,19 @@ async function main() {
 
   const second = await save(a.id, "webhook-relay", project("webhook-relay", { "src/retry.ts": "export async function withRetry<T>(fn: () => Promise<T>): Promise<T> {\n  for (let attempt = 0; attempt < 3; attempt++) {\n    try {\n      return await fn();\n    } catch (error) {\n      console.error('retry', attempt, error);\n      await new Promise((r) => setTimeout(r, 2 ** attempt * 100));\n    }\n  }\n  return fn();\n}\n" }), "");
   await issueSnapshotReceipt(a.id, second.saved.projectId, null);
+
+  /* A snapshot analyzed under the previous rules, as it would be before the version bump */
+  const OLD_RULES = "github-extract-v4";
+  const legacy = await save(a.id, "queue-worker", project("queue-worker"), "");
+  const legacyId = legacy.saved.projectId;
+  await admin.from("passport_snapshot_versions").delete().eq("snapshot_id", legacyId);
+  await admin.from("passport_projects").update({ analysis_version: OLD_RULES }).eq("id", legacyId);
+  const { data: legacyEvidence } = await admin.from("passport_evidence").select("id,finding").eq("project_id", legacyId);
+  const legacyFindingIds = ((legacyEvidence ?? []) as Array<{ id: string; finding: string }>).map((e) => e.id);
+  await admin.from("passport_evidence").update({ finding: "Old-rules wording kept for acceptance." }).eq("project_id", legacyId);
+  const oldReceipt = await issueSnapshotReceipt(a.id, legacyId, null);
+  ok("a snapshot has findings to cite before it is analyzed again", legacyFindingIds.length > 0, `findings=${legacyFindingIds.length}`);
+
   const start3 = await beginAnalysis(a.id, { sourcesChanged: true });
   if (!start3.started) throw new Error("third analysis did not start");
   await runAnalysis(start3.id, a.id, start3.supersedes);
@@ -235,6 +255,45 @@ async function main() {
   const crossView = await getReceiptView(b.id, r1.id);
   ok("another user's view of the receipt resolves to nothing", crossView === null);
 
+  /* Re-analysis under new rules appends a version; old receipts and report citations still resolve */
+  const cited = (run3?.report?.ledger ?? []).filter((e) => e.source.snapshotId === legacyId);
+  ok("the report cites the snapshot at a stored version", cited.length > 0 && cited.every((e) => e.source.snapshotVersion === 1), JSON.stringify(cited.map((e) => e.source.snapshotVersion)));
+  const reanalyzed = await save(a.id, "queue-worker", project("queue-worker"), "");
+  const versionsAfter = await listSnapshotVersions(a.id, legacyId);
+  ok("analyzing the same revision under new rules keeps the project and appends version 2",
+    reanalyzed.saved.projectId === legacyId && !reanalyzed.saved.reusedExistingVersion && versionsAfter.length === 2 &&
+    versionsAfter[1]?.analysisVersion === OLD_RULES && versionsAfter[0]?.analysisVersion === ANALYSIS_VERSION,
+    JSON.stringify(versionsAfter.map((v) => [v.version, v.analysisVersion])));
+  const v1 = versionsAfter.find((v) => v.version === 1);
+  const liveFindings = ((await admin.from("passport_evidence").select("finding").eq("project_id", legacyId)).data ?? []) as Array<{ finding: string }>;
+  ok("the live snapshot now holds the new findings, and version 1 still holds the old ones",
+    !!v1 && legacyFindingIds.every((id) => v1.findings.some((f) => f.id === id)) && v1.findings.every((f) => f.finding === "Old-rules wording kept for acceptance.") &&
+    liveFindings.length > 0 && liveFindings.every((f) => f.finding !== "Old-rules wording kept for acceptance."));
+  ok("every finding the earlier report cited resolves in the version it cited", cited.every((e) => v1?.findings.some((f) => f.id === e.id && f.finding === e.claim)), JSON.stringify(cited.map((e) => e.id)));
+  const oldView = await getReceiptView(a.id, oldReceipt.id);
+  ok("the old receipt still matches, says it was analyzed again, and links to version 1",
+    oldView?.integrity.state === "matches" && oldView.processing.state === "superseded" && /analyzed again as version 2/.test(oldView.processing.detail) && oldView.linkedReport?.href.endsWith("?version=1") === true,
+    JSON.stringify({ integrity: oldView?.integrity.state, processing: oldView?.processing, href: oldView?.linkedReport?.href }));
+  const newReceipt = await issueSnapshotReceipt(a.id, legacyId, null);
+  const { data: newRow } = await admin.from("engineer_work_receipts").select("snapshot_version_id").eq("id", newReceipt.id).single();
+  ok("a receipt for the new analysis is a separate receipt bound to version 2", newReceipt.id !== oldReceipt.id && (newRow as { snapshot_version_id: string | null } | null)?.snapshot_version_id === versionsAfter[0]?.id);
+  const tamper = await admin.from("passport_snapshot_versions").update({ findings: [] }).eq("snapshot_id", legacyId).eq("version", 1).select("id");
+  ok("the database refuses to change a stored version", !!tamper.error && /immutable/.test(tamper.error.message), tamper.error?.message ?? "update succeeded");
+  const versionRls = await cb.from("passport_snapshot_versions").select("id").eq("snapshot_id", legacyId);
+  const versionOwn = await ca.from("passport_snapshot_versions").select("id").eq("snapshot_id", legacyId);
+  ok("RLS: the owner can read stored versions and another user cannot", (versionOwn.data ?? []).length === 2 && (versionRls.data ?? []).length === 0, versionOwn.error?.message);
+  try {
+    const sa = await login(a.email);
+    const sb = await login(b.email);
+    const archived = await sa.fetch(`/app/candidate/projects/${legacyId}?version=1`);
+    const archivedHtml = await archived.text();
+    const othersArchived = await sb.fetch(`/app/candidate/projects/${legacyId}?version=1`);
+    ok("HTTP: the owner can open version 1 as it was recorded", archived.status === 200 && archivedHtml.includes("Old-rules wording kept for acceptance.") && archivedHtml.includes(OLD_RULES), `status=${archived.status}`);
+    ok("HTTP: another engineer cannot open it", othersArchived.status === 404 || !(await othersArchived.text()).includes("Old-rules wording"), `status=${othersArchived.status}`);
+  } catch (error) {
+    ok("HTTP checks for stored versions", false, error instanceof Error ? error.message : String(error));
+  }
+
   /* Published evidence version receipt: add context, confirm, publish twice */
   const parsed = parseContribution({ workedOn: "I wrote the job client, its timeout and the failure-path test.", collaboration: "solo" });
   if ("error" in parsed) throw new Error(parsed.error);
@@ -246,6 +305,53 @@ async function main() {
   ok("publishing evidence issues a receipt, and republishing the same content reuses it",
     pub1.ok === true && pub2.ok === true && !!pub1.receiptId && pub1.receiptId === pub2.receiptId,
     `confirm=${JSON.stringify(confirmed)} pub1=${JSON.stringify(pub1.ok ? { receiptId: pub1.receiptId } : pub1)}`);
+
+  /* Contribution written at import time is the statement the engineer confirms */
+  const legacyStatement = "I wrote the notes client and its failure test.";
+  const notes = await save(a.id, "notes-service", project("notes-service"), legacyStatement);
+  const notesConfirm = await confirmContribution(a.id, notes.repo);
+  const notesContext = await getContribution(a.id, notes.repo);
+  ok("a statement stored only on an older snapshot can be confirmed, and becomes the project context",
+    notesConfirm.ok === true && notesContext.workedOn === legacyStatement && notesContext.version >= 1,
+    JSON.stringify({ confirm: notesConfirm, workedOn: notesContext.workedOn }));
+  const notesPub = await publishEvidenceVersion(a.id, notes.repo, "publish");
+  ok("that confirmed statement can be published", notesPub.ok === true, JSON.stringify(notesPub));
+
+  let githubImport = "not run";
+  try {
+    const sa = await login(a.email);
+    const repoName = "jonschlinkert/is-number";
+    const pv = await sa.fetch("/api/passport/github", { method: "POST", body: JSON.stringify({ input: repoName, preview: true }) });
+    const pvBody = (await pv.json()) as { preview?: { commitSha?: string; revisionRef?: string; repository?: { fullName?: string } }; error?: string; code?: string };
+    if (pv.status !== 200 || !pvBody.preview?.commitSha) {
+      githubImport = `preview blocked: ${pv.status} ${pvBody.code ?? ""} ${pvBody.error ?? ""}`.trim();
+      ok("GitHub preview of a public repository", false, githubImport);
+    } else {
+      const importStatement = "I added the integer checks and the tests for strings that look like numbers.";
+      const start = await sa.fetch("/api/passport/imports", {
+        method: "POST",
+        body: JSON.stringify({ repository: repoName, commitSha: pvBody.preview.commitSha, revisionRef: pvBody.preview.revisionRef ?? "", contribution: importStatement }),
+      });
+      const startBody = (await start.json()) as { job?: { id: string; state: string } };
+      let job = startBody.job ?? null;
+      for (let i = 0; i < 60 && job && job.state !== "succeeded" && job.state !== "failed" && job.state !== "cancelled"; i++) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const poll = await sa.fetch(`/api/passport/imports/${job.id}`);
+        job = ((await poll.json()) as { job?: { id: string; state: string } }).job ?? job;
+      }
+      githubImport = `job ${job?.state ?? "missing"}`;
+      ok("a public GitHub repository imports through the dev server", job?.state === "succeeded", githubImport);
+      const fullName = pvBody.preview.repository?.fullName ?? repoName;
+      const ghContext = await getContribution(a.id, fullName);
+      ok("the contribution written at import is the project's 'what I worked on'", ghContext.workedOn === importStatement, ghContext.workedOn);
+      const ghConfirm = await confirmContribution(a.id, fullName);
+      const ghPub = await publishEvidenceVersion(a.id, fullName, "publish");
+      ok("the engineer can confirm and publish it without retyping", ghConfirm.ok === true && ghPub.ok === true, JSON.stringify({ ghConfirm, ghPub: ghPub.ok ? "ok" : ghPub }));
+    }
+  } catch (error) {
+    githubImport = `error: ${error instanceof Error ? error.message : String(error)}`;
+    ok("GitHub import with an import-time contribution", false, githubImport);
+  }
 
   /* Share link: anonymous visitor, then revoked */
   const share = await createShare(a.id, "Acceptance", ["projects", "evidence", "capabilities"]);
@@ -270,7 +376,7 @@ async function main() {
   const anView = analysisReceipts[0] ? await getReceiptView(a.id, analysisReceipts[0].id) : null;
   if (anView) writeFileSync(path.join(OUT, "example-receipt-analysis.json"), JSON.stringify(receiptExport({ ...anView, ownerId: "synthetic-owner" }, new Date().toISOString()), null, 2));
   if (run3?.report) writeFileSync(path.join(OUT, "example-report-live.json"), JSON.stringify({ id: run3.id, status: run3.status, reportHash: run3.reportHash, supersedesId: run3.supersedesId, report: run3.report }, null, 2));
-  writeFileSync(path.join(OUT, "live-summary.json"), JSON.stringify({ ranAt: new Date().toISOString(), devProject: DEV_REF, http, narrativeSource, comparison: cmp, results }, null, 2));
+  writeFileSync(path.join(OUT, "live-summary.json"), JSON.stringify({ ranAt: new Date().toISOString(), devProject: DEV_REF, http, githubImport, narrativeSource, comparison: cmp, results }, null, 2));
 }
 
 main()

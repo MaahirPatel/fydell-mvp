@@ -10,6 +10,7 @@ import { accountDisplayName } from "@/lib/auth/account-name";
 import { UPLOAD_IMPORTER_VERSION } from "./upload";
 import { shareState, validateExpiryInput } from "./sharing";
 import { currentSnapshots, markSuperseded } from "./snapshots";
+import { recordSnapshotVersion } from "./snapshot-versions";
 import { mergePresentations } from "./presentation";
 import { listPresentationRows } from "./presentation-store";
 import {
@@ -96,7 +97,7 @@ async function loadPassportCore(passportId: string): Promise<PassportData | null
     .eq("passport_id", passportId)
     .order("analyzed_at", { ascending: false });
   const projectRows = (projects ?? []) as ProjectRow[];
-  const profileName = await profileDisplayName(row.owner_id);
+  const [profileName, contributions] = await Promise.all([profileDisplayName(row.owner_id), listContributions(passportId)]);
   const summary = row.capability_summary as CapabilitySummary;
   const projectList: PassportProject[] = projectRows.map((p) => ({
     id: p.id,
@@ -110,7 +111,8 @@ async function loadPassportCore(passportId: string): Promise<PassportData | null
     commitSha: p.commit_sha,
     primaryLanguage: p.primary_language,
     isFork: p.is_fork,
-    contributionStatement: p.contribution_statement,
+    // The project context is the one place a contribution is stated; the snapshot copy only covers records saved before it.
+    contributionStatement: contributions.get(p.repo_full_name)?.workedOn || p.contribution_statement,
     status: p.status,
     coverage: {
       totalFiles: p.coverage.totalFiles ?? 0,
@@ -250,6 +252,9 @@ export async function saveProjectVersion(
       // Never replace evidence someone relies on: a pinned share or an engineer's note.
       const replaceable =
         (fuller || newerAnalysis) && !(await snapshotIsPinned(passportId, row.id)) && !(await snapshotHasNotes(passportId, row.id));
+      // The analysis being replaced is kept as an immutable version first, so
+      // receipts and reports that cite it keep resolving to it.
+      await recordSnapshotVersion(row.id);
       if (!replaceable) {
         const passport = await loadPassport(passportId);
         if (!passport) throw new Error("Could not load the saved passport.");

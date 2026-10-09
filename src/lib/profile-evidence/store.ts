@@ -2,7 +2,7 @@ import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getOwnerPassport } from "@/lib/passport/store";
 import { currentSnapshots } from "@/lib/passport/snapshots";
-import { listContributions, listDecisionsForPassport } from "@/lib/passport/context-store";
+import { adoptContributionStatement, listContributions, listDecisionsForPassport } from "@/lib/passport/context-store";
 import { COLLABORATION_LABEL } from "@/lib/passport/context-contract";
 import { listPresentationRows } from "@/lib/passport/presentation-store";
 import {
@@ -226,14 +226,37 @@ function currentVersions(s: EvidenceSources) {
   return { presentationVersion: s.presentation?.saved ? s.presentation.version : 0, contributionVersion: s.contribution?.version ?? 0 };
 }
 
+/** The statement written at import on the newest snapshot, for records saved before it moved into the project context. */
+async function importedStatement(ownerId: string, repoFullName: string): Promise<string> {
+  const passportId = await passportIdFor(ownerId);
+  if (!passportId) return "";
+  const { data } = await createAdminSupabaseClient()
+    .from("passport_projects")
+    .select("contribution_statement")
+    .eq("passport_id", passportId)
+    .eq("repo_full_name", repoFullName)
+    .neq("contribution_statement", "")
+    .order("analyzed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data as { contribution_statement: string } | null)?.contribution_statement ?? "";
+}
+
 /**
  * The engineer states the contribution is theirs, as currently written. A
  * later edit to the statement makes the confirmation stale; it is never
  * carried over silently.
  */
 export async function confirmContribution(ownerId: string, projectKey: string): Promise<{ ok: true; state: ConfirmationState } | Failure> {
-  const g = await gatherSources(ownerId, projectKey);
+  let g = await gatherSources(ownerId, projectKey);
   if ("ok" in g) return g;
+  if (!g.contributionText.trim() && !g.sources.contribution && (g.sources.sourceKind === "github" || g.sources.sourceKind === "upload")) {
+    const statement = await importedStatement(ownerId, g.sources.projectKey);
+    if (statement && (await adoptContributionStatement(ownerId, g.sources.projectKey, statement))) {
+      g = await gatherSources(ownerId, projectKey);
+      if ("ok" in g) return g;
+    }
+  }
   if (g.sources.sourceKind === "work_sample") return { ok: false, status: 400, error: "Work samples are Fydell observations; there is no contribution statement to confirm." };
   if (!g.contributionText.trim()) {
     await recordEvidenceEvent("publish_blocked", { reason: "no_contribution", source_kind: g.sources.sourceKind });

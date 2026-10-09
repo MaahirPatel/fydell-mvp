@@ -148,6 +148,9 @@ function ScopeCard({
           placeholder="What did you build or change here? Shown as your statement, separate from the findings."
           className="platform-input mt-1 text-app-body"
         />
+        <span className="mt-1 block text-app-caption leading-[1.5] text-[var(--text-tertiary)]">
+          Saved as what you worked on in this project&apos;s context, the same statement you confirm on the project page. Leave it empty to keep what is there.
+        </span>
       </label>
     </li>
   );

@@ -96,26 +96,60 @@ function schemaValidatedHandlers(files: Files): DraftFinding[] {
   return out;
 }
 
+/** The line without its comment. String contents are kept: `event.get("already_processed")` is a real check. */
+export function codeOnly(line: string): string {
+  const masked = line.replace(/(["'`])(?:\\.|(?!\1).)*\1/g, (s) => s[0] + " ".repeat(s.length - 2) + s[0]);
+  const comment = masked.search(/(^|\s)(#|\/\/)/);
+  return comment < 0 ? line : line.slice(0, comment);
+}
+
+/** An identifier that names already-done work: alreadyProcessed, seen_ids, PROCESSED, isDuplicate, dedupeKey... */
+const DONE_NAME = /\b\w*(processed|handled|seen|dedup\w*|duplicate|idempot\w*|delivered)\w*\b/i;
+/** A write that claims a key atomically and does nothing on a repeat: ON CONFLICT DO NOTHING, INSERT OR IGNORE, Redis SET NX. */
+const DEDUPE_CLAIM = /\bON\s+CONFLICT\b[^;]*\bDO\s+NOTHING\b|\bINSERT\s+OR\s+IGNORE\b|\bsetnx\(|\bnx\s*=\s*True\b|\bnx:\s*true\b|['"]NX['"]/i;
+
+/**
+ * Either an `if` that tests already-done work (a call such as
+ * alreadyProcessed(), a membership test such as `x in PROCESSED` or
+ * `seenIds.has(x)`, or a flag) and leaves within three lines, or an atomic
+ * dedupe claim. The words must be code, not comments or string contents,
+ * except the claim, which normally sits inside a SQL or Redis call.
+ */
+export function idempotencyMatch(ls: string[]): { start: number; end: number; kind: "guard" | "claim" } | null {
+  for (let i = 0; i < ls.length; i++) {
+    const code = codeOnly(ls[i]);
+    if (code.trim() && DEDUPE_CLAIM.test(ls[i])) return { start: i + 1, end: i + 1, kind: "claim" };
+    const at = code.search(/\bif\b/);
+    if (at < 0) continue;
+    const condition = code.slice(at).split(/\b(?:return|continue|raise|throw)\b|\{\s*$|:\s*$/)[0];
+    if (!DONE_NAME.test(condition)) continue;
+    const window = [code.slice(at), ...ls.slice(i + 1, i + 4).map(codeOnly)];
+    const end = window.findIndex((l) => /\b(return|continue|raise|throw)\b/.test(l));
+    if (end < 0) continue;
+    return { start: i + 1, end: i + 1 + end, kind: "guard" };
+  }
+  return null;
+}
+
 function idempotencyGuards(files: Files): DraftFinding[] {
   const out: DraftFinding[] = [];
   for (const [path, ls] of sourceFiles(files)) {
-    if (!isPython(path) && !isScript(path) && !["go", "rb", "java", "kt"].includes(ext(path))) continue;
-    for (let i = 0; i < ls.length; i++) {
-      if (!/\bif\b/.test(ls[i]) || !/(idempot|dedup|already_processed|is_duplicate|processed_event|ProcessedEvent|seen_ids?)/i.test(ls[i])) continue;
-      const end = ls.slice(i + 1, i + 4).findIndex((l) => /\b(return|continue|raise|throw)\b/.test(l));
-      if (end < 0) continue;
-      out.push({
-        detector: "idempotency_guard",
-        category: "backend",
-        finding: "Checks whether work was already processed before repeating it.",
-        basis: "repository_observation",
-        path,
-        startLine: i + 1,
-        endLine: i + 2 + end,
-        limitations: ["Behaviour under concurrent delivery is not observed."],
-      });
-      break;
-    }
+    if (isTestFile(path) || !(isPython(path) || isScript(path) || ["go", "rb", "java", "kt"].includes(ext(path)))) continue;
+    const m = idempotencyMatch(ls);
+    if (!m) continue;
+    out.push({
+      detector: "idempotency_guard",
+      category: "backend",
+      finding:
+        m.kind === "claim"
+          ? "Claims a key atomically so a repeated request does nothing."
+          : "Checks whether work was already processed before repeating it.",
+      basis: "repository_observation",
+      path,
+      startLine: m.start,
+      endLine: m.end,
+      limitations: ["Behaviour under concurrent delivery is not observed."],
+    });
   }
   return out;
 }

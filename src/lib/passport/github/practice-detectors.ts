@@ -43,6 +43,62 @@ function lineWith(re: RegExp, near?: RegExp, window = 4): (lines: string[]) => S
   };
 }
 
+const MAX_BLOCK = 80;
+
+/**
+ * Last line (0-based) of the block opened at `start`: the matching closing
+ * brace for brace languages, or the last line indented deeper than the header
+ * for Python. Capped so a runaway file cannot widen the search without bound.
+ */
+export function blockEnd(lines: string[], start: number): number {
+  const header = lines[start];
+  const last = Math.min(lines.length - 1, start + MAX_BLOCK);
+  if (/:\s*(#.*)?$/.test(header) && !/[{]\s*$/.test(header)) {
+    const indent = header.search(/\S/);
+    let end = start;
+    for (let i = start + 1; i <= last; i++) {
+      if (!lines[i].trim()) continue;
+      if (lines[i].search(/\S/) <= indent) break;
+      end = i;
+    }
+    return end;
+  }
+  let depth = 0;
+  let opened = false;
+  for (let i = start; i <= last; i++) {
+    for (const ch of lines[i].replace(/(["'`])(?:\\.|(?!\1).)*\1/g, "")) {
+      if (ch === "{") {
+        depth += 1;
+        opened = true;
+      } else if (ch === "}") {
+        depth -= 1;
+        if (opened && depth <= 0) return i;
+      }
+    }
+    if (!opened && i > start) return start;
+  }
+  return last;
+}
+
+const RETRY_LIBRARY = /@retry\b|tenacity|backoff\.on_exception/i;
+const RETRY_LOOP = /^\s*(}\s*)?(for|while)\b.*\b(\w*retr(y|ies)\w*|\w*attempts?\w*|(max_?)?tries)\b/i;
+const DELAY = /(sleep\(|setTimeout\(|wait_exponential|backoff|\*\*\s*attempt|Math\.pow\(2|2\s*\*\*)/;
+
+/** A retry library with a wait nearby, or a retry loop whose own body waits between attempts. */
+function retryWithBackoff(ls: string[]): Span | null {
+  for (let i = 0; i < ls.length; i++) {
+    if (RETRY_LIBRARY.test(ls[i])) {
+      const j = ls.slice(i, i + 7).findIndex((l) => DELAY.test(l));
+      if (j >= 0) return { start: i + 1, end: i + 1 + j };
+      continue;
+    }
+    if (!RETRY_LOOP.test(ls[i])) continue;
+    const end = blockEnd(ls, i);
+    for (let j = i + 1; j <= end; j++) if (DELAY.test(ls[j])) return { start: i + 1, end: j + 1 };
+  }
+  return null;
+}
+
 const SPECS: Spec[] = [
   // Backend and API engineering
   {
@@ -75,7 +131,7 @@ const SPECS: Spec[] = [
     finding: "Retries a failed operation with a delay between attempts.",
     limitations: ["Retry limits and behaviour under sustained failure were not exercised."],
     files: isCode,
-    match: lineWith(/@retry\b|tenacity|backoff\.on_exception|\b(retries|retry|attempts?)\b.*(<|<=|range\()/i, /(sleep\(|setTimeout\(|wait_exponential|backoff|\*\*\s*attempt|Math\.pow\(2)/, 6),
+    match: retryWithBackoff,
   },
   {
     detector: "outbound_timeout",

@@ -14,6 +14,8 @@ import { evidenceStatus } from "@/lib/profile-evidence/store";
 import EvidenceVersionPanel from "@/components/evidence/EvidenceVersionPanel";
 import { receiptIdsForSnapshots } from "@/lib/receipts/store";
 import Link from "next/link";
+import { listSnapshotVersions } from "@/lib/passport/snapshot-versions";
+import SnapshotVersionView from "@/components/passport/SnapshotVersionView";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Builder Report" };
@@ -36,10 +38,10 @@ export default async function BuilderReportPage({
   searchParams,
 }: {
   params: Promise<{ projectId: string }>;
-  searchParams: Promise<{ finding?: string; view?: string }>;
+  searchParams: Promise<{ finding?: string; view?: string; version?: string }>;
 }) {
   const { projectId } = await params;
-  const { finding, view } = await searchParams;
+  const { finding, view, version: versionParam } = await searchParams;
   const user = await requireUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/app/candidate/projects/${projectId}`)}`);
   if (!/^[0-9a-f-]{36}$/.test(projectId)) notFound();
@@ -51,6 +53,19 @@ export default async function BuilderReportPage({
   ]);
   const project = passport?.projects.find((p): p is PassportProject & { id: string } => p.id === projectId);
   if (!passport || !project || !manifestRow) notFound();
+
+  const stored = await listSnapshotVersions(user.id, project.id);
+  if (typeof versionParam === "string") {
+    const wanted = stored.find((v) => String(v.version) === versionParam);
+    if (!wanted) notFound();
+    if (wanted.version !== stored[0]?.version) {
+      return (
+        <CandidateShell width="wide" current="work" crumbs={[{ label: project.repoFullName.split("/").pop() ?? project.repoFullName }, { label: `Version ${wanted.version}` }]}>
+          <SnapshotVersionView version={wanted} versions={stored} focusFindingId={typeof finding === "string" ? finding : null} />
+        </CandidateShell>
+      );
+    }
+  }
 
   const [contribution, decisions, shares, removalImpact, evidence, receipts] = await Promise.all([
     getContribution(user.id, project.repoFullName),
@@ -101,6 +116,20 @@ export default async function BuilderReportPage({
           </>
         )}
       </p>
+      {stored.length > 1 ? (
+        <p className="mt-3 text-[14px] text-[var(--text-secondary)]">
+          This revision has been analyzed {stored.length} times. Earlier analyses are kept unchanged:{" "}
+          {stored.slice(1).map((v, i) => (
+            <span key={v.id}>
+              {i > 0 ? ", " : ""}
+              <Link href={`/app/candidate/projects/${project.id}?version=${v.version}`} className="font-medium text-[var(--text-primary)] underline underline-offset-4">
+                version {v.version}
+              </Link>
+            </span>
+          ))}
+          .
+        </p>
+      ) : null}
       <DevelopmentFeedback projectId={project.id} items={developmentFeedback(project)} evidence={project.evidence} />
       <RemoveProject repoFullName={project.repoFullName} versionCount={versions.length} impact={removalImpact} />
     </CandidateShell>

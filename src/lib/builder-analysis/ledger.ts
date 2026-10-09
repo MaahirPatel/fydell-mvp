@@ -56,7 +56,8 @@ export type LedgerEntry = {
   id: string;
   claim: string;
   evidence: LedgerEvidenceRef;
-  source: { repo: string; revision: string | null; snapshotId: string | null; analysisVersion: string | null };
+  /** snapshotVersion: the immutable analysis of the snapshot this entry cites; absent on reports made before versions. */
+  source: { repo: string; revision: string | null; snapshotId: string | null; snapshotVersion?: number | null; analysisVersion: string | null };
   basis: "observation" | "inference";
   capability: { practice: string; practiceLabel: string; dimension: DimensionId };
   limitations: string[];
@@ -98,7 +99,7 @@ function codeEntries(project: PassportProject): LedgerEntry[] {
       id: e.id,
       claim: e.finding,
       evidence: { kind: "code", repo: project.repoFullName, path: e.path, startLine: e.startLine, endLine: e.endLine, url: e.sourceUrl || null },
-      source: { repo: project.repoFullName, revision, snapshotId: project.id ?? null, analysisVersion: project.analysisVersion ?? null },
+      source: { repo: project.repoFullName, revision, snapshotId: project.id ?? null, snapshotVersion: project.snapshotVersion ?? null, analysisVersion: project.analysisVersion ?? null },
       basis: "observation",
       capability: { practice: practice.key, practiceLabel: practice.label, dimension: practice.dimension },
       limitations: e.limitations,
@@ -239,7 +240,7 @@ export function capabilityStatements(s: Synthesis, ledger: LedgerEntry[]): Capab
 
 export type AnalysisInputSnapshot = {
   githubLogin: string | null;
-  projects: Array<{ repo: string; snapshotId: string | null; revision: string; analysisVersion: string | null; findingIds: string[]; contributionStated: boolean }>;
+  projects: Array<{ repo: string; snapshotId: string | null; snapshotVersion?: number | null; revision: string; analysisVersion: string | null; findingIds: string[]; contributionStated: boolean }>;
   activity: Array<{ repo: string; pushedAt: string | null; reused: boolean; commitsRead: number | null; errors: string[] }>;
 };
 
@@ -251,6 +252,7 @@ export function inputSnapshot(input: { githubLogin: string | null; projects: Pas
       .map((p) => ({
         repo: p.repoFullName,
         snapshotId: p.id ?? null,
+        snapshotVersion: p.snapshotVersion ?? null,
         revision: p.commitSha,
         analysisVersion: p.analysisVersion ?? null,
         findingIds: p.evidence.map((e) => e.id).sort(),

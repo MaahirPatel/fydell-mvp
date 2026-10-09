@@ -72,6 +72,14 @@ function EntryRow({ e }: { e: LedgerEntry }) {
         )}
         {e.source.revision ? <span>at {/^[0-9a-f]{40}$/.test(e.source.revision) ? e.source.revision.slice(0, 7) : e.source.revision}</span> : null}
         <span>· {e.capability.practiceLabel}</span>
+        {e.source.snapshotId && e.source.snapshotVersion ? (
+          <Link
+            href={`/app/candidate/projects/${e.source.snapshotId}?version=${e.source.snapshotVersion}&finding=${encodeURIComponent(e.id)}`}
+            className="underline underline-offset-2 hover:text-[var(--text-primary)]"
+          >
+            snapshot version {e.source.snapshotVersion}
+          </Link>
+        ) : null}
       </p>
       <button type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)} className="mt-1 text-[12px] font-medium text-[var(--accent-ink)] hover:underline">
         {open ? "Hide verification" : "Show verification"}

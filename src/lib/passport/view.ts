@@ -24,6 +24,8 @@ export type PassportProject = {
   /** Branch the commit was resolved from at import time. */
   revisionRef?: string | null;
   analysisVersion?: string | null;
+  /** Immutable version of this snapshot's analysis that a report cites. Set when a report is built. */
+  snapshotVersion?: number | null;
   importerVersion?: string | null;
   /** Stored analysis outcome, kept even when `status` is marked "stale". */
   analysisStatus?: "complete" | "partial";

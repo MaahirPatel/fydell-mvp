@@ -1,7 +1,8 @@
 import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { sha256 } from "@/lib/builder-analysis/hash";
 import { currentSnapshots } from "@/lib/passport/snapshots";
+import { getContribution } from "@/lib/passport/context-store";
+import { findSnapshotVersionByHash, getSnapshotVersionById, loadSnapshot, recordSnapshotVersion, snapshotHash, type SnapshotVersion } from "@/lib/passport/snapshot-versions";
 import type { PassportProject } from "@/lib/passport/view";
 import {
   analysisScope,
@@ -19,7 +20,7 @@ import {
 
 const TABLE = "engineer_work_receipts";
 const COLUMNS =
-  "id,owner_id,artifact_type,project_key,source_revision,snapshot_id,evidence_version_id,analysis_id,import_job_id,subject_version,analysis_version,manifest_ref,content_hash,verification_scope,accepted_at";
+  "id,owner_id,artifact_type,project_key,source_revision,snapshot_id,snapshot_version_id,evidence_version_id,analysis_id,import_job_id,subject_version,analysis_version,manifest_ref,content_hash,verification_scope,accepted_at";
 
 type DbRow = {
   id: string;
@@ -28,6 +29,7 @@ type DbRow = {
   project_key: string | null;
   source_revision: string | null;
   snapshot_id: string | null;
+  snapshot_version_id: string | null;
   evidence_version_id: string | null;
   analysis_id: string | null;
   import_job_id: string | null;
@@ -47,6 +49,7 @@ function toRow(r: DbRow): ReceiptRow {
     projectKey: r.project_key,
     sourceRevision: r.source_revision,
     snapshotId: r.snapshot_id,
+    snapshotVersionId: r.snapshot_version_id,
     evidenceVersionId: r.evidence_version_id,
     analysisId: r.analysis_id,
     importJobId: r.import_job_id,
@@ -66,6 +69,7 @@ type Insert = {
   projectKey: string | null;
   sourceRevision: string | null;
   snapshotId?: string | null;
+  snapshotVersionId?: string | null;
   evidenceVersionId?: string | null;
   analysisId?: string | null;
   importJobId?: string | null;
@@ -97,6 +101,7 @@ async function issue(input: Insert): Promise<ReceiptRow> {
       project_key: input.projectKey,
       source_revision: input.sourceRevision,
       snapshot_id: input.snapshotId ?? null,
+      snapshot_version_id: input.snapshotVersionId ?? null,
       evidence_version_id: input.evidenceVersionId ?? null,
       analysis_id: input.analysisId ?? null,
       import_job_id: input.importJobId ?? null,
@@ -116,78 +121,42 @@ async function issue(input: Insert): Promise<ReceiptRow> {
   throw new Error("Could not record the receipt.");
 }
 
-/* ------------------------------------------------------------------ */
-/* Snapshot hashing: computed from what is stored, so it can be rechecked */
-/* ------------------------------------------------------------------ */
-
-type SnapshotDb = {
-  id: string;
-  passport_id: string;
-  repo_full_name: string;
-  commit_sha: string;
-  analysis_version: string | null;
-  importer_version: string | null;
-  source_kind: "github" | "upload" | null;
-  contribution_statement: string;
-  manifest: Array<{ path: string; blobSha: string | null; included: boolean }> | null;
-  passport_evidence: Array<{ id: string; detector: string; path: string; start_line: number; end_line: number; excerpt: string[] }>;
-};
-
-async function loadSnapshot(snapshotId: string): Promise<SnapshotDb | null> {
-  const { data } = await createAdminSupabaseClient()
-    .from("passport_projects")
-    .select("id,passport_id,repo_full_name,commit_sha,analysis_version,importer_version,source_kind,contribution_statement,manifest,passport_evidence(id,detector,path,start_line,end_line,excerpt)")
-    .eq("id", snapshotId)
-    .maybeSingle();
-  return (data as SnapshotDb | null) ?? null;
-}
-
-function manifestHash(s: SnapshotDb): string {
-  return sha256((s.manifest ?? []).map((m) => ({ path: m.path, blobSha: m.blobSha, included: m.included })).sort((a, b) => a.path.localeCompare(b.path)));
-}
-
-/** Hash of an analyzed snapshot: repository, revision, analysis version, file manifest and every cited finding. */
-function snapshotHash(s: SnapshotDb): string {
-  return sha256({
-    repo: s.repo_full_name.toLowerCase(),
-    revision: s.commit_sha,
-    analysisVersion: s.analysis_version,
-    manifest: manifestHash(s),
-    findings: [...s.passport_evidence]
-      .map((e) => ({ id: e.id, detector: e.detector, path: e.path, startLine: e.start_line, endLine: e.end_line, excerpt: e.excerpt }))
-      .sort((a, b) => a.id.localeCompare(b.id)),
-  });
-}
-
 async function ownsPassport(ownerId: string, passportId: string): Promise<boolean> {
   const { data } = await createAdminSupabaseClient().from("passports").select("id").eq("id", passportId).eq("owner_id", ownerId).maybeSingle();
   return !!data;
 }
 
-/** Receipt for one analyzed project snapshot, as stored. Safe to call again after any retry. */
+/**
+ * Receipt for one analyzed project snapshot, bound to the immutable version
+ * of its analysis that exists now. Safe to call again after any retry: the
+ * same version always resolves to the same receipt.
+ */
 export async function issueSnapshotReceipt(ownerId: string, snapshotId: string, importJobId: string | null): Promise<ReceiptRow> {
   const s = await loadSnapshot(snapshotId);
   if (!s || !(await ownsPassport(ownerId, s.passport_id))) throw new Error("Snapshot not found for this owner.");
-  const hash = snapshotHash(s);
+  const version = await recordSnapshotVersion(snapshotId);
+  if (!version) throw new Error("Snapshot not found for this owner.");
   const sourceKind = s.source_kind === "upload" ? "upload" : "github";
   const included = (s.manifest ?? []).filter((m) => m.included).length;
+  const context = await getContribution(ownerId, s.repo_full_name);
   return issue({
     ownerId,
-    key: receiptKey(sourceKind === "upload" ? "upload_snapshot" : "repository_snapshot", snapshotId, hash),
+    key: receiptKey(sourceKind === "upload" ? "upload_snapshot" : "repository_snapshot", snapshotId, version.contentHash),
     artifactType: sourceKind === "upload" ? "upload_snapshot" : "repository_snapshot",
     projectKey: s.repo_full_name,
     sourceRevision: s.commit_sha,
     snapshotId,
+    snapshotVersionId: version.id,
     importJobId,
     subjectVersion: s.importer_version,
-    analysisVersion: s.analysis_version,
-    manifestRef: { filesIncluded: included, filesExcluded: (s.manifest ?? []).length - included, findings: s.passport_evidence.length, manifestHash: manifestHash(s) },
-    contentHash: hash,
+    analysisVersion: version.analysisVersion,
+    manifestRef: { filesIncluded: included, filesExcluded: (s.manifest ?? []).length - included, findings: version.findings.length, manifestHash: version.manifestHash, snapshotVersion: version.version },
+    contentHash: version.contentHash,
     verificationScope: snapshotScope({
       sourceKind,
       revision: s.commit_sha,
-      hasTests: s.passport_evidence.some((e) => e.detector === "test_suite"),
-      contributionStated: s.contribution_statement.trim().length > 0,
+      hasTests: version.findings.some((e) => e.detector === "test_suite"),
+      contributionStated: (context.workedOn || s.contribution_statement).trim().length > 0,
     }),
   });
 }
@@ -289,28 +258,43 @@ async function snapshotStatus(ownerId: string, r: ReceiptRow): Promise<Pick<Rece
     }),
   );
   const current = currentSnapshots(asProjects)[0];
-  const state: ProcessingState = current?.id === s.id ? "current" : "superseded";
-  const hash = snapshotHash(s);
-  const integrity: Integrity = hash === r.contentHash ? "matches" : "differs";
+  const accepted: SnapshotVersion | null = r.snapshotVersionId
+    ? await getSnapshotVersionById(r.snapshotVersionId)
+    : await findSnapshotVersionByHash(s.id, r.contentHash);
+  const latest = await recordSnapshotVersion(s.id);
+  const reanalyzed = !!accepted && !!latest && latest.version > accepted.version;
+  const state: ProcessingState = current?.id === s.id && !reanalyzed ? "current" : "superseded";
+  const integrity: Integrity = accepted ? (accepted.contentHash === r.contentHash ? "matches" : "differs") : snapshotHash(s) === r.contentHash ? "matches" : "differs";
   const { data: notes } = await createAdminSupabaseClient()
     .from("passport_corrections")
     .select("finding_id,kind,created_at,withdrawn_at")
     .eq("project_id", s.id)
     .is("withdrawn_at", null)
     .order("created_at", { ascending: true });
+  const versionLabel = accepted ? `version ${accepted.version}` : "the accepted analysis";
   return {
     processing: {
       state,
-      detail: state === "current" ? "This is the snapshot your project report uses now." : `A newer import of ${s.repo_full_name} is now current. This snapshot is kept as it was.`,
+      detail:
+        state === "current"
+          ? "This is the snapshot and analysis your project report uses now."
+          : reanalyzed && latest
+            ? `This revision was analyzed again as version ${latest.version} (${latest.analysisVersion}). ${versionLabel[0].toUpperCase()}${versionLabel.slice(1)} is kept unchanged.`
+            : `A newer import of ${s.repo_full_name} is now current. This snapshot is kept as it was.`,
     },
     integrity: {
       state: integrity,
       detail:
         integrity === "matches"
-          ? "Recomputed from the stored files list and findings just now."
-          : "The stored snapshot was re-analyzed in place after this receipt (for example a partial import completed). The receipt still records what was accepted then.",
+          ? accepted
+            ? `The accepted analysis is stored unchanged as ${versionLabel} of this snapshot, and it hashes to this receipt.`
+            : "Recomputed from the stored files list and findings just now."
+          : "This snapshot was re-analyzed in place before Fydell kept every analysis as a version, so the accepted findings are no longer stored. The receipt still records what was accepted then.",
     },
-    linkedReport: { label: `Project report at revision ${s.commit_sha.slice(0, 7)}`, href: `/app/candidate/projects/${s.id}` },
+    linkedReport: {
+      label: `Project report at revision ${s.commit_sha.slice(0, 7)}${accepted ? `, ${versionLabel}` : ""}`,
+      href: accepted && reanalyzed ? `/app/candidate/projects/${s.id}?version=${accepted.version}` : `/app/candidate/projects/${s.id}`,
+    },
     corrections: ((notes ?? []) as Array<{ finding_id: string; kind: string; created_at: string }>).map((n) => ({ findingId: n.finding_id, kind: n.kind, createdAt: n.created_at })),
   };
 }

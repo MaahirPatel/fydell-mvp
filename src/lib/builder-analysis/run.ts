@@ -2,6 +2,7 @@ import "server-only";
 import { GithubClient, GithubError, type PublicRepo } from "@/lib/passport/github/client";
 import { getOwnerPassport } from "@/lib/passport/store";
 import { currentSnapshots } from "@/lib/passport/snapshots";
+import { currentVersionNumbers } from "@/lib/passport/snapshot-versions";
 import type { PassportProject } from "@/lib/passport/view";
 import { getProviderConfig } from "@/lib/ai/provider";
 import { issueAnalysisReceipt } from "@/lib/receipts/store";
@@ -131,7 +132,9 @@ export async function buildReport(input: {
 export async function runAnalysis(id: string, ownerId: string, supersedes: string | null = null): Promise<void> {
   try {
     const passport = await getOwnerPassport(ownerId);
-    const projects = currentSnapshots(passport?.projects ?? []);
+    const current = currentSnapshots(passport?.projects ?? []);
+    const versions = await currentVersionNumbers(current.flatMap((p) => (p.id ? [p.id] : [])));
+    const projects = current.map((p) => ({ ...p, snapshotVersion: p.id ? (versions.get(p.id) ?? null) : null }));
     const login = passport?.githubLogin ?? null;
     const previous = await latestCompleteReport(ownerId);
     const collected = login

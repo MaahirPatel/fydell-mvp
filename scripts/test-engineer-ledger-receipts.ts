@@ -13,6 +13,8 @@ import { __test } from "../src/lib/builder-analysis/narrative";
 import type { ClaimRejection } from "../src/lib/builder-analysis/types";
 import { receiptExport, receiptKey, snapshotScope, TIME_STATEMENT, type ReceiptView } from "../src/lib/receipts/contract";
 import type { PassportEvidence, PassportProject } from "../src/lib/passport/view";
+import { blockEnd, runPracticeDetectors } from "../src/lib/passport/github/practice-detectors";
+import { idempotencyMatch } from "../src/lib/passport/github/detectors";
 
 let passed = 0;
 function test(name: string, fn: () => void) {
@@ -168,6 +170,63 @@ test("receipt scope never claims execution or authorship; export carries snapsho
   assert.equal(out.timeStatement, TIME_STATEMENT);
   assert.match(TIME_STATEMENT, /does not show when the work itself was done/);
   assert.ok(!("ownerId" in out.receipt), "owner id is not exported");
+});
+
+const retry = (path: string, text: string) => runPracticeDetectors(new Map([[path, text]])).filter((f) => f.detector === "retry_with_backoff");
+
+test("retry with backoff is found anywhere in the loop body, not only in a fixed window", () => {
+  const far = [
+    "export async function run(url: string) {",
+    "  for (let attempt = 0; attempt < 5; attempt++) {",
+    "    try {",
+    "      const res = await fetch(url);",
+    "      await save(res);",
+    "      await audit(res);",
+    "      await notify(res);",
+    "      return res;",
+    "    } catch (err) {",
+    "      console.error(err);",
+    "      await new Promise((r) => setTimeout(r, 100 * Math.pow(2, attempt)));",
+    "    }",
+    "  }",
+    "}",
+  ].join("\n");
+  const hit = retry("src/run.ts", far);
+  assert.equal(hit.length, 1);
+  assert.equal(hit[0].startLine, 2);
+  assert.equal(hit[0].endLine, 11);
+  const py = "def run(url):\n    for attempt in range(5):\n        try:\n            return get(url)\n        except IOError:\n            log(attempt)\n            note(attempt)\n            note(attempt)\n            note(attempt)\n            time.sleep(2 ** attempt)\n    raise RuntimeError('gave up')\n";
+  assert.equal(retry("app/run.py", py).length, 1);
+});
+
+test("a delay outside the loop, or a loop over entries, is not a retry", () => {
+  const after = "for (let attempt = 0; attempt < 3; attempt++) {\n  tryOnce();\n}\nawait new Promise((r) => setTimeout(r, 1000));\n";
+  assert.equal(retry("src/a.ts", after).length, 0);
+  const pyAfter = "for attempt in range(3):\n    try_once()\ntime.sleep(1)\n";
+  assert.equal(retry("a.py", pyAfter).length, 0);
+  const entries = "for (const entry of entries) {\n  await new Promise((r) => setTimeout(r, 50));\n}\n";
+  assert.equal(retry("src/b.ts", entries).length, 0);
+  assert.equal(blockEnd(["for (;;) {", "  a();", "}", "b();"], 0), 2);
+});
+
+test("idempotency guards: camelCase calls, membership, seen sets and dedupe claims", () => {
+  const yes: Array<[string, string[]]> = [
+    ["camelCase call", ["if (await alreadyProcessed(job.id)) {", "  return 'skipped';", "}"]],
+    ["python membership", ["if job_id in PROCESSED:", "    return None"]],
+    ["seen set", ["if (seenIds.has(event.id)) continue;"]],
+    ["duplicate check", ["if is_duplicate(msg):", "    raise DuplicateMessage(msg.id)"]],
+    ["dict flag", ['if event.get("already_processed"):', "    return"]],
+    ["dedupe table", ["await db.query('INSERT INTO processed_events (id) VALUES ($1) ON CONFLICT (id) DO NOTHING', [id]);"]],
+    ["redis claim", ["ok = r.set(f'job:{job_id}', 1, nx=True, ex=3600)"]],
+  ];
+  for (const [name, ls] of yes) assert.ok(idempotencyMatch(ls), name);
+  const no: Array<[string, string[]]> = [
+    ["comment only", ["// TODO: dedupe events if processed twice", "return handle(event);"]],
+    ["name only in the returned value", ["if (done) return processedCount;"]],
+    ["no early exit", ["if (seenIds.has(id)) {", "  log(id);", "  count++;", "  more();", "}"]],
+    ["swallowed error", ["try {", "  return (await fetch(url)).status;", "} catch (e) {", "  return 200;", "}"]],
+  ];
+  for (const [name, ls] of no) assert.equal(idempotencyMatch(ls), null, name);
 });
 
 console.log(`\n${passed} ledger and receipt tests passed`);

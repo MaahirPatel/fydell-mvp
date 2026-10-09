@@ -255,6 +255,38 @@ export async function saveContribution(
   };
 }
 
+/**
+ * A contribution written while importing is the same statement the engineer
+ * edits and confirms on the project page: it is saved into the project
+ * context as "what I worked on", as a new revision. An empty field changes
+ * nothing, and an identical statement adds no revision. A changed statement
+ * makes an earlier confirmation stale, as any edit does.
+ */
+export async function adoptContributionStatement(ownerId: string, repoFullName: string, statement: string): Promise<ContributionContext | null> {
+  const text = statement.trim().slice(0, 2000);
+  if (!text) return null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const current = await getContribution(ownerId, repoFullName);
+    if (current.workedOn.trim() === text) return current;
+    const input: ContributionInput = {
+      problem: current.problem,
+      workedOn: text,
+      inherited: current.inherited,
+      collaboration: current.collaboration,
+      collaborationNote: current.collaborationNote,
+      constraintsFaced: current.constraintsFaced,
+      checkedHow: current.checkedHow,
+      results: current.results,
+      improvements: current.improvements,
+      evidenceRefs: current.evidenceRefs,
+    };
+    const saved = await saveContribution(ownerId, repoFullName, input, current.version);
+    if ("value" in saved) return saved.value;
+    if (saved.status !== 409) return null;
+  }
+  return null;
+}
+
 export async function listDecisions(ownerId: string, repoFullName: string): Promise<DecisionRecord[]> {
   const passportId = await passportIdFor(ownerId);
   if (!passportId) return [];
