@@ -1,6 +1,6 @@
 import "server-only";
-import { createCipheriv, createDecipheriv, hkdfSync, randomBytes, timingSafeEqual } from "node:crypto";
-import { isValidDesktopState } from "./desktop-state";
+import { createCipheriv, createDecipheriv, createHash, hkdfSync, randomBytes, timingSafeEqual } from "node:crypto";
+import { isValidDesktopState, isValidPkceChallenge, isValidPkceVerifier } from "./desktop-state";
 
 /**
  * Single-use desktop authorization codes (web addition W1).
@@ -15,6 +15,12 @@ import { isValidDesktopState } from "./desktop-state";
  * instance receives it. Codes expire after 5 minutes and are bound to the
  * desktop's random state. Reuse is refused per instance; across instances
  * the 5-minute expiry and state binding are the bound on replay.
+ *
+ * PKCE: when the desktop sends an S256 `code_challenge`, it is sealed into
+ * the code and the exchange must present the matching `code_verifier`, so an
+ * app that intercepts the `fydell://` deep link cannot redeem the code. A
+ * code minted without a challenge refuses any verifier, so the two flows
+ * cannot be mixed to skip the check.
  */
 
 const CODE_TTL_MS = 5 * 60 * 1000;
@@ -32,6 +38,7 @@ export interface DesktopAuthCode {
 }
 
 interface SealedPayload extends DesktopAuthCode {
+  codeChallenge: string | null;
   createdAtMs: number;
   nonce: string;
 }
@@ -51,12 +58,13 @@ function sweepRedeemed(nowMs: number): void {
 }
 
 /**
- * Mint a single-use code bound to (user, state). Throws on invalid input.
- * `nowMs` is injectable for tests; routes call it without arguments.
+ * Mint a single-use code bound to (user, state) and, when given, an S256
+ * PKCE challenge. Throws on invalid input. `nowMs` is injectable for tests.
  */
 export function mintDesktopAuthCode(
   rec: DesktopAuthCode,
   nowMs: number = Date.now(),
+  codeChallenge: string | null = null,
 ): string {
   if (!isValidDesktopState(rec.state)) {
     throw new Error("desktop auth: invalid state");
@@ -64,8 +72,12 @@ export function mintDesktopAuthCode(
   if (!rec.userId || !rec.accessToken || !rec.refreshToken) {
     throw new Error("desktop auth: incomplete session");
   }
+  if (codeChallenge !== null && !isValidPkceChallenge(codeChallenge)) {
+    throw new Error("desktop auth: invalid code challenge");
+  }
   const payload: SealedPayload = {
     ...rec,
+    codeChallenge,
     createdAtMs: nowMs,
     nonce: randomBytes(16).toString("base64url"),
   };
@@ -100,7 +112,12 @@ function unseal(code: string): SealedPayload | null {
     ) {
       return null;
     }
+    // Codes sealed before PKCE support carry no field: treat as no challenge.
+    let codeChallenge: string | null = null;
+    if (typeof p.codeChallenge === "string") codeChallenge = p.codeChallenge;
+    else if (p.codeChallenge !== undefined && p.codeChallenge !== null) return null;
     return {
+      codeChallenge,
       userId: p.userId,
       email: p.email,
       accessToken: p.accessToken,
@@ -117,18 +134,21 @@ function unseal(code: string): SealedPayload | null {
 
 export type RedeemResult =
   | { ok: true; record: DesktopAuthCode }
-  | { ok: false; reason: "not_found" | "expired" | "state_mismatch" };
+  | { ok: false; reason: "not_found" | "expired" | "state_mismatch" | "pkce_mismatch" };
 
 /**
  * Redeem a code. Single-use: the code is consumed by the first redemption
- * attempt regardless of outcome, so a wrong-state guess cannot be retried
- * against the same code. `state`, when provided, must match the bound state.
- * `nowMs` is injectable for tests; routes call it without arguments.
+ * attempt regardless of outcome, so a wrong-state or wrong-verifier guess
+ * cannot be retried against the same code. `state`, when provided, must match
+ * the bound state. A code minted with a PKCE challenge requires the matching
+ * `codeVerifier`; a code minted without one refuses any verifier.
+ * `nowMs` is injectable for tests; routes pass `undefined`.
  */
 export function redeemDesktopAuthCode(
   code: string,
   state?: string,
   nowMs: number = Date.now(),
+  codeVerifier?: string,
 ): RedeemResult {
   const rec = unseal(code);
   if (!rec || redeemed.has(rec.nonce)) {
@@ -142,6 +162,9 @@ export function redeemDesktopAuthCode(
   if (state !== undefined && !statesEqual(state, rec.state)) {
     return { ok: false, reason: "state_mismatch" };
   }
+  if (!pkceSatisfied(rec.codeChallenge, codeVerifier)) {
+    return { ok: false, reason: "pkce_mismatch" };
+  }
   return {
     ok: true,
     record: {
@@ -153,6 +176,12 @@ export function redeemDesktopAuthCode(
       state: rec.state,
     },
   };
+}
+
+function pkceSatisfied(challenge: string | null, verifier: string | undefined): boolean {
+  if (challenge === null) return verifier === undefined;
+  if (!isValidPkceVerifier(verifier)) return false;
+  return statesEqual(createHash("sha256").update(verifier, "ascii").digest("base64url"), challenge);
 }
 
 function statesEqual(a: string, b: string): boolean {

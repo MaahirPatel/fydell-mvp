@@ -13,7 +13,7 @@ import {
   PasswordInput,
 } from "@/components/ui/Field";
 import { safeNext, withNext } from "@/lib/auth/safe-next";
-import { isValidDesktopState } from "@/lib/auth/desktop-state";
+import { desktopAuthorizePath, isValidDesktopState } from "@/lib/auth/desktop-state";
 
 /**
  * Errors are deliberately non-revealing: an unknown email and a wrong password
@@ -67,6 +67,7 @@ export default function LoginForm() {
   // desktop opened this page with those exact params.
   const desktopState =
     searchParams.get("desktop") === "1" ? searchParams.get("state") : null;
+  const desktopChallenge = desktopState ? searchParams.get("code_challenge") : null;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -95,7 +96,7 @@ export default function LoginForm() {
       if (desktopState && isValidDesktopState(desktopState)) {
         // A full navigation: the authorize route answers with a redirect to the
         // fydell:// scheme, which client-side routing cannot follow.
-        window.location.assign(`/auth/desktop/authorize?state=${encodeURIComponent(desktopState)}`);
+        window.location.assign(desktopAuthorizePath(desktopState, desktopChallenge));
         setHandedOff(true);
         setLoading(false);
         return;
@@ -128,9 +129,7 @@ export default function LoginForm() {
           size="lg"
           className="w-full"
           onClick={() =>
-            window.location.assign(
-              `/auth/desktop/authorize?state=${encodeURIComponent(desktopState)}`,
-            )
+            window.location.assign(desktopAuthorizePath(desktopState, desktopChallenge))
           }
         >
           Open the Fydell app again

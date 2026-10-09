@@ -5,12 +5,18 @@
  *   POST /api/auth/desktop/exchange  { "code": "<one-time>" }
  *   → 200 { access_token, refresh_token, expires_at, user: { id, email } }
  *
- * Cases: valid, reused, expired, wrong-state, unknown/missing/malformed code.
+ * Cases: valid, reused, expired, wrong-state, unknown/missing/malformed code,
+ * and PKCE (S256): matching, missing, wrong, and verifier-on-legacy-code.
  * Pure in-process tests: no Supabase, no network, no database.
  *
  * Run via `npm run test:desktop-auth`.
  */
-import { isValidDesktopState } from "../src/lib/auth/desktop-state";
+import {
+  desktopAuthorizePath,
+  isValidDesktopState,
+  isValidPkceChallenge,
+  isValidPkceVerifier,
+} from "../src/lib/auth/desktop-state";
 import {
   mintDesktopAuthCode,
   redeemDesktopAuthCode,
@@ -19,6 +25,10 @@ import {
 import { POST as exchangePOST } from "../src/app/api/auth/desktop/exchange/route";
 
 process.env.NEXTAUTH_SECRET ||= "test-only-desktop-auth-secret";
+
+// RFC 7636 Appendix B.
+const RFC_VERIFIER = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+const RFC_CHALLENGE = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
 
 let failures = 0;
 
@@ -152,6 +162,51 @@ function syncTests() {
     check("original still redeems", redeemDesktopAuthCode(code).ok, true);
   }
 
+  console.log("\npkce validators");
+  check("challenge: rfc vector", isValidPkceChallenge(RFC_CHALLENGE), true);
+  check("challenge: wrong length", isValidPkceChallenge(RFC_CHALLENGE.slice(1)), false);
+  check("challenge: padded", isValidPkceChallenge(`${RFC_CHALLENGE.slice(1)}=`), false);
+  check("verifier: rfc vector", isValidPkceVerifier(RFC_VERIFIER), true);
+  check("verifier: too short", isValidPkceVerifier("a".repeat(42)), false);
+  check("verifier: too long", isValidPkceVerifier("a".repeat(129)), false);
+  check("verifier: bad char", isValidPkceVerifier(`${"a".repeat(42)}+`), false);
+  check(
+    "authorize path carries challenge",
+    desktopAuthorizePath("state-aaa", RFC_CHALLENGE),
+    `/auth/desktop/authorize?state=state-aaa&code_challenge=${RFC_CHALLENGE}&code_challenge_method=S256`,
+  );
+  check("authorize path legacy", desktopAuthorizePath("state-aaa", null), "/auth/desktop/authorize?state=state-aaa");
+
+  console.log("\ncode store: pkce");
+  {
+    const good = mintDesktopAuthCode(makeRecord(), undefined, RFC_CHALLENGE);
+    check("matching verifier ok", redeemDesktopAuthCode(good, undefined, undefined, RFC_VERIFIER).ok, true);
+
+    const wrong = mintDesktopAuthCode(makeRecord(), undefined, RFC_CHALLENGE);
+    const wrongRes = redeemDesktopAuthCode(wrong, undefined, undefined, "x".repeat(43));
+    check("wrong verifier fails", wrongRes.ok, false);
+    if (!wrongRes.ok) check("reason pkce_mismatch", wrongRes.reason, "pkce_mismatch");
+    check(
+      "code consumed by wrong-verifier attempt",
+      redeemDesktopAuthCode(wrong, undefined, undefined, RFC_VERIFIER).ok,
+      false,
+    );
+
+    const missing = mintDesktopAuthCode(makeRecord(), undefined, RFC_CHALLENGE);
+    check("missing verifier fails", redeemDesktopAuthCode(missing).ok, false);
+
+    const legacy = mintDesktopAuthCode(makeRecord());
+    check("verifier on a legacy code fails", redeemDesktopAuthCode(legacy, undefined, undefined, RFC_VERIFIER).ok, false);
+
+    let threw = false;
+    try {
+      mintDesktopAuthCode(makeRecord(), undefined, "not-a-challenge");
+    } catch {
+      threw = true;
+    }
+    check("invalid challenge throws", threw, true);
+  }
+
   console.log("\ncode store: uniqueness");
   {
     const a = mintDesktopAuthCode(makeRecord());
@@ -202,6 +257,27 @@ async function routeTests() {
     const wrongState = await exchangeCall({ code: bound, state: "state-bbb" });
     check("wrong state → 401", wrongState.status, 401);
     check("wrong state error", wrongState.json.error, "invalid_code");
+  }
+
+  console.log("\nexchange endpoint: pkce");
+  {
+    const good = mintDesktopAuthCode(makeRecord(), undefined, RFC_CHALLENGE);
+    const ok = await exchangeCall({ code: good, code_verifier: RFC_VERIFIER });
+    check("matching verifier → 200", ok.status, 200);
+    check("matching verifier access_token", ok.json.access_token, "access-token-value");
+
+    const noVerifier = await exchangeCall({ code: mintDesktopAuthCode(makeRecord(), undefined, RFC_CHALLENGE) });
+    check("missing verifier → 401", noVerifier.status, 401);
+    check("missing verifier error", noVerifier.json.error, "invalid_code");
+
+    const wrong = await exchangeCall({
+      code: mintDesktopAuthCode(makeRecord(), undefined, RFC_CHALLENGE),
+      code_verifier: "y".repeat(43),
+    });
+    check("wrong verifier → 401", wrong.status, 401);
+
+    const legacy = await exchangeCall({ code: mintDesktopAuthCode(makeRecord()), code_verifier: RFC_VERIFIER });
+    check("verifier on legacy code → 401", legacy.status, 401);
   }
 
   console.log("\nexchange endpoint: malformed requests");

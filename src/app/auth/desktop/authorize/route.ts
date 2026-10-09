@@ -1,11 +1,27 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { isValidDesktopState } from "@/lib/auth/desktop-state";
+import { isValidDesktopState, isValidPkceChallenge, PKCE_METHOD } from "@/lib/auth/desktop-state";
 import { mintDesktopAuthCode } from "@/lib/auth/desktop-codes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/**
+ * Optional PKCE challenge. Returns null for the legacy flow (no PKCE params),
+ * unless DESKTOP_AUTH_REQUIRE_PKCE=1, in which case a missing challenge is
+ * invalid. Only S256 is accepted; an absent method means "plain" per
+ * RFC 7636 and is refused.
+ */
+function readPkceChallenge(params: URLSearchParams): string | null | "invalid" {
+  const challenge = params.get("code_challenge");
+  const method = params.get("code_challenge_method");
+  if (challenge === null && method === null) {
+    return process.env.DESKTOP_AUTH_REQUIRE_PKCE === "1" ? "invalid" : null;
+  }
+  if (method !== PKCE_METHOD || !isValidPkceChallenge(challenge)) return "invalid";
+  return challenge;
+}
 
 /**
  * W1 - desktop sign-in callback.
@@ -19,15 +35,19 @@ export const dynamic = "force-dynamic";
  *   fydell://auth/callback?code=<code>&state=<state>
  *
  * The desktop trades the code at POST /api/auth/desktop/exchange for the
- * Supabase session. The deep-link target is built as a raw 302 (not
+ * Supabase session. When the desktop opens the flow with
+ * `code_challenge=<S256>&code_challenge_method=S256`, the code is bound to
+ * that challenge and the exchange must send the matching `code_verifier`.
+ * The deep-link target is built as a raw 302 (not
  * NextResponse.redirect) so no framework URL validation can reject the
  * custom scheme.
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const state = url.searchParams.get("state") ?? "";
+  const challenge = readPkceChallenge(url.searchParams);
 
-  if (!isValidDesktopState(state)) {
+  if (!isValidDesktopState(state) || challenge === "invalid") {
     return NextResponse.redirect(new URL("/auth/link-invalid", url.origin));
   }
 
@@ -38,6 +58,10 @@ export async function GET(req: Request) {
     const login = new URL("/login", url.origin);
     login.searchParams.set("desktop", "1");
     login.searchParams.set("state", state);
+    if (challenge) {
+      login.searchParams.set("code_challenge", challenge);
+      login.searchParams.set("code_challenge_method", PKCE_METHOD);
+    }
     return NextResponse.redirect(login);
   }
 
@@ -50,14 +74,18 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "session_unavailable" }, { status: 401 });
   }
 
-  const code = mintDesktopAuthCode({
-    userId: user.id,
-    email: user.email,
-    accessToken: session.access_token,
-    refreshToken: session.refresh_token,
-    expiresAt: session.expires_at ?? Math.floor(Date.now() / 1000) + 3600,
-    state,
-  });
+  const code = mintDesktopAuthCode(
+    {
+      userId: user.id,
+      email: user.email,
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token,
+      expiresAt: session.expires_at ?? Math.floor(Date.now() / 1000) + 3600,
+      state,
+    },
+    undefined,
+    challenge,
+  );
 
   const target =
     `fydell://auth/callback?code=${encodeURIComponent(code)}` +
