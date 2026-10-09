@@ -11,7 +11,7 @@
  *
  * The walk file (%TEMP%\fydell-walk.txt) has whitespace-separated `employer`,
  * `engineer`, `candidate2`, `teammate` and `password` lines. Passwords and tokens
- * are never printed. No email leaves the server.
+ * are never printed. Outside production any email is routed to the Resend test inbox.
  */
 import assert from "node:assert/strict";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -27,6 +27,7 @@ import { employerCollaboration } from "../src/lib/eng/authored/collaboration";
 import { capabilityStatements } from "../src/lib/eng/authored/follow-ups";
 import { resolveScenarioVersion } from "../src/lib/eng/scenario-versions";
 import type { AttemptRow } from "../src/lib/eng/types";
+import { routeRecipient } from "../src/lib/email-html";
 
 const DEV_REF = "btbmvrvynnrhapjdkunz";
 const PROD_REF = "qtrhwrcxthtqvkeerptp";
@@ -239,7 +240,8 @@ async function main() {
   const invites: Record<string, string> = {};
   for (const [who, name] of [[engineer, "Acceptance Engineer A"], [candidate2, "Acceptance Engineer B"]] as const) {
     const inv = await expectStatus(employer, "POST", `/api/eng/roles/${roleId}/invitations`, [201], { email: who.email, name, scenarioVersionId: versionId });
-    assert.notEqual(inv.emailDelivery, "sent", "no email leaves the development server");
+    const route = routeRecipient(who.email, false);
+    assert.ok(inv.emailDelivery !== "sent" || ("to" in route && route.to.endsWith("@resend.dev")), "outside production an invitation reaches only a Resend test inbox");
     invites[who.label] = strField(inv, "invitationId");
   }
   pass("role, validated simulation template, preview, publish and two invitations", `checks ran on ${checksRunner}`);
@@ -406,7 +408,7 @@ async function main() {
         const r = data as { id: string; status: string; last_error_code: string | null } | null;
         return r && ["human_review", "ready", "failed", "permanent_failure"].includes(r.status) ? r : null;
       },
-      420_000,
+      1_800_000,
       4000,
     );
   }

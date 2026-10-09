@@ -10,7 +10,7 @@
  *   FYDELL_TEST_BASE_URL=http://localhost:3000 \
  *   npx tsx --conditions react-server --env-file=.env.local scripts/accept-opening-journey.ts
  *
- * Passwords and tokens are never printed. No email leaves the server.
+ * Passwords and tokens are never printed. Outside production any email is routed to the Resend test inbox.
  */
 import assert from "node:assert/strict";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
