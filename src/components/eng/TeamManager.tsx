@@ -105,10 +105,10 @@ export function TeamManager({ members, canManage, actorIsOwner }: { members: Tea
           const locked = !canManage || m.isSelf || (m.role === "owner" && !actorIsOwner);
           return (
             <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-              <div className="min-w-0">
-                <p className="truncate text-app-body text-[var(--text-primary)]">
-                  {label}
-                  {m.isSelf ? <span className="text-[var(--text-tertiary)]"> (you)</span> : null}
+              <div className="min-w-0 max-w-full">
+                <p className="flex min-w-0 items-baseline gap-1 text-app-body text-[var(--text-primary)]">
+                  <span className="truncate" title={label}>{label}</span>
+                  {m.isSelf ? <span className="shrink-0 text-[var(--text-tertiary)]">(you)</span> : null}
                 </p>
                 {m.status !== "active" ? <StatusTag tone="changed" className="mt-1">{m.status === "invited" ? "Invited, not accepted" : m.status}</StatusTag> : null}
               </div>
