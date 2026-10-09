@@ -14,7 +14,7 @@ import type {
   Strength,
   WorkingStyle,
 } from "./types";
-import { BUILDER_ANALYSIS_VERSION } from "./types";
+import { BUILDER_ANALYSIS_VERSION, NO_GITHUB_LOGIN_LIMIT } from "./types";
 
 type ActivityHit = { label: string };
 
@@ -234,7 +234,7 @@ function buildDimensions(practices: Practice[], input: SynthesisInput): Dimensio
     const codeLevel = PRACTICES.some((p) => p.dimension === d.id && p.detectors && !p.activity);
     if (deep === 0 && codeLevel) limits.push("No imported projects, so code-level practices in this area were not checked. Only repository structure and history were read.");
     if (d.id === "communication" && !input.activity.some((a) => a.commits?.messages)) limits.push("No commit history could be read, so commit messages were not assessed.");
-    if (d.id === "delivery" && !input.githubLogin) limits.push("No GitHub username is linked, so release and commit activity were not read.");
+    if (d.id === "delivery" && !input.githubLogin) limits.push(NO_GITHUB_LOGIN_LIMIT);
     dims.push({ id: d.id, label: d.label, question: d.question, level, summary, practices: own, notObserved, limits });
   }
   return dims;

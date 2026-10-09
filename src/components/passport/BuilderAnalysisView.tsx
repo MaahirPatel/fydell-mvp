@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { DetailList, Notice, Status, type StatusKind } from "@/components/ui/report";
-import type { AnalysisRow, BuilderAnalysisReport, Dimension, EvidenceLevel, SignalRef } from "@/lib/builder-analysis/types";
+import Link from "next/link";
+import { NO_GITHUB_LOGIN_LIMIT, type AnalysisRow, type BuilderAnalysisReport, type Dimension, type EvidenceLevel, type SignalRef } from "@/lib/builder-analysis/types";
 
 const LEVEL: Record<EvidenceLevel, { label: string; kind: StatusKind }> = {
   strong: { label: "Strong evidence", kind: "success" },
@@ -98,7 +99,20 @@ function DimensionBlock({ d }: { d: Dimension }) {
         <details className="mt-3 text-[13px] text-[var(--text-secondary)]">
           <summary className="cursor-pointer select-none">Not observed and limits</summary>
           {d.notObserved.length ? <p className="mt-2">Not observed: {d.notObserved.join(", ")}. Missing evidence is not proof of absence.</p> : null}
-          {d.limits.map((l) => <p key={l} className="mt-1">{l}</p>)}
+          {d.limits.map((l) => (
+            <p key={l} className="mt-1">
+              {l}
+              {l === NO_GITHUB_LOGIN_LIMIT ? (
+                <>
+                  {" "}
+                  <Link href="/app/candidate/profile" className="font-medium text-[var(--accent-ink)] underline underline-offset-4">
+                    Add it under Edit profile
+                  </Link>
+                  , then run the analysis again.
+                </>
+              ) : null}
+            </p>
+          ))}
         </details>
       ) : null}
     </article>
@@ -357,7 +371,12 @@ export default function BuilderAnalysisView({ initial, lastReport, hasSources }:
       </div>
 
       <div className="mt-6 space-y-4" aria-live="polite">
-        {!hasSources ? <Notice tone="attention">Link your GitHub username or import a project first. The analysis only reads what you connect.</Notice> : null}
+        {!hasSources ? (
+          <Notice tone="attention">
+            <Link href="/app/candidate/profile" className="font-medium underline underline-offset-4">Link your GitHub username</Link> or{" "}
+            <Link href="/app/candidate/work-record" className="font-medium underline underline-offset-4">import a project</Link> first. The analysis only reads what you connect.
+          </Notice>
+        ) : null}
         {error ? <Notice tone="error">{error}</Notice> : null}
         {running ? <Notice>Reading repositories and measuring practices. This usually takes under a minute; you can leave this page.</Notice> : null}
         {row?.status === "failed" ? <Notice tone="error">{row.error ?? "The analysis did not finish."}</Notice> : null}

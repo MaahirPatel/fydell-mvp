@@ -1,5 +1,7 @@
 export const BUILDER_ANALYSIS_VERSION = "builder-analysis-v2";
 
+export const NO_GITHUB_LOGIN_LIMIT = "No GitHub username is linked, so release and commit activity were not read.";
+
 export const ANALYSIS_LIMITS = {
   /** Public repositories scanned per run (GitHub unauthenticated quota is 60 requests an hour). */
   maxScannedRepos: 12,
