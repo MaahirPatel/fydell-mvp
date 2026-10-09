@@ -1245,8 +1245,8 @@ html[data-mk-motion] .site-linear [data-reveal="group"] > :nth-child(n + 5) { tr
 .site-linear .page-display {
   font-size: clamp(40px, 4.4vw, 64px);
   line-height: 1.05;
-  font-weight: 400;
-  letter-spacing: -0.04em;
+  font-weight: 500;
+  letter-spacing: -0.032em;
 }
 .site-linear .page-lead {
   font-size: clamp(17px, 1.4vw, 18px);
@@ -1257,8 +1257,8 @@ html[data-mk-motion] .site-linear [data-reveal="group"] > :nth-child(n + 5) { tr
 .site-linear .section-heading {
   font-size: clamp(32px, 3.4vw, 46px);
   line-height: 1.08;
-  font-weight: 400;
-  letter-spacing: -0.035em;
+  font-weight: 500;
+  letter-spacing: -0.028em;
 }
 .site-linear .section-desc {
   font-size: 15px;
