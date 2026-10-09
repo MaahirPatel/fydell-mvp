@@ -43,6 +43,7 @@
     "test:auth": "tsx scripts/test-safe-next.ts",
     "test:route-limits": "tsx --conditions react-server scripts/test-route-limits-security.ts",
     "test:webhook-security": "tsx --conditions react-server scripts/test-webhook-security.ts",
+    "test:invite-verification": "tsx --conditions react-server --env-file=.env.local scripts/test-invite-verification-security.ts",
     "test:desktop-auth": "tsx --conditions react-server scripts/test-desktop-auth.ts",
     "check:seo": "tsx scripts/check-seo.ts",
     "test:file-package": "tsx --conditions react-server scripts/test-file-package.ts",

@@ -9,6 +9,8 @@ import { resolveScenarioVersion } from "@/lib/eng/scenario-versions";
 import { candidateTask } from "@/lib/eng/authored/runtime";
 import { AuthoredInvitationBrief } from "@/components/work-samples/runtime/AuthoredInvitationBrief";
 import { requireUser } from "@/lib/simulations/auth";
+import { InboxVerificationGate } from "@/components/security/InboxVerificationGate";
+import { isInboxVerified } from "@/lib/security/email-verification";
 
 export const metadata = { title: "Engineering task invitation" };
 export const dynamic = "force-dynamic";
@@ -66,7 +68,12 @@ export default async function EngInvitePage({ params }: { params: Promise<{ toke
             This invitation was sent to a different email address than the one you are signed in with ({user.email}). Sign out and sign in with the invited address, or ask the employer to invite this one.
           </p>
         ) : (
-          <AcceptEngInvitation token={token} />
+          <InboxVerificationGate
+            email={user.email.toLowerCase()}
+            verified={Boolean(invitation.is_preview) || (await isInboxVerified(user))}
+          >
+            <AcceptEngInvitation token={token} />
+          </InboxVerificationGate>
         );
 
   return (

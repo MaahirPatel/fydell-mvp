@@ -13,6 +13,8 @@ import { CandidateShell } from "@/components/candidate/CandidateShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { Surface } from "@/components/ui/Surface";
 import { ContactLink } from "@/components/ui/ContactLink";
+import { InboxVerificationGate } from "@/components/security/InboxVerificationGate";
+import { isInboxVerified } from "@/lib/security/email-verification";
 
 export const metadata = { title: "You're invited | Fydell" };
 export const dynamic = "force-dynamic";
@@ -95,6 +97,14 @@ export default async function InvitePage({
     if (session?.candidate_user_id === user.id) existingSessionId = session.id;
   }
 
+  // Only an addressed invitation for this account's own email asks for the
+  // inbox code; a mismatch is explained by AcceptInviteButton instead.
+  const inboxConfirmed =
+    !user ||
+    !invitation.candidate_email ||
+    user.email.toLowerCase() !== invitation.candidate_email ||
+    (await isInboxVerified(user));
+
   const next = encodeURIComponent(`/invite/${token}`);
   const skills = role?.skillsEvaluated.slice(0, 4).join(", ").toLowerCase();
 
@@ -151,11 +161,16 @@ export default async function InvitePage({
             Continue where you left off
           </ButtonLink>
         ) : user ? (
-          <AcceptInviteButton
-            token={token}
-            signedInEmail={user.email}
-            inviteEmail={invitation.candidate_email}
-          />
+          <InboxVerificationGate
+            email={user.email.toLowerCase()}
+            verified={inboxConfirmed}
+          >
+            <AcceptInviteButton
+              token={token}
+              signedInEmail={user.email}
+              inviteEmail={invitation.candidate_email}
+            />
+          </InboxVerificationGate>
         ) : (
           <div className="flex flex-wrap items-center gap-3">
             <ButtonLink

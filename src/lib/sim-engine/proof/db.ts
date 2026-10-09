@@ -1,6 +1,7 @@
 import "server-only";
 import { randomBytes } from "crypto";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { isInboxVerified } from "@/lib/security/email-verification";
 import { FACT_AUTH, FACT_CUSTOMER, FACT_SALES } from "./state-machine";
 import {
   PROOF_ROLE_ID,
@@ -125,12 +126,71 @@ export async function createInvitation(input: { organizationId: string; email: s
   return data;
 }
 
-export async function startRunFromToken(token: string, candidateUserId: string | null) {
+export type ProofInviteAccess =
+  | { state: "invalid" }
+  | { state: "sign_in" }
+  | { state: "wrong_email"; inviteEmail: string }
+  | { state: "taken" }
+  | { state: "unverified"; email: string }
+  | { state: "ready" };
+
+const PROOF_ACCESS_MESSAGE: Record<Exclude<ProofInviteAccess["state"], "ready">, string> = {
+  invalid: "Invitation is not valid.",
+  sign_in: "Sign in with the invited email to start.",
+  wrong_email: "This invitation was sent to a different email address.",
+  taken: "This invitation was already started by another account.",
+  unverified: "Confirm your email to accept this invitation.",
+};
+
+export class ProofInviteAccessError extends Error {
+  readonly state: Exclude<ProofInviteAccess["state"], "ready">;
+  constructor(state: Exclude<ProofInviteAccess["state"], "ready">) {
+    super(PROOF_ACCESS_MESSAGE[state]);
+    this.name = "ProofInviteAccessError";
+    this.state = state;
+  }
+}
+
+/**
+ * The link only identifies the invitation; the run belongs to the signed-in
+ * account whose email it was sent to, once that account has confirmed the inbox.
+ */
+export async function proofInviteAccess(token: string, user: { id: string; email: string } | null): Promise<ProofInviteAccess> {
+  if (!token || token.length > 100) return { state: "invalid" };
+  const admin = proofAdmin();
+  const { data: invite } = await admin.from("proof_invitations").select("id, email").eq("token", token).maybeSingle();
+  if (!invite) return { state: "invalid" };
+  if (!user) return { state: "sign_in" };
+  const inviteEmail = String(invite.email ?? "").toLowerCase();
+  if (user.email.toLowerCase() !== inviteEmail) return { state: "wrong_email", inviteEmail };
+  const { data: existing } = await admin.from("proof_runs").select("candidate_user_id").eq("invitation_id", invite.id).maybeSingle();
+  if (existing?.candidate_user_id && existing.candidate_user_id !== user.id) return { state: "taken" };
+  if (existing?.candidate_user_id === user.id) return { state: "ready" };
+  if (!(await isInboxVerified(user))) return { state: "unverified", email: inviteEmail };
+  return { state: "ready" };
+}
+
+export async function startRunFromToken(token: string, user: { id: string; email: string } | null) {
+  const access = await proofInviteAccess(token, user);
+  if (access.state !== "ready" || !user) throw new ProofInviteAccessError(access.state === "ready" ? "sign_in" : access.state);
+  const candidateUserId = user.id;
   const admin = proofAdmin();
   const { data: invite } = await admin.from("proof_invitations").select("*").eq("token", token).maybeSingle();
-  if (!invite) throw new Error("Invitation is not valid.");
+  if (!invite) throw new ProofInviteAccessError("invalid");
   const { data: existing } = await admin.from("proof_runs").select("*").eq("invitation_id", invite.id).maybeSingle();
-  if (existing) return { invite, run: existing };
+  if (existing?.candidate_user_id === candidateUserId) return { invite, run: existing };
+  if (existing) {
+    const { data: claimed } = await admin
+      .from("proof_runs")
+      .update({ candidate_user_id: candidateUserId })
+      .eq("id", existing.id)
+      .is("candidate_user_id", null)
+      .select("*")
+      .maybeSingle();
+    if (!claimed) throw new ProofInviteAccessError("taken");
+    await admin.from("proof_invitations").update({ candidate_user_id: candidateUserId }).eq("id", invite.id);
+    return { invite, run: claimed };
+  }
   const { data: version } = await admin.from("proof_simulation_versions").select("*").eq("id", invite.simulation_version_id).single();
   const { data: run, error: runError } = await admin
     .from("proof_runs")

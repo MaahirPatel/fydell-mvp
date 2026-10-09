@@ -11,6 +11,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { ROLE_BY_KEY } from "@/lib/simulations/roles";
 import type { RoleKey } from "@/lib/simulations/types";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { InboxVerificationRequiredError, inboxVerificationResponse } from "@/lib/security/email-verification";
 
 export const runtime = "nodejs";
 
@@ -70,6 +71,7 @@ export async function POST(
     const { session } = await acceptInvitation(token, user.id, user.email);
     return NextResponse.json({ ok: true, sessionId: session.id });
   } catch (err) {
+    if (err instanceof InboxVerificationRequiredError) return inboxVerificationResponse(err);
     return NextResponse.json(
       { error: publicErrorMessage(err, "Could not accept invitation") },
       { status: 400 }

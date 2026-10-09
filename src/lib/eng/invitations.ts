@@ -8,6 +8,7 @@ import { appUrl } from "@/lib/app-url";
 import { fydellEmailShell, isResendConfigured, sendResendHtml } from "@/lib/email";
 import { notifyUser } from "@/lib/notifications/store";
 import { normalizeHandle } from "@/lib/profile/handle";
+import { assertInboxVerified } from "@/lib/security/email-verification";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const INVITE_TTL_DAYS = 14;
@@ -263,6 +264,7 @@ async function acceptLoaded(db: Admin, inv: InvitationRow, user: { id: string; e
   if (user.email.toLowerCase() !== inv.candidate_email) {
     throw new Error(`This invitation was sent to ${inv.candidate_email}. Sign in with that email to accept it.`);
   }
+  if (!inv.is_preview) await assertInboxVerified(user);
   const { data, error } = await db
     .from("eng_attempts")
     .insert({

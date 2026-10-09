@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { acceptInvitationById } from "@/lib/simulations/db";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { InboxVerificationRequiredError, inboxVerificationResponse } from "@/lib/security/email-verification";
 
 export const runtime = "nodejs";
 
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest) {
     const { session } = await acceptInvitationById(invitationId.trim(), user.id, user.email);
     return NextResponse.json({ ok: true, sessionId: session.id });
   } catch (err) {
+    if (err instanceof InboxVerificationRequiredError) return inboxVerificationResponse(err);
     const message = publicErrorMessage(err, "Could not accept invitation");
     const status = message === "Invitation not found" ? 404 : 400;
     return NextResponse.json({ error: message }, { status });

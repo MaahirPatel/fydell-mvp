@@ -160,6 +160,13 @@ async function main() {
     assert.equal((intruderList.json.invitations as Json[]).length, 0, "another account sees no invitations");
     pass("task list: bearer token required; the candidate sees their invitation, another account sees none");
 
+    const unverified = await call("POST", "/api/eng/invitations/accept", token, { invitationId: invitation.id });
+    assert.equal(unverified.status, 403, JSON.stringify(unverified.json));
+    assert.equal(unverified.json.code, "email_unverified");
+    const { error: verifyError } = await db
+      .from("email_inbox_verifications")
+      .insert({ user_id: ids.candidate, email: emails.candidate, method: "dev_backfill" });
+    if (verifyError) throw new Error(`could not mark the disposable candidate verified: ${verifyError.message}`);
     const accepted = await call("POST", "/api/eng/invitations/accept", token, { invitationId: invitation.id });
     assert.equal(accepted.status, 200, JSON.stringify(accepted.json));
     const attemptId = String(accepted.json.attemptId);

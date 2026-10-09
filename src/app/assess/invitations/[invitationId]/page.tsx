@@ -10,6 +10,8 @@ import { resolveScenarioVersion } from "@/lib/eng/scenario-versions";
 import { candidateTask } from "@/lib/eng/authored/runtime";
 import { AuthoredInvitationBrief } from "@/components/work-samples/runtime/AuthoredInvitationBrief";
 import { requireUser } from "@/lib/simulations/auth";
+import { InboxVerificationGate } from "@/components/security/InboxVerificationGate";
+import { isInboxVerified } from "@/lib/security/email-verification";
 
 export const metadata = { title: "Engineering task invitation" };
 export const dynamic = "force-dynamic";
@@ -46,7 +48,14 @@ export default async function CandidateInvitationPage({ params }: { params: Prom
   if (usable.ok === false) return <Closed title="This invitation is closed" detail={usable.reason} />;
 
   const resolved = await resolveScenarioVersion(db, invitation.scenario_version_id);
-  const accept = <AcceptEngInvitation invitationId={invitation.id} />;
+  const accept = (
+    <InboxVerificationGate
+      email={user.email.toLowerCase()}
+      verified={Boolean(invitation.is_preview) || (await isInboxVerified(user))}
+    >
+      <AcceptEngInvitation invitationId={invitation.id} />
+    </InboxVerificationGate>
+  );
   return (
     <CandidateShell>
       {resolved.origin === "employer_authored" ? (

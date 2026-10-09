@@ -13,6 +13,7 @@ import {
 } from "./submission-files";
 import { enqueueEmail } from "@/lib/ops/email-outbox";
 import { appUrl } from "@/lib/app-url";
+import { assertInboxVerified } from "@/lib/security/email-verification";
 
 export { invitationGate } from "./invitation-gate";
 
@@ -325,6 +326,7 @@ async function acceptInvitationRow(
     throw new Error(
       `This invitation was sent to ${inv.candidate_email}. Sign in with that email to accept it.`
     );
+  if (inv.candidate_email) await assertInboxVerified({ id: userId, email: userEmail });
 
   const content = await getVersionContent(inv.template_version_id);
   const { data: session, error } = await db

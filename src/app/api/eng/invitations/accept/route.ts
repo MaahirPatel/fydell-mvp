@@ -1,6 +1,7 @@
 import { acceptInvitation, acceptInvitationById } from "@/lib/eng/invitations";
 import { engAdmin, jsonError, readJson, requireCandidate, str } from "@/lib/eng/context";
 import { errorResponse, ok } from "@/lib/eng/http";
+import { InboxVerificationRequiredError, inboxVerificationResponse } from "@/lib/security/email-verification";
 
 export async function POST(req: Request) {
   const gate = await requireCandidate();
@@ -17,6 +18,7 @@ export async function POST(req: Request) {
     if (!attempt) return jsonError(400, "The invitation link is incomplete.");
     return ok({ attemptId: attempt.id });
   } catch (err) {
+    if (err instanceof InboxVerificationRequiredError) return inboxVerificationResponse(err);
     return errorResponse(err, "accept-invitation");
   }
 }

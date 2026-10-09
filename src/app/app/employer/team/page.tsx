@@ -7,6 +7,8 @@ import { pageMember } from "@/lib/eng/employer-view";
 import { listMembers, pendingMemberships } from "@/lib/eng/members";
 import { ROLE_LABELS, roleCan } from "@/lib/eng/permissions";
 import { requireUser } from "@/lib/simulations/auth";
+import { InboxVerificationGate } from "@/components/security/InboxVerificationGate";
+import { isInboxVerified } from "@/lib/security/email-verification";
 
 export const metadata = { title: "Team" };
 export const dynamic = "force-dynamic";
@@ -34,7 +36,9 @@ export default async function TeamPage() {
         {pending.length ? (
           <Panel>
             <PanelSection title="Invitations to other workspaces">
-              <PendingMemberships items={pending.map((p) => ({ id: p.id, organizationName: p.organizationName, roleLabel: ROLE_LABELS[p.role] }))} />
+              <InboxVerificationGate email={user?.email.toLowerCase() ?? ""} verified={user ? await isInboxVerified(user) : false}>
+                <PendingMemberships items={pending.map((p) => ({ id: p.id, organizationName: p.organizationName, roleLabel: ROLE_LABELS[p.role] }))} />
+              </InboxVerificationGate>
             </PanelSection>
           </Panel>
         ) : null}

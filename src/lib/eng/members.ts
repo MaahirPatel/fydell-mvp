@@ -2,6 +2,7 @@ import "server-only";
 import type { Admin, EngMember } from "./context";
 import { isOrgRole, type OrgRole } from "./permissions";
 import { writeAudit } from "@/lib/ops/platform-roles";
+import { assertInboxVerified } from "@/lib/security/email-verification";
 
 export interface MemberRow {
   id: string;
@@ -173,12 +174,14 @@ export async function pendingMemberships(db: Admin, userId: string) {
   }));
 }
 
-export async function acceptMembership(db: Admin, userId: string, membershipId: string): Promise<string> {
+/** Invites resolve an email to an account, so joining needs proof of that inbox. */
+export async function acceptMembership(db: Admin, user: { id: string; email: string }, membershipId: string): Promise<string> {
+  await assertInboxVerified(user);
   const { data, error } = await db
     .from("organization_members")
     .update({ status: "active", joined_at: new Date().toISOString() })
     .eq("id", membershipId)
-    .eq("user_id", userId)
+    .eq("user_id", user.id)
     .eq("status", "invited")
     .select("organization_id")
     .maybeSingle();
