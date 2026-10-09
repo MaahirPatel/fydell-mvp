@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LocalTime } from "@/components/eng/LocalTime";
 
 type Decision = "none" | "advance" | "hold" | "decline";
 const OPTIONS: Array<{ value: Exclude<Decision, "none">; label: string }> = [
@@ -84,7 +85,11 @@ export default function PassportDecisionPanel({
         <p aria-live="polite" className="text-app-meta text-[var(--text-tertiary)]">
           {status === "saving" && "Saving"}
           {status === "error" && <span className="text-[var(--evidence-counter)]">Could not save. Try again.</span>}
-          {(status === "saved" || status === "idle") && savedAt ? `Decision recorded ${new Date(savedAt).toLocaleString()}` : null}
+          {(status === "saved" || status === "idle") && savedAt ? (
+            <>
+              Decision recorded <LocalTime iso={savedAt} />
+            </>
+          ) : null}
           {(status === "saved" || status === "idle") && !savedAt ? "No decision recorded" : null}
         </p>
       </div>
