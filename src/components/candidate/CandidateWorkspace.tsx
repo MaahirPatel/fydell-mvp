@@ -6,6 +6,8 @@ import { ChevronRight, CircleHelp, Link2, Menu, Settings, X, type LucideIcon } f
 import FydellLogo from "@/components/brand/FydellLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import AccountMenu from "@/components/workspace/AccountMenu";
+import QuickJump from "@/components/workspace/QuickJump";
+import { CANDIDATE_JUMP_TARGETS } from "@/lib/workspace/jump-targets";
 import { HELP_HREF, PERSONAL_HOME } from "@/lib/workspace/account";
 import { useCandidateAccount } from "./CandidateAccount";
 import { CANDIDATE_NAV, SECTION_HREF, SECTION_LABEL, SHARE_HREF } from "./nav";
@@ -235,6 +237,7 @@ export default function CandidateWorkspace({
             <Breadcrumb current={current} crumbs={crumbs} />
             <div className="flex shrink-0 items-center gap-1">
               {action}
+              <QuickJump targets={CANDIDATE_JUMP_TARGETS} />
               <NotificationBell />
             </div>
           </div>

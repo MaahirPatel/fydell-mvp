@@ -6,7 +6,8 @@ import { selectFiles } from "./github/select";
 import { suggestRoles } from "./rules";
 import {
   ANALYSIS_VERSION,
-  LIMITS,
+  UPLOAD_LIMITS,
+  type SelectionLimits,
   MANIFEST_MAX_ENTRIES,
   type ExtractionResult,
   type ManifestEntry,
@@ -31,7 +32,7 @@ export type UploadPreview = {
   totalFiles: number;
   selectedFiles: { path: string; size: number }[];
   skipped: SkippedFile[];
-  limits: typeof LIMITS;
+  limits: SelectionLimits;
 };
 
 export type UploadAnalysis =
@@ -109,7 +110,7 @@ export function analyzeUpload(buf: Uint8Array, input: { ownerId: string; name: s
     path: e.path,
     reason: e.reason === "possible_secret" ? "possible_secret" : e.reason === "nested_archive" ? "binary" : "vendored_or_generated",
   }));
-  const { selected, skipped } = selectFiles(entries);
+  const { selected, skipped } = selectFiles(entries, UPLOAD_LIMITS);
 
   const files = new Map<string, string>();
   const readSkipped: SkippedFile[] = [];
@@ -138,7 +139,7 @@ export function analyzeUpload(buf: Uint8Array, input: { ownerId: string; name: s
     totalFiles: entries.length + archiveSkipped.length,
     selectedFiles: selected.filter((e) => files.has(e.path)).map((e) => ({ path: e.path, size: e.size ?? 0 })),
     skipped: allSkipped,
-    limits: LIMITS,
+    limits: UPLOAD_LIMITS,
   };
 
   const { findings, rejected, checks } = analyzeFiles(files, {

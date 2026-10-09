@@ -56,14 +56,14 @@ export default function SignupView({
           href={withNext("/login", next)}
           className="inline-flex h-8 items-center rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors duration-100 hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
         >
-          Sign in
+          Log in
         </Link>
       }
       footer={
         <>
           Already have an account?{" "}
           <Link href={withNext("/login", next)} className="font-medium text-[var(--text-primary)] underline underline-offset-2">
-            Sign in
+            Log in
           </Link>
         </>
       }

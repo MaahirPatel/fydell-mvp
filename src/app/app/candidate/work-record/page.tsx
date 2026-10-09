@@ -42,7 +42,7 @@ function Section({ title, hint, children, id }: { title: string; hint?: string; 
 export default async function WorkRecordPage({
   searchParams,
 }: {
-  searchParams: Promise<{ github?: string; repos?: string; removed?: string; connected?: string }>;
+  searchParams: Promise<{ github?: string; repos?: string; removed?: string; connected?: string; upload?: string }>;
 }) {
   const user = await requireUser();
   if (!user) redirect(`/login?next=${encodeURIComponent("/app/candidate/work-record")}`);
@@ -180,11 +180,11 @@ export default async function WorkRecordPage({
               Add a repository
             </h2>
             <PassportConnectSection initialLogin={initialLogin} initialRepos={initialRepos} autoFind={params.connected === "1" && !!params.github} />
-            <details id="upload-project" className="group mt-6 scroll-mt-24 border-t border-[var(--border-subtle)]">
+            <details id="upload-project" open={params.upload === "1"} className="group mt-6 scroll-mt-24 border-t border-[var(--border-subtle)]">
               <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-0.5 py-3 text-[14px] font-semibold tracking-[-0.01em]">
                 <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)] transition-transform group-open:rotate-90" aria-hidden />
-                Upload a project instead
-                <span className="text-[13px] font-normal text-[var(--text-tertiary)]">For work that isn&apos;t on public GitHub</span>
+                Upload a project folder or ZIP instead
+                <span className="text-[13px] font-normal text-[var(--text-tertiary)]">For VS Code, Cursor or other local projects not on public GitHub</span>
               </summary>
               <div className="pb-4">
                 <UploadProject />

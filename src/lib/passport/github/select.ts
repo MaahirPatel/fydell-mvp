@@ -1,4 +1,4 @@
-import { LIMITS, type SkipReason, type SkippedFile, type TreeEntry } from "./types";
+import { LIMITS, type SelectionLimits, type SkipReason, type SkippedFile, type TreeEntry } from "./types";
 
 const BINARY = /\.(png|jpe?g|gif|webp|ico|bmp|svgz|pdf|zip|gz|tgz|bz2|xz|7z|rar|jar|war|class|so|dylib|dll|exe|bin|o|a|wasm|woff2?|ttf|otf|eot|mp[34]|mov|avi|wav|flac|ogg|psd|sketch|fig|pkl|pickle|pt|pth|onnx|h5|ckpt|safetensors|parquet|feather|npy|npz|db|sqlite3?)$/i;
 const VENDORED = /(^|\/)(node_modules|vendor|third_party|dist|build|out|\.next|\.nuxt|__pycache__|\.venv|venv|env|site-packages|target|coverage|\.git|\.idea|\.vscode|bower_components|Pods)(\/|$)/;
@@ -64,7 +64,7 @@ function interleave(entries: TreeEntry[]): TreeEntry[] {
   return ordered;
 }
 
-function classify(entry: TreeEntry): SkipReason | null {
+function classify(entry: TreeEntry, limits: SelectionLimits): SkipReason | null {
   if (entry.type === "commit") return "submodule";
   if (entry.mode === "120000") return "symlink";
   if (VENDORED.test(entry.path)) return "vendored_or_generated";
@@ -73,16 +73,16 @@ function classify(entry: TreeEntry): SkipReason | null {
   if (BINARY.test(entry.path)) return "binary";
   if (MINIFIED.test(entry.path)) return "minified";
   if (!TEXT.test(entry.path)) return "not_text";
-  if ((entry.size ?? 0) > LIMITS.maxBytesPerFile) return "too_large";
+  if ((entry.size ?? 0) > limits.maxBytesPerFile) return "too_large";
   return null;
 }
 
-export function selectFiles(entries: TreeEntry[]): { selected: TreeEntry[]; skipped: SkippedFile[]; totalFiles: number } {
+export function selectFiles(entries: TreeEntry[], limits: SelectionLimits = LIMITS): { selected: TreeEntry[]; skipped: SkippedFile[]; totalFiles: number } {
   const files = entries.filter((e) => e.type !== "tree");
   const skipped: SkippedFile[] = [];
   const eligible: TreeEntry[] = [];
   for (const entry of files) {
-    const reason = classify(entry);
+    const reason = classify(entry, limits);
     if (reason) skipped.push({ path: entry.path, reason });
     else eligible.push(entry);
   }
@@ -90,11 +90,11 @@ export function selectFiles(entries: TreeEntry[]): { selected: TreeEntry[]; skip
   let bytes = 0;
   for (const entry of reserveTests(interleave(eligible))) {
     const size = entry.size ?? 0;
-    if (selected.length >= LIMITS.maxFilesPerRepository) {
+    if (selected.length >= limits.maxFilesPerRepository) {
       skipped.push({ path: entry.path, reason: "file_limit" });
       continue;
     }
-    if (bytes + size > LIMITS.maxBytesPerRepository) {
+    if (bytes + size > limits.maxBytesPerRepository) {
       skipped.push({ path: entry.path, reason: "byte_limit" });
       continue;
     }

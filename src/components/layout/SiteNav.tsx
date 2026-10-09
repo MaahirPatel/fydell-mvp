@@ -220,7 +220,7 @@ export default function SiteNav() {
           ) : (
             <>
               <Link href="/login" className={`${linkClass(pathname === "/login")} hidden sm:inline-flex`}>
-                Sign in
+                Log in
               </Link>
               <Link href="/signup" className="l-btn l-btn-solid ml-1 h-9 px-4 text-[14px]">
                 Sign up
@@ -278,7 +278,7 @@ export default function SiteNav() {
                     Sign up
                   </Link>
                   <Link href="/login" onClick={() => setMobileOn(null)} className="l-btn l-btn-lg l-btn-ghost">
-                    Sign in
+                    Log in
                   </Link>
                 </>
               )}

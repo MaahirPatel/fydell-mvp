@@ -11,6 +11,7 @@ import DesktopBand from "@/components/marketing/site/DesktopBand";
 import EvidenceGrid from "@/components/marketing/site/EvidenceGrid";
 import { Announcement, CenteredClosing, CenteredHero, ShowcaseSection, Tiles } from "@/components/marketing/site/Home";
 import { LATEST } from "@/components/marketing/site/releases";
+import { WindowsIcon } from "@/components/marketing/site/OsIcons";
 
 export const metadata = {
   title: { absolute: "Fydell: Engineering work, ready to be seen" },
@@ -28,11 +29,12 @@ export default function HomePage() {
         lead="Engineers share real projects and work samples. Hiring teams read the evidence behind every claim, then make the call."
         actions={
           <>
-            <Link href="/signup" className="l-btn l-btn-lg l-btn-solid">
-              Sign up free
+            <Link href="/download" className="l-btn l-btn-lg l-btn-solid">
+              <WindowsIcon size={16} />
+              Download for Windows
             </Link>
-            <Link href="/login" className="l-btn l-btn-lg l-btn-quiet">
-              Sign in
+            <Link href="/signup" className="l-btn l-btn-lg l-btn-quiet">
+              Create an account
             </Link>
           </>
         }

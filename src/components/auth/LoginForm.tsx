@@ -149,7 +149,7 @@ export default function LoginForm() {
   return (
     <form method="post" onSubmit={submit} className="grid gap-4">
       {justReset && !error ? (
-        <FormSuccess>Password updated. Sign in with your new password.</FormSuccess>
+        <FormSuccess>Password updated. Log in with your new password.</FormSuccess>
       ) : null}
 
       <Field label="Email" htmlFor="login-email">
@@ -205,7 +205,7 @@ export default function LoginForm() {
         disabled={!hydrated}
         className="mt-1 w-full"
       >
-        {loading ? "Signing in" : "Sign in"}
+        {loading ? "Logging in" : "Log in"}
       </Button>
     </form>
   );

@@ -142,13 +142,13 @@ const SETUP_STEPS = [
   {
     title: "Choose a simulation",
     detail:
-      "Start from a simulation template for Backend & API or Applied AI, use it as it is, or adapt it to your product.",
+      "Start from a simulation template for Backend & API or Applied AI, use it as it is, or adapt it to your product. Your simulations live under Work samples.",
     href: "/app/employer/work-samples/new",
     cta: "Create simulation",
   },
   {
     title: "Create an assessment",
-    detail: "Name the job and attach the published simulation candidates will complete.",
+    detail: "Name the job and attach the published simulation candidates will complete. Assessments are in the sidebar.",
     href: "/app/employer/engineering",
     cta: "Create assessment",
   },

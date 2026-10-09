@@ -22,7 +22,7 @@ export const FIRST_RUN: Record<SignupPath, string | null> = {
 function humanizeAuthError(raw: string): string {
   const lower = raw.toLowerCase();
   if (lower.includes("already registered") || lower.includes("already been registered") || lower.includes("already exists")) {
-    return "An account with this email already exists. Sign in instead.";
+    return "An account with this email already exists. Log in instead.";
   }
   if (lower.includes("password") && lower.includes("weak")) {
     return "That password is too easy to guess. Choose a less common one.";

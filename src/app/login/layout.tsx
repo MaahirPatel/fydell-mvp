@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sign in",
-  description: "Sign in to your Fydell workspace.",
+  title: "Log in",
+  description: "Log in to your Fydell workspace.",
   robots: { index: false, follow: false },
 };
 

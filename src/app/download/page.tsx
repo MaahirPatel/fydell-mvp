@@ -166,7 +166,7 @@ export default function DownloadPage() {
           </Link>{" "}
           or{" "}
           <Link href="/login" className="font-medium text-[var(--text-primary)] underline decoration-[var(--border-strong)] underline-offset-4">
-            sign in
+            log in
           </Link>{" "}
           on the web.
         </p>

@@ -4,6 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { SKIP_REASON_LABEL } from "@/lib/passport/record-states";
+import { zipFolder, type FolderSkipReason } from "@/lib/passport/folder-zip";
+
+const FOLDER_SKIP_LABEL: Record<FolderSkipReason, string> = {
+  dependency_or_build: "in dependency or build folders",
+  possible_secret: "that may hold credentials",
+  not_source: "that aren't source code or are too large",
+  over_limit: "beyond the 300 files Fydell reads",
+};
 
 type Preview = {
   name: string;
@@ -35,12 +43,52 @@ export default function UploadProject({ onSaved }: { onSaved?: (projectId: strin
   const [busy, setBusy] = useState<"preview" | "save" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
+  const [source, setSource] = useState<"folder" | "zip">("folder");
+  const [folderNote, setFolderNote] = useState<string | null>(null);
+  const [zipping, setZipping] = useState(false);
 
   function chooseFile(next: File | null) {
     setFile(next);
     setPreview(null);
     setError(null);
+    setFolderNote(null);
     if (next && !name) setName(next.name.replace(/\.zip$/i, ""));
+  }
+
+  async function chooseFolder(list: FileList | null) {
+    setFile(null);
+    setPreview(null);
+    setError(null);
+    setFolderNote(null);
+    if (!list || list.length === 0) return;
+    setZipping(true);
+    try {
+      const packed = await zipFolder(Array.from(list));
+      if (packed.ok === false) {
+        setError(packed.error);
+        return;
+      }
+      setFile(packed.file);
+      if (!name) setName(packed.name.slice(0, 80));
+      const left = Object.entries(packed.skipped)
+        .filter(([, n]) => n > 0)
+        .map(([reason, n]) => `${n} ${FOLDER_SKIP_LABEL[reason as FolderSkipReason]}`);
+      setFolderNote(`${packed.included} files packed from “${packed.name}”.${left.length ? ` Not uploaded: ${left.join(", ")}.` : ""}`);
+    } catch {
+      setError("That folder could not be read. Try again, or upload a ZIP instead.");
+    } finally {
+      setZipping(false);
+    }
+  }
+
+  function switchSource(next: "folder" | "zip") {
+    if (next === source) return;
+    setSource(next);
+    setFile(null);
+    setPreview(null);
+    setError(null);
+    setFolderNote(null);
+    setFileInputKey((k) => k + 1);
   }
 
   async function send(intent: "preview" | "save") {
@@ -85,22 +133,57 @@ export default function UploadProject({ onSaved }: { onSaved?: (projectId: strin
   return (
     <div className="space-y-4">
       <p className="max-w-[64ch] text-app-body leading-[1.6] text-[var(--text-secondary)]">
-        For work that isn&apos;t in a public GitHub repository. Upload a ZIP of the project folder, up to 5&nbsp;MB.
-        Credential files, dependency folders and build output are left out unread. Fydell keeps the file list and the
-        cited lines of each finding, not the archive.
+        For work that isn&apos;t in a public GitHub repository, such as a project you open in VS Code or Cursor. Choose
+        the project folder, or a ZIP of it, up to 5&nbsp;MB once packed. Credential files, dependency folders and build
+        output are left out unread. Fydell keeps the file list and the cited lines of each finding, not the files.
       </p>
 
+      <div role="radiogroup" aria-label="Upload from" className="inline-flex rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-canvas)] p-0.5">
+        {(["folder", "zip"] as const).map((key) => (
+          <button
+            key={key}
+            type="button"
+            role="radio"
+            aria-checked={source === key}
+            onClick={() => switchSource(key)}
+            className={`h-8 rounded-[6px] px-3 text-app-meta font-medium transition-colors ${
+              source === key ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            {key === "folder" ? "Project folder" : "ZIP file"}
+          </button>
+        ))}
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block">
-          <span className="mb-1 block text-app-meta font-medium text-[var(--text-secondary)]">Project archive (.zip)</span>
-          <input
-            key={fileInputKey}
-            type="file"
-            accept=".zip,application/zip"
-            onChange={(e) => chooseFile(e.target.files?.[0] ?? null)}
-            className={inputClass}
-          />
-        </label>
+        {source === "folder" ? (
+          <label className="block">
+            <span className="mb-1 block text-app-meta font-medium text-[var(--text-secondary)]">Project folder</span>
+            <input
+              key={fileInputKey}
+              type="file"
+              multiple
+              ref={(el) => {
+                el?.setAttribute("webkitdirectory", "");
+                el?.setAttribute("directory", "");
+              }}
+              onChange={(e) => void chooseFolder(e.target.files)}
+              disabled={zipping}
+              className={inputClass}
+            />
+          </label>
+        ) : (
+          <label className="block">
+            <span className="mb-1 block text-app-meta font-medium text-[var(--text-secondary)]">Project archive (.zip)</span>
+            <input
+              key={fileInputKey}
+              type="file"
+              accept=".zip,application/zip"
+              onChange={(e) => chooseFile(e.target.files?.[0] ?? null)}
+              className={inputClass}
+            />
+          </label>
+        )}
         <label className="block">
           <span className="mb-1 block text-app-meta font-medium text-[var(--text-secondary)]">Project name</span>
           <input
@@ -116,9 +199,12 @@ export default function UploadProject({ onSaved }: { onSaved?: (projectId: strin
         </label>
       </div>
 
+      {zipping ? <p className="text-app-meta text-[var(--text-secondary)]">Packing the folder…</p> : null}
+      {folderNote && !zipping ? <p className="text-app-meta text-[var(--text-secondary)]">{folderNote}</p> : null}
+
       {!preview ? (
-        <Button variant="secondary" size="md" onClick={() => send("preview")} disabled={!file || name.trim().length < 2} loading={busy === "preview"}>
-          {busy === "preview" ? "Reading archive…" : "Review files"}
+        <Button variant="secondary" size="md" onClick={() => send("preview")} disabled={!file || zipping || name.trim().length < 2} loading={busy === "preview"}>
+          {busy === "preview" ? "Reading files…" : "Review files"}
         </Button>
       ) : null}
 

@@ -12,7 +12,7 @@ function ConfirmationRequiredContent() {
   return (
     <AuthShell
       title="Your account is ready"
-      description="Sign in with the email and password you just created to continue."
+      description="Log in with the email and password you just created to continue."
     >
       <ButtonLink
         href={withNext("/login", next)}
@@ -20,7 +20,7 @@ function ConfirmationRequiredContent() {
         size="lg"
         className="w-full"
       >
-        Sign in
+        Log in
       </ButtonLink>
     </AuthShell>
   );

@@ -14,18 +14,18 @@ function LoginContent() {
   const applying = safe.startsWith("/jobs/");
   const passport = safe.startsWith("/app/candidate");
   const description = applying
-    ? "Sign in to apply. You'll come straight back to the application, and nothing is shared until you send it."
+    ? "Log in to apply. You'll come straight back to the application, and nothing is shared until you send it."
     : passport
-      ? "Sign in to your Passport."
+      ? "Log in to your Passport."
       : candidate
-        ? "Sign in and we'll take you straight back to your invitation."
+        ? "Log in and we'll take you straight back to your invitation."
         : isEmployerDestination(next)
           ? "Continue to the workspace where your team reviews candidates and their evidence."
-          : "Sign in to your Builder Profile or your hiring workspace.";
+          : "Log in to your Builder Profile or your hiring workspace.";
 
   return (
     <AuthShell
-      title="Sign in to Fydell"
+      title="Log in to Fydell"
       description={description}
       showcase={isEmployerDestination(next) ? "employer" : "engineer"}
       headerAction={

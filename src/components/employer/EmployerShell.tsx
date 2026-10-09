@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { ToastProvider } from "@/components/ui/Toast";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import QuickJump from "@/components/workspace/QuickJump";
+import { EMPLOYER_JUMP_TARGETS } from "@/lib/workspace/jump-targets";
 import AccountMenu from "@/components/workspace/AccountMenu";
 import { type WorkspaceContexts } from "@/lib/workspace/account";
 import { InviteModalProvider, useInviteModal } from "./InviteCandidateModal";
@@ -504,6 +506,9 @@ function TopBar({ workspaceName }: { workspaceName: string }) {
         </ol>
       </nav>
       <div className="ml-auto flex items-center gap-0.5">
+        <span className="mr-1.5">
+          <QuickJump targets={EMPLOYER_JUMP_TARGETS} />
+        </span>
         <TopBarIconLink href="/trust" label="Trust and data handling" icon={ShieldCheck} />
         <TopBarIconLink href="/contact" label="Contact support" icon={CircleHelp} />
         <NotificationBell />

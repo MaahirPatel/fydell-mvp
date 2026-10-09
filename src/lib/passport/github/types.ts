@@ -28,6 +28,15 @@ export const LIMITS = {
   maxRepositoriesPerImport: 3,
 } as const;
 
+export type SelectionLimits = { maxFilesPerRepository: number; maxBytesPerFile: number; maxBytesPerRepository: number };
+
+/** Uploaded files are already in memory, so an upload is read far more fully than a GitHub fetch. Bounded by the 300-file archive limit. */
+export const UPLOAD_LIMITS: SelectionLimits = {
+  maxFilesPerRepository: 300,
+  maxBytesPerFile: 256 * 1024,
+  maxBytesPerRepository: 6 * 1024 * 1024,
+};
+
 export type RepoRef = { owner: string; repo: string };
 
 export type ParsedInput =

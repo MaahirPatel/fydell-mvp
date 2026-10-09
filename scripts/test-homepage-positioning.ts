@@ -57,8 +57,8 @@ ok(
   /lead="Fydell turns real projects and realistic simulations into evidence hiring teams can read\."/.test(hero),
 );
 ok(
-  "hero actions: Sign up and Sign in, no download",
-  /href="\/signup"[^>]*>\s*Sign up/.test(hero) && /href="\/login"[^>]*>\s*Sign in/.test(hero) && !/DownloadButton/.test(hero),
+  "hero actions: Download for Windows opens /download, then Create an account",
+  /href="\/download"[^>]*>[\s\S]*?Download for Windows/.test(hero) && /href="\/signup"[^>]*>\s*Create an account/.test(hero) && !/DownloadButton/.test(hero),
 );
 ok("hero leads straight into the simulation", /<ProductFrame[\s\S]*?size="hero"[\s\S]*?<SimulationHero \/>/.test(hero));
 ok(
@@ -124,7 +124,7 @@ ok("closing offers sign-up and sales", /Sign up free/.test(page) && /Contact sal
 
 // Navigation and honesty.
 ok("official lockup is used in the site header and footer", /FydellLogo/.test(nav) && /FydellLogo/.test(footer));
-ok("navigation labels", /For Engineers[\s\S]*For Employers[\s\S]*Pricing/.test(navData) && /aria-expanded=\{productOpen\}/.test(nav) && /Sign in/.test(nav) && /Sign up/.test(nav) && /Open workspace/.test(nav));
+ok("navigation labels", /For Engineers[\s\S]*For Employers[\s\S]*Pricing/.test(navData) && /aria-expanded=\{productOpen\}/.test(nav) && /Log in/.test(nav) && /Sign up/.test(nav) && !/Sign in/.test(nav) && /Open workspace/.test(nav));
 ok(
   "every Product menu item has a product page",
   [...navData.matchAll(/href: "\/products\/([a-z-]+)"/g)].every((m) => products.includes(`"${m[1]}": {`) || products.includes(`\n  ${m[1]}: {`)),

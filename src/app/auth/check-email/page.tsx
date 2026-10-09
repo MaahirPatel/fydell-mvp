@@ -26,7 +26,7 @@ export default async function CheckEmailPage({ searchParams }: { searchParams: S
         <p className="text-app-meta text-[var(--text-secondary)]">
           Already confirmed?{" "}
           <Link href={withNext("/login", next)} className="font-medium text-[var(--text-primary)] underline-offset-2 hover:underline">
-            Sign in
+            Log in
           </Link>
         </p>
       }

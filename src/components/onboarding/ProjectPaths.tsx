@@ -13,7 +13,7 @@ type PathKey = "github" | "upload" | "describe";
 
 const PATHS: { key: PathKey; label: string; hint: string }[] = [
   { key: "github", label: "Public GitHub", hint: "Fydell reads a pinned commit and cites the code behind each finding." },
-  { key: "upload", label: "Upload a ZIP", hint: "For code that isn't public. You review every file before it's read." },
+  { key: "upload", label: "Upload a folder or ZIP", hint: "For code that isn't public, like a VS Code or Cursor project. You review every file before it's read." },
   { key: "describe", label: "Describe it", hint: "For work you can't share. Shown as your description, not analyzed." },
 ];
 
