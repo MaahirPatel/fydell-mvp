@@ -274,6 +274,7 @@ async function runGenerateJob(db: Admin, job: JobRow, owner: string, deadline: n
   const provider = authoringProvider();
   if (!provider) throw new GenerationError("provider_unavailable", "No generation model is configured on the server. Upload starter files instead, or configure a model.", false);
   const model = provider.label;
+  let repairNote: string | null = null;
 
   const step = async (id: GenStageId, fn: () => Promise<Partial<GenerateCheckpoint>>, note?: () => string) => {
     const current = stages.find((s) => s.id === id);
@@ -313,7 +314,16 @@ async function runGenerateJob(db: Admin, job: JobRow, owner: string, deadline: n
           }
           const failing = rec.checks.filter((c) => (c.kind === "execution" || c.id === "test_mapping") && c.status === "failed");
           if (failing.length === 0 || repairs >= MAX_REPAIRS || Date.now() > deadline - 60_000) return { code, tests, repairs };
-          const r = await repairDraft(config, cp.brief!, code, tests, failing);
+          let r: Awaited<ReturnType<typeof repairDraft>>;
+          try {
+            r = await repairDraft(config, cp.brief!, code, tests, failing);
+          } catch (error) {
+            if (error instanceof GenerationError && error.code === "input_too_large") {
+              repairNote = "Automatic repair skipped: the draft is too large for the model's token limit. The failing checks are recorded.";
+              return { code, tests, repairs };
+            }
+            throw error;
+          }
           code = r.code;
           tests = r.tests;
           repairs += 1;
@@ -321,7 +331,7 @@ async function runGenerateJob(db: Admin, job: JobRow, owner: string, deadline: n
           await save(db, job, owner, { checkpoint: cp as unknown as Record<string, unknown>, lease_expires_at: new Date(Date.now() + LEASE_MS).toISOString() });
         }
       },
-      () => (selectRunner().ok ? `${cp.repairs ?? 0} repair round${cp.repairs === 1 ? "" : "s"}` : "Execution unavailable in this environment"),
+      () => repairNote ?? (selectRunner().ok ? `${cp.repairs ?? 0} repair round${cp.repairs === 1 ? "" : "s"}` : "Execution unavailable in this environment"),
     );
     await step("assemble", async () => {
       const { pkg: generated, prot } = assemble(config, cp.brief!, cp.code!, cp.tests!, model, "generated");

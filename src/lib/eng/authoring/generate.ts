@@ -33,7 +33,7 @@ import { matchesRef, type CheckResult } from "./checks";
 
 export class GenerationError extends Error {
   constructor(
-    public code: "provider_unavailable" | "provider_rate_limited" | "provider_failed" | "invalid_output",
+    public code: "provider_unavailable" | "provider_rate_limited" | "provider_failed" | "invalid_output" | "input_too_large",
     message: string,
     public retryable: boolean,
     public retryAfterMs = 0,
@@ -266,7 +266,7 @@ async function callJson<T>(schema: z.ZodType<T>, system: string, user: string, m
     const input = estimateTokens(sent.map((m) => m.content).join("\n")) + 200;
     const allowed = Math.min(maxTokens, budget - input - 300);
     if (allowed < 1500) {
-      throw new GenerationError("invalid_output", "The draft is too large for the configured model's token limit. Reduce the starter project size and regenerate.", false);
+      throw new GenerationError("input_too_large", "The draft is too large for the configured model's token limit. Reduce the starter project size and regenerate.", false);
     }
     let raw: string;
     try {
