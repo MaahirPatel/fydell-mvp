@@ -2,6 +2,7 @@ import SignupView, { type SignupAudience, type SignupDemo } from "@/components/a
 import type { SignupPath } from "@/components/auth/SignupForm";
 import { partnerSignupEnabled } from "@/lib/auth/flags";
 import { isCandidateDestination, isEmployerDestination, safeNext } from "@/lib/auth/safe-next";
+import { isDemoDestination } from "@/lib/employer-demo/fixtures";
 
 function one(value: string | string[] | undefined): string | null {
   return typeof value === "string" ? value : null;
@@ -28,7 +29,8 @@ export default async function SignupPage({
         : null;
 
   // The demo workspace is offered only on open sign-up, never to someone arriving with an invitation or application.
-  const demo: SignupDemo = audience !== "open" ? "none" : one(params.intent) === "demo" ? "first" : "offer";
+  const demo: SignupDemo =
+    audience !== "open" ? "none" : isDemoDestination(next) ? "entry" : one(params.intent) === "demo" ? "first" : "offer";
 
   return <SignupView audience={audience} initialPath={initialPath} next={next} partnerEnabled={partnerSignupEnabled()} demo={demo} />;
 }

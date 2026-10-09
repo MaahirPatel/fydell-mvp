@@ -30,8 +30,8 @@ export default function HomePage() {
         actions={
           <>
             <DownloadButton />
-            <Link href="/sandbox" className="l-btn l-btn-quiet">
-              Product tour
+            <Link href="/demo" className="l-btn l-btn-quiet">
+              Explore employer sandbox
             </Link>
           </>
         }

@@ -7,9 +7,11 @@ import {
   loadState,
   progressOf,
   saveState,
+  STORAGE_KEY,
   withProgress,
   withoutProgress,
   type DemoState,
+  type KeyValueStorage,
   type ScenarioProgress,
 } from "@/lib/sandbox-demo/state";
 
@@ -28,23 +30,43 @@ export function useHydrated(): boolean {
 }
 
 /**
+ * Local storage for one account's drafts. The employer demo passes the user id
+ * so two people sharing a browser never see each other's sample task.
+ */
+function scopedStorage(scope: string | undefined): KeyValueStorage | null {
+  const base = browserStorage();
+  if (!base || !scope) return base;
+  const k = (key: string) => `${key}:${scope}`;
+  return {
+    getItem: (key) => base.getItem(k(key)),
+    setItem: (key, value) => base.setItem(k(key), value),
+    removeItem: (key) => base.removeItem(k(key)),
+  };
+}
+
+/** Removes one account's local task drafts, for the employer demo's reset. */
+export function clearScopedDrafts(scope: string): void {
+  scopedStorage(scope)?.removeItem(STORAGE_KEY);
+}
+
+/**
  * The demo's state, mirrored to localStorage on every change. Call only after
  * hydration: the first render reads storage directly.
  */
-export function useDemoState() {
-  const [state, setState] = useState<DemoState>(() => loadState(browserStorage()));
+export function useDemoState(scope?: string) {
+  const [state, setState] = useState<DemoState>(() => loadState(scopedStorage(scope)));
 
   useEffect(() => {
-    saveState(browserStorage(), state);
-  }, [state]);
+    saveState(scopedStorage(scope), state);
+  }, [state, scope]);
 
   const update = useCallback<Update>((recipe) => setState((prev) => recipe(prev)), []);
   return { state, update };
 }
 
 /** One scenario's progress, with an updater and a reset that leaves other scenarios alone. */
-export function useScenarioProgress(scenario: DemoScenario) {
-  const { state, update } = useDemoState();
+export function useScenarioProgress(scenario: DemoScenario, scope?: string) {
+  const { state, update } = useDemoState(scope);
   const progress = progressOf(state, scenario);
   const updateProgress = useCallback<UpdateProgress>((recipe) => update((st) => withProgress(st, scenario, recipe)), [scenario, update]);
   const reset = useCallback(() => update((st) => withoutProgress(st, scenario.key)), [scenario.key, update]);

@@ -8,8 +8,11 @@ import DemoWorkspaceOption from "@/components/marketing/site/DemoWorkspaceOption
 import { withNext } from "@/lib/auth/safe-next";
 
 export type SignupAudience = "applicant" | "invited" | "open";
-/** Whether the demo workspace is offered: after the form, first, or not at all (invitations). */
-export type SignupDemo = "offer" | "first" | "none";
+/**
+ * Whether the demo workspace is offered: after the form, first, not at all
+ * (invitations), or as the destination this sign-up is on the way to.
+ */
+export type SignupDemo = "offer" | "first" | "entry" | "none";
 
 const COPY: Record<SignupAudience, { title: string; description: string }> = {
   applicant: {
@@ -69,6 +72,19 @@ export default function SignupView({
         </>
       }
     >
+      {demo === "entry" ? (
+        <div className="mb-6 rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-panel)] px-4 py-3.5 text-[13px] leading-[1.55] text-[var(--text-secondary)]">
+          <p className="text-[14px] font-medium text-[var(--text-primary)]">Your employer sandbox opens next</p>
+          <p className="mt-1">
+            Create an employer account, or{" "}
+            <Link href={withNext("/login", next)} className="font-medium text-[var(--text-primary)] underline underline-offset-2">
+              sign in
+            </Link>
+            , and you land in a demo workspace with a fictional role and applicants. No job, billing or candidate invitation is needed, and nothing you do there is
+            sent to anyone.
+          </p>
+        </div>
+      ) : null}
       {demo === "first" ? (
         <div className="mb-6">
           <DemoWorkspaceOption prominent />

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth/resolve-post-login";
 import { checkThrottle, createMemoryThrottleStore, THROTTLE_POLICIES, throttleIdentity } from "@/lib/security/throttles";
 import type { TeamResponse } from "@/lib/sandbox-demo/team";
 import { parseTeamRequest } from "@/lib/sandbox-demo/team-core";
@@ -10,11 +11,15 @@ const throttleStore = createMemoryThrottleStore();
 const MAX_BODY_BYTES = 24_000;
 
 /**
- * Simulated teammates for the public demo. Anonymous by design, so it is
- * throttled per address and globally, accepts only the demo scenario, stores
- * nothing, and never returns a fallback reply in place of the model's.
+ * Simulated teammates for the employer demo workspace's sample task. Signed-in
+ * only, throttled per address and globally, accepts only the demo scenario,
+ * stores nothing, and never returns a fallback reply in place of the model's.
  */
 export async function POST(req: Request) {
+  if (!(await getAuthenticatedUser())) {
+    const body: TeamResponse = { status: "unavailable", reason: "rejected", retryAfterSeconds: null, message: "Sign in to the demo workspace to message simulated teammates." };
+    return NextResponse.json(body, { status: 401 });
+  }
   if (process.env.SANDBOX_DEMO_TEAM_DISABLED === "1") {
     const body: TeamResponse = { status: "unavailable", reason: "not_configured", retryAfterSeconds: null, message: "Simulated teammates are switched off for the demo right now." };
     return NextResponse.json(body);

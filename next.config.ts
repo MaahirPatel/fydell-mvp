@@ -22,6 +22,9 @@ import type { NextConfig } from "next";
 const ALASQL_BROWSER_BUILD = "./node_modules/alasql/dist/alasql.min.js";
 
 const nextConfig: NextConfig = {
+  // A second local server (e.g. a test run beside a running `next dev`) needs
+  // its own build directory; Next refuses two dev servers on one directory.
+  distDir: process.env.FYDELL_NEXT_DIST_DIR || ".next",
   reactStrictMode: true,
   poweredByHeader: false,
   allowedDevOrigins: ["127.0.0.1"],
@@ -93,6 +96,26 @@ const nextConfig: NextConfig = {
       { source: "/resources", destination: "/products", permanent: true },
       { source: "/network", destination: "/products", permanent: true },
       { source: "/company", destination: "/contact", permanent: true },
+      // The public product tour is retired. The employer sandbox, inside an
+      // employer account, is the only interactive demo; /demo signs the
+      // visitor in and lands them on the equivalent page. Temporary, so the
+      // mapping can change without being cached in browsers.
+      ...[
+        { source: "/sandbox/:key/workspace", next: "/app/demo/task" },
+        { source: "/sandbox/task", next: "/app/demo/task" },
+        { source: "/sandbox/work", next: "/app/demo/task" },
+        { source: "/sandbox/simulation", next: "/app/demo/task" },
+        { source: "/sandbox/:key/report", next: "/app/employer/demo/applicants/your-sample" },
+        { source: "/sandbox/:key/review", next: "/app/employer/demo/applicants/your-sample" },
+        { source: "/sandbox/:key/example/:rest*", next: "/app/employer/demo/applicants/amara-osei" },
+        { source: "/sandbox/evidence/:rest*", next: "/app/employer/demo/applicants/amara-osei" },
+        { source: "/sandbox/candidates", next: "/app/employer/demo" },
+        { source: "/sandbox/:rest*", next: "/app/employer/demo" },
+      ].map(({ source, next }) => ({
+        source,
+        destination: `/demo?next=${encodeURIComponent(next)}`,
+        permanent: false,
+      })),
       // Old app areas
       { source: "/app/fde/:path*", destination: "/app/candidate", permanent: true },
       { source: "/app/employer/missions/:path*", destination: "/app/employer", permanent: true },

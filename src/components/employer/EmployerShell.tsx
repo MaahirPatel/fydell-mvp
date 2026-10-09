@@ -71,6 +71,69 @@ function isFullCanvas(pathname: string): boolean {
   return /^\/app\/employer\/workbench\/[^/]+$/.test(pathname);
 }
 
+const DEMO_HOME = "/app/employer/demo";
+const DEMO_NAME = "Demo workspace";
+
+function isDemoPath(pathname: string): boolean {
+  return pathname === DEMO_HOME || pathname.startsWith(`${DEMO_HOME}/`);
+}
+
+const DEMO_NAV = [
+  { href: DEMO_HOME, label: "Applicants", icon: Users },
+  { href: `${DEMO_HOME}/simulation`, label: "Simulation template", icon: SquareTerminal },
+] as const;
+
+function demoSection(pathname: string): { href: string; label: string } {
+  if (pathname.startsWith(`${DEMO_HOME}/simulation`)) return { href: `${DEMO_HOME}/simulation`, label: "Simulation template" };
+  return { href: DEMO_HOME, label: "Applicants" };
+}
+
+function DemoNav({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = usePathname();
+  return (
+    <nav className="flex flex-col gap-px" aria-label="Demo workspace">
+      {DEMO_NAV.map((item) => {
+        const active = demoSection(pathname).href === item.href;
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onNavigate}
+            aria-current={active ? "page" : undefined}
+            className={`flex h-[30px] items-center gap-2 rounded-[6px] px-2 text-[14px] font-medium transition-colors duration-[var(--motion-fast)] ${INSET_FOCUS} ${
+              active
+                ? "bg-[var(--surface-deep)] text-[var(--text-primary)]"
+                : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            <Icon className={`h-4 w-4 shrink-0 ${active ? "text-[var(--text-primary)]" : "text-[var(--text-tertiary)]"}`} strokeWidth={ICON_STROKE} aria-hidden />
+            <span className="truncate">{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+/**
+ * Stays at the top of every demo page so it is never unclear which data you
+ * are looking at, and the way back to the real workspace is one click.
+ */
+function DemoBanner({ liveName }: { liveName: string }) {
+  return (
+    <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1.5 border-b border-[var(--border-default)] bg-[var(--surface-canvas)] px-4 py-2 text-[13px]">
+      <p className="min-w-0 text-[var(--text-secondary)]">
+        <span className="font-medium text-[var(--text-primary)]">{DEMO_NAME}.</span> A fictional role and applicants, seeded for you alone. Decisions, notes and
+        questions stay here; nobody is emailed, charged or notified, and nothing reaches your live hiring records.
+      </p>
+      <Link href="/app/employer" className="shrink-0 font-medium text-[var(--text-primary)] underline underline-offset-2">
+        Return to {liveName}
+      </Link>
+    </div>
+  );
+}
+
 /** Closes a popover on an outside click or Escape. */
 function useDismiss(open: boolean, close: () => void) {
   const ref = useRef<HTMLDivElement>(null);
@@ -227,16 +290,28 @@ function WorkspaceMark({ workspaceName }: { workspaceName: string }) {
   );
 }
 
+function DemoMark() {
+  return (
+    <span
+      aria-hidden
+      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] border border-dashed border-[var(--border-strong)] text-[11px] font-semibold text-[var(--text-primary)]"
+    >
+      D
+    </span>
+  );
+}
+
 /**
- * Which workspace you are in and whether it holds real data. Live is the only
- * state a signed-in workspace can be in; the Sandbox is a separate place with
- * isolated demo data, reached from this menu.
+ * Which workspace you are in and whether it holds real data: your live
+ * organization, or the demo workspace with its own isolated, per-account data.
  */
 function WorkspaceSwitcher({
   workspaceName,
+  demo,
   onNavigate,
 }: {
   workspaceName: string;
+  demo: boolean;
   onNavigate?: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -255,16 +330,16 @@ function WorkspaceSwitcher({
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={open}
-        title={workspaceName}
+        title={demo ? DEMO_NAME : workspaceName}
         className={`flex h-8 w-full min-w-0 items-center gap-2 rounded-[6px] px-1.5 text-left transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] ${INSET_FOCUS}`}
       >
-        <WorkspaceMark workspaceName={workspaceName} />
+        {demo ? <DemoMark /> : <WorkspaceMark workspaceName={workspaceName} />}
         <span className="min-w-0 truncate text-[13px] font-semibold text-[var(--text-primary)]">
-          {workspaceName}
+          {demo ? DEMO_NAME : workspaceName}
         </span>
         <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-[var(--text-tertiary)]">
-          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[var(--brand-teal)]" />
-          Live
+          {demo ? null : <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[var(--brand-teal)]" />}
+          {demo ? "Demo" : "Live"}
         </span>
         <ChevronDown
           className="h-3.5 w-3.5 shrink-0 text-[var(--text-tertiary)]"
@@ -285,27 +360,27 @@ function WorkspaceSwitcher({
               </span>
               <span className="block text-[11px] text-[var(--text-tertiary)]">Live workspace</span>
             </span>
-            <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
+            {demo ? null : <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />}
           </Link>
-          <Link href="/sandbox" role="menuitem" onClick={choose} className={`${item} mt-px`}>
-            <span
-              aria-hidden
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] border border-dashed border-[var(--border-strong)] text-[11px] font-semibold"
-            >
-              S
-            </span>
+          <Link href={DEMO_HOME} role="menuitem" onClick={choose} className={`${item} mt-px`}>
+            <DemoMark />
             <span className="min-w-0 flex-1">
-              <span className="block font-medium text-[var(--text-primary)]">Sandbox</span>
-              <span className="block text-[11px] text-[var(--text-tertiary)]">Isolated demo data</span>
+              <span className="block font-medium text-[var(--text-primary)]">{DEMO_NAME}</span>
+              <span className="block text-[11px] text-[var(--text-tertiary)]">Fictional applicants, nothing is sent</span>
             </span>
+            {demo ? <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden /> : null}
           </Link>
-          <div className="my-1 h-px bg-[var(--border-subtle)]" />
-          <Link href="/app/employer/team" role="menuitem" onClick={choose} className={item}>
-            Invite teammates
-          </Link>
-          <Link href="/app/employer/settings" role="menuitem" onClick={choose} className={item}>
-            Workspace settings
-          </Link>
+          {demo ? null : (
+            <>
+              <div className="my-1 h-px bg-[var(--border-subtle)]" />
+              <Link href="/app/employer/team" role="menuitem" onClick={choose} className={item}>
+                Invite teammates
+              </Link>
+              <Link href="/app/employer/settings" role="menuitem" onClick={choose} className={item}>
+                Workspace settings
+              </Link>
+            </>
+          )}
         </div>
       ) : null}
     </div>
@@ -333,15 +408,16 @@ function SidebarContent({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const demo = isDemoPath(pathname);
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-1.5">
-        <WorkspaceSwitcher workspaceName={identity.workspaceName} onNavigate={onNavigate} />
-        {showInvite && identity.canInvite ? <InviteIconButton onBeforeOpen={onNavigate} /> : null}
+        <WorkspaceSwitcher workspaceName={identity.workspaceName} demo={demo} onNavigate={onNavigate} />
+        {showInvite && identity.canInvite && !demo ? <InviteIconButton onBeforeOpen={onNavigate} /> : null}
       </div>
 
       <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
-        <SidebarNav onNavigate={onNavigate} />
+        {demo ? <DemoNav onNavigate={onNavigate} /> : <SidebarNav onNavigate={onNavigate} />}
       </div>
 
       <div className="mt-2 flex items-center gap-1 border-t border-[var(--border-subtle)] pt-2">
@@ -393,7 +469,8 @@ function TopBarIconLink({
 /** Where you are, and the few things that are true on every page. */
 function TopBar({ workspaceName }: { workspaceName: string }) {
   const pathname = usePathname();
-  const section = workspaceSection(pathname);
+  const demo = isDemoPath(pathname);
+  const section = demo ? demoSection(pathname) : workspaceSection(pathname);
   const deeper = pathname !== section.href;
   return (
     <header className="hidden h-11 shrink-0 items-center gap-3 border-b border-[var(--border-subtle)] px-4 md:flex">
@@ -401,10 +478,10 @@ function TopBar({ workspaceName }: { workspaceName: string }) {
         <ol className="flex min-w-0 items-center gap-1.5 text-[13px]">
           <li className="min-w-0">
             <Link
-              href="/app/employer"
+              href={demo ? DEMO_HOME : "/app/employer"}
               className="block truncate text-[var(--text-tertiary)] transition-colors duration-[var(--motion-fast)] hover:text-[var(--text-primary)]"
             >
-              {workspaceName}
+              {demo ? DEMO_NAME : workspaceName}
             </Link>
           </li>
           <li aria-hidden>
@@ -513,7 +590,8 @@ function MobileTopBar({ identity }: { identity: ShellIdentity }) {
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   const pathname = usePathname();
-  const section = workspaceSection(pathname);
+  const demo = isDemoPath(pathname);
+  const section = demo ? demoSection(pathname) : workspaceSection(pathname);
   return (
     <>
       <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center gap-2 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2 md:hidden">
@@ -526,17 +604,17 @@ function MobileTopBar({ identity }: { identity: ShellIdentity }) {
         >
           <Menu className="h-[18px] w-[18px]" strokeWidth={ICON_STROKE} aria-hidden />
         </button>
-        <Link href="/app/employer" className="flex min-w-0 items-center gap-2">
-          <WorkspaceMark workspaceName={identity.workspaceName} />
+        <Link href={demo ? DEMO_HOME : "/app/employer"} className="flex min-w-0 items-center gap-2">
+          {demo ? <DemoMark /> : <WorkspaceMark workspaceName={identity.workspaceName} />}
           <span className="min-w-0 truncate text-[14px] font-semibold text-[var(--text-primary)]">
-            {identity.workspaceName}
+            {demo ? DEMO_NAME : identity.workspaceName}
           </span>
         </Link>
         <span aria-hidden className="text-[var(--text-quaternary)]">/</span>
         <span className="min-w-0 truncate text-[14px] text-[var(--text-secondary)]">{section.label}</span>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           <NotificationBell />
-          {identity.canInvite ? <InviteIconButton /> : null}
+          {identity.canInvite && !demo ? <InviteIconButton /> : null}
         </div>
       </header>
       {open ? <MobileNavSheet identity={identity} onClose={close} /> : null}
@@ -597,6 +675,7 @@ export default function EmployerShell({
   children: React.ReactNode;
 }) {
   const identity: ShellIdentity = { workspaceName, userEmail, userName, userAvatarUrl, contexts, canInvite };
+  const demo = isDemoPath(usePathname());
   return (
     <ToastProvider>
       <InviteModalProvider catalog={catalog} canInvite={canInvite}>
@@ -610,6 +689,7 @@ export default function EmployerShell({
           {/* The inset sheet. On a phone it is simply the page. */}
           <div className="flex min-w-0 flex-1 flex-col bg-[var(--surface-raised)] md:my-2 md:mr-2 md:overflow-hidden md:rounded-[10px] md:border md:border-[var(--border-default)] md:shadow-[var(--shadow-panel)]">
             <TopBar workspaceName={workspaceName} />
+            {demo ? <DemoBanner liveName={workspaceName} /> : null}
             <PageCanvas>{children}</PageCanvas>
           </div>
         </div>

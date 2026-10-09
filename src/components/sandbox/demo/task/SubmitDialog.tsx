@@ -48,6 +48,7 @@ export function SubmitDialog({
   onOpenDiff,
   onSubmit,
   onClose,
+  consequence,
 }: {
   scenario: DemoScenario;
   diffs: FileDiff[];
@@ -58,6 +59,8 @@ export function SubmitDialog({
   error: string | null;
   onHandoff: (field: HandoffField, value: string) => void;
   onOpenDiff: (path: string) => void;
+  /** Where the submission goes, when it is not the public preview's browser-only report. */
+  consequence?: { confirm: string; kept: string };
   onSubmit: () => void;
   onClose: () => void;
 }) {
@@ -134,7 +137,8 @@ export function SubmitDialog({
             {confirming ? (
               <div className="grid gap-3 rounded-[12px] border border-[var(--border-strong)] bg-[var(--surface-panel)] p-4">
                 <p className="text-[15px] text-[var(--text-primary)]">
-                  Submit now? The public and protected tests run on your files in this browser as a preview, then your report opens. You can come back and submit again.
+                  {consequence?.confirm ??
+                    "Submit now? The public and protected tests run on your files in this browser as a preview, then your report opens. You can come back and submit again."}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Button variant="primary" onClick={onSubmit} loading={submitting}>
@@ -202,7 +206,10 @@ export function SubmitDialog({
                   The team thread ({teamCount} {teamCount === 1 ? "message" : "messages"}), with check-ins labelled
                 </li>
               </ul>
-              <p className="text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">A browser preview, saved in this browser only. Nothing is sent to an employer. A real assessment runs in the Fydell desktop app, where results come from the isolated runner rather than the browser.</p>
+              <p className="text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+                {consequence?.kept ??
+                  "A browser preview, saved in this browser only. Nothing is sent to an employer. A real assessment runs in the Fydell desktop app, where results come from the isolated runner rather than the browser."}
+              </p>
             </Card>
           </aside>
         </div>

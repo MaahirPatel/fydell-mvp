@@ -54,6 +54,7 @@ export const PRIVATE_PATH_PREFIXES = [
   "/receipts",
   "/results",
   "/sandbox",
+  "/demo",
   "/pilot",
   "/lab",
   "/prototypes",

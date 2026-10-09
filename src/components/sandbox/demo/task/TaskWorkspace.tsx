@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ArrowLeft, Clock, HardDrive, PanelRight, Play } from "lucide-react";
 import FydellLogo from "@/components/brand/FydellLogo";
 import { Button } from "@/components/ui/Button";
@@ -11,7 +11,7 @@ import { demoScenario } from "@/lib/sandbox-demo/catalog";
 import type { DemoScenario } from "@/lib/sandbox-demo/catalog-types";
 import { diffFiles } from "@/lib/sandbox-demo/diff";
 import { runtimeFor } from "@/lib/sandbox-demo/runtime";
-import { ATTEMPT_LIMIT, RUN_SUMMARY_LIMIT, emptyReview, type HandoffField } from "@/lib/sandbox-demo/state";
+import { ATTEMPT_LIMIT, RUN_SUMMARY_LIMIT, emptyReview, type Attempt, type HandoffField } from "@/lib/sandbox-demo/state";
 import { minutesBetween, summarizeRun } from "@/lib/sandbox-demo/team-client";
 import type { TestMeta } from "@/lib/sandbox-demo/types";
 import { EditorArea, tabId, type EditorTab } from "@/components/simulations/workspace/EditorArea";
@@ -51,15 +51,28 @@ function testLine(source: string, name: string): number {
   return i >= 0 ? i + 1 : 1;
 }
 
+/**
+ * How the task behaves when it runs inside the employer demo workspace rather
+ * than as a standalone preview: drafts are scoped to the account, a notice says
+ * whose perspective this is, and submitting saves to the demo workspace.
+ */
+export type TaskEmbed = {
+  storageScope: string;
+  overview: { href: string; label: string };
+  notice: ReactNode;
+  consequence: { confirm: string; kept: string };
+  onSubmitted: (attempt: Attempt) => Promise<{ ok: true; href: string } | { ok: false; error: string }>;
+};
+
 /** A simulation's full-screen workspace, in the production workspace's theme. */
-export default function DemoWorkspace({ scenarioKey }: { scenarioKey: string }) {
+export default function DemoWorkspace({ scenarioKey, embed }: { scenarioKey: string; embed?: TaskEmbed }) {
   const hydrated = useHydrated();
   const scenario = demoScenario(scenarioKey);
   if (!scenario) return null;
   return (
     <SimThemeRoot className={t.root}>
       {hydrated ? (
-        <TaskWorkspace scenario={scenario} />
+        <TaskWorkspace scenario={scenario} embed={embed} />
       ) : (
         <div className="grid h-dvh place-items-center">
           <p role="status" className="text-[14px] text-[var(--text-secondary)]">
@@ -71,16 +84,16 @@ export default function DemoWorkspace({ scenarioKey }: { scenarioKey: string }) 
   );
 }
 
-function TaskWorkspace({ scenario }: { scenario: DemoScenario }) {
+function TaskWorkspace({ scenario, embed }: { scenario: DemoScenario; embed?: TaskEmbed }) {
   const router = useRouter();
   const rt = runtimeFor(scenario);
-  const { progress: p, updateProgress } = useScenarioProgress(scenario);
+  const { progress: p, updateProgress } = useScenarioProgress(scenario, embed?.storageScope);
   const prefs = useSimPrefs();
   const wide = useMediaQuery("(min-width: 1024px)");
   const now = useNow(15_000);
   const { running, run } = useTestRun(scenario);
   const team = useTeam(scenario, p, updateProgress);
-  const briefHref = `/sandbox/${scenario.key}`;
+  const overview = embed?.overview ?? { href: `/sandbox/${scenario.key}`, label: "Simulation overview" };
 
   /* Start the clock the first time the workspace opens. */
   useEffect(() => {
@@ -230,21 +243,26 @@ function TaskWorkspace({ scenario }: { scenario: DemoScenario }) {
       setSubmitError("The tests could not start in this browser, so nothing was submitted. Try again.");
       return;
     }
-    updateProgress((cur) => ({
-      ...cur,
-      attempts: [
-        ...cur.attempts,
-        {
-          id: `attempt-${Date.now()}`,
-          at: record.at,
-          files: submitted,
-          run: record,
-          handoff: { ...cur.handoff },
-          transcript: cur.team.filter((m) => m.status !== "sending"),
-        },
-      ].slice(-ATTEMPT_LIMIT),
-      review: emptyReview(),
-    }));
+    const attempt: Attempt = {
+      id: `attempt-${Date.now()}`,
+      at: record.at,
+      files: submitted,
+      run: record,
+      handoff: { ...p.handoff },
+      transcript: p.team.filter((m) => m.status !== "sending"),
+    };
+    if (embed) {
+      const saved = await embed.onSubmitted(attempt).catch(() => ({ ok: false as const, error: "The submission could not reach the server. Your files are still here; try again." }));
+      if ("error" in saved) {
+        setSubmitting(false);
+        setSubmitError(saved.error);
+        return;
+      }
+      updateProgress((cur) => ({ ...cur, attempts: [...cur.attempts, attempt].slice(-ATTEMPT_LIMIT), review: emptyReview() }));
+      setLeaveTo(saved.href);
+      return;
+    }
+    updateProgress((cur) => ({ ...cur, attempts: [...cur.attempts, attempt].slice(-ATTEMPT_LIMIT), review: emptyReview() }));
     setLeaveTo(`/sandbox/${scenario.key}/report`);
   };
 
@@ -266,6 +284,7 @@ function TaskWorkspace({ scenario }: { scenario: DemoScenario }) {
   return (
     <>
       <div className="flex h-dvh flex-col overflow-hidden" inert={reviewOpen}>
+        {embed?.notice}
         <header className="flex h-12 shrink-0 items-center gap-3 border-b border-[var(--border-default)] bg-[var(--surface-panel)] px-3">
           <Link href="/" aria-label="Fydell home" className="shrink-0 rounded-[4px]">
             <FydellLogo height={17} tone={prefs.theme === "dark" ? "dark" : "light"} />
@@ -289,12 +308,12 @@ function TaskWorkspace({ scenario }: { scenario: DemoScenario }) {
             </span>
             <div className="flex items-center gap-0.5">
               <Link
-                href={briefHref}
+                href={overview.href}
                 className="inline-flex h-8 items-center gap-1.5 rounded-[6px] px-2 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
               >
                 <ArrowLeft aria-hidden size={14} />
-                <span className="hidden lg:inline">Simulation overview</span>
-                <span className="lg:hidden">Overview</span>
+                <span className="hidden lg:inline">{overview.label}</span>
+                <span className="lg:hidden">Back</span>
               </Link>
               <SettingsMenu showFontSize />
               {!wide ? (
@@ -479,6 +498,7 @@ function TaskWorkspace({ scenario }: { scenario: DemoScenario }) {
           }}
           onSubmit={() => void submit()}
           onClose={() => setReviewOpen(false)}
+          consequence={embed?.consequence}
         />
       ) : null}
     </>

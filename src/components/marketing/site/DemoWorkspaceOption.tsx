@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ArrowRight, FlaskConical } from "lucide-react";
 
-export const DEMO_WORKSPACE_HREF = "/sandbox";
+export const DEMO_WORKSPACE_HREF = "/demo";
 
 /**
- * The one public way into the demo workspace: offered beside account
- * creation, never in site navigation. `prominent` is for visitors who came
- * asking for the demo.
+ * The public way into the employer sandbox, offered beside account creation.
+ * It goes through sign-in or sign-up and lands in the demo workspace.
+ * `prominent` is for visitors who came asking for the demo.
  */
 export default function DemoWorkspaceOption({ prominent = false }: { prominent?: boolean }) {
   return (
@@ -22,9 +22,9 @@ export default function DemoWorkspaceOption({ prominent = false }: { prominent?:
         <FlaskConical aria-hidden className="h-4 w-4 text-[var(--mk-indigo)]" strokeWidth={1.7} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[14px] font-medium text-[var(--text-primary)]">Explore the demo workspace first</span>
+        <span className="block text-[14px] font-medium text-[var(--text-primary)]">Explore employer sandbox</span>
         <span className="mt-0.5 block text-[13px] leading-[1.55] text-[var(--text-secondary)]">
-          Synthetic data. Nothing you do there is sent to anyone. No account needed.
+          A demo workspace with a fictional role and applicants, inside an employer account. Nothing you do there is sent to anyone.
         </span>
       </span>
       <ArrowRight
