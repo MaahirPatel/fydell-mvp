@@ -10,6 +10,7 @@
  * - "gemini": Google Gemini through its OpenAI-compatible endpoint (requires
  *   GEMINI_API_KEY). Google's free tier may use prompts to improve its
  *   products, so production must use a billed key before engineers' code is sent.
+ * - "cerebras": Cerebras Inference, OpenAI-compatible (requires CEREBRAS_API_KEY).
  *
  * There is deliberately NO mock provider here. Mock responses exist only in
  * test scripts under scripts/test-*.ts and are never a runtime fallback.
@@ -23,7 +24,7 @@
  * locally (`npm run dev`), so that `localhost` means the same machine as the
  * Ollama server. Do not set MODEL_PROVIDER=ollama on a deployed environment.
  */
-export type ModelProvider = "openai" | "ollama" | "groq" | "gemini";
+export type ModelProvider = "openai" | "ollama" | "groq" | "gemini" | "cerebras";
 
 export interface ProviderConfig {
   provider: ModelProvider;
@@ -45,6 +46,7 @@ const DEFAULT_OLLAMA_MODEL = "qwen2.5:7b";
 const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
 const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
 const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+const DEFAULT_CEREBRAS_MODEL = "gpt-oss-120b";
 const CHAT_PATH = "/v1/chat/completions";
 
 /**
@@ -78,6 +80,20 @@ export function getProviderConfig(): ProviderConfig | null {
       model: process.env.GROQ_MODEL ?? DEFAULT_GROQ_MODEL,
       // Structured-output support differs by Groq model; JSON mode plus the
       // caller's validation works for all of them.
+      supportsJsonSchema: false,
+      timeoutMs: 15_000,
+    };
+  }
+
+  if (provider === "cerebras") {
+    const apiKey = process.env.CEREBRAS_API_KEY;
+    if (!apiKey) return null;
+    return {
+      provider: "cerebras",
+      baseUrl: "https://api.cerebras.ai",
+      chatPath: CHAT_PATH,
+      apiKey,
+      model: process.env.CEREBRAS_MODEL ?? DEFAULT_CEREBRAS_MODEL,
       supportsJsonSchema: false,
       timeoutMs: 15_000,
     };
@@ -129,6 +145,7 @@ export function describeProvider(): string {
   }
   if (config.provider === "groq") return `groq (${config.model})`;
   if (config.provider === "gemini") return `gemini (${config.model})`;
+  if (config.provider === "cerebras") return `cerebras (${config.model})`;
   return `openai (${config.model})`;
 }
 
