@@ -42,9 +42,9 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
   const row = resolved.row;
   const definition = resolved.origin === "fydell_reviewed" ? resolved.definition : null;
   const taskTitle = resolved.origin === "employer_authored" ? resolved.pkg.brief.title : resolved.definition.title;
-  const workSamples = authoredOptions.filter((o) => o.id !== row.id).map((o) => ({ id: o.id, label: `${o.title}, version ${o.version}` }));
+  const workSamples = authoredOptions.filter((o) => o.id !== row.id).map((o) => ({ id: o.id, label: `${o.title}, version ${o.version}`, publishedAt: o.publishedAt }));
   const previewable = [
-    ...(resolved.origin === "employer_authored" ? [{ id: row.id, label: `${taskTitle}, version ${row.version}` }] : []),
+    ...(resolved.origin === "employer_authored" ? [{ id: row.id, label: `${taskTitle}, version ${row.version}`, publishedAt: row.published_at ?? undefined }] : []),
     ...workSamples,
   ];
   const canManage = roleCan(member.role, "manage_roles");

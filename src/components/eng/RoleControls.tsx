@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Field, FormError, FormSuccess, Input, Select } from "@/components/ui/Field";
 import { engFetch } from "./api";
+import { localTimeText, useHydrated } from "./LocalTime";
 
 export function RoleStatusActions({ roleId, status }: { roleId: string; status: "draft" | "published" | "archived" }) {
   const router = useRouter();
@@ -78,7 +79,17 @@ type InviteResult = {
   name?: string | null;
 };
 
-export type WorkSampleChoice = { id: string; label: string };
+export type WorkSampleChoice = { id: string; label: string; publishedAt?: string };
+
+/** Separate work samples can share a title and version, so tell those apart by when each was published. */
+function useChoiceLabels(choices: WorkSampleChoice[]): Map<string, string> {
+  const hydrated = useHydrated();
+  const counts = new Map<string, number>();
+  for (const c of choices) counts.set(c.label, (counts.get(c.label) ?? 0) + 1);
+  return new Map(
+    choices.map((c) => [c.id, (counts.get(c.label) ?? 0) > 1 && c.publishedAt ? `${c.label}, published ${localTimeText(c.publishedAt, hydrated)}` : c.label]),
+  );
+}
 
 export function InviteCandidateForm({
   roleId,
@@ -100,6 +111,7 @@ export function InviteCandidateForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<InviteResult | null>(null);
+  const labels = useChoiceLabels(workSamples);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -188,7 +200,7 @@ export function InviteCandidateForm({
           <Select id="inv-version" value={versionId} onChange={(e) => setVersionId(e.target.value)}>
             {workSamples.map((w) => (
               <option key={w.id} value={w.id}>
-                {w.label}
+                {labels.get(w.id)}
               </option>
             ))}
             <option value="">{defaultLabel ?? "The role’s simulation"}</option>
@@ -210,6 +222,7 @@ export function PreviewWorkSample({ roleId, workSamples }: { roleId: string; wor
   const [versionId, setVersionId] = useState(workSamples[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const labels = useChoiceLabels(workSamples);
 
   async function start() {
     setBusy(true);
@@ -232,7 +245,7 @@ export function PreviewWorkSample({ roleId, workSamples }: { roleId: string; wor
             <Select id="preview-version" value={versionId} onChange={(e) => setVersionId(e.target.value)}>
               {workSamples.map((w) => (
                 <option key={w.id} value={w.id}>
-                  {w.label}
+                  {labels.get(w.id)}
                 </option>
               ))}
             </Select>
