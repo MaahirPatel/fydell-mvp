@@ -25,6 +25,7 @@ import {
   withdrawApplication,
 } from "@/lib/hiring/applications";
 import { authorizeReviewScope } from "@/lib/employer/review";
+import { getApplicationDecision, NO_DECISION_VERSION, recordApplicationDecision } from "@/lib/hiring/application-decisions";
 import { listNotifications } from "@/lib/notifications/store";
 
 let failures = 0;
@@ -168,6 +169,23 @@ async function main() {
     check("two reviewers moving the stage at once: exactly one wins", [first, second].filter((r) => r.kind === "changed").length === 1 && [first, second].some((r) => r.kind === "conflict"));
     check("stage moves back to in review", (await setApplicationStage(orgId, submitted.id, "in_review")).kind === "changed");
 
+    console.log("application decision without a Passport review");
+    const fresh = await getApplicationDecision(orgId, submitted.id);
+    check("an undecided application starts at the 'new' version", fresh?.decision === "none" && fresh.version === NO_DECISION_VERSION);
+    check("another organization can't read the decision", (await getApplicationDecision(otherOrgId, submitted.id)) === null);
+    const [decA, decB] = await Promise.all([
+      recordApplicationDecision(orgId, submitted.id, reviewer.id, "advance", "private: strong retry reasoning", NO_DECISION_VERSION),
+      recordApplicationDecision(orgId, submitted.id, reviewer.id, "decline", "private: decline", NO_DECISION_VERSION),
+    ]);
+    check("two first decisions at once: exactly one saved, the other a conflict", [decA, decB].filter((r) => r.kind === "saved").length === 1 && [decA, decB].some((r) => r.kind === "conflict"));
+    const savedDecision = await getApplicationDecision(orgId, submitted.id);
+    const stalePatch = await recordApplicationDecision(orgId, submitted.id, reviewer.id, "hold", "", NO_DECISION_VERSION);
+    check("a save from a stale version returns the saved state instead of overwriting", stalePatch.kind === "conflict" && stalePatch.state.decision === savedDecision?.decision);
+    const moved = await recordApplicationDecision(orgId, submitted.id, reviewer.id, "advance", "private: strong retry reasoning", savedDecision?.version ?? null);
+    check("a save from the current version succeeds", moved.kind === "saved" && moved.state.decision === "advance");
+    check("another organization can't record a decision", (await recordApplicationDecision(otherOrgId, submitted.id, reviewer.id, "decline", "", NO_DECISION_VERSION)).kind === "not_found");
+    check("the applicant list counts the decision", (await listApplicationsForRole(orgId, role.id))[0]?.decision === "advance");
+
     console.log("requirement versions");
     const edited = parseRoleInput({ ...input.value, required: [...input.value.required, "Owns incidents"] });
     if (!edited.ok) throw new Error(edited.error);
@@ -221,6 +239,10 @@ async function main() {
     check("signed-out client reads no applications", (leaked ?? []).length === 0);
     const { error: writeErr } = await anon.from("role_applications").insert({ organization_id: orgId });
     check("signed-out client can't insert", !!writeErr);
+    const { data: leakedDecisions } = await anon.from("application_decisions").select("application_id,private_note").limit(1);
+    check("signed-out client reads no application decisions or notes", (leakedDecisions ?? []).length === 0);
+    const { error: decisionWriteErr } = await anon.from("application_decisions").insert({ application_id: randomUUID(), organization_id: orgId });
+    check("signed-out client can't write a decision", !!decisionWriteErr);
   } finally {
     await admin.from("role_applications").delete().eq("organization_id", orgId);
     await admin.from("organizations").delete().in("id", [orgId, otherOrgId]);

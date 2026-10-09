@@ -263,7 +263,8 @@ type DecisionJoins = {
 
 /** Applications with a Passport review decide there; the rest decide on the application itself. */
 function decisionOf(r: DecisionJoins): string {
-  return r.employer_passport_reviews?.decision ?? r.application_decisions?.decision ?? "none";
+  const review = r.employer_passport_reviews?.decision ?? "none";
+  return review !== "none" ? review : (r.application_decisions?.decision ?? "none");
 }
 
 type EmployerRow = AppRow & DecisionJoins & {
