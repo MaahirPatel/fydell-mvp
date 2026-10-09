@@ -14,6 +14,7 @@ import { StatusTag } from "@/components/ui/StatusTag";
 import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
 import { engAdmin } from "@/lib/eng/context";
 import { listRoleSummaries, listTeamQueue } from "@/lib/eng/employer-view";
+import { listApplicationQueue } from "@/lib/hiring/applications";
 import {
   getInvitationRecords,
   getOperationalSnapshot,
@@ -205,13 +206,32 @@ export default async function EmployerHomePage() {
   const now = Date.now();
 
   const db = engAdmin();
-  const [invitations, reports, snapshot, engRoles, teamQueue] = await Promise.all([
+  const [invitations, reports, snapshot, engRoles, attemptQueue, applicationQueue] = await Promise.all([
     getInvitationRecords(org.organizationId, 200),
     getReportRecords(org.organizationId, 5),
     getOperationalSnapshot(org.organizationId, now),
     listRoleSummaries(db, org.organizationId),
     listTeamQueue(db, org.organizationId),
+    listApplicationQueue(org.organizationId, 8),
   ]);
+  const teamQueue = [
+    ...attemptQueue.map((item) => ({
+      key: `attempt:${item.attemptId}`,
+      href: `/app/employer/engineering/attempts/${item.attemptId}`,
+      candidate: item.candidate,
+      context: item.roleTitle,
+      action: item.waitingOn === "decision" ? "Record a decision" : item.waitingOn === "hold" ? "On hold" : "Review and release",
+      since: item.since,
+    })),
+    ...applicationQueue.map((item) => ({
+      key: `application:${item.applicationId}`,
+      href: `/app/employer/openings/${item.roleId}/applications/${item.applicationId}`,
+      candidate: item.candidate,
+      context: `Application, ${item.roleTitle}`,
+      action: item.waitingOn === "answer" ? "Read the applicant's answer" : item.waitingOn === "review" ? "Review evidence" : "Record a decision",
+      since: item.since,
+    })),
+  ].sort((a, b) => (a.since ?? "").localeCompare(b.since ?? ""));
   const health = await getWorkspaceHealth(org.organizationId, invitations);
 
   const canManage = orgCan(org.role, "manage_candidates");
@@ -285,7 +305,7 @@ export default async function EmployerHomePage() {
         <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
           <WorkspaceSection
             title="Waiting on your team"
-            description="Submitted work with a report to release, a decision to record, or a candidate on hold. Oldest first."
+            description="Work and applications where the next step is yours. Oldest first."
             action={
               <span className="text-app-meta tabular-nums text-[var(--text-tertiary)]">
                 {teamQueue.length} {teamQueue.length === 1 ? "candidate" : "candidates"}
@@ -295,18 +315,16 @@ export default async function EmployerHomePage() {
           >
             <ul>
               {teamQueue.map((item) => (
-                <li key={item.attemptId} className="border-t border-[var(--border-subtle)]">
+                <li key={item.key} className="border-t border-[var(--border-subtle)]">
                   <Link
-                    href={`/app/employer/engineering/attempts/${item.attemptId}`}
+                    href={item.href}
                     className="flex items-baseline gap-3 px-5 py-3 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] lg:px-6"
                   >
                     <span className="min-w-0 flex-1 truncate">
                       <span className="text-app-body font-medium text-[var(--text-primary)]">{item.candidate}</span>
-                      <span className="text-app-meta text-[var(--text-tertiary)]"> · {item.roleTitle}</span>
+                      <span className="text-app-meta text-[var(--text-tertiary)]"> · {item.context}</span>
                     </span>
-                    <span className="shrink-0 text-app-meta text-[var(--text-secondary)]">
-                      {item.waitingOn === "decision" ? "Record a decision" : item.waitingOn === "hold" ? "On hold" : "Review and release"}
-                    </span>
+                    <span className="shrink-0 text-app-meta text-[var(--text-secondary)]">{item.action}</span>
                     {item.since ? (
                       <span
                         className="w-9 shrink-0 text-right font-mono text-app-meta tabular-nums text-[var(--text-tertiary)]"

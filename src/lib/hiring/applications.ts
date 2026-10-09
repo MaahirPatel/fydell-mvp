@@ -270,6 +270,65 @@ function nextActionFor(r: EmployerRow, evidenceAvailable: boolean): string {
   return "Close or follow up";
 }
 
+export type ApplicationQueueItem = {
+  applicationId: string;
+  roleId: string;
+  candidate: string;
+  roleTitle: string;
+  waitingOn: "answer" | "review" | "decision";
+  since: string;
+};
+
+/**
+ * Applications whose next step belongs to the employer: an answer nobody has
+ * read, a new application, or a reviewed one without a decision. Oldest first.
+ */
+export async function listApplicationQueue(organizationId: string, limit = 20): Promise<ApplicationQueueItem[]> {
+  const db = createAdminSupabaseClient();
+  const { data } = await db
+    .from("role_applications")
+    .select("id,role_id,contact_name,role_snapshot,stage,submitted_at,employer_passport_reviews(decision)")
+    .eq("organization_id", organizationId)
+    .eq("status", "submitted")
+    .in("stage", ["new", "in_review"])
+    .order("submitted_at", { ascending: true })
+    .limit(200);
+  const rows = (data ?? []) as unknown as Array<{
+    id: string;
+    role_id: string;
+    contact_name: string;
+    role_snapshot: RoleSnapshot;
+    stage: ApplicationStage;
+    submitted_at: string;
+    employer_passport_reviews: { decision: string } | null;
+  }>;
+  if (rows.length === 0) return [];
+
+  const { data: answers } = await db
+    .from("application_questions")
+    .select("application_id,answered_at")
+    .eq("organization_id", organizationId)
+    .eq("status", "answered")
+    .is("reviewed_at", null)
+    .in("application_id", rows.map((r) => r.id));
+  const unreadSince = new Map<string, string>();
+  for (const a of (answers ?? []) as Array<{ application_id: string; answered_at: string | null }>) {
+    const at = a.answered_at ?? "";
+    const prev = unreadSince.get(a.application_id);
+    if (!prev || at < prev) unreadSince.set(a.application_id, at);
+  }
+
+  const items: ApplicationQueueItem[] = [];
+  for (const r of rows) {
+    const base = { applicationId: r.id, roleId: r.role_id, candidate: r.contact_name, roleTitle: r.role_snapshot.title };
+    const unread = unreadSince.get(r.id);
+    if (unread !== undefined) items.push({ ...base, waitingOn: "answer", since: unread || r.submitted_at });
+    else if (r.stage === "new") items.push({ ...base, waitingOn: "review", since: r.submitted_at });
+    else if ((r.employer_passport_reviews?.decision ?? "none") === "none") items.push({ ...base, waitingOn: "decision", since: r.submitted_at });
+  }
+  return items.sort((a, b) => a.since.localeCompare(b.since)).slice(0, limit);
+}
+
 export async function listApplicationsForRole(
   organizationId: string,
   roleId: string,
