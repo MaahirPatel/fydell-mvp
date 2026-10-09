@@ -47,6 +47,7 @@
     "test:email-delivery": "tsx --conditions react-server --env-file=.env.local scripts/test-email-delivery.ts",
     "test:email-delivery:no-key": "tsx --conditions react-server --env-file=.env.local scripts/test-email-delivery.ts --no-key",
     "test:invite-verification": "tsx --conditions react-server --env-file=.env.local scripts/test-invite-verification-security.ts",
+    "test:login-lockout": "tsx --conditions react-server --env-file=.env.local scripts/test-login-lockout-security.ts",
     "test:desktop-auth": "tsx --conditions react-server scripts/test-desktop-auth.ts",
     "check:seo": "tsx scripts/check-seo.ts",
     "test:file-package": "tsx --conditions react-server scripts/test-file-package.ts",
