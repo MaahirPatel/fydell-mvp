@@ -6,7 +6,7 @@
  * before it enters HTML (SEC-07).
  */
 
-import { escapeHtml } from "./submission-files";
+import { escapeHtml, safeHref } from "@/lib/email-html";
 
 export interface InvitationCopyInput {
   organizationName: string;
@@ -25,7 +25,7 @@ export function invitationEmailCopy(input: InvitationCopyInput): { subject: stri
   const who = input.candidateName ? ` ${escapeHtml(input.candidateName)}` : "";
   const role = escapeHtml(input.roleTitle);
   const title = escapeHtml(input.simulationTitle);
-  const href = escapeHtml(input.inviteUrl);
+  const href = safeHref(input.inviteUrl);
   const expires = escapeHtml(new Date(input.expiresAt).toLocaleDateString("en-US", { dateStyle: "medium" }));
   const minutes = Math.max(1, Math.round(input.durationMinutes));
   const how = input.requiresDesktop

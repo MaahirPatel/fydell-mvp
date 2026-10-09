@@ -1,6 +1,9 @@
 import "server-only";
 import type { Admin, EngMember } from "./context";
-import { isOrgRole, type OrgRole } from "./permissions";
+import { isOrgRole, ROLE_LABELS, type OrgRole } from "./permissions";
+import { appUrl } from "@/lib/app-url";
+import { emailButton, escapeHtml, fydellEmailShell, sendTrackedEmail, type TrackedDelivery } from "@/lib/email";
+import { notifyUser } from "@/lib/notifications/store";
 import { writeAudit } from "@/lib/ops/platform-roles";
 import { assertInboxVerified } from "@/lib/security/email-verification";
 
@@ -72,7 +75,18 @@ async function activeOwnerCount(db: Admin, organizationId: string): Promise<numb
  * Adds an existing Fydell account as an invited member. Membership becomes
  * active only when that person accepts it; nobody joins silently.
  */
-export async function inviteMember(db: Admin, actor: EngMember, emailRaw: string, role: OrgRole): Promise<{ status: "invited" | "already_member" }> {
+/** Body of the teammate invitation (pure, exported for tests). */
+export function memberInviteEmailHtml(input: { organizationName: string; inviterEmail: string; roleLabel: string; url: string }): string {
+  return `<h1 style="color:#08090C;font-size:22px;margin:0 0 12px;letter-spacing:-0.02em">Join ${escapeHtml(input.organizationName)} on Fydell</h1>
+    <p style="color:#3A445C;font-size:15px;line-height:1.6;margin:0 0 18px">${escapeHtml(input.inviterEmail)} added you to <strong>${escapeHtml(input.organizationName)}</strong> as ${escapeHtml(input.roleLabel.toLowerCase())}. Sign in with this email address and accept it on the Team page. You join only when you accept.</p>
+    <p style="margin:0 0 22px">${emailButton(input.url, "Review the invitation")}</p>`;
+}
+
+export type MemberInviteResult =
+  | { status: "already_member" }
+  | { status: "invited"; emailDelivery: TrackedDelivery };
+
+export async function inviteMember(db: Admin, actor: EngMember, emailRaw: string, role: OrgRole): Promise<MemberInviteResult> {
   const email = emailRaw.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address.");
   if (role === "owner" && actor.role !== "owner") throw new Error("Only an owner can add another owner.");
@@ -85,29 +99,55 @@ export async function inviteMember(db: Admin, actor: EngMember, emailRaw: string
     .eq("user_id", userId)
     .maybeSingle();
   if (existing?.status === "active") return { status: "already_member" };
+  const invitedAt = new Date().toISOString();
+  let membershipId: string;
   if (existing) {
-    const { error } = await db.from("organization_members").update({ role, status: "invited", invited_by: actor.userId, invited_at: new Date().toISOString() }).eq("id", existing.id);
+    const { error } = await db.from("organization_members").update({ role, status: "invited", invited_by: actor.userId, invited_at: invitedAt }).eq("id", existing.id);
     if (error) throw new Error(`Could not invite: ${error.message}`);
+    membershipId = existing.id as string;
   } else {
-    const { error } = await db.from("organization_members").insert({
-      organization_id: actor.organizationId,
-      user_id: userId,
-      role,
-      status: "invited",
-      invited_by: actor.userId,
-      invited_at: new Date().toISOString(),
-    });
-    if (error) throw new Error(`Could not invite: ${error.message}`);
+    const { data, error } = await db
+      .from("organization_members")
+      .insert({
+        organization_id: actor.organizationId,
+        user_id: userId,
+        role,
+        status: "invited",
+        invited_by: actor.userId,
+        invited_at: invitedAt,
+      })
+      .select("id")
+      .single();
+    if (error || !data) throw new Error(`Could not invite: ${error?.message ?? "no row returned"}`);
+    membershipId = data.id as string;
   }
+  const url = `${appUrl()}/app/employer/team`;
+  await notifyUser(userId, {
+    kind: "invitation_received",
+    title: `${actor.organizationName} added you to their workspace`,
+    body: `Accept it on the Team page to join as ${ROLE_LABELS[role].toLowerCase()}.`,
+    href: "/app/employer/team",
+  });
+  const sent = await sendTrackedEmail({
+    to: email,
+    subject: `${actor.organizationName} added you to their Fydell workspace`,
+    html: fydellEmailShell(memberInviteEmailHtml({ organizationName: actor.organizationName, inviterEmail: actor.email, roleLabel: ROLE_LABELS[role], url })),
+    template: "organization_member_invite",
+    eventType: "organization_member_invited",
+    idempotencyKey: `member_invite:${membershipId}:${invitedAt}`,
+    relatedEntityType: "organization_member",
+    relatedEntityId: membershipId,
+  });
+  if (sent.delivery === "failed") console.error(`[eng] member invitation ${membershipId} email failed: ${sent.error ?? "unknown error"}`);
   await writeAudit({
     actorEmail: actor.email,
     actorUserId: actor.userId,
     action: "organization_member_invited",
     entityType: "organization_members",
     organizationId: actor.organizationId,
-    after: { email, role },
+    after: { email, role, emailDelivery: sent.delivery },
   });
-  return { status: "invited" };
+  return { status: "invited", emailDelivery: sent.delivery };
 }
 
 export async function changeMemberRole(db: Admin, actor: EngMember, memberId: string, role: OrgRole): Promise<void> {

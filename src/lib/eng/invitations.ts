@@ -5,7 +5,7 @@ import { recordEngEvent } from "./events";
 import { resolveScenarioVersion } from "./scenario-versions";
 import type { AttemptRow, InvitationRow, RoleRow, RoleSnapshot, ScenarioVersionRow } from "./types";
 import { appUrl } from "@/lib/app-url";
-import { fydellEmailShell, isResendConfigured, sendResendHtml } from "@/lib/email";
+import { escapeHtml, fydellEmailShell, safeHref, sendTrackedEmail } from "@/lib/email";
 import { notifyUser } from "@/lib/notifications/store";
 import { normalizeHandle } from "@/lib/profile/handle";
 import { assertInboxVerified } from "@/lib/security/email-verification";
@@ -23,10 +23,6 @@ function mintToken(): string {
 
 export function inviteUrl(token: string): string {
   return `${appUrl()}/assess/invite/${token}`;
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
 }
 
 export function normalizeCandidate(emailRaw: unknown, nameRaw: unknown): { email: string; name: string | null } | { error: string } {
@@ -66,21 +62,42 @@ async function deliver(
   taskLine = "You work locally in your own editor for about 50 minutes, then upload your project.",
 ): Promise<InvitationRow["email_delivery"]> {
   if (invitation.is_preview) return "not_configured";
-  if (!isResendConfigured()) return "not_configured";
-  const url = inviteUrl(token);
-  const hello = invitation.candidate_name ? ` ${escapeHtml(invitation.candidate_name)}` : "";
-  const sent = await sendResendHtml({
+  const sent = await sendTrackedEmail({
     to: invitation.candidate_email,
     subject: `${organizationName} invited you to a Fydell engineering task`,
-    html: fydellEmailShell(
-      `<p style="margin:0 0 12px">Hi${hello},</p>
-       <p style="margin:0 0 12px"><strong>${escapeHtml(organizationName)}</strong> invited you to a practical engineering task: <strong>${escapeHtml(invitation.role_snapshot.title)}</strong>. ${escapeHtml(taskLine)}</p>
-       <p style="margin:0 0 20px"><a href="${url}" style="background:#111827;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Review the invitation</a></p>
-       <p style="margin:0;color:#6B7280;font-size:13px">Nothing starts until you finish setup and press Start. This link expires ${new Date(invitation.expires_at).toUTCString()}.</p>`
-    ),
+    html: fydellEmailShell(engInvitationEmailHtml({
+      candidateName: invitation.candidate_name,
+      organizationName,
+      roleTitle: invitation.role_snapshot.title,
+      taskLine,
+      url: inviteUrl(token),
+      expiresAt: invitation.expires_at,
+    })),
+    template: "eng_invitation",
+    eventType: "candidate_invited",
+    idempotencyKey: `eng_invitation:${invitation.id}:${invitation.resend_count}`,
+    relatedEntityType: "eng_invitation",
+    relatedEntityId: invitation.id,
+    recipientName: invitation.candidate_name,
   });
-  if (!sent.ok) console.error(`[eng] invitation ${invitation.id} email failed: ${sent.error ?? "unknown error"}`);
-  return sent.ok ? "sent" : "failed";
+  if (sent.delivery === "failed") console.error(`[eng] invitation ${invitation.id} email failed: ${sent.error ?? "unknown error"}`);
+  return sent.delivery;
+}
+
+/** Body of the engineering task invitation (pure, exported for tests). */
+export function engInvitationEmailHtml(input: {
+  candidateName: string | null;
+  organizationName: string;
+  roleTitle: string;
+  taskLine: string;
+  url: string;
+  expiresAt: string;
+}): string {
+  const hello = input.candidateName ? ` ${escapeHtml(input.candidateName)}` : "";
+  return `<p style="margin:0 0 12px">Hi${hello},</p>
+       <p style="margin:0 0 12px"><strong>${escapeHtml(input.organizationName)}</strong> invited you to a practical engineering task: <strong>${escapeHtml(input.roleTitle)}</strong>. ${escapeHtml(input.taskLine)}</p>
+       <p style="margin:0 0 20px"><a href="${safeHref(input.url)}" style="background:#111827;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Review the invitation</a></p>
+       <p style="margin:0;color:#6B7280;font-size:13px">Nothing starts until you finish setup and press Start. This link expires ${escapeHtml(new Date(input.expiresAt).toUTCString())}.</p>`;
 }
 
 /** Employer-authored versions must belong to the inviting workspace and still be published. */

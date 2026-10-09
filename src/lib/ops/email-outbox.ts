@@ -2,6 +2,7 @@ import "server-only";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { adminNotificationEmail } from "@/lib/ops/platform-roles";
 import { PRO_WAITLIST_COMPANY } from "@/lib/marketing/pricing";
+import { escapeHtml, safeHref } from "@/lib/email-html";
 
 export type OutboxInsert = {
   eventType: string;
@@ -54,14 +55,6 @@ export async function enqueueEmail(input: OutboxInsert): Promise<{ id: string } 
   return { id: data.id as string };
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 function shell(inner: string): string {
   return `
   <div style="font-family:Inter,Arial,sans-serif;background:#07080B;padding:32px">
@@ -85,8 +78,14 @@ function h1(text: string): string {
   return `<h1 style="font-size:22px;line-height:1.2;margin:0 0 12px;font-weight:560">${text}</h1>`;
 }
 
+/** href is a raw URL and is validated here; label is trusted template text. */
 function link(href: string, label: string): string {
-  return `<p style="margin:0"><a href="${href}" style="color:#5662FF">${label}</a></p>`;
+  return `<p style="margin:0"><a href="${safeHref(href)}" style="color:#5662FF">${label}</a></p>`;
+}
+
+/** Subjects are plain text, so values are trimmed of line breaks rather than HTML-escaped. */
+function plain(value: unknown): string {
+  return String(value ?? "").replace(/[\r\n]+/g, " ").trim();
 }
 
 /** @deprecated alias - use renderEmailTemplate */
@@ -106,12 +105,14 @@ export function renderEmailTemplate(
   const role = escapeHtml(String(payload.roleBeingHired || payload.roleTitle || ""));
   const reference = escapeHtml(String(payload.publicReference || ""));
   const email = escapeHtml(String(payload.workEmail || payload.email || ""));
-  const adminUrl = escapeHtml(
-    String(payload.adminUrl || "https://www.fydell.com/admin/pilot-requests")
-  );
-  const siteUrl = escapeHtml(String(payload.siteUrl || "https://www.fydell.com"));
-  const actionUrl = escapeHtml(String(payload.actionUrl || `${siteUrl}/login`));
+  const adminUrl = String(payload.adminUrl || "https://www.fydell.com/admin/pilot-requests");
+  const siteUrl = String(payload.siteUrl || "https://www.fydell.com");
+  const actionUrl = String(payload.actionUrl || `${siteUrl}/login`);
   const extra = escapeHtml(String(payload.message || payload.body || ""));
+  const subjectName = plain(payload.fullName);
+  const subjectCompany = plain(payload.companyName);
+  const subjectRole = plain(payload.roleBeingHired || payload.roleTitle);
+  const subjectReference = plain(payload.publicReference);
 
   const proWaitlist = String(payload.companyName || "") === PRO_WAITLIST_COMPANY;
 
@@ -134,7 +135,7 @@ export function renderEmailTemplate(
           ),
         },
     admin_new_pilot_request: {
-      subject: `New pilot request: ${company} - ${role}`,
+      subject: `New pilot request: ${subjectCompany} - ${subjectRole}`,
       html: shell(
         `${h1("New pilot request")}${p(
           `<strong style="color:#F4F5F7">${name}</strong> (${email}) from <strong style="color:#F4F5F7">${company}</strong>`
@@ -142,7 +143,7 @@ export function renderEmailTemplate(
       ),
     },
     organization_workspace_invite: {
-      subject: `Your Fydell workspace for ${company}`,
+      subject: `Your Fydell workspace for ${subjectCompany}`,
       html: shell(
         `${h1("Workspace ready")}${p(`Hi ${name},`)}${p(
           `Your Fydell pilot workspace for <strong style="color:#F4F5F7">${company}</strong> is ready. Check your inbox for the secure account invitation, then sign in to continue setup.`
@@ -150,7 +151,7 @@ export function renderEmailTemplate(
       ),
     },
     pilot_request_needs_information: {
-      subject: `We need a bit more detail - ${reference || company}`,
+      subject: `We need a bit more detail - ${subjectReference || subjectCompany}`,
       html: shell(
         `${h1("Quick follow-up")}${p(`Hi ${name},`)}${p(
           `Thanks for your Fydell pilot request${reference ? ` (${reference})` : ""}. Could you share a little more detail so we can configure Project Meridian correctly?`
@@ -158,7 +159,7 @@ export function renderEmailTemplate(
       ),
     },
     pilot_request_approved: {
-      subject: `Your Fydell pilot is approved - ${company}`,
+      subject: `Your Fydell pilot is approved - ${subjectCompany}`,
       html: shell(
         `${h1("Pilot approved")}${p(`Hi ${name},`)}${p(
           `Your Fydell pilot for <strong style="color:#F4F5F7">${company}</strong> is approved. You’ll receive a secure invitation to set up your workspace next.`
@@ -166,7 +167,7 @@ export function renderEmailTemplate(
       ),
     },
     organization_member_invite: {
-      subject: `You’re invited to ${company} on Fydell`,
+      subject: `You’re invited to ${subjectCompany} on Fydell`,
       html: shell(
         `${h1("Team invitation")}${p(`Hi ${name},`)}${p(
           `You’ve been invited to join <strong style="color:#F4F5F7">${company}</strong> on Fydell.`
@@ -198,7 +199,7 @@ export function renderEmailTemplate(
       ),
     },
     employer_session_submitted: {
-      subject: `Candidate submitted - ${name || "session"}`,
+      subject: `Candidate submitted - ${subjectName || "session"}`,
       html: shell(
         `${h1("Candidate submitted")}${p(
           `A candidate has submitted their Project Meridian session for <strong style="color:#F4F5F7">${company}</strong>.`
@@ -206,7 +207,7 @@ export function renderEmailTemplate(
       ),
     },
     report_ready: {
-      subject: `Evidence report ready - ${company || "Fydell"}`,
+      subject: `Evidence report ready - ${subjectCompany || "Fydell"}`,
       html: shell(
         `${h1("Report ready")}${p(`Hi ${name},`)}${p(
           "A candidate evidence report is ready for review."
@@ -249,8 +250,8 @@ export function renderEmailTemplate(
 
   return (
     templates[templateKey] || {
-      subject: String(payload.subject || "Fydell notification"),
-      html: shell(p(escapeHtml(String(payload.body || "")))),
+      subject: plain(payload.subject) || "Fydell notification",
+      html: shell(p(extra)),
     }
   );
 }

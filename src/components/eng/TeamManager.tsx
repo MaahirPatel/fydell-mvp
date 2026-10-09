@@ -25,28 +25,52 @@ export interface TeamMember {
   isSelf: boolean;
 }
 
+type InviteResult = { status: "already_member" } | { status: "invited"; emailDelivery: "sent" | "failed" | "not_configured" };
+type Notice = { tone: "success" | "info"; text: string };
+
+function inviteNotice(result: InviteResult, email: string): Notice {
+  if (result.status === "already_member") return { tone: "info", text: `${email} is already an active member.` };
+  const pending = "It is waiting on their Team page and in their notifications until they accept.";
+  if (result.emailDelivery === "sent") return { tone: "success", text: `Invitation saved and email sent to ${email}. ${pending}` };
+  if (result.emailDelivery === "failed") return { tone: "info", text: `Invitation saved, but the email to ${email} could not be sent. ${pending} Use Resend invitation to try the email again.` };
+  return { tone: "info", text: `Invitation saved. No email was sent because email delivery is not set up here. ${pending}` };
+}
+
 export function TeamManager({ members, canManage, actorIsOwner }: { members: TeamMember[]; canManage: boolean; actorIsOwner: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("reviewer");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const [resending, setResending] = useState<string | null>(null);
+
+  async function send(target: string, targetRole: Role): Promise<boolean> {
+    setError(null);
+    setNotice(null);
+    const res = await engFetch<InviteResult>("/api/eng/members", { body: { email: target, role: targetRole } });
+    if (res.ok === false) {
+      setError(res.error);
+      return false;
+    }
+    setNotice(inviteNotice(res.data, target));
+    router.refresh();
+    return true;
+  }
 
   async function invite(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError(null);
-    setNotice(null);
-    const res = await engFetch<{ status: "invited" | "already_member" }>("/api/eng/members", { body: { email, role } });
+    const done = await send(email, role);
     setBusy(false);
-    if (res.ok === false) {
-      setError(res.error);
-      return;
-    }
-    setNotice(res.data.status === "already_member" ? "That person is already an active member." : "Added as invited. They become a member when they accept it from their own Team page.");
-    setEmail("");
-    router.refresh();
+    if (done) setEmail("");
+  }
+
+  async function resend(member: TeamMember) {
+    if (!member.email) return;
+    setResending(member.id);
+    await send(member.email, member.role);
+    setResending(null);
   }
 
   async function change(memberId: string, next: Role) {
@@ -69,6 +93,12 @@ export function TeamManager({ members, canManage, actorIsOwner }: { members: Tea
   return (
     <div className="grid gap-5">
       <FormError>{error}</FormError>
+      {notice?.tone === "success" ? <FormSuccess>{notice.text}</FormSuccess> : null}
+      {notice?.tone === "info" ? (
+        <p role="status" className="rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-support)] px-3 py-2 text-app-body text-[var(--text-secondary)]">
+          {notice.text}
+        </p>
+      ) : null}
       <ul className="divide-y divide-[var(--border-subtle)]">
         {members.map((m) => {
           const label = m.email ?? "Unknown account";
@@ -94,6 +124,11 @@ export function TeamManager({ members, canManage, actorIsOwner }: { members: Tea
                     ))}
                   </Select>
                 )}
+                {!locked && m.status === "invited" && m.email ? (
+                  <Button size="sm" variant="secondary" loading={resending === m.id} disabled={resending !== null && resending !== m.id} onClick={() => resend(m)}>
+                    Resend invitation
+                  </Button>
+                ) : null}
                 {!locked ? (
                   <Button size="sm" variant="quiet" onClick={() => remove(m.id, label)}>
                     Remove
@@ -107,9 +142,8 @@ export function TeamManager({ members, canManage, actorIsOwner }: { members: Tea
 
       {canManage ? (
         <form onSubmit={invite} className="grid gap-3 border-t border-[var(--border-subtle)] pt-5">
-          <FormSuccess>{notice}</FormSuccess>
           <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_200px]">
-            <Field label="Add a member" htmlFor="member-email" help="They need a Fydell account with this email. No email is sent; they accept from their own Team page.">
+            <Field label="Add a member" htmlFor="member-email" help="They need a Fydell account with this email. They join only after accepting from their own Team page.">
               <Input id="member-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </Field>
             <Field label="Role" htmlFor="member-role" help={ROLE_OPTIONS.find((o) => o.key === role)?.help}>

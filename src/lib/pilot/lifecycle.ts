@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash, randomBytes } from "crypto";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { appUrl } from "@/lib/app-url";
 import {
   employerSelfSignupMode,
   isReservedOrganizationName,
@@ -273,8 +274,7 @@ export async function inviteCandidate(input: {
     throw new Error(asgErr?.message || "Could not create assignment.");
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.fydell.com";
-  const acceptUrl = `${appUrl}/candidate/invite/${token}`;
+  const acceptUrl = `${appUrl()}/candidate/invite/${token}`;
 
   await admin.from("email_outbox").insert({
     event_type: "candidate_invite",
@@ -283,7 +283,10 @@ export async function inviteCandidate(input: {
     recipient_name: input.candidateName,
     payload: {
       candidateName: input.candidateName,
+      fullName: input.candidateName,
       acceptUrl,
+      actionUrl: acceptUrl,
+      siteUrl: appUrl(),
       roleTitle: role.title,
       organizationId: input.organizationId,
     },

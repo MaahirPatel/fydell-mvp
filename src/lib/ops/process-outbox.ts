@@ -2,6 +2,8 @@ import "server-only";
 import { Resend } from "resend";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { renderEmailTemplate } from "@/lib/ops/email-outbox";
+import { DIRECT_TEMPLATE_PREFIX, isProductionDeployment } from "@/lib/email";
+import { routeRecipient } from "@/lib/email-html";
 
 function resendClient(): Resend | null {
   const key = process.env.RESEND_API_KEY;
@@ -79,16 +81,32 @@ export async function processEmailOutbox(limit = 20): Promise<{
       continue;
     }
 
+    const route = routeRecipient(String(row.recipient_email), isProductionDeployment());
+    if (String(row.template_key).startsWith(DIRECT_TEMPLATE_PREFIX) || "refused" in route) {
+      await admin
+        .from("email_outbox")
+        .update({
+          status: "cancelled",
+          last_error: "refused" in route ? route.refused : "Sent immediately when it was created; the queue does not resend it. Resend from the product to issue a fresh link.",
+          locked_at: null,
+          locked_by: null,
+        })
+        .eq("id", row.id);
+      failed += 1;
+      continue;
+    }
+
     try {
       const rendered = renderEmailTemplate(row.template_key, row.payload || {});
       const subject = row.subject_override || rendered.subject;
       const result = await client.emails.send({
         from: fromAddress(),
-        to: row.recipient_email,
+        to: route.to,
         replyTo: row.reply_to || process.env.EMAIL_REPLY_TO || undefined,
         subject,
         html: rendered.html,
       });
+      if (result.error) throw new Error(result.error.message || "The email provider rejected the message.");
 
       const messageId =
         (result.data as { id?: string } | null)?.id ||
