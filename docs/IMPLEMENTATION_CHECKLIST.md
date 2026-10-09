@@ -96,9 +96,9 @@ this checklist.
 
 | # | Area | Status |
 | --- | --- | --- |
-| S1 | Engineer workspace routes | Partial: most verified; onboarding and Passport creation not rendered |
-| S2 | Employer routes | Partial: assessments list squeezed at 1280; invitation page needs a fresh invite |
-| S3 | Settings, billing, admin, auth | Not started (agent D next) |
+| S1 | Engineer workspace routes | Partial: home, projects (incl. no-match), report with source drawer, profile, share preview, settings walked signed in; overflow clean at 390 and 768; contrast AA measured. Onboarding and Passport creation not rendered |
+| S2 | Employer routes | Partial: overview, role and applicant review, candidates search, assessments, reviews, team, settings, demo walked. Open: `/app/employer/assessments` titled "Evaluations" with an "Overview" breadcrumb; invitation page needs a fresh invite; attempt result text truncates criteria mid-word |
+| S3 | Settings, billing, admin, auth | Partial: settings and auth at 390 and 1280 checked; admin routes unverified (no admin credentials) |
 | S4 | Simulation workbench | Partial: seven templates validated in the sandbox (backend, applied AI); other tracks labelled not offered; workbench screenshots at 1280 and 1440 |
 | S5 | Desktop app sign-in, sync, crash recovery | Partial. Verified (native, dev): browser sign-in through `fydell://`, refresh token in Windows Credential Manager only, sign-in survives force-kill and offline, handoff answers and unsent file edits restored after a crash, duplicate delivery creates no extra version. Pending: desktop submit with the same receipt id on desktop, web and employer views; local handoff drafts in the standard flow; live check that web and desktop sessions are independent. Every build opens www.fydell.com unless `FYDELL_PLATFORM_URL` is set |
 
