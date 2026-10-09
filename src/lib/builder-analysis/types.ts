@@ -1,4 +1,9 @@
-export const BUILDER_ANALYSIS_VERSION = "builder-analysis-v2";
+import type { AnalysisInputSnapshot, CapabilityStatement, LedgerEntry } from "./ledger";
+
+export const BUILDER_ANALYSIS_VERSION = "builder-analysis-v3";
+/** Stored reports from these versions still render; v2 predates the ledger and run record. */
+export const READABLE_ANALYSIS_VERSIONS = ["builder-analysis-v2", BUILDER_ANALYSIS_VERSION] as const;
+export type AnalysisVersion = (typeof READABLE_ANALYSIS_VERSIONS)[number];
 
 export const NO_GITHUB_LOGIN_LIMIT = "No GitHub username is linked, so release and commit activity were not read.";
 
@@ -147,15 +152,39 @@ export type ProjectBreakdown = {
 
 export type NarrativeParagraph = { text: string; refs: string[] };
 
+export type ClaimRejection = { reason: "unknown_citation" | "judgment" | "authorship" | "trait" | "execution_claim" | "raw_id" | "length"; excerpt: string };
+
+/** Result of checking model prose against the ledger. The model may explain evidence; it may not add any. */
+export type ClaimCheck = { proposed: number; kept: number; rejected: ClaimRejection[]; fellBackToTemplate: boolean };
+
 export type Narrative = {
   source: "model" | "template";
   model?: string;
   summary: string;
   paragraphs: NarrativeParagraph[];
+  claimCheck?: ClaimCheck;
+};
+
+/** How this run was produced: what it read, with which rules, and which run it replaces. */
+export type RunRecord = {
+  runId: string;
+  inputHash: string;
+  input: AnalysisInputSnapshot;
+  config: {
+    analysisVersion: typeof BUILDER_ANALYSIS_VERSION;
+    ledgerVersion: string;
+    limits: typeof ANALYSIS_LIMITS;
+    narrative: { provider: string; model: string } | { provider: "template" };
+  };
+  /** The complete run this one replaces as the current report, if any. That run is kept unchanged. */
+  supersedes: string | null;
 };
 
 export type BuilderAnalysisReport = {
-  version: typeof BUILDER_ANALYSIS_VERSION;
+  version: AnalysisVersion;
+  run?: RunRecord;
+  ledger?: LedgerEntry[];
+  capabilityStatements?: CapabilityStatement[];
   generatedAt: string;
   subject: { displayName: string; githubLogin: string | null };
   scope: {
@@ -188,4 +217,20 @@ export type AnalysisRow = {
   error: string | null;
   createdAt: string;
   completedAt: string | null;
+  reportHash: string | null;
+  supersedesId: string | null;
+};
+
+/** One stored run in the owner's history. Complete runs are immutable. */
+export type AnalysisVersionSummary = {
+  id: string;
+  status: AnalysisRow["status"];
+  createdAt: string;
+  completedAt: string | null;
+  reportHash: string | null;
+  inputHash: string | null;
+  supersedesId: string | null;
+  /** True for the newest complete run: the report the engineer sees by default. */
+  current: boolean;
+  error: string | null;
 };

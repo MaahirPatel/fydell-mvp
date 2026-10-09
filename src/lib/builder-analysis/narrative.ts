@@ -1,6 +1,6 @@
 import { getProviderConfig, postChatCompletion, type ChatMessage } from "@/lib/ai/provider";
 import { LEVEL_LABEL, citableIds, type Synthesis } from "./synthesize";
-import type { Narrative, NarrativeParagraph } from "./types";
+import type { ClaimRejection, Narrative, NarrativeParagraph } from "./types";
 
 /** Words that would turn an evidence report into a judgment of the person. */
 const BANNED = /\b(personality|culture fit|cultural fit|introvert|extrovert|lazy|genius|rockstar|ninja|10x|smart|intelligent|talented|passionate|hire|reject|score|rating|percentile|best|worst|senior|junior)\b/i;
@@ -10,6 +10,11 @@ const AUTHORSHIP = /\b(you (wrote|authored|built|created|developed|implemented)|
 
 /** Phrases that turn a handful of findings into a trait of the person. */
 const TRAIT = /\b(you demonstrate|you are|consistently|always|habitually|mindset)\b|[-\u2011]oriented\b/i;
+
+/** Fydell does not run imported code, so prose may never say tests ran or passed unless it says they were not. */
+const EXECUTION =
+  /\b((tests?|suites?) (pass|passed|passes|passing|succeed\w*|ran|run|(was|were|are|is|get|gets) (run|executed)|executed)|(ran|runs|run|executes|executed) (the |its |all |these |automated )?(tests?|test suites?)|green build|builds? (is |are )?(green|pass\w*))\b/i;
+const NEGATED = /\b(not|never|no|whether|cannot|could not|wasn't|weren't|unknown)\b/i;
 
 /** Internal evidence ids must never appear in prose shown to the engineer. */
 const RAW_ID = /\b(dimension|growth|pattern|strength|act|finding):[\w./:-]+/i;
@@ -67,6 +72,7 @@ const SYSTEM = [
   "Treat missing evidence as missing, not as absence. Anything listed as not assessed must not be described at all except to say it was not assessed.",
   "A paragraph about missing evidence cites the [dimension:...] ids of the areas it describes, never the evidence for a practice that was found.",
   "Call something an inference only when the facts mark it as an inference; observations are stated plainly.",
+  "Fydell never runs the code. Never say tests ran, pass or are run by CI; say the project contains tests or a CI configuration.",
   "Imported projects can be other people's repositories. Never say the engineer wrote, built or authored the code; say what the analyzed projects contain.",
   "When practices are listed in the same project, say they are in the same project; never imply separate projects.",
   "Do not turn findings into traits or habits. Say how many projects showed a practice instead of calling it an approach or saying it happens consistently.",
@@ -90,7 +96,21 @@ function dimensionIndex(s: Synthesis): Map<string, string> {
   return index;
 }
 
-function parseNarrative(raw: string, allowed: Set<string>, dimensionOf: Map<string, string> = new Map()): ModelNarrative | null {
+function overclaimReason(t: string): ClaimRejection["reason"] | null {
+  if (BANNED.test(t)) return "judgment";
+  if (AUTHORSHIP.test(t)) return "authorship";
+  if (TRAIT.test(t)) return "trait";
+  if (EXECUTION.test(t) && !NEGATED.test(t)) return "execution_claim";
+  return null;
+}
+
+function parseNarrative(
+  raw: string,
+  allowed: Set<string>,
+  dimensionOf: Map<string, string> = new Map(),
+  rejected: ClaimRejection[] = [],
+  proposed: { count: number } = { count: 0 },
+): ModelNarrative | null {
   let data: unknown;
   try {
     data = JSON.parse(raw.trim().replace(/^```(?:json)?\s*|\s*```$/g, ""));
@@ -100,17 +120,27 @@ function parseNarrative(raw: string, allowed: Set<string>, dimensionOf: Map<stri
   if (!data || typeof data !== "object") return null;
   const obj = data as Record<string, unknown>;
   const clean = (t: string) => t.replace(/\u2014/g, ",").replace(/\u2011/g, "-");
-  const overclaims = (t: string) => BANNED.test(t) || AUTHORSHIP.test(t) || TRAIT.test(t);
+  const excerpt = (t: string) => t.slice(0, 160);
   const summary = typeof obj.summary === "string" ? clean(obj.summary.trim()) : "";
-  if (summary.length < 20 || summary.length > 400 || overclaims(summary)) return null;
+  const summaryProblem = summary.length < 20 || summary.length > 400 ? "length" : overclaimReason(summary);
+  if (summaryProblem) {
+    rejected.push({ reason: summaryProblem, excerpt: excerpt(summary) });
+    return null;
+  }
   const paragraphs: NarrativeParagraph[] = [];
   for (const p of Array.isArray(obj.paragraphs) ? obj.paragraphs : []) {
     if (!p || typeof p !== "object") continue;
+    proposed.count += 1;
     const rec = p as Record<string, unknown>;
     const text = typeof rec.text === "string" ? clean(rec.text.replace(/\s*\[[^\]]{2,60}\]/g, "").trim()) : "";
     let refs = (Array.isArray(rec.refs) ? rec.refs : []).filter((r): r is string => typeof r === "string" && allowed.has(r));
     if (ABSENCE.test(text)) refs = refs.flatMap((r) => (r.startsWith("dimension:") ? [r] : dimensionOf.has(r) ? [dimensionOf.get(r) as string] : []));
-    if (text.length < 30 || text.length > 900 || overclaims(text) || RAW_ID.test(text) || refs.length === 0) continue;
+    const reason: ClaimRejection["reason"] | null =
+      text.length < 30 || text.length > 900 ? "length" : overclaimReason(text) ?? (RAW_ID.test(text) ? "raw_id" : refs.length === 0 ? "unknown_citation" : null);
+    if (reason) {
+      rejected.push({ reason, excerpt: excerpt(text) });
+      continue;
+    }
     paragraphs.push({ text, refs: [...new Set(refs)].slice(0, 6) });
   }
   if (paragraphs.length < 2) return null;
@@ -123,23 +153,31 @@ function parseNarrative(raw: string, allowed: Set<string>, dimensionOf: Map<stri
  * survives, the deterministic template is used instead.
  */
 export async function writeNarrative(s: Synthesis): Promise<Narrative> {
-  const fallback = templateNarrative(s);
+  const template = templateNarrative(s);
   const config = getProviderConfig();
-  if (!config) return fallback;
-  if (s.dimensions.every((d) => d.level === "insufficient_evidence")) return fallback;
+  if (!config) return template;
+  if (s.dimensions.every((d) => d.level === "insufficient_evidence")) return template;
   const allowed = citableIds(s);
   const messages: ChatMessage[] = [
     { role: "system", content: SYSTEM },
     { role: "user", content: compactSynthesis(s) },
   ];
   const extraBody = config.provider === "groq" && config.model.includes("gpt-oss") ? { reasoning_effort: "low" } : undefined;
+  const rejected: ClaimRejection[] = [];
+  const proposed = { count: 0 };
+  const fallback = (): Narrative => ({ ...template, claimCheck: { proposed: proposed.count, kept: 0, rejected, fellBackToTemplate: true } });
   try {
     const raw = await postChatCompletion(config, messages, { schema: {}, schemaName: "narrative", temperature: 0.3, maxTokens: 1500, extraBody });
-    const parsed = parseNarrative(raw, allowed, dimensionIndex(s));
-    if (!parsed) return fallback;
-    return { source: "model", model: `${config.provider}:${config.model}`, ...parsed };
+    const parsed = parseNarrative(raw, allowed, dimensionIndex(s), rejected, proposed);
+    if (!parsed) return fallback();
+    return {
+      source: "model",
+      model: `${config.provider}:${config.model}`,
+      ...parsed,
+      claimCheck: { proposed: proposed.count, kept: parsed.paragraphs.length, rejected, fellBackToTemplate: false },
+    };
   } catch {
-    return fallback;
+    return fallback();
   }
 }
 

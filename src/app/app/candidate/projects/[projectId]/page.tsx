@@ -12,6 +12,8 @@ import { parseReportView } from "@/lib/passport/record-states";
 import type { PassportProject } from "@/lib/passport/view";
 import { evidenceStatus } from "@/lib/profile-evidence/store";
 import EvidenceVersionPanel from "@/components/evidence/EvidenceVersionPanel";
+import { receiptIdsForSnapshots } from "@/lib/receipts/store";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Builder Report" };
@@ -50,13 +52,15 @@ export default async function BuilderReportPage({
   const project = passport?.projects.find((p): p is PassportProject & { id: string } => p.id === projectId);
   if (!passport || !project || !manifestRow) notFound();
 
-  const [contribution, decisions, shares, removalImpact, evidence] = await Promise.all([
+  const [contribution, decisions, shares, removalImpact, evidence, receipts] = await Promise.all([
     getContribution(user.id, project.repoFullName),
     listDecisions(user.id, project.repoFullName),
     listShares(user.id),
     projectRemovalImpact(user.id, project.repoFullName),
     evidenceStatus(user.id, project.repoFullName),
+    receiptIdsForSnapshots(user.id, [project.id]),
   ]);
+  const receiptId = receipts.get(project.id) ?? null;
   const pinnedByShare = shares.some((s) => !s.revokedAt && (s.pinnedProjectIds ?? []).includes(project.id));
 
   const versions = versionsOf(passport.projects, project.repoFullName).filter((p): p is PassportProject & { id: string } => Boolean(p.id));
@@ -84,6 +88,19 @@ export default async function BuilderReportPage({
         pinnedByShare={pinnedByShare}
       />
       {evidence ? <EvidenceVersionPanel initial={evidence} /> : null}
+      <p className="mt-8 text-[14px] text-[var(--text-secondary)]">
+        {receiptId ? (
+          <>
+            Fydell recorded a work receipt when this snapshot was saved.{" "}
+            <Link href={`/app/candidate/receipts/${receiptId}`} className="font-medium text-[var(--text-primary)] underline underline-offset-4">View receipt</Link>
+          </>
+        ) : (
+          <>
+            This snapshot was saved before Fydell recorded work receipts, so it has none. Fydell does not back-date receipts.{" "}
+            <Link href="/app/candidate/receipts" className="font-medium text-[var(--text-primary)] underline underline-offset-4">All receipts</Link>
+          </>
+        )}
+      </p>
       <DevelopmentFeedback projectId={project.id} items={developmentFeedback(project)} evidence={project.evidence} />
       <RemoveProject repoFullName={project.repoFullName} versionCount={versions.length} impact={removalImpact} />
     </CandidateShell>

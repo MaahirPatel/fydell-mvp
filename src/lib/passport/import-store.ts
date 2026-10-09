@@ -27,6 +27,7 @@ import {
   type ImportStage,
 } from "./import-jobs";
 import { saveProjectVersion } from "./store";
+import { issueSnapshotReceipt } from "@/lib/receipts/store";
 
 const JOB_COLUMNS =
   "id,state,payload,attempt_count,max_attempts,next_attempt_at,stage,progress,error_code,safe_error,retryable,result_ref,analysis_version,created_at,started_at,finished_at,heartbeat_at,cancel_requested_at,owner_id";
@@ -251,11 +252,13 @@ export async function runImportJob(jobId: string): Promise<ImportJobView | null>
       payload.contribution,
       jobId,
     );
+    const receipt = await issueSnapshotReceipt(row.owner_id, saved.projectId, jobId);
     ref2 = {
       projectId: saved.projectId,
       findings: result.findings.length,
       status: result.status === "partial" ? "partial" : "complete",
       reusedExistingVersion: saved.reusedExistingVersion,
+      receiptId: receipt.id,
     };
   } catch {
     await scheduleOrFail(row, worker, "save_failed");

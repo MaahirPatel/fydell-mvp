@@ -1,11 +1,17 @@
 import "server-only";
 import { GithubClient, GithubError, type PublicRepo } from "@/lib/passport/github/client";
 import { getOwnerPassport } from "@/lib/passport/store";
+import { currentSnapshots } from "@/lib/passport/snapshots";
+import type { PassportProject } from "@/lib/passport/view";
+import { getProviderConfig } from "@/lib/ai/provider";
+import { issueAnalysisReceipt } from "@/lib/receipts/store";
 import { RateLimitedError, measureRepository, selectRepositories } from "./activity";
+import { sha256 } from "./hash";
+import { LEDGER_VERSION, buildLedger, capabilityStatements, inputSnapshot } from "./ledger";
 import { writeNarrative } from "./narrative";
 import { completeAnalysis, failAnalysis, latestCompleteReport } from "./store";
 import { synthesize } from "./synthesize";
-import type { BuilderAnalysisReport, RepoActivity } from "./types";
+import { ANALYSIS_LIMITS, BUILDER_ANALYSIS_VERSION, type BuilderAnalysisReport, type RepoActivity } from "./types";
 
 type Scope = BuilderAnalysisReport["scope"];
 
@@ -71,11 +77,61 @@ export async function collectActivity(
   };
 }
 
-/** Runs one analysis to completion and records the outcome. Never throws. */
-export async function runAnalysis(id: string, ownerId: string): Promise<void> {
+/**
+ * Builds a complete report from already-collected inputs: synthesis, evidence
+ * ledger, capability statements, model-or-template narrative checked against
+ * the ledger, and the run record. Used by runs and by the acceptance harness.
+ */
+export async function buildReport(input: {
+  runId: string;
+  supersedes: string | null;
+  displayName: string;
+  githubLogin: string | null;
+  projects: PassportProject[];
+  activity: RepoActivity[];
+  scope: Omit<Scope, "deepProjects">;
+  now: Date;
+}): Promise<BuilderAnalysisReport> {
+  const projects = currentSnapshots(input.projects);
+  const synthesis = synthesize({
+    displayName: input.displayName,
+    githubLogin: input.githubLogin,
+    projects,
+    activity: input.activity,
+    scope: { deepProjects: projects.length, ...input.scope },
+    now: input.now,
+  });
+  const ledger = buildLedger(synthesis, { projects, activity: input.activity });
+  const statements = capabilityStatements(synthesis, ledger);
+  const narrative = await writeNarrative(synthesis);
+  const snapshot = inputSnapshot({ githubLogin: input.githubLogin, projects, activity: input.activity });
+  const provider = getProviderConfig();
+  return {
+    ...synthesis,
+    version: BUILDER_ANALYSIS_VERSION,
+    narrative,
+    ledger,
+    capabilityStatements: statements,
+    run: {
+      runId: input.runId,
+      inputHash: sha256(snapshot),
+      input: snapshot,
+      config: {
+        analysisVersion: BUILDER_ANALYSIS_VERSION,
+        ledgerVersion: LEDGER_VERSION,
+        limits: ANALYSIS_LIMITS,
+        narrative: provider ? { provider: provider.provider, model: provider.model } : { provider: "template" },
+      },
+      supersedes: input.supersedes,
+    },
+  };
+}
+
+/** Runs one analysis to completion and records the outcome. Never throws. A failed run never replaces the previous report. */
+export async function runAnalysis(id: string, ownerId: string, supersedes: string | null = null): Promise<void> {
   try {
     const passport = await getOwnerPassport(ownerId);
-    const projects = passport?.projects ?? [];
+    const projects = currentSnapshots(passport?.projects ?? []);
     const login = passport?.githubLogin ?? null;
     const previous = await latestCompleteReport(ownerId);
     const collected = login
@@ -85,16 +141,29 @@ export async function runAnalysis(id: string, ownerId: string): Promise<void> {
       await failAnalysis(id, login ? "No public repositories or imported projects could be read. Import a project or check your GitHub username." : "Link your GitHub username or import a project first.");
       return;
     }
-    const synthesis = synthesize({
+    const report = await buildReport({
+      runId: id,
+      supersedes,
       displayName: passport?.displayName ?? "You",
       githubLogin: login,
       projects,
       activity: collected.activity,
-      scope: { deepProjects: projects.length, ...collected.scope },
+      scope: collected.scope,
       now: new Date(),
     });
-    const narrative = await writeNarrative(synthesis);
-    await completeAnalysis(id, { ...synthesis, narrative });
+    const done = await completeAnalysis(id, report);
+    if (done && report.run) {
+      await issueAnalysisReceipt(ownerId, {
+        analysisId: id,
+        reportHash: done.reportHash,
+        inputHash: report.run.inputHash,
+        analysisVersion: BUILDER_ANALYSIS_VERSION,
+        projects: report.scope.deepProjects,
+        scannedRepos: report.scope.scannedRepos,
+        findings: report.ledger?.length ?? 0,
+        modelNarrative: report.narrative.source === "model",
+      }).catch(() => undefined);
+    }
   } catch {
     await failAnalysis(id, "The analysis could not be completed. Try again in a few minutes.");
   }

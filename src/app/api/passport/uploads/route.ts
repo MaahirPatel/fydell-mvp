@@ -6,6 +6,7 @@ import { ZIP_LIMITS } from "@/lib/eng/zip";
 import { analyzeUpload } from "@/lib/passport/upload";
 import { saveProjectVersion } from "@/lib/passport/store";
 import { accountDisplayName } from "@/lib/auth/account-name";
+import { issueSnapshotReceipt } from "@/lib/receipts/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -85,8 +86,12 @@ export async function POST(req: Request) {
       result,
       "",
     );
-    return NextResponse.json({ projectId: saved.projectId, reusedExistingVersion: saved.reusedExistingVersion }, { status: saved.reusedExistingVersion ? 200 : 201 });
+    const receipt = await issueSnapshotReceipt(user.id, saved.projectId, null);
+    return NextResponse.json(
+      { projectId: saved.projectId, reusedExistingVersion: saved.reusedExistingVersion, receiptId: receipt.id },
+      { status: saved.reusedExistingVersion ? 200 : 201 },
+    );
   } catch {
-    return NextResponse.json({ error: "The project could not be saved. Nothing was added; try again.", code: "save_failed" }, { status: 500 });
+    return NextResponse.json({ error: "The project could not be saved or its receipt recorded. Saving again is safe and will not duplicate it.", code: "save_failed" }, { status: 500 });
   }
 }

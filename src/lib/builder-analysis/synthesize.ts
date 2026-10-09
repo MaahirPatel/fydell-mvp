@@ -411,26 +411,26 @@ function buildWorkingStyle(dimensions: Dimension[], practices: Practice[], input
   };
 
   if (rank("reliability") >= 2)
-    add(rank("reliability") * 10 + (dim("reliability")?.practices.length ?? 0), "reliability_minded", "Reliability-minded builder",
-      "Writes code that expects failure: retries, timeouts and guarded writes show up repeatedly.", reasonsFor("reliability"), "reliability");
+    add(rank("reliability") * 10 + (dim("reliability")?.practices.length ?? 0), "reliability_minded", "Most evidence: failure handling",
+      "Retries, timeouts or guarded writes are cited in more than one project.", reasonsFor("reliability"), "reliability");
   if (rank("quality") >= 2 && has("failure_tests"))
-    add(rank("quality") * 10 + (dim("quality")?.practices.length ?? 0), "test_minded", "Test-minded engineer",
-      "Checks work with tests, including the paths where things go wrong.", reasonsFor("quality"), "quality");
+    add(rank("quality") * 10 + (dim("quality")?.practices.length ?? 0), "test_minded", "Most evidence: testing",
+      "Tests, including tests of failure paths, are present in more than one project. Fydell did not run them.", reasonsFor("quality"), "quality");
   if (rank("delivery") >= 2 && has("ci") && (has("releases") || has("sustained")))
-    add(rank("delivery") * 10 + (dim("delivery")?.practices.length ?? 0), "steady_shipper", "Steady shipper",
-      "Ships work through automated checks and keeps coming back to it.", reasonsFor("delivery"), "delivery");
+    add(rank("delivery") * 10 + (dim("delivery")?.practices.length ?? 0), "steady_shipper", "Most evidence: delivery",
+      "CI checks plus releases or sustained commit activity appear in more than one project.", reasonsFor("delivery"), "delivery");
   if (rank("communication") >= 3)
-    add(30 + (dim("communication")?.practices.length ?? 0), "clear_communicator", "Clear communicator",
-      "Leaves work that others can pick up: documented setup and readable history.", reasonsFor("communication"), "communication");
+    add(30 + (dim("communication")?.practices.length ?? 0), "clear_communicator", "Most evidence: documentation and history",
+      "Setup instructions and descriptive commit history appear across projects.", reasonsFor("communication"), "communication");
   if (rank("applied_ai") >= 2)
-    add(rank("applied_ai") * 10 + (dim("applied_ai")?.practices.length ?? 0) + (has("llm_validation") || has("ml_evaluation") ? 2 : 0), "applied_ai", "Applied AI builder",
-      "Builds with models and puts checks around them.", reasonsFor("applied_ai"), "applied_ai");
+    add(rank("applied_ai") * 10 + (dim("applied_ai")?.practices.length ?? 0) + (has("llm_validation") || has("ml_evaluation") ? 2 : 0), "applied_ai", "Most evidence: applied AI",
+      "Model integrations with checks around them appear in more than one project.", reasonsFor("applied_ai"), "applied_ai");
   if (rank("architecture") >= 3)
-    add(30 + (dim("architecture")?.practices.length ?? 0), "structurer", "Systems structurer",
-      "Gives growing projects a clear structure: validated boundaries, contracts and modules.", reasonsFor("architecture"), "architecture");
+    add(30 + (dim("architecture")?.practices.length ?? 0), "structurer", "Most evidence: project structure",
+      "Validated boundaries, typed contracts or modular layouts appear across projects.", reasonsFor("architecture"), "architecture");
   if (input.activity.length >= 5 && languages.size >= 3 && !dimensions.some((d) => d.level === "strong"))
-    add(15, "explorer", "Broad explorer",
-      "Tries many tools and languages across many projects, with depth still forming.",
+    add(15, "explorer", "Breadth across many repositories",
+      "Many repositories in several languages, without one area reaching strong evidence.",
       [`${input.activity.length} public repositories`, `${languages.size} primary languages: ${[...languages].slice(0, 4).join(", ")}`]);
 
   const best = candidates.sort((a, b) => b.score - a.score)[0];
@@ -450,8 +450,8 @@ function buildWorkingStyle(dimensions: Dimension[], practices: Practice[], input
       basis: "inference",
     };
   return {
-    id: "generalist", label: "Generalist builder",
-    description: "Works across several areas without one clearly leading.",
+    id: "generalist", label: "Evidence spread across areas",
+    description: "Several areas have some evidence; none leads.",
     reasons: dimensions.filter((d) => d.level !== "insufficient_evidence").map((d) => `${d.label}: ${LEVEL_LABEL[d.level].toLowerCase()}`),
     basis: "inference",
   };
@@ -508,8 +508,8 @@ function buildHeadline(style: WorkingStyle, dimensions: Dimension[]): string {
   const ranked = [...dimensions].sort((a, b) => LEVEL_RANK[b.level] - LEVEL_RANK[a.level] || b.practices.length - a.practices.length);
   const top = ranked.filter((d) => LEVEL_RANK[d.level] >= 2).slice(0, 2).map((d) => d.label.toLowerCase());
   const low = ranked.filter((d) => d.level === "insufficient_evidence" || d.level === "limited").slice(-1)[0];
-  if (!top.length) return `${style.label}. Not enough evidence yet to name a strongest area.`;
-  return `${style.label}. Most evidence in ${top.join(" and ")}${low ? `; least in ${low.label.toLowerCase()}` : ""}.`;
+  if (!top.length) return style.id === "early_record" ? "Not enough evidence yet to name an area with the most evidence." : `${style.label}. Not enough evidence yet to name a strongest area.`;
+  return `Most evidence in ${top.join(" and ")}${low ? `; least in ${low.label.toLowerCase()}` : ""}.`;
 }
 
 function buildLimits(input: SynthesisInput): string[] {

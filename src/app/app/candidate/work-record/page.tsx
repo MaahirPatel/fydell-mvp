@@ -94,6 +94,9 @@ export default async function WorkRecordPage({
             <ButtonLink href="/app/candidate/reports" variant="secondary" size="sm">
               Builder Analysis
             </ButtonLink>
+            <ButtonLink href="/app/candidate/receipts" variant="secondary" size="sm">
+              Receipts
+            </ButtonLink>
             <ButtonLink href="/app/candidate/profile" variant="secondary" size="sm">
               View profile
             </ButtonLink>

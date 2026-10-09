@@ -85,6 +85,11 @@ function JobRow({ job, now, onAction, busy }: { job: ImportJobView; now: number;
             Open report
           </ButtonLink>
         ) : null}
+        {job.state === "succeeded" && job.result?.receiptId ? (
+          <ButtonLink href={`/app/candidate/receipts/${job.result.receiptId}`} variant="quiet" size="sm">
+            Receipt
+          </ButtonLink>
+        ) : null}
         {job.state === "failed" && job.retryable ? (
           <Button size="sm" variant="secondary" loading={busy} onClick={() => onAction(job.id, "retry")}>
             Try again

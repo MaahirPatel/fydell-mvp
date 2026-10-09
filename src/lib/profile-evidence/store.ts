@@ -34,6 +34,7 @@ import { recordEvidenceEvent } from "./events";
 import { listFeedbackRows } from "./feedback";
 import { passportIdFor, type Failure } from "./ids";
 import { getWorkSampleRow, listWorkSamples, SAMPLE_PREFIX } from "./work-samples";
+import { issueEvidenceReceipt } from "@/lib/receipts/store";
 
 export type { Failure };
 
@@ -310,7 +311,7 @@ export async function listVersions(ownerId: string, projectKey: string): Promise
   return rows.map((r) => ({ id: r.id, version: r.version, createdAt: r.created_at, origin: r.origin, contentHash: r.content_hash, applications: usage.get(r.id) ?? [] }));
 }
 
-export type PublishResult = { ok: true; versionId: string; version: number; reused: boolean; content: EvidenceVersionContent } | Failure;
+export type PublishResult = { ok: true; versionId: string; version: number; reused: boolean; content: EvidenceVersionContent; receiptId: string | null } | Failure;
 
 /**
  * Stores the current evidence for one project as an immutable version.
@@ -353,10 +354,13 @@ export async function publishEvidenceVersion(ownerId: string, projectKey: string
       note_count: content.notes.length,
     });
 
+  // A version that exists without a receipt gets one on the next publish; publishing is idempotent.
+  const receiptFor = (versionId: string) => issueEvidenceReceipt(ownerId, versionId).then((r) => r.id, () => null);
+
   const prior = await findExisting();
   if (prior) {
     await reportPublished(true, prior.version);
-    return { ok: true, versionId: prior.id, version: prior.version, reused: true, content };
+    return { ok: true, versionId: prior.id, version: prior.version, reused: true, content, receiptId: await receiptFor(prior.id) };
   }
   for (let attempt = 0; attempt < 3; attempt++) {
     const { data: top } = await admin
@@ -385,13 +389,13 @@ export async function publishEvidenceVersion(ownerId: string, projectKey: string
     if (data) {
       const row = data as { id: string; version: number };
       await reportPublished(false, row.version);
-      return { ok: true, versionId: row.id, version: row.version, reused: false, content };
+      return { ok: true, versionId: row.id, version: row.version, reused: false, content, receiptId: await receiptFor(row.id) };
     }
     if (error?.code !== "23505") break;
     const raced = await findExisting();
     if (raced) {
       await reportPublished(true, raced.version);
-      return { ok: true, versionId: raced.id, version: raced.version, reused: true, content };
+      return { ok: true, versionId: raced.id, version: raced.version, reused: true, content, receiptId: await receiptFor(raced.id) };
     }
   }
   return { ok: false, status: 500, error: "Could not publish this version. Nothing changed; try again." };

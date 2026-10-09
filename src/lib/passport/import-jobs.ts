@@ -51,6 +51,8 @@ export type ImportResultRef = {
   findings: number;
   status: "complete" | "partial";
   reusedExistingVersion: boolean;
+  /** Absent on jobs finished before receipts existed. */
+  receiptId?: string;
 };
 
 export type ImportJobView = {
@@ -137,6 +139,7 @@ function parseResult(raw: unknown): ImportResultRef | null {
     findings: typeof r.findings === "number" ? r.findings : 0,
     status: r.status === "partial" ? "partial" : "complete",
     reusedExistingVersion: r.reusedExistingVersion === true,
+    receiptId: typeof r.receiptId === "string" ? r.receiptId : undefined,
   };
 }
 

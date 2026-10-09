@@ -86,6 +86,9 @@ function ScopeCard({
         Will read <strong className="font-medium text-[var(--text-primary)]">{p.selectedFiles.length}</strong> of {p.totalFiles} files
         {skipped ? `; ${skipped} excluded` : ""}. Code is read at this commit and never run.
       </p>
+      <p className="mt-1 text-app-meta leading-[1.5] text-[var(--text-secondary)]">
+        Access: public read only, with no GitHub sign-in or token. Result: a new report for this revision in your work record, private until you share it, with a work receipt.
+      </p>
       {p.notices.map((n) => (
         <p key={n} className="mt-1 text-app-meta text-[var(--fydell-changed)]">
           {n}

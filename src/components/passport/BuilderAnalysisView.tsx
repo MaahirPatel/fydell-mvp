@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { DetailList, Notice, Status, type StatusKind } from "@/components/ui/report";
 import Link from "next/link";
 import { NO_GITHUB_LOGIN_LIMIT, type AnalysisRow, type BuilderAnalysisReport, type Dimension, type EvidenceLevel, type SignalRef } from "@/lib/builder-analysis/types";
+import { CapabilityStatements, EvidenceLedger, RunRecordPanel, VersionHistory } from "./BuilderAnalysisEvidence";
 
 const LEVEL: Record<EvidenceLevel, { label: string; kind: StatusKind }> = {
   strong: { label: "Strong evidence", kind: "success" },
@@ -188,6 +189,15 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
         </p>
       </section>
 
+      {report.capabilityStatements?.length ? (
+        <section aria-labelledby="ba-capabilities">
+          <H2 id="ba-capabilities" hint="What was observed in specific work, at which revision, and what was not assessed. Not assessed is never a negative finding.">
+            What the evidence shows
+          </H2>
+          <CapabilityStatements statements={report.capabilityStatements} />
+        </section>
+      ) : null}
+
       <section aria-labelledby="ba-areas">
         <H2 id="ba-areas" hint="Levels describe how much evidence was found, never how good you are.">Evidence by area</H2>
         <div>{report.dimensions.map((d) => <DimensionBlock key={d.id} d={d} />)}</div>
@@ -304,11 +314,55 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
           {report.limits.map((l) => <li key={l}>{l}</li>)}
         </ul>
       </section>
+
+      {report.ledger ? (
+        <section aria-labelledby="ba-ledger">
+          <H2 id="ba-ledger" hint="Every finding this report rests on. Each one keeps code existing, code inspected, tests existing, tests run, tests passing, production behaviour, your claim and attribution separate.">
+            Evidence ledger
+          </H2>
+          <EvidenceLedger ledger={report.ledger} />
+        </section>
+      ) : null}
+
+      <section aria-labelledby="ba-run">
+        <H2 id="ba-run">How this report was made</H2>
+        <RunRecordPanel report={report} />
+      </section>
     </div>
   );
 }
 
-export default function BuilderAnalysisView({ initial, lastReport, hasSources }: { initial: AnalysisRow | null; lastReport: BuilderAnalysisReport | null; hasSources: boolean }) {
+export default function BuilderAnalysisView({
+  initial,
+  lastReport,
+  hasSources,
+  viewing = null,
+}: {
+  initial: AnalysisRow | null;
+  lastReport: BuilderAnalysisReport | null;
+  hasSources: boolean;
+  /** A specific stored run the engineer opened from the history. Read as stored. */
+  viewing?: AnalysisRow | null;
+}) {
+  if (viewing?.report) {
+    return (
+      <div>
+        <Notice>
+          You are viewing a superseded run from {formatDate(viewing.report.generatedAt)}. It is kept exactly as it was produced.{" "}
+          <Link href="/app/candidate/reports" className="font-medium underline underline-offset-4">Back to the current report</Link>
+        </Notice>
+        <div className="mt-8"><Report report={viewing.report} /></div>
+        <section aria-labelledby="ba-history" className="mt-12">
+          <H2 id="ba-history">Run history</H2>
+          <VersionHistory viewingId={viewing.id} />
+        </section>
+      </div>
+    );
+  }
+  return <CurrentAnalysis initial={initial} lastReport={lastReport} hasSources={hasSources} />;
+}
+
+function CurrentAnalysis({ initial, lastReport, hasSources }: { initial: AnalysisRow | null; lastReport: BuilderAnalysisReport | null; hasSources: boolean }) {
   const [row, setRow] = useState<AnalysisRow | null>(initial);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
@@ -384,6 +438,12 @@ export default function BuilderAnalysisView({ initial, lastReport, hasSources }:
 
       {isPrevious && shownReport ? <p className="mt-4 text-[13px] text-[var(--text-secondary)]">Showing your previous analysis from {formatDate(shownReport.generatedAt)}.</p> : null}
       {shownReport ? <div className="mt-8"><Report report={shownReport} /></div> : null}
+      {row ? (
+        <section aria-labelledby="ba-history" className="mt-12">
+          <H2 id="ba-history" hint="Each run is stored unchanged. A new run only replaces the current report when it finishes; a failed run keeps the previous one.">Run history</H2>
+          <VersionHistory key={`${row.id}:${row.status}`} viewingId={row.status === "complete" ? row.id : null} />
+        </section>
+      ) : null}
     </div>
   );
 }
