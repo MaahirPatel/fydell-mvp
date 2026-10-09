@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { AlertCircle, Check, ChevronDown, GitFork, Loader2, RotateCcw } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, GitFork, Loader2, RotateCcw, Search } from "lucide-react";
 import PassportView from "./PassportView";
 import { IMPORTS_CHANGED_EVENT } from "./ImportJobsPanel";
 import { Button } from "@/components/ui/Button";
@@ -24,6 +24,7 @@ type StartState = { status: "idle" | "starting" | "started" } | { status: "error
 type RunState = { status: "queued" | "running" | "done" | "failed"; message?: string; project?: PassportProject | null };
 
 const MAX = LIMITS.maxRepositoriesPerImport;
+const REPO_SEARCH_FROM = 8;
 const primaryCls =
   "inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[var(--control-solid)] px-5 text-app-body font-medium text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] disabled:opacity-50";
 
@@ -174,6 +175,7 @@ export default function PassportBuilder({
   const [login, setLogin] = useState<string | null>(initialLogin || null);
   const [repos, setRepos] = useState<Repo[]>([]);
   const [selected, setSelected] = useState<string[]>(initialRepos.slice(0, MAX));
+  const [repoFilter, setRepoFilter] = useState("");
   const [contributions, setContributions] = useState<Record<string, string>>({});
   const [scopes, setScopes] = useState<Record<string, ScopeState>>({});
   const [start, setStart] = useState<StartState>({ status: "idle" });
@@ -275,6 +277,7 @@ export default function PassportBuilder({
         setLogin(data.user ?? null);
         const list = (data.repositories ?? []).filter((r) => !r.archived);
         setRepos(list);
+        setRepoFilter("");
         setSelected(list.filter((r) => !r.fork).slice(0, 1).map((r) => r.fullName));
         setPhase("select");
       } else if (data.kind === "preview" && data.preview) {
@@ -355,6 +358,11 @@ export default function PassportBuilder({
     };
   }, [runs, login]);
 
+  const query = repoFilter.trim().toLowerCase();
+  const visibleRepos = query
+    ? repos.filter((r) => r.name.toLowerCase().includes(query) || (r.language ?? "").toLowerCase().includes(query))
+    : repos;
+
   const resumeHref = `/signup?as=developer&next=${encodeURIComponent(`/app/candidate/work-record?github=${login ?? ""}&repos=${selected.join(",")}`)}`;
 
   return (
@@ -405,14 +413,36 @@ export default function PassportBuilder({
               Choose up to {MAX} repositories
             </h2>
             <p className="text-app-meta text-[var(--text-tertiary)]">
-              {repos.length} public repositories for {login}
+              {selected.length} of {MAX} selected · {repos.length} public repositories for {login}
             </p>
           </div>
+          {repos.length > REPO_SEARCH_FROM ? (
+            <div className="border-b border-[var(--border-subtle)] px-5 py-3 sm:px-6">
+              <label htmlFor="repo-filter" className="sr-only">
+                Search repositories
+              </label>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-tertiary)]" aria-hidden />
+                <input
+                  id="repo-filter"
+                  type="search"
+                  value={repoFilter}
+                  onChange={(e) => setRepoFilter(e.target.value)}
+                  placeholder="Search repositories by name or language"
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="platform-input h-10 w-full pl-9! text-app-control"
+                />
+              </div>
+            </div>
+          ) : null}
           {repos.length === 0 ? (
             <p className="px-6 py-6 text-app-body text-[var(--text-secondary)]">This account has no public, active repositories to analyze.</p>
+          ) : visibleRepos.length === 0 ? (
+            <p className="px-6 py-6 text-app-body text-[var(--text-secondary)]">No repository in this list matches &ldquo;{repoFilter.trim()}&rdquo;. To add one directly, enter owner/repository above.</p>
           ) : (
             <ul className="max-h-[420px] divide-y divide-[var(--border-subtle)] overflow-auto">
-              {repos.map((r) => {
+              {visibleRepos.map((r) => {
                 const checked = selected.includes(r.fullName);
                 const disabled = !checked && selected.length >= MAX;
                 return (
@@ -438,7 +468,7 @@ export default function PassportBuilder({
                         </span>
                         <span className="mt-0.5 block text-app-meta text-[var(--text-tertiary)]">
                           {r.language ?? "Language unknown"}
-                          {r.pushedAt ? ` · updated ${new Date(r.pushedAt).toLocaleDateString()}` : ""}
+                          {r.pushedAt ? ` · updated ${new Date(r.pushedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : ""}
                         </span>
                       </span>
                     </label>
