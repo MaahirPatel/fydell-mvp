@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Editor, { DiffEditor, loader, type Monaco, type OnMount } from "@monaco-editor/react";
+import Editor, { DiffEditor, type Monaco, type OnMount } from "@monaco-editor/react";
+import { EditorBootGate } from "./EditorFallback";
 import type { SimTheme } from "./prefs";
-
-loader.config({ paths: { vs: "/monaco/vs" } });
 
 type MonacoEditor = Parameters<OnMount>[0];
 
@@ -103,7 +102,7 @@ function applyReveal(editor: MonacoEditor, r: RevealRequest) {
   editor.focus();
 }
 
-export function CodeEditor({
+function MonacoCodeEditor({
   path,
   value,
   language,
@@ -195,7 +194,7 @@ export function CodeEditor({
   );
 }
 
-export function CodeDiff({
+function MonacoCodeDiff({
   id,
   original,
   modified,
@@ -250,5 +249,24 @@ export function CodeDiff({
         fixedOverflowWidgets: true,
       }}
     />
+  );
+}
+
+type CodeEditorProps = Parameters<typeof MonacoCodeEditor>[0];
+
+/** Monaco once it has loaded; a bounded loading state, retry and plain text fallback otherwise. */
+export function CodeEditor(props: CodeEditorProps) {
+  return (
+    <EditorBootGate plain={{ value: props.value, onChange: props.onChange, readOnly: props.readOnly, label: props.label }}>
+      <MonacoCodeEditor {...props} />
+    </EditorBootGate>
+  );
+}
+
+export function CodeDiff(props: Parameters<typeof MonacoCodeDiff>[0]) {
+  return (
+    <EditorBootGate loadingLabel="Loading the comparison">
+      <MonacoCodeDiff {...props} />
+    </EditorBootGate>
   );
 }

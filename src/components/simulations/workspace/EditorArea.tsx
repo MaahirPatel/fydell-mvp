@@ -1,22 +1,43 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRef, type KeyboardEvent, type ReactNode } from "react";
+import { useRef, type ComponentProps, type KeyboardEvent, type ReactNode } from "react";
 import { ChevronRight, GitCompareArrows, Lock, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { AuthoredFile } from "@/lib/eng/authored/types";
 import { baseName, isReadOnlyFile, languageFor, type WorkspaceFile } from "./lib";
-import type { RevealRequest } from "./MonacoViews";
+import { EditorLoadingNotice, PlainCodeEditor } from "./EditorFallback";
+import type { CodeDiff as MonacoCodeDiff, CodeEditor as MonacoCodeEditor, RevealRequest } from "./MonacoViews";
 import type { SimTheme } from "./prefs";
 
-const EditorLoading = () => (
-  <p className="p-5 text-[13px] text-[var(--text-secondary)]" role="status">
-    Loading the editor
-  </p>
-);
+const EditorLoading = () => <EditorLoadingNotice />;
 
-const CodeEditor = dynamic(() => import("./MonacoViews").then((m) => m.CodeEditor), { ssr: false, loading: EditorLoading });
-export const CodeDiff = dynamic(() => import("./MonacoViews").then((m) => m.CodeDiff), { ssr: false, loading: EditorLoading });
+function EditorChunkFailed(props: ComponentProps<typeof MonacoCodeEditor>) {
+  return <PlainCodeEditor value={props.value} onChange={props.onChange} readOnly={props.readOnly} label={props.label} />;
+}
+
+function DiffChunkFailed(props: ComponentProps<typeof MonacoCodeDiff>) {
+  return (
+    <p role="alert" className="p-5 text-[13px] leading-[1.6] text-[var(--text-secondary)]">
+      The comparison view could not be downloaded. {props.label} is not shown; your files are unchanged.
+    </p>
+  );
+}
+
+const CodeEditor = dynamic(
+  () =>
+    import("./MonacoViews")
+      .then((m) => m.CodeEditor)
+      .catch(() => EditorChunkFailed),
+  { ssr: false, loading: EditorLoading },
+);
+export const CodeDiff = dynamic(
+  () =>
+    import("./MonacoViews")
+      .then((m) => m.CodeDiff)
+      .catch(() => DiffChunkFailed),
+  { ssr: false, loading: EditorLoading },
+);
 
 export type EditorTab = { kind: "file"; path: string } | { kind: "diff"; path: string };
 
