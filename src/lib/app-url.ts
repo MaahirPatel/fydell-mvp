@@ -8,6 +8,6 @@ export function appUrl(): string {
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.NEXT_PUBLIC_SITE_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
-  const raw = (fromEnv || "http://localhost:3000").replace(/\/$/, "");
+  const raw = (fromEnv || "https://www.fydell.com").replace(/\/$/, "");
   return raw;
 }

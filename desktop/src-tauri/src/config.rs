@@ -1,8 +1,8 @@
 //! Where the desktop app connects.
 //!
-//! Installed copies run without environment variables, so release builds
-//! default to the production platform. `FYDELL_PLATFORM_URL` (at runtime or
-//! at compile time) overrides it for local development and staging.
+//! Every build, debug included, defaults to the production platform, so no
+//! copy a person can open sends them to a local server. `FYDELL_PLATFORM_URL`
+//! (at runtime or at compile time) points it at a local or staging server.
 //!
 //! The public Supabase URL and anon key come from the platform
 //! (`GET /api/desktop/config`) so no deployment detail is baked into the
@@ -14,22 +14,14 @@ use serde::Deserialize;
 
 use crate::error::{AppError, AppResult};
 
-const RELEASE_PLATFORM_URL: &str = "https://www.fydell.com";
-const DEBUG_PLATFORM_URL: &str = "http://localhost:3000";
+const PLATFORM_URL: &str = "https://www.fydell.com";
 
 pub fn platform_base() -> String {
     let raw = std::env::var("FYDELL_PLATFORM_URL")
         .ok()
         .filter(|v| !v.trim().is_empty())
         .or_else(|| option_env!("FYDELL_PLATFORM_URL").map(str::to_string))
-        .unwrap_or_else(|| {
-            if cfg!(debug_assertions) {
-                DEBUG_PLATFORM_URL
-            } else {
-                RELEASE_PLATFORM_URL
-            }
-            .to_string()
-        });
+        .unwrap_or_else(|| PLATFORM_URL.to_string());
     raw.trim().trim_end_matches('/').to_string()
 }
 
@@ -73,9 +65,9 @@ async fn load_supabase() -> AppResult<SupabasePublic> {
         .timeout(std::time::Duration::from_secs(15))
         .send()
         .await
-        .map_err(|e| AppError::Auth(format!("could not reach Fydell: {e}")))?;
+        .map_err(|e| AppError::Platform(format!("could not reach Fydell: {e}")))?;
     if !res.status().is_success() {
-        return Err(AppError::Auth(format!(
+        return Err(AppError::Platform(format!(
             "Fydell did not return the desktop configuration ({})",
             res.status()
         )));
@@ -83,7 +75,7 @@ async fn load_supabase() -> AppResult<SupabasePublic> {
     let body: ConfigResponse = res
         .json()
         .await
-        .map_err(|e| AppError::Auth(format!("bad desktop configuration response: {e}")))?;
+        .map_err(|e| AppError::Platform(format!("bad desktop configuration response: {e}")))?;
     Ok(SupabasePublic {
         url: body.supabase_url.trim().trim_end_matches('/').to_string(),
         anon_key: body.supabase_anon_key.trim().to_string(),

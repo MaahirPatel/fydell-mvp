@@ -517,8 +517,9 @@ No Supabase dashboard changes are needed (the callback is issued by the web
 app, not by Supabase's hosted authorize endpoint).
 
 Desktop configuration (`config.rs`): `FYDELL_PLATFORM_URL` (runtime or
-compile time) overrides the platform; otherwise debug builds use
-`http://localhost:3000` and release builds `https://www.fydell.com`. The
+compile time) overrides the platform; otherwise every build, debug included,
+uses `https://www.fydell.com`. Local development sets
+`FYDELL_PLATFORM_URL=http://localhost:3000` explicitly. The
 public Supabase URL and anon key come from `GET /api/desktop/config`;
 `FYDELL_SUPABASE_URL` + `FYDELL_SUPABASE_ANON_KEY` override them.
 
