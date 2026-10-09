@@ -6,6 +6,7 @@ import SignOutButton from "@/components/employer/SignOutButton";
 import WorkspaceNameForm from "@/components/employer/WorkspaceNameForm";
 import { ContactLink } from "@/components/ui/ContactLink";
 import { memberIdentity, type AuthIdentityMetadata } from "@/lib/workspace/identity";
+import { loadMemberIdentity } from "@/lib/workspace/load-identity";
 import { isPreviewMode, PREVIEW_ORG, PREVIEW_USER } from "@/lib/dev/preview";
 import PlanControls from "@/components/employer/PlanControls";
 import { billingConfig } from "@/lib/billing/stripe";
@@ -146,8 +147,7 @@ export default async function EmployerSettingsPage({
         if (section === "privacy") deletionRequestedAt = (await openWorkspaceDeletion(membership.organization_id))?.receivedAt ?? null;
       }
     }
-    const { data: profile } = await admin.from("profiles").select("full_name, display_name, avatar_url").eq("id", user.id).maybeSingle();
-    identity = memberIdentity(user.email || "", profile, (user as { user_metadata?: AuthIdentityMetadata }).user_metadata);
+    identity = await loadMemberIdentity(user);
   }
 
   const canEdit = MANAGER_ROLES.has(memberRole);

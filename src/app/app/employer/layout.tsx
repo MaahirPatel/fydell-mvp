@@ -9,6 +9,7 @@ import { createAdminSupabaseClient, supabaseAdminStatus } from "@/lib/supabase/a
 import EmployerShell from "@/components/employer/EmployerShell";
 import WorkspaceUnavailable from "@/components/employer/WorkspaceUnavailable";
 import { memberIdentity } from "@/lib/workspace/identity";
+import { loadMemberIdentity } from "@/lib/workspace/load-identity";
 import { loadWorkspaceContexts } from "@/lib/workspace/contexts";
 import { isPreviewMode, PREVIEW_ORG, PREVIEW_USER } from "@/lib/dev/preview";
 import { getEmployerCatalog } from "./_lib/catalog";
@@ -193,13 +194,7 @@ export default async function EmployerAppLayout({ children }: { children: React.
       const org = membership.organizations as { name?: string } | null;
       workspaceName = org?.name || workspaceName;
       canInvite = orgCan(membership.role as string, "manage_candidates");
-
-      const { data: profile } = await admin
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle();
-      identity = memberIdentity(user.email || "", profile, user.user_metadata);
+      identity = await loadMemberIdentity(user);
     }
   }
 

@@ -6,6 +6,7 @@ import {
   type SimulationReportSummary,
   type SnapshotFinding,
 } from "@/lib/profile-evidence/contract";
+import { isAuthoredSummary } from "@/lib/profile-evidence/simulation";
 import { LocalDate } from "@/components/eng/LocalTime";
 
 const SOURCE_LABEL: Record<EvidenceVersionContent["sourceKind"], string> = {
@@ -72,19 +73,26 @@ function ListBlock({ title, items, empty }: { title: string; items: string[]; em
 }
 
 export function SimulationReport({ report }: { report: SimulationReportSummary }) {
+  const authored = isAuthoredSummary(report);
   return (
     <div className="rounded-[8px] border border-[var(--border-subtle)] p-4">
       <p className="text-[15px] font-medium text-[var(--text-primary)]">{report.title}</p>
       <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">Released {report.releasedAt ? <LocalDate iso={report.releasedAt} /> : "date not recorded"}. Observed by Fydell in a work sample; no score.</p>
       {report.summary ? <p className="mt-2 whitespace-pre-wrap text-app-meta leading-[1.55] text-[var(--text-body)]">{report.summary}</p> : null}
       <details className="mt-3">
-        <summary className="cursor-pointer text-app-meta font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">What was investigated, changed and checked</summary>
+        <summary className="cursor-pointer text-app-meta font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+          {authored ? "What the public tests checked" : "What was investigated, changed and checked"}
+        </summary>
         <div className="mt-3 grid gap-3">
-          <ListBlock title="Investigated" items={report.investigated} empty="Not recorded in this report." />
-          <ListBlock title="Questions clarified" items={report.clarified} empty="No clarifying questions are cited." />
-          <ListBlock title="Changes" items={report.changes} empty="No code changes are cited." />
+          {authored ? null : (
+            <>
+              <ListBlock title="Investigated" items={report.investigated} empty="Not recorded in this report." />
+              <ListBlock title="Questions clarified" items={report.clarified} empty="No clarifying questions are cited." />
+              <ListBlock title="Changes" items={report.changes} empty="No code changes are cited." />
+            </>
+          )}
           <ListBlock title="Checks" items={report.checks} empty="No public checks are recorded." />
-          <ListBlock title="Effect of feedback or AI assistance" items={report.feedbackEffect} empty="Not recorded in this report." />
+          {authored ? null : <ListBlock title="Effect of feedback or AI assistance" items={report.feedbackEffect} empty="Not recorded in this report." />}
           <ListBlock title="Unresolved" items={report.unresolved} empty="Nothing is listed as unresolved." />
         </div>
       </details>

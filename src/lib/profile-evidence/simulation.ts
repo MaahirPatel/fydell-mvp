@@ -31,6 +31,7 @@ export function workSampleSummary(attemptId: string, title: string, report: Cand
     report.findings.filter((f) => f.citations.some((c) => c.kind === kind)).map((f) => f.statement);
   return {
     attemptId,
+    origin: "built_in",
     title,
     releasedAt: report.releasedAt,
     summary: report.summary,
@@ -58,6 +59,7 @@ export function authoredWorkSampleSummary(attemptId: string, title: string, repo
   for (const a of report.acceptance) for (const t of a.publicTests) publicChecks.set(t.name, t.outcome);
   return {
     attemptId,
+    origin: "employer_authored",
     title,
     releasedAt: report.releasedAt,
     summary: report.summary,
@@ -74,6 +76,21 @@ export function authoredWorkSampleSummary(attemptId: string, title: string, repo
         citations: a.publicTests.map((t) => ({ kind: "public_check" as const, label: `Public check: ${t.name} (${t.outcome})` })),
       })),
   };
+}
+
+/**
+ * Whether a summary came from an employer-authored work sample. Summaries
+ * frozen before the origin was recorded are recognised by their shape: no
+ * narrative lists, and evidence cited only by public checks.
+ */
+export function isAuthoredSummary(s: SimulationReportSummary): boolean {
+  if (s.origin) return s.origin === "employer_authored";
+  const narrative = s.investigated.length + s.clarified.length + s.changes.length + s.feedbackEffect.length;
+  return (
+    narrative === 0 &&
+    s.evidence.length > 0 &&
+    s.evidence.every((e) => e.citations.length > 0 && e.citations.every((c) => c.kind === "public_check"))
+  );
 }
 
 /** Narrows a stored passport_work_samples.summary back to the shape above. */
@@ -101,6 +118,7 @@ export function parseWorkSampleSummary(raw: unknown): SimulationReportSummary | 
     : [];
   return {
     attemptId: r.attemptId,
+    origin: r.origin === "employer_authored" || r.origin === "built_in" ? r.origin : undefined,
     title: r.title,
     releasedAt: typeof r.releasedAt === "string" ? r.releasedAt : null,
     summary: typeof r.summary === "string" ? r.summary : "",

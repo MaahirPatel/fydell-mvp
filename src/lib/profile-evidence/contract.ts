@@ -79,6 +79,8 @@ export type SimulationCitation = { kind: "file" | "message" | "handoff" | "publi
 
 export type SimulationReportSummary = {
   attemptId: string;
+  /** Employer-authored work samples record only public checks and what stayed unassessed. */
+  origin?: "built_in" | "employer_authored";
   title: string;
   releasedAt: string | null;
   summary: string;
