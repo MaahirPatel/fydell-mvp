@@ -8,7 +8,7 @@ import { orgCan } from "@/lib/orgs/capabilities";
 import ActivityFeed from "@/components/employer/ActivityFeed";
 import AttentionQueue from "@/components/employer/AttentionQueue";
 import CandidatePipeline from "@/components/employer/CandidatePipeline";
-import { AppliedAiDemoModule } from "@/components/employer/AppliedAiDemoModule";
+import { ExampleReviewModule } from "@/components/employer/ExampleReviewModule";
 import { describeElapsed, formatElapsed } from "@/lib/time/elapsed";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
@@ -24,6 +24,27 @@ import {
 
 export const metadata = { title: "Home" };
 export const dynamic = "force-dynamic";
+
+/** A second line for roles that share a title, so each row can be told apart. */
+function distinguishRoles(roles: Array<{ id: string; title: string; stack: string[]; created_at: string }>): Map<string, string> {
+  const notes = new Map<string, string>();
+  const byTitle = new Map<string, typeof roles>();
+  for (const r of roles) {
+    const key = r.title.trim().toLowerCase();
+    byTitle.set(key, [...(byTitle.get(key) ?? []), r]);
+  }
+  for (const group of byTitle.values()) {
+    if (group.length < 2) continue;
+    const days = group.map((r) => new Date(r.created_at).toDateString());
+    for (const r of group) {
+      const at = new Date(r.created_at);
+      const sameDay = days.filter((d) => d === at.toDateString()).length > 1;
+      const when = at.toLocaleString("en-US", sameDay ? { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" } : { month: "short", day: "numeric", year: "numeric" });
+      notes.set(r.id, [r.stack.slice(0, 3).join(", "), `created ${when}`].filter(Boolean).join(" · "));
+    }
+  }
+  return notes;
+}
 
 function SectionLink({ href, label }: { href: string; label: string }) {
   return (
@@ -198,6 +219,7 @@ export default async function EmployerHomePage() {
   const hasInvited = invitations.length > 0 || engInvited > 0;
   const hasResults = reports.length > 0 || teamQueue.length > 0;
   const activeRoles = engRoles.filter((r) => r.status !== "archived");
+  const roleNote = distinguishRoles(activeRoles.slice(0, 6));
 
   const attentionRows = snapshot.attention.map((item) => ({
     key: item.key,
@@ -327,6 +349,9 @@ export default async function EmployerHomePage() {
                       <Link href={`/app/employer/engineering/roles/${role.id}`} className="hover:underline">
                         {role.title}
                       </Link>
+                      {roleNote.has(role.id) ? (
+                        <span className="block text-app-meta font-normal text-[var(--text-tertiary)]">{roleNote.get(role.id)}</span>
+                      ) : null}
                     </TDPrimary>
                     <TD>
                       <StatusTag tone={role.status === "published" ? "good" : "neutral"}>
@@ -357,7 +382,7 @@ export default async function EmployerHomePage() {
         </Panel>
       ) : null}
 
-      <AppliedAiDemoModule className="mt-6" />
+      {teamQueue.length === 0 && !hasResults ? <ExampleReviewModule className="mt-6" /> : null}
 
       {invitations.length > 0 ? (
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">

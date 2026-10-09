@@ -5,7 +5,7 @@ import { ROLES } from "@/lib/simulations/roles";
 import ReportsList from "@/components/employer/ReportsList";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
-import { AppliedAiDemoModule } from "@/components/employer/AppliedAiDemoModule";
+import { ExampleReviewModule } from "@/components/employer/ExampleReviewModule";
 import { getReportRecords } from "../_lib/data";
 
 export const metadata = { title: "Evidence" };
@@ -52,7 +52,7 @@ export default async function EmployerEvidencePage({
           />
         )}
       </div>
-      {records.length === 0 ? <AppliedAiDemoModule className="mt-6" /> : null}
+      {records.length === 0 ? <ExampleReviewModule className="mt-6" /> : null}
     </div>
   );
 }

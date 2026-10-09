@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
-import { AppliedAiDemoModule } from "@/components/employer/AppliedAiDemoModule";
+import { ExampleReviewModule } from "@/components/employer/ExampleReviewModule";
 import { getOutcomeRecords, type OutcomeRecord } from "../_lib/data";
 
 export const metadata = { title: "Outcomes" };
@@ -130,7 +130,7 @@ export default async function EmployerOutcomesPage() {
         </p>
 
         {outcomes.length === 0 ? (
-          <AppliedAiDemoModule className="mt-6" href="/sandbox/work" />
+          <ExampleReviewModule className="mt-6" />
         ) : null}
       </div>
     </div>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
-import { AppliedAiDemoModule } from "@/components/employer/AppliedAiDemoModule";
+import { ExampleReviewModule } from "@/components/employer/ExampleReviewModule";
 
 export const metadata = { title: "Work Receipts" };
 
@@ -40,7 +40,7 @@ export default function EmployerWorkReceiptsPage() {
             ))}
           </div>
         </Panel>
-        <AppliedAiDemoModule className="mt-6" href="/sandbox/work" />
+        <ExampleReviewModule className="mt-6" />
       </div>
     </div>
   );
