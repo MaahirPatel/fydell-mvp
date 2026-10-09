@@ -39,7 +39,7 @@ import {
 } from "./requirements";
 import { allActiveMembers } from "./members";
 
-/** Engineering intake details. Internal to the workspace; never on the public page. */
+/** Engineering intake details. Only the fields picked into `PublicRole.work` reach the public page. */
 export type RoleIntake = {
   family: RoleFamily | null;
   specialization: Specialization | null;
@@ -72,6 +72,8 @@ export type RoleRecord = RoleInput & {
 };
 
 export type PublicRole = Omit<RoleRecord, "organizationId" | "genuineConfirmedAt" | "status" | "intake"> & {
+  /** The intake fields the form tells employers applicants will read. */
+  work: Pick<RoleIntake, "ownership" | "responsibilities" | "languages" | "teamContext" | "acceptedEvidence" | "workSamplePolicy">;
   organizationName: string;
   accepting: boolean;
   closedReason: string | null;
@@ -499,6 +501,14 @@ export async function getPublicRole(slug: string, viewerUserId: string | null = 
     requirementsVersion: r.requirementsVersion,
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
+    work: {
+      ownership: r.intake.ownership,
+      responsibilities: r.intake.responsibilities,
+      languages: r.intake.languages,
+      teamContext: r.intake.teamContext,
+      acceptedEvidence: r.intake.acceptedEvidence,
+      workSamplePolicy: r.intake.workSamplePolicy,
+    },
     organizationName: row.organizations?.name ?? "A hiring team",
     accepting: r.intake.visibility !== "private" && acceptsApplications(r.status, r.applicationDeadline),
     closedReason:

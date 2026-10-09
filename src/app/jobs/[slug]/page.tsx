@@ -5,6 +5,7 @@ import MarketingShell from "@/components/layout/MarketingShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { getPublicRole } from "@/lib/hiring/roles";
 import { REMOTE_LABEL } from "@/lib/hiring/role-contract";
+import { EVIDENCE_LABEL, type WorkSamplePolicy } from "@/lib/eng/taxonomy";
 import { requireUser } from "@/lib/simulations/auth";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,25 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
+function Bullets({ items, className = "" }: { items: string[]; className?: string }) {
+  return (
+    <ul className={`grid gap-2 text-[16px] leading-[1.6] text-[var(--text-body)] ${className}`}>
+      {items.map((r) => (
+        <li key={r} className="flex gap-3">
+          <span aria-hidden className="mt-[0.7em] h-1 w-1 shrink-0 rounded-full bg-[var(--text-tertiary)]" />
+          {r}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const WORK_SAMPLE_NOTE: Record<WorkSamplePolicy, string> = {
+  not_needed: "No work sample is part of this process. The team reviews the work you share.",
+  when_evidence_gap: "A short work sample is offered only if the work you share doesn't show one of the required capabilities. You'll see its scope and time before you start.",
+  required: "Applicants who reach review are asked to complete a short work sample. You'll see its scope and time before you start.",
+};
+
 export default async function PublicRolePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const viewer = await requireUser();
@@ -42,6 +62,7 @@ export default async function PublicRolePage({ params }: { params: Promise<{ slu
     role.remotePolicy ? REMOTE_LABEL[role.remotePolicy] : "",
   ].filter(Boolean);
   const applyHref = `/jobs/${role.slug}/apply`;
+  const work = role.work;
 
   return (
     <MarketingShell>
@@ -69,21 +90,29 @@ export default async function PublicRolePage({ params }: { params: Promise<{ slu
         </div>
 
         <div className="mt-12">
-          {role.description ? (
+          {role.description || work.responsibilities.length > 0 || work.ownership ? (
             <Block title="The work">
-              <p className="whitespace-pre-wrap text-[16px] leading-[1.65] text-[var(--text-body)]">{role.description}</p>
+              {role.description ? <p className="whitespace-pre-wrap text-[16px] leading-[1.65] text-[var(--text-body)]">{role.description}</p> : null}
+              {work.ownership ? (
+                <p className="mt-4 text-[16px] leading-[1.65] text-[var(--text-body)]">
+                  <span className="text-[var(--text-primary)]">You will own: </span>
+                  {work.ownership}
+                </p>
+              ) : null}
+              {work.responsibilities.length > 0 ? <Bullets items={work.responsibilities} className="mt-4" /> : null}
+            </Block>
+          ) : null}
+          {work.teamContext || work.languages.length > 0 ? (
+            <Block title="The team">
+              {work.teamContext ? <p className="whitespace-pre-wrap text-[16px] leading-[1.65] text-[var(--text-body)]">{work.teamContext}</p> : null}
+              {work.languages.length > 0 ? (
+                <p className={`${work.teamContext ? "mt-3 " : ""}text-[15px] text-[var(--text-secondary)]`}>Works in {work.languages.join(", ")}.</p>
+              ) : null}
             </Block>
           ) : null}
           {role.required.length > 0 ? (
             <Block title="What the team needs to see">
-              <ul className="grid gap-2 text-[16px] leading-[1.6] text-[var(--text-body)]">
-                {role.required.map((r) => (
-                  <li key={r} className="flex gap-3">
-                    <span aria-hidden className="mt-[0.7em] h-1 w-1 shrink-0 rounded-full bg-[var(--text-tertiary)]" />
-                    {r}
-                  </li>
-                ))}
-              </ul>
+              <Bullets items={role.required} />
               <p className="mt-4 text-[14px] leading-[1.55] text-[var(--text-secondary)]">
                 Reviewers look for evidence of each of these in what you share. It&apos;s fine if your work shows some and not others.
               </p>
@@ -91,14 +120,7 @@ export default async function PublicRolePage({ params }: { params: Promise<{ slu
           ) : null}
           {role.preferred.length > 0 ? (
             <Block title="Also useful">
-              <ul className="grid gap-2 text-[16px] leading-[1.6] text-[var(--text-body)]">
-                {role.preferred.map((r) => (
-                  <li key={r} className="flex gap-3">
-                    <span aria-hidden className="mt-[0.7em] h-1 w-1 shrink-0 rounded-full bg-[var(--text-tertiary)]" />
-                    {r}
-                  </li>
-                ))}
-              </ul>
+              <Bullets items={role.preferred} />
             </Block>
           ) : null}
           {role.hiringSteps.length > 0 || role.expectedEffort ? (
@@ -117,6 +139,12 @@ export default async function PublicRolePage({ params }: { params: Promise<{ slu
             <p className="text-[16px] leading-[1.65] text-[var(--text-body)]">
               You sign in, choose which projects to include and in what order, and can add links or a short note. The team sees only what you select, as a fixed version of each project. You can withdraw at any time, which stops their access to the projects you shared.
             </p>
+            {work.acceptedEvidence.length > 0 ? (
+              <p className="mt-3 text-[15px] leading-[1.55] text-[var(--text-secondary)]">
+                This team accepts: {work.acceptedEvidence.map((k) => EVIDENCE_LABEL[k].toLowerCase()).join("; ")}.
+              </p>
+            ) : null}
+            <p className="mt-3 text-[15px] leading-[1.55] text-[var(--text-secondary)]">{WORK_SAMPLE_NOTE[work.workSamplePolicy]}</p>
             {role.contactEmail ? (
               <p className="mt-3 text-[15px] text-[var(--text-secondary)]">
                 Questions about the role: <a href={`mailto:${role.contactEmail}`} className="text-[var(--text-primary)] underline underline-offset-4">{role.contactEmail}</a>
