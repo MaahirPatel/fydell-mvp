@@ -17,7 +17,12 @@ export default function WorkspaceLogoForm({ canEdit }: { canEdit: boolean }) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ logo_url: url }),
     });
-    setMessage(res.ok ? "Logo saved." : "Could not save logo.");
+    if (res.ok) {
+      setMessage("Logo saved.");
+      return;
+    }
+    const json = (await res.json().catch(() => null)) as { error?: string } | null;
+    setMessage(json?.error ?? "Could not save logo.");
   }
   return (
     <form onSubmit={onSubmit} className="flex gap-2">

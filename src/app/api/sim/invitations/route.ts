@@ -30,7 +30,10 @@ export async function GET() {
     )
     .eq("organization_id", org.organizationId)
     .order("created_at", { ascending: false });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[sim:invitations]", error.message);
+    return NextResponse.json({ error: "Invitations could not be loaded. Try again." }, { status: 500 });
+  }
   return NextResponse.json({ invitations: data || [] });
 }
 

@@ -35,7 +35,10 @@ export async function GET() {
     .in("status", ["sent", "opened"])
     .gt("expires_at", new Date().toISOString())
     .order("created_at", { ascending: false });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[sim:invitations:mine]", error.message);
+    return NextResponse.json({ error: "Invitations could not be loaded. Try again." }, { status: 500 });
+  }
 
   const invitations: Array<{
     id: string;
