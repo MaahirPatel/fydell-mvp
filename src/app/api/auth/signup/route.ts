@@ -102,7 +102,7 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: publicErrorMessage(error, "Could not create account.") }, { status: 400 });
     }
 
     const userId = data.user?.id;
@@ -121,9 +121,7 @@ export async function POST(req: Request) {
     if (signInError || !signedIn.session) {
       return NextResponse.json(
         {
-          error:
-            signInError?.message ||
-            "Account created. Sign in with the same email and password.",
+          error: publicErrorMessage(signInError ?? undefined, "Account created. Sign in with the same email and password."),
         },
         { status: 400 }
       );

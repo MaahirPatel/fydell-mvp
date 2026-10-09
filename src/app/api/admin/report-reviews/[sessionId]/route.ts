@@ -4,6 +4,11 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { engineeringReportFor, evaluationStateOf } from "@/lib/engineering/submission-eval";
 import { applyReviewAction, type ReviewAction, type ReviewStatus } from "@/lib/engineering/report-review";
 
+function reviewSaveFailed(error: { message: string; code?: string }): NextResponse {
+  console.error("[report-review] save failed", error.code, error.message);
+  return NextResponse.json({ error: "Could not save the review. Nothing was changed; try again." }, { status: 500 });
+}
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -73,12 +78,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ses
       .eq("session_id", sessionId)
       .eq("status", current)
       .select("session_id");
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return reviewSaveFailed(error);
     if (!updated?.length) return stale;
   } else {
     const { error } = await admin.from("sim_report_reviews").insert({ session_id: sessionId, ...values });
     if (error?.code === "23505") return stale;
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return reviewSaveFailed(error);
   }
   await admin.from("sim_report_review_events").insert({
     session_id: sessionId,
