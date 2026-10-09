@@ -1,6 +1,7 @@
 import { NextResponse, after } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { csrfGuard } from "@/lib/security/csrf";
+import { limitByUser, ROUTE_LIMITS } from "@/lib/security/route-limits";
 import { beginAnalysis, latestAnalysis, latestCompleteReport } from "@/lib/builder-analysis/store";
 import { runAnalysis } from "@/lib/builder-analysis/run";
 import { hasSourceChanges, sourceChanges } from "@/lib/builder-analysis/synthesize";
@@ -27,6 +28,8 @@ export async function POST(req: Request) {
   if (blocked) return blocked;
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Sign in to run an analysis." }, { status: 401 });
+  const limited = limitByUser(user.id, ROUTE_LIMITS.analysis);
+  if (limited) return limited;
   try {
     const [passport, previous] = await Promise.all([getOwnerPassport(user.id), latestCompleteReport(user.id)]);
     const sourcesChanged =

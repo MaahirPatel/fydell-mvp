@@ -8,6 +8,7 @@ import { runV2Scoring } from "@/lib/simulations/v2/run";
 import { mayUseKeywordFallback } from "@/lib/contracts/da01";
 import { evaluateSubmittedSession } from "@/lib/engineering/submission-eval";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { limitByUser, ROUTE_LIMITS } from "@/lib/security/route-limits";
 
 export const runtime = "nodejs";
 // Engineering attempts also run the trusted + hidden tests in an isolated runner.
@@ -28,6 +29,8 @@ export async function POST(
   const { id } = await params;
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = limitByUser(`${user.id}:${id}`, ROUTE_LIMITS.analysis);
+  if (limited) return limited;
 
   // Caller must be the candidate or an org member for this session.
   const admin = createAdminSupabaseClient();

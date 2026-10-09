@@ -11,6 +11,7 @@ import {
   recordEvent,
 } from "@/lib/simulations/db";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { limitByUser, ROUTE_LIMITS } from "@/lib/security/route-limits";
 
 export const runtime = "nodejs";
 
@@ -28,6 +29,8 @@ export async function POST(
   const { id } = await params;
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = limitByUser(user.id, ROUTE_LIMITS.modelCall);
+  if (limited) return limited;
 
   const config = getProviderConfig();
   if (!config)

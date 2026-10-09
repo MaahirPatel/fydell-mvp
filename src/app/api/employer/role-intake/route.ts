@@ -16,6 +16,7 @@ import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/
 import { isOrgRole, roleCan } from "@/lib/eng/permissions";
 import { processIntake } from "@/lib/employer/intake";
 import { CATALOG, summarize } from "@/lib/scenario-catalog";
+import { limitByUser, ROUTE_LIMITS } from "@/lib/security/route-limits";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,6 +38,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const user = await requireUser();
   if (!user) return error(401, "unauthorized", "Sign in to continue.");
+  const limited = limitByUser(user.id, ROUTE_LIMITS.analysis);
+  if (limited) return limited;
   const org = await requireOrgMember(user.id);
   if (!org) return error(403, "forbidden", "You are not a member of an active hiring workspace.");
   if (!isOrgRole(org.role) || !roleCan(org.role, "manage_roles")) {

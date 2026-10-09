@@ -3,6 +3,7 @@ import { ok } from "@/lib/eng/http";
 import { requestRegeneration } from "@/lib/eng/authoring/drafts";
 import { authoringError, authoringGate, kickJob, validId } from "@/lib/eng/authoring/http";
 import { publicJob, type RegenerateScope } from "@/lib/eng/authoring/jobs";
+import { limitByUser, ROUTE_LIMITS } from "@/lib/security/route-limits";
 
 export const maxDuration = 300;
 
@@ -14,6 +15,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ draftId
   if (bad) return bad;
   const gate = await authoringGate("author_work_samples");
   if (gate.ok === false) return gate.response;
+  const limited = limitByUser(gate.value.member.userId, ROUTE_LIMITS.analysis);
+  if (limited) return limited;
   const body = await readJson(req);
   const scope = SCOPES.find((s) => s === body?.scope);
   if (!scope) return jsonError(400, "Choose what to regenerate: all, starter or tests.");

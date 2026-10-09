@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
+import { limitByUser, ROUTE_LIMITS } from "@/lib/security/route-limits";
 import { ProfileInputError, getOrCreateProfile, removeProfilePhoto, setProfilePhoto } from "@/lib/profile/store";
 
 export const runtime = "nodejs";
@@ -9,6 +10,8 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Sign in to change your photo." }, { status: 401 });
+  const limited = limitByUser(user.id, ROUTE_LIMITS.upload);
+  if (limited) return limited;
   const form = await req.formData().catch(() => null);
   const file = form?.get("photo");
   if (!(file instanceof File)) return NextResponse.json({ error: "Choose an image to upload." }, { status: 400 });

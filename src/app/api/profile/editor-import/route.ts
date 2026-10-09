@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { MAX_UPLOAD_BYTES, parseEditorUpload } from "@/lib/profile/editor-import/parse";
 import { listEditorImports, saveEditorImport } from "@/lib/profile/store";
+import { limitByUser, ROUTE_LIMITS } from "@/lib/security/route-limits";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,6 +27,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Sign in to import editor history." }, { status: 401 });
+  const limited = limitByUser(user.id, ROUTE_LIMITS.importJob);
+  if (limited) return limited;
 
   let form: FormData;
   try {
