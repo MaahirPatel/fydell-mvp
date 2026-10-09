@@ -10,8 +10,12 @@ import {
   type SectionKey,
   type TestRef,
 } from "./package";
+import { packageLeaks } from "./leakage";
 import { CAPABILITIES, DURATION_LIMITS, ENVIRONMENTS } from "./registry";
-import type { Runner, RunnerInfo, SuiteRun, TestCaseResult } from "./runner";
+import { displayCommand, type Runner, type RunnerInfo, type SuiteRun, type TestCaseResult } from "./runner";
+
+/** A suite that catches only one mistake may be shaped around it; two distinct ones show it checks the behavior. */
+export const MIN_INCORRECT_SOLUTIONS = 2;
 
 export type CheckStatus = "passed" | "failed" | "not_run";
 
@@ -104,6 +108,15 @@ export function staticChecks(pkg: ScenarioPackage, prot: ProtectedMaterials): Ch
   const protPaths = new Set(prot.protectedTests.map((f) => f.path));
   for (const r of prot.protectedTestRefs) if (!protPaths.has(r.file)) fileIssues.push(`Evaluation test ${r.name} points to ${r.file}, which does not exist.`);
   push("protected_isolation", "Files and protected material", fileIssues, "Files are within limits and evaluation material is not in the candidate project.");
+
+  const publicCommand = displayCommand(pkg.environment.id, [...new Set(pkg.publicTests.map((t) => t.file))]);
+  const leak = packageLeaks(pkg, prot, publicCommand);
+  push(
+    "leakage",
+    "Private material stays out of candidate and teammate context",
+    [...new Set(leak.leaks.map((l) => `${l.context} contains ${l.source}: "${l.excerpt}"`))].slice(0, 12),
+    `Scanned ${leak.contexts} candidate, teammate and assistant contexts for ${leak.fingerprints} private fingerprints (reference lines, protected test code and names, rubric notes, wrong-solution descriptions); none found.`,
+  );
 
   const mapIssues: string[] = [];
   if (pkg.acceptanceCriteria.length === 0) mapIssues.push("Add at least one acceptance criterion.");
@@ -275,7 +288,9 @@ export async function executionChecks(pkg: ScenarioPackage, prot: ProtectedMater
 
   {
     const issues: string[] = [];
-    if (prot.incorrectSolutions.length === 0) issues.push("Add at least one plausible incorrect solution, so the tests are shown to catch real mistakes.");
+    if (prot.incorrectSolutions.length < MIN_INCORRECT_SOLUTIONS) {
+      issues.push(`Add at least ${MIN_INCORRECT_SOLUTIONS} plausible incorrect solutions that make different mistakes, so the tests are shown to catch real mistakes.`);
+    }
     // A hang is a mistake the suite catches: a candidate submitting it would see the run time out.
     prot.incorrectSolutions.forEach((s, i) => {
       const run = incorrectRuns[i];
@@ -334,6 +349,27 @@ export async function executionChecks(pkg: ScenarioPackage, prot: ProtectedMater
 
   return checks;
 }
+
+/** Every check a publishable record must contain; a record made before a check existed must be run again. */
+export const REQUIRED_CHECK_IDS = [
+  "setup",
+  "baseline",
+  "reference",
+  "incorrect",
+  "repeatability",
+  "discovery",
+  "protected_isolation",
+  "leakage",
+  "test_mapping",
+  "disclosed_requirements",
+  "instructions_files",
+  "secrets",
+  "rubric",
+  "coworkers",
+  "policy",
+  "timing",
+  "submission",
+] as const;
 
 export const EXECUTION_CHECKS: Array<[string, string]> = [
   ["setup", "Environment setup and syntax"],

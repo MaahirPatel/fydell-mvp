@@ -2,7 +2,7 @@
  * Software engineering tracks. "Software engineer" is the umbrella a profile
  * can use; simulations are always built for one track. A track being listed
  * here does not make it available in the simulation creator: only
- * combinations backed by a validated role-model scenario are offered (see
+ * combinations backed by a validated simulation template are offered (see
  * `src/lib/eng/exemplars/registry.ts`).
  */
 

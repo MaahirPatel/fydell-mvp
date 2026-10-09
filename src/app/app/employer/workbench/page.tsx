@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { listScenarios } from "@/lib/sim-engine/scenarios/catalog";
+import { listValidScenarios } from "@/lib/sim-engine/scenarios/catalog";
 import { ROLE_DISPLAY } from "@/lib/sim-engine/types/roles";
 import { isSimEngineEnabled } from "@/lib/sim-engine/featureFlag";
 
@@ -33,14 +33,23 @@ export default async function WorkspaceSimulationsPage() {
     );
   }
 
-  const scenarios = listScenarios();
+  const scenarios = listValidScenarios();
 
   return (
     <div>
       <PageHeader
         title="Simulations"
-        description="The work environments behind your evaluations. Open one to run it exactly as a candidate does, or read the analysis it produces."
+        description="Workbench previews you can open to see how the simulation environment behaves, and the analysis it produces."
       />
+
+      <p className="mt-4 max-w-[720px] text-app-body leading-[1.6] text-[var(--text-secondary)]">
+        These previews are not validated work samples. No reference solution or protected checks are run against them in the
+        isolated sandbox, so they are not offered for candidate invitations. To invite candidates, use a simulation template from{" "}
+        <Link href="/app/employer/work-samples" className="font-medium text-[var(--text-primary)] underline">
+          Work samples
+        </Link>
+        , where each template states what its validation run proved.
+      </p>
 
       <div className="mt-7 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)]">
         {scenarios.map((scenario, index) => {
@@ -93,9 +102,8 @@ export default async function WorkspaceSimulationsPage() {
       </div>
 
       <p className="mt-6 max-w-[720px] text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
-        Opening a workbench here runs the real simulation, but the attempt is
-        yours and is not recorded against any candidate. Candidate attempts
-        arrive through an invitation and appear under Candidates.
+        Opening a preview runs the workbench as a candidate would see it. The
+        attempt is yours and is not recorded against any candidate.
       </p>
     </div>
   );

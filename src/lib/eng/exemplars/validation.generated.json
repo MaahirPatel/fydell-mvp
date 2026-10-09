@@ -5,8 +5,26 @@
       "version": "1.0.0",
       "sha256": "eec64d91ae5764cc6a34a46bddd59cd6968e81cc17eb3d467d55e5650ace2db0",
       "status": "passed",
-      "checkedAt": "2026-10-08T02:49:03.950Z",
-      "runner": "Local development runner (not isolated)",
+      "checkedAt": "2026-10-09T15:05:42.749Z",
+      "runner": "Isolated sandbox",
+      "runnerVersion": "vercel-snapshot:snap_qve4wQwb9P66E1jnEMomSQSlEh4m",
+      "isolated": true,
+      "summary": {
+        "starter": {
+          "failing": 8,
+          "total": 13
+        },
+        "reference": {
+          "passed": 13,
+          "total": 13
+        },
+        "incorrect": {
+          "caught": 6,
+          "total": 6
+        },
+        "leakage": "passed",
+        "leakageDetail": "Scanned 8 candidate, teammate and assistant contexts for 152 private fingerprints (reference lines, protected test code and names, rubric notes, wrong-solution descriptions); none found."
+      },
       "checks": [
         {
           "id": "setup",
@@ -34,6 +52,10 @@
         },
         {
           "id": "protected_isolation",
+          "status": "passed"
+        },
+        {
+          "id": "leakage",
           "status": "passed"
         },
         {
@@ -79,8 +101,26 @@
       "version": "1.0.0",
       "sha256": "db103422b1b9d2cb0da8cdf7a81eab9a5e80daefd38629f41eddb7b085bf3567",
       "status": "passed",
-      "checkedAt": "2026-10-08T02:49:05.005Z",
-      "runner": "Local development runner (not isolated)",
+      "checkedAt": "2026-10-09T15:05:51.451Z",
+      "runner": "Isolated sandbox",
+      "runnerVersion": "vercel-snapshot:snap_qve4wQwb9P66E1jnEMomSQSlEh4m",
+      "isolated": true,
+      "summary": {
+        "starter": {
+          "failing": 11,
+          "total": 13
+        },
+        "reference": {
+          "passed": 13,
+          "total": 13
+        },
+        "incorrect": {
+          "caught": 4,
+          "total": 4
+        },
+        "leakage": "passed",
+        "leakageDetail": "Scanned 8 candidate, teammate and assistant contexts for 218 private fingerprints (reference lines, protected test code and names, rubric notes, wrong-solution descriptions); none found."
+      },
       "checks": [
         {
           "id": "setup",
@@ -108,6 +148,10 @@
         },
         {
           "id": "protected_isolation",
+          "status": "passed"
+        },
+        {
+          "id": "leakage",
           "status": "passed"
         },
         {
@@ -153,8 +197,26 @@
       "version": "1.0.0",
       "sha256": "abf3ac73e2a0f9e84c55d7b9748db510a422720010052354aae9eba98d707e07",
       "status": "passed",
-      "checkedAt": "2026-10-08T02:48:56.780Z",
-      "runner": "Local development runner (not isolated)",
+      "checkedAt": "2026-10-09T15:05:28.527Z",
+      "runner": "Isolated sandbox",
+      "runnerVersion": "vercel-snapshot:snap_qve4wQwb9P66E1jnEMomSQSlEh4m",
+      "isolated": true,
+      "summary": {
+        "starter": {
+          "failing": 16,
+          "total": 16
+        },
+        "reference": {
+          "passed": 16,
+          "total": 16
+        },
+        "incorrect": {
+          "caught": 5,
+          "total": 5
+        },
+        "leakage": "passed",
+        "leakageDetail": "Scanned 8 candidate, teammate and assistant contexts for 238 private fingerprints (reference lines, protected test code and names, rubric notes, wrong-solution descriptions); none found."
+      },
       "checks": [
         {
           "id": "setup",
@@ -182,6 +244,10 @@
         },
         {
           "id": "protected_isolation",
+          "status": "passed"
+        },
+        {
+          "id": "leakage",
           "status": "passed"
         },
         {
@@ -227,8 +293,26 @@
       "version": "1",
       "sha256": "b6d46635c64a47ce3226b0787ff21feeb6a986cfe26075731427c05cf2e06eb2",
       "status": "passed",
-      "checkedAt": "2026-10-08T02:48:54.073Z",
-      "runner": "Local development runner (not isolated)",
+      "checkedAt": "2026-10-09T15:05:04.801Z",
+      "runner": "Isolated sandbox",
+      "runnerVersion": "vercel-snapshot:snap_qve4wQwb9P66E1jnEMomSQSlEh4m",
+      "isolated": true,
+      "summary": {
+        "starter": {
+          "failing": 12,
+          "total": 16
+        },
+        "reference": {
+          "passed": 16,
+          "total": 16
+        },
+        "incorrect": {
+          "caught": 6,
+          "total": 6
+        },
+        "leakage": "passed",
+        "leakageDetail": "Scanned 8 candidate, teammate and assistant contexts for 228 private fingerprints (reference lines, protected test code and names, rubric notes, wrong-solution descriptions); none found."
+      },
       "checks": [
         {
           "id": "setup",
@@ -256,6 +340,10 @@
         },
         {
           "id": "protected_isolation",
+          "status": "passed"
+        },
+        {
+          "id": "leakage",
           "status": "passed"
         },
         {
@@ -301,8 +389,26 @@
       "version": "1",
       "sha256": "ff814fe2b50420a02afb299223cf5efecacefb74c91df4857cc0378e1346053a",
       "status": "passed",
-      "checkedAt": "2026-10-08T02:48:52.594Z",
-      "runner": "Local development runner (not isolated)",
+      "checkedAt": "2026-10-09T15:04:51.350Z",
+      "runner": "Isolated sandbox",
+      "runnerVersion": "vercel-snapshot:snap_qve4wQwb9P66E1jnEMomSQSlEh4m",
+      "isolated": true,
+      "summary": {
+        "starter": {
+          "failing": 7,
+          "total": 12
+        },
+        "reference": {
+          "passed": 12,
+          "total": 12
+        },
+        "incorrect": {
+          "caught": 5,
+          "total": 5
+        },
+        "leakage": "passed",
+        "leakageDetail": "Scanned 8 candidate, teammate and assistant contexts for 164 private fingerprints (reference lines, protected test code and names, rubric notes, wrong-solution descriptions); none found."
+      },
       "checks": [
         {
           "id": "setup",
@@ -330,6 +436,10 @@
         },
         {
           "id": "protected_isolation",
+          "status": "passed"
+        },
+        {
+          "id": "leakage",
           "status": "passed"
         },
         {
@@ -375,8 +485,26 @@
       "version": "1.0.0",
       "sha256": "b10fcbb3123cff9b013e3e432cc0b93686bb31027539fa6796c54df8aecf848d",
       "status": "passed",
-      "checkedAt": "2026-10-08T02:48:55.447Z",
-      "runner": "Local development runner (not isolated)",
+      "checkedAt": "2026-10-09T15:05:14.878Z",
+      "runner": "Isolated sandbox",
+      "runnerVersion": "vercel-snapshot:snap_qve4wQwb9P66E1jnEMomSQSlEh4m",
+      "isolated": true,
+      "summary": {
+        "starter": {
+          "failing": 9,
+          "total": 13
+        },
+        "reference": {
+          "passed": 13,
+          "total": 13
+        },
+        "incorrect": {
+          "caught": 5,
+          "total": 5
+        },
+        "leakage": "passed",
+        "leakageDetail": "Scanned 8 candidate, teammate and assistant contexts for 163 private fingerprints (reference lines, protected test code and names, rubric notes, wrong-solution descriptions); none found."
+      },
       "checks": [
         {
           "id": "setup",
@@ -404,6 +532,10 @@
         },
         {
           "id": "protected_isolation",
+          "status": "passed"
+        },
+        {
+          "id": "leakage",
           "status": "passed"
         },
         {
@@ -449,8 +581,26 @@
       "version": "1",
       "sha256": "f10fc68be452c9f0cf4018ec8fbafcb4d484c6df7f2548dc3f96f1608de9d042",
       "status": "passed",
-      "checkedAt": "2026-10-08T02:48:51.251Z",
-      "runner": "Local development runner (not isolated)",
+      "checkedAt": "2026-10-09T15:04:41.414Z",
+      "runner": "Isolated sandbox",
+      "runnerVersion": "vercel-snapshot:snap_qve4wQwb9P66E1jnEMomSQSlEh4m",
+      "isolated": true,
+      "summary": {
+        "starter": {
+          "failing": 5,
+          "total": 10
+        },
+        "reference": {
+          "passed": 10,
+          "total": 10
+        },
+        "incorrect": {
+          "caught": 4,
+          "total": 4
+        },
+        "leakage": "passed",
+        "leakageDetail": "Scanned 8 candidate, teammate and assistant contexts for 110 private fingerprints (reference lines, protected test code and names, rubric notes, wrong-solution descriptions); none found."
+      },
       "checks": [
         {
           "id": "setup",
@@ -478,6 +628,10 @@
         },
         {
           "id": "protected_isolation",
+          "status": "passed"
+        },
+        {
+          "id": "leakage",
           "status": "passed"
         },
         {

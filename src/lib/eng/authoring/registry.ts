@@ -288,7 +288,7 @@ export type Customizations = {
 
 /**
  * What the employer is hiring for, kept as separate fields: a job title is
- * context, the track decides the kind of engineering work, the role model is
+ * context, the track decides the kind of engineering work, the simulation template is
  * the validated scenario the generator adapts. Null on drafts created before
  * tracks existed.
  */
@@ -296,14 +296,14 @@ export type SimulationIntent = {
   track: TrackId;
   taskFamily: string;
   exemplarKey: string;
-  /** "as_is" runs the role model unchanged; "adapt" generates a new scenario from it in the employer's context. */
+  /** "as_is" runs the simulation template unchanged; "adapt" generates a new scenario from it in the employer's context. */
   mode: "as_is" | "adapt";
   jobTitle: string;
   businessContext: string;
   secondaryCapability: string;
 };
 
-/** Validated role models the server offers, used to gate track, task family and language. */
+/** Validated simulation templates the server offers, used to gate track, task family and language. */
 export type ExemplarOption = { key: string; track: TrackId; taskFamily: string; language: LanguageId };
 
 /** The resolved configuration used for generation and stored in the package. Contains no "other". */
@@ -587,7 +587,7 @@ function closestTaskType(text: string): TaskTypeId {
 }
 
 /**
- * `exemplars` is the server's list of validated role models. When given,
+ * `exemplars` is the server's list of Validated simulation templates. When given,
  * a simulation's track, task family and language must match one of them;
  * the creator never accepts a combination nothing validated backs.
  */
@@ -768,7 +768,7 @@ export function validateConfig(input: AuthoringInput, invalid: ConfigIssue[] = [
   if (!Number.isFinite(input.setupMinutes) || input.setupMinutes < DURATION_LIMITS.minSetup || input.setupMinutes > DURATION_LIMITS.maxSetup) {
     errors.push({ field: "setupMinutes", message: `Setup time must be between ${DURATION_LIMITS.minSetup} and ${DURATION_LIMITS.maxSetup} minutes. It is not counted in task time.` });
   }
-  // With a role model the scenario is defined by it; the description only adds emphasis.
+  // With a simulation template the scenario is defined by it; the description only adds emphasis.
   if (simulation) {
     if (input.description.length > DESCRIPTION_MAX) errors.push({ field: "description", message: `Keep the description under ${DESCRIPTION_MAX.toLocaleString("en-US")} characters.` });
   } else if (input.description.length < DESCRIPTION_MIN) {
@@ -827,7 +827,7 @@ export function validateConfig(input: AuthoringInput, invalid: ConfigIssue[] = [
     assumptions.push({ id: "frontend_logic_only", statement: "The task covers frontend logic (state, data handling) in plain modules; there is no browser rendering." });
   }
 
-  // A role model already defines the symptom and expected behavior; these two questions are for free-form drafts.
+  // A simulation template already defines the symptom and expected behavior; these two questions are for free-form drafts.
   if (!simulation && input.outcomes.length === 0 && !/\b(should|must|so that|success|expected)\b/i.test(input.description)) {
     clarifications.push({ id: "success", question: "What should a successful result do?", why: "Acceptance criteria and tests are built from the expected behavior. Without it the generator would invent requirements." });
   }

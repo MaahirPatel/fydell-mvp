@@ -7,10 +7,11 @@ import type { PackageFile, ScenarioPackage } from "../authoring/package";
 import { displayCommand, selectRunner, type TestCaseResult } from "../authoring/runner";
 import { resolveScenarioVersion } from "../scenario-versions";
 import { completeSubmission } from "../submissions";
-import { effectiveDueAt, submissionWindow } from "../state";
+import { effectiveDueAt, operationalState, sessionLifecycle, submissionWindow } from "../state";
 import { SUBMISSION_BUCKET } from "../uploads";
 import type { AttemptRow, AuthoredHandoff, InvitationRow, RunRow, ScenarioVersionRow, SubmissionRow } from "../types";
 import { filesFingerprint, sha256Hex, zipFiles } from "./archive";
+import { asManifest, buildManifest, isClientSubmissionId, manifestSha256, receiptStatements, seqRange } from "./manifest";
 import { buildAuthoredCandidatePayload } from "./candidate-payload";
 import { PUBLIC_RUN_TIMEOUT_MS, publicTestProject, validateCandidateFiles } from "./evaluate";
 import type { AuthoredCandidateView, AuthoredEvaluationStatus, CandidateTask, PublicRunView } from "./types";
@@ -282,7 +283,28 @@ export async function runPublicTests(
 export type AuthoredReceipt = NonNullable<AuthoredCandidateView["receipt"]> & { alreadySubmitted: boolean };
 
 function receiptOf(s: SubmissionRow, alreadySubmitted: boolean): AuthoredReceipt {
-  return { submissionId: s.id, archiveSha256: s.archive_sha256, archiveBytes: s.archive_bytes, submittedAt: s.submitted_at, late: s.late, alreadySubmitted };
+  const manifest = asManifest(s.manifest);
+  return {
+    submissionId: s.id,
+    archiveSha256: s.archive_sha256,
+    archiveBytes: s.archive_bytes,
+    submittedAt: s.submitted_at,
+    late: s.late,
+    clientSubmissionId: s.client_submission_id ?? null,
+    manifestSha256: s.manifest_sha256 ?? null,
+    scenarioVersion: manifest?.scenario.version ?? null,
+    files: manifest?.files ?? [],
+    ...receiptStatements(manifest),
+    alreadySubmitted,
+  };
+}
+
+async function seqs(db: Admin, table: "eng_attempt_events" | "eng_messages" | "eng_assistant_interactions", attemptId: string, statuses?: string[]): Promise<number[]> {
+  let q = db.from(table).select("seq").eq("attempt_id", attemptId);
+  if (statuses) q = q.in("status", statuses);
+  const { data, error } = await q;
+  if (error) throw new AttemptError("Could not freeze the submission record. Your files are saved; try again.", 500);
+  return ((data ?? []) as Array<{ seq: number }>).map((r) => Number(r.seq));
 }
 
 export function validateAuthoredHandoff(
@@ -316,6 +338,24 @@ async function followThrough(db: Admin, attempt: AttemptRow, submission: Submiss
     .eq("id", submission.upload_id)
     .eq("status", "initiated");
   await completeSubmission(db, attempt, submission, userId);
+  await discardOrphanedUploads(db, attempt.id, submission.upload_id);
+}
+
+/**
+ * Sealed archives left by requests that died before their submission was
+ * recorded. Once a submission exists none of them can become it, so each is
+ * marked failed and its stored copy removed.
+ */
+async function discardOrphanedUploads(db: Admin, attemptId: string, keepUploadId: string): Promise<void> {
+  const { data } = await db.from("eng_uploads").select("id, storage_path").eq("attempt_id", attemptId).eq("status", "initiated").neq("id", keepUploadId);
+  for (const u of (data ?? []) as Array<{ id: string; storage_path: string }>) {
+    await discardSealed(db, u.id, u.storage_path, "A different archive became this attempt's submission.");
+  }
+  const prefix = `attempts/${attemptId}`;
+  const keepPath = `${prefix}/${keepUploadId}.zip`;
+  const { data: objects } = await db.storage.from(SUBMISSION_BUCKET).list(prefix);
+  const stray = (objects ?? []).map((o) => `${prefix}/${o.name}`).filter((p) => p.endsWith(".zip") && p !== keepPath);
+  if (stray.length) await db.storage.from(SUBMISSION_BUCKET).remove(stray);
 }
 
 /** A sealed archive that never became the submission is marked failed and its stored copy removed. */
@@ -349,10 +389,10 @@ export async function existingAuthoredReceipt(db: Admin, authored: AuthoredAttem
 export async function submitAuthored(
   db: Admin,
   authored: AuthoredAttempt,
-  input: { files: unknown; handoff: AuthoredHandoff; aiDisclosure: string },
+  input: { files: unknown; handoff: AuthoredHandoff; aiDisclosure: string; clientSubmissionId?: string | null },
   userId: string,
 ): Promise<AuthoredReceipt> {
-  const { attempt, pkg } = authored;
+  const { attempt, pkg, version } = authored;
   const { data: existing } = await db.from("eng_submissions").select("*").eq("attempt_id", attempt.id).maybeSingle();
   if (existing) {
     await followThrough(db, attempt, existing as SubmissionRow, userId);
@@ -370,6 +410,26 @@ export async function submitAuthored(
 
   const bytes = zipFiles(files);
   const sha256 = sha256Hex(bytes);
+  const [eventSeqs, messageSeqs, assistantSeqs] = await Promise.all([
+    seqs(db, "eng_attempt_events", attempt.id),
+    seqs(db, "eng_messages", attempt.id),
+    seqs(db, "eng_assistant_interactions", attempt.id),
+  ]);
+  const usedAssistant = await seqs(db, "eng_assistant_interactions", attempt.id, ["answered", "invalid_output"]);
+  const manifest = buildManifest({
+    clientSubmissionId: isClientSubmissionId(input.clientSubmissionId) ? input.clientSubmissionId : `srv_${randomUUID().replace(/-/g, "")}`,
+    attemptId: attempt.id,
+    scenario: { versionId: version.id, key: version.scenario_key, version: version.version, harnessSha256: version.harness_sha256, aiPolicy: pkg.aiPolicy.id },
+    files,
+    archive: { sha256, bytes: bytes.length },
+    handoff: input.handoff,
+    aiDisclosure: input.aiDisclosure,
+    builtInAssistantRequests: usedAssistant.length,
+    events: seqRange(eventSeqs),
+    teamMessages: seqRange(messageSeqs),
+    assistantInteractions: seqRange(assistantSeqs),
+    late: window === "late",
+  });
   const uploadId = randomUUID();
   const storagePath = `attempts/${attempt.id}/${uploadId}.zip`;
   const { error: storageError } = await db.storage.from(SUBMISSION_BUCKET).upload(storagePath, bytes, { contentType: "application/zip", upsert: false });
@@ -401,6 +461,9 @@ export async function submitAuthored(
       handoff: input.handoff,
       ai_disclosure: input.aiDisclosure,
       late: window === "late",
+      client_submission_id: manifest.clientSubmissionId,
+      manifest,
+      manifest_sha256: manifestSha256(manifest),
     })
     .select("*")
     .single();
@@ -419,11 +482,18 @@ export async function submitAuthored(
   return receiptOf(submission, false);
 }
 
-/** A submission recorded by a request that died before closing the attempt is completed on the next load. */
+/**
+ * A submission recorded by a request that died before closing the attempt, or
+ * before queueing its analysis, is completed on the next load.
+ */
 async function settleRecordedSubmission(db: Admin, attempt: AttemptRow): Promise<AttemptRow> {
-  if (attempt.status !== "in_progress") return attempt;
+  if (attempt.status !== "in_progress" && attempt.status !== "submitted") return attempt;
   const { data: submission } = await db.from("eng_submissions").select("*").eq("attempt_id", attempt.id).maybeSingle();
   if (!submission) return attempt;
+  if (attempt.status === "submitted") {
+    const { data: run } = await db.from("eng_evaluation_runs").select("id").eq("submission_id", (submission as SubmissionRow).id).limit(1).maybeSingle();
+    if (run) return attempt;
+  }
   await followThrough(db, attempt, submission as SubmissionRow, attempt.candidate_user_id);
   const { data: settled } = await db.from("eng_attempts").select("*").eq("id", attempt.id).single();
   return (settled as AttemptRow | null) ?? attempt;
@@ -444,14 +514,14 @@ export function evaluationStatus(run: Pick<RunRow, "status"> | null, released: b
 export async function buildAuthoredCandidateView(db: Admin, authored: AuthoredAttempt): Promise<AuthoredCandidateView> {
   const { pkg } = authored;
   const attempt = await settleRecordedSubmission(db, authored.attempt);
-  const { data: inv } = await db.from("eng_invitations").select("role_snapshot, is_preview").eq("id", attempt.invitation_id).single();
-  const invitation = inv as Pick<InvitationRow, "role_snapshot" | "is_preview">;
+  const { data: inv } = await db.from("eng_invitations").select("role_snapshot, is_preview, status, expires_at").eq("id", attempt.invitation_id).single();
+  const invitation = inv as Pick<InvitationRow, "role_snapshot" | "is_preview" | "status" | "expires_at">;
   const working = attempt.status === "in_progress";
   const submitted = attempt.status === "submitted";
   const [workspace, publicRuns, submissionRes, runRes, releasedRes] = await Promise.all([
     working ? ensureWorkspace(db, attempt.id, pkg) : submitted ? getWorkspace(db, attempt.id) : Promise.resolve(null),
     publicRunSummary(db, attempt.id),
-    submitted ? db.from("eng_submissions").select("*").eq("attempt_id", attempt.id).maybeSingle() : Promise.resolve({ data: null }),
+    working || submitted ? db.from("eng_submissions").select("*").eq("attempt_id", attempt.id).maybeSingle() : Promise.resolve({ data: null }),
     submitted
       ? db.from("eng_evaluation_runs").select("status").eq("attempt_id", attempt.id).neq("status", "canceled").order("created_at", { ascending: false }).limit(1).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -459,6 +529,14 @@ export async function buildAuthoredCandidateView(db: Admin, authored: AuthoredAt
   ]);
   const submission = submissionRes.data as SubmissionRow | null;
   const due = effectiveDueAt(attempt);
+  const run = runRes.data as Pick<RunRow, "status"> | null;
+  const window = submissionWindow(attempt, AUTHORED_GRACE_MINUTES);
+  const op = operationalState({
+    invitation: { status: invitation.status, expires_at: invitation.expires_at },
+    attempt: { status: attempt.status },
+    run,
+    releasedReport: releasedRes.data ? { status: "released" } : null,
+  });
   return {
     kind: "authored",
     serverNow: new Date().toISOString(),
@@ -474,7 +552,7 @@ export async function buildAuthoredCandidateView(db: Admin, authored: AuthoredAt
       allowedMinutes: attempt.allowed_minutes,
       extensionMinutes: attempt.extension_minutes,
       submittedAt: attempt.submitted_at,
-      window: submissionWindow(attempt, AUTHORED_GRACE_MINUTES),
+      window,
     },
     role: {
       title: invitation.role_snapshot.title,
@@ -485,6 +563,7 @@ export async function buildAuthoredCandidateView(db: Admin, authored: AuthoredAt
     workspace: workspace ? { ...workspace, filesSha256: filesFingerprint(workspace.files) } : null,
     publicRuns,
     receipt: submission ? receiptOf(submission, true) : null,
-    evaluation: submitted ? evaluationStatus(runRes.data as Pick<RunRow, "status"> | null, Boolean(releasedRes.data)) : "not_submitted",
+    evaluation: submitted ? evaluationStatus(run, Boolean(releasedRes.data)) : "not_submitted",
+    lifecycle: sessionLifecycle(op, { audience: "candidate", submissionRecorded: Boolean(submission) && working, windowClosed: working && window === "closed" }),
   };
 }

@@ -238,12 +238,18 @@ function main() {
     assert.equal(by.new_information.state, "not_assessed", "the scenario introduced no new information");
     assert.equal(by.uncertainty.state, "not_observed", "the open-risks question was asked and left empty");
     for (const i of items) for (const e of i.excerpts) assert.ok(e.ref, `${i.behavior} excerpt has a source link`);
+    assert.equal(by.handoff.opportunities, 3, "each handoff prompt is one opportunity");
+    assert.equal(by.clarification.opportunities, 1);
+    assert.equal(by.feedback.opportunities, 1, "one review question was asked");
+    assert.equal(by.new_information.opportunities, 0, "no new information was introduced");
+    for (const i of items) if (i.state === "observed") assert.ok(i.opportunities >= 1, `${i.behavior} observed with an opportunity`);
 
     const quiet = buildCommunicationEvidence({ hasTeammates: true, messages: [], handoff: null, submitted: false });
     const q = Object.fromEntries(quiet.map((i) => [i.behavior, i]));
     assert.equal(q.clarification.state, "not_assessed", "not asking a question is never a negative finding");
     assert.equal(q.feedback.state, "not_assessed");
     assert.equal(q.handoff.state, "not_assessed");
+    assert.equal(q.handoff.opportunities, 0);
     for (const i of quiet) assert.notEqual(i.state, "not_observed", "an unsubmitted, silent attempt has no negative findings");
     for (const i of [...quiet, ...items]) assert.ok(!/\b(score|weak|poor|bad|concern|personality|culture|attitude|confident)\b/i.test(`${i.summary} ${i.limits}`), i.behavior);
   });

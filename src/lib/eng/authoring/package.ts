@@ -132,6 +132,7 @@ export const CHECK_DEPENDENCIES: Record<string, SectionKey[]> = {
   repeatability: ["files", "tests"],
   discovery: ["files", "tests"],
   protected_isolation: ["files", "tests"],
+  leakage: ["files", "tests", "brief", "coworkers", "criteria"],
   test_mapping: ["tests", "brief"],
   disclosed_requirements: ["tests", "brief"],
   instructions_files: ["brief", "files"],

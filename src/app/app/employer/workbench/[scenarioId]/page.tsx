@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { ScenarioWorkbenchHost } from "@/components/simulations/hosts/ScenarioWorkbenchHost";
-import { getScenario } from "@/lib/sim-engine/scenarios/catalog";
+import { getValidScenario } from "@/lib/sim-engine/scenarios/catalog";
 import { isSimEngineEnabled } from "@/lib/sim-engine/featureFlag";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ export async function generateMetadata({
   params: Promise<{ scenarioId: string }>;
 }) {
   const { scenarioId } = await params;
-  const scenario = getScenario(scenarioId);
+  const scenario = getValidScenario(scenarioId);
   return { title: scenario ? scenario.metadata.title : "Simulation" };
 }
 
@@ -33,7 +33,7 @@ export default async function WorkspaceSimulationPage({
 
   if (!isSimEngineEnabled()) redirect("/app/employer/workbench");
 
-  const scenario = getScenario(scenarioId);
+  const scenario = getValidScenario(scenarioId);
   if (!scenario) notFound();
 
   return (
@@ -52,7 +52,7 @@ export default async function WorkspaceSimulationPage({
               label: "Analysis",
             },
           ],
-          note: "Your attempt. Not recorded against a candidate.",
+          note: "Preview. Your attempt is not recorded against a candidate.",
         }}
       />
     </div>

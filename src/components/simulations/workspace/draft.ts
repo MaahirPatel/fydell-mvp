@@ -106,3 +106,29 @@ export function clearDraft(attemptId: string) {
     /* Nothing to clear. */
   }
 }
+
+const submissionKey = (attemptId: string) => `fydell.sim.submission.${attemptId}`;
+
+/**
+ * One client submission id per attempt, kept until the server confirms, so a
+ * retry after a dropped response is recognised as the same submission.
+ */
+export function clientSubmissionId(attemptId: string): string {
+  const fresh = `web_${crypto.randomUUID().replace(/-/g, "")}`;
+  try {
+    const existing = window.localStorage.getItem(submissionKey(attemptId));
+    if (existing && /^[A-Za-z0-9_-]{8,80}$/.test(existing)) return existing;
+    window.localStorage.setItem(submissionKey(attemptId), fresh);
+  } catch {
+    /* Without storage the id lives for this page only; the server still accepts one submission per attempt. */
+  }
+  return fresh;
+}
+
+export function clearClientSubmissionId(attemptId: string) {
+  try {
+    window.localStorage.removeItem(submissionKey(attemptId));
+  } catch {
+    /* Nothing to clear. */
+  }
+}

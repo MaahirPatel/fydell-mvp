@@ -329,7 +329,7 @@ export function layoutFor(config: AuthoringConfig): Layout {
 }
 
 /**
- * The validated role model the draft adapts. Only the candidate-facing
+ * The validated simulation template the draft adapts. Only the candidate-facing
  * shape and the pattern are sent: never its tests, reference solution or
  * incorrect solutions, so a draft cannot be a lightly renamed copy.
  */
@@ -340,14 +340,14 @@ function roleModelGuidance(key: string): string {
   const { exemplar } = found;
   const b = built.pkg.brief;
   return [
-    "Role model (a validated scenario to learn from, NOT to copy):",
+    "Simulation template (a validated scenario to learn from, NOT to copy):",
     `Engineering problem: ${exemplar.pattern.problem}`,
     `It produces evidence of: ${exemplar.pattern.assesses.join("; ")}`,
     `Every adaptation must keep:\n- ${exemplar.pattern.invariants.join("\n- ")}`,
     `Vary along:\n- ${exemplar.pattern.variationAxes.join("\n- ")}`,
     `Its brief, for shape and depth only: "${b.title}". ${b.summary}`,
     `Its acceptance criteria, for granularity only:\n- ${built.pkg.acceptanceCriteria.map((a) => a.text).join("\n- ")}`,
-    `Its business context was ${exemplar.businessContext}. Write a new scenario of the same engineering problem class set in the employer's business context: new company, domain, entities, data, incident and file names. Do not reuse the role model's company, names, identifiers or wording. Keep a comparable scope, difficulty and number of acceptance criteria.`,
+    `Its business context was ${exemplar.businessContext}. Write a new scenario of the same engineering problem class set in the employer's business context: new company, domain, entities, data, incident and file names. Do not reuse the template's company, names, identifiers or wording. Keep a comparable scope, difficulty and number of acceptance criteria.`,
   ].join("\n");
 }
 

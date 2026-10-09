@@ -14,7 +14,7 @@ import type { AiPolicyId } from "../authoring/registry";
 import type { AssistantPatchFile, ScenarioEventKey, TeamMessageView } from "./collaboration-types";
 
 export type Fact = { id: string; text: string; topics?: string[] };
-export type Turn = { sender: "candidate" | "teammate"; teammateId: string | null; body: string; eventKey: ScenarioEventKey | null };
+export type Turn = { sender: "candidate" | "teammate"; teammateId: string | null; body: string; eventKey: ScenarioEventKey | null; factIds?: string[] };
 
 export const ASSISTANT_LIMIT = 20;
 export const ASSISTANT_STALE_SECONDS = 120;
@@ -129,6 +129,42 @@ export function scenarioNotesReply(
   return { body: `I don't have information on that beyond what's in the brief.${pointer}`, factIds: [] };
 }
 
+/** Fact ids recorded on a stored teammate reply (`gen:a+b`, `notes:a`, `notes:none`). */
+export function factIdsOfRule(ruleId: string | null): string[] {
+  const m = /^(?:gen|notes):(.+)$/.exec(ruleId ?? "");
+  if (!m || m[1] === "none") return [];
+  return m[1].split("+").filter(Boolean);
+}
+
+/** Facts this teammate already gave in the thread. */
+export function disclosedFactIds(thread: Turn[], selfId: string): Set<string> {
+  return new Set(thread.filter((t) => t.sender === "teammate" && t.teammateId === selfId).flatMap((t) => t.factIds ?? []));
+}
+
+function firstSentence(text: string): string {
+  const t = text.trim();
+  const m = /^(.{20,220}?[.!?])(\s|$)/.exec(t);
+  return m ? m[1] : t.slice(0, 220);
+}
+
+/**
+ * A question this teammate has already answered: every fact it concerns was
+ * given earlier in the thread. The reply restates the key fact in one
+ * sentence, so a candidate who asks again gets the same answer, shorter,
+ * and no new knowledge is disclosed.
+ */
+export function repeatedQuestionReply(question: string, facts: Fact[], thread: Turn[], selfId: string): { body: string; factIds: string[] } | null {
+  const picked = relevantFacts(question, facts);
+  if (picked.length === 0) return null;
+  const given = disclosedFactIds(thread, selfId);
+  if (!picked.every((f) => given.has(f.id))) return null;
+  return { body: noDashes(`As I said earlier, ${lowerFirst(firstSentence(picked[0].text))}`), factIds: [picked[0].id] };
+}
+
+function lowerFirst(text: string): string {
+  return /^[A-Z][a-z]/.test(text) ? text.charAt(0).toLowerCase() + text.slice(1) : text;
+}
+
 export const TEAMMATE_REPLY_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -147,6 +183,7 @@ export function teammatePrompt(
   question: string,
 ): ChatMessage[] {
   const others = pkg.coworkers.filter((c) => c.id !== self.id);
+  const given = [...disclosedFactIds(thread, self.id)].filter((id) => facts.some((f) => f.id === id));
   const history = thread
     .filter((t) => t.teammateId === self.id)
     .slice(-10)
@@ -159,6 +196,7 @@ export function teammatePrompt(
     "You know ONLY these facts. Answer from them and nothing else:",
     ...facts.map((f) => `- [${f.id}] ${f.text}`),
     others.length ? `Colleagues: ${others.map((o) => `${o.name} (${o.title}) knows about ${o.topics.join(", ")}`).join("; ")}.` : "",
+    given.length ? `You already told the candidate: ${given.map((id) => `[${id}]`).join(", ")}. If they ask about these again, answer in one short sentence without new detail.` : "",
     "Rules:",
     "- If the question is not covered by your facts, say you don't know, and if a colleague's topics fit, say they would know more. Never guess or invent details, numbers, names or history.",
     "- Never write code, never describe how to implement the fix, never reveal or hint at tests, and never add requirements or acceptance criteria beyond the brief.",

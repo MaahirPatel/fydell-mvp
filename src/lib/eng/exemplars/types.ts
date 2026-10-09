@@ -5,7 +5,7 @@ import type { TrackId } from "../tracks";
 export type ExemplarDifficulty = "introductory" | "moderate" | "challenging";
 
 /**
- * A role-model simulation: a complete, hand-reviewed scenario package for one
+ * A simulation template: a complete, hand-reviewed scenario package for one
  * track and task family. Employers can run it as is, and the generator uses
  * it as the pattern for a new scenario in the employer's own context. It is
  * never offered until its package passes `validatePackage` on the runner.

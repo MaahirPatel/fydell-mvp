@@ -8,6 +8,7 @@ import { downloadArchive } from "../uploads";
 import type { ReportBrief, ReportRow, RunRow, ScenarioVersionRow, SubmissionRow, UploadRow } from "../types";
 import { sha256Hex, unzipFiles } from "./archive";
 import { runAuthoredEvaluation, type MappedEvaluation } from "./evaluate";
+import { asManifest, filesMatchManifest, manifestSha256 } from "./manifest";
 
 export const AUTOMATED_REVIEWER = "Automated test evaluation";
 
@@ -90,6 +91,13 @@ export async function processAuthoredRun(db: Admin, run: RunRow): Promise<RunRow
   } catch (error) {
     const code = error instanceof Error ? error.message : "archive_unreadable";
     return failRun(db, run, code, "The stored submission could not be read back and verified.", code === "archive_missing");
+  }
+  const sub = submission as SubmissionRow;
+  const manifest = asManifest(sub.manifest);
+  if (sub.manifest_sha256) {
+    if (!manifest || manifestSha256(manifest) !== sub.manifest_sha256 || (run.manifest_sha256 && run.manifest_sha256 !== sub.manifest_sha256) || !filesMatchManifest(files, manifest)) {
+      return failRun(db, run, "manifest_mismatch", "The stored files do not match the submission manifest. Nothing was evaluated.", false);
+    }
   }
 
   const selection = selectRunner();

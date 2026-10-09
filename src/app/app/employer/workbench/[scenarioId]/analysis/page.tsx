@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ScenarioAnalysisHost } from "@/components/simulations/hosts/ScenarioAnalysisHost";
-import { getScenario } from "@/lib/sim-engine/scenarios/catalog";
+import { getValidScenario } from "@/lib/sim-engine/scenarios/catalog";
 import { isSimEngineEnabled } from "@/lib/sim-engine/featureFlag";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export async function generateMetadata({
   params: Promise<{ scenarioId: string }>;
 }) {
   const { scenarioId } = await params;
-  const scenario = getScenario(scenarioId);
+  const scenario = getValidScenario(scenarioId);
   return { title: scenario ? `${scenario.metadata.title} analysis` : "Analysis" };
 }
 
@@ -41,7 +41,7 @@ export default async function WorkspaceSimulationAnalysisPage({
 
   if (!isSimEngineEnabled()) redirect("/app/employer/workbench");
 
-  const scenario = getScenario(scenarioId);
+  const scenario = getValidScenario(scenarioId);
   if (!scenario) notFound();
 
   return (

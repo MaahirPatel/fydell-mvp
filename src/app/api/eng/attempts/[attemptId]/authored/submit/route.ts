@@ -24,7 +24,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ attempt
   const handoff = validateAuthoredHandoff(authored.pkg, body);
   if (handoff.ok === false) return jsonError(422, handoff.error);
   try {
-    const receipt = await submitAuthored(db, authored, { files: body.files, handoff: handoff.handoff, aiDisclosure: handoff.aiDisclosure }, user.id);
+    const receipt = await submitAuthored(db, authored, {
+        files: body.files,
+        handoff: handoff.handoff,
+        aiDisclosure: handoff.aiDisclosure,
+        clientSubmissionId: typeof body.client_submission_id === "string" ? body.client_submission_id : null,
+      }, user.id);
     scheduleEvaluationWork();
     return ok({ receipt }, receipt.alreadySubmitted ? 200 : 201);
   } catch (err) {

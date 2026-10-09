@@ -155,15 +155,23 @@ export function SimulationPicker({
                 <button key={m.key} type="button" role="radio" aria-checked={on} onClick={() => track && onSelect(m, track)} className={choiceClass(on)}>
                   <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <span className="text-[15px] font-semibold text-[var(--text-primary)]">{m.title}</span>
-                    <span className="text-app-meta font-medium text-[var(--status-positive-ink)]">Reviewed by Fydell</span>
+                    <span className="text-app-meta font-medium text-[var(--status-positive-ink)]">Reviewed by Fydell, checked in the sandbox</span>
                   </span>
                   <span className="mt-1 block text-[14px] leading-[1.5] text-[var(--text-body)]">{m.summary}</span>
                   <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-app-meta text-[var(--text-secondary)]">
                     <span>{m.stackLabel}</span>
-                    <span>{m.minutes} min</span>
-                    <span>{DIFFICULTY_LABEL[m.difficulty]}</span>
+                    <span>{m.minutes} min target</span>
+                    <span>{DIFFICULTY_LABEL[m.difficulty]}, {m.level} level target</span>
                     <span>Set in: {m.businessContext}</span>
                   </span>
+                  {m.validation.status === "validated" ? (
+                    <span className="mt-2 block text-app-meta leading-[1.5] text-[var(--text-secondary)]">
+                      Sandbox check on {new Date(m.validation.checkedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}: the starter fails{" "}
+                      {m.validation.proof.starter.failing} of {m.validation.proof.starter.total} tests, the reference solution passes all {m.validation.proof.reference.total},{" "}
+                      {m.validation.proof.incorrect.caught} of {m.validation.proof.incorrect.total} known wrong solutions are caught, and no private material reaches the candidate or teammate context.
+                      Difficulty and time are targets until calibrated with completed attempts.
+                    </span>
+                  ) : null}
                 </button>
               );
             })}

@@ -22,9 +22,11 @@ import {
   checkTeammateDraft,
   eventDisclosure,
   eventKeyOf,
+  factIdsOfRule,
   finalHandoffMessage,
   initialContextMessage,
   messageView,
+  repeatedQuestionReply,
   reviewQuestionDue,
   scenarioNotesReply,
   teammatePrompt,
@@ -83,7 +85,7 @@ async function listRows(db: Admin, attemptId: string): Promise<MessageRow[]> {
 }
 
 function turns(rows: MessageRow[]): Turn[] {
-  return rows.map((m) => ({ sender: m.sender, teammateId: m.teammate_id, body: m.body, eventKey: eventKeyOf(m.rule_id) }));
+  return rows.map((m) => ({ sender: m.sender, teammateId: m.teammate_id, body: m.body, eventKey: eventKeyOf(m.rule_id), factIds: factIdsOfRule(m.rule_id) }));
 }
 
 /* ------------------------------------------------------------------ */
@@ -149,6 +151,8 @@ async function composeReply(
 ): Promise<{ body: string; factIds: string[]; mode: "model" | "scenario_notes"; reason: string | null }> {
   const facts = factsFor(prot, self.id);
   const notes = (reason: string) => ({ ...scenarioNotesReply(self, pkg.coworkers, facts, question, thread), mode: "scenario_notes" as const, reason });
+  const repeat = repeatedQuestionReply(question, facts, thread, self.id);
+  if (repeat) return { ...repeat, mode: "scenario_notes", reason: "repeated_question" };
   const config = getProviderConfig();
   if (!config) return notes("no_provider");
   const extraBody = config.provider === "groq" && config.model.includes("gpt-oss") ? { reasoning_effort: "low" } : undefined;

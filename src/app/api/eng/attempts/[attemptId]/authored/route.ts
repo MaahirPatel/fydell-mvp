@@ -11,7 +11,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ attempt
   const { db, authored } = gate.value;
   try {
     const view = await buildAuthoredCandidateView(db, authored);
-    if (authored.attempt.status === "submitted") await scheduleIfRunnable(db, authored.attempt.id);
+    if (view.attempt.status === "submitted") await scheduleIfRunnable(db, authored.attempt.id);
     return ok({ view });
   } catch (err) {
     return errorResponse(err, "authored-view");

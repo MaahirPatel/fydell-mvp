@@ -266,7 +266,10 @@ async function main() {
         { name: "EvaluationTests.test_phantom", criterionIds: ["AC-2"] },
       ],
     },
-    incorrectSolutions: [{ description: "Never stops on an empty page", files: [{ path: "app/importer.py", content: wrongInfinite }] }],
+    incorrectSolutions: [
+      { description: "Never stops on an empty page", files: [{ path: "app/importer.py", content: wrongInfinite }] },
+      { description: "Starts from the second page", files: [{ path: "app/importer.py", content: reference.replace("page = 0", "page = 1") }] },
+    ],
   };
   const code = { starterFiles: [{ path: "app/importer.py", content: starter }, { path: "tests/helpers.py", content: helper }], referenceFiles: [{ path: "app/importer.py", content: reference }], approaches: ["Stop on an empty batch instead of a short batch."] };
 
@@ -327,7 +330,7 @@ async function main() {
     const rec = await validatePackage(pkg, prot, null, "none");
     const edited = bumpSections(pkg, ["coworkers"], "author");
     const stale = staleChecks(rec, sectionRevisions(edited));
-    assert.deepEqual(stale, ["coworkers"]);
+    assert.deepEqual([...stale].sort(), ["coworkers", "leakage"]);
     const changed = { ...edited, coworkers: [] };
     assert.notEqual(packageSha256(changed, prot), packageSha256(pkg, prot));
   });
@@ -346,7 +349,10 @@ async function main() {
     const tsTests: TestsStage = {
       publicTests: { file: { path: "test/public.test.ts", content: `import test from "node:test";\nimport assert from "node:assert/strict";\nimport { sum } from "../src/sum.ts";\ntest("sums two", () => assert.equal(sum([1, 2]), 3));\n` }, tests: [{ name: "sums two", criterionIds: ["AC-1"] }] },
       evaluationTests: { file: { path: "test/evaluation.test.ts", content: `import test from "node:test";\nimport assert from "node:assert/strict";\nimport { sum } from "../src/sum.ts";\ntest("sums empty", () => assert.equal(sum([]), 0));\ntest("sums many", () => assert.equal(sum([1, 2, 3, 4]), 10));\n` }, tests: [{ name: "sums empty", criterionIds: ["AC-1"] }, { name: "sums many", criterionIds: ["AC-1"] }] },
-      incorrectSolutions: [{ description: "Skips the last item", files: [{ path: "src/sum.ts", content: "export function sum(xs: number[]): number { let t = 0; for (let i = 0; i < xs.length - 1; i++) t += xs[i]; return t; }\n" }] }],
+      incorrectSolutions: [
+        { description: "Skips the last item", files: [{ path: "src/sum.ts", content: "export function sum(xs: number[]): number { let t = 0; for (let i = 0; i < xs.length - 1; i++) t += xs[i]; return t; }\n" }] },
+        { description: "Counts the first item twice", files: [{ path: "src/sum.ts", content: "export function sum(xs: number[]): number { return xs.reduce((a: number, b: number) => a + b, xs[0] ?? 0); }\n" }] },
+      ],
     };
     const tsCode = { starterFiles: [{ path: "src/sum.ts", content: "export function sum(xs: number[]): number { return xs.length ? xs[0] : 0; }\n" }], referenceFiles: [{ path: "src/sum.ts", content: "export function sum(xs: number[]): number { return xs.reduce((a: number, b: number) => a + b, 0); }\n" }], approaches: ["reduce"] };
     const built = assemble(ts, { ...tsBrief, coworkers: [] }, tsCode, tsTests, null, "uploaded");

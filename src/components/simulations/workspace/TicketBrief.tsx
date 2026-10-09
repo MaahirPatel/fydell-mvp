@@ -169,10 +169,14 @@ export function TicketBrief({ view, base, onView }: { view: AuthoredCandidateVie
 
             {!consented ? (
               <div className="grid gap-4">
-                <p className="text-[14px] leading-[1.6] text-[var(--text-body)]">
-                  Your files, test runs, messages with simulated teammates, assistant use and handoff answers are recorded and shared with {view.role.organizationName}. Setup comes
-                  next and is not timed.
-                </p>
+                <ul className="grid list-disc gap-1.5 pl-5 text-[14px] leading-[1.6] text-[var(--text-body)]">
+                  <li>The task, what is out of scope and the AI and tool policy are in the brief. Read them before you start.</li>
+                  <li>You have {minutes} minutes once you press Start. Setup comes next and is not timed.</li>
+                  <li>Your files, test runs, messages with simulated teammates, assistant use and handoff answers are recorded.</li>
+                  <li>
+                    The hiring team at {view.role.organizationName} sees that record and the analysis of your submission. You see your report once they release it.
+                  </li>
+                </ul>
                 <ErrorNote message={error} />
                 <Button variant="primary" onClick={consent} loading={busy === "consent"}>
                   Agree and continue to setup

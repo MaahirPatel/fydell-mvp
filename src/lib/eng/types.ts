@@ -140,6 +140,10 @@ export interface SubmissionRow {
   ai_disclosure: string;
   late: boolean;
   submitted_at: string;
+  /** Added in 093 for authored submissions; null on older rows. */
+  client_submission_id?: string | null;
+  manifest?: unknown;
+  manifest_sha256?: string | null;
 }
 
 export interface Handoff {
@@ -175,6 +179,8 @@ export interface RunRow {
   max_attempts: number;
   lease_owner: string | null;
   lease_expires_at: string | null;
+  /** Added in 093: the submission manifest this run must evaluate. */
+  manifest_sha256?: string | null;
   next_retry_at: string | null;
   last_error_code: string | null;
   last_error_detail: string | null;

@@ -1,4 +1,5 @@
 import type { SimulationScenarioDefinition } from "../types";
+import { validateScenario } from "../validation/validateScenario";
 import { northstarIntegrationScenario } from "./solutions-engineer/northstar-integration";
 import {
   q3ChurnInvestigationBiScenario,
@@ -31,4 +32,14 @@ export function getScenario(id: string): SimulationScenarioDefinition | null {
 
 export function listScenarios(): SimulationScenarioDefinition[] {
   return Object.values(SCENARIO_BY_ID);
+}
+
+/** Scenarios that pass `validateScenario()` with no errors. Only these are shown outside the lab. */
+export function listValidScenarios(): SimulationScenarioDefinition[] {
+  return listScenarios().filter((s) => validateScenario(s).ok);
+}
+
+export function getValidScenario(id: string): SimulationScenarioDefinition | null {
+  const scenario = getScenario(id);
+  return scenario && validateScenario(scenario).ok ? scenario : null;
 }

@@ -9,7 +9,7 @@ import { AssistantPanel, readInteraction, upsertInteraction } from "./AssistantP
 import { BottomPanel, type BottomTab } from "./BottomPanel";
 import { BriefContent, teammatesFor } from "./BriefContent";
 import { Dialog } from "./Dialog";
-import { clearDraft, readDraft, writeDraft, type LocalDraft } from "./draft";
+import { clearClientSubmissionId, clearDraft, clientSubmissionId, readDraft, writeDraft, type LocalDraft } from "./draft";
 import { EditorArea, tabId, type EditorTab } from "./EditorArea";
 import { diffFileSets, formatClock, parseProblems, runTally, sameFiles, type Problem, type WorkspaceFile } from "./lib";
 import { downloadWorkspaceZip, LocalEditingBar, LocalEditingDialog, planSync, readFolder, SyncPreviewDialog, type SyncPlan, type SyncStatus } from "./LocalEditing";
@@ -446,9 +446,12 @@ function WorkspaceInner({
   const submit = async (): Promise<string | null> => {
     const saved = await ws.flush();
     if (saved.ok === false) return saveFailureText(saved);
-    const res = await engFetch<{ receipt: unknown }>(`${base}/submit`, { body: { files: saved.files, handoff: answers, ai_use: aiUse } });
+    const res = await engFetch<{ receipt: unknown }>(`${base}/submit`, {
+      body: { files: saved.files, handoff: answers, ai_use: aiUse, client_submission_id: clientSubmissionId(attemptId) },
+    });
     if (res.ok === false) return res.problems.length ? `${res.error} ${res.problems.join(" ")}` : res.error;
     clearDraft(attemptId);
+    clearClientSubmissionId(attemptId);
     const refreshed = await engFetch<{ view: AuthoredCandidateView }>(base);
     if (refreshed.ok) onSubmitted(refreshed.data.view);
     else window.location.reload();

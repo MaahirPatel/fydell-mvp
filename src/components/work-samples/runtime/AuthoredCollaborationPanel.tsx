@@ -43,6 +43,11 @@ export function AuthoredCollaborationPanel({ data }: { data: EmployerCollaborati
                 </Status>
               </div>
               <p className="mt-1 text-app-meta text-[var(--text-secondary)]">{item.summary}</p>
+              <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
+                {item.opportunities === 0
+                  ? "The task gave no opportunity to show this."
+                  : `${item.opportunities} ${item.opportunities === 1 ? "opportunity" : "opportunities"} in this task.`}
+              </p>
               {item.excerpts.length ? (
                 <details className="mt-2">
                   <summary className="cursor-pointer text-app-meta font-medium text-[var(--text-primary)]">

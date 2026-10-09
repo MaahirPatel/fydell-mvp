@@ -45,6 +45,7 @@ export async function enqueueEvaluation(db: Admin, submission: SubmissionRow, sc
     suite_version: row.suite_version,
     harness_sha256: row.harness_sha256,
     scenario_version_id: row.id,
+    ...(submission.manifest_sha256 ? { manifest_sha256: submission.manifest_sha256 } : {}),
   });
   if (error && error.code !== "23505") throw new Error(`Could not queue evaluation: ${error.message}`);
 }

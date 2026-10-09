@@ -6,6 +6,7 @@
  */
 
 import type { CandidateResponse } from "../candidate-report";
+import type { LifecycleView } from "../state";
 
 export type AuthoredFile = { path: string; content: string };
 
@@ -103,8 +104,17 @@ export interface AuthoredCandidateView {
     archiveBytes: number;
     submittedAt: string;
     late: boolean;
+    /** Null for submissions recorded before manifests existed. */
+    clientSubmissionId: string | null;
+    manifestSha256: string | null;
+    scenarioVersion: number | null;
+    files: { path: string; bytes: number; sha256: string }[];
+    proves: string[];
+    doesNotProve: string[];
   } | null;
   evaluation: AuthoredEvaluationStatus;
+  /** Server-derived session state; the website and the desktop app both render this. */
+  lifecycle: LifecycleView;
 }
 
 /** One acceptance criterion as the candidate sees it after release. Protected test names are never included. */

@@ -14,15 +14,36 @@ import type { Exemplar, ExemplarDifficulty } from "./types";
 import validation from "./validation.generated.json";
 
 /**
- * Role-model simulations, one per track and task family. An exemplar is
+ * Simulation templates, one per track and task family. A template is
  * offered to employers only when its current package hash matches a passing
- * run recorded by `scripts/validate-exemplars.ts`; any edit to a package
- * takes it out of the creator until it is validated again.
+ * run on the isolated sandbox recorded by `scripts/validate-exemplars.ts`;
+ * any edit to a package takes it out of the creator until it is validated
+ * again.
  */
 
 export const EXEMPLARS: Exemplar[] = [webhookDedupe, jobLeaseRecovery, inventoryPagination, supportRetrieval, extractionOutput, appointmentBooking, evalHarness];
 
-type ValidationRecord = { key: string; version: string; sha256: string; status: "passed" | "failed"; checkedAt: string; runner: string; checks: Array<{ id: string; status: string }> };
+/** What one validation run proved, so the product can say exactly what passed. */
+export type ValidationProof = {
+  starter: { failing: number; total: number };
+  reference: { passed: number; total: number };
+  incorrect: { caught: number; total: number };
+  leakage: "passed" | "failed";
+  leakageDetail: string;
+};
+
+export type ValidationRecord = {
+  key: string;
+  version: string;
+  sha256: string;
+  status: "passed" | "failed";
+  checkedAt: string;
+  runner: string;
+  runnerVersion?: string;
+  isolated?: boolean;
+  summary?: ValidationProof;
+  checks: Array<{ id: string; status: string }>;
+};
 
 const RECORDS = (validation as { records: ValidationRecord[] }).records;
 
@@ -43,10 +64,17 @@ export type ExemplarSummary = {
   minutes: number;
   browserPreview: boolean;
   pattern: Exemplar["pattern"];
-  /** The creator fields this role model was validated with, applied when an employer picks it. */
+  /** The creator fields this simulation template was validated with, applied when an employer picks it. */
   config: { language: LanguageId; framework: FrameworkId; database: DatabaseId; taskType: TaskTypeId; capabilities: CapabilityId[]; taskMinutes: number; setupMinutes: number };
-  validation: { status: "validated"; checkedAt: string; runner: string; checks: number } | { status: "not_validated"; reason: string };
+  validation: { status: "validated"; checkedAt: string; runner: string; checks: number; proof: ValidationProof } | { status: "not_validated"; reason: string };
 };
+
+/** One sentence naming what the validation run proved, for employer-facing copy. */
+export function validationStatement(v: ExemplarSummary["validation"]): string {
+  if (v.status !== "validated") return `Not validated: ${v.reason}`;
+  const p = v.proof;
+  return `Checked in the isolated sandbox: the starter fails ${p.starter.failing} of ${p.starter.total} tests, the reference solution passes all ${p.reference.total}, ${p.incorrect.caught} of ${p.incorrect.total} known wrong solutions are caught, and no private material reaches the candidate or teammate context.`;
+}
 
 const cache = new Map<string, { pkg: ReturnType<Exemplar["build"]>["pkg"]; prot: ReturnType<Exemplar["build"]>["prot"]; sha: string }>();
 
@@ -66,7 +94,8 @@ function validationFor(ex: Exemplar, sha: string): ExemplarSummary["validation"]
   if (!rec) return { status: "not_validated", reason: "No validation run is recorded for this package." };
   if (rec.sha256 !== sha) return { status: "not_validated", reason: "The package changed after its last validation run." };
   if (rec.status !== "passed") return { status: "not_validated", reason: "The last validation run did not pass every check." };
-  return { status: "validated", checkedAt: rec.checkedAt, runner: rec.runner, checks: rec.checks.length };
+  if (rec.isolated !== true || !rec.summary) return { status: "not_validated", reason: "It has been checked only on the local development runner, not the isolated sandbox." };
+  return { status: "validated", checkedAt: rec.checkedAt, runner: rec.runner, checks: rec.checks.length, proof: rec.summary };
 }
 
 export function exemplarSummaries(): ExemplarSummary[] {

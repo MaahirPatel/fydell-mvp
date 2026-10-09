@@ -39,6 +39,12 @@ export interface CommunicationItem {
   excerpts: EvidenceExcerpt[];
   /** What this evidence does not establish. */
   limits: string;
+  /**
+   * How many chances the task actually gave to show this behaviour (an open
+   * teammate channel, a platform fault, a scenario update, a handoff question,
+   * a review question). Zero means the behaviour could not be shown.
+   */
+  opportunities: number;
 }
 
 export interface AssistantUseSummary {
@@ -107,6 +113,19 @@ export function buildCommunicationEvidence(input: {
     ref: { kind: "team_message", messageId: m.id, seq: m.seq },
   });
   const handoffExcerpt = (h: HandoffAnswer): EvidenceExcerpt => ({ source: "handoff", label: `Handoff: ${h.label}`, text: clip(h.answer), at: null, ref: { kind: "handoff", promptId: h.id } });
+  const injectedEvents = messages.filter((m) => m.kind === "scenario_event" && m.eventKey !== "initial_context" && m.eventKey !== "review_question" && m.eventKey !== "final_handoff");
+  const reviewEvents = messages.filter((m) => m.eventKey === "review_question");
+  const reportedBlockers = candidate.filter((m) => BLOCKER_WORDS.test(m.body)).length;
+  const asksForRisks = prompts.some((h) => UNRESOLVED_PROMPT.test(`${h.id} ${h.label}`));
+  const opportunities: Record<CommunicationBehavior, number> = {
+    clarification: input.hasTeammates ? 1 : 0,
+    blocker: Math.max(technicalIssues.length, reportedBlockers > 0 ? 1 : 0),
+    decision: input.submitted && prompts.length ? 1 : 0,
+    new_information: injectedEvents.length,
+    uncertainty: input.submitted && asksForRisks ? 1 : 0,
+    handoff: input.submitted ? prompts.length : 0,
+    feedback: reviewEvents.length,
+  };
   const item = (behavior: CommunicationBehavior, state: EvidenceState, summary: string, excerpts: EvidenceExcerpt[], limits: string): CommunicationItem => ({
     behavior,
     label: BEHAVIOR_LABELS[behavior],
@@ -114,6 +133,7 @@ export function buildCommunicationEvidence(input: {
     summary,
     excerpts: excerpts.slice(0, 4),
     limits,
+    opportunities: state === "observed" ? Math.max(1, opportunities[behavior]) : opportunities[behavior],
   });
 
   const items: CommunicationItem[] = [];

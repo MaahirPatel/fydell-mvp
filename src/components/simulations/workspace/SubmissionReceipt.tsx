@@ -12,17 +12,6 @@ import { AuthoredReport } from "@/components/work-samples/runtime/AuthoredReport
 import { AuthoredReportResponses } from "@/components/work-samples/runtime/AuthoredReportResponses";
 import { SimHeader, SupportLine } from "./TicketBrief";
 
-const EVALUATION_COPY: Record<AuthoredCandidateView["evaluation"], { title: string; body: string }> = {
-  not_submitted: { title: "Not submitted", body: "" },
-  pending: { title: "Evaluation pending", body: "Your submission is queued to run against the full test suite. This usually takes a few minutes." },
-  delayed: {
-    title: "Evaluation pending",
-    body: "Evaluation has not been able to run yet. Your submission is sealed and safe; nothing more is needed from you. The team has been told.",
-  },
-  awaiting_release: { title: "With the hiring team", body: "The tests have run. The hiring team reviews the results before anything is shared with you." },
-  released: { title: "Report released", body: "" },
-};
-
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="grid gap-1 py-2.5 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-4">
@@ -34,7 +23,6 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 
 /** The durable receipt after submission, with a way back into the read-only files and thread. */
 export function SubmissionReceipt({ view, report, onOpenFiles }: { view: AuthoredCandidateView; report: AuthoredCandidateReport | null; onOpenFiles: (() => void) | null }) {
-  const copy = EVALUATION_COPY[view.evaluation];
   const receipt = view.receipt;
   return (
     <div className="min-h-dvh">
@@ -78,11 +66,43 @@ export function SubmissionReceipt({ view, report, onOpenFiles }: { view: Authore
                 </span>
               </Row>
               <Row label="Timing">{receipt.late ? "After the time limit, marked late" : "Within the time limit"}</Row>
+              {receipt.scenarioVersion !== null ? <Row label="Simulation version">Version {receipt.scenarioVersion}</Row> : null}
+              {receipt.manifestSha256 ? (
+                <Row label="Manifest">
+                  <span className="font-mono text-[13px]">
+                    {receipt.files.length} {receipt.files.length === 1 ? "file" : "files"}, SHA-256 {receipt.manifestSha256}
+                  </span>
+                </Row>
+              ) : null}
             </dl>
           ) : (
             <p className="py-2 text-[14px] text-[var(--text-secondary)]">Your submission is recorded.</p>
           )}
         </section>
+
+        {receipt ? (
+          <section aria-labelledby="receipt-meaning" className="grid gap-4 sm:grid-cols-2">
+            <h2 id="receipt-meaning" className="sr-only">
+              What this receipt means
+            </h2>
+            <div className="grid content-start gap-2">
+              <h3 className="text-[15px] font-semibold text-[var(--text-primary)]">This receipt shows</h3>
+              <ul className="grid list-disc gap-1.5 pl-5 text-[14px] leading-[1.55] text-[var(--text-body)]">
+                {receipt.proves.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="grid content-start gap-2">
+              <h3 className="text-[15px] font-semibold text-[var(--text-primary)]">It does not show</h3>
+              <ul className="grid list-disc gap-1.5 pl-5 text-[14px] leading-[1.55] text-[var(--text-body)]">
+                {receipt.doesNotProve.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        ) : null}
 
         {onOpenFiles ? (
           <div className="flex flex-wrap items-center gap-3">
@@ -96,9 +116,9 @@ export function SubmissionReceipt({ view, report, onOpenFiles }: { view: Authore
         {view.evaluation !== "released" ? (
           <section aria-labelledby="evaluation-title" className="grid gap-2">
             <h2 id="evaluation-title" className="text-[17px] font-semibold text-[var(--text-primary)]">
-              {copy.title}
+              {view.lifecycle.label}
             </h2>
-            <p className="max-w-[68ch] text-[15px] leading-[1.6] text-[var(--text-body)]">{copy.body}</p>
+            <p className="max-w-[68ch] text-[15px] leading-[1.6] text-[var(--text-body)]">{view.lifecycle.detail}</p>
           </section>
         ) : null}
 

@@ -2,7 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { Admin, EngMember } from "../context";
-import { staleChecks, type CheckResult, type ValidationRecord } from "./checks";
+import { REQUIRED_CHECK_IDS, staleChecks, type CheckResult, type ValidationRecord } from "./checks";
 import { skeletonPackage, stagesFromPackage } from "./generate";
 import {
   AuthoringError,
@@ -69,7 +69,7 @@ export function checkInput(raw: unknown) {
   return { input, validation: validateConfig(input, invalid, exemplars) };
 }
 
-/** A copy of a validated role model as a new draft the employer can edit, validate again and publish. */
+/** A copy of a validated simulation template as a new draft the employer can edit, validate again and publish. */
 function roleModelDraft(config: AuthoringConfig): { pkg: ScenarioPackage; prot: ProtectedMaterials; title: string } {
   const key = config.simulation?.exemplarKey;
   const built = key ? buildExemplar(key) : null;
@@ -255,6 +255,7 @@ export function publishBlockers(args: { pkg: ScenarioPackage | null; sha: string
   else if (!args.validationCurrent) out.push("The draft changed since the last check run. Run the checks again.");
   else if (args.record.runner && !args.record.runner.isolated && isProductionRuntime()) out.push("Checks ran on a runner that is not isolated. Publishing requires the isolated sandbox runner.");
   else if (!args.record.runner) out.push(args.record.runnerUnavailable ?? "Isolated execution is not available, so the checks could not run.");
+  else if (REQUIRED_CHECK_IDS.some((id) => !args.record!.checks.some((c) => c.id === id))) out.push("The checks were updated since the last run. Run them again before publishing.");
   else for (const c of args.record.checks.filter((x) => x.status !== "passed")) out.push(`${c.label}: ${c.issues[0] ?? c.detail}`);
   if (!args.approvalCurrent) out.push("A reviewer must preview this exact version and approve it.");
   return out;
