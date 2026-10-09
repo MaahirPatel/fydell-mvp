@@ -220,6 +220,11 @@ check("every table with a policy also enables RLS", () => {
       m[1].toLowerCase()
     )
   );
+  // Later migrations enable RLS for a list of tables in a plpgsql loop.
+  for (const loop of sql.matchAll(/foreach\s+\w+\s+in\s+array\s+array\s*\[([^\]]*)\]\s*loop([\s\S]*?)end\s+loop/gi)) {
+    if (!/enable\s+row\s+level\s+security/i.test(loop[2])) continue;
+    for (const name of loop[1].matchAll(/'(\w+)'/g)) rlsOn.add(name[1].toLowerCase());
+  }
   const missing = [...policied].filter((t) => !rlsOn.has(t));
   assertTrue(
     missing.length === 0,
