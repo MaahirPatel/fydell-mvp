@@ -351,7 +351,7 @@ export const DEMO_PASSPORT_PROJECTS = [
   },
   {
     name: "ledger-cli",
-    detail: "Go · structure and metadata only; Go analysis not yet supported",
+    detail: "Go · tests recognized; practice rules do not cover Go yet",
     attribution: "Attribution unverified",
   },
 ] as const;
