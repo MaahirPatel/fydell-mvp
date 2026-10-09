@@ -80,11 +80,14 @@ export async function POST(
   } catch {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
-  if (!body.questionId || typeof body.responseText !== "string") {
+  if (typeof body.questionId !== "string" || !body.questionId || typeof body.responseText !== "string") {
     return NextResponse.json({ error: "questionId and responseText required" }, { status: 400 });
   }
   const method = body.collectionMethod || "candidate_typed";
-  if (method === "facilitator_notes" && !body.attestation?.trim()) {
+  if (method !== "candidate_typed" && method !== "facilitator_notes") {
+    return NextResponse.json({ error: "Unknown collection method." }, { status: 400 });
+  }
+  if (method === "facilitator_notes" && (typeof body.attestation !== "string" || !body.attestation.trim())) {
     return NextResponse.json(
       { error: "Facilitator notes require an attestation of how they were collected." },
       { status: 400 }
@@ -95,6 +98,9 @@ export async function POST(
     await authorize(id, user.id);
     const defense = await getOralDefense(id);
     if (!defense) return NextResponse.json({ error: "No oral defense set" }, { status: 404 });
+    if (!defense.questions.some((q) => q.id === body.questionId)) {
+      return NextResponse.json({ error: "That question is not part of this defense." }, { status: 400 });
+    }
     await saveDefenseResponse({
       defenseSetId: defense.set.id,
       questionId: body.questionId,

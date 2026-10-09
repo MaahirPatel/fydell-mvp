@@ -40,9 +40,10 @@ export async function POST(request: Request, context: { params: Promise<{ runId:
   if (!body.claimId || (body.action !== "approve" && body.action !== "reject")) {
     return NextResponse.json({ error: "claimId and action required" }, { status: 400 });
   }
-  const { data: before } = await admin.from("proof_evidence_claims").select("*").eq("id", body.claimId).single();
+  const { data: before } = await admin.from("proof_evidence_claims").select("*").eq("id", body.claimId).eq("run_id", runId).maybeSingle();
+  if (!before) return NextResponse.json({ error: "That claim is not part of this run." }, { status: 404 });
   const next = body.action === "approve" ? "APPROVED" : "REJECTED";
-  await admin.from("proof_evidence_claims").update({ review_status: next }).eq("id", body.claimId);
+  await admin.from("proof_evidence_claims").update({ review_status: next }).eq("id", body.claimId).eq("run_id", runId);
   await admin.from("proof_claim_reviews").insert({
     claim_id: body.claimId,
     reviewer: auth.email,
