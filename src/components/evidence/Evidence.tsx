@@ -81,7 +81,7 @@ function CheckIcon({ state }: { state: ReceiptCheck["state"] }) {
 }
 
 /**
- * The verified artifact of completed work: what was asked, what was changed,
+ * The record of completed work: what was asked, what was changed,
  * what was checked, and where the evidence lives.
  */
 export function WorkReceipt({
@@ -110,7 +110,7 @@ export function WorkReceipt({
         </span>
         <span className={cx(s.verified, !verified && s.unverified)}>
           {verified ? <Check aria-hidden width={12} height={12} strokeWidth={2.4} /> : null}
-          {verified ? "Verified" : "Awaiting checks"}
+          {verified ? "Checks finished" : "Awaiting checks"}
         </span>
       </div>
       <div className={s.receiptBody}>

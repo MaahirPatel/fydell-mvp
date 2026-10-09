@@ -381,7 +381,7 @@ export default async function EmployerSettingsPage({
               </p>
             ) : null}
             <Group label="Subscription">
-              <Row label="Current plan" help={billingReady ? undefined : "Online checkout is not enabled on this deployment. Pilot plans are invoiced directly."}>
+              <Row label="Current plan" help={billingReady ? undefined : "Card checkout is not open yet. Paid pilots are arranged directly and invoiced; contact us below."}>
                 <Value>{planLabel}</Value>
                 {billing?.currentPeriodEnd && hasSubscription ? (
                   <p className="mt-0.5 text-[13px] text-[var(--text-secondary)]">

@@ -441,7 +441,7 @@ export default function ProfileOverview({
                   ))}
                 </ul>
                 {capabilities?.source === "rules" ? (
-                  <p className="mt-5 text-[13px] text-[var(--text-tertiary)]">Grouped by rules from the verified findings.</p>
+                  <p className="mt-5 text-[13px] text-[var(--text-tertiary)]">Grouped by rules from the source-linked findings.</p>
                 ) : null}
               </>
             ) : (

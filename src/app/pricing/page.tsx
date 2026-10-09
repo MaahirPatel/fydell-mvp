@@ -7,7 +7,7 @@ import s from "@/components/marketing/site/pricing.module.css";
 
 export const metadata = {
   title: "Pricing",
-  description: `Free for engineers. Hiring teams pay ${usd(PRICING.starterPerSimulation)} per completed simulation, or ${usd(PRICING.teamMonthly)} a month with ${PRICING.teamIncluded} included.`,
+  description: `Free for engineers. Planned hiring plans: ${usd(PRICING.starterPerSimulation)} per completed simulation, or ${usd(PRICING.teamMonthly)} a month with ${PRICING.teamIncluded} included. Paid pilots are arranged directly.`,
   alternates: { canonical: "/pricing" },
 };
 
@@ -29,6 +29,7 @@ const HIRING: readonly Plan[] = [
     summary: "No monthly fee. Pay only when a candidate submits.",
     features: ["Roles, application links and reviewers", "Requirement-by-requirement review", "Simulations with cited reports", "Decision log"],
     cta: { href: "/signup?as=employer", label: "Create a workspace" },
+    status: "preview",
   },
   {
     name: "Team",
@@ -37,6 +38,7 @@ const HIRING: readonly Plan[] = [
     summary: `${PRICING.teamIncluded} completed simulations included, then ${usd(PRICING.teamOverage)} each.`,
     features: ["Everything in Starter", `${PRICING.teamIncluded} completed simulations a month`, "Priority support", "Help setting up your first role"],
     cta: { href: "/signup?as=employer", label: "Create a workspace" },
+    status: "preview",
   },
   {
     name: "Hiring Pilot",
@@ -62,8 +64,8 @@ const COMPARE: readonly (readonly string[])[] = [
   ["At the limit", "Each completed simulation is billed", `${usd(PRICING.teamOverage)} per extra completed simulation`, "Agreed in the quote", "Volume rate"],
   ["Applications through a role link", "Not billed", "Not billed", "Not billed", "Not billed"],
   ["Analysis and cited reports", "Included", "Included", "Included", "Included"],
-  ["Billing", "Card, per simulation", "Card, monthly", "Invoice", "Invoice"],
-  ["Cancellation", "No commitment", "Month to month, from billing settings", "Ends on the agreed date", "Per contract"],
+  ["Billing", "Card, per simulation, once checkout opens", "Card, monthly, once checkout opens", "Invoice", "Invoice"],
+  ["Cancellation", "No commitment", "Month to month", "Ends on the agreed date", "Per contract"],
   ["Support", "Email", "Priority", "Priority", "Priority"],
 ];
 
@@ -96,7 +98,7 @@ export default function PricingPage() {
                 <li>Applications and employer invitations, including simulations</li>
               </ul>
               <p className={s.limitNote}>
-                Analysis limits: up to 3 repositories per import and 20 imports an hour. Past a limit you wait for the next hour; nothing is charged.
+                Analysis limits: up to 3 imports running at once and 20 imports an hour. Past a limit you wait for an import to finish or for the next hour; nothing is charged.
               </p>
               <Link href="/signup" className="l-btn l-btn-lg l-btn-solid mt-6 self-start">
                 Sign up
@@ -137,13 +139,16 @@ export default function PricingPage() {
             For hiring teams. <span className={s.muted}>Applications are never billed.</span>
           </h2>
           <p className={s.sectionLead}>
-            Card checkout is not open yet. Create a workspace and set up your first role now; to activate a paid plan, contact sales.
+            Card checkout is not open yet, so Starter and Team cannot be bought today. Paid pilots are arranged directly; <Link href="/contact" className="underline underline-offset-2">contact us</Link>. You can create a workspace and set up a role without a card in the meantime.
           </p>
           <div className={s.field} data-tint="violet">
             <div className={s.hiringGrid}>
             {HIRING.map((plan) => (
               <article key={plan.name} className={s.plan}>
-                <p className={s.planName}>{plan.name}</p>
+                <div className={s.planHead}>
+                  <p className={s.planName}>{plan.name}</p>
+                  {plan.status === "preview" ? <Availability state="preview">Checkout not open</Availability> : null}
+                </div>
                 <p className={s.price}>
                   {plan.price} {plan.per ? <span className={s.per}>{plan.per}</span> : null}
                 </p>
@@ -205,7 +210,7 @@ export default function PricingPage() {
           { q: "What counts as a completed simulation?", a: "One candidate submitting their work. Invitations, expired links and attempts that are never submitted are not billed." },
           { q: "Is AI analysis included?", a: "Yes. Analysis of shared projects and the cited reports for simulations are included in every hiring plan. There is no separate usage charge." },
           { q: "Do I need a card to start?", a: "No. You can create a workspace and set up a role without a card. Card checkout is not open yet; contact sales to activate a paid plan." },
-          { q: "Can I cancel?", a: "Starter has no commitment. Team is month to month and is cancelled from your workspace's billing settings. Pilot and Enterprise follow the agreed terms." },
+          { q: "Can I cancel?", a: "Starter will have no commitment and Team will be month to month once card checkout opens. Pilot and Enterprise follow the agreed terms." },
           { q: "Do engineers ever pay to apply?", a: "No. Applying to roles, accepting invitations and taking simulations are free. Pro, when it opens, adds capacity and history; it is never required to apply." },
         ]}
       />

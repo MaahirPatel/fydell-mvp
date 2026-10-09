@@ -58,7 +58,7 @@ export default function AuthShell({
           </div>
         </main>
 
-        <footer className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 py-6 text-[12.5px] text-[var(--text-tertiary)]">
+        <footer className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 py-6 text-[13px] text-[var(--text-tertiary)]">
           <span>© Fydell</span>
           <Link href="/terms" className="hover:text-[var(--text-secondary)]">
             Terms
@@ -69,7 +69,7 @@ export default function AuthShell({
         </footer>
       </div>
 
-      <aside className="sticky top-0 hidden h-[100dvh] overflow-hidden border-l border-[var(--border-subtle)] bg-[var(--surface-panel)] lg:block">
+      <aside inert className="sticky top-0 hidden h-[100dvh] overflow-hidden border-l border-[var(--border-subtle)] bg-[var(--surface-panel)] lg:block">
         <AuthShowcase variant={showcase} />
       </aside>
     </div>

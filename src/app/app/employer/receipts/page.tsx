@@ -10,13 +10,13 @@ export default function EmployerWorkReceiptsPage() {
     <div>
       <PageHeader
         title="Work Receipts"
-        description="Candidate-controlled records of demonstrated work, its verification, and its limits."
+        description="Candidate-controlled records of demonstrated work, the checks Fydell ran, and their limits."
       />
       <div className="mt-7 max-w-[980px]">
         <Panel>
           <PanelSection
             title="No employer-visible Work Receipts"
-            description="A receipt belongs to the candidate. It appears here only when the candidate has completed verified work and has authorized this workspace to view it."
+            description="A receipt belongs to the candidate. It appears here only when the candidate has completed checked work and has authorized this workspace to view it."
           >
             <div className="flex flex-wrap gap-3">
               <Link

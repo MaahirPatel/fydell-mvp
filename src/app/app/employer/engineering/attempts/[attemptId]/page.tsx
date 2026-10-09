@@ -103,7 +103,7 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
     { label: "Source", value: "Invited", state: "done" },
     { label: "Work", value: attempt.submitted_at ? "Submitted" : attempt.started_at ? "In progress" : "Not started", state: attempt.submitted_at ? "done" : attempt.started_at ? "current" : "pending" },
     {
-      label: "Verify",
+      label: "Checks",
       value: testsFinished && hidden.length ? `${hiddenPassed} / ${hidden.length}` : view.submission ? "Running" : "Checks",
       state: testsFinished ? "done" : view.submission ? "current" : "pending",
     },
@@ -343,7 +343,7 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
           {view.report && roleCan(member.role, "record_decision") ? (
             <Panel>
               <PanelSection title="Your decision" description="Fydell provides evidence. The decision is yours.">
-                <DecisionForm attemptId={attempt.id} reportVersion={view.report.version} current={decisionValue} />
+                <DecisionForm attemptId={attempt.id} reportVersion={view.report.version} current={decisionValue} currentDecisionId={latestDecision?.id ?? null} />
               </PanelSection>
               {view.decisions.length ? (
                 <PanelSection title="Decision history">

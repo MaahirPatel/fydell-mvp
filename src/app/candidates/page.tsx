@@ -80,7 +80,7 @@ export default function CandidatesPage() {
         />
         <Trio
           items={[
-            { fig: <FigConsent />, title: "Your portable record", body: "You choose whether a verified result is added to a privacy-controlled record you can share later." },
+            { fig: <FigConsent />, title: "Your portable record", body: "You choose whether a completed result is added to a privacy-controlled record you can share later." },
             { fig: <FigReport />, title: "Sharing and privacy", body: "Employers only see attempts for simulations they ran. You control portable-record visibility." },
             { fig: <FigDesktop />, title: "AI use", body: "If the simulation permits in-product AI, its use is recorded and summarized for the employer. Outside tools are not inferred or claimed." },
           ]}

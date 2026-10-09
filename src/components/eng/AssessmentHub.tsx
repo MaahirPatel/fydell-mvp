@@ -106,7 +106,7 @@ function ReceiptPanel({ view }: { view: View }) {
               ]}
             />
           </PanelSection>
-          <PanelSection title="Fingerprint" description="The SHA-256 of the accepted ZIP. If anyone asks what you submitted, this proves it.">
+          <PanelSection title="Fingerprint" description="The SHA-256 of the accepted ZIP. If anyone asks what you submitted, it identifies the exact archive.">
             <p className="break-all rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-[12.5px] leading-[1.6] text-[var(--text-primary)]">
               {r.archiveSha256}
             </p>

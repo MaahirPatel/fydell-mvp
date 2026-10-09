@@ -75,7 +75,7 @@ export default function EmployerProofHome() {
 
       <Panel className="mt-7">
         <PanelSection
-          title="Invite to verified work"
+          title="Invite to a work sample"
           description="Create a private Solutions Engineer work link for one candidate."
         >
           <form
@@ -131,7 +131,7 @@ export default function EmployerProofHome() {
             </p>
           ) : empty ? (
             <p className="border-t border-[var(--border-subtle)] px-5 py-5 text-app-body text-[var(--text-secondary)] lg:px-6">
-              No candidate has completed verification yet.
+              No candidate has submitted work yet.
             </p>
           ) : (
             <ul>
