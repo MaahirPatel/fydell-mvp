@@ -121,6 +121,7 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
     evidence,
     mappings,
     questions,
+    applicationQuestions: appQuestions,
     invitations,
     workSamples,
     canAsk,
@@ -147,7 +148,7 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
         }
         action={
           orgCan(org.role, "record_decisions") && app.status === "submitted" ? (
-            <StageSelect applicationId={app.id} stage={app.stage} applicantName={app.name} />
+            <StageSelect key={app.stage} applicationId={app.id} stage={app.stage} applicantName={app.name} />
           ) : (
             <span className="badge badge-neutral">{STAGE_LABEL[app.stage]}</span>
           )
@@ -186,7 +187,10 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
             A targeted question is often enough to settle what the evidence leaves open.
           </p>
           <div className="mt-4">
-            <ApplicationQuestions applicationId={app.id} initial={appQuestions} targets={questionTargets} canAsk={canAsk} open={app.status === "submitted"} />
+            <ApplicationQuestions
+              key={appQuestions.map((q) => `${q.id}:${q.status}:${q.reviewedAt ?? ""}`).join(",")}
+              applicationId={app.id}
+              initial={appQuestions} targets={questionTargets} canAsk={canAsk} open={app.status === "submitted"} />
           </div>
         </section>
 

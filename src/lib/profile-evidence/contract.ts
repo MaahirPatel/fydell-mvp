@@ -405,6 +405,8 @@ export type QuestionInput = {
   question: string;
   evidenceVersionId: string | null;
   findingId: string | null;
+  /** One of the role's requirements, checked against the role by the caller. */
+  requirementId: string | null;
   dueAt: string | null;
   clientRequestId: string | null;
 };
@@ -421,6 +423,7 @@ export function parseQuestionInput(raw: unknown, now = Date.now()): QuestionInpu
   const evidenceVersionId = typeof b.evidenceVersionId === "string" && UUID.test(b.evidenceVersionId) ? b.evidenceVersionId : null;
   const findingId = typeof b.findingId === "string" && /^ev_[0-9a-f]{16}$/.test(b.findingId) ? b.findingId : null;
   if (findingId && !evidenceVersionId) return { error: "A question about a finding needs the project it belongs to." };
+  const requirementId = typeof b.requirementId === "string" && /^[A-Za-z0-9_-]{1,40}$/.test(b.requirementId) ? b.requirementId : null;
   let dueAt: string | null = null;
   if (typeof b.dueAt === "string" && b.dueAt) {
     const t = Date.parse(b.dueAt);
@@ -429,7 +432,7 @@ export function parseQuestionInput(raw: unknown, now = Date.now()): QuestionInpu
     dueAt = new Date(t).toISOString();
   }
   const clientRequestId = typeof b.clientRequestId === "string" && /^[A-Za-z0-9_-]{8,64}$/.test(b.clientRequestId) ? b.clientRequestId : null;
-  return { question, evidenceVersionId, findingId, dueAt, clientRequestId };
+  return { question, evidenceVersionId, findingId, requirementId, dueAt, clientRequestId };
 }
 
 export type FeedbackInput = {

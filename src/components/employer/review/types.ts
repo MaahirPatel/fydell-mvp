@@ -1,6 +1,7 @@
 import type { EvidenceMapping, ReviewQuestion } from "@/lib/employer/review";
 import type { ApplicationInvitation, WorkSampleOption } from "@/lib/hiring/work-samples";
 import type { RequirementKind } from "@/lib/hiring/requirements";
+import type { ApplicationQuestion } from "@/lib/profile-evidence/applications";
 
 export type ReviewRequirement = {
   id: string;
@@ -32,7 +33,9 @@ export type ReviewData = {
   requirements: ReviewRequirement[];
   evidence: EvidenceItem[];
   mappings: EvidenceMapping[];
+  /** Questions asked from an earlier Passport review of this share, before they moved onto the application. */
   questions: ReviewQuestion[];
+  applicationQuestions: ApplicationQuestion[];
   invitations: ApplicationInvitation[];
   workSamples: WorkSampleOption[];
   canAsk: boolean;

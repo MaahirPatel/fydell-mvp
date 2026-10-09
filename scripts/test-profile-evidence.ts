@@ -382,6 +382,20 @@ async function flowChecks() {
     const read = await apps.updateApplicationQuestion(orgId, asked.question.id, "reviewed");
     check("employer marks the answer read", !!read?.reviewedAt);
 
+    const reqQuestion = (requirementId: string, id: string) =>
+      parseQuestionInput({ question: "Tell us about a failure you handled in an external call.", requirementId, clientRequestId: id });
+    const unknownReq = reqQuestion("r_doesnotexist0000", `req${tag}a`);
+    if ("error" in unknownReq) throw new Error(unknownReq.error);
+    check("a question about a requirement not on the role is refused", (await apps.askApplicationQuestion(orgId, app1.id, reviewer.id, unknownReq)).ok === false);
+    const realReq = role1.intake.requirements.find((r) => r.kind === "required" && r.confirmed);
+    const knownReq = reqQuestion(realReq?.id ?? "", `req${tag}b`);
+    if ("error" in knownReq) throw new Error(knownReq.error);
+    const aboutReq = await apps.askApplicationQuestion(orgId, app1.id, reviewer.id, knownReq);
+    check("a requirement question stores the requirement text as asked", aboutReq.ok && aboutReq.question.requirement?.text === realReq?.text);
+    const reqInbox = await apps.listApplicationQuestionsForApplicant(engineer.id, app1.id);
+    check("the applicant sees which requirement it is about", reqInbox.some((x) => x.requirement?.id === realReq?.id));
+    if (aboutReq.ok) await apps.updateApplicationQuestion(orgId, aboutReq.question.id, "close");
+
     console.log("collaborator feedback");
     const fb = await addFeedback(engineer.id, repoA, { authorName: "Sam Example", relationship: "peer", relationshipNote: "", directlyObserved: true, statement: "Reviewed the retry change with them." });
     check("feedback is stored unverified", fb.ok && fb.feedback.verification === "none");

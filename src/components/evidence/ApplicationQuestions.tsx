@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ApplicationQuestion } from "@/lib/profile-evidence/applications";
+import { LocalDate } from "@/components/eng/LocalTime";
 import { request } from "./request";
 
 export type QuestionTarget = {
@@ -33,6 +35,7 @@ export default function ApplicationQuestions({
   canAsk: boolean;
   open: boolean;
 }) {
+  const router = useRouter();
   const [questions, setQuestions] = useState(initial);
   const [question, setQuestion] = useState("");
   const [versionId, setVersionId] = useState("");
@@ -65,6 +68,7 @@ export default function ApplicationQuestions({
     setFindingId("");
     setDueAt("");
     setRequestId(newRequestId());
+    router.refresh();
   }
 
   async function update(questionId: string, action: "reviewed" | "close") {
@@ -72,6 +76,7 @@ export default function ApplicationQuestions({
     const result = await request<{ question: ApplicationQuestion }>(`/api/employer/applications/${applicationId}/questions`, "PATCH", { questionId, action });
     if (result.ok === false) return setError(result.error);
     setQuestions((prev) => prev.map((q) => (q.id === questionId ? result.data.question : q)));
+    router.refresh();
   }
 
   return (
@@ -143,7 +148,11 @@ export default function ApplicationQuestions({
               <p className="text-[var(--text-tertiary)]">
                 {STATUS[q.status]}
                 {q.reviewedAt ? ", read" : ""}
-                {q.dueAt && q.status === "open" ? `, answer by ${new Date(q.dueAt).toLocaleDateString()}` : ""}
+                {q.dueAt && q.status === "open" ? (
+                  <>
+                    , answer by <LocalDate iso={q.dueAt} />
+                  </>
+                ) : null}
               </p>
               {q.evidenceVersionId ? (
                 <p className="mt-1 text-[var(--text-secondary)]">
@@ -151,6 +160,7 @@ export default function ApplicationQuestions({
                   {q.findingId && findingFor.get(q.findingId) ? `: ${findingFor.get(q.findingId)}` : ""}
                 </p>
               ) : null}
+              {q.requirement ? <p className="mt-1 text-[var(--text-secondary)]">About the requirement: {q.requirement.text}</p> : null}
               <p className="mt-1 whitespace-pre-wrap font-medium text-[var(--text-primary)]">{q.question}</p>
               {q.response ? <p className="mt-2 whitespace-pre-wrap text-[var(--text-body)]">{q.response}</p> : null}
               {canAsk && q.status !== "closed" ? (

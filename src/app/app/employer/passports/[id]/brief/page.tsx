@@ -192,6 +192,7 @@ export default async function DecisionBriefPage({
                 <span className="block text-[13px] text-[var(--text-tertiary)]">
                   Asked {date(q.askedAt)}
                   {q.askedBy ? ` by ${q.askedBy}` : ""}
+                  {q.about ? ` · about: ${q.about}` : ""}
                 </span>
               </li>
             ))}
@@ -206,6 +207,7 @@ export default async function DecisionBriefPage({
             {b.answered.map((q, i) => (
               <li key={i} className="text-[15px] leading-[1.55]">
                 <p className="text-[var(--text-primary)]">{q.question}</p>
+                {q.about ? <p className="text-[13px] text-[var(--text-tertiary)]">About: {q.about}</p> : null}
                 <p className="mt-0.5 text-[var(--text-body)]">“{q.response}”</p>
               </li>
             ))}

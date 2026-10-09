@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ApplicationQuestion } from "@/lib/profile-evidence/applications";
+import { LocalDate } from "@/components/eng/LocalTime";
 import { request } from "./request";
 
 function AnswerForm({ question, onAnswered }: { question: ApplicationQuestion; onAnswered: (q: ApplicationQuestion) => void }) {
@@ -48,6 +50,7 @@ function AnswerForm({ question, onAnswered }: { question: ApplicationQuestion; o
 }
 
 export default function AnswerQuestions({ initial, titles, withdrawn }: { initial: ApplicationQuestion[]; titles: Record<string, string>; withdrawn: boolean }) {
+  const router = useRouter();
   const [questions, setQuestions] = useState(initial);
   const [answering, setAnswering] = useState<Set<string>>(() => new Set());
   if (questions.length === 0) return <p className="text-app-meta text-[var(--text-secondary)]">The team has not asked anything yet.</p>;
@@ -57,14 +60,25 @@ export default function AnswerQuestions({ initial, titles, withdrawn }: { initia
         <li key={q.id} className="rounded-[8px] border border-[var(--border-subtle)] p-3 text-app-meta">
           <p className="text-[var(--text-tertiary)]">
             {q.status === "answered" ? "Answered" : q.status === "closed" ? "Closed by the team" : "Waiting for your answer"}
-            {q.dueAt && q.status === "open" ? `, by ${new Date(q.dueAt).toLocaleDateString()}` : ""}
+            {q.dueAt && q.status === "open" ? (
+              <>
+                , by <LocalDate iso={q.dueAt} />
+              </>
+            ) : null}
           </p>
           {q.evidenceVersionId && titles[q.evidenceVersionId] ? <p className="mt-1 text-[var(--text-secondary)]">About {titles[q.evidenceVersionId]}</p> : null}
+          {q.requirement ? <p className="mt-1 text-[var(--text-secondary)]">About the requirement: {q.requirement.text}</p> : null}
           <p className="mt-1 whitespace-pre-wrap font-medium text-[var(--text-primary)]">{q.question}</p>
           {q.response ? <p className="mt-2 whitespace-pre-wrap text-[var(--text-body)]">{q.response}</p> : null}
           {q.status === "open" && !withdrawn ? (
             answering.has(q.id) ? (
-              <AnswerForm question={q} onAnswered={(next) => setQuestions((prev) => prev.map((x) => (x.id === next.id ? next : x)))} />
+              <AnswerForm
+                question={q}
+                onAnswered={(next) => {
+                  setQuestions((prev) => prev.map((x) => (x.id === next.id ? next : x)));
+                  router.refresh();
+                }}
+              />
             ) : (
               <button type="button" onClick={() => setAnswering((prev) => new Set(prev).add(q.id))} className="btn btn-secondary mt-2 h-8 px-3 text-app-meta">
                 Answer

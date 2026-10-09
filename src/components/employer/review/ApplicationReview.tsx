@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, FormError, FormSuccess, Input, Textarea } from "@/components/ui/Field";
 import type { Assessment, EvidenceMapping, ReviewQuestion } from "@/lib/employer/review";
 import type { ApplicationInvitation } from "@/lib/hiring/work-samples";
+import { LocalDate } from "@/components/eng/LocalTime";
 import WorkSampleInviteForm from "./WorkSampleInviteForm";
 import type { EvidenceItem, ReviewData, ReviewRequirement } from "./types";
 
@@ -41,7 +42,9 @@ const ASSESSMENT_OPTIONS: Array<{ value: Assessment; label: string; help: string
   { value: "concern", label: "Concern", help: "Something in the work points the other way. Say what.", badge: "badge-coral" },
 ];
 
-function status(mapping: EvidenceMapping | undefined, questions: ReviewQuestion[], invites: ApplicationInvitation[]): { label: string; badge: string } {
+type AskedQuestion = Pick<ReviewQuestion, "id" | "question" | "response" | "status" | "dueAt" | "reviewedAt">;
+
+function status(mapping: EvidenceMapping | undefined, questions: AskedQuestion[], invites: ApplicationInvitation[]): { label: string; badge: string } {
   const assessed = mapping?.assessment ? ASSESSMENT_OPTIONS.find((o) => o.value === mapping.assessment) : undefined;
   if (assessed) return { label: assessed.label, badge: assessed.badge };
   if (mapping?.status === "accepted" && mapping.evidenceId) return { label: "Evidence mapped", badge: "badge-teal" };
@@ -91,7 +94,7 @@ function ExistingEvidence({
   req: ReviewRequirement;
   mapped: EvidenceItem | undefined;
   mapping: EvidenceMapping | undefined;
-  questions: ReviewQuestion[];
+  questions: AskedQuestion[];
   invites: ApplicationInvitation[];
 }) {
   const nothing = !mapped && questions.length === 0 && invites.length === 0;
@@ -107,7 +110,12 @@ function ExistingEvidence({
       {questions.map((q) => (
         <div key={q.id} className="rounded-[8px] border border-[var(--border-subtle)] p-3 text-app-meta">
           <p className="text-[var(--text-tertiary)]">
-            {q.status === "closed" ? "Question closed" : q.status === "answered" ? "Answered" : `Waiting for an answer${q.dueAt ? ` by ${new Date(q.dueAt).toLocaleDateString()}` : ""}`}
+            {q.status === "closed" ? "Question closed" : q.status === "answered" ? "Answered" : "Waiting for an answer"}
+            {q.status === "open" && q.dueAt ? (
+              <>
+                {" "}by <LocalDate iso={q.dueAt} />
+              </>
+            ) : null}
           </p>
           <p className="mt-1 font-medium text-[var(--text-primary)]">{q.question}</p>
           {q.response ? <p className="mt-1 whitespace-pre-wrap text-[var(--text-body)]">{q.response}</p> : null}
@@ -264,7 +272,7 @@ function ReviewPath({
   );
 }
 
-function AskPath({ data, req, mapping, onSaved }: { data: ReviewData; req: ReviewRequirement; mapping: EvidenceMapping | undefined; onSaved: () => void }) {
+function AskPath({ data, req, onSaved }: { data: ReviewData; req: ReviewRequirement; onSaved: () => void }) {
   const artifactText = `Could you share a design doc, pull request or write-up you are permitted to share that shows your work on: ${req.text}? Leave out anything confidential.`;
   const [mode, setMode] = useState<"question" | "artifact">("question");
   const [text, setText] = useState("");
@@ -274,38 +282,16 @@ function AskPath({ data, req, mapping, onSaved }: { data: ReviewData; req: Revie
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
-  if (!data.share) {
-    return (
-      <p className="text-app-meta leading-[1.5] text-[var(--text-secondary)]">
-        Questions are attached to a shared Passport, and this applicant applied without one. Write to them at the email on their application, or invite them to a work sample if the gap matters.
-      </p>
-    );
-  }
   if (!data.canAsk) return <p className="text-app-meta text-[var(--text-secondary)]">Your workspace role cannot ask applicants questions.</p>;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!data.share || busy || !text.trim()) return;
+    if (busy || !text.trim()) return;
     setBusy(true);
     setError(null);
-    let mappingId: string | null = mapping?.id ?? null;
-    if (!mappingId && req.mappingIndex !== null) {
-      const created = await postJson<{ mapping: EvidenceMapping }>(`/api/employer/review/${data.roleId}/${data.share.shareId}/mappings`, {
-        requirementIndex: req.mappingIndex,
-        evidenceProjectId: null,
-        evidenceId: null,
-        status: "questioned",
-        reviewerNote: "",
-      });
-      if (created.ok === false) {
-        setBusy(false);
-        return setError(created.error);
-      }
-      mappingId = created.data.mapping.id;
-    }
-    const r = await postJson(`/api/employer/review/${data.roleId}/${data.share.shareId}/questions`, {
+    const r = await postJson(`/api/employer/applications/${data.application.id}/questions`, {
       question: text.trim(),
-      mappingId,
+      requirementId: req.id,
       dueAt: due ? new Date(`${due}T23:59:00`).toISOString() : null,
       clientRequestId: requestId,
     });
@@ -321,7 +307,7 @@ function AskPath({ data, req, mapping, onSaved }: { data: ReviewData; req: Revie
   if (sent) {
     return (
       <div className="grid gap-3">
-        <FormSuccess>Sent. The applicant is notified and answers from their Passport.</FormSuccess>
+        <FormSuccess>Sent. The applicant is notified in Fydell and answers on their application. No email is sent.</FormSuccess>
         <div>
           <Button size="sm" onClick={() => setSent(false)}>
             Ask something else
@@ -383,7 +369,10 @@ function RequirementCard({ data, req }: { data: ReviewData; req: ReviewRequireme
   const mapping =
     req.mappingIndex === null ? undefined : data.mappings.find((m) => m.requirementIndex === req.mappingIndex && m.requirementText === req.text);
   const mapped = mapping?.evidenceId ? data.evidence.find((e) => e.id === mapping.evidenceId) : undefined;
-  const questions = mapping ? data.questions.filter((q) => q.mappingId === mapping.id) : [];
+  const questions: AskedQuestion[] = [
+    ...data.applicationQuestions.filter((q) => q.requirement?.id === req.id),
+    ...(mapping ? data.questions.filter((q) => q.mappingId === mapping.id) : []),
+  ];
   const invites = data.invitations.filter((i) => i.evidenceGap?.requirementId === req.id);
   const s = status(mapping, questions, invites);
   const withdrawn = data.application.status === "withdrawn";
@@ -449,7 +438,7 @@ function RequirementCard({ data, req }: { data: ReviewData; req: ReviewRequireme
                   }}
                 />
               ) : null}
-              {path === "ask" ? <AskPath data={data} req={req} mapping={mapping} onSaved={refresh} /> : null}
+              {path === "ask" ? <AskPath data={data} req={req} onSaved={refresh} /> : null}
               {path === "invite" ? (
                 <WorkSampleInviteForm
                   roleId={data.roleId}

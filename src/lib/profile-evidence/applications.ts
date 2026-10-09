@@ -6,6 +6,7 @@ import { employerEvidenceAccess, parseEvidenceContent, type EvidenceVersionConte
 import { recordEvidenceEvent } from "./events";
 import { UUID, type Failure } from "./ids";
 import { gatherSources, publishEvidenceVersion } from "./store";
+import { getRole } from "@/lib/hiring/roles";
 import { SAMPLE_PREFIX } from "./work-samples";
 
 export type PreparedEvidence = { projectKey: string; versionId: string; version: number; reused: boolean };
@@ -181,6 +182,8 @@ export type ApplicationQuestion = {
   applicationId: string;
   evidenceVersionId: string | null;
   findingId: string | null;
+  /** The role requirement this asks about, with its text as it was when asked. */
+  requirement: { id: string; text: string } | null;
   question: string;
   response: string;
   status: "open" | "answered" | "closed";
@@ -196,6 +199,8 @@ type QuestionRow = {
   application_id: string;
   evidence_version_id: string | null;
   finding_id: string | null;
+  requirement_id: string | null;
+  requirement_text: string | null;
   question: string;
   response: string;
   status: ApplicationQuestion["status"];
@@ -206,13 +211,14 @@ type QuestionRow = {
   created_at: string;
 };
 
-const Q_COLUMNS = "id,organization_id,application_id,evidence_version_id,finding_id,question,response,status,asked_by,due_at,answered_at,reviewed_at,created_at";
+const Q_COLUMNS = "id,organization_id,application_id,evidence_version_id,finding_id,requirement_id,requirement_text,question,response,status,asked_by,due_at,answered_at,reviewed_at,created_at";
 
 const toQuestion = (r: QuestionRow): ApplicationQuestion => ({
   id: r.id,
   applicationId: r.application_id,
   evidenceVersionId: r.evidence_version_id,
   findingId: r.finding_id,
+  requirement: r.requirement_id ? { id: r.requirement_id, text: r.requirement_text ?? "" } : null,
   question: r.question,
   response: r.response,
   status: r.status,
@@ -279,6 +285,13 @@ export async function askApplicationQuestion(
       return { ok: false, status: 400, error: "That finding is not in the version they shared." };
     }
   }
+  let requirementText: string | null = null;
+  if (input.requirementId) {
+    const role = app.role_id ? await getRole(organizationId, app.role_id) : null;
+    const requirement = role?.intake.requirements.find((r) => r.id === input.requirementId && r.confirmed);
+    if (!requirement) return { ok: false, status: 400, error: "That requirement is no longer on this role. Reload and try again." };
+    requirementText = requirement.text;
+  }
   const { data, error } = await admin
     .from("application_questions")
     .insert({
@@ -286,6 +299,8 @@ export async function askApplicationQuestion(
       application_id: app.id,
       evidence_version_id: input.evidenceVersionId,
       finding_id: input.findingId,
+      requirement_id: input.requirementId,
+      requirement_text: requirementText,
       question: input.question,
       asked_by: askedBy,
       due_at: input.dueAt,
@@ -308,7 +323,13 @@ export async function askApplicationQuestion(
   });
   await recordEvidenceEvent(
     "employer_question_asked",
-    { application_id: app.id, about_project: !!input.evidenceVersionId, about_finding: !!input.findingId, has_due_date: !!input.dueAt },
+    {
+      application_id: app.id,
+      about_project: !!input.evidenceVersionId,
+      about_finding: !!input.findingId,
+      about_requirement: !!input.requirementId,
+      has_due_date: !!input.dueAt,
+    },
     organizationId,
   );
   await recordEvidenceEvent("employer_next_step", { application_id: app.id, step: "question" }, organizationId);

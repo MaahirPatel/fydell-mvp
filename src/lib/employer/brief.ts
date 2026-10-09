@@ -37,8 +37,8 @@ export type DecisionBrief = {
   versionPolicy: "pinned" | "follow" | null;
   requirements: BriefRequirement[];
   contributions: NonNullable<PassportData["contributions"]>;
-  openQuestions: Array<{ question: string; askedBy: string | null; askedAt: string }>;
-  answered: Array<{ question: string; response: string; askedBy: string | null; answeredAt: string | null }>;
+  openQuestions: Array<{ question: string; about: string | null; askedBy: string | null; askedAt: string }>;
+  answered: Array<{ question: string; about: string | null; response: string; askedBy: string | null; answeredAt: string | null }>;
   decision: { value: ReviewDecision; label: string; decidedAt: string | null; decidedBy: string | null };
   limitations: string[];
 };
@@ -119,10 +119,19 @@ export async function buildDecisionBrief(organizationId: string, reviewId: strin
     applicationForReview(organizationId, review.id),
   ]);
   const appQuestions = application && application.roleId === role.id ? await listApplicationQuestionsForOrg(organizationId, application.id) : [];
-  const questions: Array<{ question: string; response: string; status: string; askedBy: string | null; createdAt: string; answeredAt: string | null }> = [
-    ...reviewQuestions,
+  const questions: Array<{
+    question: string;
+    about: string | null;
+    response: string;
+    status: string;
+    askedBy: string | null;
+    createdAt: string;
+    answeredAt: string | null;
+  }> = [
+    ...reviewQuestions.map((q) => ({ ...q, about: null })),
     ...appQuestions.map((q) => ({
       question: q.question,
+      about: q.requirement?.text ?? null,
       response: q.response,
       status: q.status,
       askedBy: null,
@@ -177,10 +186,10 @@ export async function buildDecisionBrief(organizationId: string, reviewId: strin
       contributions: passport.contributions ?? [],
       openQuestions: questions
         .filter((q) => q.status === "open")
-        .map((q) => ({ question: q.question, askedBy: q.askedBy ? (people.get(q.askedBy) ?? null) : null, askedAt: q.createdAt })),
+        .map((q) => ({ question: q.question, about: q.about, askedBy: q.askedBy ? (people.get(q.askedBy) ?? null) : null, askedAt: q.createdAt })),
       answered: questions
         .filter((q) => q.response.trim().length > 0)
-        .map((q) => ({ question: q.question, response: q.response, askedBy: q.askedBy ? (people.get(q.askedBy) ?? null) : null, answeredAt: q.answeredAt })),
+        .map((q) => ({ question: q.question, about: q.about, response: q.response, askedBy: q.askedBy ? (people.get(q.askedBy) ?? null) : null, answeredAt: q.answeredAt })),
       decision: {
         value: review.decision,
         label: DECISION_LABEL[review.decision],
@@ -237,11 +246,14 @@ export function briefToMarkdown(b: DecisionBrief): string {
   }
   out.push("## Open questions");
   if (b.openQuestions.length === 0) out.push("None.");
-  for (const q of b.openQuestions) out.push(`- ${q.question}${q.askedBy ? ` (asked by ${q.askedBy})` : ""}`);
+  for (const q of b.openQuestions) {
+    out.push(`- ${q.question}${q.askedBy ? ` (asked by ${q.askedBy})` : ""}`);
+    if (q.about) out.push(`  About: ${q.about}`);
+  }
   out.push("");
   if (b.answered.length) {
     out.push("## Answered questions");
-    for (const q of b.answered) out.push(`- Q: ${q.question}\n  A: ${q.response}`);
+    for (const q of b.answered) out.push(`- Q: ${q.question}${q.about ? `\n  About: ${q.about}` : ""}\n  A: ${q.response}`);
     out.push("");
   }
   out.push("## Limitations");
