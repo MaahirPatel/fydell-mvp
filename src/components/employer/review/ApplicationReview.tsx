@@ -44,21 +44,39 @@ const ASSESSMENT_OPTIONS: Array<{ value: Assessment; label: string; help: string
 
 type AskedQuestion = Pick<ReviewQuestion, "id" | "question" | "response" | "status" | "dueAt" | "reviewedAt">;
 
-function status(mapping: EvidenceMapping | undefined, questions: AskedQuestion[], invites: ApplicationInvitation[]): { label: string; badge: string } {
+type Tone = "good" | "attention" | "concern" | "neutral" | "pending";
+
+const TONE_DOT: Record<Tone, string> = {
+  good: "bg-[var(--fydell-good)]",
+  attention: "bg-[var(--fy-yellow)]",
+  concern: "bg-[var(--fy-red)]",
+  neutral: "border border-[var(--text-tertiary)] bg-transparent",
+  pending: "bg-[var(--accent)]",
+};
+
+const ASSESSMENT_TONE: Record<Assessment, Tone> = { supports: "good", insufficient: "attention", not_observed: "neutral", concern: "concern" };
+
+type Status = { label: string; help: string; tone: Tone };
+
+function status(mapping: EvidenceMapping | undefined, questions: AskedQuestion[], invites: ApplicationInvitation[]): Status {
   const assessed = mapping?.assessment ? ASSESSMENT_OPTIONS.find((o) => o.value === mapping.assessment) : undefined;
-  if (assessed) return { label: assessed.label, badge: assessed.badge };
-  if (mapping?.status === "accepted" && mapping.evidenceId) return { label: "Evidence mapped", badge: "badge-teal" };
-  if (invites.some((i) => i.status === "invited" || i.status === "accepted")) return { label: "Work sample invited", badge: "badge-violet" };
-  if (questions.some((q) => q.status === "open")) return { label: "Waiting on applicant", badge: "badge-attention" };
-  if (questions.some((q) => q.status === "answered" && !q.reviewedAt)) return { label: "Answer to read", badge: "badge-attention" };
-  if (mapping?.status === "unresolved") return { label: "Not established yet", badge: "badge-attention" };
-  return { label: "Not reviewed", badge: "badge-neutral" };
+  if (assessed) return { label: assessed.label, help: assessed.help, tone: ASSESSMENT_TONE[assessed.value] };
+  if (mapping?.status === "accepted" && mapping.evidenceId) return { label: "Evidence mapped", help: "A finding is linked; no assessment recorded yet.", tone: "good" };
+  if (invites.some((i) => i.status === "invited" || i.status === "accepted")) return { label: "Work sample invited", help: "Waiting on the work sample named for this gap.", tone: "pending" };
+  if (questions.some((q) => q.status === "open")) return { label: "Waiting on applicant", help: "A question about this requirement is open.", tone: "pending" };
+  if (questions.some((q) => q.status === "answered" && !q.reviewedAt)) return { label: "Answer to read", help: "The applicant answered; read it before assessing.", tone: "attention" };
+  if (mapping?.status === "unresolved") return { label: "Not established yet", help: "Reviewed, but the evidence does not settle it.", tone: "attention" };
+  return { label: "Not reviewed", help: "Nobody has assessed this requirement yet.", tone: "neutral" };
+}
+
+function StatusDot({ tone }: { tone: Tone }) {
+  return <span aria-hidden className={`inline-block h-2 w-2 shrink-0 rounded-full ${TONE_DOT[tone]}`} />;
 }
 
 function EvidenceCard({ item, action }: { item: EvidenceItem; action?: React.ReactNode }) {
   return (
     <div className="rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] p-3">
-      <p className="text-app-meta leading-[1.5] text-[var(--text-body)]">{item.finding}</p>
+      <p className="text-app-control leading-[1.5] text-[var(--text-body)]">{item.finding}</p>
       <p className="mt-1 break-all font-mono text-app-meta text-[var(--text-tertiary)]">
         {item.repo} · {item.path}:{item.startLine}
         {item.endLine > item.startLine ? `-${item.endLine}` : ""}
@@ -136,8 +154,8 @@ function ExistingEvidence({
           </p>
           <ul className="grid gap-1.5">
             {data.evidence.slice(0, PREVIEW_FINDINGS).map((e) => (
-              <li key={e.id} className="rounded-[6px] bg-[var(--surface-canvas)] px-2.5 py-2 text-app-meta leading-[1.45]">
-                <span className="text-[var(--text-body)]">{e.finding}</span>
+              <li key={e.id} className="rounded-[6px] bg-[var(--surface-canvas)] px-2.5 py-2 leading-[1.45]">
+                <span className="text-app-control text-[var(--text-body)]">{e.finding}</span>
                 <span className="mt-0.5 block break-all font-mono text-app-meta text-[var(--text-tertiary)]">{e.path}:{e.startLine}</span>
               </li>
             ))}
@@ -363,9 +381,7 @@ function AskPath({ data, req, onSaved }: { data: ReviewData; req: ReviewRequirem
   );
 }
 
-function RequirementCard({ data, req }: { data: ReviewData; req: ReviewRequirement }) {
-  const router = useRouter();
-  const [path, setPath] = useState<Path | null>(null);
+function requirementState(data: ReviewData, req: ReviewRequirement) {
   const mapping =
     req.mappingIndex === null ? undefined : data.mappings.find((m) => m.requirementIndex === req.mappingIndex && m.requirementText === req.text);
   const mapped = mapping?.evidenceId ? data.evidence.find((e) => e.id === mapping.evidenceId) : undefined;
@@ -374,7 +390,13 @@ function RequirementCard({ data, req }: { data: ReviewData; req: ReviewRequireme
     ...(mapping ? data.questions.filter((q) => q.mappingId === mapping.id) : []),
   ];
   const invites = data.invitations.filter((i) => i.evidenceGap?.requirementId === req.id);
-  const s = status(mapping, questions, invites);
+  return { mapping, mapped, questions, invites, status: status(mapping, questions, invites) };
+}
+
+function RequirementDetail({ data, req, headingId }: { data: ReviewData; req: ReviewRequirement; headingId: string }) {
+  const router = useRouter();
+  const [path, setPath] = useState<Path | null>(null);
+  const { mapping, mapped, questions, invites, status: s } = requirementState(data, req);
   const withdrawn = data.application.status === "withdrawn";
   const policyNote =
     data.workSamplePolicy === "not_needed"
@@ -385,15 +407,17 @@ function RequirementCard({ data, req }: { data: ReviewData; req: ReviewRequireme
   const refresh = () => router.refresh();
 
   return (
-    <li className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border-subtle)] px-5 py-4">
-        <div className="min-w-0">
-          <p className="text-app-meta font-medium text-[var(--text-tertiary)]">{req.kind === "required" ? "Required" : "Preferred"}</p>
-          <h3 className="mt-0.5 text-[15px] font-medium leading-[1.4] text-[var(--text-primary)]">{req.text}</h3>
-        </div>
-        <span className={`badge shrink-0 ${s.badge}`}>{s.label}</span>
+    <section aria-labelledby={headingId} className="rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+      <div className="border-b border-[var(--border-subtle)] px-5 py-4">
+        <p className="text-app-meta text-[var(--text-tertiary)]">{req.kind === "required" ? "Required" : "Preferred"}</p>
+        <h3 id={headingId} className="mt-1 text-app-finding text-[var(--text-primary)] [overflow-wrap:anywhere]">{req.text}</h3>
+        <p className="mt-2 flex items-center gap-2 text-app-control">
+          <StatusDot tone={s.tone} />
+          <span className="font-medium text-[var(--text-primary)]">{s.label}</span>
+          <span className="text-[var(--text-secondary)]">{s.help}</span>
+        </p>
       </div>
-      <div className="grid gap-5 px-5 py-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+      <div className="grid gap-6 px-5 py-5 2xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         <ExistingEvidence data={data} req={req} mapped={mapped} mapping={mapping} questions={questions} invites={invites} />
         <div className="grid content-start gap-3">
           {path === null ? (
@@ -453,28 +477,72 @@ function RequirementCard({ data, req }: { data: ReviewData; req: ReviewRequireme
           )}
         </div>
       </div>
-    </li>
+    </section>
   );
 }
 
 /**
- * Review an application one requirement at a time. Each requirement shows
- * the evidence already in hand beside three ways forward. Nothing here
- * requires a work sample; it is one option among three.
+ * Review an application one requirement at a time: the requirement list on
+ * the left, the selected requirement's evidence and next steps beside it.
+ * Nothing here requires a work sample; it is one option among three.
  */
 export default function ApplicationReview({ data }: { data: ReviewData }) {
-  if (data.requirements.length === 0) {
+  const states = data.requirements.map((r) => ({ req: r, ...requirementState(data, r) }));
+  const firstOpen = states.find((s) => s.req.kind === "required" && !s.mapping?.assessment) ?? states[0];
+  const [selectedId, setSelectedId] = useState<string | null>(firstOpen?.req.id ?? null);
+  const selected = data.requirements.find((r) => r.id === selectedId) ?? data.requirements[0];
+
+  function choose(id: string) {
+    setSelectedId(id);
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      requestAnimationFrame(() => document.getElementById("requirement-detail")?.scrollIntoView({ block: "start" }));
+    }
+  }
+
+  if (data.requirements.length === 0 || !selected) {
     return (
       <div className="rounded-[10px] border border-dashed border-[var(--border-default)] p-5 text-app-meta text-[var(--text-secondary)]">
         This role has no confirmed requirements, so there is nothing to review against yet. Add them from Edit role.
       </div>
     );
   }
+  const assessed = states.filter((s) => s.mapping?.assessment).length;
   return (
-    <ol className="grid gap-4">
-      {data.requirements.map((r) => (
-        <RequirementCard key={r.id} data={data} req={r} />
-      ))}
-    </ol>
+    <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
+      <nav aria-label="Requirements" className="lg:sticky lg:top-6">
+        <p className="mb-2 text-app-meta text-[var(--text-secondary)]">
+          {assessed} of {states.filter((s) => s.req.mappingIndex !== null).length} required assessed
+        </p>
+        <ol className="overflow-hidden rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+          {states.map(({ req, status: s }) => {
+            const active = req.id === selected.id;
+            return (
+              <li key={req.id} className="border-b border-[var(--border-subtle)] last:border-b-0">
+                <button
+                  type="button"
+                  onClick={() => choose(req.id)}
+                  aria-current={active ? "true" : undefined}
+                  className={`grid w-full gap-1 px-4 py-3 text-left outline-offset-[-2px] ${
+                    active ? "bg-[var(--surface-selected)]" : "hover:bg-[var(--surface-hover)]"
+                  }`}
+                >
+                  <span className={`text-app-control leading-[1.4] [overflow-wrap:anywhere] ${active ? "font-medium text-[var(--text-primary)]" : "text-[var(--text-body)]"}`}>
+                    {req.text}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-app-meta text-[var(--text-secondary)]">
+                    <StatusDot tone={s.tone} />
+                    {s.label}
+                    {req.kind === "preferred" ? <span className="text-[var(--text-tertiary)]"> · Preferred</span> : null}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
+      <div id="requirement-detail" className="min-w-0 scroll-mt-6">
+        <RequirementDetail key={selected.id} data={data} req={selected} headingId={`req-${selected.id}`} />
+      </div>
+    </div>
   );
 }

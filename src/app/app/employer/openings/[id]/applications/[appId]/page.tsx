@@ -155,11 +155,27 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
         }
       />
 
-      <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <section className="mt-8 min-w-0" aria-labelledby="requirements-heading">
+        <h2 id="requirements-heading" className="text-app-section text-[var(--text-primary)]">Review against {role.title}</h2>
+        <p className="mt-1 max-w-[72ch] text-app-control leading-[1.5] text-[var(--text-secondary)]">
+          {requirements.filter((r) => r.kind === "required").length} required and {requirements.filter((r) => r.kind === "preferred").length} preferred
+          requirements. For each one, assess the work they already shared, ask about it, or, only if a gap remains, invite them to a work sample.
+        </p>
+        {app.snapshot.requirementsVersion !== role.requirementsVersion ? (
+          <p className="mt-3 max-w-[72ch] rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3.5 py-2.5 text-app-meta text-[var(--text-secondary)]">
+            They applied against requirements version {app.snapshot.requirementsVersion}. The role is now on version {role.requirementsVersion}; the list below is the current one.
+          </p>
+        ) : null}
+        <div className="mt-5">
+          <ApplicationReview data={data} />
+        </div>
+      </section>
+
+      <div className="mt-12 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="grid min-w-0 content-start gap-10">
         <section className="min-w-0" aria-labelledby="work-heading">
-          <h2 id="work-heading" className="text-[16px] font-semibold text-[var(--text-primary)]">The work they chose to send</h2>
-          <p className="mt-1 max-w-[72ch] text-app-meta leading-[1.5] text-[var(--text-secondary)]">
+          <h2 id="work-heading" className="text-app-section text-[var(--text-primary)]">The work they chose to send</h2>
+          <p className="mt-1 max-w-[72ch] text-app-control leading-[1.5] text-[var(--text-secondary)]">
             Each project is the version they sent with this application, in the order they chose. Later edits to their profile do not change it.
           </p>
           {pinned?.access === "withdrawn" ? (
@@ -169,11 +185,11 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
           ) : (
             <ol className="mt-5 grid gap-5">
               {pinnedItems.map((p) => (
-                <li key={p.versionId} className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-3 sm:p-5">
+                <li key={p.versionId} className="min-w-0">
                   {p.content ? (
                     <EvidenceSnapshotView content={p.content} version={p.version} publishedAt={p.publishedAt} headingLevel={3} />
                   ) : (
-                    <p className="text-app-meta text-[var(--text-secondary)]">The applicant stopped sharing this project{p.revokedAt ? <> on <LocalDate iso={p.revokedAt} /></> : null}.</p>
+                    <p className="rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5 text-app-meta text-[var(--text-secondary)]">The applicant stopped sharing this project{p.revokedAt ? <> on <LocalDate iso={p.revokedAt} /></> : null}.</p>
                   )}
                 </li>
               ))}
@@ -182,8 +198,8 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
         </section>
 
         <section className="min-w-0" aria-labelledby="ask-heading">
-          <h2 id="ask-heading" className="text-[16px] font-semibold text-[var(--text-primary)]">Ask about the work</h2>
-          <p className="mt-1 max-w-[72ch] text-app-meta leading-[1.5] text-[var(--text-secondary)]">
+          <h2 id="ask-heading" className="text-app-section text-[var(--text-primary)]">Ask about the work</h2>
+          <p className="mt-1 max-w-[72ch] text-app-control leading-[1.5] text-[var(--text-secondary)]">
             A targeted question is often enough to settle what the evidence leaves open.
           </p>
           <div className="mt-4">
@@ -191,21 +207,6 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
               key={appQuestions.map((q) => `${q.id}:${q.status}:${q.reviewedAt ?? ""}`).join(",")}
               applicationId={app.id}
               initial={appQuestions} targets={questionTargets} canAsk={canAsk} open={app.status === "submitted"} />
-          </div>
-        </section>
-
-        <section className="min-w-0" aria-labelledby="requirements-heading">
-          <h2 id="requirements-heading" className="text-[16px] font-semibold text-[var(--text-primary)]">Review against each requirement</h2>
-          <p className="mt-1 max-w-[72ch] text-app-meta leading-[1.5] text-[var(--text-secondary)]">
-            Start from the work they already shared. For each requirement, review the evidence, ask about it, or, only if a gap remains, invite them to a relevant work sample.
-          </p>
-          {app.snapshot.requirementsVersion !== role.requirementsVersion ? (
-            <p className="mt-3 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3.5 py-2.5 text-app-meta text-[var(--text-secondary)]">
-              They applied against requirements version {app.snapshot.requirementsVersion}. The role is now on version {role.requirementsVersion}; the list below is the current one.
-            </p>
-          ) : null}
-          <div className="mt-5">
-            <ApplicationReview data={data} />
           </div>
         </section>
         </div>
