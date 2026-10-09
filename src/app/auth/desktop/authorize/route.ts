@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isValidDesktopState, isValidPkceChallenge, PKCE_METHOD } from "@/lib/auth/desktop-state";
 import { mintDesktopAuthCode } from "@/lib/auth/desktop-codes";
+import { mintDesktopSession } from "@/lib/auth/desktop-session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -65,22 +65,20 @@ export async function GET(req: Request) {
     return NextResponse.redirect(login);
   }
 
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session?.access_token || !session?.refresh_token) {
-    // Authenticated but no usable session to hand over; fail closed.
-    return NextResponse.json({ error: "session_unavailable" }, { status: 401 });
+  // The desktop gets its own session, never the browser's: the two would
+  // otherwise share one rotating refresh token and sign each other out.
+  const session = user.email ? await mintDesktopSession(user.id, user.email) : null;
+  if (!session) {
+    return NextResponse.json({ error: "session_unavailable" }, { status: 503 });
   }
 
   const code = mintDesktopAuthCode(
     {
       userId: user.id,
       email: user.email,
-      accessToken: session.access_token,
-      refreshToken: session.refresh_token,
-      expiresAt: session.expires_at ?? Math.floor(Date.now() / 1000) + 3600,
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+      expiresAt: session.expiresAt,
       state,
     },
     undefined,
