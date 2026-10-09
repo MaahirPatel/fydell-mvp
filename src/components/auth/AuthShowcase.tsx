@@ -40,7 +40,7 @@ function Window({ crumb, children }: { crumb: string; children: React.ReactNode 
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-tertiary)]">{children}</p>;
+  return <p className="text-[12.5px] font-medium text-[var(--text-secondary)]">{children}</p>;
 }
 
 function BuilderProfile() {
