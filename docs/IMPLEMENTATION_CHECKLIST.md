@@ -100,7 +100,7 @@ this checklist.
 | S2 | Employer routes | Partial: assessments list squeezed at 1280; invitation page needs a fresh invite |
 | S3 | Settings, billing, admin, auth | Not started (agent D next) |
 | S4 | Simulation workbench | In progress (agent S) |
-| S5 | Desktop app sign-in, sync, crash recovery | In progress (agent F); every build now opens www.fydell.com |
+| S5 | Desktop app sign-in, sync, crash recovery | Partial. Verified (native, dev): browser sign-in through `fydell://`, refresh token in Windows Credential Manager only, sign-in survives force-kill and offline, handoff answers and unsent file edits restored after a crash, duplicate delivery creates no extra version. Pending: desktop submit with the same receipt id on desktop, web and employer views; local handoff drafts in the standard flow; live check that web and desktop sessions are independent. Every build opens www.fydell.com unless `FYDELL_PLATFORM_URL` is set |
 
 ## P2. Real users
 
