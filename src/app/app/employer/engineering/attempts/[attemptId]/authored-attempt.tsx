@@ -64,6 +64,8 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
     ? { changed: [...changedPaths].filter((p) => starter.has(p)).sort(), added: [...changedPaths].filter((p) => !starter.has(p)).sort() }
     : null;
   const who = candidateIdentity(view.invitation);
+  const link = view.invitation as typeof view.invitation & { application_id?: string | null; hiring_role_id?: string | null };
+  const application = link.application_id && link.hiring_role_id ? { id: link.application_id, roleId: link.hiring_role_id } : null;
   const state = OPERATIONAL_STATES[view.state];
   const latestDecision = view.decisions[0] ?? null;
   const followUps = evaluation ? buildAuthoredFollowUps(evaluation, pkg.rubric) : null;
@@ -102,9 +104,15 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
 
   return (
     <div className="max-w-[1240px]">
-      <Link href={`/app/employer/engineering/roles/${view.role.id}`} className="text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
-        ← {view.role.title}
-      </Link>
+      {application ? (
+        <Link href={`/app/employer/openings/${application.roleId}/applications/${application.id}`} className="text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+          ← Application for {view.role.title}
+        </Link>
+      ) : (
+        <Link href={`/app/employer/engineering/roles/${view.role.id}`} className="text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+          ← {view.role.title}
+        </Link>
+      )}
 
       <header className="mt-4 border-b border-[var(--border-subtle)] pb-6">
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-app-meta text-[var(--text-tertiary)]">

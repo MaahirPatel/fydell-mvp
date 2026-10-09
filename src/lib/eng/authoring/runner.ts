@@ -219,63 +219,86 @@ async function runLocal(req: SuiteRequest): Promise<SuiteRun> {
  * afterwards.
  */
 export function sandboxRunner(snapshotId: string): Runner {
+  const runSuites = sandboxSuites(snapshotId);
   return {
     info: { name: "vercel-sandbox", isolated: true, label: "Isolated sandbox", version: `vercel-snapshot:${snapshotId}` },
     async runSuites(requests) {
-      let sandbox: Sandbox | null = null;
+      const budget = SANDBOX_SETUP_MS + requests.reduce((n, r) => n + (r.timeoutMs ?? DEFAULT_TIMEOUT) + SANDBOX_STEP_MS, 0);
+      let timer: NodeJS.Timeout | undefined;
+      const deadline = new Promise<SuiteRun[]>((resolve) => {
+        timer = setTimeout(
+          () => resolve(requests.map(() => ({ kind: "infrastructure_error" as const, code: "sandbox_unresponsive", detail: `The sandbox did not respond within ${Math.round(budget / 1000)} seconds.` }))),
+          budget,
+        );
+      });
       try {
-        sandbox = await Sandbox.create({
-          source: { type: "snapshot", snapshotId },
-          persistent: false,
-          timeout: 280_000,
-          resources: { vcpus: 1 },
-          networkPolicy: "deny-all",
-          env: {},
-          ports: [],
-        });
-      } catch (error) {
-        const detail = error instanceof Error ? error.message.slice(0, 200) : "unknown";
-        return requests.map(() => ({ kind: "infrastructure_error" as const, code: "sandbox_create_failed", detail }));
-      }
-      try {
-        const user = await sandbox.createUser("author");
-        const out: SuiteRun[] = [];
-        for (const [i, req] of requests.entries()) {
-          const dir = `run${i}`;
-          if (req.files.some((f) => !isSafePath(f.path))) {
-            out.push({ kind: "infrastructure_error", code: "unsafe_path", detail: "Refused an unsafe file path." });
-            continue;
-          }
-          await user.writeFiles(req.files.map((f) => ({ path: `${dir}/${f.path}`, content: new TextEncoder().encode(f.content) })));
-          const { cmd, args } = commandFor(req.environment, req.testFiles, false);
-          const command = displayCommand(req.environment, req.testFiles);
-          let output = "";
-          let bytes = 0;
-          let exceeded = false;
-          const sink = new Writable({
-            write(chunk, _e, cb) {
-              bytes += chunk.length;
-              if (bytes > OUTPUT_LIMIT) exceeded = true;
-              else output += chunk.toString();
-              cb();
-            },
-          });
-          const timeoutMs = req.timeoutMs ?? DEFAULT_TIMEOUT;
-          const started = Date.now();
-          const result = await user.runCommand({ cmd: "sh", args: ["-c", `cd ${dir} && exec "$0" "$@"`, cmd, ...args], timeoutMs, stdout: sink, stderr: sink });
-          const durationMs = Date.now() - started;
-          if (exceeded) out.push({ kind: "infrastructure_error", code: "output_limit", detail: "The test run printed more output than allowed." });
-          else if (result.exitCode === 124 || result.exitCode === 137 || durationMs >= timeoutMs) out.push({ kind: "timeout", command, durationMs, output: clip(output) });
-          else out.push({ kind: "ran", command, exitCode: result.exitCode, durationMs, tests: parseResults(req.environment, output), output: clip(output) });
-        }
-        return out;
-      } catch (error) {
-        const detail = error instanceof Error ? error.message.slice(0, 200) : "unknown";
-        return requests.map(() => ({ kind: "infrastructure_error" as const, code: "sandbox_run_failed", detail }));
+        return await Promise.race([runSuites(requests), deadline]);
       } finally {
-        await sandbox.stop().catch(() => undefined);
-        await sandbox.delete().catch(() => undefined);
+        clearTimeout(timer);
       }
     },
+  };
+}
+
+/** Sandbox calls that hang (create, user setup, file writes) must not hold a request open forever. */
+const SANDBOX_SETUP_MS = 90_000;
+const SANDBOX_STEP_MS = 30_000;
+
+function sandboxSuites(snapshotId: string): (requests: SuiteRequest[]) => Promise<SuiteRun[]> {
+  return async (requests) => {
+    let sandbox: Sandbox | null = null;
+    try {
+      sandbox = await Sandbox.create({
+        source: { type: "snapshot", snapshotId },
+        persistent: false,
+        timeout: 280_000,
+        resources: { vcpus: 1 },
+        networkPolicy: "deny-all",
+        env: {},
+        ports: [],
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message.slice(0, 200) : "unknown";
+      return requests.map(() => ({ kind: "infrastructure_error" as const, code: "sandbox_create_failed", detail }));
+    }
+    try {
+      const user = await sandbox.createUser("author");
+      const out: SuiteRun[] = [];
+      for (const [i, req] of requests.entries()) {
+        const dir = `run${i}`;
+        if (req.files.some((f) => !isSafePath(f.path))) {
+          out.push({ kind: "infrastructure_error", code: "unsafe_path", detail: "Refused an unsafe file path." });
+          continue;
+        }
+        await user.writeFiles(req.files.map((f) => ({ path: `${dir}/${f.path}`, content: new TextEncoder().encode(f.content) })));
+        const { cmd, args } = commandFor(req.environment, req.testFiles, false);
+        const command = displayCommand(req.environment, req.testFiles);
+        let output = "";
+        let bytes = 0;
+        let exceeded = false;
+        const sink = new Writable({
+          write(chunk, _e, cb) {
+            bytes += chunk.length;
+            if (bytes > OUTPUT_LIMIT) exceeded = true;
+            else output += chunk.toString();
+            cb();
+          },
+        });
+        const timeoutMs = req.timeoutMs ?? DEFAULT_TIMEOUT;
+        const started = Date.now();
+        const result = await user.runCommand({ cmd: "sh", args: ["-c", `cd ${dir} && exec "$0" "$@"`, cmd, ...args], timeoutMs, stdout: sink, stderr: sink });
+        const durationMs = Date.now() - started;
+        if (exceeded) out.push({ kind: "infrastructure_error", code: "output_limit", detail: "The test run printed more output than allowed." });
+        else if (result.exitCode === 124 || result.exitCode === 137 || durationMs >= timeoutMs) out.push({ kind: "timeout", command, durationMs, output: clip(output) });
+        else out.push({ kind: "ran", command, exitCode: result.exitCode, durationMs, tests: parseResults(req.environment, output), output: clip(output) });
+      }
+      return out;
+    } catch (error) {
+      const detail = error instanceof Error ? error.message.slice(0, 200) : "unknown";
+      return requests.map(() => ({ kind: "infrastructure_error" as const, code: "sandbox_run_failed", detail }));
+    } finally {
+      await sandbox.stop().catch(() => undefined);
+      await sandbox.delete().catch(() => undefined);
+    }
   };
 }

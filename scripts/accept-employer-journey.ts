@@ -101,12 +101,16 @@ async function signIn(label: string, email: string, password: string): Promise<A
 async function send(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
   for (let i = 0; ; i++) {
     try {
-      return await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+      const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+      const restarting = res.status >= 500 && url.includes("/api/") && (res.headers.get("content-type") ?? "").includes("text/html");
+      if (!restarting || i >= 8) return res;
+      console.log(`  ..   server error page from a restart, retrying ${init.method ?? "GET"} ${url.replace(BASE, "")} in 60 seconds`);
+      await sleep(60_000);
     } catch (error) {
       const dropped = error instanceof Error && (error.message === "fetch failed" || error.name === "TimeoutError");
-      if (!dropped || i >= 6) throw error;
-      console.log(`  ..   server unavailable, retrying ${init.method ?? "GET"} ${url.replace(BASE, "")}`);
-      await sleep(8000);
+      if (!dropped || i >= 8) throw error;
+      console.log(`  ..   server unavailable, retrying ${init.method ?? "GET"} ${url.replace(BASE, "")} in 60 seconds`);
+      await sleep(60_000);
     }
   }
 }
@@ -315,9 +319,9 @@ async function main() {
     unresolved: "I am not sure how the provider behaves if our 2xx is lost after commit; I assumed it retries and the dedupe row absorbs it. Concurrent workers on separate databases were not in scope.",
   };
   const receiptA = obj((await expectStatus(engineer, "POST", `${a.A}/submit`, [201], { files: correct, handoff: handoffA, ai_use: "No assistant used." })).receipt, "receipt");
-  const repeatA = obj((await expectStatus(engineer, "POST", `${a.A}/submit`, [200], { files: a.starter, handoff: handoffA, ai_use: "" })).receipt, "receipt");
+  const repeatA = obj((await expectStatus(engineer, "POST", `${a.A}/submit`, [200], { files: a.starter, ai_use: "" })).receipt, "receipt");
   assert.equal(repeatA.submissionId, receiptA.submissionId, "a submission retry returns the same receipt");
-  pass("submitted; retry returns the same receipt", strField(receiptA, "submissionId"));
+  pass("submitted; a retry, even with a different or empty body, returns the same receipt", strField(receiptA, "submissionId"));
 
   /* ------------------------------------------------------------ 4 */
   step("4. Candidate B: superficial fix, cutoff enforced by the server, minimal handoff");

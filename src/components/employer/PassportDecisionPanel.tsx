@@ -23,12 +23,15 @@ function savedStateOf(value: unknown): SavedState | null {
 
 export default function PassportDecisionPanel({
   reviewId,
+  endpoint,
   initialDecision,
   initialNote,
   decidedAt,
   version,
 }: {
   reviewId: string;
+  /** Defaults to the Passport review; applications without a review save to their own decision. */
+  endpoint?: string;
   initialDecision: Decision;
   initialNote: string;
   decidedAt: string | null;
@@ -43,7 +46,7 @@ export default function PassportDecisionPanel({
 
   async function save(next: Decision) {
     setStatus("saving");
-    const res = await fetch(`/api/employer/passport-reviews/${reviewId}`, {
+    const res = await fetch(endpoint ?? `/api/employer/passport-reviews/${reviewId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ decision: next, note, expectedVersion: savedVersion }),

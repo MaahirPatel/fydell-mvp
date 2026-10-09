@@ -256,9 +256,18 @@ export type ApplicationListItem = {
   requirementsVersion: number;
 };
 
-type EmployerRow = AppRow & {
-  passport_shares: ShareJoin;
+type DecisionJoins = {
   employer_passport_reviews: { decision: string } | null;
+  application_decisions: { decision: string } | null;
+};
+
+/** Applications with a Passport review decide there; the rest decide on the application itself. */
+function decisionOf(r: DecisionJoins): string {
+  return r.employer_passport_reviews?.decision ?? r.application_decisions?.decision ?? "none";
+}
+
+type EmployerRow = AppRow & DecisionJoins & {
+  passport_shares: ShareJoin;
 };
 
 function nextActionFor(r: EmployerRow, evidenceAvailable: boolean): string {
@@ -266,7 +275,7 @@ function nextActionFor(r: EmployerRow, evidenceAvailable: boolean): string {
   if (r.stage === "closed") return "None";
   if (r.stage === "awaiting_candidate") return "Waiting on the applicant";
   if (!evidenceAvailable && (r.links ?? []).length === 0 && !r.note) return "Ask for evidence";
-  if ((r.employer_passport_reviews?.decision ?? "none") === "none") return r.stage === "new" ? "Review submission" : "Record decision";
+  if (decisionOf(r) === "none") return r.stage === "new" ? "Review submission" : "Record decision";
   return "Close or follow up";
 }
 
@@ -287,7 +296,7 @@ export async function listApplicationQueue(organizationId: string, limit = 20): 
   const db = createAdminSupabaseClient();
   const { data } = await db
     .from("role_applications")
-    .select("id,role_id,contact_name,role_snapshot,stage,submitted_at,employer_passport_reviews(decision)")
+    .select("id,role_id,contact_name,role_snapshot,stage,submitted_at,employer_passport_reviews(decision),application_decisions(decision)")
     .eq("organization_id", organizationId)
     .eq("status", "submitted")
     .in("stage", ["new", "in_review"])
@@ -300,8 +309,7 @@ export async function listApplicationQueue(organizationId: string, limit = 20): 
     role_snapshot: RoleSnapshot;
     stage: ApplicationStage;
     submitted_at: string;
-    employer_passport_reviews: { decision: string } | null;
-  }>;
+  } & DecisionJoins>;
   if (rows.length === 0) return [];
 
   const { data: answers } = await db
@@ -324,7 +332,7 @@ export async function listApplicationQueue(organizationId: string, limit = 20): 
     const unread = unreadSince.get(r.id);
     if (unread !== undefined) items.push({ ...base, waitingOn: "answer", since: unread || r.submitted_at });
     else if (r.stage === "new") items.push({ ...base, waitingOn: "review", since: r.submitted_at });
-    else if ((r.employer_passport_reviews?.decision ?? "none") === "none") items.push({ ...base, waitingOn: "decision", since: r.submitted_at });
+    else if (decisionOf(r) === "none") items.push({ ...base, waitingOn: "decision", since: r.submitted_at });
   }
   return items.sort((a, b) => a.since.localeCompare(b.since)).slice(0, limit);
 }
@@ -369,7 +377,7 @@ export async function listApplicationsForRole(
   const db = createAdminSupabaseClient();
   let query = db
     .from("role_applications")
-    .select(`${APP_COLUMNS},passport_shares(id,revoked_at,expires_at,project_repos,version_policy),employer_passport_reviews(decision)`)
+    .select(`${APP_COLUMNS},passport_shares(id,revoked_at,expires_at,project_repos,version_policy),employer_passport_reviews(decision),application_decisions(decision)`)
     .eq("organization_id", organizationId)
     .eq("role_id", roleId)
     .order("submitted_at", { ascending: false })
@@ -396,7 +404,7 @@ export async function listApplicationsForRole(
         hasNote: !!r.note,
         evidenceAvailable,
         reviewId: r.review_id,
-        decision: r.employer_passport_reviews?.decision ?? "none",
+        decision: decisionOf(r),
         nextAction: nextActionFor(r, evidenceAvailable),
         requirementsVersion: r.role_snapshot.requirementsVersion,
       };

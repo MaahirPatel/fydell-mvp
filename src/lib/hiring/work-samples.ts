@@ -68,6 +68,7 @@ export type ApplicationInvitation = {
   deadlineTimezone: string | null;
   evidenceGap: EvidenceGap | null;
   attemptStatus: string | null;
+  attemptId: string | null;
   createdAt: string;
 };
 
@@ -94,7 +95,7 @@ type InvitationJoin = {
   evidence_gap: unknown;
   created_at: string;
   eng_scenario_versions: { title: string; version: number } | null;
-  eng_attempts: Array<{ status: string }> | { status: string } | null;
+  eng_attempts: Array<{ id: string; status: string }> | { id: string; status: string } | null;
 };
 
 export async function listApplicationInvitations(organizationId: string, applicationId: string): Promise<ApplicationInvitation[]> {
@@ -102,7 +103,7 @@ export async function listApplicationInvitations(organizationId: string, applica
   const db = createAdminSupabaseClient();
   const { data } = await db
     .from("eng_invitations")
-    .select("id,status,email_delivery,expires_at,deadline_timezone,evidence_gap,created_at,eng_scenario_versions(title,version),eng_attempts(status)")
+    .select("id,status,email_delivery,expires_at,deadline_timezone,evidence_gap,created_at,eng_scenario_versions(title,version),eng_attempts(id,status)")
     .eq("organization_id", organizationId)
     .eq("application_id", applicationId)
     .eq("is_preview", false)
@@ -119,6 +120,7 @@ export async function listApplicationInvitations(organizationId: string, applica
       deadlineTimezone: r.deadline_timezone,
       evidenceGap: readGap(r.evidence_gap),
       attemptStatus: attempt?.status ?? null,
+      attemptId: attempt?.id ?? null,
       createdAt: r.created_at,
     };
   });

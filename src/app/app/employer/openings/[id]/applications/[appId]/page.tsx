@@ -5,6 +5,7 @@ import { orgCan } from "@/lib/orgs/capabilities";
 import { getApplicationForOrg } from "@/lib/hiring/applications";
 import { getRole } from "@/lib/hiring/roles";
 import { listApplicationInvitations, listWorkSampleOptions, type ApplicationInvitation } from "@/lib/hiring/work-samples";
+import { getApplicationDecision } from "@/lib/hiring/application-decisions";
 import { formatDeadline } from "@/lib/hiring/evidence-gap";
 import { STAGE_LABEL } from "@/lib/hiring/role-contract";
 import { authorizeReviewScope, listMappings, listQuestions, type EvidenceMapping, type ReviewQuestion } from "@/lib/employer/review";
@@ -73,6 +74,7 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
     getApplicationEvidenceForOrg(org.organizationId, app.id, user.id),
     listApplicationQuestionsForOrg(org.organizationId, app.id),
   ]);
+  const appDecision = !review && canAsk ? await getApplicationDecision(org.organizationId, app.id) : null;
   const pinnedItems = pinned?.items ?? [];
   const questionTargets: QuestionTarget[] = pinnedItems.flatMap((p) =>
     p.content ? [{ versionId: p.versionId, title: p.content.title, findings: p.content.findings.map((f) => ({ id: f.id, finding: f.finding })) }] : [],
@@ -225,6 +227,15 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
                 </Link>
               ) : null}
             </>
+          ) : appDecision ? (
+            <PassportDecisionPanel
+              reviewId={app.id}
+              endpoint={`/api/employer/applications/${app.id}/decision`}
+              initialDecision={appDecision.decision}
+              initialNote={appDecision.privateNote}
+              decidedAt={appDecision.decidedAt}
+              version={appDecision.version}
+            />
           ) : null}
           <Panel id="app-heading" title="What they sent">
             {pinnedItems.length > 0 ? (
@@ -275,6 +286,11 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
                     {i.evidenceGap ? <span className="text-[var(--text-secondary)]">For: {reqText(i.evidenceGap.requirementId) ?? i.evidenceGap.requirementText}</span> : null}
                     <span className="text-[var(--text-tertiary)]">Due {formatDeadline(i.expiresAt, i.deadlineTimezone)}</span>
                     <span className="text-[var(--text-tertiary)]">{DELIVERY[i.emailDelivery]}</span>
+                    {i.attemptId && i.attemptStatus === "submitted" ? (
+                      <Link href={`/app/employer/engineering/attempts/${i.attemptId}`} className="font-medium text-[var(--text-primary)] underline underline-offset-4">
+                        Open the work sample report
+                      </Link>
+                    ) : null}
                   </li>
                 ))}
               </ul>
