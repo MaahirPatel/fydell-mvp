@@ -1,41 +1,10 @@
 import { NextResponse } from "next/server";
-import { createHmac, timingSafeEqual } from "crypto";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
+import { svixHeaders, verifySvixSignature } from "@/lib/security/webhook-signature";
 
 export const runtime = "nodejs";
 
-function verifyResendSignature(
-  payload: string,
-  signatureHeader: string | null,
-  secret: string
-): boolean {
-  if (!signatureHeader || !secret) return false;
-  // Resend uses Svix-style headers in many setups: t=...,v1=...
-  const parts = Object.fromEntries(
-    signatureHeader.split(",").map((part) => {
-      const [k, v] = part.split("=");
-      return [k.trim(), v?.trim() || ""];
-    })
-  );
-  const timestamp = parts.t;
-  const signature = parts.v1;
-  if (!timestamp || !signature) {
-    // Fallback: raw hex hmac of body
-    const expected = createHmac("sha256", secret).update(payload).digest("hex");
-    try {
-      return timingSafeEqual(Buffer.from(expected), Buffer.from(signatureHeader));
-    } catch {
-      return false;
-    }
-  }
-  const signed = `${timestamp}.${payload}`;
-  const expected = createHmac("sha256", secret).update(signed).digest("hex");
-  try {
-    return timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
-  } catch {
-    return false;
-  }
-}
+const MAX_WEBHOOK_BYTES = 256 * 1024;
 
 function mapEventStatus(type: string): string | null {
   switch (type) {
@@ -58,13 +27,13 @@ function mapEventStatus(type: string): string | null {
 
 export async function POST(req: Request) {
   const secret = process.env.RESEND_WEBHOOK_SECRET || "";
+  if (!secret) return NextResponse.json({ error: "Webhook is not configured." }, { status: 503 });
+  const declaredLength = Number(req.headers.get("content-length") || 0);
+  if (declaredLength > MAX_WEBHOOK_BYTES) return NextResponse.json({ error: "Payload too large" }, { status: 413 });
   const raw = await req.text();
-  const signature =
-    req.headers.get("resend-signature") ||
-    req.headers.get("svix-signature") ||
-    req.headers.get("webhook-signature");
+  if (raw.length > MAX_WEBHOOK_BYTES) return NextResponse.json({ error: "Payload too large" }, { status: 413 });
 
-  if (!secret || !verifyResendSignature(raw, signature, secret)) {
+  if (!verifySvixSignature(raw, svixHeaders(req.headers), secret).ok) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
