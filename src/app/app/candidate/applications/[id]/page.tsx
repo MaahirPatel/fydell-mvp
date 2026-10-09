@@ -10,6 +10,7 @@ import WithdrawButton from "@/components/hiring/WithdrawButton";
 import EvidenceSnapshotView from "@/components/evidence/EvidenceSnapshotView";
 import StopSharingButton from "@/components/evidence/StopSharingButton";
 import AnswerQuestions from "@/components/evidence/AnswerQuestions";
+import { LocalDate, LocalTime } from "@/components/eng/LocalTime";
 import { getApplicationEvidenceForApplicant, listApplicationQuestionsForApplicant } from "@/lib/profile-evidence/applications";
 
 export const metadata = { title: "Application receipt" };
@@ -57,13 +58,15 @@ export default async function ApplicationReceiptPage({
 
       <dl className="mt-6">
         <Row label="Status">
-          {withdrawn
-            ? `Withdrawn ${app.withdrawnAt ? new Date(app.withdrawnAt).toLocaleString() : ""}`
-            : app.waitingOnYou
-              ? "The team is waiting on a reply from you. Check your email or your questions on the Passport page."
-              : "Sent. The team reviews applications themselves; Fydell doesn't rank or filter them."}
+          {withdrawn ? (
+            <>Withdrawn{app.withdrawnAt ? <> <LocalTime iso={app.withdrawnAt} /></> : null}</>
+          ) : app.waitingOnYou ? (
+            <a href="#questions" className="underline underline-offset-4">The team is waiting on an answer from you. Reply to their questions below.</a>
+          ) : (
+            "Sent. The team reviews applications themselves; Fydell doesn't rank or filter them."
+          )}
         </Row>
-        <Row label="Sent">{new Date(app.submittedAt).toLocaleString()}</Row>
+        <Row label="Sent"><LocalTime iso={app.submittedAt} /></Row>
         <Row label="Role">
           {ROLE_STATE_LABEL[app.roleState]}
           {app.roleSlug ? (
@@ -83,8 +86,8 @@ export default async function ApplicationReceiptPage({
                       {p.position + 1}. {p.content?.title ?? p.projectKey}
                     </p>
                     <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">
-                      Version {p.version}, prepared {new Date(p.publishedAt).toLocaleDateString()}
-                      {p.revokedAt ? `. You stopped sharing it on ${new Date(p.revokedAt).toLocaleDateString()}.` : ""}
+                      Version {p.version}, prepared <LocalDate iso={p.publishedAt} />
+                      {p.revokedAt ? <>. You stopped sharing it on <LocalDate iso={p.revokedAt} />.</> : ""}
                     </p>
                     {p.content ? (
                       <details className="mt-2">
@@ -149,7 +152,7 @@ export default async function ApplicationReceiptPage({
         ) : null}
       </dl>
 
-      <section className="mt-6 border-t border-[var(--border-subtle)] pt-6" aria-labelledby="questions-heading">
+      <section id="questions" className="mt-6 scroll-mt-20 border-t border-[var(--border-subtle)] pt-6" aria-labelledby="questions-heading">
         <h2 id="questions-heading" className="text-[15px] font-semibold text-[var(--text-primary)]">Questions from {app.organizationName}</h2>
         <div className="mt-3">
           <AnswerQuestions initial={questions} titles={titles} withdrawn={withdrawn} />

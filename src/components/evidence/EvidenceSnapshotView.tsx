@@ -6,6 +6,7 @@ import {
   type SimulationReportSummary,
   type SnapshotFinding,
 } from "@/lib/profile-evidence/contract";
+import { LocalDate } from "@/components/eng/LocalTime";
 
 const SOURCE_LABEL: Record<EvidenceVersionContent["sourceKind"], string> = {
   github: "Public repository",
@@ -13,12 +14,6 @@ const SOURCE_LABEL: Record<EvidenceVersionContent["sourceKind"], string> = {
   manual: "Described by the engineer",
   work_sample: "Fydell work sample",
 };
-
-function formatDate(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
-}
 
 function lines(f: SnapshotFinding): string {
   return `${f.path}:${f.startLine}${f.endLine > f.startLine ? `-${f.endLine}` : ""}`;
@@ -49,7 +44,7 @@ function Finding({ f, notes }: { f: SnapshotFinding; notes: EvidenceVersionConte
       {mine.map((n) => (
         <div key={`${n.findingId}-${n.createdAt}`} className="mt-2 rounded-[6px] bg-[var(--surface-panel)] px-2.5 py-2 text-app-meta leading-[1.5]">
           <p className="font-medium text-[var(--text-primary)]">
-            {n.kind === "correction" ? "Engineer's correction" : n.kind === "inaccurate" ? "Engineer says this is inaccurate" : "Engineer's context"}, {formatDate(n.createdAt)}
+            {n.kind === "correction" ? "Engineer's correction" : n.kind === "inaccurate" ? "Engineer says this is inaccurate" : "Engineer's context"}, <LocalDate iso={n.createdAt} />
           </p>
           <p className="mt-0.5 whitespace-pre-wrap text-[var(--text-body)]">{n.text}</p>
           {n.proposedInterpretation ? <p className="mt-1 whitespace-pre-wrap text-[var(--text-body)]">Should read: {n.proposedInterpretation}</p> : null}
@@ -80,7 +75,7 @@ export function SimulationReport({ report }: { report: SimulationReportSummary }
   return (
     <div className="rounded-[8px] border border-[var(--border-subtle)] p-4">
       <p className="text-[15px] font-medium text-[var(--text-primary)]">{report.title}</p>
-      <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">Released {formatDate(report.releasedAt) || "date not recorded"}. Observed by Fydell in a work sample; no score.</p>
+      <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]">Released {report.releasedAt ? <LocalDate iso={report.releasedAt} /> : "date not recorded"}. Observed by Fydell in a work sample; no score.</p>
       {report.summary ? <p className="mt-2 whitespace-pre-wrap text-app-meta leading-[1.55] text-[var(--text-body)]">{report.summary}</p> : null}
       <details className="mt-3">
         <summary className="cursor-pointer text-app-meta font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">What was investigated, changed and checked</summary>
@@ -145,9 +140,13 @@ export default function EvidenceSnapshotView({
         ) : null}
         {content.sourceKind !== "work_sample" ? (
           <p className="mt-2 text-app-meta text-[var(--text-secondary)]">
-            {content.confirmation.confirmed
-              ? `The engineer confirmed this contribution on ${formatDate(content.confirmation.confirmedAt)}. Fydell has not verified ownership.`
-              : "The engineer has not confirmed this contribution. Ownership is not inferred from repository access or commits."}
+            {content.confirmation.confirmed ? (
+              <>
+                The engineer confirmed this contribution{content.confirmation.confirmedAt ? <> on <LocalDate iso={content.confirmation.confirmedAt} /></> : null}. Fydell has not verified ownership.
+              </>
+            ) : (
+              "The engineer has not confirmed this contribution. Ownership is not inferred from repository access or commits."
+            )}
           </p>
         ) : null}
       </div>
@@ -276,7 +275,7 @@ export default function EvidenceSnapshotView({
 
         <p className="text-[12px] leading-[1.5] text-[var(--text-tertiary)]">
           {version ? `Version ${version}` : "Unpublished preview"}
-          {publishedAt ? `, published ${formatDate(publishedAt)}` : ""}
+          {publishedAt ? <>, published <LocalDate iso={publishedAt} /></> : ""}
           {content.provenance.commitSha ? `. Revision ${content.provenance.commitSha.slice(0, 7)}` : ""}
           {content.provenance.coverage ? `. ${content.provenance.coverage}` : ""}
           {content.provenance.generatedFields.length > 0 ? ` Fields still drafted from the analysis: ${content.provenance.generatedFields.join(", ")}.` : ""}
