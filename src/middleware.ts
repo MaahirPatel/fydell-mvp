@@ -3,11 +3,19 @@ import { updateSession } from "@/lib/supabase/middleware";
 import { isPrivatePath } from "@/lib/seo/site";
 import { checkOrigin } from "@/lib/security/origin-check";
 
+const MAX_API_BODY_BYTES = 25 * 1024 * 1024;
+
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   if (path.startsWith("/api/") && checkOrigin(request)) {
     return NextResponse.json({ error: "Request blocked for security reasons." }, { status: 403 });
+  }
+
+  // Route handlers buffer request bodies without a size limit. The largest
+  // legitimate upload (editor history import) is 10 MB.
+  if (path.startsWith("/api/") && Number(request.headers.get("content-length") || 0) > MAX_API_BODY_BYTES) {
+    return NextResponse.json({ error: "Request body is too large." }, { status: 413 });
   }
 
   // A layout cannot read the request path, so it is forwarded here. Without it
