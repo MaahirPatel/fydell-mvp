@@ -154,7 +154,9 @@ export async function gatherSources(ownerId: string, projectKey: string): Promis
   const repo = snapshot.repoFullName;
   const [contributions, decisions] = await Promise.all([listContributions(passportId), listDecisionsForPassport(passportId)]);
   const contribution = contributions.get(repo) ?? null;
-  const presentation = saved ? toPresentationSource(saved, true) : toPresentationSource(draftFromProject(draftSourceOf(snapshot), 0), false);
+  // Featuring or reordering stores the generated draft without the engineer saving it (no confirmedAt);
+  // that is still the draft, so it must not make an earlier confirmation stale.
+  const presentation = saved ? toPresentationSource(saved, !!saved.confirmedAt) : toPresentationSource(draftFromProject(draftSourceOf(snapshot), 0), false);
   const sourceKind: EvidenceSourceKind = snapshot.sourceKind === "upload" ? "upload" : "github";
   return {
     passportId,
@@ -501,7 +503,7 @@ export async function listEvidenceOptions(ownerId: string): Promise<EvidenceOpti
       kind: p.sourceKind === "upload" ? "upload" : "github",
       detail: `Revision ${p.commitSha.slice(0, 7)} · ${p.evidence.length} finding${p.evidence.length === 1 ? "" : "s"}`,
       private: pres?.visibility === "private",
-      confirmed: confirmed(p.repoFullName, pres?.version ?? 0, contributions.get(p.repoFullName)?.version ?? 0),
+      confirmed: confirmed(p.repoFullName, pres?.confirmedAt ? pres.version : 0, contributions.get(p.repoFullName)?.version ?? 0),
     };
   });
   const manual: EvidenceOption[] = presentations

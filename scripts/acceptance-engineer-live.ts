@@ -30,7 +30,8 @@ import { receiptExport } from "../src/lib/receipts/contract";
 import { beginAnalysis, failAnalysis, getAnalysis, latestCompleteReport, listAnalysisVersions } from "../src/lib/builder-analysis/store";
 import { runAnalysis } from "../src/lib/builder-analysis/run";
 import { compareVersions } from "../src/lib/builder-analysis/ledger";
-import { confirmContribution, publishEvidenceVersion } from "../src/lib/profile-evidence/store";
+import { confirmContribution, evidenceStatus, listEvidenceOptions, publishEvidenceVersion } from "../src/lib/profile-evidence/store";
+import { arrangePresentations } from "../src/lib/passport/presentation-store";
 import { getContribution, saveContribution } from "../src/lib/passport/context-store";
 import { listSnapshotVersions } from "../src/lib/passport/snapshot-versions";
 import { ANALYSIS_VERSION } from "../src/lib/passport/github/types";
@@ -316,6 +317,35 @@ async function main() {
     JSON.stringify({ confirm: notesConfirm, workedOn: notesContext.workedOn }));
   const notesPub = await publishEvidenceVersion(a.id, notes.repo, "publish");
   ok("that confirmed statement can be published", notesPub.ok === true, JSON.stringify(notesPub));
+  const arranged = await arrangePresentations(a.id, [{ projectKey: notes.repo, featured: true }]);
+  const optionsAfter = await listEvidenceOptions(a.id);
+  const notesStatus = await evidenceStatus(a.id, notes.repo);
+  ok("featuring a project on the profile does not make its confirmation stale",
+    arranged.ok === true && optionsAfter.find((o) => o.key === notes.repo)?.confirmed === true && notesStatus?.confirmation === "confirmed",
+    JSON.stringify({ arranged, option: optionsAfter.find((o) => o.key === notes.repo), confirmation: notesStatus?.confirmation }));
+
+  /* A partial analysis completed later is a new version; the partial one still resolves */
+  const partialZip = project("billing-sync");
+  const partial = await save(a.id, "billing-sync", partialZip, "");
+  const partialId = partial.saved.projectId;
+  const { data: partialEvidence } = await admin.from("passport_evidence").select("id").eq("project_id", partialId);
+  const allIds = ((partialEvidence ?? []) as Array<{ id: string }>).map((e) => e.id);
+  await admin.from("passport_snapshot_versions").delete().eq("snapshot_id", partialId);
+  if (allIds.length > 1) await admin.from("passport_evidence").delete().eq("project_id", partialId).eq("id", allIds[allIds.length - 1]);
+  await admin.from("passport_projects").update({ status: "partial" }).eq("id", partialId);
+  const partialReceipt = await issueSnapshotReceipt(a.id, partialId, null);
+  const completed = await save(a.id, "billing-sync", partialZip, "");
+  const partialVersions = await listSnapshotVersions(a.id, partialId);
+  const pv1 = partialVersions.find((v) => v.version === 1);
+  const pv2 = partialVersions.find((v) => v.version === 2);
+  ok("a complete analysis of a partially analyzed revision appends version 2 instead of overwriting",
+    allIds.length > 1 && completed.saved.projectId === partialId && !completed.saved.reusedExistingVersion &&
+    pv1?.status === "partial" && pv2?.status === "complete" && pv1.findings.length === allIds.length - 1 && pv2.findings.length === allIds.length,
+    JSON.stringify({ findings: allIds.length, versions: partialVersions.map((v) => [v.version, v.status, v.findings.length]) }));
+  const partialView = await getReceiptView(a.id, partialReceipt.id);
+  ok("the partial analysis's receipt still matches and links to version 1",
+    partialView?.integrity.state === "matches" && partialView.processing.state === "superseded" && partialView.linkedReport?.href.endsWith("?version=1") === true,
+    JSON.stringify({ integrity: partialView?.integrity.state, processing: partialView?.processing.state, href: partialView?.linkedReport?.href }));
 
   let githubImport = "not run";
   try {
