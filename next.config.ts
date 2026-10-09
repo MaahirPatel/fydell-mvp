@@ -37,6 +37,20 @@ const nextConfig: NextConfig = {
       "alasql/dist/alasql.js": ALASQL_BROWSER_BUILD,
     },
   },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     // Legacy product surfaces. Old URLs must never 404 or render retired UI.
     return [
