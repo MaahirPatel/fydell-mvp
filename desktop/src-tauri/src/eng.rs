@@ -48,10 +48,15 @@ fn workspaces_root() -> AppResult<PathBuf> {
 }
 
 fn state_path(attempt_id: &str) -> AppResult<PathBuf> {
+    state_file(attempt_id, "json")
+}
+
+/// App-private file for one attempt, e.g. `<id>.outbox.json`.
+pub(crate) fn state_file(attempt_id: &str, suffix: &str) -> AppResult<PathBuf> {
     Ok(STATE_DIR
         .get()
         .ok_or(AppError::NoSession)?
-        .join(format!("{attempt_id}.json")))
+        .join(format!("{attempt_id}.{suffix}")))
 }
 
 /// Attempt ids are UUIDs; anything else never reaches a URL or a path.
@@ -539,7 +544,7 @@ pub(crate) fn now_iso() -> String {
 // Rust) and error mapping (`{ error }` bodies become readable messages).
 // ---------------------------------------------------------------------------
 
-fn reach(e: reqwest::Error) -> AppError {
+pub(crate) fn reach(e: reqwest::Error) -> AppError {
     AppError::Platform(format!("could not reach Fydell: {}", e.without_url()))
 }
 

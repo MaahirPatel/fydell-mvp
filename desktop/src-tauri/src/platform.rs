@@ -448,9 +448,11 @@ impl Platform {
     pub(crate) async fn check(&self, res: reqwest::Response, what: &str) -> AppResult<reqwest::Response> {
         let status = res.status();
         if status == reqwest::StatusCode::UNAUTHORIZED {
-            return Err(AppError::Auth(
-                "platform rejected the session; please sign in again".to_string(),
-            ));
+            // Signed out only when Supabase also refuses to renew the session.
+            auth::revalidate_after_unauthorized().await?;
+            return Err(AppError::Platform(format!(
+                "{what}: Fydell did not accept the request; try again"
+            )));
         }
         if !status.is_success() {
             let body = res.text().await.unwrap_or_default();

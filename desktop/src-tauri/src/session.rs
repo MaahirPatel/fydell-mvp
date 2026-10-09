@@ -304,9 +304,7 @@ pub async fn join_session(invite_token: String) -> AppResult<SessionInfo> {
         }
     }
     // Fail fast with a clear message when not signed in.
-    crate::auth::access_token()
-        .await
-        .map_err(|_| AppError::Auth("sign in first, then enter your invite code".to_string()))?;
+    crate::auth::require_signed_in("sign in first, then enter your invite code").await?;
 
     let token = invite_token.trim();
     if token.is_empty() {

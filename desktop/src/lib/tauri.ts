@@ -10,7 +10,7 @@ import type {
   EngTaskList,
   EngUploadOutcome,
 } from "./eng";
-import type { AuthoredReceipt, AuthoredReport, AuthoredView, Collaboration, PublicRun } from "./eng-authored";
+import type { AuthoredOutbox, AuthoredReceipt, AuthoredReport, AuthoredView, Collaboration, FilesSyncStatus, PublicRun } from "./eng-authored";
 
 // Typed bindings for the Rust commands (see src-tauri/src/*.rs).
 // The desktop is a client of the platform's session API
@@ -415,4 +415,11 @@ export const engAuthoredApi = {
   submit: (attemptId: string, handoff: Record<string, string>, aiUse: string) =>
     invoke<AuthoredReceipt>("eng_authored_submit", { attemptId, handoff, aiUse }),
   report: (attemptId: string) => invoke<AuthoredReport | null>("eng_authored_report", { attemptId }),
+  filesStatus: (attemptId: string) => invoke<FilesSyncStatus>("eng_authored_files_status", { attemptId }),
+  syncFiles: (attemptId: string) => invoke<FilesSyncStatus>("eng_authored_sync_files", { attemptId }),
+  resolveFiles: (attemptId: string, choice: "keep_local" | "use_website") =>
+    invoke<FilesSyncStatus>("eng_authored_resolve_files", { attemptId, choice }),
+  outbox: (attemptId: string) => invoke<AuthoredOutbox>("eng_authored_outbox", { attemptId }),
+  saveHandoff: (attemptId: string, handoff: Record<string, string>, aiUse: string) =>
+    invoke<string>("eng_authored_save_handoff", { attemptId, handoff, aiUse }),
 };

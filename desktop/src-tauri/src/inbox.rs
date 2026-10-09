@@ -18,9 +18,7 @@ use crate::session::{content_str, session, SessionInfo};
 #[tauri::command]
 pub async fn list_invitations() -> AppResult<Vec<InboxInvitation>> {
     // Fail fast with a clear message when not signed in.
-    crate::auth::access_token()
-        .await
-        .map_err(|_| AppError::Auth("sign in first, then open your inbox".to_string()))?;
+    crate::auth::require_signed_in("sign in first, then open your inbox").await?;
     let invs = Platform::new().list_invitations().await?;
     Ok(sort_invitations(invs))
 }
@@ -49,9 +47,7 @@ pub async fn accept_invitation_by_id(
         }
     }
     // Fail fast with a clear message when not signed in.
-    crate::auth::access_token()
-        .await
-        .map_err(|_| AppError::Auth("sign in first, then accept an invitation".to_string()))?;
+    crate::auth::require_signed_in("sign in first, then accept an invitation").await?;
 
     let platform = Platform::new();
 

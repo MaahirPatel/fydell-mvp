@@ -65,9 +65,20 @@ implements exactly that (`src-tauri/src/auth.rs`):
    `auth::handle_callback_url`, which validates `state` (constant-time
    compare), exchanges the code for a Supabase session in the background, and
    emits `auth-changed` / `auth-error` to the frontend.
-4. Tokens (access + refresh) are stored in the OS keychain (`keyring` crate;
-   best-effort — memory always works) and **never cross the IPC boundary**:
-   `auth_session` returns only `{ signed_in, email, expires_at }`.
+4. Only the refresh token (plus email and user id) is stored in the OS
+   credential store (`keyring` with the per-OS native feature; without one,
+   keyring 3 silently uses an in-memory mock and every restart signs out).
+   The access token lives in memory and is renewed at startup. Tokens
+   **never cross the IPC boundary**: `auth_session` returns only
+   `{ signed_in, email, expires_at }`. If the credential store refuses the
+   write, the sign-in lasts until the app closes and diagnostics say so.
+   The session sealed into the one-time code is minted for the desktop
+   (`src/lib/auth/desktop-session.ts`), not copied from the browser's
+   cookies, so the two refresh tokens rotate independently and signing out
+   in one place does not invalidate the other through token reuse.
+   Refresh is serialized; a network error or Supabase 5xx/429 keeps the
+   session (`platform_error`), and only a rejected refresh token signs out.
+   A 401 from the platform triggers one forced refresh before giving up.
 5. Token refresh goes directly to Supabase Auth REST
    (`{SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, public anon key)
    — no web changes needed for refresh. The desktop build needs
@@ -198,6 +209,24 @@ write-then-rename) records the project path, starter hash and file list, the
 last package and its upload status, and the receipt. It never lives inside
 the project folder. The draft handoff answers are server-side
 (`PUT …/drafts`); there is no local sync journal for this flow.
+
+**Authored work samples: local outbox and file sync** (`eng_authored.rs`).
+The project folder is the source of truth on this computer. While the task
+is open the app reads that folder (and nothing else) about every 20 seconds,
+on window focus and when the network returns, and sends it to
+`PUT …/authored/files` fenced by the last revision Fydell accepted.
+`app_data/eng/<attemptId>.outbox.json` (fsync, then rename) keeps the
+handoff answers as they are typed, the last accepted revision and the local
+fingerprint it covered, and a sticky conflict marker. The UI shows "Saved on
+this computer" until the server accepts a copy, then "Accepted by Fydell
+(version N)". Delivery is idempotent: with no acceptance on record (first
+sync, or a reply lost in a crash) the app compares the website copy first
+and records an identical copy as accepted without writing; a 409 whose
+server copy matches the local files is also treated as accepted. A website
+copy that differs from both the last accepted copy and the starter is a
+conflict: nothing is overwritten until the candidate chooses "keep this
+computer's files" or "use the website copy" (the folder is moved aside, not
+deleted). The employer sees only what is submitted.
 
 **Frontend.** An "Engineering" tab (`EngTasks` → `EngAssessment` →
 `EngWork` / `EngResult`), with presentation logic in `lib/eng.ts`, which is
@@ -537,6 +566,16 @@ We will not claim proctoring we do not perform.
 
 ## 15. What remains unbuilt / unverified
 
+- Verified in the native Windows debug build against a local platform and
+  the development Supabase project, 2026-10-09: browser sign-in through the
+  real `fydell://` deep link, refresh token in Windows Credential Manager and
+  removed on sign-out, sign-in restored after a forced kill, an offline
+  platform shown as a connection error rather than a sign-out, authored
+  task setup and start, edits and handoff answers surviving a forced kill
+  and delivered on restart, and a duplicate delivery after a lost
+  acknowledgement creating no new revision. Submitting from the desktop and
+  comparing the receipt with the website and employer views was not
+  completed. macOS and Linux keychains are untested.
 - Verified on Windows, 2026-10-07: the desktop TypeScript project
   type-checks and `vite build` succeeds; `lib/eng.test.ts` passes; `cargo
   check` is clean; `cargo test` passes 42 tests; `tauri build` produces

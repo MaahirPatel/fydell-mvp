@@ -78,6 +78,62 @@ export interface AuthoredView {
   publicRuns: { used: number; limit: number; minGapSeconds: number; latest: PublicRun | null };
   receipt: { submissionId: string; archiveSha256: string; archiveBytes: number; submittedAt: string; late: boolean } | null;
   evaluation: AuthoredEvaluation | string;
+  /** The platform's saved copy of the files, shared with the website editor. */
+  workspace?: { revision: number; filesSha256: string } | null;
+}
+
+export interface AcceptedFiles {
+  revision: number;
+  filesSha256: string | null;
+  localFingerprint: string;
+  acceptedAt: string;
+}
+
+/** Mirrors `FilesSyncStatus` in src-tauri/src/eng_authored.rs. */
+export interface FilesSyncStatus {
+  state: "accepted" | "pending" | "conflict" | "blocked";
+  accepted: AcceptedFiles | null;
+  serverRevision: number | null;
+  detail: string | null;
+  backupDir: string | null;
+}
+
+/** Mirrors `AuthoredOutbox`: what this computer holds that Fydell may not have yet. */
+export interface AuthoredOutbox {
+  handoff: Record<string, string>;
+  aiUse: string;
+  handoffSavedAt: string | null;
+  accepted: AcceptedFiles | null;
+  conflict: { serverRevision: number; detectedAt: string } | null;
+}
+
+/**
+ * The save line for the project folder. "Saved on this computer" and
+ * "accepted by Fydell" are different facts and are never merged.
+ */
+export function filesSyncLabel(s: FilesSyncStatus | null, timeOf: (iso: string) => string): { tone: "ok" | "pending" | "warn"; text: string } {
+  if (!s) return { tone: "pending", text: "Checking your project folder…" };
+  switch (s.state) {
+    case "accepted":
+      return {
+        tone: "ok",
+        text: s.accepted
+          ? `Accepted by Fydell at ${timeOf(s.accepted.acceptedAt)} (version ${s.accepted.revision}). The website and the hiring team see the same files.`
+          : "Accepted by Fydell.",
+      };
+    case "pending":
+      return {
+        tone: "pending",
+        text: s.detail ?? "Saved on this computer. Not yet accepted by Fydell; the app sends it automatically.",
+      };
+    case "conflict":
+      return {
+        tone: "warn",
+        text: `The copy saved on the website changed separately (version ${s.serverRevision ?? "?"}). Nothing was overwritten. Choose which copy to keep.`,
+      };
+    default:
+      return { tone: "warn", text: s.detail ? `Fydell cannot take this folder yet: ${s.detail}` : "Fydell cannot take this folder yet." };
+  }
 }
 
 export interface TeamMessage {

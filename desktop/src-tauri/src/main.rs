@@ -74,8 +74,13 @@ fn main() {
             session::init(app_data);
 
             // fydell://auth/callback → auth::handle_callback_url.
-            // The scheme is registered per-OS at bundle time via the
-            // `deep-link` plugin config in tauri.conf.json.
+            // Installers register the scheme from the `deep-link` config in
+            // tauri.conf.json; an unbundled dev binary registers itself
+            // (per-user) so the browser handoff reaches it.
+            #[cfg(all(debug_assertions, any(windows, target_os = "linux")))]
+            if let Err(e) = app.deep_link().register_all() {
+                eprintln!("fydell: could not register the fydell:// scheme: {e}");
+            }
             let handle = app.handle().clone();
             app.deep_link().on_open_url(move |event| {
                 for url in event.urls() {
@@ -142,6 +147,11 @@ fn main() {
             eng_authored::eng_authored_collaboration,
             eng_authored::eng_authored_submit,
             eng_authored::eng_authored_report,
+            eng_authored::eng_authored_files_status,
+            eng_authored::eng_authored_sync_files,
+            eng_authored::eng_authored_resolve_files,
+            eng_authored::eng_authored_outbox,
+            eng_authored::eng_authored_save_handoff,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Fydell desktop");

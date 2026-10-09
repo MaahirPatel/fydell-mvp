@@ -6,6 +6,7 @@ import {
   authoredStage,
   environmentCheckState,
   evaluationNote,
+  filesSyncLabel,
   newClientMsgId,
   outcomeLabel,
   publicRunWaitSeconds,
@@ -13,6 +14,7 @@ import {
   type AuthoredReport,
   type AuthoredView,
   type Collaboration,
+  type FilesSyncStatus,
   type PublicRun,
 } from "../lib/eng-authored";
 import { messageOf } from "../App";
@@ -27,8 +29,8 @@ import { Bullets, CopyLine, Facts, WorkspaceCard } from "./EngAssessment";
    ========================================================================== */
 
 const AUTHORED_DISCLOSURE: readonly string[] = [
-  "This app writes the starter project into one folder on this computer and never changes it afterwards.",
-  "It reads that folder only when you run the public tests or submit, and shows you every file it would send first.",
+  "This app writes the starter project into one folder on this computer. It changes that folder again only if you choose to use the website copy, and it keeps your previous folder beside it.",
+  "While the task is open it reads only that folder, about every 20 seconds, to send a backup copy of your files to Fydell. Fydell reviews the files you submit, and shows you every file it would send first.",
   "It never runs your code itself and never watches your editor, screen or other files. Public tests run on Fydell’s test runner.",
 ];
 
@@ -474,11 +476,136 @@ function TeamPanel({ attemptId }: { attemptId: string }) {
   );
 }
 
+const SYNC_INTERVAL_MS = 20_000;
+
+function timeOf(iso: string): string {
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+/** Sends the project folder to the platform's copy of the attempt and says plainly which copy is where. */
+function FilesSync({ view }: { view: AuthoredView }) {
+  const attemptId = view.attempt.id;
+  const [status, setStatus] = useState<FilesSyncStatus | null>(null);
+  const resolve = useAction();
+  const inFlight = useRef(false);
+
+  const sync = useCallback(async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    try {
+      setStatus(await engAuthoredApi.syncFiles(attemptId));
+    } catch (e) {
+      setStatus((prev) => ({
+        state: prev?.state === "conflict" ? "conflict" : "pending",
+        accepted: prev?.accepted ?? null,
+        serverRevision: prev?.serverRevision ?? null,
+        detail: `Saved on this computer. Not yet accepted by Fydell: ${messageOf(e)}`,
+        backupDir: null,
+      }));
+    } finally {
+      inFlight.current = false;
+    }
+  }, [attemptId]);
+
+  useEffect(() => {
+    engAuthoredApi.filesStatus(attemptId).then(setStatus, () => {});
+    void sync();
+    const id = window.setInterval(() => void sync(), SYNC_INTERVAL_MS);
+    const now = () => void sync();
+    window.addEventListener("focus", now);
+    window.addEventListener("online", now);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("focus", now);
+      window.removeEventListener("online", now);
+    };
+  }, [attemptId, sync]);
+
+  const label = filesSyncLabel(status, timeOf);
+  return (
+    <div className="eng-plan mt-3" role="status" aria-live="polite">
+      <div className="row">
+        <span className={`chip ${label.tone === "ok" ? "chip-ok" : label.tone === "warn" ? "chip-warn" : ""}`}>
+          {status?.state === "accepted" ? "Accepted by Fydell" : status?.state === "conflict" ? "Two copies" : status?.state === "blocked" ? "Not sent" : "Saved on this computer"}
+        </span>
+        <span className="muted">{label.text}</span>
+        <div className="spacer" />
+        {status?.state !== "conflict" && (
+          <button className="btn ghost sm" onClick={() => void sync()}>
+            Send now
+          </button>
+        )}
+      </div>
+      {status?.backupDir && <p className="muted mt-2">Your previous folder was kept at {status.backupDir}.</p>}
+      {status?.state === "conflict" && (
+        <div className="row mt-2">
+          <button
+            className="btn sm"
+            disabled={resolve.busy}
+            onClick={() => void resolve.run(async () => setStatus(await engAuthoredApi.resolveFiles(attemptId, "keep_local")))}
+          >
+            Keep this computer’s files
+          </button>
+          <button
+            className="btn ghost sm"
+            disabled={resolve.busy}
+            onClick={() => void resolve.run(async () => setStatus(await engAuthoredApi.resolveFiles(attemptId, "use_website")))}
+          >
+            Use the website copy (this folder is kept beside it)
+          </button>
+        </div>
+      )}
+      {resolve.error && <div className="error mt-2">{resolve.error}</div>}
+    </div>
+  );
+}
+
 function SubmitPanel({ view, onView }: { view: AuthoredView; onView: () => Promise<void> }) {
   const prompts = view.task.submission.handoffPrompts;
+  const attemptId = view.attempt.id;
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [aiUse, setAiUse] = useState("");
+  const [restored, setRestored] = useState<"loading" | "ok" | "failed">("loading");
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [plan, setPlan] = useState<EngPackagePlan | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    engAuthoredApi.outbox(attemptId).then(
+      (o) => {
+        if (!live) return;
+        setAnswers(o.handoff);
+        setAiUse(o.aiUse);
+        setSavedAt(o.handoffSavedAt);
+        setRestored("ok");
+      },
+      (e: unknown) => {
+        if (!live) return;
+        setSaveError(messageOf(e));
+        setRestored("failed");
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [attemptId]);
+
+  // Every edit is written to this computer within half a second, so closing
+  // the app or a crash keeps the answers.
+  useEffect(() => {
+    if (restored !== "ok") return;
+    const id = window.setTimeout(() => {
+      engAuthoredApi.saveHandoff(attemptId, answers, aiUse).then(
+        (at) => {
+          setSavedAt(at);
+          setSaveError(null);
+        },
+        (e: unknown) => setSaveError(messageOf(e)),
+      );
+    }, 400);
+    return () => window.clearTimeout(id);
+  }, [attemptId, answers, aiUse, restored]);
   const [confirming, setConfirming] = useState(false);
   const preview = useAction();
   const submit = useAction();
@@ -536,14 +663,21 @@ function SubmitPanel({ view, onView }: { view: AuthoredView; onView: () => Promi
         <label key={p.id} className="eng-field">
           <span className="strong">{p.label}</span>
           {p.help && <span className="muted">{p.help}</span>}
-          <textarea className="textarea mt-2" rows={4} maxLength={8000} value={answers[p.id] ?? ""} onChange={(e) => setAnswers((a) => ({ ...a, [p.id]: e.target.value }))} />
+          <textarea className="textarea mt-2" rows={4} maxLength={8000} value={answers[p.id] ?? ""} disabled={restored === "loading"} onChange={(e) => setAnswers((a) => ({ ...a, [p.id]: e.target.value }))} />
         </label>
       ))}
       <label className="eng-field">
         <span className="strong">AI assistance</span>
         <span className="muted">Which AI tools you used and for what. Recorded as your statement.</span>
-        <textarea className="textarea mt-2" rows={3} maxLength={4000} value={aiUse} onChange={(e) => setAiUse(e.target.value)} />
+        <textarea className="textarea mt-2" rows={3} maxLength={4000} value={aiUse} disabled={restored === "loading"} onChange={(e) => setAiUse(e.target.value)} />
       </label>
+      <p className="muted mt-2" role="status">
+        {saveError
+          ? `Not saved on this computer: ${saveError}`
+          : savedAt
+            ? `Answers saved on this computer at ${timeOf(savedAt)}. Fydell receives them when you submit.`
+            : "Answers are saved on this computer as you type. Fydell receives them when you submit."}
+      </p>
 
       {submit.error && <div className="error mt-3">{submit.error}</div>}
       {blockers.length > 0 && <p className="muted mt-2">{blockers.join(" ")}</p>}
@@ -608,6 +742,7 @@ function Working({
         plannedNote="The published starter files will be written to:"
         verifiedNote="written from the published task"
       />
+      {local && <FilesSync view={view} />}
       <div className="panel-tabs mt-3" role="tablist">
         {(["brief", "tests", "team", "submit"] as const).map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} className={`panel-tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>

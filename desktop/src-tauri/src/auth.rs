@@ -87,19 +87,49 @@ use crate::config::platform_base;
 // exist on headless CI — the app still functions for the process lifetime).
 // ---------------------------------------------------------------------------
 
+/// What persists across restarts. The access token stays in memory only: it
+/// is short-lived, and a JWT does not fit the Windows Credential Manager's
+/// 2560-byte (UTF-16) limit. A restored session refreshes on first use.
+#[derive(Debug, Serialize, Deserialize)]
+struct KeychainRecord {
+    refresh_token: String,
+    email: String,
+    user_id: String,
+}
+
 fn load_keychain_session() -> Option<StoredSession> {
     let entry = keyring::Entry::new(KEYRING_SERVICE, KEYRING_ACCOUNT).ok()?;
     let raw = entry.get_password().ok()?;
-    serde_json::from_str(&raw).ok()
+    let rec: KeychainRecord = serde_json::from_str(&raw).ok()?;
+    if rec.refresh_token.is_empty() {
+        return None;
+    }
+    Some(StoredSession {
+        access_token: String::new(),
+        refresh_token: rec.refresh_token,
+        expires_at: 0,
+        email: rec.email,
+        user_id: rec.user_id,
+    })
 }
 
 fn save_keychain_session(s: &StoredSession) {
-    let raw = match serde_json::to_string(s) {
+    let rec = KeychainRecord {
+        refresh_token: s.refresh_token.clone(),
+        email: s.email.clone(),
+        user_id: s.user_id.clone(),
+    };
+    let raw = match serde_json::to_string(&rec) {
         Ok(r) => r,
         Err(_) => return,
     };
     if let Ok(entry) = keyring::Entry::new(KEYRING_SERVICE, KEYRING_ACCOUNT) {
-        let _ = entry.set_password(&raw);
+        if entry.set_password(&raw).is_err() {
+            crate::diagnostics::note_error(
+                "auth_required",
+                "could not store the sign-in in the OS credential store; it lasts until the app closes",
+            );
+        }
     }
 }
 
@@ -125,10 +155,9 @@ pub fn auth_sign_in(app: AppHandle) -> AppResult<()> {
     let verifier = pkce_verifier();
     let challenge = pkce_challenge(&verifier);
     {
+        // An existing session is replaced only when this sign-in completes,
+        // so a session the platform stopped accepting never blocks signing in.
         let mut a = auth().lock().unwrap();
-        if a.session.is_some() {
-            return Err(AppError::Auth("already signed in".to_string()));
-        }
         a.pending_state = Some(state.clone());
         a.pending_verifier = Some(verifier);
     }
@@ -138,6 +167,10 @@ pub fn auth_sign_in(app: AppHandle) -> AppResult<()> {
         urlencoding_safe(&state),
         challenge
     );
+    // Lets a developer finish sign-in in another browser. The state is a
+    // one-time nonce and the S256 challenge is public; the verifier stays here.
+    #[cfg(debug_assertions)]
+    eprintln!("fydell (dev): sign-in page {url}");
     app.opener()
         .open_url(&url, None::<&str>)
         .map_err(|e| AppError::Execution(format!("could not open system browser: {e}")))?;
@@ -152,7 +185,7 @@ pub fn auth_session() -> AppResult<SessionSummary> {
         Some(s) => SessionSummary {
             signed_in: true,
             email: Some(s.email.clone()),
-            expires_at: Some(s.expires_at),
+            expires_at: (s.expires_at > 0).then_some(s.expires_at),
         },
         None => SessionSummary {
             signed_in: false,
@@ -327,12 +360,52 @@ async fn exchange_code(code: &str, state: &str, verifier: &str) -> AppResult<Sto
 /// Refresh needs no web changes: it goes directly to the Supabase project
 /// with the public anon key.
 pub(crate) async fn access_token() -> AppResult<String> {
+    if let Some(token) = fresh_access_token()? {
+        return Ok(token);
+    }
+    let _guard = refresh_lock().lock().await;
+    if let Some(token) = fresh_access_token()? {
+        return Ok(token);
+    }
     let current = { auth().lock().unwrap().session.clone() };
     let session = current.ok_or_else(|| AppError::Auth("not signed in".to_string()))?;
-    if session.expires_at - REFRESH_SKEW_SECS > now_secs() {
-        return Ok(session.access_token);
-    }
     refresh_session(&session).await.map(|s| s.access_token)
+}
+
+/// `auth_required` must mean "signed out", so callers that only need a
+/// session keep transient failures (offline, Supabase 5xx) as they are.
+pub(crate) async fn require_signed_in(msg: &str) -> AppResult<()> {
+    match access_token().await {
+        Ok(_) => Ok(()),
+        Err(AppError::Auth(_)) => Err(AppError::Auth(msg.to_string())),
+        Err(other) => Err(other),
+    }
+}
+
+/// After the platform answers 401: renew the access token once. A rejected
+/// refresh signs out (`Auth`); a successful one means the 401 was transient
+/// and the caller may retry.
+pub(crate) async fn revalidate_after_unauthorized() -> AppResult<()> {
+    let _guard = refresh_lock().lock().await;
+    let current = { auth().lock().unwrap().session.clone() };
+    let session = current.ok_or_else(|| AppError::Auth("not signed in".to_string()))?;
+    refresh_session(&session).await.map(|_| ())
+}
+
+/// Supabase rotates refresh tokens, so refreshes must not race: one runs,
+/// the rest reuse its result.
+fn refresh_lock() -> &'static tokio::sync::Mutex<()> {
+    static REFRESH: OnceLock<tokio::sync::Mutex<()>> = OnceLock::new();
+    REFRESH.get_or_init(|| tokio::sync::Mutex::new(()))
+}
+
+fn fresh_access_token() -> AppResult<Option<String>> {
+    let a = auth().lock().unwrap();
+    let session = a
+        .session
+        .as_ref()
+        .ok_or_else(|| AppError::Auth("not signed in".to_string()))?;
+    Ok((session.expires_at - REFRESH_SKEW_SECS > now_secs()).then(|| session.access_token.clone()))
 }
 
 #[derive(Deserialize)]
@@ -360,7 +433,13 @@ async fn refresh_session(session: &StoredSession) -> AppResult<StoredSession> {
         .timeout(std::time::Duration::from_secs(30))
         .send()
         .await
-        .map_err(|e| AppError::Auth(format!("session refresh failed: {e}")))?;
+        .map_err(|e| AppError::Platform(format!("could not renew your sign-in (check your connection): {e}")))?;
+    if res.status().is_server_error() || res.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
+        return Err(AppError::Platform(format!(
+            "session refresh failed ({}); try again shortly",
+            res.status()
+        )));
+    }
     if !res.status().is_success() {
         // Refresh token rejected: the session is dead; drop it.
         {
@@ -385,6 +464,14 @@ async fn refresh_session(session: &StoredSession) -> AppResult<StoredSession> {
     };
     {
         let mut a = auth().lock().unwrap();
+        // A sign-out during the refresh wins: never resurrect the session.
+        let still_current = a
+            .session
+            .as_ref()
+            .is_some_and(|s| s.refresh_token == session.refresh_token);
+        if !still_current {
+            return Err(AppError::Auth("not signed in".to_string()));
+        }
         a.session = Some(refreshed.clone());
     }
     save_keychain_session(&refreshed);

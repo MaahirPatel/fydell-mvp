@@ -12,9 +12,7 @@ use crate::platform::{EngineerProfileView, PassportView, Platform};
 /// `Ok(None)` means no profile exists yet — the UI shows first-run onboarding.
 #[tauri::command]
 pub async fn get_profile() -> AppResult<Option<EngineerProfileView>> {
-    crate::auth::access_token()
-        .await
-        .map_err(|_| AppError::Auth("sign in first, then open your profile".to_string()))?;
+    crate::auth::require_signed_in("sign in first, then open your profile").await?;
     Platform::new().get_profile().await
 }
 
@@ -26,9 +24,7 @@ pub async fn update_profile(
     headline: String,
     role: String,
 ) -> AppResult<EngineerProfileView> {
-    crate::auth::access_token()
-        .await
-        .map_err(|_| AppError::Auth("sign in first, then edit your profile".to_string()))?;
+    crate::auth::require_signed_in("sign in first, then edit your profile").await?;
     let display_name = display_name.trim();
     if display_name.is_empty() {
         return Err(AppError::Execution(
@@ -49,9 +45,7 @@ pub async fn update_profile(
 /// the UI shows the empty state (add your first repository), not an error.
 #[tauri::command]
 pub async fn get_passport() -> AppResult<Option<PassportView>> {
-    crate::auth::access_token()
-        .await
-        .map_err(|_| AppError::Auth("sign in first, then open your profile".to_string()))?;
+    crate::auth::require_signed_in("sign in first, then open your profile").await?;
     Platform::new().get_passport().await
 }
 
@@ -65,9 +59,7 @@ pub async fn add_project(
     contribution: String,
     github_login: Option<String>,
 ) -> AppResult<serde_json::Value> {
-    crate::auth::access_token()
-        .await
-        .map_err(|_| AppError::Auth("sign in first, then add a project".to_string()))?;
+    crate::auth::require_signed_in("sign in first, then add a project").await?;
     let repository = repository.trim();
     if repository.is_empty() {
         return Err(AppError::Execution(
@@ -89,9 +81,7 @@ pub async fn add_project(
 /// Remove a project from the passport. Returns `{ passport, explanation }`.
 #[tauri::command]
 pub async fn remove_project(repo: String) -> AppResult<serde_json::Value> {
-    crate::auth::access_token()
-        .await
-        .map_err(|_| AppError::Auth("sign in first, then edit your profile".to_string()))?;
+    crate::auth::require_signed_in("sign in first, then edit your profile").await?;
     let repo = repo.trim();
     if !is_repo_shape(repo) {
         return Err(AppError::Execution("unknown project".to_string()));

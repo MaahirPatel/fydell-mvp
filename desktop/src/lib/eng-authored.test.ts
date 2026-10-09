@@ -5,13 +5,46 @@ import {
   authoredStage,
   environmentCheckState,
   evaluationNote,
+  filesSyncLabel,
   newClientMsgId,
   outcomeLabel,
   publicRunWaitSeconds,
   runHeadline,
   runTally,
+  type FilesSyncStatus,
   type PublicRun,
 } from "./eng-authored.js";
+
+describe("files sync label", () => {
+  const at = () => "10:30";
+  const base: FilesSyncStatus = { state: "pending", accepted: null, serverRevision: null, detail: null, backupDir: null };
+  it("never calls local-only work accepted", () => {
+    const l = filesSyncLabel(base, at);
+    assert.equal(l.tone, "pending");
+    assert.match(l.text, /Saved on this computer/);
+    assert.doesNotMatch(l.text, /^Accepted/);
+  });
+  it("names the accepted version and time", () => {
+    const l = filesSyncLabel(
+      { ...base, state: "accepted", accepted: { revision: 4, filesSha256: null, localFingerprint: "f", acceptedAt: "2026-10-09T14:30:00Z" } },
+      at,
+    );
+    assert.equal(l.tone, "ok");
+    assert.match(l.text, /Accepted by Fydell at 10:30 \(version 4\)/);
+  });
+  it("says a conflict overwrote nothing", () => {
+    const l = filesSyncLabel({ ...base, state: "conflict", serverRevision: 7 }, at);
+    assert.equal(l.tone, "warn");
+    assert.match(l.text, /version 7/);
+    assert.match(l.text, /Nothing was overwritten/);
+  });
+  it("explains why a folder cannot be sent", () => {
+    assert.match(filesSyncLabel({ ...base, state: "blocked", detail: ".env looks like a credential file" }, at).text, /\.env/);
+  });
+  it("shows a checking state before the first answer", () => {
+    assert.equal(filesSyncLabel(null, at).tone, "pending");
+  });
+});
 
 function run(over: Partial<PublicRun> = {}): PublicRun {
   return {
