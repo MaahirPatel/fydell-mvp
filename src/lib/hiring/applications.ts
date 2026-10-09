@@ -329,6 +329,38 @@ export async function listApplicationQueue(organizationId: string, limit = 20): 
   return items.sort((a, b) => a.since.localeCompare(b.since)).slice(0, limit);
 }
 
+export type OrgApplicationItem = {
+  id: string;
+  roleId: string;
+  roleTitle: string;
+  name: string;
+  email: string;
+  stageLabel: string;
+  withdrawn: boolean;
+  submittedAt: string;
+};
+
+/** Every application across the workspace's roles, newest first, for the Candidates page. */
+export async function listOrgApplications(organizationId: string, limit = 200): Promise<OrgApplicationItem[]> {
+  const db = createAdminSupabaseClient();
+  const { data } = await db
+    .from("role_applications")
+    .select("id,role_id,contact_name,contact_email,role_snapshot,status,stage,submitted_at")
+    .eq("organization_id", organizationId)
+    .order("submitted_at", { ascending: false })
+    .limit(limit);
+  return ((data ?? []) as unknown as Pick<AppRow, "id" | "role_id" | "contact_name" | "contact_email" | "role_snapshot" | "status" | "stage" | "submitted_at">[]).map((r) => ({
+    id: r.id,
+    roleId: r.role_id,
+    roleTitle: r.role_snapshot.title,
+    name: r.contact_name,
+    email: r.contact_email,
+    stageLabel: r.status === "withdrawn" ? "Withdrawn" : STAGE_LABEL[r.stage],
+    withdrawn: r.status === "withdrawn",
+    submittedAt: r.submitted_at,
+  }));
+}
+
 export async function listApplicationsForRole(
   organizationId: string,
   roleId: string,

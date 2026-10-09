@@ -2,7 +2,7 @@ export type WorkspaceNavLabel =
   | "Overview"
   | "Roles"
   | "Assessments"
-  | "Applicants"
+  | "Candidates"
   | "Reviews"
   | "Work samples"
   | "Team"
@@ -42,7 +42,7 @@ export const WORKSPACE_NAV_GROUPS: WorkspaceNavGroup[] = [
       { href: "/app/employer", label: "Overview", exact: true },
       { href: "/app/employer/openings", label: "Roles" },
       { href: "/app/employer/engineering", label: "Assessments" },
-      { href: "/app/employer/candidates", label: "Applicants" },
+      { href: "/app/employer/candidates", label: "Candidates" },
       { href: "/app/employer/passports", label: "Reviews" },
       { href: "/app/employer/work-samples", label: "Work samples" },
       { href: "/app/employer/team", label: "Team" },

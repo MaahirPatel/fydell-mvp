@@ -72,7 +72,7 @@ export default function CreateRoleForm({
   return (
     <form onSubmit={submit} className="grid gap-4">
       <FormError>{error}</FormError>
-      <Field label="Role title" htmlFor="role-title">
+      <Field label="Job title" htmlFor="role-title">
         <Input id="role-title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} required placeholder="Backend engineer, payments" />
       </Field>
       <Field label="Stack" htmlFor="role-stack" help="Comma separated. Shown to reviewers as context. The simulation you attach sets the language candidates work in.">
@@ -101,7 +101,7 @@ export default function CreateRoleForm({
       </fieldset>
       <div>
         <Button type="submit" variant="primary" loading={saving}>
-          {roleId ? "Save changes" : "Create draft role"}
+          {roleId ? "Save changes" : "Create draft assessment"}
         </Button>
       </div>
     </form>

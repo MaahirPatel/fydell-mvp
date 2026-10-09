@@ -20,7 +20,7 @@ import { FOCUS_OPTIONS, getRoleForOrg } from "@/lib/eng/roles";
 import { resolveScenarioVersion } from "@/lib/eng/scenario-versions";
 import { OPERATIONAL_STATES } from "@/lib/eng/state";
 
-export const metadata = { title: "Engineering role" };
+export const metadata = { title: "Assessment" };
 export const dynamic = "force-dynamic";
 
 function when(iso: string | null): React.ReactNode {
@@ -66,7 +66,7 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
         description={
           workSamples.length
             ? "Choose the simulation each candidate gets when you invite them. Every candidate stays on the version they were invited to."
-            : `${taskTitle}, version ${row.version}. Every candidate for this role gets exactly this version.`
+            : `${taskTitle}, version ${row.version}. Every candidate for this assessment gets exactly this version.`
         }
         meta={
           <>
@@ -77,7 +77,7 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
         action={canManage ? <RoleStatusActions roleId={role.id} status={role.status} /> : undefined}
       />
 
-      <div className="mt-7 grid gap-6">
+      <div className="mt-7 grid grid-cols-[minmax(0,1fr)] gap-6">
         <Panel>
           <PanelSection
             title="Candidates"
@@ -87,7 +87,7 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
             <div className="grid gap-5 px-5 pb-5 lg:px-6">
               <InviteCandidateForm
                 roleId={role.id}
-                defaultLabel={`${taskTitle}, version ${row.version} (${resolved.origin === "fydell_reviewed" ? "Fydell’s built-in task" : "the role’s simulation"})`}
+                defaultLabel={`${taskTitle}, version ${row.version} (${resolved.origin === "fydell_reviewed" ? "Fydell’s built-in task" : "the assessment’s simulation"})`}
                 workSamples={workSamples}
                 initialVersionId={resolved.origin === "fydell_reviewed" ? (workSamples[0]?.id ?? "") : ""}
               />
@@ -99,7 +99,7 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
             </div>
           ) : role.status === "draft" ? (
             <div className="px-5 pb-5 lg:px-6">
-              <EmptyState title="Publish to invite" description="Preview the task below. Once you publish, the role and task version are frozen and you can invite candidates." />
+              <EmptyState title="Publish to invite" description="Preview the task below. Once you publish, the assessment and task version are frozen and you can invite candidates." />
             </div>
           ) : null}
           {candidates.length > 0 ? (
@@ -173,7 +173,7 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
           </Panel>
         ) : null}
         {definition ? (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-2">
           <Panel>
             <PanelSection title="What candidates see" description={`The brief, the rules and the setup requirements, exactly as shown before they start.${builtInScope}`}>
               <PanelLabel>Brief</PanelLabel>
@@ -199,7 +199,7 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
             </PanelSection>
           </Panel>
           <Panel>
-            <PanelSection title="How it is reviewed" description={`Focus for this role: ${focusLabels.join(", ")}.${builtInScope}`}>
+            <PanelSection title="How it is reviewed" description={`Focus for this assessment: ${focusLabels.join(", ")}.${builtInScope}`}>
               <ul className="grid gap-4">
                 {definition.rubric.map((dimension) => (
                   <li key={dimension.key}>

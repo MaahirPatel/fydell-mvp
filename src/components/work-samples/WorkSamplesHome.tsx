@@ -179,7 +179,7 @@ export function WorkSamplesHome({
               }
               secondary={
                 <Link href="/app/employer/engineering" className="text-[14px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline">
-                  Engineering roles
+                  Assessments
                 </Link>
               }
             />

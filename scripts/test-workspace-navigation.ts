@@ -21,7 +21,7 @@ const expected = [
   "Overview",
   "Roles",
   "Assessments",
-  "Applicants",
+  "Candidates",
   "Reviews",
   "Work samples",
   "Team",
@@ -73,7 +73,7 @@ ok(
 );
 ok(
   "the hiring destinations are visible before More",
-  visibleByDefault.map((item) => item.label).join(",") === "Overview,Roles,Assessments,Applicants,Reviews,Work samples,Team",
+  visibleByDefault.map((item) => item.label).join(",") === "Overview,Roles,Assessments,Candidates,Reviews,Work samples,Team",
 );
 ok(
   "More holds the lower-traffic records",

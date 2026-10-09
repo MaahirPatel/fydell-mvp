@@ -16,6 +16,8 @@ import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Tabl
 import { engAdmin } from "@/lib/eng/context";
 import { listRoleSummaries, listTeamQueue } from "@/lib/eng/employer-view";
 import { listApplicationQueue } from "@/lib/hiring/applications";
+import { listRoles } from "@/lib/hiring/roles";
+import { ROLE_STATE_LABEL } from "@/lib/hiring/role-contract";
 import {
   getInvitationRecords,
   getOperationalSnapshot,
@@ -145,17 +147,17 @@ const SETUP_STEPS = [
     cta: "Create simulation",
   },
   {
-    title: "Open a role",
-    detail: "Describe the engineering role and attach the published simulation candidates will complete.",
+    title: "Create an assessment",
+    detail: "Name the job and attach the published simulation candidates will complete.",
     href: "/app/employer/engineering",
-    cta: "Create role",
+    cta: "Create assessment",
   },
   {
     title: "Invite candidates",
     detail:
-      "Candidates work in the Fydell desktop app, in their own editor. Your team reviews the evidence before anything is released.",
-    href: "/app/employer/roles",
-    cta: "View roles",
+      "Invite from the assessment. Candidates work in the Fydell desktop app, in their own editor. Your team reviews the evidence before anything is released.",
+    href: "/app/employer/engineering",
+    cta: "View assessments",
   },
 ] as const;
 
@@ -212,14 +214,16 @@ export default async function EmployerHomePage() {
   const now = Date.now();
 
   const db = engAdmin();
-  const [invitations, reports, snapshot, engRoles, attemptQueue, applicationQueue] = await Promise.all([
+  const [invitations, reports, snapshot, engRoles, attemptQueue, applicationQueue, hiringRoles] = await Promise.all([
     getInvitationRecords(org.organizationId, 200),
     getReportRecords(org.organizationId, 5),
     getOperationalSnapshot(org.organizationId, now),
     listRoleSummaries(db, org.organizationId),
     listTeamQueue(db, org.organizationId),
     listApplicationQueue(org.organizationId, 8),
+    listRoles(org.organizationId),
   ]);
+  const openRoles = hiringRoles.filter((r) => r.state !== "closed");
   const teamQueue = [
     ...attemptQueue.map((item) => ({
       key: `attempt:${item.attemptId}`,
@@ -277,7 +281,7 @@ export default async function EmployerHomePage() {
         action={
           canManage ? (
             <ButtonLink href="/app/employer/engineering" variant="primary" size="sm">
-              Create engineering role
+              Create assessment
             </ButtonLink>
           ) : undefined
         }
@@ -347,20 +351,57 @@ export default async function EmployerHomePage() {
         </Panel>
       ) : null}
 
-      {!hasInvited && activeRoles.length === 0 ? (
+      {!hasInvited && activeRoles.length === 0 && openRoles.length === 0 ? (
         <GettingStarted className={attentionRows.length > 0 ? "mt-6" : "mt-7"} canManage={canManage} />
       ) : null}
 
-      {activeRoles.length > 0 ? (
+      {openRoles.length > 0 ? (
         <Panel className="mt-6">
           <WorkspaceSection
-            title="Engineering roles"
-            action={<SectionLink href="/app/employer/engineering" label="All roles" />}
+            title="Roles"
+            description="Openings with a shareable page. Applicants send their Passport."
+            action={<SectionLink href="/app/employer/openings" label="All roles" />}
             bodyClassName="-mx-5 -mb-4 lg:-mx-6 lg:-mb-5"
           >
             <Table>
               <THead>
                 <TH>Role</TH>
+                <TH>Status</TH>
+                <TH align="right">Applications</TH>
+                <TH align="right">New</TH>
+              </THead>
+              <TBody>
+                {openRoles.slice(0, 6).map((role) => (
+                  <TR key={role.id}>
+                    <TDPrimary>
+                      <Link href={`/app/employer/openings/${role.id}`} className="hover:underline">
+                        {role.title}
+                      </Link>
+                    </TDPrimary>
+                    <TD>
+                      <StatusTag tone={role.state === "open" ? "good" : "neutral"}>{ROLE_STATE_LABEL[role.state]}</StatusTag>
+                    </TD>
+                    <TD align="right">{role.applications}</TD>
+                    <TD align="right">{role.newApplications}</TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          </WorkspaceSection>
+        </Panel>
+      ) : null}
+
+      {activeRoles.length > 0 ? (
+        <Panel className="mt-6">
+          <WorkspaceSection
+            title="Assessments"
+            description="Work samples you invite candidates to directly."
+            action={<SectionLink href="/app/employer/engineering" label="All assessments" />}
+            bodyClassName="-mx-5 -mb-4 lg:-mx-6 lg:-mb-5"
+          >
+            <Table>
+              <THead>
+                <TH>Assessment</TH>
                 <TH>Status</TH>
                 <TH align="right">Invited</TH>
                 <TH align="right">In progress</TH>
@@ -396,10 +437,9 @@ export default async function EmployerHomePage() {
       {invitations.length > 0 ? (
         <Panel className="mt-6">
           <WorkspaceSection
-            title="Active roles"
-            action={
-              <SectionLink href="/app/employer/roles" label="All roles" />
-            }
+            title="Simulations"
+            description="Where candidates invited to a simulation have reached."
+            action={<SectionLink href="/app/employer/candidates" label="All candidates" />}
           >
             <CandidatePipeline invitations={invitations} />
           </WorkspaceSection>

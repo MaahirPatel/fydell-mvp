@@ -46,7 +46,7 @@ const NAV_ICONS: Record<WorkspaceNavLabel, typeof House> = {
   Overview: House,
   Roles: BriefcaseBusiness,
   Assessments: ShieldCheck,
-  Applicants: Users,
+  Candidates: Users,
   Reviews: IdCard,
   "Work samples": SquareTerminal,
   "Task library": LibraryBig,

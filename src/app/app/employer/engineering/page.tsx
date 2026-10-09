@@ -36,15 +36,15 @@ export default async function EngineeringRolesPage() {
 
       <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <Panel>
-          <PanelSection title="Roles" description="Invite from a role page. Every candidate stays on the simulation version they were invited to." />
+          <PanelSection title="Your assessments" description="Invite from an assessment's page. Every candidate stays on the simulation version they were invited to. Openings that people apply to are under Roles." />
           {roles.length === 0 ? (
             <div className="px-5 pb-5 lg:px-6">
-              <EmptyState title="No engineering roles yet" description={canManage ? "Create a draft role, preview the task, then publish it to start inviting." : "An owner, admin or hiring manager can create the first role."} />
+              <EmptyState title="No assessments yet" description={canManage ? "Create a draft assessment, preview the task, then publish it to start inviting." : "An owner, admin or hiring manager can create the first assessment."} />
             </div>
           ) : (
             <Table>
               <THead>
-                <TH>Role</TH>
+                <TH>Assessment</TH>
                 <TH>Status</TH>
                 <TH align="right">Invited</TH>
                 <TH align="right">In progress</TH>
@@ -74,13 +74,13 @@ export default async function EngineeringRolesPage() {
         <div className="grid h-fit gap-6">
           {canManage ? (
             <Panel>
-              <PanelSection title="New role" description="Starts as a draft. You can edit it until you publish.">
+              <PanelSection title="New assessment" description="Starts as a draft. You can edit it until you publish.">
                 <CreateRoleForm focusOptions={FOCUS_OPTIONS} />
               </PanelSection>
             </Panel>
           ) : null}
           <Panel>
-            <PanelSection title="Simulations" description="Roles attach a published simulation from Work samples.">
+            <PanelSection title="Simulations" description="Each assessment attaches a published simulation from Work samples.">
               <p className="text-app-body leading-[1.6] text-[var(--text-secondary)]">
                 Start from a simulation template reviewed by Fydell, use it as it is or adapt it to your product, then publish it once the checks pass.
               </p>
