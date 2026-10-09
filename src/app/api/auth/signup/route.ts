@@ -4,7 +4,7 @@ import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/
 import { completeEmployerOnboarding } from "@/lib/pilot/lifecycle";
 import { ensureCandidateProfile, audit } from "@/lib/auth/signup-helpers";
 import { seedEngineerProfileName } from "@/lib/auth/account-name";
-import { isReservedOrganizationName } from "@/lib/org/reserved";
+import { employerSelfSignupMode, isReservedOrganizationName } from "@/lib/org/reserved";
 import { publicErrorMessage } from "@/lib/security/public-error";
 import { limitByIp, ROUTE_LIMITS } from "@/lib/security/route-limits";
 export const dynamic = "force-dynamic";
@@ -67,6 +67,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
     }
     if (path === "employer") {
+      if (employerSelfSignupMode() === "disabled") {
+        return NextResponse.json(
+          { error: "Employer self-signup is disabled. Request a pilot instead." },
+          { status: 403 }
+        );
+      }
       if (!companyName) {
         return NextResponse.json({ error: "Company name is required." }, { status: 400 });
       }

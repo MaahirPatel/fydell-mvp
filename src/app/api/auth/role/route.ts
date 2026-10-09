@@ -4,7 +4,7 @@ import { createAdminSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/
 import { completeEmployerOnboarding } from "@/lib/pilot/lifecycle";
 import { ensureCandidateProfile, audit } from "@/lib/auth/signup-helpers";
 import { accountDisplayName, seedEngineerProfileName } from "@/lib/auth/account-name";
-import { isReservedOrganizationName } from "@/lib/org/reserved";
+import { employerSelfSignupMode, isReservedOrganizationName } from "@/lib/org/reserved";
 import { partnerSignupEnabled } from "@/lib/auth/flags";
 import { publicErrorMessage } from "@/lib/security/public-error";
 
@@ -28,6 +28,12 @@ export async function POST(req: Request) {
     const role = String(body.role || "") as Role;
     if (!["employer", "fde", "partner"].includes(role)) {
       return NextResponse.json({ error: "Invalid role." }, { status: 400 });
+    }
+    if (role === "employer" && employerSelfSignupMode() === "disabled") {
+      return NextResponse.json(
+        { error: "Employer self-signup is disabled. Request a pilot instead." },
+        { status: 403 }
+      );
     }
     if (role === "partner" && !partnerSignupEnabled()) {
       return NextResponse.json({ error: "Partner signup is not open yet." }, { status: 403 });
