@@ -41,7 +41,7 @@ function Section({ id, title, description, children }: { id: string; title: stri
         {title}
       </h2>
       {description ? <p className="mt-1 max-w-[72ch] text-app-meta leading-[1.5] text-[var(--text-secondary)]">{description}</p> : null}
-      <div className="mt-5 grid gap-5">{children}</div>
+      <div className="mt-5 grid grid-cols-1 gap-5">{children}</div>
     </section>
   );
 }
@@ -119,7 +119,7 @@ function IntakeForm({ roleId, initial, members, expectedUpdatedAt, requirementsV
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-6" noValidate>
+    <form onSubmit={submit} className="grid grid-cols-1 gap-6" noValidate>
       {restoredAt ? (
         <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-4 py-3 text-app-meta text-[var(--text-secondary)]">
           <span>
@@ -144,7 +144,7 @@ function IntakeForm({ roleId, initial, members, expectedUpdatedAt, requirementsV
         <Field label="Role title" htmlFor="role-title">
           <Input id="role-title" value={draft.title} onChange={text("title")} maxLength={120} required placeholder="Backend Engineer, Payments" />
         </Field>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Field label="Role family" htmlFor="role-family">
             <Select
               id="role-family"
@@ -258,7 +258,7 @@ function IntakeForm({ roleId, initial, members, expectedUpdatedAt, requirementsV
         <Field label="Team and product context" htmlFor="role-team" optional help="Who they work with and what the product does. Helps applicants pick relevant projects.">
           <Textarea id="role-team" value={draft.teamContext} onChange={text("teamContext")} maxLength={2000} rows={3} />
         </Field>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Field label="Location" htmlFor="role-location" optional>
             <Input id="role-location" value={draft.location} onChange={text("location")} maxLength={120} placeholder="London or Berlin" />
           </Field>
@@ -277,7 +277,7 @@ function IntakeForm({ roleId, initial, members, expectedUpdatedAt, requirementsV
       </Section>
 
       <Section id="sec-people" title="People" description="Choose from active members of your workspace.">
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Field label="Hiring owner" htmlFor="role-owner" optional>
             <Select id="role-owner" value={draft.hiringOwner} onChange={(e) => set("hiringOwner", e.target.value)}>
               <option value="">No owner yet</option>
@@ -289,7 +289,7 @@ function IntakeForm({ roleId, initial, members, expectedUpdatedAt, requirementsV
             </Select>
           </Field>
         </div>
-        <fieldset className="grid gap-2">
+        <fieldset className="grid min-w-0 gap-2">
           <legend className="text-app-meta font-medium text-[var(--text-primary)]">Reviewers</legend>
           {members.length === 0 ? (
             <p className="text-app-meta text-[var(--text-secondary)]">No other active members yet. Invite teammates from Team settings.</p>
@@ -303,7 +303,7 @@ function IntakeForm({ roleId, initial, members, expectedUpdatedAt, requirementsV
                     onChange={(e) => set("reviewerIds", e.target.checked ? [...draft.reviewerIds, m.userId] : draft.reviewerIds.filter((id) => id !== m.userId))}
                     className="h-4 w-4 shrink-0 accent-[var(--control-solid)]"
                   />
-                  <span className="min-w-0 truncate">{m.label}</span>
+                  <span className="min-w-0 [overflow-wrap:anywhere]">{m.label}</span>
                 </label>
               ))}
             </div>
@@ -323,7 +323,7 @@ function IntakeForm({ roleId, initial, members, expectedUpdatedAt, requirementsV
             addLabel="Add step"
           />
         </Field>
-        <fieldset className="grid gap-2">
+        <fieldset className="grid min-w-0 gap-2">
           <legend className="text-app-meta font-medium text-[var(--text-primary)]">Evidence you accept</legend>
           <div className="grid gap-1.5 sm:grid-cols-2">
             {EVIDENCE_KINDS.map((k) => (
@@ -339,7 +339,7 @@ function IntakeForm({ roleId, initial, members, expectedUpdatedAt, requirementsV
             ))}
           </div>
         </fieldset>
-        <fieldset className="grid gap-2">
+        <fieldset className="grid min-w-0 gap-2">
           <legend className="text-app-meta font-medium text-[var(--text-primary)]">When to use a work sample</legend>
           <div className="grid gap-2">
             {(Object.keys(WORK_SAMPLE_POLICY_LABEL) as WorkSamplePolicy[]).map((p) => (
@@ -347,7 +347,7 @@ function IntakeForm({ roleId, initial, members, expectedUpdatedAt, requirementsV
             ))}
           </div>
         </fieldset>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Field label="Expected effort from applicants" htmlFor="role-effort" optional>
             <Input id="role-effort" value={draft.expectedEffort} onChange={text("expectedEffort")} maxLength={200} placeholder="About 2 hours across the process" />
           </Field>
@@ -361,7 +361,7 @@ function IntakeForm({ roleId, initial, members, expectedUpdatedAt, requirementsV
       </Section>
 
       <Section id="sec-visibility" title="Visibility and status">
-        <fieldset className="grid gap-2">
+        <fieldset className="grid min-w-0 gap-2">
           <legend className="sr-only">Visibility</legend>
           <div className="grid gap-2 sm:grid-cols-3">
             {(Object.keys(VISIBILITY_LABEL) as Visibility[]).map((v) => (

@@ -116,6 +116,16 @@ check("appends safe next", withNext("/login", "/invite/abc"), "/login?next=%2Fin
 check("drops unsafe next", withNext("/login", "https://evil.com"), "/login");
 check("drops null next", withNext("/login", null), "/login");
 check(
+  "role application survives sign-up",
+  withNext("/signup", "/jobs/backend-engineer-1a2b3c4d/apply"),
+  "/signup?next=%2Fjobs%2Fbackend-engineer-1a2b3c4d%2Fapply",
+);
+check(
+  "sign-up to log-in hop keeps the role application",
+  withNext("/login", new URLSearchParams("next=%2Fjobs%2Fbackend-engineer-1a2b3c4d%2Fapply").get("next")),
+  "/login?next=%2Fjobs%2Fbackend-engineer-1a2b3c4d%2Fapply",
+);
+check(
   "respects existing query",
   withNext("/login?reset=1", "/app/employer"),
   "/login?reset=1&next=%2Fapp%2Femployer",

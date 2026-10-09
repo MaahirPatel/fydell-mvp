@@ -227,7 +227,13 @@ export default function ApplyForm({
         <Button type="submit" variant="primary" size="lg" loading={busy} disabled={!confirm || !hasContent || !draft.contactName.trim()}>
           Send application
         </Button>
-        {!hasContent ? <p className="text-app-meta text-[var(--text-secondary)]">Include a project, a link or a note.</p> : null}
+        {!draft.contactName.trim() ? (
+          <p className="text-app-meta text-[var(--text-secondary)]">Add your name.</p>
+        ) : !hasContent ? (
+          <p className="text-app-meta text-[var(--text-secondary)]">Include a project, a link or a note.</p>
+        ) : !confirm ? (
+          <p className="text-app-meta text-[var(--text-secondary)]">Confirm what is shared to send.</p>
+        ) : null}
       </div>
     </form>
   );

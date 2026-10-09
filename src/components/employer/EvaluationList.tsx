@@ -240,7 +240,7 @@ export default function EvaluationList({ roles }: { roles: CatalogRole[] }) {
                     actually finished, not for a template being available. */}
                 {sim.templateId ? null : <StatusTag>Prototype</StatusTag>}
               </div>
-              <p className="mt-0.5 truncate text-app-meta text-[var(--text-secondary)]">
+              <p className="mt-0.5 text-app-meta leading-[1.5] text-[var(--text-secondary)]">
                 {sim.tagline}
               </p>
             </div>

@@ -7,8 +7,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { getEmployerCatalog } from "../_lib/catalog";
 import { getInvitationRecords } from "../_lib/data";
 
-export const metadata = { title: "Evaluations" };
+export const metadata = { title: "Simulation templates" };
 export const dynamic = "force-dynamic";
+
+const TITLE = "Simulation templates";
 
 export default async function EmployerEvaluationsPage() {
   const user = await requireUser();
@@ -27,21 +29,21 @@ export default async function EmployerEvaluationsPage() {
     return (
       <div className="max-w-[900px]">
         <PageHeader
-          title="Evaluations"
+          title={TITLE}
           description="Preview exactly what a candidate will see, then invite someone to it."
         />
         <div className="mt-7">
           <EmptyState
-            title="No evaluations are available yet"
-            description="An evaluation has to be published before it appears here and before candidates can be invited to it."
+            title="No simulation templates are available yet"
+            description="A simulation template has to be published before it appears here and before candidates can be invited to it."
           />
         </div>
       </div>
     );
   }
 
-  // One released evaluation is the real case today, and a one-row list is a
-  // worse answer than showing the evaluation itself.
+  // One released template is the real case today, and a one-row list is a
+  // worse answer than showing the template itself.
   if (published.length === 1) {
     const only = published[0];
     const invitations = await getInvitationRecords(org.organizationId, 400);
@@ -50,7 +52,7 @@ export default async function EmployerEvaluationsPage() {
     return (
       <div>
         <PageHeader
-          title="Evaluations"
+          title={TITLE}
           description="This is exactly what a candidate sees. It is maintained by Fydell and cannot be edited from a workspace."
           meta={
             <span className="text-app-body font-medium text-[var(--text-primary)]">
@@ -73,8 +75,8 @@ export default async function EmployerEvaluationsPage() {
           />
         </div>
         <p className="mt-8 text-app-meta leading-[1.6] text-[var(--text-tertiary)]">
-          Solutions Engineer and Sales Engineer evaluations are coming later.
-          They are not published catalogs.
+          Simulation templates for Solutions Engineer and Sales Engineer roles are coming later.
+          They are not published yet.
         </p>
       </div>
     );
@@ -83,7 +85,7 @@ export default async function EmployerEvaluationsPage() {
   return (
     <div className="max-w-[900px]">
       <PageHeader
-        title="Evaluations"
+        title={TITLE}
         description="Preview exactly what a candidate will see, then invite someone to it."
       />
       <div className="mt-7">

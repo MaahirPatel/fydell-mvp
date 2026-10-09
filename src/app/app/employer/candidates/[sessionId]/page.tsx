@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireOrgMember, requireUser } from "@/lib/simulations/auth";
+import { withNext } from "@/lib/auth/safe-next";
 import { EvidenceReport } from "@/components/sim/EvidenceReport";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel, PanelSection } from "@/components/ui/Panel";
@@ -18,17 +19,14 @@ export default async function CandidateDecisionPage({
   params: Promise<{ sessionId: string }>;
   searchParams: Promise<{ tab?: string }>;
 }) {
+  const { sessionId } = await params;
   const user = await requireUser();
-  if (!user) redirect("/login");
+  if (!user) redirect(withNext("/login", `/app/employer/candidates/${sessionId}`));
   const org = await requireOrgMember(user.id);
   if (!org) redirect("/account/setup-required?reason=no_org");
-  const [{ sessionId }, query, reports] = await Promise.all([
-    params,
-    searchParams,
-    getReportRecords(org.organizationId),
-  ]);
+  const [query, reports] = await Promise.all([searchParams, getReportRecords(org.organizationId)]);
   const report = reports.find((item) => item.sessionId === sessionId);
-  if (!report) redirect("/app/employer/evidence");
+  if (!report) notFound();
   const tab = TABS.includes(query.tab as CandidateTab) ? (query.tab as CandidateTab) : "brief";
 
   return (

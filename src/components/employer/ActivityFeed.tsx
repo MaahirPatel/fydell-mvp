@@ -33,11 +33,9 @@ export default function ActivityFeed({ rows }: { rows: ActivityRow[] }) {
       {rows.map((row) => {
         const body = (
           <>
-            <span className="min-w-0 flex-1 truncate text-app-body text-[var(--text-primary)]">
-              {row.what}
-            </span>
-            <span className="min-w-0 max-w-[38%] truncate text-app-meta text-[var(--text-secondary)]">
-              {row.who}
+            <span className="min-w-0 flex-1">
+              <span className="block text-app-body text-[var(--text-primary)]">{row.what}</span>
+              <span className="block text-app-meta text-[var(--text-secondary)] [overflow-wrap:anywhere]">{row.who}</span>
             </span>
             <span
               title={row.elapsedTitle}

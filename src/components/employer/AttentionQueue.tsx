@@ -151,8 +151,8 @@ export default function AttentionQueue({ rows }: { rows: AttentionRow[] }) {
                       className="flex flex-wrap items-start gap-x-4 gap-y-2.5 border-t border-[var(--border-subtle)] px-5 py-3 transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] sm:flex-nowrap lg:px-6"
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-baseline gap-2">
-                          <span className="truncate text-app-body font-medium text-[var(--text-primary)]">
+                        <div className="flex flex-wrap items-baseline gap-x-2">
+                          <span className="min-w-0 text-app-body font-medium text-[var(--text-primary)] [overflow-wrap:anywhere]">
                             {row.candidate}
                           </span>
                           <span className="shrink-0 text-app-meta text-[var(--text-tertiary)]">

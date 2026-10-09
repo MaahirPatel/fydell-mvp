@@ -126,9 +126,9 @@ function listPaths(paths: string[], max = 3): string {
   return rest > 0 ? `${text} and ${rest} more` : text;
 }
 
-function shortText(text: string, max = 90): string {
-  const t = text.trim().replace(/\.$/, "");
-  return t.length > max ? `${t.slice(0, max - 1).trimEnd()}…` : t;
+/** A criterion is quoted whole: cutting it mid-sentence drops what it requires. */
+function criterionText(text: string): string {
+  return text.trim().replace(/\.$/, "");
 }
 
 /**
@@ -149,8 +149,8 @@ export function capabilityStatements(evaluation: EmployerAuthoredEvaluation, cha
     const notConfirmed = linked.filter((a) => a.state === "not_confirmed");
     const noResult = linked.filter((a) => a.state === "no_result");
     const run: string[] = [];
-    if (confirmed.length) run.push(`the controlled run passed ${confirmed.map((a) => `${a.id} (${shortText(a.text)})`).join(", ")} for this submission`);
-    if (notConfirmed.length) run.push(`it did not pass ${notConfirmed.map((a) => `${a.id} (${shortText(a.text)})`).join(", ")}`);
+    if (confirmed.length) run.push(`the controlled run passed ${confirmed.map((a) => `${a.id} (${criterionText(a.text)})`).join(", ")} for this submission`);
+    if (notConfirmed.length) run.push(`it did not pass ${notConfirmed.map((a) => `${a.id} (${criterionText(a.text)})`).join(", ")}`);
     if (noResult.length) run.push(`${noResult.map((a) => a.id).join(", ")} produced no result and ${noResult.length === 1 ? "was" : "were"} not assessed`);
     if (!linked.length) run.push("no test is linked to it, so it was not assessed");
     return { criterionId: c.id, text: `${c.label}: ${[work, ...run].filter(Boolean).join("; ")}.` };

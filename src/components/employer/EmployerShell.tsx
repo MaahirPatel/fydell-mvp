@@ -73,6 +73,20 @@ function isFullCanvas(pathname: string): boolean {
   return /^\/app\/employer\/workbench\/[^/]+$/.test(pathname);
 }
 
+/**
+ * Pages that belong to a rail section but live outside its URL. Without this
+ * they fall through to Overview in the breadcrumb and highlight nothing.
+ */
+const SECTION_ALIASES: { prefix: string; section: string }[] = [
+  { prefix: "/app/employer/assessments", section: "/app/employer/engineering" },
+];
+
+/** The path the rail and breadcrumb should treat as current. */
+function sectionPath(pathname: string): string {
+  const alias = SECTION_ALIASES.find((a) => pathname === a.prefix || pathname.startsWith(`${a.prefix}/`));
+  return alias ? `${alias.section}${pathname.slice(alias.prefix.length)}` : pathname;
+}
+
 const DEMO_HOME = "/app/employer/demo";
 const DEMO_NAME = "Demo workspace";
 
@@ -166,7 +180,7 @@ function NavRow({
   pathname: string;
   onNavigate?: () => void;
 }) {
-  const active = isNavItemActive(item, pathname);
+  const active = isNavItemActive(item, sectionPath(pathname));
   const Icon = NAV_ICONS[item.label];
   return (
     <Link
@@ -217,7 +231,7 @@ function NavGroup({
     case "primary":
       return rows;
     case "collapsible": {
-      const open = override ?? groupContainsPath(group, pathname);
+      const open = override ?? groupContainsPath(group, sectionPath(pathname));
       return (
         <div>
           <button
@@ -472,7 +486,7 @@ function TopBarIconLink({
 function TopBar({ workspaceName }: { workspaceName: string }) {
   const pathname = usePathname();
   const demo = isDemoPath(pathname);
-  const section = demo ? demoSection(pathname) : workspaceSection(pathname);
+  const section = demo ? demoSection(pathname) : workspaceSection(sectionPath(pathname));
   const deeper = pathname !== section.href;
   return (
     <header className="hidden h-11 shrink-0 items-center gap-3 border-b border-[var(--border-subtle)] px-4 md:flex">
@@ -596,7 +610,7 @@ function MobileTopBar({ identity }: { identity: ShellIdentity }) {
   const close = useCallback(() => setOpen(false), []);
   const pathname = usePathname();
   const demo = isDemoPath(pathname);
-  const section = demo ? demoSection(pathname) : workspaceSection(pathname);
+  const section = demo ? demoSection(pathname) : workspaceSection(sectionPath(pathname));
   return (
     <>
       <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center gap-2 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] px-2 md:hidden">
@@ -616,7 +630,7 @@ function MobileTopBar({ identity }: { identity: ShellIdentity }) {
           </span>
         </Link>
         <span aria-hidden className="text-[var(--text-quaternary)]">/</span>
-        <span className="min-w-0 truncate text-[14px] text-[var(--text-secondary)]">{section.label}</span>
+        <span className="shrink-0 whitespace-nowrap text-[14px] text-[var(--text-secondary)]">{section.label}</span>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           <NotificationBell />
           {identity.canInvite && !demo ? <InviteIconButton /> : null}
@@ -651,10 +665,10 @@ const WORKSPACE_DENSITY = [
 function PageCanvas({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   if (isFullCanvas(pathname)) {
-    return <main className="min-h-0 min-w-0 flex-1">{children}</main>;
+    return <main id="workspace-main" tabIndex={-1} className="min-h-0 min-w-0 flex-1 outline-none">{children}</main>;
   }
   return (
-    <main className={`min-w-0 flex-1 px-4 py-6 sm:px-6 md:overflow-y-auto lg:px-10 lg:py-8 ${WORKSPACE_DENSITY}`}>
+    <main id="workspace-main" tabIndex={-1} className={`min-w-0 flex-1 outline-none px-4 py-6 sm:px-6 md:overflow-y-auto lg:px-10 lg:py-8 ${WORKSPACE_DENSITY}`}>
       <div className="mx-auto w-full max-w-[1240px]">{children}</div>
     </main>
   );
@@ -684,6 +698,12 @@ export default function EmployerShell({
   return (
     <ToastProvider>
       <InviteModalProvider catalog={catalog} canInvite={canInvite}>
+        <a
+          href="#workspace-main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-[8px] focus:border focus:border-[var(--border-strong)] focus:bg-[var(--surface-raised)] focus:px-3 focus:py-2 focus:text-app-meta focus:font-medium focus:text-[var(--text-primary)] focus:shadow-[var(--shadow-float)]"
+        >
+          Skip to content
+        </a>
         <div className="min-h-screen bg-[var(--surface-raised)] text-[var(--text-primary)] [--radius-frame:9px] [--radius-panel:8px] md:flex md:h-dvh md:min-h-0 md:overflow-hidden md:bg-[var(--surface-panel)]">
           <aside className="hidden w-[244px] shrink-0 flex-col px-2 pb-2 pt-2.5 md:flex">
             <SidebarContent identity={identity} showInvite />
