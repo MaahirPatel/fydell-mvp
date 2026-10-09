@@ -7,7 +7,7 @@ export const PRODUCT_ITEMS: readonly NavItem[] = [
   { label: "Builder Reports", href: "/products/builder-reports", description: "Inspect findings, their sources and their limits." },
   { label: "Hiring Workspace", href: "/products/hiring-workspace", description: "Review applicants and their evidence by requirement." },
   { label: "Simulations", href: "/products/simulations", description: "Focused technical work samples, with disclosed scope." },
-  { label: "Desktop", href: "/products/desktop", description: "Install Fydell as an app with its own window." },
+  { label: "Desktop", href: "/products/desktop", description: "Take simulations in the Fydell app for Windows." },
 ];
 
 export const RESOURCE_ITEMS: readonly NavItem[] = [
@@ -20,5 +20,5 @@ export const PRIMARY_LINKS: readonly NavItem[] = [
   { label: "For Engineers", href: "/developers" },
   { label: "For Employers", href: "/employers" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Install app", href: "/download" },
+  { label: "Download", href: "/download" },
 ];

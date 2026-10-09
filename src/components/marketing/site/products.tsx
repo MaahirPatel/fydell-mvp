@@ -145,9 +145,9 @@ export const PRODUCTS: Record<ProductSlug, ProductPage> = {
   desktop: {
     name: "Desktop",
     title: ["Fydell on", "your computer."],
-    lead: "Install Fydell from your browser and it opens in its own window, with its own icon in the Start menu, taskbar or Dock. Projects, reports, simulations and your hiring workspace are all there, and it updates itself.",
-    availability: { state: "available", text: "Available on Windows and Mac in Microsoft Edge, Google Chrome and Safari." },
-    primary: { href: "/download", label: "Install the app" },
+    lead: "A separate Windows app for taking the simulations you are invited to. Your inbox, tasks, reports and profile are in the app, and invitations sent to your email arrive in its inbox.",
+    availability: { state: "available", text: "For Windows 10 and 11, from the Microsoft Store. On a Mac, simulations run in the browser." },
+    primary: { href: "/download", label: "Get the desktop app" },
     secondary: { href: "/changelog", label: "Read the changelog" },
     visual: (
       <ProductFrame
@@ -162,10 +162,10 @@ export const PRODUCTS: Record<ProductSlug, ProductPage> = {
     ),
     sections: [
       { title: "An editor, not a form", body: "The workspace puts the brief, public tests, team thread and submission beside the code. Press Ctrl K to jump anywhere." },
-      { title: "Your own editor too", body: "For engineering tasks you can download the starter project, work in VS Code or Cursor, and submit from Fydell." },
-      { title: "Nothing to download", body: "No installer, no security warning and no manual updates. Uninstall it like any other app." },
+      { title: "Your own editor too", body: "Engineering tasks create a project folder in Documents\\Fydell that you open in VS Code or Cursor. The app packages and submits it." },
+      { title: "No security warning", body: "The Microsoft Store reviews and signs the app, so Windows installs it without a warning, and the Store delivers updates." },
     ],
-    limits: ["The app needs an internet connection. Unsaved text in an open simulation is kept in the browser if the connection drops."],
+    limits: ["The app needs an internet connection to start and submit. Work done while offline is kept on your computer and synced when you are back online."],
     related: ["simulations", "builder-profiles"],
   },
 };

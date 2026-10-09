@@ -1,0 +1,251 @@
+/* ============================================================================
+   Fydell desktop design tokens
+   ============================================================================
+
+   The desktop adaptation of the shared Fydell token contract
+   (src/styles/fydell-tokens.css). Same token NAMES, same semantic MEANINGS,
+   tuned for a dense native-feeling workbench — in LIGHT mode, per the
+   founder direction ("Fydell Light").
+
+   Light-first. The desktop mirrors the website: warm off-white canvas,
+   near-white raised surfaces, ink text and a solid ink primary action.
+   Evidence keeps its meanings with quieter hues: observed evidence is ink,
+   generated evidence is stone, attention is a small yellow, green is a real
+   completed state, red is destructive or failed. Colour never carries
+   meaning alone; every state also has a label or icon.
+
+   Desktop keeps its own opinions (unchanged by the retheme):
+   - Denser type. Desktop body text is 13px (vs 14px web); the focal level
+     (20px) stays >=1.5x body so hierarchy survives the density.
+   - Editor surfaces. Dedicated tokens for the Monaco host, file tree,
+     tabs, and test output so editor chrome never drifts into ad-hoc
+     grays. The editor runs Monaco's light "vs" theme against
+     --surface-editor (#ffffff).
+   - Native metrics. 32px controls, 44px topbar, 220px file rail — sized
+     for mouse + keyboard operation in a resizable window.
+
+   Import order in the desktop app:
+     1. this file (tokens)
+     2. component styles, referencing only these tokens — no raw hex, no
+        raw px for spacing/type outside the scale.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* ---- Typefaces: shared contract, desktop fallbacks ----------------------
+     The desktop bundles its own fonts; until then the stack degrades to
+     system UI. Inter is a FALLBACK here, never the primary — the product
+     typeface is Geist. */
+  --font-sans: "Geist Sans", "Geist", Inter, ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, "SF Mono",
+    SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ---- Desktop type scale (fixed; denser than web) -------------------------
+     Roles, not sizes. 20px focal / 13px body = 1.54x — hierarchy without
+     the airy marketing scale. */
+  --type-app-page: 1.25rem;       /* 20px — screen / dialog titles */
+  --type-app-page-lh: 1.2;
+  --type-app-page-tracking: -0.028em;
+  --type-app-section: 0.9375rem;  /* 15px — panel section titles */
+  --type-app-section-lh: 1.35;
+  --type-app-section-tracking: -0.02em;
+  --type-app-body: 0.8125rem;     /* 13px — body and controls */
+  --type-app-body-lh: 1.55;
+  --type-app-meta: 0.71875rem;    /* 11.5px — metadata, timestamps */
+  --type-app-meta-lh: 1.45;
+  --type-editor: 0.8125rem;       /* 13px — Monaco editor size */
+  --type-editor-lh: 1.6;
+
+  /* ---- Spacing: shared 4/8/12/16/24/32/48/64 scale ------------------------ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* ---- Radii: shared contract ---------------------------------------------- */
+  --radius-tag: 4px;
+  --radius-control: 6px;
+  --radius-panel: 10px;
+  --radius-frame: 14px;
+
+  /* ---- Borders: hairlines only (ink #17212B per spec) ----------------------- */
+  --border-subtle: #ebe9e3;
+  --border-default: #e1ded6;
+  --border-strong: #cfcbc0;
+
+  /* ---- Surfaces (warm ivory canvas, white raised — never dark) -------------- */
+  --surface-canvas: #f7f7f4;      /* app ground: warm off-white */
+  --surface-deep: #efeee9;        /* sunken wells: output, inputs */
+  --surface-band: #f2f1ec;
+  --surface-raised: #fcfcfa;      /* topbar, rails, cards */
+  --surface-panel: #f4f3ef;       /* side panels */
+  --surface-hover: #edece6;       /* hovered rows/files */
+  --surface-selected: #e9e7df;    /* selected file / active tab track */
+
+  /* ---- Editor surfaces (Monaco light "vs" family) ----------------------------
+     Kept as tokens so the editor host, file tree, and tab bar read as one
+     surface instead of three ad-hoc grays. */
+  --surface-editor: #ffffff;         /* Monaco vs ground */
+  --surface-editor-gutter: #ffffff;
+  --surface-tabbar: #f2f1ec;
+  --surface-tab-active: #ffffff;     /* active tab matches editor */
+  --surface-tab-inactive: #f2f1ec;
+  --surface-filetree: #f4f3ef;
+
+  /* ---- Accent fields (contract surface tints) -------------------------------- */
+  --field-blue: #ebe9e2;
+  --ink-blue: #1a1915;
+  --ink-blue-line: rgb(26 25 21 / 0.20);
+
+  /* ---- Text (solid colors, never opacity) ------------------------------------ */
+  --text-primary: #1a1915;
+  --text-body: #34322b;
+  --text-secondary: #5e5b52;
+  --text-tertiary: #6f6c62;
+  --text-disabled: #aeaa9f;
+  --text-on-solid: #fcfcfa;
+
+  /* ---- The one inverted control (spec §5: solid ink primary, white text) -------
+     Desktop primary is brand blue per spec §1; hover/active stay in-family. */
+  --control-solid: #1a1915;
+  --control-solid-hover: #34322b;
+  --control-solid-active: #000000;
+  --control-solid-ink: #fcfcfa;
+
+  /* ---- Evidence semantics: IDENTICAL meanings to the shared contract ---------
+     teal    = observed / project evidence
+     violet  = generated / simulation evidence
+     amber   = needs attention / changed
+     green   = real completed state
+     red     = unsupported / destructive
+     Values are the web contract aliases verbatim (light theme). The
+     --ev-*-line tokens are solid hairline variants of the inks, desktop-only. */
+  --ev-observed: #34322b;
+  --ev-observed-ink: #1a1915;
+  --ev-observed-field: #efeee9;
+  --ev-observed-line: rgb(26 25 21 / 0.28);
+  --ev-generated: #6f6c62;
+  --ev-generated-ink: #5e5b52;
+  --ev-generated-field: #f2f1ec;
+  --ev-generated-line: rgb(94 91 82 / 0.30);
+  --ev-attention: #b88400;
+  --ev-attention-ink: #7a5700;
+  --ev-attention-field: #fbf3dc;
+  --ev-attention-line: rgb(122 87 0 / 0.30);
+  --ev-success: #3f7d5c;
+  --ev-success-ink: #2f6b4a;
+  --ev-success-field: #e9f4ee;
+  --ev-success-line: rgb(47 107 74 / 0.32);
+  --ev-error: #d13b40;
+  --ev-error-ink: #b3272c;
+  --ev-error-field: #fbe9e8;
+  --ev-error-line: rgb(179 39 44 / 0.30);
+
+  /* ---- Action: solid ink, matching the website ---------------------------------- */
+  --action: #1a1915;
+  --action-hover: #34322b;
+  --action-ink: #1a1915;
+  --action-ink-ring: rgb(26 25 21 / 0.30);
+
+  /* ---- Focus ------------------------------------------------------------------- */
+  --focus-ring: 2px solid var(--action-ink);
+  --focus-ring-offset: 2px;
+
+  /* ---- Shadows (light: hairlines carry depth first; soft, low-contrast) -------- */
+  --shadow-1: 0 1px 2px rgb(40 34 20 / 0.04), 0 2px 6px rgb(40 34 20 / 0.03);
+  --shadow-2: 0 1px 2px rgb(40 34 20 / 0.05), 0 8px 20px -8px rgb(40 34 20 / 0.12);
+  --shadow-3: 0 2px 4px rgb(40 34 20 / 0.04), 0 20px 44px -16px rgb(40 34 20 / 0.18);
+  --shadow-card: 0 1px 2px rgb(40 34 20 / 0.05), 0 4px 14px rgb(40 34 20 / 0.05);
+  --shadow-float: 0 2px 8px rgb(40 34 20 / 0.06), 0 20px 48px rgb(40 34 20 / 0.10);
+
+  /* ---- Screen wash: a faint brand glow behind centered screens ------------------ */
+  --screen-wash: radial-gradient(
+    120% 80% at 50% -10%,
+    rgb(40 34 20 / 0.035) 0%,
+    rgb(40 34 20 / 0.01) 38%,
+    transparent 70%
+  );
+
+  /* ---- Motion -------------------------------------------------------------------- */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-fast: 140ms;
+  --motion-panel: 190ms;
+
+  /* ---- Desktop control metrics ----------------------------------------------------- */
+  --control-height: 32px;         /* desktop form controls (denser than web 42px) */
+  --control-height-sm: 28px;
+  --control-padding-x: 10px;
+
+  /* ---- Desktop layout ---------------------------------------------------------------
+     From the approved contract + the checklist's starting proportions. */
+  --topbar-height: 44px;
+  --filetree-width: 220px;        /* contract: 200-240px */
+  --sidepanel-width: 340px;       /* contract: 300-360px */
+  --min-window-width: 1024px;     /* below this, panels become tabs */
+  --min-window-height: 640px;
+}
+
+/* ---- Base ------------------------------------------------------------------------ */
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--type-app-body);
+  line-height: var(--type-app-body-lh);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+
+/* Focus is never optional. */
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+::selection {
+  background: rgb(226 165 0 / 0.22);
+  color: inherit;
+}
+
+/* Scrollbars: thin, quiet, part of the design. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(26 25 21 / 0.18) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgb(26 25 21 / 0.18);
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(26 25 21 / 0.30);
+  background-clip: content-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

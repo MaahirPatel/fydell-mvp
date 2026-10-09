@@ -107,7 +107,7 @@ export default function GuidedDemo() {
             </Link>
             <Link href="/download" className="l-btn l-btn-quiet">
               <Download size={14} aria-hidden />
-              Install the app
+              Get the desktop app
             </Link>
           </>
         }

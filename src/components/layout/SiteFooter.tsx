@@ -10,7 +10,7 @@ const COLUMNS: { title: string; links: readonly { label: string; href: string }[
       { label: "For Engineers", href: "/developers" },
       { label: "For Employers", href: "/employers" },
       { label: "Pricing", href: "/pricing" },
-      { label: "Install app", href: "/download" },
+      { label: "Download", href: "/download" },
     ],
   },
   {

@@ -11,18 +11,18 @@ export const metadata = {
 
 const APP_RELEASE = {
   date: "2026-10-09",
-  title: "Install Fydell from your browser",
+  title: "The desktop app moves to the Microsoft Store",
   notes: [
-    "Fydell now installs from Microsoft Edge, Google Chrome or Safari and opens in its own window, with no installer and no security warning.",
-    "The separate desktop app is retired. Engineering tasks run in the browser editor, or in VS Code or Cursor with the downloadable starter project.",
-    "Updates reach the app automatically.",
+    "The Windows desktop app is coming back through the Microsoft Store, which signs it so Windows installs it without a security warning. The download page links to it once it is listed.",
+    "The Store version shows your name and profile at the bottom of the sidebar, and takes its updates from the Store.",
+    "Until it is listed, invited simulations work in the browser at fydell.com, with the same inbox, tasks, reports and profile.",
   ],
 };
 
 export default function ChangelogPage() {
   return (
     <MarketingShell>
-      <SiteHero align="left" title={["Changelog"]} lead="What changed in Fydell, newest first. Entries before October 2026 describe the retired desktop app." />
+      <SiteHero align="left" title={["Changelog"]} lead="What changed in Fydell, newest first. Numbered entries are desktop app releases." />
       <section className={s.wrap} aria-label="Releases">
         <ol className={s.list}>
           <li className={s.entry} id="app">
@@ -61,7 +61,7 @@ export default function ChangelogPage() {
           ))}
         </ol>
       </section>
-      <SiteClosing title="Always the latest version." primary={{ href: "/download", label: "Install the app" }} secondary={{ href: "/signup", label: "Sign up" }} />
+      <SiteClosing title="Get the desktop app." primary={{ href: "/download", label: "Download" }} secondary={{ href: "/signup", label: "Sign up" }} />
     </MarketingShell>
   );
 }

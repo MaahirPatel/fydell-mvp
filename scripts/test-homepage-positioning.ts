@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { microsoftStoreUrl } from "../src/lib/desktop/store";
 
 let failures = 0;
 
@@ -26,7 +27,6 @@ const profile = read("src/components/marketing/site/ProfileWorkspace.tsx");
 const applicants = read("src/components/marketing/site/ApplicantReview.tsx");
 const simHero = read("src/components/marketing/site/SimulationHero.tsx");
 const desktopBand = read("src/components/marketing/site/DesktopBand.tsx");
-const installButton = read("src/components/marketing/site/InstallAppButton.tsx");
 const manifest = read("src/app/manifest.ts");
 const releases = read("src/components/marketing/site/releases.ts");
 const navData = read("src/components/marketing/site/nav-data.ts");
@@ -57,8 +57,8 @@ ok(
   /lead="Fydell turns real projects and realistic simulations into evidence hiring teams can read\."/.test(hero),
 );
 ok(
-  "hero actions: Install for Windows opens /download, then Create an account",
-  /href="\/download"[^>]*>[\s\S]*?Install for Windows/.test(hero) && /href="\/signup"[^>]*>\s*Create an account/.test(hero),
+  "hero actions: Download for Windows opens /download, then Create an account",
+  /href="\/download"[^>]*>[\s\S]*?Download for Windows/.test(hero) && /href="\/signup"[^>]*>\s*Create an account/.test(hero),
 );
 ok("hero leads straight into the simulation", /<ProductFrame[\s\S]*?size="hero"[\s\S]*?<SimulationHero \/>/.test(hero));
 ok(
@@ -66,18 +66,25 @@ ok(
   /backend-webhook-retry\/definition/.test(simHero) && /SCENARIO\.teammates/.test(simHero) && />Example</.test(simHero),
 );
 
-// The app installs from the browser; there is no installer to download.
+// The desktop app ships through the Microsoft Store; there is no unsigned installer to download.
 ok(
   "the site is installable: manifest with standalone display and 192/512 icons",
   /display: "standalone"/.test(manifest) && /icon-192\.png/.test(manifest) && /icon-512\.png/.test(manifest) && /start_url: "\/app\/desk"/.test(manifest),
 );
 ok(
-  "/download installs the web app, linked from the nav and desktop band",
-  /<InstallAppButton \/>/.test(download) &&
-    /beforeinstallprompt/.test(installButton) &&
+  "/download offers the desktop app from the Microsoft Store only once it is listed, linked from the nav and desktop band",
+  /microsoftStoreUrl\(\)/.test(download) &&
+    /Get it from Microsoft Store/.test(download) &&
+    /in Microsoft Store review/.test(download) &&
     /href="\/download"/.test(desktopBand) &&
-    /label: "Install app", href: "\/download"/.test(navData) &&
+    /label: "Download", href: "\/download"/.test(navData) &&
     !/\.exe|\.dmg|DownloadPicker/.test([download, page, desktopBand].join("\n")),
+);
+ok(
+  "the Store link exists only for a valid 12-character product id",
+  microsoftStoreUrl({}) === null &&
+    microsoftStoreUrl({ MICROSOFT_STORE_PRODUCT_ID: "not-an-id" }) === null &&
+    microsoftStoreUrl({ MICROSOFT_STORE_PRODUCT_ID: " 9nblggh4nns1 " }) === "https://apps.microsoft.com/detail/9NBLGGH4NNS1",
 );
 
 // Demo gating: only inside the signed-in app.

@@ -11,6 +11,7 @@ import DesktopBand from "@/components/marketing/site/DesktopBand";
 import EvidenceGrid from "@/components/marketing/site/EvidenceGrid";
 import { Announcement, CenteredClosing, CenteredHero, ShowcaseSection, Tiles } from "@/components/marketing/site/Home";
 import { WindowsIcon } from "@/components/marketing/site/OsIcons";
+import { microsoftStoreUrl } from "@/lib/desktop/store";
 
 export const metadata = {
   title: { absolute: "Fydell: Engineering work, ready to be seen" },
@@ -23,14 +24,20 @@ export default function HomePage() {
   return (
     <MarketingShell>
       <CenteredHero
-        announcement={<Announcement href="/download" label="Install Fydell as an app" action="No installer needed" />}
+        announcement={
+          <Announcement
+            href="/download"
+            label="The Fydell desktop app"
+            action={microsoftStoreUrl() ? "Get it from the Microsoft Store" : "Coming to the Microsoft Store"}
+          />
+        }
         title="Engineering work, ready to be seen."
         lead="Engineers share real projects and work samples. Hiring teams read the evidence behind every claim, then make the call."
         actions={
           <>
             <Link href="/download" className="l-btn l-btn-lg l-btn-solid">
               <WindowsIcon size={16} />
-              Install for Windows
+              Download for Windows
             </Link>
             <Link href="/signup" className="l-btn l-btn-lg l-btn-quiet">
               Create an account

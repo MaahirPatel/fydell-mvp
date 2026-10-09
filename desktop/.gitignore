@@ -1,0 +1,5 @@
+# Build outputs — never commit
+dist/
+src-tauri/target/
+src-tauri/gen/
+node_modules/

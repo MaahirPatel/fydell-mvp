@@ -4,7 +4,7 @@ import { hasPainting } from "./PaintedStage";
 import RevealObserver from "./RevealObserver";
 import s from "./home.module.css";
 
-/** The installable app on a painted ground. */
+/** The desktop app on a painted ground. */
 export default function DesktopBand() {
   const painted = hasPainting("coast");
   return (
@@ -18,14 +18,14 @@ export default function DesktopBand() {
               <h2 id="desktop-title" className={s.desktopTitle}>
                 Fydell for desktop
               </h2>
-              <p className={s.desktopBody}>Install Fydell from your browser on Windows or Mac. Its own window and icon, no installer, always up to date.</p>
+              <p className={s.desktopBody}>A separate Windows app for taking the simulations you are invited to. From the Microsoft Store, so it installs with no security warning.</p>
               <div className={s.desktopCtas}>
                 <Link href="/download" className="l-btn l-btn-lg l-btn-solid">
-                  Install the app
+                  Get the desktop app
                 </Link>
               </div>
               <p className={s.desktopMeta}>
-                Works in Edge, Chrome and Safari · <Link href="/changelog">Changelog</Link>
+                Windows 10 and 11 · <Link href="/changelog">Changelog</Link>
               </p>
             </div>
           </div>

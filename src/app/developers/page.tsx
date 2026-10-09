@@ -21,7 +21,7 @@ export default function DevelopersPage() {
         title={["Show the work", "behind your resume."]}
         lead="Bring your projects, contributions, and source-linked findings into one profile. Choose what to share."
         primary={{ href: "/signup", label: "Sign up" }}
-        supporting={{ href: "/download", label: "Install the app" }}
+        supporting={{ href: "/download", label: "Get the desktop app" }}
       >
         <TintStage tint="teal">
           <ProductFrame size="hero" interactive title="Fydell · Passport" label="One project in an engineer's Passport: its purpose, their part, and a finding opened to the source lines it cites. Select a highlight to open it.">
@@ -104,7 +104,7 @@ export default function DevelopersPage() {
           },
           { q: "Can I use AI tools in a simulation?", a: "Yes, the same way you would at work, unless the brief says otherwise. Fydell cannot see your tools and does not try to detect them. You describe any AI help in your own words." },
           { q: "What if a finding about my code is wrong?", a: "Flag it, add context, or propose a different reading. Your note is attributed to you and shown next to the finding; the original stays visible." },
-          { q: "Do I need to install anything?", a: "No. Everything works in the browser. You can install Fydell from the browser to give it its own window, and engineering tasks can also be worked in your own editor." },
+          { q: "Do I need to install anything?", a: "No. Everything works in the browser. On Windows you can take simulations in the Fydell desktop app from the Microsoft Store, and engineering tasks can be worked in your own editor." },
         ]}
       />
 
@@ -112,7 +112,7 @@ export default function DevelopersPage() {
         title="Put your work where it can be seen."
         body="Create your profile and add your first project."
         primary={{ href: "/signup", label: "Sign up" }}
-        secondary={{ href: "/download", label: "Install the app" }}
+        secondary={{ href: "/download", label: "Get the desktop app" }}
       />
     </MarketingShell>
   );

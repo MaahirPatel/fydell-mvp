@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "app": {
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:"
+    },
+    "windows": [
+      {
+        "height": 900,
+        "minHeight": 700,
+        "minWidth": 1100,
+        "title": "Fydell",
+        "width": 1440
+      }
+    ]
+  },
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
+  },
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "longDescription": "Fydell is a proof-of-work hiring network. Candidates complete realistic engineering simulations locally and submit evidence-backed work for employer review.",
+    "shortDescription": "Complete Fydell hiring simulations.",
+    "targets": "all",
+    "createUpdaterArtifacts": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico"
+      }
+    }
+  },
+  "identifier": "ai.fydell.desktop",
+  "productName": "Fydell",
+  "version": "0.2.0",
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "fydell"
+        ]
+      }
+    },
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDUxQjhBQjdBQTE3QTFERkQKUldUOUhYcWhlcXU0VWNXU2NaRGgzVnY4NHlabkxodHNNTSszOVhZaXF4OXppdk9nU3lDdEtiOUUK",
+      "endpoints": [
+        "https://github.com/MaahirPatel/fydell-mvp/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}
