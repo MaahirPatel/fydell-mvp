@@ -33,7 +33,7 @@ function CheckinLabel() {
 function Message({ scenario, message, onRetry }: { scenario: DemoScenario; message: TeamMessage; onRetry: (id: string) => void }) {
   if (message.from === "system") {
     return (
-      <li className="flex items-start gap-2 text-[12.5px] leading-[1.5] text-[var(--text-tertiary)]">
+      <li className="flex items-start gap-2 text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
         <Info aria-hidden size={13} className="mt-[3px] shrink-0" />
         <span>{message.text}</span>
       </li>
@@ -43,7 +43,7 @@ function Message({ scenario, message, onRetry }: { scenario: DemoScenario; messa
     const to = message.to ? teammate(scenario, message.to) : null;
     return (
       <li className="grid gap-1">
-        <p className="flex items-baseline justify-between gap-2 text-[12.5px] text-[var(--text-tertiary)]">
+        <p className="flex items-baseline justify-between gap-2 text-app-meta text-[var(--text-tertiary)]">
           <span>
             <span className="font-medium text-[var(--text-secondary)]">You</span>
             {to ? ` to ${to.name}` : ""}
@@ -53,17 +53,17 @@ function Message({ scenario, message, onRetry }: { scenario: DemoScenario; messa
         <p className={cn("whitespace-pre-wrap rounded-[10px] bg-[var(--surface-raised)] px-3 py-2 text-[14.5px] leading-[1.55] text-[var(--text-primary)]", message.status === "sending" && "opacity-80")}>
           {message.text}
         </p>
-        {message.status === "sending" ? <p className="text-[12px] text-[var(--text-tertiary)]">Sending</p> : null}
+        {message.status === "sending" ? <p className="text-app-meta text-[var(--text-tertiary)]">Sending</p> : null}
         {message.status === "unavailable" ? (
           <div role="alert" className="grid gap-1.5 rounded-[8px] bg-[var(--sim-attention-bg)] px-3 py-2">
-            <p className="text-[12.5px] leading-[1.5] text-[var(--text-primary)]">
+            <p className="text-app-meta leading-[1.5] text-[var(--text-primary)]">
               No reply. {message.notice ?? "The teammate service did not answer."} Your message is kept here.
             </p>
             <div>
               <button
                 type="button"
                 onClick={() => onRetry(message.id)}
-                className="inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2.5 text-[12.5px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+                className="inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2.5 text-app-meta font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
               >
                 <RotateCw aria-hidden size={12} />
                 Retry
@@ -77,7 +77,7 @@ function Message({ scenario, message, onRetry }: { scenario: DemoScenario; messa
   const from = teammate(scenario, message.from);
   return (
     <li className="grid gap-1.5">
-      <div className="flex items-center gap-2 text-[12.5px]">
+      <div className="flex items-center gap-2 text-app-meta">
         <TeammateAvatar scenario={scenario} id={message.from} size={24} />
         <span className="font-medium text-[var(--text-primary)]">{from.name}</span>
         <span className="min-w-0 truncate text-[var(--text-tertiary)]">{from.title}</span>
@@ -93,7 +93,7 @@ function Message({ scenario, message, onRetry }: { scenario: DemoScenario; messa
 
 function Typing({ scenario, who }: { scenario: DemoScenario; who: string }) {
   return (
-    <li className="flex items-center gap-2 text-[12.5px] text-[var(--text-secondary)]">
+    <li className="flex items-center gap-2 text-app-meta text-[var(--text-secondary)]">
       <TeammateAvatar scenario={scenario} id={who} size={24} />
       <span>{teammate(scenario, who).name.split(" ")[0]} is writing</span>
       <span className={t.dots} aria-hidden>
@@ -142,7 +142,7 @@ function RecipientPicker({ scenario, value, onChange }: { scenario: DemoScenario
             <TeammateAvatar scenario={scenario} id={id} size={24} />
             <span className="grid min-w-0">
               <span className="truncate text-[13px] font-medium text-[var(--text-primary)]">{person.name}</span>
-              <span className="truncate text-[11.5px] text-[var(--text-tertiary)]">{person.title}</span>
+              <span className="truncate text-app-meta text-[var(--text-tertiary)]">{person.title}</span>
             </span>
           </button>
         );
@@ -211,24 +211,24 @@ export function TeamDock({
         </button>
       </div>
       <div className="shrink-0 border-b border-[var(--border-subtle)] px-4 py-2.5">
-        <p className="text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+        <p className="text-app-meta leading-[1.55] text-[var(--text-secondary)]">
           AI teammates that answer from the scenario&apos;s facts and what they can see of your work in this demo: your changed files and test results. They
           never edit your files.
         </p>
         <details className="group mt-1.5">
-          <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-[4px] text-[12.5px] font-medium text-[var(--accent-ink)] hover:underline">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-[4px] text-app-meta font-medium text-[var(--accent-ink)] hover:underline">
             <ChevronRight aria-hidden size={13} className="transition-transform group-open:rotate-90" />
             When do teammates check in?
           </summary>
           <ul className="mt-2 grid gap-1.5 pl-1">
             {CHECKIN_TRIGGERS.map((trigger) => (
-              <li key={trigger} className="flex items-start gap-2 text-[12.5px] leading-[1.5] text-[var(--text-body)]">
+              <li key={trigger} className="flex items-start gap-2 text-app-meta leading-[1.5] text-[var(--text-body)]">
                 <TeammateAvatar scenario={scenario} id={checkinSenderId(scenario, trigger)} size={18} />
                 <span>{CHECKIN_RULES[trigger]}</span>
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-[12px] leading-[1.5] text-[var(--text-tertiary)]">Each check-in happens at most once. Fewer messages never count against you.</p>
+          <p className="mt-2 text-app-meta leading-[1.5] text-[var(--text-tertiary)]">Each check-in happens at most once. Fewer messages never count against you.</p>
         </details>
       </div>
 
@@ -265,7 +265,7 @@ export function TeamDock({
       >
         <RecipientPicker scenario={scenario} value={to} onChange={setTo} />
         {tooLong ? (
-          <p role="alert" className="text-[12px] text-[var(--sim-error)]">
+          <p role="alert" className="text-app-meta text-[var(--sim-error)]">
             Keep messages under {MESSAGE_CHAR_LIMIT} characters.
           </p>
         ) : null}

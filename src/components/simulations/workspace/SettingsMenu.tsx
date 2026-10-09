@@ -19,7 +19,7 @@ export function SettingsMenu({ showFontSize }: { showFontSize: boolean }) {
       {() => (
         <div className="grid gap-3 p-2">
           <div className="grid gap-1.5">
-            <p id="sim-theme-label" className="text-[12.5px] text-[var(--text-secondary)]">
+            <p id="sim-theme-label" className="text-app-meta text-[var(--text-secondary)]">
               Theme
             </p>
             <div role="radiogroup" aria-labelledby="sim-theme-label" className="flex gap-1 rounded-[8px] bg-[var(--surface-panel)] p-1">
@@ -42,7 +42,7 @@ export function SettingsMenu({ showFontSize }: { showFontSize: boolean }) {
           </div>
           {showFontSize ? (
             <div className="grid gap-1.5">
-              <p id="sim-font-label" className="text-[12.5px] text-[var(--text-secondary)]">
+              <p id="sim-font-label" className="text-app-meta text-[var(--text-secondary)]">
                 Editor text size
               </p>
               <div className="flex items-center gap-1 rounded-[8px] bg-[var(--surface-panel)] p-1" role="group" aria-labelledby="sim-font-label">

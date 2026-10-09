@@ -118,7 +118,7 @@ export default function SimulationHero() {
           <div className={s.body}>
             <div className={s.work}>
               <p className={`${s.requirement} ${s.enter}`} style={at(150)}>
-                <span className={s.reqNum}>Requirement {REQUIREMENT_INDEX + 1}</span>
+                <span className={s.reqNum}>Requirement</span>
                 {REQUIREMENT}
               </p>
 

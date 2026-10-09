@@ -170,9 +170,9 @@ export function SubmitDialog({
                         onClick={() => onOpenDiff(d.path)}
                         className="flex w-full items-center gap-2 rounded-[6px] px-2 py-1.5 text-left hover:bg-[var(--surface-hover)]"
                       >
-                        <span className="min-w-0 flex-1 truncate font-mono text-[12.5px] text-[var(--text-primary)] underline-offset-2 hover:underline">{d.path}</span>
-                        <span className="shrink-0 text-[12px] text-[var(--text-tertiary)]">Edited</span>
-                        <span className="shrink-0 font-mono text-[11.5px] tabular-nums">
+                        <span className="min-w-0 flex-1 truncate font-mono text-app-meta text-[var(--text-primary)] underline-offset-2 hover:underline">{d.path}</span>
+                        <span className="shrink-0 text-app-meta text-[var(--text-tertiary)]">Edited</span>
+                        <span className="shrink-0 font-mono text-app-marker tabular-nums">
                           <span className="text-[var(--sim-success)]">+{d.added}</span> <span className="text-[var(--sim-error)]">-{d.removed}</span>
                         </span>
                       </button>
@@ -188,7 +188,7 @@ export function SubmitDialog({
               {run ? (
                 <div className="grid gap-1.5">
                   <RunHeadline scenario={scenario} run={run} />
-                  <p className="text-[12.5px] text-[var(--text-tertiary)]">
+                  <p className="text-app-meta text-[var(--text-tertiary)]">
                     {RUN_LOCATION_LABEL}, {formatClock(run.at)}
                   </p>
                 </div>
@@ -206,7 +206,7 @@ export function SubmitDialog({
                   The team thread ({teamCount} {teamCount === 1 ? "message" : "messages"}), with check-ins labelled
                 </li>
               </ul>
-              <p className="text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+              <p className="text-app-meta leading-[1.5] text-[var(--text-secondary)]">
                 {consequence?.kept ??
                   "A browser preview, saved in this browser only. Nothing is sent to an employer. A real assessment runs in the Fydell desktop app, where results come from the isolated runner rather than the browser."}
               </p>

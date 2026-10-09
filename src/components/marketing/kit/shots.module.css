@@ -67,7 +67,7 @@
 }
 .wsSub {
   margin-left: auto;
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 400;
   color: var(--t4);
 }
@@ -101,7 +101,7 @@
   padding: 0 5px;
   border-radius: 999px;
   background: var(--fy-accent);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 590;
   line-height: 16px;
   text-align: center;
@@ -121,7 +121,7 @@
   gap: 6px;
   margin-top: 16px;
   padding: 4px 8px;
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   color: var(--t4);
 }
 .file {
@@ -132,7 +132,7 @@
   padding: 0 8px 0 20px;
   border-radius: 6px;
   color: var(--t3);
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   white-space: nowrap;
 }
 .file svg {
@@ -146,7 +146,7 @@
 }
 .flag {
   margin-left: auto;
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 590;
 }
 .flagM {
@@ -162,7 +162,7 @@
   gap: 8px;
   padding: 10px 8px 4px;
   border-top: 1px solid var(--ln);
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--t3);
 }
 .sideFoot svg {
@@ -203,7 +203,7 @@
   padding: 0 8px;
   border: 1px solid var(--ln-2);
   border-radius: 999px;
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   color: var(--t2);
 }
 .pillRed {
@@ -223,7 +223,7 @@
   margin-left: auto;
 }
 .timer {
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--t2);
 }
 .submit {
@@ -233,7 +233,7 @@
   padding: 0 11px;
   border-radius: 999px;
   background: var(--fy-accent);
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 510;
   color: #fff;
 }
@@ -263,7 +263,7 @@
   gap: 7px;
   padding: 0 14px;
   border-right: 1px solid var(--ln);
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--t3);
   white-space: nowrap;
 }
@@ -280,7 +280,7 @@
   flex: 1;
   overflow: hidden;
   padding: 12px 0;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 21px;
 }
 .ln {
@@ -384,7 +384,7 @@
   width: 24px;
   height: 24px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 590;
   color: #fff;
 }
@@ -402,18 +402,18 @@
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-weight: 510;
   color: var(--t1);
 }
 .who span {
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   font-weight: 400;
   color: var(--t4);
 }
 .text {
   margin-top: 2px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--t2);
 }
@@ -428,14 +428,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 510;
   letter-spacing: 0.02em;
   color: var(--fy-red-ink);
 }
 .updateTitle {
   margin-top: 5px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-weight: 590;
   color: var(--t1);
 }
@@ -445,7 +445,7 @@
   border: 1px solid var(--ln-2);
   border-radius: 8px;
   background: var(--bg);
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--t4);
 }
 
@@ -456,7 +456,7 @@
   padding: 0 14px;
   border-top: 1px solid var(--ln);
   background: var(--bg-2);
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   color: var(--t3);
   white-space: nowrap;
   overflow: hidden;
@@ -514,7 +514,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--t4);
 }
 .docTitle {
@@ -554,7 +554,7 @@
   border: 1px solid var(--ln);
   border-radius: 4px;
   background: var(--bg-3);
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   color: var(--t1);
 }
 .card {
@@ -620,7 +620,7 @@
   color: var(--t3);
 }
 .time {
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--t4);
 }
 .what {
@@ -633,7 +633,7 @@
   color: var(--t3);
 }
 .meta {
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--t3);
 }
 .rowRed svg {
@@ -655,7 +655,7 @@
 }
 .consentSub {
   margin-top: 4px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--t3);
 }
 .checks {
@@ -667,7 +667,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--t2);
 }
 .check svg {
@@ -679,7 +679,7 @@
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--ln);
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--t4);
 }
@@ -704,7 +704,7 @@
 .panelHead span {
   margin-left: auto;
   font-weight: 400;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--t4);
 }
 .col {
@@ -723,7 +723,7 @@
   border: 1px solid var(--ln);
   border-radius: 8px;
   background: var(--bg-3);
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--t3);
   word-break: break-all;
@@ -737,7 +737,7 @@
 }
 .diffStat {
   margin-left: auto;
-  font-size: 12px;
+  font-size: 0.8125rem;
 }
 .plus {
   color: var(--fy-accent-ink);
@@ -762,7 +762,7 @@
 .result .name {
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--t2);
 }
 .pass svg {
@@ -797,7 +797,7 @@
 }
 .summaryText {
   margin-top: 10px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--t3);
 }
 .summaryText b {
@@ -824,7 +824,7 @@
 }
 .reportMeta {
   margin-top: 6px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--t4);
 }
 .finding {
@@ -846,12 +846,12 @@
 }
 .kind {
   margin-left: auto;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--t4);
 }
 .findingText {
   margin-top: 6px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 1.55;
   color: var(--t3);
 }
@@ -870,7 +870,7 @@
   border: 1px solid var(--fy-accent-line);
   border-radius: 6px;
   background: var(--fy-accent-field);
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--fy-accent-ink);
 }
 .cite svg {
@@ -890,7 +890,7 @@
   background: var(--bg-2);
 }
 .decideLabel {
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 510;
   color: var(--t3);
 }
@@ -925,7 +925,7 @@
   padding: 12px;
   border: 1px solid var(--ln);
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--t3);
 }
@@ -943,7 +943,7 @@
   margin-top: 4px;
   border-radius: 8px;
   background: var(--fy-accent);
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-weight: 510;
   color: #fff;
 }
@@ -952,14 +952,14 @@
   padding: 12px 14px;
   border-radius: 8px;
   background: var(--fy-red-field);
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 1.55;
   color: var(--t2);
 }
 .prompt b {
   display: block;
   margin-bottom: 2px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 510;
   color: var(--fy-red-ink);
 }
@@ -991,12 +991,12 @@
   justify-content: space-between;
 }
 .receiptKicker {
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--t1);
 }
 .receiptNo {
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--t4);
 }
 .receiptTitle {
@@ -1008,7 +1008,7 @@
 }
 .receiptSub {
   margin-top: 4px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--t3);
 }
 .stamp {
@@ -1032,7 +1032,7 @@
   text-transform: uppercase;
 }
 .stamp span {
-  font-size: 12px;
+  font-size: 0.8125rem;
   letter-spacing: 0.04em;
 }
 .receiptStats {
@@ -1053,7 +1053,7 @@
   border-left: 0;
 }
 .statLabel {
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1074,7 +1074,7 @@
   grid-template-columns: 14px minmax(0, 1fr) 70px 56px;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 0.8125rem;
 }
 .receiptFiles svg {
   width: 13px;
@@ -1102,7 +1102,7 @@
   background: var(--fy-red);
 }
 .receiptDiff {
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   text-align: right;
 }
 .handoff {
@@ -1120,7 +1120,7 @@
   border: 1px solid var(--ln);
   border-radius: 999px;
   background: var(--bg);
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--t2);
 }
@@ -1171,12 +1171,12 @@
   background: var(--t1);
 }
 .receiptSha {
-  font-size: 12px;
+  font-size: 0.8125rem;
   letter-spacing: 0.04em;
   color: var(--t3);
 }
 .receiptNote {
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   color: var(--t4);
 }
 /* ---------- Responsive: keep the core, drop the chrome ---------- */
@@ -1218,7 +1218,7 @@
     display: none;
   }
   .code {
-    font-size: 11.5px;
+    font-size: 0.8125rem;
   }
   .ln {
     grid-template-columns: 34px 14px minmax(0, 1fr);

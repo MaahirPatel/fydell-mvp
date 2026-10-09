@@ -36,7 +36,7 @@ export function SubmissionReview({
           <ul className="grid divide-y divide-[var(--border-subtle)] rounded-[8px] border border-[var(--border-subtle)]">
             {changes.map((c) => (
               <li key={c.path} className="flex items-center justify-between gap-3 px-3 py-2">
-                <span className="min-w-0 truncate font-mono text-[12.5px] text-[var(--text-primary)]">{c.path}</span>
+                <span className="min-w-0 truncate font-mono text-app-meta text-[var(--text-primary)]">{c.path}</span>
                 <span className="shrink-0 text-app-meta text-[var(--text-secondary)]">{CHANGE_LABEL[c.change]}</span>
               </li>
             ))}

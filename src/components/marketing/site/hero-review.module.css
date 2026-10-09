@@ -25,7 +25,7 @@
 }
 .mono {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 0.8125rem;
 }
 
 /* ---------- Rail ---------- */
@@ -49,7 +49,7 @@
   border-radius: 5px;
   background: var(--control-solid);
   color: var(--control-solid-ink);
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 .wsName {
@@ -116,7 +116,7 @@
   border-radius: 50%;
   background: var(--field-violet);
   color: var(--ink-violet);
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 .queueList li:nth-child(2) .avatar {
@@ -144,7 +144,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 0.8125rem;
 }
 .state {
   grid-column: 2;
@@ -152,7 +152,7 @@
   margin-top: 4px;
   padding: 1px 7px;
   border-radius: var(--radius-tag);
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
   background: var(--badge-neutral-bg);
   color: var(--badge-neutral-ink);
@@ -219,7 +219,7 @@
   border-radius: var(--radius-tag);
   background: var(--badge-success-bg);
   color: var(--badge-success-ink);
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 .claim {
@@ -243,7 +243,7 @@
   border-radius: var(--radius-tag);
   background: var(--ev-observed-field);
   color: var(--ev-observed-ink);
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 .code {
@@ -255,7 +255,7 @@
   border-radius: var(--radius-control);
   background: var(--surface-panel);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 0.8125rem;
   line-height: 1.75;
   white-space: pre;
 }
@@ -278,7 +278,7 @@
   gap: 8px;
   margin-top: 12px;
   color: var(--text-secondary);
-  font-size: 12.5px;
+  font-size: 0.8125rem;
 }
 .limits svg {
   flex: none;
@@ -337,7 +337,7 @@
   color: var(--text-primary);
 }
 .briefEv {
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 .briefFoot {
@@ -357,7 +357,7 @@
   padding: 3px 8px;
   border: 1px solid var(--border-default);
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 .choices span:first-child {
@@ -370,7 +370,7 @@
   align-items: center;
   gap: 6px;
   margin-top: 10px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 

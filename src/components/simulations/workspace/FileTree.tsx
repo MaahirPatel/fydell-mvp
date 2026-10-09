@@ -95,7 +95,7 @@ export function FileTree({
             path === activePath ? "bg-[var(--surface-selected)] text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]",
           )}
         >
-          <span className="min-w-0 flex-1 truncate font-mono text-[12.5px]">{label}</span>
+          <span className="min-w-0 flex-1 truncate font-mono text-app-meta">{label}</span>
           {lockedPaths?.has(path) ? (
             <>
               <Lock aria-hidden size={11} className="shrink-0 text-[var(--text-tertiary)]" />
@@ -109,7 +109,7 @@ export function FileTree({
             </>
           ) : null}
           {mark ? (
-            <span className={cn("w-3 shrink-0 text-center font-mono text-[11px] font-semibold", mark.className)}>
+            <span className={cn("w-3 shrink-0 text-center font-mono text-app-meta font-semibold", mark.className)}>
               <span aria-hidden>{mark.letter}</span>
               <span className="sr-only">, {mark.label}</span>
             </span>
@@ -143,7 +143,7 @@ export function FileTree({
             className="flex h-7 w-full items-center gap-1 pr-2 text-left text-[13px] text-[var(--text-secondary)] outline-offset-[-2px] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
           >
             {open ? <ChevronDown aria-hidden size={13} className="shrink-0" /> : <ChevronRight aria-hidden size={13} className="shrink-0" />}
-            <span className="truncate font-mono text-[12.5px]">{n.name}</span>
+            <span className="truncate font-mono text-app-meta">{n.name}</span>
           </button>
           {open ? <ul>{renderNodes(n.children, depth + 1)}</ul> : null}
         </li>
@@ -161,7 +161,7 @@ export function FileTree({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filter files"
-            className="h-7 w-full rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-canvas)] pl-7 pr-2 text-[12.5px] text-[var(--text-primary)] placeholder:text-[var(--text-quaternary)]"
+            className="h-7 w-full rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-canvas)] pl-7 pr-2 text-app-meta text-[var(--text-primary)] placeholder:text-[var(--text-quaternary)]"
           />
         </label>
         {!readOnly ? (
@@ -181,7 +181,7 @@ export function FileTree({
       </div>
       {adding ? (
         <div className="grid shrink-0 gap-1 px-2 pb-2">
-          <label htmlFor="sim-new-file" className="text-[12px] text-[var(--text-secondary)]">
+          <label htmlFor="sim-new-file" className="text-app-meta text-[var(--text-secondary)]">
             New file path
           </label>
           <input
@@ -203,14 +203,14 @@ export function FileTree({
             placeholder="src/helpers.py"
             aria-invalid={pathError ? true : undefined}
             aria-describedby={pathError ? "sim-new-file-error" : undefined}
-            className="h-7 rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-2 font-mono text-[12px] text-[var(--text-primary)]"
+            className="h-7 rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-2 font-mono text-app-meta text-[var(--text-primary)]"
           />
           {pathError ? (
-            <p id="sim-new-file-error" className="text-[12px] text-[var(--sim-error)]">
+            <p id="sim-new-file-error" className="text-app-meta text-[var(--sim-error)]">
               {pathError}
             </p>
           ) : (
-            <p className="text-[11.5px] text-[var(--text-tertiary)]">Press Enter to add, Escape to cancel.</p>
+            <p className="text-app-meta text-[var(--text-tertiary)]">Press Enter to add, Escape to cancel.</p>
           )}
         </div>
       ) : null}
@@ -219,7 +219,7 @@ export function FileTree({
           matches.length ? (
             <ul aria-label="Matching files">{matches.map((p) => fileRow(p, p, 0))}</ul>
           ) : (
-            <p className="px-3 py-2 text-[12.5px] text-[var(--text-tertiary)]">No files match.</p>
+            <p className="px-3 py-2 text-app-meta text-[var(--text-tertiary)]">No files match.</p>
           )
         ) : (
           <ul aria-label="Files">{renderNodes(tree, 0)}</ul>

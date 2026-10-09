@@ -41,7 +41,7 @@ export function CapabilityStatements({ statements }: { statements: CapabilitySta
           {s.notAssessed.length ? (
             <p className="mt-1 text-[13px] leading-[1.55] text-[var(--text-tertiary)]">{s.notAssessed.join(" ")}</p>
           ) : null}
-          <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
+          <p className="mt-1 text-app-meta text-[var(--text-tertiary)]">
             {LEVEL_TEXT[s.level]} · {s.entryIds.length} ledger entr{s.entryIds.length === 1 ? "y" : "ies"}
           </p>
         </li>
@@ -60,7 +60,7 @@ function EntryRow({ e }: { e: LedgerEntry }) {
         <p className="min-w-0 text-[14px] text-[var(--text-primary)]">{e.claim}</p>
         <Status kind="neutral" icon={false}>{e.basis === "observation" ? "Observation" : "Inference"}</Status>
       </div>
-      <p className="mt-0.5 flex flex-wrap items-center gap-x-2 font-mono text-[12px] text-[var(--text-tertiary)]">
+      <p className="mt-0.5 flex flex-wrap items-center gap-x-2 font-mono text-app-meta text-[var(--text-tertiary)]">
         <span>{e.source.repo}</span>
         {url ? (
           <a href={url} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-0.5 hover:text-[var(--text-primary)]">
@@ -81,7 +81,7 @@ function EntryRow({ e }: { e: LedgerEntry }) {
           </Link>
         ) : null}
       </p>
-      <button type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)} className="mt-1 text-[12px] font-medium text-[var(--accent-ink)] hover:underline">
+      <button type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)} className="mt-1 text-app-meta font-medium text-[var(--accent-ink)] hover:underline">
         {open ? "Hide verification" : "Show verification"}
       </button>
       {open ? (
@@ -100,7 +100,7 @@ function EntryRow({ e }: { e: LedgerEntry }) {
             ))}
           </dl>
           {e.limitations.length ? <p className="text-[13px] text-[var(--text-tertiary)]">Limits: {e.limitations.join(" ")}</p> : null}
-          <p className="font-mono text-[11px] text-[var(--text-tertiary)]">Entry {e.id}</p>
+          <p className="font-mono text-app-meta text-[var(--text-tertiary)]">Entry {e.id}</p>
         </div>
       ) : null}
     </li>
@@ -149,7 +149,7 @@ export function RunRecordPanel({ report }: { report: BuilderAnalysisReport }) {
           {check.fellBackToTemplate ? " Too little survived, so the template summary is shown instead." : ""}
         </p>
       ) : null}
-      <p className="font-mono text-[11px] text-[var(--text-tertiary)]">
+      <p className="font-mono text-app-meta text-[var(--text-tertiary)]">
         Run {run.runId} · inputs {run.inputHash.slice(0, 16)}
         {run.supersedes ? ` · supersedes ${run.supersedes.slice(0, 8)}` : ""}
       </p>
@@ -219,7 +219,7 @@ export function VersionHistory({ viewingId }: { viewingId: string | null }) {
               {v.status === "complete" && !v.current ? <Status kind="neutral" icon={false}>Superseded, kept unchanged</Status> : null}
               {v.status === "failed" ? <Status kind="attention" icon={false}>Failed, previous report kept</Status> : null}
               {v.status === "running" ? <Status kind="pending" icon={false}>Running</Status> : null}
-              {v.id === viewingId ? <span className="text-[12px] text-[var(--text-tertiary)]">Viewing</span> : null}
+              {v.id === viewingId ? <span className="text-app-meta text-[var(--text-tertiary)]">Viewing</span> : null}
               <span className="ml-auto flex gap-2">
                 {v.status === "complete" && v.id !== viewingId ? (
                   <Link href={v.current ? "/app/candidate/reports" : `/app/candidate/reports?run=${v.id}`} className="text-[13px] font-medium text-[var(--accent-ink)] underline underline-offset-4">
@@ -234,7 +234,7 @@ export function VersionHistory({ viewingId }: { viewingId: string | null }) {
               </span>
             </div>
             {v.status === "failed" && v.error ? <p className="mt-0.5 text-[13px] text-[var(--text-secondary)]">{v.error}</p> : null}
-            {v.reportHash ? <p className="mt-0.5 font-mono text-[11px] text-[var(--text-tertiary)]">report {v.reportHash.slice(0, 16)}{v.inputHash ? ` · inputs ${v.inputHash.slice(0, 16)}` : ""}</p> : null}
+            {v.reportHash ? <p className="mt-0.5 font-mono text-app-meta text-[var(--text-tertiary)]">report {v.reportHash.slice(0, 16)}{v.inputHash ? ` · inputs ${v.inputHash.slice(0, 16)}` : ""}</p> : null}
             {comparison?.id === v.id ? <ComparisonView c={comparison.c} /> : null}
           </li>
         ))}

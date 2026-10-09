@@ -56,7 +56,7 @@
   position: absolute;
   top: 10px;
   right: 14px;
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 
@@ -94,7 +94,7 @@
 }
 .mono {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 0.8125rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -107,7 +107,7 @@
   border-radius: var(--radius-control);
   background: var(--surface-panel);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 0.8125rem;
   line-height: 1.7;
   color: var(--text-body);
 }
@@ -133,7 +133,7 @@
   flex: none;
   padding: 1px 7px;
   border-radius: var(--radius-tag);
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 .chip[data-kind="observed"] {
@@ -154,7 +154,7 @@
   border-radius: var(--radius-tag);
   background: var(--badge-neutral-bg);
   color: var(--badge-neutral-ink);
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
@@ -203,7 +203,7 @@
   align-items: center;
   gap: 6px;
   color: var(--text-tertiary);
-  font-size: 12.5px;
+  font-size: 0.8125rem;
 }
 
 .brief {

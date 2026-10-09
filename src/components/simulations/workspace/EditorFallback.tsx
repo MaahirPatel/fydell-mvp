@@ -67,13 +67,13 @@ export function PlainCodeEditor({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] bg-[var(--surface-band)] px-3 py-1.5">
-        <p className="text-[12.5px] text-[var(--text-secondary)]">
+        <p className="text-app-meta text-[var(--text-secondary)]">
           {onLoadFull
             ? "Plain text editor. Syntax highlighting and find are off here."
             : "The full editor could not be downloaded, so this plain text editor is showing. Your changes are kept."}
         </p>
         {onLoadFull ? (
-          <button type="button" onClick={onLoadFull} className="text-[12.5px] font-medium text-[var(--text-primary)] underline underline-offset-2">
+          <button type="button" onClick={onLoadFull} className="text-app-meta font-medium text-[var(--text-primary)] underline underline-offset-2">
             Load the full editor
           </button>
         ) : null}

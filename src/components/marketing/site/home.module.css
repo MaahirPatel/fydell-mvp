@@ -192,6 +192,13 @@
 .muted {
   color: var(--text-tertiary);
 }
+.headLead {
+  max-width: 36em;
+  margin-top: 14px;
+  font-size: 1.125rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
 .more {
   display: inline-flex;
   align-items: center;

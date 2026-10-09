@@ -23,20 +23,20 @@ export function CandidateFileBrowser({ pkg }: { pkg: ScenarioPackage }) {
               aria-current={f.path === file.path ? "true" : undefined}
               onClick={() => setSelected(f.path)}
               className={cn(
-                "flex w-full items-center gap-2 px-3 py-1.5 text-left font-mono text-[12.5px]",
+                "flex w-full items-center gap-2 px-3 py-1.5 text-left font-mono text-app-meta",
                 f.path === file.path ? "bg-[var(--surface-selected)] text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]",
               )}
             >
               <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden />
               <span className="min-w-0 truncate">{f.path}</span>
-              {testFiles.has(f.path) ? <span className="ml-auto shrink-0 font-sans text-[11.5px] text-[var(--text-tertiary)]">test</span> : fixtures.has(f.path) ? <span className="ml-auto shrink-0 font-sans text-[11.5px] text-[var(--text-tertiary)]">fixture</span> : null}
+              {testFiles.has(f.path) ? <span className="ml-auto shrink-0 font-sans text-app-meta text-[var(--text-tertiary)]">test</span> : fixtures.has(f.path) ? <span className="ml-auto shrink-0 font-sans text-app-meta text-[var(--text-tertiary)]">fixture</span> : null}
             </button>
           </li>
         ))}
       </ul>
       <div className="min-w-0">
-        <p className="border-b border-[var(--border-subtle)] px-3.5 py-2 font-mono text-[12.5px] text-[var(--text-secondary)]">{file.path}</p>
-        <pre className="max-h-[420px] overflow-auto bg-[var(--surface-code)] px-3.5 py-3 font-mono text-[12.5px] leading-[1.6] text-[var(--text-primary)]">{file.content}</pre>
+        <p className="border-b border-[var(--border-subtle)] px-3.5 py-2 font-mono text-app-meta text-[var(--text-secondary)]">{file.path}</p>
+        <pre className="max-h-[420px] overflow-auto bg-[var(--surface-code)] px-3.5 py-3 font-mono text-app-meta leading-[1.6] text-[var(--text-primary)]">{file.content}</pre>
       </div>
     </div>
   );

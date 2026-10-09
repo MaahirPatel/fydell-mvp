@@ -165,7 +165,7 @@ export function LocalEditingDialog({
         </li>
         <li>
           <p>Open the folder in VS Code or Cursor and work as usual. Run the tests in your own terminal:</p>
-          <pre className="sim-scroll mt-2 overflow-x-auto rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-2 font-mono text-[12.5px] text-[var(--text-body)]">
+          <pre className="sim-scroll mt-2 overflow-x-auto rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-2 font-mono text-app-meta text-[var(--text-body)]">
             {[...setupCommands, testCommand].join("\n")}
           </pre>
         </li>
@@ -193,7 +193,7 @@ function PathList({ title, paths, tone }: { title: string; paths: string[]; tone
       </h3>
       <ul className="grid gap-0.5 rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-2">
         {paths.map((p) => (
-          <li key={p} className={`truncate font-mono text-[12.5px] ${color}`}>
+          <li key={p} className={`truncate font-mono text-app-meta ${color}`}>
             {p}
           </li>
         ))}
@@ -250,7 +250,7 @@ export function SyncPreviewDialog({
           </div>
         ) : null}
         {plan.skipped ? (
-          <p className="text-[12.5px] text-[var(--text-tertiary)]">
+          <p className="text-app-meta text-[var(--text-tertiary)]">
             {plan.skipped} {plan.skipped === 1 ? "file was" : "files were"} skipped: dependency or cache folders, hidden files, binary files, or new files that are not source
             text.
           </p>

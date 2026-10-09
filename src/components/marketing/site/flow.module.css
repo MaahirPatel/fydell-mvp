@@ -54,7 +54,7 @@
   color: var(--text-secondary);
 }
 .fieldLabel {
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 .field {
@@ -69,7 +69,7 @@
   padding: 1px 8px;
   border-radius: 6px;
   background: var(--surface-deep);
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
 }

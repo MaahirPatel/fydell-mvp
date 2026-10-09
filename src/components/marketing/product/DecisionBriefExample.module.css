@@ -55,7 +55,7 @@
   border-bottom: 1px solid var(--border-subtle);
   padding: 0 20px;
   color: var(--text-tertiary);
-  font-size: 12px;
+  font-size: 0.8125rem;
 }
 
 .reportBar strong {
@@ -83,7 +83,7 @@
 .railMeta {
   margin-top: 7px;
   color: var(--text-tertiary);
-  font-size: 12px;
+  font-size: 0.8125rem;
   line-height: 1.55;
 }
 
@@ -92,7 +92,7 @@
   gap: 3px;
   margin-top: 28px;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 0.8125rem;
 }
 
 .railNav span {
@@ -115,14 +115,14 @@
 
 .versionList dt {
   color: var(--text-tertiary);
-  font-size: 10px;
+  font-size: 0.8125rem;
 }
 
 .versionList dd {
   margin-top: 3px;
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 0.8125rem;
   overflow-wrap: anywhere;
 }
 
@@ -144,7 +144,7 @@
 .recommendationLabel,
 .sectionLabel {
   color: var(--text-tertiary);
-  font-size: 12px;
+  font-size: 0.8125rem;
 }
 
 .recommendation h2 {
@@ -163,7 +163,7 @@
   padding: 8px 10px;
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 0.8125rem;
 }
 
 .recommendation p:last-child {
@@ -194,7 +194,7 @@
 .claimIdentity {
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 0.8125rem;
   line-height: 1.6;
 }
 
@@ -231,7 +231,7 @@
 
 .claimEvidence h4 {
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
@@ -253,14 +253,14 @@
   margin-right: 7px;
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 0.8125rem;
 }
 
 .claimVersions {
   margin-top: 18px;
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 0.8125rem;
   line-height: 1.55;
 }
 
@@ -286,7 +286,7 @@
 .questions span {
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 0.8125rem;
 }
 
 .reviewNote {
@@ -350,7 +350,7 @@
 .runEvent {
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 0.8125rem;
 }
 
 .runStep h3 {

@@ -255,7 +255,7 @@ function OptionRow({
   return (
     <>
       {group ? (
-        <li role="presentation" className="px-3 pb-1 pt-2.5 text-[12px] font-medium text-[var(--text-tertiary)]">
+        <li role="presentation" className="px-3 pb-1 pt-2.5 text-app-meta font-medium text-[var(--text-tertiary)]">
           {group}
         </li>
       ) : null}
@@ -279,9 +279,9 @@ function OptionRow({
         <span className="min-w-0">
           <span className={cn("block text-[14px]", u ? "text-[var(--text-tertiary)]" : "text-[var(--text-primary)]")}>{option.label}</span>
           {u ? (
-            <span className="block text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">{unavailableText(u)}</span>
+            <span className="block text-app-meta leading-[1.45] text-[var(--text-secondary)]">{unavailableText(u)}</span>
           ) : option.description ? (
-            <span className="block text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">{option.description}</span>
+            <span className="block text-app-meta leading-[1.45] text-[var(--text-secondary)]">{option.description}</span>
           ) : null}
         </span>
       </li>

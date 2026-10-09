@@ -149,21 +149,21 @@ function Evidence({ evidence: e }: { evidence: RunEvidence }) {
           {outcome}, {(e.durationMs / 1000).toFixed(1)} s
           {e.tests.length ? `, ${e.tests.length} tests: ${Object.entries(counts).map(([k, n]) => `${n} ${k}`).join(", ")}` : ""}
         </span>
-        <span className="ml-auto text-[12.5px] text-[var(--text-tertiary)] group-open:hidden">Show details</span>
-        <span className="ml-auto hidden text-[12.5px] text-[var(--text-tertiary)] group-open:inline">Hide details</span>
+        <span className="ml-auto text-app-meta text-[var(--text-tertiary)] group-open:hidden">Show details</span>
+        <span className="ml-auto hidden text-app-meta text-[var(--text-tertiary)] group-open:inline">Hide details</span>
       </summary>
       <div className="grid gap-3 border-t border-[var(--border-subtle)] px-3 py-3">
         {e.command ? (
           <div>
-            <p className="text-[12.5px] text-[var(--text-tertiary)]">Command</p>
-            <code className="mt-0.5 block overflow-x-auto whitespace-pre font-mono text-[12.5px] text-[var(--text-primary)]">{e.command}</code>
+            <p className="text-app-meta text-[var(--text-tertiary)]">Command</p>
+            <code className="mt-0.5 block overflow-x-auto whitespace-pre font-mono text-app-meta text-[var(--text-primary)]">{e.command}</code>
           </div>
         ) : null}
         {e.tests.length ? (
           <ul className="grid gap-1">
             {e.tests.map((t) => (
               <li key={t.name} className="flex items-start justify-between gap-3 text-[13px]">
-                <span className="min-w-0 break-all font-mono text-[12.5px] text-[var(--text-body)]">{t.name}</span>
+                <span className="min-w-0 break-all font-mono text-app-meta text-[var(--text-body)]">{t.name}</span>
                 <StatusText tone={TEST_TONE[t.outcome] ?? "neutral"} className="shrink-0">
                   {t.outcome[0].toUpperCase() + t.outcome.slice(1)}
                 </StatusText>
@@ -173,8 +173,8 @@ function Evidence({ evidence: e }: { evidence: RunEvidence }) {
         ) : null}
         {e.output ? (
           <div>
-            <p className="text-[12.5px] text-[var(--text-tertiary)]">Output</p>
-            <pre className="mt-0.5 max-h-[320px] overflow-auto rounded-[6px] bg-[var(--surface-code)] px-3 py-2 font-mono text-[12px] leading-[1.55] text-[var(--text-primary)]">{e.output}</pre>
+            <p className="text-app-meta text-[var(--text-tertiary)]">Output</p>
+            <pre className="mt-0.5 max-h-[320px] overflow-auto rounded-[6px] bg-[var(--surface-code)] px-3 py-2 font-mono text-app-meta leading-[1.55] text-[var(--text-primary)]">{e.output}</pre>
           </div>
         ) : null}
       </div>

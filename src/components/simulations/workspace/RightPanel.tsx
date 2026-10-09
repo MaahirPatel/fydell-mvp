@@ -93,7 +93,7 @@ export function RightPanel({
           <PanelRightClose aria-hidden size={15} />
         </button>
       </div>
-      <p className={cn("shrink-0 border-b border-[var(--border-subtle)] px-4 py-2 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]", current.value === "assistant" && "bg-[var(--sim-assistant-bg)]")}>
+      <p className={cn("shrink-0 border-b border-[var(--border-subtle)] px-4 py-2 text-app-meta leading-[1.5] text-[var(--text-secondary)]", current.value === "assistant" && "bg-[var(--sim-assistant-bg)]")}>
         {current.caption}
       </p>
       <div id="sim-right-tabpanel" role="tabpanel" aria-labelledby={`sim-right-tab-${current.value}`} className="min-h-0 flex-1">

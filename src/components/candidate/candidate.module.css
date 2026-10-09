@@ -113,7 +113,7 @@
   margin-right: 0;
 }
 .metaLabel {
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-tertiary);
 }
@@ -135,6 +135,7 @@
 
 .section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
 .sectionHead {
   display: flex;
@@ -157,11 +158,12 @@
 }
 .table {
   margin-top: 2px;
+  container-type: inline-size;
 }
 .tableHead {
   display: none;
   padding: 6px 12px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-tertiary);
 }
@@ -175,7 +177,7 @@
 .row:first-of-type {
   border-top: 0;
 }
-@media (min-width: 720px) {
+@container (min-width: 680px) {
   .tableHead,
   .row {
     display: grid;
@@ -217,7 +219,7 @@
   color: var(--text-secondary);
 }
 .dateLabel {
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 .rowNote {

@@ -80,9 +80,12 @@ export function ShowcaseSection({
       <RevealObserver />
       <div className={s.container}>
         <div className={s.head} data-reveal="group">
-          <h2 id={`${id}-title`} className={s.h2}>
-            {title} <span className={s.muted}>{aside}</span>
-          </h2>
+          <div>
+            <h2 id={`${id}-title`} className={s.h2}>
+              {title}
+            </h2>
+            <p className={s.headLead}>{aside}</p>
+          </div>
           {more ? (
             <Link href={more.href} className={s.more}>
               {more.label} <ArrowRight />

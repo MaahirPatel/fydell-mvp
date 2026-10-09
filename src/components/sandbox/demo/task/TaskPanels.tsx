@@ -56,13 +56,13 @@ export function TaskBrief({ scenario }: { scenario: DemoScenario }) {
               <TeammateAvatar scenario={scenario} id={c.id} size={26} />
               <span className="grid">
                 <span className="font-medium text-[var(--text-primary)]">{c.name}</span>
-                <span className="text-[12.5px] text-[var(--text-secondary)]">{c.title}</span>
+                <span className="text-app-meta text-[var(--text-secondary)]">{c.title}</span>
               </span>
             </li>
           ))}
         </ul>
       </section>
-      <p className="text-[12.5px] text-[var(--text-secondary)]">
+      <p className="text-app-meta text-[var(--text-secondary)]">
         About {scenario.minutes} minutes, with no hard limit. {brief.aiPolicy} {scenario.testCommandLabel}
       </p>
     </div>
@@ -70,7 +70,7 @@ export function TaskBrief({ scenario }: { scenario: DemoScenario }) {
 }
 
 export function ChangesList({ diffs, onOpenDiff }: { diffs: FileDiff[]; onOpenDiff: (path: string) => void }) {
-  if (!diffs.length) return <p className="px-3 py-2 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">No files differ from the starter yet.</p>;
+  if (!diffs.length) return <p className="px-3 py-2 text-app-meta leading-[1.55] text-[var(--text-secondary)]">No files differ from the starter yet.</p>;
   return (
     <ul aria-label="Files changed from the starter">
       {diffs.map((d) => (
@@ -81,10 +81,10 @@ export function ChangesList({ diffs, onOpenDiff }: { diffs: FileDiff[]; onOpenDi
             className="flex w-full items-center gap-2 px-3 py-1.5 text-left outline-offset-[-2px] hover:bg-[var(--surface-hover)]"
           >
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-mono text-[12.5px] text-[var(--text-primary)]">{d.path.split("/").pop()}</span>
-              <span className="block truncate text-[11.5px] text-[var(--text-tertiary)]">Edited, {d.path.slice(0, d.path.lastIndexOf("/")) || "root"}</span>
+              <span className="block truncate font-mono text-app-meta text-[var(--text-primary)]">{d.path.split("/").pop()}</span>
+              <span className="block truncate text-app-meta text-[var(--text-tertiary)]">Edited, {d.path.slice(0, d.path.lastIndexOf("/")) || "root"}</span>
             </span>
-            <span className="shrink-0 font-mono text-[11.5px] tabular-nums">
+            <span className="shrink-0 font-mono text-app-marker tabular-nums">
               <span className="text-[var(--sim-success)]">+{d.added}</span> <span className="text-[var(--sim-error)]">-{d.removed}</span>
             </span>
           </button>
@@ -197,19 +197,19 @@ export function TaskBottomPanel({
                 }}
                 onKeyDown={(e) => onKey(e, i)}
                 className={cn(
-                  "relative flex items-center gap-1.5 px-2.5 text-[12.5px] outline-offset-[-2px]",
+                  "relative flex items-center gap-1.5 px-2.5 text-app-meta outline-offset-[-2px]",
                   selected ? "text-[var(--text-primary)]" : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]",
                 )}
               >
                 {t.label}
-                {t.count ? <span className="rounded-full bg-[var(--surface-raised)] px-1.5 text-[11px] tabular-nums text-[var(--text-secondary)]">{t.count}</span> : null}
+                {t.count ? <span className="rounded-full bg-[var(--surface-raised)] px-1.5 text-app-marker tabular-nums text-[var(--text-secondary)]">{t.count}</span> : null}
                 {selected ? <span aria-hidden className="absolute inset-x-2 bottom-0 h-[2px] bg-[var(--accent)]" /> : null}
               </button>
             );
           })}
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {run && !running ? <span className="hidden text-[12px] text-[var(--text-tertiary)] md:inline">{RUN_LOCATION_LABEL}</span> : null}
+          {run && !running ? <span className="hidden text-app-meta text-[var(--text-tertiary)] md:inline">{RUN_LOCATION_LABEL}</span> : null}
           <Button size="sm" variant="secondary" onClick={onRun} loading={running} disabled={running} className="h-7">
             {running ? null : <Play aria-hidden size={13} />}
             {running ? "Running" : "Run tests"}
@@ -236,7 +236,7 @@ export function TaskBottomPanel({
                 ) : run ? (
                   <>
                     <RunHeadline scenario={scenario} run={run} />
-                    <p className="text-[12.5px] text-[var(--text-secondary)]">
+                    <p className="text-app-meta text-[var(--text-secondary)]">
                       {RUN_LOCATION_LABEL}, {formatClock(run.at)}, {run.durationMs} ms
                     </p>
                   </>
@@ -264,12 +264,12 @@ export function TaskBottomPanel({
                           className="min-w-0 flex-1 text-left"
                           title={`Open this test in ${r.meta.file}`}
                         >
-                          <span className="block font-mono text-[12.5px] text-[var(--text-primary)] underline-offset-2 hover:underline">{r.meta.name}</span>
-                          <span className="block text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">{r.meta.requirement}</span>
+                          <span className="block font-mono text-app-meta text-[var(--text-primary)] underline-offset-2 hover:underline">{r.meta.name}</span>
+                          <span className="block text-app-meta leading-[1.5] text-[var(--text-secondary)]">{r.meta.requirement}</span>
                         </button>
                         <span
                           className={cn(
-                            "shrink-0 text-[12px]",
+                            "shrink-0 text-app-meta",
                             r.status === "pass" && "text-[var(--sim-success)]",
                             r.status === "fail" && "text-[var(--sim-error)]",
                             r.status === "not_run" && "text-[var(--text-tertiary)]",
@@ -279,7 +279,7 @@ export function TaskBottomPanel({
                         </span>
                       </div>
                       {r.status === "fail" && r.message ? (
-                        <pre className="ml-6 overflow-x-auto whitespace-pre-wrap break-words rounded-[6px] bg-[var(--sim-error-bg)] px-3 py-2 font-mono text-[12px] leading-[1.55] text-[var(--sim-error)]">
+                        <pre className="ml-6 overflow-x-auto whitespace-pre-wrap break-words rounded-[6px] bg-[var(--sim-error-bg)] px-3 py-2 font-mono text-app-meta leading-[1.55] text-[var(--sim-error)]">
                           {r.message}
                         </pre>
                       ) : null}
@@ -287,7 +287,7 @@ export function TaskBottomPanel({
                   ))}
                 </ul>
               ) : null}
-              <p className="flex items-center gap-1.5 text-[12px] text-[var(--text-tertiary)]">
+              <p className="flex items-center gap-1.5 text-app-meta text-[var(--text-tertiary)]">
                 <Lock aria-hidden size={11} />
                 {protectedCount === 1 ? "1 protected test runs" : `${protectedCount} protected tests run`} on your files when you submit. Your report shows the requirement each checks, not its code.
               </p>
@@ -296,7 +296,7 @@ export function TaskBottomPanel({
 
           {tab === "output" ? (
             run?.logs.length ? (
-              <pre className="sim-scroll overflow-auto whitespace-pre-wrap break-words rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-2.5 font-mono text-[12.5px] leading-[1.6] text-[var(--text-body)]">
+              <pre className="sim-scroll overflow-auto whitespace-pre-wrap break-words rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-2.5 font-mono text-app-meta leading-[1.6] text-[var(--text-body)]">
                 {run.logs.join("\n")}
               </pre>
             ) : (

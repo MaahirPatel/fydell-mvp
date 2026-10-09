@@ -92,13 +92,13 @@ export function FileSetEditor({
                       setConfirmDelete(null);
                     }}
                     className={cn(
-                      "flex w-full items-center gap-2 px-3 py-1.5 text-left font-mono text-[12.5px]",
+                      "flex w-full items-center gap-2 px-3 py-1.5 text-left font-mono text-app-meta",
                       on ? "bg-[var(--surface-selected)] text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]",
                     )}
                   >
                     <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden />
                     <span className="min-w-0 truncate">{f.path}</span>
-                    {tag ? <span className="ml-auto shrink-0 font-sans text-[11.5px] text-[var(--text-tertiary)]">{tag}</span> : null}
+                    {tag ? <span className="ml-auto shrink-0 font-sans text-app-meta text-[var(--text-tertiary)]">{tag}</span> : null}
                   </button>
                 </li>
               );
@@ -113,7 +113,7 @@ export function FileSetEditor({
                 </Button>
               ) : (
                 <div className="grid gap-1.5">
-                  <label htmlFor={`${base}-new`} className="text-[12.5px] font-medium text-[var(--text-primary)]">
+                  <label htmlFor={`${base}-new`} className="text-app-meta font-medium text-[var(--text-primary)]">
                     New file path
                   </label>
                   <Input
@@ -121,7 +121,7 @@ export function FileSetEditor({
                     autoFocus
                     value={adding}
                     placeholder={newFilePlaceholder}
-                    className="h-8 font-mono text-[12.5px]"
+                    className="h-8 font-mono text-app-meta"
                     onChange={(e) => setAdding(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
@@ -167,7 +167,7 @@ export function FileSetEditor({
                       id={`${base}-rename`}
                       autoFocus
                       value={renaming.to}
-                      className="h-8 min-w-[180px] flex-1 font-mono text-[12.5px]"
+                      className="h-8 min-w-[180px] flex-1 font-mono text-app-meta"
                       onChange={(e) => setRenaming({ ...renaming, to: e.target.value })}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
@@ -194,7 +194,7 @@ export function FileSetEditor({
                     </Button>
                   </div>
                 ) : (
-                  <span className="min-w-0 truncate font-mono text-[12.5px] text-[var(--text-secondary)]">{current.path}</span>
+                  <span className="min-w-0 truncate font-mono text-app-meta text-[var(--text-secondary)]">{current.path}</span>
                 )}
                 {readOnly || renaming ? null : (
                   <div className="flex items-center gap-1">

@@ -203,7 +203,7 @@
 
 .mockCaption {
   margin-top: 12px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 1.55;
   color: var(--dim);
 }
@@ -334,7 +334,7 @@
   border-radius: 6px;
   background: var(--sheet);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 0.8125rem;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--text-secondary);
@@ -375,7 +375,7 @@
   border-top: 1px solid var(--line);
   background: var(--sheet);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 0.8125rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--dim);
@@ -474,7 +474,7 @@
 .sideLabel {
   margin-top: 16px;
   padding: 6px 8px 4px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--dim);
 }
 
@@ -540,7 +540,7 @@
   border-radius: 5px;
   background: var(--tint);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--text-primary);
 }
 
@@ -642,7 +642,7 @@
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-primary);
   border: 1px solid var(--line);
@@ -709,7 +709,7 @@
 
 .working {
   margin-top: 10px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   background: linear-gradient(90deg, var(--dim) 0%, var(--text-primary) 50%, var(--dim) 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
@@ -729,7 +729,7 @@
 
 .worked {
   margin-top: 10px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--dim);
 }
 
@@ -770,7 +770,7 @@
   border-radius: 6px;
   background: var(--tint);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
   animation: rise 420ms var(--ease) both;
 }
@@ -787,7 +787,7 @@
 
 .propLabel {
   margin-bottom: 8px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--dim);
 }
 
@@ -813,7 +813,7 @@
   padding: 2px 9px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 
@@ -825,7 +825,7 @@
   border-radius: 999px;
   background: var(--tint);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -886,7 +886,7 @@
 
 .figLabel {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 0.8125rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--dim);
@@ -1018,7 +1018,7 @@
 }
 .chapterIndex span {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--dim);
 }
 .chapterIndex:hover {
@@ -1090,7 +1090,7 @@
 
 .cardId {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--dim);
 }
 
@@ -1113,7 +1113,7 @@
   padding: 2px 7px;
   border: 1px solid var(--border-subtle);
   border-radius: 5px;
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 
@@ -1186,7 +1186,7 @@
   padding-left: 148px;
   border-bottom: 1px solid var(--border-subtle);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--dim);
 }
 
@@ -1229,7 +1229,7 @@
   border-left-width: 3px;
   border-radius: 4px;
   background: var(--seg-field);
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 500;
   white-space: nowrap;
   color: var(--seg-ink);
@@ -1305,7 +1305,7 @@
   border: 1px solid currentColor;
   border-radius: 999px;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 10px;
+  font-size: 0.8125rem;
   line-height: 1;
 }
 
@@ -1422,7 +1422,7 @@
   display: block;
   margin-top: 3px;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--dim);
 }
 
@@ -1432,7 +1432,7 @@
   gap: 8px;
   padding: 5px 0;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 
@@ -1619,7 +1619,7 @@
 }
 .stepNum {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--dim);
 }
 .stepTitle {
@@ -1885,7 +1885,7 @@
   justify-content: space-between;
   margin-top: 8px;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--dim);
 }
 .presets {
@@ -1926,7 +1926,7 @@
   padding: 2px 8px;
   border: 1px solid var(--brand-violet);
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--ink-violet, var(--brand-violet));
 }
 .quoteBest b {

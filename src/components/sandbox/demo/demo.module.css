@@ -63,7 +63,7 @@
   color: var(--text-body);
 }
 .meta {
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--text-secondary);
 }
@@ -78,7 +78,7 @@
   border-radius: 5px;
   background: var(--surface-panel);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-primary);
 }
 .actions {
@@ -96,7 +96,7 @@
   align-items: center;
   gap: 4px;
   border-radius: 4px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--mk-indigo);
   text-decoration: underline;
   text-decoration-color: var(--mk-indigo-line);
@@ -117,7 +117,7 @@
   padding: 2px 9px;
   border: 1px solid var(--border-default);
   border-radius: 999px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--text-body);
   white-space: nowrap;
 }
@@ -280,7 +280,7 @@
   border-radius: 50%;
   background: var(--mk-indigo-tint);
   color: var(--mk-indigo);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -289,7 +289,7 @@
   height: 22px;
   background: var(--surface-deep);
   color: var(--text-body);
-  font-size: 11.5px;
+  font-size: 0.75rem;
 }
 .strongText {
   font-weight: 500;
@@ -410,12 +410,12 @@
   color: var(--text-primary);
 }
 .help {
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--text-body);
 }
 .error {
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--mk-error);
 }
@@ -479,7 +479,7 @@
   height: 22px;
   padding-inline: 8px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -533,7 +533,7 @@
 }
 .testName {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--text-primary);
   overflow-wrap: anywhere;
 }
@@ -546,7 +546,7 @@
   border-radius: 7px;
   background: var(--demo-error-tint);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--mk-error);
   white-space: pre-wrap;
@@ -556,13 +556,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--text-body);
 }
 
 .details > summary {
   cursor: pointer;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--mk-indigo);
   border-radius: 4px;
@@ -582,7 +582,7 @@
   background: var(--surface-raised);
   font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   font-feature-settings: normal;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 20px;
 }
 .codeLines {
@@ -608,7 +608,7 @@
   overflow-x: auto;
   font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   font-feature-settings: normal;
-  font-size: 12px;
+  font-size: 0.8125rem;
   line-height: 19px;
 }
 .diffFile + .diffFile {
@@ -621,7 +621,7 @@
   padding: 8px 14px;
   background: var(--surface-panel);
   border-bottom: 1px solid var(--border-subtle);
-  font-size: 12.5px;
+  font-size: 0.8125rem;
 }
 .diffHunk {
   padding: 4px 14px;
@@ -683,7 +683,7 @@
   border-radius: 50%;
   background: var(--surface-deep);
   color: var(--text-body);
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 .avatar[data-tone="0"] {
@@ -732,7 +732,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 8px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
 }
 .turnName {
   font-weight: 600;
@@ -747,7 +747,7 @@
   overflow-wrap: anywhere;
 }
 .turnNotice {
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--text-secondary);
 }
@@ -759,7 +759,7 @@
   border-radius: 999px;
   background: var(--mk-indigo-tint);
   color: var(--mk-indigo);
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 .quote {
@@ -820,7 +820,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--mk-attention);
 }

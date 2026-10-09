@@ -283,7 +283,7 @@ function WorkspaceMark({ workspaceName }: { workspaceName: string }) {
   return (
     <span
       aria-hidden
-      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] bg-[var(--control-solid)] text-[11px] font-semibold text-[var(--control-solid-ink)]"
+      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] bg-[var(--control-solid)] text-app-marker font-semibold text-[var(--control-solid-ink)]"
     >
       {mark}
     </span>
@@ -294,7 +294,7 @@ function DemoMark() {
   return (
     <span
       aria-hidden
-      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] border border-dashed border-[var(--border-strong)] text-[11px] font-semibold text-[var(--text-primary)]"
+      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] border border-dashed border-[var(--border-strong)] text-app-marker font-semibold text-[var(--text-primary)]"
     >
       D
     </span>
@@ -337,7 +337,7 @@ function WorkspaceSwitcher({
         <span className="min-w-0 truncate text-[13px] font-semibold text-[var(--text-primary)]">
           {demo ? DEMO_NAME : workspaceName}
         </span>
-        <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-[var(--text-tertiary)]">
+        <span className="inline-flex shrink-0 items-center gap-1 text-app-meta font-medium text-[var(--text-tertiary)]">
           {demo ? null : <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[var(--brand-teal)]" />}
           {demo ? "Demo" : "Live"}
         </span>
@@ -358,7 +358,7 @@ function WorkspaceSwitcher({
               <span className="block truncate font-medium text-[var(--text-primary)]">
                 {workspaceName}
               </span>
-              <span className="block text-[11px] text-[var(--text-tertiary)]">Live workspace</span>
+              <span className="block text-app-meta text-[var(--text-tertiary)]">Live workspace</span>
             </span>
             {demo ? null : <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />}
           </Link>
@@ -366,7 +366,7 @@ function WorkspaceSwitcher({
             <DemoMark />
             <span className="min-w-0 flex-1">
               <span className="block font-medium text-[var(--text-primary)]">{DEMO_NAME}</span>
-              <span className="block text-[11px] text-[var(--text-tertiary)]">Fictional applicants, nothing is sent</span>
+              <span className="block text-app-meta text-[var(--text-tertiary)]">Fictional applicants, nothing is sent</span>
             </span>
             {demo ? <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden /> : null}
           </Link>

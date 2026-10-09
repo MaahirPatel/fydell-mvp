@@ -32,7 +32,7 @@
   border: 1px solid var(--border-default);
   border-radius: 4px;
   background: var(--surface-raised);
-  font-size: 10.5px;
+  font-size: 0.75rem;
   color: var(--text-tertiary);
 }
 .group {
@@ -42,7 +42,7 @@
 }
 .groupLabel {
   padding: 0 8px 5px;
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-tertiary);
 }
@@ -74,7 +74,7 @@
 .role {
   flex: none;
   margin-left: auto;
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   font-weight: 400;
   color: var(--text-tertiary);
 }
@@ -86,7 +86,7 @@
 }
 .count {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 0.75rem;
   color: var(--text-tertiary);
 }
 .dot {
@@ -128,7 +128,7 @@
 }
 .topId {
   flex: none;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 .topTitle {
@@ -145,7 +145,7 @@
   align-items: center;
   gap: 14px;
   margin-left: auto;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
   white-space: nowrap;
 }
@@ -180,7 +180,7 @@
   align-items: center;
   gap: 6px;
   height: 38px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-tertiary);
   white-space: nowrap;
@@ -202,7 +202,7 @@
   padding: 0 5px;
   border-radius: 4px;
   background: var(--surface-panel);
-  font-size: 10.5px;
+  font-size: 0.75rem;
   line-height: 16px;
   color: var(--text-tertiary);
 }
@@ -239,7 +239,7 @@
   justify-content: start;
   gap: 0;
   margin-top: 16px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
 }
 .meta > div {
   min-width: 0;
@@ -251,7 +251,7 @@
   border-right: 0;
 }
 .meta dt {
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-tertiary);
 }
@@ -301,7 +301,7 @@
   padding: 7px 10px;
   border-bottom: 1px solid var(--border-subtle);
   background: var(--surface-panel);
-  font-size: 11.5px;
+  font-size: 0.8125rem;
 }
 .codeFile {
   overflow: hidden;
@@ -314,7 +314,7 @@
   margin: 0;
   padding: 4px 0;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 0.8125rem;
   line-height: 1.7;
 }
 .line {
@@ -365,7 +365,7 @@
   justify-content: space-between;
 }
 .checksScore {
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--fy-green-ink);
 }
@@ -388,7 +388,7 @@
   align-items: center;
   gap: 6px;
   margin-top: 8px;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 .legendUpdate {
@@ -416,7 +416,7 @@
   height: 26px;
   border-radius: 999px;
   background: var(--surface-raised);
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -425,7 +425,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 .msgHead b {
@@ -436,7 +436,7 @@
   padding: 0 6px;
   border-radius: 4px;
   background: var(--surface-raised);
-  font-size: 10.5px;
+  font-size: 0.8125rem;
   font-weight: 600;
   line-height: 18px;
   color: var(--fy-red-ink);
@@ -465,7 +465,7 @@
   border: 1px solid var(--border-strong);
   border-radius: 7px;
   background: var(--surface-raised);
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
 }

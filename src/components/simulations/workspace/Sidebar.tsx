@@ -88,7 +88,7 @@ export function SidebarRail({
           >
             <Icon aria-hidden size={17} />
             {value === "changes" && changeCount ? (
-              <span aria-hidden className="absolute right-0.5 top-0.5 min-w-[15px] rounded-full bg-[var(--accent)] px-1 text-center text-[10px] font-semibold leading-[15px] text-[var(--control-solid-ink)]">
+              <span aria-hidden className="absolute right-0.5 top-0.5 min-w-[15px] rounded-full bg-[var(--accent)] px-1 text-center text-app-marker font-semibold leading-[15px] text-[var(--control-solid-ink)]">
                 {changeCount}
               </span>
             ) : null}
@@ -147,7 +147,7 @@ export function SidebarPanel({
           <button
             type="button"
             onClick={onExpandBrief}
-            className="inline-flex h-6 items-center gap-1 rounded-[4px] px-1.5 text-[12px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            className="inline-flex h-6 items-center gap-1 rounded-[4px] px-1.5 text-app-meta text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
           >
             <Expand aria-hidden size={12} />
             Full view
@@ -188,13 +188,13 @@ export function SidebarPanel({
                     className="flex w-full items-center gap-2 px-3 py-1.5 text-left outline-offset-[-2px] hover:bg-[var(--surface-hover)]"
                   >
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-mono text-[12.5px] text-[var(--text-primary)]">{c.path.split("/").pop()}</span>
-                      <span className="block truncate text-[11.5px] text-[var(--text-tertiary)]">
+                      <span className="block truncate font-mono text-app-meta text-[var(--text-primary)]">{c.path.split("/").pop()}</span>
+                      <span className="block truncate text-app-meta text-[var(--text-tertiary)]">
                         {CHANGE_WORD[c.change]}
                         {c.path.includes("/") ? `, ${c.path.slice(0, c.path.lastIndexOf("/"))}` : ""}
                       </span>
                     </span>
-                    <span className="shrink-0 font-mono text-[11.5px] tabular-nums">
+                    <span className="shrink-0 font-mono text-app-marker tabular-nums">
                       <span className="text-[var(--sim-success)]">+{c.added}</span> <span className="text-[var(--sim-error)]">-{c.removed}</span>
                     </span>
                   </button>
@@ -202,7 +202,7 @@ export function SidebarPanel({
               ))}
             </ul>
           ) : (
-            <p className="px-3 py-2 text-[12.5px] leading-[1.55] text-[var(--text-tertiary)]">No files differ from the starter yet.</p>
+            <p className="px-3 py-2 text-app-meta leading-[1.55] text-[var(--text-tertiary)]">No files differ from the starter yet.</p>
           )}
         </div>
       ) : null}
@@ -213,18 +213,18 @@ export function SidebarPanel({
             <ol aria-label="Activity, newest first" className="grid gap-2.5">
               {activity.map((a) => (
                 <li key={a.id} className="grid gap-0.5">
-                  <p className="flex items-baseline justify-between gap-2 text-[11.5px] text-[var(--text-tertiary)]">
+                  <p className="flex items-baseline justify-between gap-2 text-app-meta text-[var(--text-tertiary)]">
                     <span>{ACTIVITY_LABEL[a.kind]}</span>
                     <time dateTime={a.at} className="tabular-nums">
                       {formatClock(a.at)}
                     </time>
                   </p>
-                  <p className="text-[12.5px] leading-[1.5] text-[var(--text-body)]">{a.text}</p>
+                  <p className="text-app-meta leading-[1.5] text-[var(--text-body)]">{a.text}</p>
                 </li>
               ))}
             </ol>
           ) : (
-            <p className="py-2 text-[12.5px] text-[var(--text-tertiary)]">Test runs, saves, assistant decisions and team events will appear here.</p>
+            <p className="py-2 text-app-meta text-[var(--text-tertiary)]">Test runs, saves, assistant decisions and team events will appear here.</p>
           )}
         </div>
       ) : null}

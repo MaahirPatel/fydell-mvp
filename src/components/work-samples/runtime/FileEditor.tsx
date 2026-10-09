@@ -81,14 +81,14 @@ export function FileEditor({
                   onClick={() => setSelected(f.path)}
                   aria-current={f.path === selected ? "true" : undefined}
                   className={cn(
-                    "flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left font-mono text-[12.5px]",
+                    "flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left font-mono text-app-meta",
                     f.path === selected ? "bg-[var(--surface-selected)] text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                   )}
                 >
                   <span className="min-w-0 truncate" title={f.path}>
                     {f.path}
                   </span>
-                  {change ? <span className="shrink-0 font-sans text-[11px] text-[var(--text-tertiary)]">{CHANGE_LABEL[change]}</span> : null}
+                  {change ? <span className="shrink-0 font-sans text-app-meta text-[var(--text-tertiary)]">{CHANGE_LABEL[change]}</span> : null}
                 </button>
               </li>
             );
@@ -96,7 +96,7 @@ export function FileEditor({
         </ul>
         {!disabled ? (
           <div className="grid gap-1.5 border-t border-[var(--border-subtle)] p-2">
-            <label className="text-[12px] font-medium text-[var(--text-tertiary)]" htmlFor="authored-new-file">
+            <label className="text-app-meta font-medium text-[var(--text-tertiary)]" htmlFor="authored-new-file">
               New file
             </label>
             <div className="flex gap-1.5">
@@ -114,13 +114,13 @@ export function FileEditor({
                   }
                 }}
                 placeholder="src/helpers.py"
-                className="h-8 min-w-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-2 font-mono text-[12px] text-[var(--text-primary)]"
+                className="h-8 min-w-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-2 font-mono text-app-meta text-[var(--text-primary)]"
               />
               <Button type="button" size="sm" variant="secondary" onClick={addFile} disabled={!newPath.trim()}>
                 Add
               </Button>
             </div>
-            {pathError ? <p className="text-[12px] text-[var(--fy-red-ink)]">{pathError}</p> : null}
+            {pathError ? <p className="text-app-meta text-[var(--fy-red-ink)]">{pathError}</p> : null}
           </div>
         ) : null}
       </div>
@@ -128,7 +128,7 @@ export function FileEditor({
         {current ? (
           <>
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] px-3 py-1.5">
-              <span className="min-w-0 truncate font-mono text-[12.5px] text-[var(--text-primary)]">{current.path}</span>
+              <span className="min-w-0 truncate font-mono text-app-meta text-[var(--text-primary)]">{current.path}</span>
               {!disabled ? (
                 <div className="flex gap-1">
                   {starterCopy && starterCopy.content !== current.content ? (
@@ -153,7 +153,7 @@ export function FileEditor({
               ) : null}
             </div>
             {isTest ? (
-              <p className="border-b border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-1.5 text-[12px] text-[var(--text-secondary)]">
+              <p className="border-b border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-1.5 text-app-meta text-[var(--text-secondary)]">
                 This is a public test file. Tests always run from the starter copy, so edits here do not change results.
               </p>
             ) : null}

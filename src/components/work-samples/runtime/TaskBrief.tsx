@@ -49,7 +49,7 @@ export function TaskBriefSections({ task }: { task: CandidateTask }) {
       </PanelSection>
       {task.interface.trim() ? (
         <PanelSection title="Interface" description="The public surface of the starter project. Keep it working unless the task says otherwise.">
-          <pre className="overflow-x-auto whitespace-pre-wrap rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-[12.5px] leading-[1.6] text-[var(--text-primary)]">
+          <pre className="overflow-x-auto whitespace-pre-wrap rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-app-meta leading-[1.6] text-[var(--text-primary)]">
             {task.interface}
           </pre>
         </PanelSection>

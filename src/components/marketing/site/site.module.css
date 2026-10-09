@@ -238,7 +238,7 @@
   padding: 2px 8px;
   border-radius: 6px;
   background: var(--surface-panel);
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
 }

@@ -30,7 +30,7 @@ export function TestOutcomeList({ tests }: { tests: { name: string; outcome: Tes
     <ul className="grid divide-y divide-[var(--border-subtle)] rounded-[8px] border border-[var(--border-subtle)]">
       {tests.map((t) => (
         <li key={t.name} className="flex items-center justify-between gap-3 px-3 py-2">
-          <span className="min-w-0 truncate font-mono text-[12.5px] text-[var(--text-primary)]" title={t.name}>
+          <span className="min-w-0 truncate font-mono text-app-meta text-[var(--text-primary)]" title={t.name}>
             {t.name}
           </span>
           <Status kind={outcomeKind(t.outcome)}>{OUTCOME_LABEL[t.outcome]}</Status>
@@ -63,7 +63,7 @@ export function PublicTestResults({ run }: { run: PublicRunView }) {
       {run.output ? (
         <details>
           <summary className="cursor-pointer text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Full output</summary>
-          <pre className="mt-2 max-h-[320px] overflow-auto whitespace-pre-wrap rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-[12px] leading-[1.55] text-[var(--text-primary)]">
+          <pre className="mt-2 max-h-[320px] overflow-auto whitespace-pre-wrap rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-app-meta leading-[1.55] text-[var(--text-primary)]">
             {run.output}
           </pre>
         </details>

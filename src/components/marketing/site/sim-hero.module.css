@@ -64,7 +64,7 @@
   border-radius: 5px;
   background: var(--control-solid);
   color: var(--control-solid-ink);
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 .wsName {
@@ -111,12 +111,12 @@
   border-top: 1px solid var(--border-subtle);
 }
 .footLabel {
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-primary);
 }
 .footMeta {
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 
@@ -137,7 +137,7 @@
 }
 .key {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
   white-space: nowrap;
 }
@@ -159,7 +159,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -168,7 +168,7 @@
   padding: 2px 8px;
   border-radius: 6px;
   background: var(--surface-deep);
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -199,7 +199,7 @@
 }
 .reqNum {
   flex-shrink: 0;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -236,7 +236,7 @@
 }
 .hunkCount {
   margin-left: auto;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
   white-space: nowrap;
 }
@@ -252,7 +252,7 @@
   padding: 6px 14px;
   background: var(--surface-panel);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
   white-space: nowrap;
   overflow: hidden;
@@ -281,7 +281,7 @@
   padding-right: 8px;
   text-align: right;
   color: var(--text-tertiary);
-  font-size: 12px;
+  font-size: 0.75rem;
   user-select: none;
 }
 .sign {
@@ -337,7 +337,7 @@
 .cmd {
   margin-left: auto;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
   white-space: nowrap;
 }
@@ -354,7 +354,7 @@
   height: 26px;
   padding-inline: 14px;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 .testRow[data-fixed] {
@@ -375,7 +375,7 @@
   margin-left: auto;
   flex-shrink: 0;
   font-family: var(--font-geist-sans), system-ui, sans-serif;
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--mk-success);
   white-space: nowrap;
@@ -407,7 +407,7 @@
   padding: 1px 7px;
   border: 1px solid var(--border-default);
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 .thread {
@@ -455,7 +455,7 @@
   color: var(--text-primary);
 }
 .time {
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 .replyText {
@@ -553,7 +553,7 @@
     visibility: hidden;
   }
   .code {
-    font-size: 12px;
+    font-size: 0.8125rem;
     line-height: 20px;
   }
 }

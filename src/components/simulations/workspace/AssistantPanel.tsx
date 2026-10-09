@@ -51,7 +51,7 @@ function Answer({ text }: { text: string }) {
         seg.kind === "code" ? (
           <pre
             key={i}
-            className="sim-scroll overflow-x-auto rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-2 font-mono text-[12.5px] leading-[1.6] text-[var(--text-body)]"
+            className="sim-scroll overflow-x-auto rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-2 font-mono text-app-meta leading-[1.6] text-[var(--text-body)]"
           >
             {seg.text}
           </pre>
@@ -80,12 +80,12 @@ function InteractionItem({
   return (
     <li className="grid gap-2">
       <div className="grid gap-1">
-        <p className="text-[12.5px] font-medium text-[var(--text-secondary)]">You asked</p>
+        <p className="text-app-meta font-medium text-[var(--text-secondary)]">You asked</p>
         <p className="whitespace-pre-wrap rounded-[10px] bg-[var(--surface-raised)] px-3 py-2 text-[15px] leading-[1.55] text-[var(--text-primary)]">{interaction.prompt}</p>
-        {interaction.contextPaths.length ? <p className="text-[12px] text-[var(--text-tertiary)]">Shared: {interaction.contextPaths.join(", ")}</p> : null}
+        {interaction.contextPaths.length ? <p className="text-app-meta text-[var(--text-tertiary)]">Shared: {interaction.contextPaths.join(", ")}</p> : null}
       </div>
       <div className="grid gap-2 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--sim-assistant-bg)] px-3 py-2.5">
-        <p className="text-[12.5px] font-medium text-[var(--text-secondary)]">Coding assistant</p>
+        <p className="text-app-meta font-medium text-[var(--text-secondary)]">Coding assistant</p>
         {interaction.status === "answered" ? (
           <Answer text={interaction.answer} />
         ) : (
@@ -101,17 +101,17 @@ function InteractionItem({
                 type="button"
                 onClick={() => onReview(interaction)}
                 aria-pressed={reviewing}
-                className="ml-auto h-7 rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-2.5 text-[12.5px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+                className="ml-auto h-7 rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-2.5 text-app-meta font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
               >
                 {reviewing ? "Reviewing" : "Review changes"}
               </button>
             ) : null}
             {interaction.decision === "accepted" ? (
-              <span className="ml-auto text-[12.5px] text-[var(--text-secondary)]">
+              <span className="ml-auto text-app-meta text-[var(--text-secondary)]">
                 Accepted{interaction.appliedRevision ? `, saved as revision ${interaction.appliedRevision}` : ""}
               </span>
             ) : null}
-            {interaction.decision === "rejected" ? <span className="ml-auto text-[12.5px] text-[var(--text-secondary)]">Rejected, nothing was changed</span> : null}
+            {interaction.decision === "rejected" ? <span className="ml-auto text-app-meta text-[var(--text-secondary)]">Rejected, nothing was changed</span> : null}
           </div>
         ) : null}
       </div>
@@ -205,14 +205,14 @@ export function AssistantPanel({
     <div className="flex h-full min-h-0 flex-col">
       <div className="sim-scroll min-h-0 flex-1 overflow-y-auto px-4 py-3">
         <div className="mb-4 grid gap-1.5">
-          <p className="text-[12.5px] tabular-nums text-[var(--text-secondary)]">
+          <p className="text-app-marker tabular-nums text-[var(--text-secondary)]">
             {assistant.used} of {assistant.limit} requests used
           </p>
           <details>
-            <summary className="cursor-pointer text-[12.5px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]">AI policy for this task</summary>
+            <summary className="cursor-pointer text-app-meta text-[var(--text-secondary)] hover:text-[var(--text-primary)]">AI policy for this task</summary>
             <p className="mt-1.5 whitespace-pre-wrap text-[13px] leading-[1.55] text-[var(--text-tertiary)]">{assistant.policyText}</p>
           </details>
-          <p className="text-[12px] leading-[1.5] text-[var(--text-tertiary)]">
+          <p className="text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
             The assistant can only propose changes. You review each one before anything changes in your files. Only the public test results show whether tests pass.
           </p>
         </div>
@@ -223,12 +223,12 @@ export function AssistantPanel({
             ))}
             {pending ? (
               <li className="grid gap-1">
-                <p className="text-[12.5px] font-medium text-[var(--text-secondary)]">You asked</p>
+                <p className="text-app-meta font-medium text-[var(--text-secondary)]">You asked</p>
                 <p className="whitespace-pre-wrap rounded-[10px] bg-[var(--surface-raised)] px-3 py-2 text-[15px] leading-[1.55] text-[var(--text-primary)] opacity-80">{pending.prompt}</p>
                 {pending.state === "sending" ? (
-                  <p className="text-[12.5px] text-[var(--text-tertiary)]">Waiting for the assistant</p>
+                  <p className="text-app-meta text-[var(--text-tertiary)]">Waiting for the assistant</p>
                 ) : (
-                  <p role="alert" className="flex flex-wrap items-center gap-2 text-[12.5px] text-[var(--sim-error)]">
+                  <p role="alert" className="flex flex-wrap items-center gap-2 text-app-meta text-[var(--sim-error)]">
                     {pending.error}
                     <button type="button" onClick={() => void deliver(pending)} className="font-medium text-[var(--text-primary)] underline underline-offset-2">
                       Retry
@@ -271,7 +271,7 @@ export function AssistantPanel({
           onSend={send}
         >
           <fieldset className="grid gap-1">
-            <legend className="mb-1 text-[12.5px] text-[var(--text-secondary)]">
+            <legend className="mb-1 text-app-meta text-[var(--text-secondary)]">
               Files to share ({chosen.length} of up to {MAX_CONTEXT}, including unsaved edits)
             </legend>
             {options.length ? (
@@ -279,7 +279,7 @@ export function AssistantPanel({
                 {options.map((p) => {
                   const checked = chosen.includes(p);
                   return (
-                    <label key={p} className="flex items-center gap-2 text-[12.5px] text-[var(--text-body)]">
+                    <label key={p} className="flex items-center gap-2 text-app-meta text-[var(--text-body)]">
                       <input
                         type="checkbox"
                         checked={checked}
@@ -295,7 +295,7 @@ export function AssistantPanel({
                 })}
               </div>
             ) : (
-              <p className="text-[12px] text-[var(--text-tertiary)]">Open a file to share it.</p>
+              <p className="text-app-meta text-[var(--text-tertiary)]">Open a file to share it.</p>
             )}
           </fieldset>
         </Composer>

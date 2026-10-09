@@ -228,9 +228,9 @@ export function ReviewSubmission({
                         onClick={() => onOpenDiff(c.path)}
                         className="flex w-full items-center gap-2 rounded-[6px] px-2 py-1.5 text-left hover:bg-[var(--surface-hover)]"
                       >
-                        <span className="min-w-0 flex-1 truncate font-mono text-[12.5px] text-[var(--text-primary)] underline-offset-2 hover:underline">{c.path}</span>
-                        <span className="shrink-0 text-[12px] text-[var(--text-tertiary)]">{CHANGE_WORD[c.change]}</span>
-                        <span className="shrink-0 font-mono text-[11.5px] tabular-nums">
+                        <span className="min-w-0 flex-1 truncate font-mono text-app-meta text-[var(--text-primary)] underline-offset-2 hover:underline">{c.path}</span>
+                        <span className="shrink-0 text-app-meta text-[var(--text-tertiary)]">{CHANGE_WORD[c.change]}</span>
+                        <span className="shrink-0 font-mono text-app-marker tabular-nums">
                           <span className="text-[var(--sim-success)]">+{c.added}</span> <span className="text-[var(--sim-error)]">-{c.removed}</span>
                         </span>
                       </button>
@@ -246,7 +246,7 @@ export function ReviewSubmission({
               {run ? (
                 <div className="grid gap-2">
                   <RunHeadline run={run} />
-                  <p className="text-[12.5px] text-[var(--text-tertiary)]">
+                  <p className="text-app-meta text-[var(--text-tertiary)]">
                     {run.runnerLabel ?? "Test runner"}, {formatClock(run.createdAt)}
                   </p>
                   <RevisionMatch run={run} savedSha={savedSha} hasUnsaved={hasUnsaved} />

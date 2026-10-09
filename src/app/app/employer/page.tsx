@@ -314,13 +314,8 @@ export default async function EmployerHomePage() {
       {teamQueue.length > 0 ? (
         <Panel className={attentionRows.length > 0 ? "mt-6" : "mt-7"}>
           <WorkspaceSection
-            title="Waiting on your team"
+            title={`${teamQueue.length} ${teamQueue.length === 1 ? "candidate needs" : "candidates need"} a next step from your team`}
             description="Work and applications where the next step is yours. Oldest first."
-            action={
-              <span className="text-app-meta tabular-nums text-[var(--text-tertiary)]">
-                {teamQueue.length} {teamQueue.length === 1 ? "candidate" : "candidates"}
-              </span>
-            }
             bodyClassName="-mx-5 -mb-4 lg:-mx-6 lg:-mb-5"
           >
             <ul>

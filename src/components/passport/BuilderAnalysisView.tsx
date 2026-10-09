@@ -177,7 +177,7 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
             <p key={i} className="text-[15px] leading-[1.65] text-[var(--text-secondary)]">
               {p.text}{" "}
               {citations(p.refs).map((ref) => (
-                <a key={ref.label} href={`#${ref.anchor}`} className="mr-1 inline-flex rounded-[4px] bg-[var(--surface-panel)] px-1.5 py-[1px] align-[1px] text-app-marker font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                <a key={ref.label} href={`#${ref.anchor}`} className="mr-1 inline-flex rounded-[4px] bg-[var(--surface-panel)] px-1.5 py-[1px] align-[1px] text-app-meta font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                   {ref.label}
                 </a>
               ))}

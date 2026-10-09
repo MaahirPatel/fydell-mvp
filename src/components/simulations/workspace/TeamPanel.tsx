@@ -61,7 +61,7 @@ export function Composer({
         className="sim-scroll max-h-[200px] min-h-[76px] w-full resize-y rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-3 py-2 text-[15px] leading-[1.5] text-[var(--text-primary)] placeholder:text-[var(--text-quaternary)] disabled:opacity-60"
       />
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[12px] text-[var(--text-tertiary)]">Enter to send, Shift+Enter for a new line</p>
+        <p className="text-app-meta text-[var(--text-tertiary)]">Enter to send, Shift+Enter for a new line</p>
         <button
           type="button"
           onClick={onSend}
@@ -79,7 +79,7 @@ function TeammateLine({ teammate }: { teammate: TeammateView | undefined }) {
   return (
     <span className="flex flex-wrap items-baseline gap-x-1.5">
       <span className="font-medium text-[var(--text-primary)]">{teammate?.name ?? "Teammate"}</span>
-      <span className="text-[12px] text-[var(--text-tertiary)]">Simulated teammate</span>
+      <span className="text-app-meta text-[var(--text-tertiary)]">Simulated teammate</span>
     </span>
   );
 }
@@ -90,7 +90,7 @@ function MessageItem({ message, teammates }: { message: TeamMessageView; teammat
   if (message.sender === "candidate") {
     return (
       <li className="grid gap-1">
-        <p className="flex items-baseline justify-between gap-2 text-[12.5px] text-[var(--text-tertiary)]">
+        <p className="flex items-baseline justify-between gap-2 text-app-meta text-[var(--text-tertiary)]">
           <span>
             <span className="font-medium text-[var(--text-secondary)]">You</span>
             {to ? ` to ${to.name}` : ""}
@@ -104,27 +104,27 @@ function MessageItem({ message, teammates }: { message: TeamMessageView; teammat
   if (message.kind === "scenario_event") {
     return (
       <li className="grid gap-1 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--sim-scenario-bg)] px-3 py-2.5">
-        <p className="flex items-baseline justify-between gap-2 text-[12.5px]">
+        <p className="flex items-baseline justify-between gap-2 text-app-meta">
           <TeammateLine teammate={from} />
           <time dateTime={message.createdAt} className="shrink-0 text-[var(--text-tertiary)]">
             {formatClock(message.createdAt)}
           </time>
         </p>
         <p className="whitespace-pre-wrap text-[14.5px] leading-[1.55] text-[var(--text-body)]">{message.body}</p>
-        {message.answeredFrom === "scenario_notes" ? <p className="text-[12px] text-[var(--text-tertiary)]">Model unavailable, answered from scenario notes</p> : null}
+        {message.answeredFrom === "scenario_notes" ? <p className="text-app-meta text-[var(--text-tertiary)]">Model unavailable, answered from scenario notes</p> : null}
       </li>
     );
   }
   return (
     <li className="grid gap-1">
-      <p className="flex items-baseline justify-between gap-2 text-[12.5px]">
+      <p className="flex items-baseline justify-between gap-2 text-app-meta">
         <TeammateLine teammate={from} />
         <time dateTime={message.createdAt} className="shrink-0 text-[var(--text-tertiary)]">
           {formatClock(message.createdAt)}
         </time>
       </p>
       <p className="whitespace-pre-wrap text-[15px] leading-[1.6] text-[var(--text-body)]">{message.body}</p>
-      {message.answeredFrom === "scenario_notes" ? <p className="text-[12px] text-[var(--text-tertiary)]">Model unavailable, answered from scenario notes</p> : null}
+      {message.answeredFrom === "scenario_notes" ? <p className="text-app-meta text-[var(--text-tertiary)]">Model unavailable, answered from scenario notes</p> : null}
     </li>
   );
 }
@@ -181,7 +181,7 @@ export function TeamPanel({ base, state, onView }: { base: string; state: Collab
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="sim-scroll min-h-0 flex-1 overflow-y-auto px-4 py-3">
-        {view.eventDisclosure ? <p className="mb-4 text-[12.5px] leading-[1.55] text-[var(--text-tertiary)]">{view.eventDisclosure}</p> : null}
+        {view.eventDisclosure ? <p className="mb-4 text-app-meta leading-[1.55] text-[var(--text-tertiary)]">{view.eventDisclosure}</p> : null}
         {messages.length || pending.length ? (
           <ol aria-label="Team thread" className="grid gap-4">
             {messages.map((m) => (
@@ -189,14 +189,14 @@ export function TeamPanel({ base, state, onView }: { base: string; state: Collab
             ))}
             {pending.map((p) => (
               <li key={p.clientMsgId} className="grid gap-1">
-                <p className="text-[12.5px] text-[var(--text-tertiary)]">
+                <p className="text-app-meta text-[var(--text-tertiary)]">
                   <span className="font-medium text-[var(--text-secondary)]">You</span> to {teammates.get(p.teammateId)?.name ?? "teammate"}
                 </p>
                 <p className="whitespace-pre-wrap rounded-[10px] bg-[var(--surface-raised)] px-3 py-2 text-[15px] leading-[1.55] text-[var(--text-primary)] opacity-80">{p.body}</p>
                 {p.state === "sending" ? (
-                  <p className="text-[12.5px] text-[var(--text-tertiary)]">Waiting for a reply from {teammates.get(p.teammateId)?.name ?? "your teammate"}</p>
+                  <p className="text-app-meta text-[var(--text-tertiary)]">Waiting for a reply from {teammates.get(p.teammateId)?.name ?? "your teammate"}</p>
                 ) : (
-                  <p role="alert" className="flex flex-wrap items-center gap-2 text-[12.5px] text-[var(--sim-error)]">
+                  <p role="alert" className="flex flex-wrap items-center gap-2 text-app-meta text-[var(--sim-error)]">
                     {p.error}
                     <button type="button" onClick={() => void deliver(p)} className="font-medium text-[var(--text-primary)] underline underline-offset-2">
                       Retry
@@ -216,7 +216,7 @@ export function TeamPanel({ base, state, onView }: { base: string; state: Collab
         ) : (
           <p className="text-[14px] leading-[1.6] text-[var(--text-secondary)]">No messages yet. Choose a teammate below and ask about anything in their area.</p>
         )}
-        {state.stale ? <p className="mt-3 text-[12px] text-[var(--text-tertiary)]">Could not refresh the thread. Retrying.</p> : null}
+        {state.stale ? <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">Could not refresh the thread. Retrying.</p> : null}
         <div ref={endRef} />
       </div>
 
@@ -260,7 +260,7 @@ export function TeamPanel({ base, state, onView }: { base: string; state: Collab
                   )}
                 >
                   <span className="text-[13px] font-medium text-[var(--text-primary)]">{t.name}</span>
-                  <span className="max-w-[220px] truncate text-[11.5px] text-[var(--text-tertiary)]">{t.title}</span>
+                  <span className="max-w-[220px] truncate text-app-meta text-[var(--text-tertiary)]">{t.title}</span>
                 </button>
               );
             })}

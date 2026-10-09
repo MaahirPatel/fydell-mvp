@@ -58,18 +58,18 @@ export function TestList({ tests, onSelect }: { tests: PublicRunView["tests"]; o
               className="flex w-full items-center gap-2 rounded-[4px] px-2 py-1 text-left hover:bg-[var(--surface-hover)]"
             >
               <OutcomeIcon outcome={t.outcome} />
-              <span className="min-w-0 flex-1 truncate font-mono text-[12.5px] text-[var(--text-body)]" title={t.name}>
+              <span className="min-w-0 flex-1 truncate font-mono text-app-meta text-[var(--text-body)]" title={t.name}>
                 {t.name}
               </span>
-              <span className="shrink-0 text-[12px] text-[var(--text-tertiary)]">{OUTCOME_LABEL[t.outcome]}</span>
+              <span className="shrink-0 text-app-meta text-[var(--text-tertiary)]">{OUTCOME_LABEL[t.outcome]}</span>
             </button>
           ) : (
             <div className="flex items-center gap-2 px-2 py-1">
               <OutcomeIcon outcome={t.outcome} />
-              <span className="min-w-0 flex-1 truncate font-mono text-[12.5px] text-[var(--text-body)]" title={t.name}>
+              <span className="min-w-0 flex-1 truncate font-mono text-app-meta text-[var(--text-body)]" title={t.name}>
                 {t.name}
               </span>
-              <span className="shrink-0 text-[12px] text-[var(--text-tertiary)]">{OUTCOME_LABEL[t.outcome]}</span>
+              <span className="shrink-0 text-app-meta text-[var(--text-tertiary)]">{OUTCOME_LABEL[t.outcome]}</span>
             </div>
           )}
         </li>

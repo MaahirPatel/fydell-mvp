@@ -27,7 +27,7 @@ export interface AccountMenuPerson {
 
 const ITEM =
   "flex h-8 w-full items-center gap-2 rounded-[6px] px-2 text-left text-[14px] font-normal text-[var(--text-primary)] outline-none transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-hover)] focus-visible:bg-[var(--surface-hover)] focus-visible:ring-2 focus-visible:ring-[var(--accent-line)] disabled:opacity-50";
-const GROUP_LABEL = "px-2 pb-1 pt-1.5 text-[12px] text-[var(--text-tertiary)]";
+const GROUP_LABEL = "px-2 pb-1 pt-1.5 text-app-meta text-[var(--text-tertiary)]";
 const SEPARATOR = "my-1 h-px bg-[var(--border-subtle)]";
 
 function menuItems(menu: HTMLElement | null): HTMLElement[] {
@@ -198,7 +198,7 @@ export default function AccountMenu({
         <Avatar name={name} url={person?.avatarUrl ?? ""} size={24} />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[14px] font-medium leading-[1.2] text-[var(--text-primary)]">{name}</span>
-          <span className="block truncate text-[12px] leading-[1.3] text-[var(--text-tertiary)]">{subtitle}</span>
+          <span className="block truncate text-app-meta leading-[1.3] text-[var(--text-tertiary)]">{subtitle}</span>
         </span>
         {placement === "above" ? (
           <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-[var(--text-tertiary)]" strokeWidth={1.75} aria-hidden />
@@ -220,7 +220,7 @@ export default function AccountMenu({
         >
           <div className="px-2 pb-1.5 pt-1">
             <p className="truncate text-[14px] font-medium text-[var(--text-primary)]">{name}</p>
-            {person?.email ? <p className="truncate text-[12px] text-[var(--text-tertiary)]">{person.email}</p> : null}
+            {person?.email ? <p className="truncate text-app-meta text-[var(--text-tertiary)]">{person.email}</p> : null}
           </div>
           <div role="separator" className={SEPARATOR} />
 
@@ -265,7 +265,7 @@ export default function AccountMenu({
               </Link>
             ) : null}
             {error ? (
-              <p role="alert" className="px-2 py-1 text-[12px] text-[var(--status-attention-ink)]">
+              <p role="alert" className="px-2 py-1 text-app-meta text-[var(--status-attention-ink)]">
                 {error}
               </p>
             ) : null}

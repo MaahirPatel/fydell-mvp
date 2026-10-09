@@ -42,7 +42,7 @@
   padding: 2px 8px;
   border-radius: 6px;
   background: var(--surface-deep);
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -67,7 +67,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 .icon {
@@ -87,7 +87,7 @@
 }
 .label {
   margin-bottom: 6px;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-tertiary);
 }
@@ -120,7 +120,7 @@
   border: 1px solid var(--border-default);
   border-radius: 8px;
   background: var(--surface-raised);
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 1.35;
   color: var(--text-secondary);
 }
@@ -143,12 +143,12 @@
 }
 .nodeFile {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 11.5px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 .flowCaption {
   margin-top: 10px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 
@@ -190,7 +190,7 @@
 .highlightFile {
   flex-shrink: 0;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 400;
   color: var(--text-tertiary);
 }
@@ -235,7 +235,7 @@
   height: 38px;
   padding-inline: 14px;
   border-bottom: 1px solid var(--border-subtle);
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   white-space: nowrap;
 }
 .path {
@@ -250,7 +250,7 @@
   display: block;
   padding: 6px 0 8px;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
   line-height: 21px;
 }
 .line {
@@ -265,7 +265,7 @@
 .ln {
   padding-right: 10px;
   text-align: right;
-  font-size: 11.5px;
+  font-size: 0.75rem;
   color: var(--text-tertiary);
   user-select: none;
 }
@@ -323,7 +323,7 @@
     display: none;
   }
   .code {
-    font-size: 12px;
+    font-size: 0.8125rem;
     line-height: 20px;
   }
   .line {

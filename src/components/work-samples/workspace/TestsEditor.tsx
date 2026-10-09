@@ -124,7 +124,7 @@ function TestRefTable({
       <ul className="mt-3 grid gap-3">
         {refs.map((r, i) => (
           <li key={i} className="grid gap-2 rounded-[var(--radius-panel)] border border-[var(--border-subtle)] p-3 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto] md:items-start">
-            <Input aria-label={`Test ${i + 1} name`} className="font-mono text-[12.5px]" maxLength={200} value={r.name} readOnly={readOnly} onChange={(e) => set(i, { name: e.target.value })} />
+            <Input aria-label={`Test ${i + 1} name`} className="font-mono text-app-meta" maxLength={200} value={r.name} readOnly={readOnly} onChange={(e) => set(i, { name: e.target.value })} />
             <Combobox id={`${idPrefix}-file-${i}`} options={fileOptions} value={r.file} placeholder="Test file" disabled={readOnly} onChange={(v) => set(i, { file: v })} />
             <Combobox
               id={`${idPrefix}-ac-${i}`}

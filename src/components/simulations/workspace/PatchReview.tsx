@@ -47,7 +47,7 @@ export function PatchReview({
           <h2 id="sim-patch-title" className="text-[14px] font-semibold text-[var(--text-primary)]">
             Proposed changes from the coding assistant
           </h2>
-          <p className="text-[12.5px] text-[var(--text-secondary)]">Your current version on the left, the proposal on the right. Accepting replaces these files and saves them.</p>
+          <p className="text-app-meta text-[var(--text-secondary)]">Your current version on the left, the proposal on the right. Accepting replaces these files and saves them.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="quiet" onClick={onClose} disabled={busy !== null}>
@@ -85,12 +85,12 @@ export function PatchReview({
                 aria-selected={isSel}
                 onClick={() => setSelected(p.path)}
                 className={cn(
-                  "flex shrink-0 items-center gap-2 rounded-[6px] px-2 py-1 font-mono text-[12px]",
+                  "flex shrink-0 items-center gap-2 rounded-[6px] px-2 py-1 font-mono text-app-meta",
                   isSel ? "bg-[var(--surface-selected)] text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]",
                 )}
               >
                 {p.path}
-                {before === undefined ? <span className="font-sans text-[11px] text-[var(--text-tertiary)]">new</span> : null}
+                {before === undefined ? <span className="font-sans text-app-meta text-[var(--text-tertiary)]">new</span> : null}
                 <span className="tabular-nums">
                   <span className="text-[var(--sim-success)]">+{counts.added}</span> <span className="text-[var(--sim-error)]">-{counts.removed}</span>
                 </span>

@@ -26,7 +26,7 @@ export function CodeEditor({
       <div
         ref={gutter}
         aria-hidden
-        className="select-none overflow-hidden border-r border-[var(--border-subtle)] px-2.5 py-3 text-right font-mono text-[12.5px] leading-[1.6] text-[var(--text-disabled)]"
+        className="select-none overflow-hidden border-r border-[var(--border-subtle)] px-2.5 py-3 text-right font-mono text-app-marker leading-[1.6] text-[var(--text-disabled)]"
       >
         {Array.from({ length: lines }, (_, i) => (
           <div key={i}>{i + 1}</div>
@@ -45,7 +45,7 @@ export function CodeEditor({
         onScroll={(e) => {
           if (gutter.current) gutter.current.scrollTop = e.currentTarget.scrollTop;
         }}
-        className="h-full min-w-0 flex-1 resize-none bg-transparent px-3 py-3 font-mono text-[12.5px] leading-[1.6] text-[var(--text-primary)] outline-none focus-visible:shadow-[inset_0_0_0_2px_rgba(86,98,255,0.35)]"
+        className="h-full min-w-0 flex-1 resize-none bg-transparent px-3 py-3 font-mono text-app-meta leading-[1.6] text-[var(--text-primary)] outline-none focus-visible:shadow-[inset_0_0_0_2px_rgba(86,98,255,0.35)]"
       />
     </div>
   );

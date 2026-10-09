@@ -50,7 +50,7 @@ const ASSESSMENT_LABEL: Record<Assessment, string> = {
 function MappingBadge({ mapping }: { mapping: EvidenceMapping | undefined }) {
   if (!mapping) {
     return (
-      <span style={{ display: "inline-flex", fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: "var(--radius-tag)", background: "var(--surface-subtle)", color: "var(--ink-secondary)" }}>
+      <span style={{ display: "inline-flex", fontSize: 13, fontWeight: 600, padding: "3px 10px", borderRadius: "var(--radius-tag)", background: "var(--surface-subtle)", color: "var(--ink-secondary)" }}>
         Not reviewed
       </span>
     );
@@ -63,7 +63,7 @@ function MappingBadge({ mapping }: { mapping: EvidenceMapping | undefined }) {
           ? { background: "var(--surface-subtle)", color: "var(--ink-secondary)" }
           : { background: "var(--question-tint)", color: "var(--question-ink)" };
     return (
-      <span style={{ display: "inline-flex", fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: "var(--radius-tag)", ...tone }}>
+      <span style={{ display: "inline-flex", fontSize: 13, fontWeight: 600, padding: "3px 10px", borderRadius: "var(--radius-tag)", ...tone }}>
         {ASSESSMENT_LABEL[mapping.assessment]}
       </span>
     );
@@ -85,7 +85,7 @@ function StatusBadge({ status }: { status: MappingStatus }) {
         display: "inline-flex",
         alignItems: "center",
         gap: 6,
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: 600,
         padding: "3px 10px",
         borderRadius: "var(--radius-tag)",
@@ -289,14 +289,14 @@ export default function RequirementEvidenceReview({
             padding: 16,
           }}
         >
-          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 4px" }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 4px" }}>
             ROLE
           </p>
           <p style={{ fontSize: 14, fontWeight: 600, margin: "0 0 4px" }}>{roleTitle}</p>
-          <p style={{ fontSize: 12, color: "var(--ink-secondary)", margin: "0 0 16px" }}>
+          <p style={{ fontSize: 13, color: "var(--ink-secondary)", margin: "0 0 16px" }}>
             Candidate: {candidateName}
           </p>
-          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 8px" }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 8px" }}>
             REQUIREMENTS
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -345,11 +345,11 @@ export default function RequirementEvidenceReview({
                 marginBottom: 16,
               }}
             >
-              <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 8px" }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 8px" }}>
                 MAPPED EVIDENCE · {currentEvidence.repo}
               </p>
               <p style={{ fontSize: 14, margin: "0 0 8px" }}>{currentEvidence.finding}</p>
-              <p style={{ fontSize: 12, color: "var(--ink-secondary)", margin: "0 0 12px" }}>
+              <p style={{ fontSize: 13, color: "var(--ink-secondary)", margin: "0 0 12px" }}>
                 {currentEvidence.path}:{currentEvidence.startLine}-{currentEvidence.endLine}
               </p>
               <button
@@ -387,7 +387,7 @@ export default function RequirementEvidenceReview({
           )}
 
           {/* Evidence picker */}
-          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 8px" }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 8px" }}>
             AVAILABLE EVIDENCE
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20, maxHeight: 320, overflowY: "auto" }}>
@@ -407,7 +407,7 @@ export default function RequirementEvidenceReview({
                   }}
                 >
                   <p style={{ fontSize: 13, margin: "0 0 4px" }}>{e.finding}</p>
-                  <p style={{ fontSize: 12, color: "var(--ink-secondary)", margin: "0 0 8px" }}>
+                  <p style={{ fontSize: 13, color: "var(--ink-secondary)", margin: "0 0 8px" }}>
                     {e.repo} · {e.path}:{e.startLine}
                   </p>
                   <div style={{ display: "flex", gap: 8 }}>
@@ -415,7 +415,7 @@ export default function RequirementEvidenceReview({
                       onClick={() => saveMapping(selectedReq, { evidenceId: e.id, status: "accepted" })}
                       disabled={saving}
                       style={{
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: 600,
                         padding: "6px 12px",
                         borderRadius: "var(--radius-control)",
@@ -430,7 +430,7 @@ export default function RequirementEvidenceReview({
                     <button
                       onClick={() => setDrawerEvidence(e)}
                       style={{
-                        fontSize: 12,
+                        fontSize: 13,
                         padding: "6px 12px",
                         borderRadius: "var(--radius-control)",
                         border: "1px solid var(--border)",
@@ -518,7 +518,7 @@ export default function RequirementEvidenceReview({
                 />
               </label>
               {dueDate ? (
-                <p style={{ fontSize: 12, color: "var(--ink-secondary)", margin: "4px 0 0" }}>
+                <p style={{ fontSize: 13, color: "var(--ink-secondary)", margin: "4px 0 0" }}>
                   The candidate will see this date. Only set one your team will hold to.
                 </p>
               ) : null}
@@ -540,7 +540,7 @@ export default function RequirementEvidenceReview({
           {/* Thread */}
           {currentQuestions.length > 0 && (
             <div style={{ marginTop: 20 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 8px" }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 8px" }}>
                 FOLLOW-UP THREAD
               </p>
               {currentQuestions.map((q) => (
@@ -553,7 +553,7 @@ export default function RequirementEvidenceReview({
                     marginBottom: 8,
                   }}
                 >
-                  <p style={{ fontSize: 12, color: "var(--ink-secondary)", margin: "0 0 4px" }}>
+                  <p style={{ fontSize: 13, color: "var(--ink-secondary)", margin: "0 0 4px" }}>
                     {q.status === "closed"
                       ? "Closed"
                       : q.status === "answered"
@@ -610,11 +610,11 @@ export default function RequirementEvidenceReview({
         >
           <div style={{ padding: 20, borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
             <div>
-              <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 4px" }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 4px" }}>
                 SOURCE
               </p>
               <p style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{drawerEvidence.repo}</p>
-              <p style={{ fontSize: 12, color: "var(--ink-secondary)", margin: "4px 0 0", fontFamily: "var(--font-mono)" }}>
+              <p style={{ fontSize: 13, color: "var(--ink-secondary)", margin: "4px 0 0", fontFamily: "var(--font-mono)" }}>
                 {drawerEvidence.path}:{drawerEvidence.startLine}-{drawerEvidence.endLine}
               </p>
             </div>
@@ -642,7 +642,7 @@ export default function RequirementEvidenceReview({
                 color: "var(--code-text)",
                 borderRadius: "var(--radius-control)",
                 padding: 16,
-                fontSize: 12,
+                fontSize: 13,
                 overflowX: "auto",
                 fontFamily: "var(--font-mono)",
               }}
@@ -651,7 +651,7 @@ export default function RequirementEvidenceReview({
             </pre>
             {drawerEvidence.limitations.length > 0 && (
               <div style={{ marginTop: 16 }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 6px" }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-secondary)", margin: "0 0 6px" }}>
                   LIMITATIONS
                 </p>
                 <ul style={{ fontSize: 13, color: "var(--ink-secondary)", margin: 0, paddingLeft: 18 }}>

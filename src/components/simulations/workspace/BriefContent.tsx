@@ -81,16 +81,16 @@ export function BriefContent({
           {task.outcomes.length ? <List items={task.outcomes} compact={compact} /> : null}
           {task.acceptanceCriteria.length ? (
             <div className="grid gap-2">
-              <h3 className={cn("font-medium text-[var(--text-secondary)]", compact ? "text-[12.5px]" : "text-[14px]")}>Acceptance criteria</h3>
+              <h3 className={cn("font-medium text-[var(--text-secondary)]", compact ? "text-app-meta" : "text-[14px]")}>Acceptance criteria</h3>
               <ol className="grid gap-2">
                 {task.acceptanceCriteria.map((ac) => (
                   <li key={ac.id} className={cn("grid gap-2", compact ? "grid-cols-[36px_minmax(0,1fr)] text-[13px]" : "grid-cols-[48px_minmax(0,1fr)] text-[15px]")}>
-                    <span className="pt-[2px] font-mono text-[12px] text-[var(--text-tertiary)]">{ac.id}</span>
+                    <span className="pt-[2px] font-mono text-app-meta text-[var(--text-tertiary)]">{ac.id}</span>
                     <span className="leading-[1.55] text-[var(--text-primary)]">{ac.text}</span>
                   </li>
                 ))}
               </ol>
-              <p className={cn("text-[var(--text-tertiary)]", compact ? "text-[12px]" : "text-[13px]")}>
+              <p className={cn("text-[var(--text-tertiary)]", compact ? "text-app-meta" : "text-[13px]")}>
                 Some tests ship with the starter. Others run only after you submit and check the same criteria.
               </p>
             </div>
@@ -104,13 +104,13 @@ export function BriefContent({
             {task.constraints.length ? <List items={task.constraints} compact={compact} /> : null}
             {task.outOfScope.length ? (
               <div className="grid gap-2">
-                <h3 className={cn("font-medium text-[var(--text-secondary)]", compact ? "text-[12.5px]" : "text-[14px]")}>Out of scope</h3>
+                <h3 className={cn("font-medium text-[var(--text-secondary)]", compact ? "text-app-meta" : "text-[14px]")}>Out of scope</h3>
                 <List items={task.outOfScope} compact={compact} />
               </div>
             ) : null}
             {task.optionalExtensions.length ? (
               <div className="grid gap-2">
-                <h3 className={cn("font-medium text-[var(--text-secondary)]", compact ? "text-[12.5px]" : "text-[14px]")}>Optional, if you have time</h3>
+                <h3 className={cn("font-medium text-[var(--text-secondary)]", compact ? "text-app-meta" : "text-[14px]")}>Optional, if you have time</h3>
                 <List items={task.optionalExtensions} compact={compact} />
               </div>
             ) : null}
@@ -120,8 +120,8 @@ export function BriefContent({
 
       {task.interface.trim() ? (
         <BriefSection title="Interface" compact={compact} id={`${idBase}-interface`}>
-          <p className={cn("text-[var(--text-secondary)]", compact ? "text-[12.5px]" : "text-[14px]")}>The public surface of the starter project. Keep it working unless the task says otherwise.</p>
-          <pre className="sim-scroll overflow-x-auto whitespace-pre-wrap rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-[12.5px] leading-[1.6] text-[var(--text-primary)]">
+          <p className={cn("text-[var(--text-secondary)]", compact ? "text-app-meta" : "text-[14px]")}>The public surface of the starter project. Keep it working unless the task says otherwise.</p>
+          <pre className="sim-scroll overflow-x-auto whitespace-pre-wrap rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-app-meta leading-[1.6] text-[var(--text-primary)]">
             {task.interface}
           </pre>
         </BriefSection>
@@ -130,18 +130,18 @@ export function BriefContent({
       <BriefSection title="Starter repository" compact={compact} id={`${idBase}-starter`}>
         <ul className="grid gap-0.5 rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2">
           {starterPaths.map((p) => (
-            <li key={p} className="flex items-center justify-between gap-3 font-mono text-[12.5px] leading-[1.7] text-[var(--text-body)]">
+            <li key={p} className="flex items-center justify-between gap-3 font-mono text-app-meta leading-[1.7] text-[var(--text-body)]">
               <span className="min-w-0 truncate" title={p}>
                 {p}
               </span>
-              {testFiles.has(p) ? <span className="shrink-0 font-sans text-[11.5px] text-[var(--text-tertiary)]">Public tests</span> : null}
+              {testFiles.has(p) ? <span className="shrink-0 font-sans text-app-meta text-[var(--text-tertiary)]">Public tests</span> : null}
             </li>
           ))}
         </ul>
-        <div className={cn("grid gap-1 text-[var(--text-secondary)]", compact ? "text-[12.5px]" : "text-[14px]")}>
+        <div className={cn("grid gap-1 text-[var(--text-secondary)]", compact ? "text-app-meta" : "text-[14px]")}>
           <p>
             {task.environment.label}. Public test command:{" "}
-            <code className="rounded-[4px] bg-[var(--surface-raised)] px-1.5 py-0.5 font-mono text-[12.5px] text-[var(--text-primary)]">{task.environment.publicTestCommand}</code>
+            <code className="rounded-[4px] bg-[var(--surface-raised)] px-1.5 py-0.5 font-mono text-app-meta text-[var(--text-primary)]">{task.environment.publicTestCommand}</code>
           </p>
           {task.environment.runtime === "python" && windowsCommand(task.environment.publicTestCommand) !== task.environment.publicTestCommand ? (
             <p className="text-[var(--text-tertiary)]">On Windows use {windowsCommand(task.environment.publicTestCommand)}.</p>
@@ -164,7 +164,7 @@ export function BriefContent({
           {task.submission.requirements.length ? <List items={task.submission.requirements} compact={compact} /> : null}
           {task.submission.handoffPrompts.length ? (
             <div className="grid gap-2">
-              <h3 className={cn("font-medium text-[var(--text-secondary)]", compact ? "text-[12.5px]" : "text-[14px]")}>Handoff questions you answer when you submit</h3>
+              <h3 className={cn("font-medium text-[var(--text-secondary)]", compact ? "text-app-meta" : "text-[14px]")}>Handoff questions you answer when you submit</h3>
               <List items={task.submission.handoffPrompts.map((p) => p.label)} compact={compact} />
             </div>
           ) : null}
@@ -173,7 +173,7 @@ export function BriefContent({
 
       {teammates.length ? (
         <BriefSection title="Simulated teammates" compact={compact} id={`${idBase}-team`}>
-          <p className={cn("text-[var(--text-secondary)]", compact ? "text-[12.5px]" : "text-[14px]")}>
+          <p className={cn("text-[var(--text-secondary)]", compact ? "text-app-meta" : "text-[14px]")}>
             {messagingAvailable
               ? "These teammates are simulated. You can message them from the Team panel. Each knows about their own area and none of them will edit your files."
               : "Messaging is not available for this task. Work from the brief, and state any assumption in your handoff."}
@@ -185,9 +185,9 @@ export function BriefContent({
                   <span className="font-medium text-[var(--text-primary)]">{t.name}</span>
                   <span className="text-[var(--text-secondary)]">, {t.title}</span>
                 </p>
-                {t.responsibilities ? <p className={cn("text-[var(--text-secondary)]", compact ? "text-[12.5px]" : "text-[14px]")}>{t.responsibilities}</p> : null}
+                {t.responsibilities ? <p className={cn("text-[var(--text-secondary)]", compact ? "text-app-meta" : "text-[14px]")}>{t.responsibilities}</p> : null}
                 {t.topics.length ? (
-                  <p className={cn("text-[var(--text-tertiary)]", compact ? "text-[12px]" : "text-[13px]")}>Can talk about: {t.topics.join(", ")}</p>
+                  <p className={cn("text-[var(--text-tertiary)]", compact ? "text-app-meta" : "text-[13px]")}>Can talk about: {t.topics.join(", ")}</p>
                 ) : null}
               </li>
             ))}

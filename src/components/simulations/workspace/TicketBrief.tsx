@@ -142,7 +142,7 @@ export function TicketBrief({ view, base, onView }: { view: AuthoredCandidateVie
           <header className="mb-9 grid gap-3 border-b border-[var(--border-default)] pb-7">
             <h1 className="text-[28px] font-semibold leading-[1.2] tracking-[-0.02em] text-[var(--text-primary)]">{view.task.title}</h1>
             <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] text-[var(--text-secondary)]">
-              <span className="rounded-[4px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-1.5 py-0.5 font-mono text-[12.5px] text-[var(--text-primary)]">
+              <span className="rounded-[4px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-1.5 py-0.5 font-mono text-app-meta text-[var(--text-primary)]">
                 {slugify(view.task.title)}
               </span>
               <span>

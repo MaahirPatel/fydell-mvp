@@ -298,11 +298,11 @@ function TaskWorkspace({ scenario, embed }: { scenario: DemoScenario; embed?: Ta
           </span>
 
           <div className="ml-auto flex shrink-0 items-center gap-3">
-            <span className="hidden items-center gap-1.5 text-[12.5px] tabular-nums text-[var(--text-secondary)] md:inline-flex" title="Time since you opened the workspace">
+            <span className="hidden items-center gap-1.5 text-app-marker tabular-nums text-[var(--text-secondary)] md:inline-flex" title="Time since you opened the workspace">
               <Clock aria-hidden size={13} />
               {elapsedText(elapsed)}
             </span>
-            <span className="hidden items-center gap-1.5 text-[12.5px] text-[var(--text-secondary)] xl:inline-flex" title="Your edits are kept in this browser's local storage. Fydell does not store them.">
+            <span className="hidden items-center gap-1.5 text-app-meta text-[var(--text-secondary)] xl:inline-flex" title="Your edits are kept in this browser's local storage. Fydell does not store them.">
               <HardDrive aria-hidden size={13} />
               Saved in this browser
             </span>

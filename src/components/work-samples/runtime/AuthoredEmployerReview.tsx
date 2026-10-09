@@ -26,7 +26,7 @@ export function AuthoredEvaluationPanel({ evaluation }: { evaluation: EmployerAu
           items={[
             { label: "Runner", value: runner.isolated || /not isolated/i.test(runner.label) ? runner.label : `${runner.label}, not isolated` },
             { label: "Suite", value: suite.outcome === "timeout" ? `Timed out after ${(suite.durationMs / 1000).toFixed(0)}s` : `Finished in ${(suite.durationMs / 1000).toFixed(1)}s, exit code ${suite.exitCode ?? "none"}` },
-            { label: "Command", value: <code className="font-mono text-[12.5px]">{suite.command}</code> },
+            { label: "Command", value: <code className="font-mono text-app-meta">{suite.command}</code> },
             { label: "Tests", value: `${evaluation.tests.filter((t) => t.outcome === "passed").length} of ${evaluation.tests.length} passed` },
           ]}
         />
@@ -72,10 +72,10 @@ export function AuthoredEvaluationPanel({ evaluation }: { evaluation: EmployerAu
           {evaluation.tests.map((t) => (
             <li key={`${t.file}:${t.name}`} className="grid gap-1 px-3 py-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-3">
               <div className="min-w-0">
-                <p className="truncate font-mono text-[12.5px] text-[var(--text-primary)]" title={t.name}>
+                <p className="truncate font-mono text-app-meta text-[var(--text-primary)]" title={t.name}>
                   {t.name}
                 </p>
-                <p className="text-[12px] text-[var(--text-tertiary)]">
+                <p className="text-app-meta text-[var(--text-tertiary)]">
                   {t.visibility === "protected" ? "Protected" : "Public"} · {t.file}
                   {t.criterionIds.length ? ` · ${t.criterionIds.join(", ")}` : ""}
                 </p>
@@ -91,7 +91,7 @@ export function AuthoredEvaluationPanel({ evaluation }: { evaluation: EmployerAu
           {evaluation.output ? (
             <div className="mt-3">
               <Disclosure summary="Runner output">
-                <pre className="max-h-[360px] overflow-auto whitespace-pre-wrap rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-[12px] leading-[1.55] text-[var(--text-primary)]">
+                <pre className="max-h-[360px] overflow-auto whitespace-pre-wrap rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-app-meta leading-[1.55] text-[var(--text-primary)]">
                   {evaluation.output}
                 </pre>
               </Disclosure>
@@ -116,7 +116,7 @@ export function AuthoredFollowUpsPanel({ followUps }: { followUps: AuthoredFollo
               </p>
               {f.tests.length ? (
                 <p className="text-app-meta text-[var(--text-tertiary)]">
-                  Tests: <span className="font-mono text-[12px]">{f.tests.join(", ")}</span>
+                  Tests: <span className="font-mono text-app-meta">{f.tests.join(", ")}</span>
                 </p>
               ) : null}
             </li>
@@ -199,7 +199,7 @@ export function AuthoredSubmissionPanel({
               .sort((a, b) => Number(changedPaths.has(b.path)) - Number(changedPaths.has(a.path)) || a.path.localeCompare(b.path))
               .map((f) => (
                 <Disclosure key={f.path} summary={`${f.path}${changedPaths.has(f.path) ? " (changed)" : ""}`}>
-                  <pre className="max-h-[420px] overflow-auto whitespace-pre rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-[12px] leading-[1.55] text-[var(--text-primary)]">
+                  <pre className="max-h-[420px] overflow-auto whitespace-pre rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2.5 font-mono text-app-meta leading-[1.55] text-[var(--text-primary)]">
                     {f.content}
                   </pre>
                 </Disclosure>

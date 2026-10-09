@@ -102,7 +102,7 @@ export function PopoverItem({ children, onClick, disabled, hint }: { children: R
       className="flex w-full flex-col items-start gap-0.5 rounded-[6px] px-2.5 py-2 text-left text-[13.5px] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] disabled:opacity-50"
     >
       <span>{children}</span>
-      {hint ? <span className="text-[12px] text-[var(--text-tertiary)]">{hint}</span> : null}
+      {hint ? <span className="text-app-meta text-[var(--text-tertiary)]">{hint}</span> : null}
     </button>
   );
 }
