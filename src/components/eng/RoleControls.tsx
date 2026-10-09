@@ -76,7 +76,7 @@ function CopyLink({ url }: { url: string }) {
 
 const DELIVERY_MESSAGE = {
   sent: "Invitation emailed. You can also share the link below yourself.",
-  failed: "The email could not be sent. Share the link below with the candidate yourself.",
+  failed: "Invitation created, but the email could not be sent. Share the link below yourself, or use Resend in the candidate list to try the email again.",
   not_configured: "Email sending is not configured on this deployment, so nothing was emailed. Share the link below with the candidate yourself.",
 } as const;
 
@@ -304,7 +304,13 @@ export function InvitationActions({
     }
     if (action === "resend" && res.data.url) {
       setLink(res.data.url);
-      setMessage(res.data.emailDelivery === "sent" ? "Emailed a new link. The old link no longer works." : "New link created (not emailed). The old link no longer works.");
+      setMessage(
+        res.data.emailDelivery === "sent"
+          ? "Emailed a new link. The old link no longer works."
+          : res.data.emailDelivery === "failed"
+            ? "New link created, but the email could not be sent. Share the link, or press Resend to try again. The old link no longer works."
+            : "New link created. Email is not set up here, so nothing was emailed; share the link. The old link no longer works.",
+      );
     }
     router.refresh();
   }

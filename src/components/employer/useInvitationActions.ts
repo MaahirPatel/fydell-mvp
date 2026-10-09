@@ -20,12 +20,12 @@ export function useInvitationActions() {
       const res = await fetch(`/api/sim/invitations/manage/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: action === "copy" ? "resend" : action }),
+        body: JSON.stringify(action === "copy" ? { action: "resend", email: false } : { action }),
       });
       const data = (await res.json()) as {
         error?: string;
         inviteUrl?: string;
-        emailDelivery?: string;
+        emailDelivery?: string | null;
       };
       if (!res.ok) throw new Error(data.error || "The action failed. Try again.");
 
@@ -41,8 +41,10 @@ export function useInvitationActions() {
       } else if (data.inviteUrl) {
         setNotice(
           data.emailDelivery === "sent"
-            ? "A new invitation email was sent."
-            : `Email is not set up. Share this link: ${data.inviteUrl}`
+            ? "A new invitation email was sent. Earlier links no longer work."
+            : data.emailDelivery === "failed"
+              ? `The email could not be sent. Resend to try again, or share this link: ${data.inviteUrl}`
+              : `Email is not set up here, so nothing was sent. Share this link: ${data.inviteUrl}`
         );
       }
       router.refresh();

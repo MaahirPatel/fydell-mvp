@@ -10,7 +10,7 @@ import { parseJsonBody } from "@/lib/security/request-body";
 
 export const runtime = "nodejs";
 
-/** POST: { action: "revoke" | "resend" } */
+/** POST: { action: "revoke" | "resend", email?: boolean }. `email: false` only mints a fresh link. */
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -23,7 +23,7 @@ export async function POST(
   if (!orgCan(org.role, "manage_candidates"))
     return NextResponse.json({ error: capabilityDeniedMessage("manage_candidates") }, { status: 403 });
 
-  const parsed = await parseJsonBody(req, { action: { type: "string", max: 20 } });
+  const parsed = await parseJsonBody(req, { action: { type: "string", max: 20 }, email: { type: "boolean" } });
   if (parsed.ok === false) return parsed.response;
   const body = parsed.body;
 
@@ -35,6 +35,9 @@ export async function POST(
     if (body.action === "resend") {
       const { invitation, token } = await resendInvitation(id, org.organizationId);
       const inviteUrl = `${appUrl()}/invite/${token}`;
+      if (body.email === false) {
+        return NextResponse.json({ ok: true, status: "rotated", inviteUrl, emailDelivery: null });
+      }
       let delivery = "not_configured";
       if (isResendConfigured()) {
         const sent = await sendTrackedEmail({

@@ -138,7 +138,9 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
                         </span>
                         {c.late ? <span className="ml-2 text-app-meta text-[var(--text-tertiary)]">Submitted late</span> : null}
                         {!c.attempt && c.invitation.email_delivery !== "sent" ? (
-                          <span className="block text-app-meta text-[var(--text-tertiary)]">Not emailed; share the link</span>
+                          <span className="block text-app-meta text-[var(--text-tertiary)]">
+                            {c.invitation.email_delivery === "failed" ? "Email failed. Resend to try again." : "Not emailed. Resend to get a link to share."}
+                          </span>
                         ) : null}
                       </TD>
                       <TD>{c.dueAt ? when(c.dueAt) : c.attempt ? "Not started" : <>Invite expires {when(c.invitation.expires_at)}</>}</TD>

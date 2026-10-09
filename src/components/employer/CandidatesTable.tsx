@@ -192,7 +192,7 @@ export default function CandidatesTable({
 
                 {r.emailDelivery === "failed" ? (
                   <p className="mt-1.5 text-app-meta text-[var(--fydell-risk)]">
-                    Email failed to send
+                    Email failed. Resend to try again.
                   </p>
                 ) : null}
                 {r.emailDelivery === "not_configured" ? (
@@ -250,7 +250,7 @@ export default function CandidatesTable({
                     <StatusTag tone={stage.tone}>{stage.label}</StatusTag>
                     {r.emailDelivery === "failed" ? (
                       <span className="mt-1 block text-app-meta text-[var(--fydell-risk)]">
-                        Email failed to send
+                        Email failed. Resend to try again.
                       </span>
                     ) : null}
                     {r.emailDelivery === "not_configured" ? (
