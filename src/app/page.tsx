@@ -3,10 +3,10 @@ import MarketingShell from "@/components/layout/MarketingShell";
 import ProductFrame from "@/components/marketing/site/ProductFrame";
 import ProfileWorkspace from "@/components/marketing/site/ProfileWorkspace";
 import ApplicantReview from "@/components/marketing/site/ApplicantReview";
-import SimulationWorkspace from "@/components/marketing/site/SimulationWorkspace";
 import SimulationHero from "@/components/marketing/site/SimulationHero";
-import StoryStrip from "@/components/marketing/site/StoryStrip";
+import HeroReview from "@/components/marketing/site/HeroReview";
 import PaintedStage from "@/components/marketing/site/PaintedStage";
+import TintStage from "@/components/marketing/site/TintStage";
 import DownloadButton from "@/components/marketing/site/DownloadButton";
 import DesktopBand from "@/components/marketing/site/DesktopBand";
 import EvidenceGrid from "@/components/marketing/site/EvidenceGrid";
@@ -26,7 +26,7 @@ export default function HomePage() {
       <CenteredHero
         announcement={<Announcement href="/changelog" label={`Fydell Desktop ${LATEST.version}`} action="See what's new" />}
         title="Engineering work, ready to be seen."
-        lead="Bring projects and simulation results into one engineering profile, with evidence hiring teams can inspect."
+        lead="Engineers share real projects and work samples. Hiring teams read the evidence behind every claim, then make the call."
         actions={
           <>
             <DownloadButton />
@@ -39,14 +39,12 @@ export default function HomePage() {
         <PaintedStage painting="hills" priority wash inset="hero">
           <ProductFrame
             size="hero"
-            chrome="none"
-            title="Fydell · Simulation"
-            label="A candidate's simulation: the requirement being worked on, the candidate's change to the webhook dispatcher, the public tests now passing, and a short team thread. Example data."
+            title="Hiring Workspace · Applicants"
+            label="A hiring team's workspace: the applicant queue for a backend role, one finding opened to the lines of retry.ts it cites, and the decision brief listing evidence for each requirement."
           >
-            <SimulationHero />
+            <HeroReview />
           </ProductFrame>
         </PaintedStage>
-        <StoryStrip current="simulation" />
       </CenteredHero>
 
       <ShowcaseSection
@@ -55,11 +53,11 @@ export default function HomePage() {
         aside="Every finding links to the code it came from."
         more={{ href: "/products/builder-profiles", label: "Builder Profiles" }}
       >
-        <PaintedStage painting="coast">
+        <TintStage tint="teal">
           <ProductFrame interactive title="Fydell · Passport" label="One project in an engineer's Passport: its purpose, their part, and a finding opened to the source lines it cites. Select a highlight to open it.">
             <ProfileWorkspace />
           </ProductFrame>
-        </PaintedStage>
+        </TintStage>
       </ShowcaseSection>
 
       <ShowcaseSection
@@ -68,11 +66,24 @@ export default function HomePage() {
         aside="A real codebase, a brief, and a team to ask."
         more={{ href: "/products/simulations", label: "Simulations" }}
       >
-        <PaintedStage painting="field">
-          <ProductFrame tag="Preview" title="Simulation · Webhook retry incident" label="A candidate's simulation: the brief and requirements, the project files, a public test run, and the team thread docked beside the brief.">
-            <SimulationWorkspace />
+        <TintStage tint="blue">
+          <ProductFrame
+            chrome="none"
+            title="Fydell · Simulation"
+            label="A candidate's simulation: the requirement being worked on, the candidate's change to the webhook dispatcher, the public tests now passing, and a short team thread."
+          >
+            <SimulationHero />
           </ProductFrame>
-        </PaintedStage>
+        </TintStage>
+      </ShowcaseSection>
+
+      <ShowcaseSection
+        id="evidence"
+        title="Every claim has a source."
+        aside="Findings, tests and questions stay attached to the work."
+        more={{ href: "/products/builder-reports", label: "Builder Reports" }}
+      >
+        <EvidenceGrid />
       </ShowcaseSection>
 
       <ShowcaseSection
@@ -90,20 +101,11 @@ export default function HomePage() {
           />
         }
       >
-        <PaintedStage painting="hills" inset="wide">
-          <ProductFrame interactive title="Hiring Workspace · Applicants" label="A hiring team's review of one applicant against the role's requirements. Select a requirement to see the evidence.">
+        <TintStage tint="violet" inset="wide">
+          <ProductFrame interactive title="Hiring Workspace · Requirements" label="A hiring team's review of one applicant against the role's requirements. Select a requirement to see the evidence.">
             <ApplicantReview />
           </ProductFrame>
-        </PaintedStage>
-      </ShowcaseSection>
-
-      <ShowcaseSection
-        id="evidence"
-        title="Every claim has a source."
-        aside="Findings, tests and questions stay attached to the work."
-        more={{ href: "/products/builder-reports", label: "Builder Reports" }}
-      >
-        <EvidenceGrid />
+        </TintStage>
       </ShowcaseSection>
 
       <DesktopBand />

@@ -1,0 +1,66 @@
+.stage {
+  --tint: var(--tint-violet);
+  --ink: var(--brand-violet);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 64px 72px 0;
+  border-radius: 20px;
+  background: var(--tint);
+}
+.stage[data-tint="teal"] {
+  --tint: var(--tint-teal);
+  --ink: var(--brand-teal);
+}
+.stage[data-tint="blue"] {
+  --tint: var(--tint-blue);
+  --ink: var(--brand-blue);
+}
+.stage[data-tint="warm"] {
+  --tint: var(--tint-warm);
+  --ink: var(--brand-warm);
+}
+.stage[data-inset="wide"] {
+  padding: 48px 48px 0;
+}
+
+/* Light from the top, a deeper pool of the same hue at the bottom corner. */
+.glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(70% 60% at 50% 0%, color-mix(in oklch, var(--surface-raised) 70%, transparent), transparent 70%),
+    radial-gradient(45% 55% at 100% 100%, color-mix(in oklch, var(--ink) 16%, transparent), transparent 75%),
+    radial-gradient(40% 50% at 0% 100%, color-mix(in oklch, var(--ink) 10%, transparent), transparent 75%);
+}
+
+.inner {
+  position: relative;
+}
+
+/* The product sits on the bottom edge of the panel, cropped like a screen. */
+.inner :global(figure) > div:first-child {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 0;
+  border-color: color-mix(in oklch, var(--ink) 18%, var(--border-default));
+  box-shadow:
+    0 1px 2px color-mix(in oklch, var(--ink) 10%, transparent),
+    0 24px 60px -24px color-mix(in oklch, var(--ink) 40%, transparent);
+}
+
+@media (max-width: 1023px) {
+  .stage,
+  .stage[data-inset="wide"] {
+    padding: 32px 28px 0;
+    border-radius: 16px;
+  }
+}
+@media (max-width: 639px) {
+  .stage,
+  .stage[data-inset="wide"] {
+    padding: 16px 12px 0;
+    border-radius: 12px;
+  }
+}

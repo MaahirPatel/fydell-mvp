@@ -406,7 +406,6 @@
   margin-top: 18px;
   padding: 12px 14px;
   border: 1px solid var(--fy-red-line);
-  border-left: 3px solid var(--fy-red);
   border-radius: 10px;
   background: var(--fy-red-field);
 }

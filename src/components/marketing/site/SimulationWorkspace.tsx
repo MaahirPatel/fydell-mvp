@@ -115,7 +115,7 @@ export default function SimulationWorkspace() {
           <div className={s.messages}>
             <div className={s.message}>
               <p className={s.author}>
-                {lead.name} <span className={s.authorRole}>{lead.title}</span>
+                {lead.title} <span className={s.authorRole}>Simulated</span>
               </p>
               <p className={s.messageText}>{SCENARIO.kickoff.body}</p>
             </div>
@@ -125,7 +125,7 @@ export default function SimulationWorkspace() {
             </div>
             <div className={s.message}>
               <p className={s.author}>
-                {lead.name} <span className={s.authorRole}>{lead.title}</span>
+                {lead.title} <span className={s.authorRole}>Simulated</span>
               </p>
               <p className={s.messageText}>{answer}</p>
             </div>

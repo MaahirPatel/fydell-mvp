@@ -299,14 +299,12 @@
 }
 .add {
   background: rgba(47, 158, 98, 0.09);
-  box-shadow: inset 2px 0 0 #3a9b66;
 }
 .add > span:nth-child(2) {
   color: var(--fy-green-ink);
 }
 .del {
   background: rgba(229, 72, 77, 0.08);
-  box-shadow: inset 2px 0 0 var(--fy-red);
 }
 .del > span:nth-child(2) {
   color: var(--fy-red-ink);
@@ -952,8 +950,8 @@
 .prompt {
   margin-top: 18px;
   padding: 12px 14px;
-  border-left: 2px solid var(--fy-red);
-  background: linear-gradient(90deg, rgba(255, 90, 110, 0.08), transparent);
+  border-radius: 8px;
+  background: var(--fy-red-field);
   font-size: 12.5px;
   line-height: 1.55;
   color: var(--t2);

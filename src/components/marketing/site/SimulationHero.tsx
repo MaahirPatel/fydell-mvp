@@ -183,13 +183,13 @@ export default function SimulationHero() {
                 <div className={`${s.reply} ${s.enter}`} style={at(800)}>
                   <p className={s.replyHead}>
                     <span className={s.avatar} aria-hidden>
-                      {LEAD.name
+                      {LEAD.title
                         .split(" ")
-                        .map((p) => p[0])
+                        .map((p) => p[0].toUpperCase())
                         .join("")}
                     </span>
-                    <b>{LEAD.name}</b>
-                    <span className={s.time}>{LEAD.title}</span>
+                    <b>{LEAD.title}</b>
+                    <span className={s.time}>Simulated</span>
                   </p>
                   <p className={s.replyText}>{ANSWER_SHORT}</p>
                 </div>

@@ -33,10 +33,10 @@ function highlight(text: string) {
 }
 
 const MARK: Record<NonNullable<CodeLine["mark"]>, string> = {
-  cited: "bg-[var(--accent-soft)] shadow-[inset_2px_0_0_var(--accent)]",
-  observed: "bg-[var(--field-violet)] shadow-[inset_2px_0_0_var(--brand-violet)]",
-  added: "bg-[var(--ev-success-field)] shadow-[inset_2px_0_0_var(--ev-success)]",
-  removed: "bg-[var(--ev-error-field)] shadow-[inset_2px_0_0_var(--ev-error)]",
+  cited: "bg-[var(--accent-soft)]",
+  observed: "bg-[var(--field-violet)]",
+  added: "bg-[var(--ev-success-field)]",
+  removed: "bg-[var(--ev-error-field)]",
 };
 
 export function CodeBlock({

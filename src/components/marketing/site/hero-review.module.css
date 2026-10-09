@@ -1,0 +1,416 @@
+/* Hero product view: rail, applicant queue, an opened finding, and the
+   decision brief floated over the right edge. Product type sizes. */
+
+.root {
+  position: relative;
+  container-type: inline-size;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-body);
+  background: var(--surface-raised);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 160px 236px minmax(0, 1fr);
+  min-height: 512px;
+}
+
+.strong {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.dim {
+  color: var(--text-tertiary);
+}
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ---------- Rail ---------- */
+
+.rail {
+  padding: 14px 10px;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-panel);
+}
+.workspace {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 14px;
+}
+.logo {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: var(--control-solid);
+  color: var(--control-solid-ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+.wsName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.nav {
+  display: grid;
+  gap: 2px;
+}
+.nav li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+.nav li svg {
+  color: var(--text-tertiary);
+}
+.nav li[data-on] {
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-1);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.nav li[data-on] svg {
+  color: var(--accent);
+}
+
+/* ---------- Queue ---------- */
+
+.queue {
+  border-right: 1px solid var(--border-subtle);
+}
+.queueHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.queueList li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 2px 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.queueList li[data-on] {
+  background: var(--surface-selected);
+}
+.avatar {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--field-violet);
+  color: var(--ink-violet);
+  font-size: 11px;
+  font-weight: 600;
+}
+.queueList li:nth-child(2) .avatar {
+  background: var(--field-teal);
+  color: var(--ink-teal);
+}
+.queueList li:nth-child(3) .avatar {
+  background: var(--field-warm);
+  color: var(--ink-warm);
+}
+.queueList li:nth-child(4) .avatar {
+  background: var(--field-blue);
+  color: var(--ink-blue);
+}
+.queueList li:nth-child(5) .avatar {
+  background: var(--field-coral);
+  color: var(--ink-coral);
+}
+.queueText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.queueText .dim {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.state {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 4px;
+  padding: 1px 7px;
+  border-radius: var(--radius-tag);
+  font-size: 11.5px;
+  font-weight: 500;
+  background: var(--badge-neutral-bg);
+  color: var(--badge-neutral-ink);
+}
+.state[data-state="review"] {
+  background: var(--badge-pending-bg);
+  color: var(--badge-pending-ink);
+}
+.state[data-state="waiting"] {
+  background: var(--badge-attention-bg);
+  color: var(--badge-attention-ink);
+}
+.state[data-state="decided"] {
+  background: var(--badge-success-bg);
+  color: var(--badge-success-ink);
+}
+
+/* ---------- Main ---------- */
+
+.main {
+  min-width: 0;
+  padding: 0 24px 24px;
+}
+.mainHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 52px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.crumbs {
+  display: flex;
+  gap: 6px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+.tabs li {
+  padding: 4px 9px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.tabs li[data-on] {
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.finding {
+  max-width: 460px;
+  margin-right: 290px;
+  padding-top: 20px;
+}
+.req {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: var(--radius-tag);
+  background: var(--badge-success-bg);
+  color: var(--badge-success-ink);
+  font-size: 12px;
+  font-weight: 500;
+}
+.claim {
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: -0.006em;
+  color: var(--text-primary);
+}
+.cite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: 12px;
+  color: var(--text-secondary);
+}
+.chip {
+  padding: 1px 7px;
+  border-radius: var(--radius-tag);
+  background: var(--ev-observed-field);
+  color: var(--ev-observed-ink);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.code {
+  display: grid;
+  margin: 10px 0 0;
+  padding: 8px 0;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--surface-panel);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.75;
+  white-space: pre;
+}
+.line {
+  padding-right: 12px;
+}
+.line[data-hit] {
+  background: color-mix(in oklch, var(--accent) 10%, transparent);
+  color: var(--text-primary);
+}
+.ln {
+  display: inline-block;
+  width: 36px;
+  padding-right: 12px;
+  text-align: right;
+  color: var(--text-tertiary);
+}
+.limits {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+}
+.limits svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--evidence-uncertain);
+}
+
+/* ---------- Floating brief ---------- */
+
+.brief {
+  position: absolute;
+  top: 76px;
+  right: 20px;
+  width: 270px;
+  padding: 14px 14px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-panel);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-float);
+}
+.briefHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 10px;
+}
+.briefList li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 1px 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+.dot {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: 50%;
+  border: 1px dashed var(--border-strong);
+  color: var(--text-tertiary);
+}
+.dot[data-tone="support"] {
+  border: 0;
+  background: var(--badge-success-bg);
+  color: var(--badge-success-ink);
+}
+.dot[data-tone="partial"] {
+  border: 0;
+  background: var(--badge-attention-bg);
+  color: var(--badge-attention-ink);
+}
+.briefReq {
+  color: var(--text-primary);
+}
+.briefEv {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.briefFoot {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+.choices {
+  display: flex;
+  gap: 4px;
+}
+.choices span {
+  padding: 3px 8px;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.choices span:first-child {
+  border-color: var(--control-solid);
+  background: var(--control-solid);
+  color: var(--control-solid-ink);
+}
+.briefNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Responsive: follows the frame, not the viewport ---------- */
+
+@container (max-width: 1060px) {
+  .app {
+    grid-template-columns: 224px minmax(0, 1fr);
+  }
+  .rail {
+    display: none;
+  }
+}
+@container (max-width: 820px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .queue {
+    display: none;
+  }
+  .finding {
+    max-width: none;
+    margin-right: 0;
+  }
+  .brief {
+    position: static;
+    width: auto;
+    margin: 0 16px 16px;
+    box-shadow: var(--shadow-2);
+  }
+}
+@container (max-width: 479px) {
+  .main {
+    padding: 0 14px 16px;
+  }
+  .tabs li:not([data-on]) {
+    display: none;
+  }
+  .brief {
+    margin: 0 12px 12px;
+  }
+}

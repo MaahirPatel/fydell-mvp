@@ -88,7 +88,7 @@ function TeamMessages({ compact = false }: { compact?: boolean }) {
       <Msg av="Y" tone="you" who="You" time="14:02">
         Which failures should count as temporary?
       </Msg>
-      <Msg av="AM" tone="blue" who="Alex Morgan" role="Engineering lead" time="14:02">
+      <Msg av="EL" tone="blue" who="Engineering lead" role="Simulated" time="14:02">
         Treat any 5xx, 408 and 429 as temporary, and connection failures too. Everything else, including other 4xx, is
         permanent.
       </Msg>
@@ -207,7 +207,7 @@ export function BriefShot() {
     <div className={`${s.app} ${s.layered}`}>
       <div className={s.doc}>
         <p className={s.docMeta}>
-          <Mark size={14} /> INCIDENT.md · opened by Alex Morgan
+          <Mark size={14} /> INCIDENT.md · opened by the engineering lead
         </p>
         <p className={s.docTitle}>INC-2291: webhook retry storm</p>
         <p className={s.docH}>What happened</p>
