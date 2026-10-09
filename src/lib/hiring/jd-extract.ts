@@ -113,21 +113,24 @@ function guessTitle(lines: string[]): string {
 function guessLevel(title: string, text: string): Level | null {
   const byWords = (s: string): Level | null => {
     if (/\b(staff|principal)\b/i.test(s)) return "staff";
-    if (/\b(senior|sr\.?|lead)\b/i.test(s)) return "senior";
+    if (/\b(senior|sr\.?)\b/i.test(s)) return "senior";
     if (/\b(junior|jr\.?|entry[- ]level|graduate|new grad)\b/i.test(s)) return "junior";
     if (/\b(mid[- ]level|intermediate)\b/i.test(s)) return "mid";
     return null;
   };
+  // "Lead" names a responsibility, not a level, so it never sets one.
   const fromTitle = byWords(title);
   if (fromTitle) return fromTitle;
-  const years = /(\d{1,2})\+?\s*(?:or more\s*)?years/i.exec(text);
+  const years = /(\d{1,2})\+?\s*(?:or more\s*)?years?\s+(?:of|in|with|building|working|developing|writing|professional|experience)\b/i.exec(text);
   if (years) {
     const n = Number(years[1]);
     if (n >= 6) return "senior";
     if (n >= 3) return "mid";
     return "junior";
   }
-  return byWords(text);
+  // Body text mentions colleagues ("work with senior engineers"); only explicit level phrasing counts.
+  const explicit = /\b(staff|senior|mid|junior|entry)[- ]level\b|\bnew grad\b/i.exec(text);
+  return explicit ? byWords(explicit[0]) : null;
 }
 
 function guessFamily(title: string, text: string): { family: RoleFamily | null; specialization: Specialization | null } {

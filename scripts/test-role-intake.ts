@@ -110,6 +110,13 @@ Remote within North America. Mid-level. Full-time. Salary 130,000 to 155,000 USD
   check("prose after a list ends the list", !d.requirements.some((r) => /Remote within/.test(r.text)) && !d.responsibilities.some((r) => /Remote within/.test(r)));
   check("location from 'Remote within'", d.location === "North America", d.location);
   check("salary without a currency symbol", d.compensation === "130,000 to 155,000 USD", d.compensation);
+  check("explicit 'Mid-level' in the body sets the level", d.level === "mid", d.level);
+}
+{
+  const lead = extractJobDescription("Tech Lead, Payments\n- You will lead the ledger migration\n- Work with senior engineers across teams\n");
+  check("'Lead' and mentions of senior colleagues do not set a level", lead.level === null, lead.level);
+  const company = extractJobDescription("Backend Engineer\nWe were founded 12 years ago.\n- Build APIs in Go\n");
+  check("company age is not years of experience", company.level === null, company.level);
 }
 {
   const d = extractJobDescription(`Backend Engineer
