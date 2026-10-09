@@ -11,17 +11,27 @@ import { ensureEmployerOnboardingRow } from "@/lib/pilot/lifecycle";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isSupabaseAuthConfigured } from "@/lib/supabase";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { loginIdentities, loginLockout, recordLoginFailure } from "@/lib/security/route-limits";
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const body: unknown = await req.json().catch(() => null);
+    const fields = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+    const email = typeof fields.email === "string" ? fields.email : "";
+    const password = typeof fields.password === "string" ? fields.password : "";
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password required." }, { status: 400 });
     }
+    if (email.length > 254 || password.length > 256) {
+      return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
+    }
 
-    const normalized = String(email).trim().toLowerCase();
+    const normalized = email.trim().toLowerCase();
+    const identities = loginIdentities(req, normalized);
+    const locked = loginLockout(identities);
+    if (locked) return locked;
 
-    if (verifyAdminCredentials(normalized, String(password))) {
+    if (verifyAdminCredentials(normalized, password)) {
       try {
         await ensureBootstrapRole(normalized);
       } catch {
@@ -74,6 +84,7 @@ export async function POST(req: Request) {
     }
 
     if (error || !data.user) {
+      recordLoginFailure(identities);
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
     }
 

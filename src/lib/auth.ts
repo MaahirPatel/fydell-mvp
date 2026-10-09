@@ -1,6 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
+import { createHash, timingSafeEqual } from "node:crypto";
 
 // ---------------------------------------------------------------------------
 // Signed HTTP-only cookie sessions (admin + employer) using jose / NEXTAUTH_SECRET
@@ -74,9 +75,20 @@ function adminAccounts(): AdminAccount[] {
   return accounts;
 }
 
+function sameSecret(a: string, b: string): boolean {
+  const left = createHash("sha256").update(a).digest();
+  const right = createHash("sha256").update(b).digest();
+  return timingSafeEqual(left, right);
+}
+
 export function verifyAdminCredentials(email: string, password: string): boolean {
   const e = email.trim().toLowerCase();
-  return adminAccounts().some((a) => a.email === e && a.password === password);
+  if (!e || !password) return false;
+  let matched = false;
+  for (const account of adminAccounts()) {
+    if (account.email === e && sameSecret(account.password, password)) matched = true;
+  }
+  return matched;
 }
 
 export async function createAdminSession(email: string): Promise<void> {

@@ -6,6 +6,7 @@ import { ensureCandidateProfile, audit } from "@/lib/auth/signup-helpers";
 import { seedEngineerProfileName } from "@/lib/auth/account-name";
 import { isReservedOrganizationName } from "@/lib/org/reserved";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { limitByIp, ROUTE_LIMITS } from "@/lib/security/route-limits";
 export const dynamic = "force-dynamic";
 
 type SignupPath = "employer" | "fde" | "partner";
@@ -18,25 +19,49 @@ function redirectForPath(path: SignupPath | null): string {
   return "/signup/role";
 }
 
+/** "" when absent, null when present but not a plain https URL; bare domains get https://. */
+function normalizeWebsite(value: string): string | null {
+  if (!value) return "";
+  const candidate = /^[a-z][a-z0-9+.-]*:/i.test(value) ? value : `https://${value}`;
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== "https:" || !url.hostname.includes(".") || url.username || url.password) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     if (!isSupabaseConfigured()) {
       return NextResponse.json({ error: "Authentication is not configured." }, { status: 503 });
     }
 
-    const body = await req.json();
-    const rawPath = String(body.path || "");
+    const limited = limitByIp(req, ROUTE_LIMITS.signup);
+    if (limited) return limited;
+
+    const raw: unknown = await req.json().catch(() => null);
+    const body = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+    const text = (value: unknown, max: number): string => (typeof value === "string" ? value.trim().slice(0, max) : "");
+    const rawPath = text(body.path, 20);
     const path = (["employer", "fde", "partner"].includes(rawPath) ? rawPath : null) as SignupPath | null;
 
-    const email = String(body.email || "").trim().toLowerCase();
-    const password = String(body.password || "");
-    const name = String(body.name || "").trim();
-    const companyName = body.companyName ? String(body.companyName).trim() : "";
-    const companyWebsite = body.companyWebsite ? String(body.companyWebsite).trim() : "";
-    const firmName = body.firmName ? String(body.firmName).trim() : "";
+    const email = text(body.email, 254).toLowerCase();
+    const password = typeof body.password === "string" ? body.password : "";
+    const name = text(body.name, 160);
+    const companyName = text(body.companyName, 160);
+    const companyWebsite = normalizeWebsite(text(body.companyWebsite, 300));
+    const firmName = text(body.firmName, 160);
 
     if (!email || !password || !name) {
       return NextResponse.json({ error: "Name, email, and password are required." }, { status: 400 });
+    }
+    if (password.length > 256) {
+      return NextResponse.json({ error: "Password must be at most 256 characters." }, { status: 400 });
+    }
+    if (companyWebsite === null) {
+      return NextResponse.json({ error: "Enter the company website as an https:// address." }, { status: 400 });
     }
     if (password.length < 8) {
       return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });

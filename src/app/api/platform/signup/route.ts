@@ -6,12 +6,25 @@ import { ensureEmployerOnboardingRow } from "@/lib/pilot/lifecycle";
 import { employerSelfSignupMode } from "@/lib/org/reserved";
 import { appUrl } from "@/lib/app-url";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { limitByIp, ROUTE_LIMITS } from "@/lib/security/route-limits";
 
 export async function POST(req: Request) {
+  const limited = limitByIp(req, ROUTE_LIMITS.signup);
+  if (limited) return limited;
   try {
-    const { email, password, companyName, fullName, intent } = await req.json();
+    const raw: unknown = await req.json().catch(() => null);
+    const fields = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+    const text = (value: unknown, max: number): string => (typeof value === "string" ? value.trim().slice(0, max) : "");
+    const email = text(fields.email, 254);
+    const password = typeof fields.password === "string" ? fields.password : "";
+    const companyName = text(fields.companyName, 160);
+    const fullName = text(fields.fullName, 160);
+    const intent = fields.intent === "candidate" ? "candidate" : fields.intent === "hiring" ? "hiring" : undefined;
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password required." }, { status: 400 });
+    }
+    if (password.length > 256) {
+      return NextResponse.json({ error: "Password must be at most 256 characters." }, { status: 400 });
     }
     if (password.length < 8) {
       return NextResponse.json(

@@ -41,6 +41,7 @@
     "test:states": "tsx scripts/test-state-machines.ts",
     "test:disclosure": "tsx scripts/test-disclosure-boundary.ts",
     "test:auth": "tsx scripts/test-safe-next.ts",
+    "test:route-limits": "tsx --conditions react-server scripts/test-route-limits-security.ts",
     "test:desktop-auth": "tsx --conditions react-server scripts/test-desktop-auth.ts",
     "check:seo": "tsx scripts/check-seo.ts",
     "test:file-package": "tsx --conditions react-server scripts/test-file-package.ts",
