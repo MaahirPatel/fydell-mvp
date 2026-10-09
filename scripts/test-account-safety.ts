@@ -257,7 +257,7 @@ async function confirmationGate() {
 
   const page = await send(`${base}/auth/check-email?email=${encodeURIComponent(pending.email)}`, { redirect: "manual" });
   const html = await page.text();
-  check("check-email page renders", page.status === 200 && /Confirm your email/.test(html), String(page.status));
+  check("check-email page is server-rendered with the address", page.status === 200 && /Confirm your email/.test(html) && html.includes(pending.email), String(page.status));
   const bad = await send(`${base}/api/auth/resend-confirmation`, {
     method: "POST",
     headers: { "content-type": "application/json", "x-forwarded-for": fakeIp() },

@@ -1,16 +1,18 @@
-"use client";
-
-import { Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import AuthShell from "@/components/auth/AuthShell";
 import ResendConfirmation from "@/components/auth/ResendConfirmation";
-import { withNext } from "@/lib/auth/safe-next";
+import { safeNext, withNext } from "@/lib/auth/safe-next";
 
-function CheckEmailContent() {
-  const params = useSearchParams();
-  const next = params.get("next");
-  const email = (params.get("email") ?? "").slice(0, 254);
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function single(value: string | string[] | undefined): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+export default async function CheckEmailPage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
+  const next = safeNext(single(params.next));
+  const email = (single(params.email) ?? "").slice(0, 254);
 
   return (
     <AuthShell
@@ -32,13 +34,5 @@ function CheckEmailContent() {
       <p className="mb-4 text-app-meta text-[var(--text-secondary)]">Nothing arrived? Check spam, then ask for a new link.</p>
       <ResendConfirmation initialEmail={email} next={next} />
     </AuthShell>
-  );
-}
-
-export default function CheckEmailPage() {
-  return (
-    <Suspense fallback={<div className="min-h-[100dvh] bg-[var(--surface-canvas)]" />}>
-      <CheckEmailContent />
-    </Suspense>
   );
 }
