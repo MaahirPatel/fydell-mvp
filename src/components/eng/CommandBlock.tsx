@@ -8,7 +8,7 @@ type Os = "windows" | "unix";
 /** A copyable terminal command with Windows and macOS/Linux variants. */
 export function CommandBlock({ commands, label }: { commands: { windows: string; unix: string }; label: string }) {
   const [os, setOs] = useState<Os>("windows");
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"idle" | "ok" | "failed">("idle");
   const command = commands[os];
   return (
     <div className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)]">
@@ -22,7 +22,7 @@ export function CommandBlock({ commands, label }: { commands: { windows: string;
               aria-selected={os === key}
               onClick={() => {
                 setOs(key);
-                setCopied(false);
+                setCopied("idle");
               }}
               className={cn(
                 "h-7 rounded-[var(--radius-control)] px-2.5 text-app-meta",
@@ -38,14 +38,14 @@ export function CommandBlock({ commands, label }: { commands: { windows: string;
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(command);
-              setCopied(true);
+              setCopied("ok");
             } catch {
-              setCopied(false);
+              setCopied("failed");
             }
           }}
           className="h-7 rounded-[var(--radius-control)] px-2.5 text-app-meta text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
         >
-          {copied ? "Copied" : "Copy"}
+          {copied === "ok" ? "Copied" : copied === "failed" ? "Copy blocked; select the command below" : "Copy"}
         </button>
       </div>
       <pre className="overflow-x-auto bg-[var(--surface-raised)] px-3 py-2.5 font-mono text-[13px] text-[var(--text-primary)]">

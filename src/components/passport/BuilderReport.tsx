@@ -480,7 +480,7 @@ export default function BuilderReport({
   });
   const [notes, setNotes] = useState<Correction[]>(initialNotes);
   const [busyNote, setBusyNote] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"idle" | "ok" | "failed">("idle");
   const selected = evidence.find((e) => e.id === selectedId) ?? null;
   const state = reportState(project);
   const isLatest = project.id === latestId;
@@ -526,7 +526,7 @@ export default function BuilderReport({
     if (id === selectedId && view === "findings") return;
     setSelectedId(id);
     setView("findings");
-    setCopied(false);
+    setCopied("idle");
     const url = new URL(window.location.href);
     url.searchParams.set("finding", id);
     url.searchParams.delete("view");
@@ -575,9 +575,10 @@ export default function BuilderReport({
     url.searchParams.delete("view");
     try {
       await navigator.clipboard.writeText(url.toString());
-      setCopied(true);
+      setCopied("ok");
     } catch {
-      setCopied(false);
+      window.history.replaceState(null, "", url);
+      setCopied("failed");
     }
   }
 
@@ -822,8 +823,8 @@ export default function BuilderReport({
                       <span aria-hidden className="text-[var(--text-quaternary)]">·</span>
                       <span>{selected.basis === "repository_observation" ? "Observed in code" : "Declared dependency"}</span>
                       <button type="button" onClick={() => void copyLink()} className="ml-auto inline-flex items-center gap-1 font-medium hover:text-[var(--text-primary)]">
-                        {copied ? <Check className="h-3.5 w-3.5" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />}
-                        {copied ? "Copied" : "Copy link"}
+                        {copied === "ok" ? <Check className="h-3.5 w-3.5" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />}
+                        {copied === "ok" ? "Copied" : copied === "failed" ? "Copy blocked; the address bar has this link" : "Copy link"}
                       </button>
                     </div>
                     <h3 className="mt-3 text-[17px] font-semibold leading-[1.35] tracking-[-0.012em]">{selected.finding}</h3>

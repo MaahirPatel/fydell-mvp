@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Field, FormError, FormSuccess, Input, Select } from "@/components/ui/Field";
 import { engFetch } from "./api";
@@ -43,25 +43,34 @@ export function RoleStatusActions({ roleId, status }: { roleId: string; status: 
 }
 
 function CopyLink({ url }: { url: string }) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"idle" | "ok" | "failed">("idle");
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="mt-2 flex items-center gap-2">
-      <Input readOnly value={url} onFocus={(e) => e.currentTarget.select()} aria-label="Invitation link" />
-      <Button
-        size="sm"
-        variant="secondary"
-        onClick={async () => {
-          try {
-            await navigator.clipboard.writeText(url);
-            setCopied(true);
-          } catch {
-            setCopied(false);
-          }
-        }}
-      >
-        {copied ? "Copied" : "Copy"}
-      </Button>
-    </div>
+    <>
+      <div className="mt-2 flex items-center gap-2">
+        <Input ref={inputRef} readOnly value={url} onFocus={(e) => e.currentTarget.select()} aria-label="Invitation link" />
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(url);
+              setCopied("ok");
+            } catch {
+              setCopied("failed");
+              inputRef.current?.select();
+            }
+          }}
+        >
+          {copied === "ok" ? "Copied" : "Copy"}
+        </Button>
+      </div>
+      {copied === "failed" ? (
+        <span className="mt-1 block text-app-meta" role="status">
+          Your browser blocked copying. The link is selected; press Ctrl+C (Cmd+C on a Mac) to copy it.
+        </span>
+      ) : null}
+    </>
   );
 }
 

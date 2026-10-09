@@ -91,7 +91,7 @@ export default function CohortWorkspace({
     url: string;
     label: string;
   } | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"idle" | "ok" | "failed">("idle");
 
   const load = useCallback(async () => {
     setError(null);
@@ -135,7 +135,7 @@ export default function CohortWorkspace({
     setBusy(true);
     setInviteError(null);
     setInviteResult(null);
-    setCopied(false);
+    setCopied("idle");
     try {
       const res = await fetch("/api/sim/invitations", {
         method: "POST",
@@ -422,18 +422,20 @@ export default function CohortWorkspace({
                   variant="secondary"
                   size="sm"
                   onClick={() => {
-                    void navigator.clipboard.writeText(inviteResult.url);
-                    setCopied(true);
+                    navigator.clipboard.writeText(inviteResult.url).then(
+                      () => setCopied("ok"),
+                      () => setCopied("failed"),
+                    );
                   }}
                 >
-                  {copied ? "Copied" : "Copy link"}
+                  {copied === "ok" ? "Copied" : copied === "failed" ? "Copy blocked; select the link above" : "Copy link"}
                 </Button>
                 <Button
                   variant="quiet"
                   size="sm"
                   onClick={() => {
                     setInviteResult(null);
-                    setCopied(false);
+                    setCopied("idle");
                   }}
                 >
                   Invite another

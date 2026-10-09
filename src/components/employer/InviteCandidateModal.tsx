@@ -72,7 +72,7 @@ export function InviteModalProvider({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState<SentResult | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"idle" | "ok" | "failed">("idle");
 
   const selectedRole = useMemo(
     () => catalog.find((r) => r.key === roleKey) || catalog[0],
@@ -97,7 +97,7 @@ export function InviteModalProvider({
       setExpiresInDays(14);
       setError(null);
       setSent(null);
-      setCopied(false);
+      setCopied("idle");
       setIsOpen(true);
     },
     [catalog]
@@ -161,10 +161,10 @@ export function InviteModalProvider({
     if (!sent) return;
     try {
       await navigator.clipboard.writeText(sent.inviteUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopied("ok");
+      setTimeout(() => setCopied("idle"), 2000);
     } catch {
-      setCopied(false);
+      setCopied("failed");
     }
   };
 
@@ -238,7 +238,7 @@ export function InviteModalProvider({
                 className="mt-2"
                 onClick={() => void copyLink()}
               >
-                {copied ? "Copied" : "Copy link"}
+                {copied === "ok" ? "Copied" : copied === "failed" ? "Copy blocked; select the link above" : "Copy link"}
               </Button>
             </div>
           </div>
