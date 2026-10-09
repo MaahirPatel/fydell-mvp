@@ -118,8 +118,10 @@ release never exists without its event and a retry cannot record it twice.
 
 Exports (report downloads, passport presentation images) are generated
 synchronously per request and hold no server-side state. An interrupted
-download is fixed by downloading again. There is no self-service export of all
-account data yet; data requests go through `/admin/data-requests`.
+download is fixed by downloading again. The self-service account export
+(`/api/account/export`, linked from Settings → Data & privacy) is the same: one
+JSON document per request, limited to five an hour. Other data requests go
+through `/admin/data-requests`.
 
 ### Concurrent edits
 
@@ -129,16 +131,16 @@ These writes are compare-and-set on a revision or `updated_at`, and the loser ge
 - work-sample drafts and contributions
 - scenario drafts
 - incident reviews
-- employer role edits (when the client sends `expectedUpdatedAt`)
+- employer role edits (`expectedUpdatedAt` is required; a save without it gets 428)
+- the "How I build" profile statement (`expectedUpdatedAt`, null when there was none; a save without it gets 428)
 
-Known gaps:
-
-- `expectedUpdatedAt` is optional on `PATCH /api/employer/roles/[id]`, so an older client can overwrite.
-- The "How I build" profile section has no revision check.
+Authored-assessment submissions follow the same rule as built-in ones: the
+sealed upload is accepted only once the submission row exists, and a retry or
+a reload of the attempt finishes any follow-through the first request missed.
+An authored evaluation stores its result and draft report before the run moves
+to human review.
 
 ## Known gaps
 
-- The authored-assessment submit path does not yet re-run its follow-through on retry the way built-in assessments do, and can leave an upload with no submission. A retry still returns the stored submission.
-- `evaluation-run.ts` writes the evaluation draft after flipping the run to human review. A crash between the two leaves a run waiting for review with no draft. An operator can requeue it.
 - The every-minute worker schedule needs the one-time Vault setup in production (see above).
 - Database backups depend on the plan (see above).
