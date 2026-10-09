@@ -90,6 +90,18 @@ export default function DevelopersPage() {
         title="Questions from engineers"
         items={[
           { q: "Do I pay anything?", a: "No. Your profile, Passport, reports, applications and simulations are free. A Pro plan is in preview and will never be required to apply." },
+          {
+            q: "Can I use private or employer code?",
+            a: "Upload a ZIP of a project you are allowed to share. It is read the same way as a public repository and labelled as uploaded source, with no public link to the code. For work you can't share at all, describe it in your own words; recipients see it marked as described by you, with no source analyzed.",
+          },
+          {
+            q: "I don't have public repositories. Can I still use Fydell?",
+            a: "Yes. Upload a project as a ZIP or describe your work in your own words. If a hiring team invites you to a simulation, you can take it without any repositories.",
+          },
+          {
+            q: "What can an employer see?",
+            a: "Only what you share: the projects you tick, at the versions you pin. Applying to a role uses the same choice. You can set an expiry and revoke a link at any time, but copies someone already saved cannot be recalled.",
+          },
           { q: "Can I use AI tools in a simulation?", a: "Yes, the same way you would at work, unless the brief says otherwise. Fydell cannot see your tools and does not try to detect them. You describe any AI help in your own words." },
           { q: "What if a finding about my code is wrong?", a: "Flag it, add context, or propose a different reading. Your note is attributed to you and shown next to the finding; the original stays visible." },
           { q: "Do I need the desktop app?", a: "No. Everything works in the browser. The desktop app is an option for working simulations in a local workspace." },
