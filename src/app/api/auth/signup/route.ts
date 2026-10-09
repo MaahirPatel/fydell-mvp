@@ -7,6 +7,8 @@ import { seedEngineerProfileName } from "@/lib/auth/account-name";
 import { employerSelfSignupMode, isReservedOrganizationName } from "@/lib/org/reserved";
 import { publicErrorMessage } from "@/lib/security/public-error";
 import { limitByIp, ROUTE_LIMITS } from "@/lib/security/route-limits";
+import { checkEmailPath, confirmationRedirect, emailConfirmationRequired } from "@/lib/auth/email-confirmation";
+import { safeNext } from "@/lib/auth/safe-next";
 export const dynamic = "force-dynamic";
 
 type SignupPath = "employer" | "fde" | "partner";
@@ -87,19 +89,20 @@ export async function POST(req: Request) {
     const supabase = await createServerSupabaseClient();
     const admin = createAdminSupabaseClient();
     const nextPath = redirectForPath(path);
+    const returnTo = safeNext(typeof body.next === "string" ? body.next : null);
+    const metadata = { full_name: name, account_type: path || "unresolved" };
+    const confirmByEmail = emailConfirmationRequired();
 
-    // Accounts are confirmed on creation, so no confirmation email is sent.
-    // signUp() would send one, and Supabase's built-in mailer allows only a few
-    // per hour, which fails sign-ups outright once exceeded.
-    const { data, error } = await admin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: name,
-        account_type: path || "unresolved",
-      },
-    });
+    // Production: signUp() emails a confirmation link and returns no session
+    // until the person opens it. Elsewhere the account is confirmed on creation
+    // so testing does not depend on a mailer.
+    const { data, error } = confirmByEmail
+      ? await supabase.auth.signUp({ email, password, options: { data: metadata, emailRedirectTo: confirmationRedirect(returnTo ?? nextPath) } })
+      : await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: metadata });
+
+    if (!error && confirmByEmail && data.user && (data.user.identities ?? []).length === 0) {
+      return NextResponse.json({ error: "An account with this email already exists. Sign in instead." }, { status: 400 });
+    }
 
     if (error) {
       if (/already|registered|exists/i.test(error.message)) {
@@ -118,13 +121,13 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    const emailVerifiedAt = data.user.email_confirmed_at || new Date().toISOString();
+    const awaitingConfirmation = confirmByEmail && !data.user.email_confirmed_at;
+    const emailVerifiedAt = awaitingConfirmation ? null : data.user.email_confirmed_at || new Date().toISOString();
 
-    const { data: signedIn, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (signInError || !signedIn.session) {
+    const { data: signedIn, error: signInError } = awaitingConfirmation
+      ? { data: { session: null }, error: null }
+      : await supabase.auth.signInWithPassword({ email, password });
+    if (!awaitingConfirmation && (signInError || !signedIn.session)) {
       return NextResponse.json(
         {
           error: publicErrorMessage(signInError ?? undefined, "Account created. Sign in with the same email and password."),
@@ -181,8 +184,12 @@ export async function POST(req: Request) {
     await audit(userId, `signup.${path || "unresolved"}`, "profile", userId, {
       path: path || "unresolved",
       email,
+      awaitingConfirmation,
     });
 
+    if (awaitingConfirmation) {
+      return NextResponse.json({ ok: true, needsConfirmation: true, redirectTo: checkEmailPath(email, returnTo ?? redirectTo) });
+    }
     return NextResponse.json({ ok: true, redirectTo });
   } catch (err) {
     const msg = publicErrorMessage(err, "Could not create account.");

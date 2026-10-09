@@ -25,7 +25,6 @@ function humanizeLoginError(raw: string): string {
   if (
     lower.includes("invalid login") ||
     lower.includes("invalid credentials") ||
-    lower.includes("email not confirmed") ||
     lower.includes("not found") ||
     lower.includes("incorrect")
   ) {
@@ -85,9 +84,13 @@ export default function LoginForm() {
       const res = await fetch("/api/platform/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, next: rawNext }),
       });
       const data = await res.json();
+      if (res.status === 403 && data.code === "email_not_confirmed" && typeof data.redirectTo === "string") {
+        router.push(data.redirectTo);
+        return;
+      }
       if (!res.ok) throw new Error(data.error ?? "Request failed");
 
       // An invited candidate returns to their invitation, not a generic

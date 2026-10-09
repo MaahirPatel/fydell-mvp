@@ -13,6 +13,8 @@ import { isSupabaseAuthConfigured } from "@/lib/supabase";
 import { publicErrorMessage } from "@/lib/security/public-error";
 import { loginIdentities } from "@/lib/security/route-limits";
 import { checkLoginLockout, recordFailedLogin } from "@/lib/security/login-lockout";
+import { checkEmailPath, emailConfirmationRequired, isEmailNotConfirmed } from "@/lib/auth/email-confirmation";
+import { safeNext } from "@/lib/auth/safe-next";
 
 export async function POST(req: Request) {
   try {
@@ -60,8 +62,19 @@ export async function POST(req: Request) {
       password: String(password),
     });
 
-    // Pilot: if Auth still requires confirmation, confirm via service role and retry once.
-    if (error && /confirm|verified/i.test(error.message || "")) {
+    // Production never confirms on someone's behalf: the person confirms from
+    // their inbox. Outside production the account is confirmed and retried once.
+    if (isEmailNotConfirmed(error) && emailConfirmationRequired()) {
+      return NextResponse.json(
+        {
+          error: "Confirm your email address before signing in. Use the link we emailed you, or ask for a new one.",
+          code: "email_not_confirmed",
+          redirectTo: checkEmailPath(normalized, safeNext(typeof fields.next === "string" ? fields.next : null)),
+        },
+        { status: 403 }
+      );
+    }
+    if (isEmailNotConfirmed(error)) {
       try {
         const admin = createAdminSupabaseClient();
         const { data: profile } = await admin

@@ -135,12 +135,17 @@ export default function SignupForm({
           email,
           password,
           companyName: sentPath === "employer" ? companyName : undefined,
+          next: returnPath ?? undefined,
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { error?: string; redirectTo?: string };
+      const data = (await res.json().catch(() => ({}))) as { error?: string; redirectTo?: string; needsConfirmation?: boolean };
       if (!res.ok) throw new Error(data.error ?? "Request failed");
 
       setRedirecting(true);
+      if (data.needsConfirmation && data.redirectTo) {
+        router.push(data.redirectTo);
+        return;
+      }
       if (returnPath && !employerReturn) {
         router.push(returnPath);
         return;

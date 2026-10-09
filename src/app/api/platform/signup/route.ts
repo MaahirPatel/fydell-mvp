@@ -7,6 +7,7 @@ import { employerSelfSignupMode } from "@/lib/org/reserved";
 import { appUrl } from "@/lib/app-url";
 import { publicErrorMessage } from "@/lib/security/public-error";
 import { limitByIp, ROUTE_LIMITS } from "@/lib/security/route-limits";
+import { checkEmailPath, emailConfirmationRequired } from "@/lib/auth/email-confirmation";
 
 export async function POST(req: Request) {
   const limited = limitByIp(req, ROUTE_LIMITS.signup);
@@ -86,8 +87,10 @@ export async function POST(req: Request) {
 
     const admin = createAdminSupabaseClient();
 
-    // Pilot: never block on email confirmation. Confirm immediately, then ensure session.
-    if (!data.session) {
+    // Production waits for the person to confirm from their inbox; elsewhere the
+    // account is confirmed immediately and signed in.
+    const awaitingConfirmation = !data.session && emailConfirmationRequired();
+    if (!data.session && !awaitingConfirmation) {
       const { error: confirmError } = await admin.auth.admin.updateUserById(userId, {
         email_confirm: true,
       });
@@ -135,6 +138,9 @@ export async function POST(req: Request) {
       }
     }
 
+    if (awaitingConfirmation) {
+      return NextResponse.json({ ok: true, needsConfirmation: true, redirectTo: checkEmailPath(normalized, null) });
+    }
     await createCompanySession(userId, normalized);
     return NextResponse.json({
       ok: true,
