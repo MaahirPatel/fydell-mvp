@@ -97,6 +97,69 @@ granting themselves access with a written justification:
 - **Reactivate** restores sign-in. Neither action deletes data.
 - Account deletion is a soft delete. It is blocked while the account is the sole owner of an organization.
 
+## One-time production setup
+
+### Scheduled workers (pg_cron)
+
+Migration `090_scheduled_workers` makes Supabase call the evaluation worker
+(`/api/eng/worker`) and the email outbox (`/api/cron/process-email-outbox`)
+once a minute through `pg_cron` and `pg_net`. No Vercel Pro plan is needed.
+The migration schedules nothing until two Vault secrets exist, so applying it
+alone changes nothing.
+
+1. In Vercel, set `CRON_SECRET` for Production to a long random value (at least 16 characters; 32+ recommended) and redeploy.
+2. In the Supabase SQL editor of the production project, store the same value and the public app URL in Vault. Type the values into the editor; never put them in a migration or commit them:
+
+   ```sql
+   select vault.create_secret('https://<production domain>', 'fydell_app_url');
+   select vault.create_secret('<the CRON_SECRET value>', 'fydell_cron_secret');
+   ```
+
+   The URL must start with `https://`; anything else is refused.
+3. Turn the schedule on:
+
+   ```sql
+   select public.fydell_schedule_workers();
+   ```
+
+   It returns `scheduled`, or `skipped: …` naming what is missing.
+4. Check it after two minutes:
+
+   ```sql
+   select jobname, schedule, active from cron.job where jobname like 'fydell-%';
+   select status, return_message, start_time from cron.job_run_details
+     where jobid in (select jobid from cron.job where jobname like 'fydell-%')
+     order by start_time desc limit 10;
+   select status_code, created from net._http_response order by created desc limit 10;
+   ```
+
+   Expect `fydell-evaluation-worker` and `fydell-email-outbox`, runs that `succeeded`, and HTTP `200`. A `401` means the Vault secret and Vercel's `CRON_SECRET` differ.
+
+To rotate the secret, change it in Vercel and redeploy, then run
+`select vault.update_secret((select id from vault.secrets where name = 'fydell_cron_secret'), '<new value>');`.
+The jobs read Vault on every run, so nothing needs rescheduling. To stop the
+jobs, run `select public.fydell_unschedule_workers();`.
+
+Only the service role can run these functions, and they call only the two
+worker paths.
+
+### Email confirmation
+
+Production requires every new account to confirm its email address before it
+can sign in. Outside production, accounts are confirmed on creation unless
+`FYDELL_REQUIRE_EMAIL_CONFIRMATION=true`.
+
+1. In Supabase, open Authentication → Providers → Email and turn on **Confirm email**. Configure custom SMTP (Resend) under Authentication → Emails → SMTP settings.
+2. Under Authentication → URL Configuration, set the Site URL to the production domain and add `https://<production domain>/auth/callback` to the redirect URLs.
+3. In the **Confirm signup** email template, link to the callback with the token hash so the link works in any browser:
+
+   ```
+   {{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=signup
+   ```
+
+   The default `{{ .ConfirmationURL }}` also works, but only in the browser that signed up.
+4. Check it with a real inbox. Sign up, then try to sign in before confirming: you should land on `/auth/check-email`, which can send a new link. After you click the link, sign-in works.
+
 ## Rules
 
 - Admin actions never change candidate evidence or erase reports. Replacements add a new attempt; corrections add a new ledger entry; report fixes publish a new version.

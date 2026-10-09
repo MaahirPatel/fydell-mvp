@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { processEmailOutbox } from "@/lib/ops/process-outbox";
 
@@ -13,7 +14,9 @@ async function run(req: Request) {
   const auth = req.headers.get("authorization") || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
 
-  if (!secret || token !== secret) {
+  const given = Buffer.from(token);
+  const expected = Buffer.from(secret ?? "");
+  if (!secret || given.length !== expected.length || !timingSafeEqual(given, expected)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

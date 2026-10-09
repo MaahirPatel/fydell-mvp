@@ -30,22 +30,23 @@ Before production traffic depends on this:
 2. Until then, take a `pg_dump` of the production database before every migration and on a fixed schedule, and store it outside Supabase.
 3. Practise a restore into a scratch project once. A backup nobody has restored is not proven.
 
-### Scheduled workers are not frequent enough yet
+### Scheduled workers
 
 `vercel.json` runs three crons once a day (sandbox cleanup, billing usage,
-passport imports). Neither the evaluation worker (`/api/eng/worker`) nor the
-email outbox (`/api/cron/process-email-outbox`) is scheduled. Both accept
-`GET` and `POST` with `Authorization: Bearer $CRON_SECRET`.
+passport imports). The evaluation worker (`/api/eng/worker`) and the email
+outbox (`/api/cron/process-email-outbox`) run every minute from Supabase
+`pg_cron` once the one-time setup in `admin-guide.md` ("Scheduled workers") is
+done. Both accept `GET` and `POST` with `Authorization: Bearer $CRON_SECRET`.
 
-In practice:
+Until that setup is done, or if the jobs stop:
 
 - Evaluation starts in the same request that accepted the submission, and every retry or page load re-queues it. A run whose worker dies is picked up only when someone loads the attempt, a reviewer opens it, or an operator requeues it from `/admin/operations`.
 - Queued emails wait until someone calls the outbox route. Invitation emails are sent directly when created and do not depend on it.
 - A failed import retries at the next daily run.
 
-Sub-daily schedules need the Vercel Pro plan or an external scheduler (for
-example a GitHub Actions cron or Supabase `pg_cron` calling the routes with the
-secret). This is an owner decision and is not changed in code.
+`pg_net` gives up waiting after 60 seconds. A worker run that takes longer
+keeps going on Vercel only until the function's own time limit, and its leases
+are picked up again on a later run.
 
 ## Scenarios
 
@@ -109,9 +110,9 @@ either version overwritten.
 Releasing a report version is a single database transaction, and report
 versions are immutable: a fix publishes a new version and keeps the old one.
 If publication fails, nothing is visible and the employer can publish again.
-Known gap: the `report_released` event is written after the transaction. A
-crash between the two leaves a released report with no event; the report
-itself is correct.
+The `report_released` event is written in the same transaction
+(`eng_release_report_with_event`, migration 091), keyed by the report id, so a
+release never exists without its event and a retry cannot record it twice.
 
 ### Interrupted export
 
@@ -139,6 +140,5 @@ Known gaps:
 
 - The authored-assessment submit path does not yet re-run its follow-through on retry the way built-in assessments do, and can leave an upload with no submission. A retry still returns the stored submission.
 - `evaluation-run.ts` writes the evaluation draft after flipping the run to human review. A crash between the two leaves a run waiting for review with no draft. An operator can requeue it.
-- A Resend delivery webhook that arrives out of order can move an email's status backwards (for example from delivered to sent).
-- The evaluation worker and email outbox are unscheduled (see above).
+- The every-minute worker schedule needs the one-time Vault setup in production (see above).
 - Database backups depend on the plan (see above).
