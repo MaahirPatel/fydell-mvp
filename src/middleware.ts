@@ -1,9 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { isPrivatePath } from "@/lib/seo/site";
+import { checkOrigin } from "@/lib/security/origin-check";
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
+
+  if (path.startsWith("/api/") && checkOrigin(request)) {
+    return NextResponse.json({ error: "Request blocked for security reasons." }, { status: 403 });
+  }
 
   // A layout cannot read the request path, so it is forwarded here. Without it
   // an unauthenticated hit on any employer sub-route would send the reviewer to
