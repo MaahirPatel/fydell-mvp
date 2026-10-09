@@ -227,12 +227,14 @@ function unitTests() {
 
   console.log("How I build");
   const statement = "I write the failing test first and review each AI suggestion before it lands.";
-  const privateHow = parseHowIBuild({ text: statement });
+  const privateHow = parseHowIBuild({ text: statement, expectedUpdatedAt: null });
   check("the statement is private by default", privateHow.ok && privateHow.value.includeInShares === false);
-  const emptyShared = parseHowIBuild({ text: "   ", includeInShares: true });
+  const emptyShared = parseHowIBuild({ text: "   ", includeInShares: true, expectedUpdatedAt: null });
   check("an empty statement can never be shared", emptyShared.ok && emptyShared.value.includeInShares === false);
-  check("an over-long statement is refused", !parseHowIBuild({ text: "a".repeat(1501) }).ok);
-  check("non-text is refused", !parseHowIBuild({ text: 42 }).ok);
+  check("an over-long statement is refused", !parseHowIBuild({ text: "a".repeat(1501), expectedUpdatedAt: null }).ok);
+  check("non-text is refused", !parseHowIBuild({ text: 42, expectedUpdatedAt: null }).ok);
+  const noRevision = parseHowIBuild({ text: statement });
+  check("a save without the revision it started from is refused", noRevision.ok === false && noRevision.missingRevision === true);
   check("a statement not included is dropped from a share", shareHowIBuild({ text: statement, includeInShares: false, updatedAt: null }) === null);
   check("an included statement is kept for a share", shareHowIBuild({ text: statement, includeInShares: true, updatedAt: null })?.text === statement);
   check("the share projection never carries the statement", !imagedJson.includes(statement) && !JSON.stringify(all).includes(statement));
@@ -389,7 +391,7 @@ async function liveTest() {
     console.log("Live share assembly");
     const profiles = await import("@/lib/profile/store");
     const statement = `I test the failure paths first (${tag}).`;
-    await profiles.updateHowIBuild(userId, "presentation-test", { text: statement, includeInShares: false });
+    const firstSave = await profiles.updateHowIBuild(userId, "presentation-test", { text: statement, includeInShares: false, expectedUpdatedAt: null });
     const pub = await profiles.getPublicProfile(share.token);
     const pubJson = JSON.stringify(pub);
     const pubPresentations = pub.status === "ok" ? pub.public.passport.presentations ?? [] : [];
@@ -405,10 +407,17 @@ async function liveTest() {
     const preview = await profiles.getSharePreview(userId, ["projects", "evidence"], { versionPolicy: "follow" });
     const previewJson = JSON.stringify(preview);
     check("the recipient preview leaves out the statement and private images", !previewJson.includes(statement) && !previewJson.includes(privatePath) && !previewJson.includes("Private ledger screenshot"));
-    await profiles.updateHowIBuild(userId, "presentation-test", { text: statement, includeInShares: true });
+    const staleSave = await profiles
+      .updateHowIBuild(userId, "presentation-test", { text: "overwrite from a stale tab", includeInShares: true, expectedUpdatedAt: null })
+      .then(() => "saved", (err: unknown) => (err instanceof profiles.HowIBuildConflict ? "conflict" : "error"));
+    const afterStale = await profiles.getProfile(userId);
+    check("a save from a stale copy is refused and changes nothing", staleSave === "conflict" && afterStale?.howIBuild?.text === statement);
+    const second = await profiles.updateHowIBuild(userId, "presentation-test", { text: statement, includeInShares: true, expectedUpdatedAt: firstSave.howIBuild?.updatedAt ?? null });
     const pub2 = await profiles.getPublicProfile(share.token);
     check("once included, the statement appears in the share", pub2.status === "ok" && pub2.public.profile.howIBuild?.text === statement);
-    const cleared = await profiles.updateHowIBuild(userId, "presentation-test", { text: "", includeInShares: true });
+    const cleared = await profiles.updateHowIBuild(userId, "presentation-test", { text: "", includeInShares: true, expectedUpdatedAt: second.howIBuild?.updatedAt ?? null });
+    const afterClear = await profiles.updateHowIBuild(userId, "presentation-test", { text: statement, includeInShares: false, expectedUpdatedAt: null });
+    check("a cleared statement counts as none for the next save", afterClear.howIBuild?.text === statement);
     const { data: clearedRow } = await admin.from("engineer_profiles").select("how_i_build_shared").eq("owner_id", userId).maybeSingle();
     check("clearing the statement also stops sharing it", cleared.howIBuild === null && (clearedRow as { how_i_build_shared: boolean } | null)?.how_i_build_shared === false);
 

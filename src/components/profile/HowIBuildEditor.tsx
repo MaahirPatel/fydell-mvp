@@ -31,7 +31,7 @@ export default function HowIBuildEditor({ initial }: { initial: HowIBuild | null
       const res = await fetch("/api/profile/how-i-build", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, includeInShares: include }),
+        body: JSON.stringify({ text, includeInShares: include, expectedUpdatedAt: initial?.updatedAt ?? null }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {

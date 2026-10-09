@@ -114,18 +114,40 @@ function toProfile(row: ProfileRow): EngineerProfile {
   };
 }
 
-/** Saves the engineer's "How I build" statement. Clearing the text also stops sharing it. */
+export class HowIBuildConflict extends Error {
+  constructor() {
+    super("Your statement was changed in another tab or device. Reload to see the latest version, then make your edit again.");
+  }
+}
+
+/**
+ * Saves the engineer's "How I build" statement. Clearing the text also stops
+ * sharing it. The save applies only if the statement is still the one the
+ * editor started from; a cleared statement counts as none.
+ */
 export async function updateHowIBuild(ownerId: string, fallbackName: string, input: HowIBuildInput): Promise<EngineerProfile> {
   await getOrCreateProfile(ownerId, fallbackName);
   const admin = createAdminSupabaseClient();
+  const { data: current, error: readError } = await admin
+    .from("engineer_profiles")
+    .select("how_i_build, how_i_build_updated_at")
+    .eq("owner_id", ownerId)
+    .single();
+  if (readError || !current) throw new Error("Could not read the statement.");
+  const stamp = current.how_i_build_updated_at as string | null;
+  const visible = current.how_i_build ? stamp : null;
+  if (input.expectedUpdatedAt !== visible) throw new HowIBuildConflict();
+
   const now = new Date().toISOString();
-  const { data, error } = await admin
+  const update = admin
     .from("engineer_profiles")
     .update({ how_i_build: input.text, how_i_build_shared: input.text ? input.includeInShares : false, how_i_build_updated_at: now, updated_at: now })
-    .eq("owner_id", ownerId)
+    .eq("owner_id", ownerId);
+  const { data, error } = await (stamp ? update.eq("how_i_build_updated_at", stamp) : update.is("how_i_build_updated_at", null))
     .select(PROFILE_COLUMNS)
-    .single();
-  if (error || !data) throw new Error("Could not save the statement.");
+    .maybeSingle();
+  if (error) throw new Error("Could not save the statement.");
+  if (!data) throw new HowIBuildConflict();
   return toProfile(data as ProfileRow);
 }
 

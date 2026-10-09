@@ -23,7 +23,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const parsed = parseRoleIntake(body);
   if (parsed.ok === false) return NextResponse.json({ error: parsed.error }, { status: 400 });
   const expectedRaw = typeof body === "object" && body !== null ? (body as Record<string, unknown>).expectedUpdatedAt : null;
-  const expected = typeof expectedRaw === "string" && expectedRaw.length <= 40 ? expectedRaw : null;
+  const expected = typeof expectedRaw === "string" && expectedRaw.length > 0 && expectedRaw.length <= 40 ? expectedRaw : null;
+  if (!expected) {
+    return NextResponse.json({ error: "Reload the role before saving so changes made by others are not overwritten." }, { status: 428, headers: noStore });
+  }
   try {
     const role = await updateRoleFromIntake(auth.org.organizationId, id, auth.org.userId, parsed.value, expected);
     return NextResponse.json({ role: { id: role.id, requirementsVersion: role.requirementsVersion } }, { headers: noStore });

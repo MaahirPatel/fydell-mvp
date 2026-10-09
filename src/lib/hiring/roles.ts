@@ -373,11 +373,11 @@ export async function updateRoleFromIntake(
   roleId: string,
   userId: string,
   input: RoleIntakeInput,
-  expectedUpdatedAt: string | null,
+  expectedUpdatedAt: string,
 ): Promise<RoleRecord> {
   const current = await getRole(organizationId, roleId);
   assertEditable(current);
-  if (expectedUpdatedAt && expectedUpdatedAt !== current.updatedAt) throw new RoleError(CONFLICT, 409);
+  if (expectedUpdatedAt !== current.updatedAt) throw new RoleError(CONFLICT, 409);
   await assertMembers(organizationId, input);
   const { version, changed } = versionFields(current, input.requirements);
   const db = createAdminSupabaseClient();
