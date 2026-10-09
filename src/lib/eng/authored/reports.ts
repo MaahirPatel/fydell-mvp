@@ -1,8 +1,7 @@
 import "server-only";
 import type { Admin, EngMember } from "../context";
-import { recordEngEvent } from "../events";
 import type { ScenarioPackage } from "../authoring/package";
-import { ReportError, listReports } from "../reports";
+import { ReportError, listReports, releaseWithEvent } from "../reports";
 import { listResponses } from "../candidate-report";
 import type { AttemptRow, ReportRow } from "../types";
 import { AUTHORED_STATE_LABEL, type AuthoredCandidateReport, type CandidateAcceptanceResult, type EmployerAuthoredEvaluation } from "./types";
@@ -57,10 +56,7 @@ export async function releaseAuthoredReport(db: Admin, attempt: AttemptRow, memb
   const brief = { ...draft.brief, authored: { ...draft.brief.authored, reviewerNote } };
   const { error: updateError } = await db.from("eng_reports").update({ brief, reviewer_email: member.email }).eq("id", draft.id).eq("status", "draft");
   if (updateError) throw new ReportError(`Could not prepare the report: ${updateError.message}`, [], 500);
-  const { error } = await db.rpc("eng_release_report", { p_report_id: draft.id });
-  if (error) throw new ReportError(`Could not release the report: ${error.message}`, [], 500);
-  await recordEngEvent(db, attempt.id, {
-    type: draft.supersedes_id ? "report_correction_released" : "report_released",
+  await releaseWithEvent(db, draft, attempt.id, {
     actor: "employer",
     actorUserId: member.userId,
     actorEmail: member.email,

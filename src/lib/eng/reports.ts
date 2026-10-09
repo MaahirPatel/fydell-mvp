@@ -154,14 +154,44 @@ export async function releaseReport(db: Admin, attempt: AttemptRow, reviewerEmai
   ];
   if (problems.length > 0) throw new ReportError("The report cannot be released yet.", problems, 422);
 
-  const { error } = await db.rpc("eng_release_report", { p_report_id: draft.id });
-  if (error) throw new ReportError(`Could not release the report: ${error.message}`, [], 500);
-  await recordEngEvent(db, attempt.id, {
-    type: draft.supersedes_id ? "report_correction_released" : "report_released",
+  await releaseWithEvent(db, draft, attempt.id, {
     actor: "reviewer",
+    actorUserId: null,
     actorEmail: reviewerEmail,
     payload: { reportId: draft.id, version: draft.version, changeReason: draft.change_reason },
   });
   const { data } = await db.from("eng_reports").select("*").eq("id", draft.id).single();
   return data as ReportRow;
+}
+
+/**
+ * Releases the draft and records its history event in one transaction
+ * (migration 091). Where 091 is not applied yet, falls back to the separate
+ * release and an idempotent event write keyed on the report.
+ */
+export async function releaseWithEvent(
+  db: Admin,
+  draft: ReportRow,
+  attemptId: string,
+  event: { actor: "reviewer" | "employer"; actorUserId: string | null; actorEmail: string | null; payload: Record<string, unknown> },
+): Promise<void> {
+  const { error } = await db.rpc("eng_release_report_with_event", {
+    p_report_id: draft.id,
+    p_actor: event.actor,
+    p_actor_user_id: event.actorUserId,
+    p_actor_email: event.actorEmail,
+    p_payload: event.payload,
+  });
+  if (!error) return;
+  if (error.code !== "PGRST202" && error.code !== "42883") throw new ReportError(`Could not release the report: ${error.message}`, [], 500);
+  const { error: legacyError } = await db.rpc("eng_release_report", { p_report_id: draft.id });
+  if (legacyError) throw new ReportError(`Could not release the report: ${legacyError.message}`, [], 500);
+  await recordEngEvent(db, attemptId, {
+    type: draft.supersedes_id ? "report_correction_released" : "report_released",
+    actor: event.actor,
+    actorUserId: event.actorUserId,
+    actorEmail: event.actorEmail,
+    payload: event.payload,
+    clientEventId: `report_released:${draft.id}`,
+  });
 }
