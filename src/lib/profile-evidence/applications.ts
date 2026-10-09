@@ -223,6 +223,27 @@ const toQuestion = (r: QuestionRow): ApplicationQuestion => ({
 });
 
 /**
+ * Keeps the application stage in step with its questions: an open question
+ * means the team is waiting on the applicant, and once none are open it is
+ * back in review. Never moves a closed application.
+ */
+async function syncStageWithQuestions(applicationId: string): Promise<void> {
+  const admin = createAdminSupabaseClient();
+  const { count } = await admin
+    .from("application_questions")
+    .select("id", { count: "exact", head: true })
+    .eq("application_id", applicationId)
+    .eq("status", "open");
+  const waiting = (count ?? 0) > 0;
+  await admin
+    .from("role_applications")
+    .update({ stage: waiting ? "awaiting_candidate" : "in_review", updated_at: new Date().toISOString() })
+    .eq("id", applicationId)
+    .eq("status", "submitted")
+    .in("stage", waiting ? ["new", "in_review"] : ["awaiting_candidate"]);
+}
+
+/**
  * Asks the applicant a targeted question. Works with or without a share; an
  * optional reference must point at evidence this application pinned and the
  * team can still see. A repeated clientRequestId returns the first question.
@@ -277,6 +298,7 @@ export async function askApplicationQuestion(
     if (raced) return { ok: true, question: raced, created: false };
     return { ok: false, status: 500, error: "Could not send the question. Your draft is kept; try again." };
   }
+  await syncStageWithQuestions(app.id);
   const roleTitle = typeof app.role_snapshot?.title === "string" ? app.role_snapshot.title : "a role";
   await notifyUser(app.applicant_user_id, {
     kind: "question_received",
@@ -341,6 +363,7 @@ export async function answerApplicationQuestion(userId: string, questionId: stri
     .maybeSingle();
   if (!data) return { ok: false, status: 409, error: "The team closed this question, so it can no longer be answered." };
   const saved = toQuestion(data as QuestionRow);
+  await syncStageWithQuestions(app.id);
   if (current.asked_by) {
     await notifyUser(current.asked_by, {
       kind: "question_answered",
@@ -366,5 +389,8 @@ export async function updateApplicationQuestion(organizationId: string, question
     .eq("organization_id", organizationId)
     .select(Q_COLUMNS)
     .maybeSingle();
-  return data ? toQuestion(data as QuestionRow) : null;
+  if (!data) return null;
+  const saved = data as QuestionRow;
+  if (action === "close") await syncStageWithQuestions(saved.application_id);
+  return toQuestion(saved);
 }
