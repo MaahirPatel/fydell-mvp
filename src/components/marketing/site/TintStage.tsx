@@ -15,14 +15,16 @@ export default function TintStage({
   children,
   steps,
   inset = "default",
+  crop = true,
 }: {
   tint: Tint;
   children: ReactNode;
   steps?: readonly Step[];
   inset?: "default" | "wide";
+  crop?: boolean;
 }) {
   return (
-    <div className={s.stage} data-tint={tint} data-inset={inset}>
+    <div className={s.stage} data-tint={tint} data-inset={inset} data-crop={crop || undefined}>
       <span aria-hidden className={s.glow} />
       {steps ? (
         <ol className={s.steps}>

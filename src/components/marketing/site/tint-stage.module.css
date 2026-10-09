@@ -23,6 +23,12 @@
 .stage[data-inset="wide"] {
   padding: 48px 48px 0;
 }
+.stage:not([data-crop]) {
+  padding-bottom: 64px;
+}
+.inner :global(figure) > div:first-child {
+  border-color: color-mix(in oklch, var(--ink) 18%, var(--border-default));
+}
 
 /* Light from the top, a deeper pool of the same hue at the bottom corner. */
 .glow {
@@ -69,7 +75,7 @@
 }
 
 /* The product sits on the bottom edge of the panel, cropped like a screen. */
-.inner :global(figure) > div:first-child {
+.stage[data-crop] > .inner > :global(figure) > div:first-child {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom: 0;

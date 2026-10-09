@@ -1,0 +1,225 @@
+/* Product index: cal.com-style numbered cards. Example view on a tint above,
+   name and description below. */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-frame);
+  background: var(--surface-raised);
+  transition:
+    border-color 140ms ease,
+    box-shadow 160ms ease;
+}
+.card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-2);
+}
+.card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.field {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 200px;
+  padding: 36px 28px 0;
+  background: var(--tint-violet);
+}
+.field[data-tint="teal"] {
+  background: var(--tint-teal);
+}
+.field[data-tint="blue"] {
+  background: var(--tint-blue);
+}
+.field[data-tint="warm"] {
+  background: var(--tint-warm);
+}
+.example {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.panel {
+  width: 100%;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--border-default);
+  border-bottom: 0;
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-2);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-body);
+  transition: transform 200ms var(--ease);
+}
+.card:hover .panel {
+  transform: translateY(-3px);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.sep {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+.strong {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.body {
+  margin-top: 8px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.dim {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  color: var(--text-tertiary);
+}
+.dimIcon {
+  color: var(--text-tertiary);
+}
+.mono {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 1px 7px;
+  border-radius: var(--radius-tag);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 11px;
+  font-weight: 500;
+}
+.badge[data-tone="muted"] {
+  background: var(--badge-neutral-bg);
+  color: var(--badge-neutral-ink);
+}
+.badge[data-tone="observed"] {
+  background: var(--ev-observed-field);
+  color: var(--ev-observed-ink);
+}
+.badge[data-tone="pending"] {
+  background: var(--badge-pending-bg);
+  color: var(--badge-pending-ink);
+}
+.badge[data-tone="attention"] {
+  background: var(--badge-attention-bg);
+  color: var(--badge-attention-ink);
+}
+.badge[data-tone="success"] {
+  background: var(--badge-success-bg);
+  color: var(--badge-success-ink);
+}
+
+.ticks {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.ticks li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+.tick {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+}
+.tick[data-on] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--control-solid-ink);
+}
+
+.dots {
+  display: flex;
+  gap: 5px;
+}
+.dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 22px 24px;
+}
+.num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  color: var(--text-primary);
+}
+.lead {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1023px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 639px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .field {
+    min-height: 0;
+    padding: 32px 18px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card:hover .panel {
+    transform: none;
+  }
+}

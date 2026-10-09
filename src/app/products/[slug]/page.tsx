@@ -4,6 +4,8 @@ import MarketingShell from "@/components/layout/MarketingShell";
 import { Arrow, Availability, SiteClosing, SiteHero } from "@/components/marketing/site/Sections";
 import { PRODUCTS, PRODUCT_SLUGS, type ProductSlug } from "@/components/marketing/site/products";
 import { PRODUCT_ITEMS } from "@/components/marketing/site/nav-data";
+import TintStage from "@/components/marketing/site/TintStage";
+import { PRODUCT_TINT } from "@/components/marketing/site/ProductCards";
 import s from "@/components/marketing/site/site.module.css";
 
 const isSlug = (value: string): value is ProductSlug => (PRODUCT_SLUGS as string[]).includes(value);
@@ -40,7 +42,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </>
         }
       >
-        {page.visual}
+        {page.visual ? (
+          <TintStage tint={PRODUCT_TINT[slug]} crop={slug !== "simulations" && slug !== "desktop"}>
+            {page.visual}
+          </TintStage>
+        ) : null}
       </SiteHero>
 
       <section className={s.section} aria-labelledby="details-title">

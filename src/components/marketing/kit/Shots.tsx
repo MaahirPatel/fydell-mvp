@@ -94,7 +94,7 @@ function TeamMessages({ compact = false }: { compact?: boolean }) {
       </Msg>
       <RetryAfterUpdate />
       {compact ? null : (
-        <Msg av="JH" tone="red" who="Jordan Hayes" role="Partner support" time="14:21">
+        <Msg av="PS" tone="red" who="Partner support" role="Simulated" time="14:21">
           Only whole seconds. If a partner sends a date instead, treat it as unparseable and fall back to the normal
           backoff.
         </Msg>
