@@ -1,0 +1,212 @@
+/* Trust page layout. The scenes themselves keep their own frames. */
+
+.glance {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-frame);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-2);
+}
+.glanceCol {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 24px 22px;
+}
+.glanceCol + .glanceCol {
+  border-left: 1px solid var(--border-subtle);
+}
+.glanceHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.glanceIcon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: var(--tint-teal);
+  color: var(--evidence-support);
+}
+.glanceCol[data-tone="not-yet"] .glanceIcon {
+  background: var(--tint-warm);
+  color: var(--evidence-uncertain);
+}
+.glanceCol[data-tone="not-claimed"] .glanceIcon {
+  background: var(--tint-violet);
+  color: var(--text-secondary);
+}
+.glanceList {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  flex: 1;
+}
+.glanceList li {
+  display: flex;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.glanceList svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--text-tertiary);
+}
+.glanceLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin-top: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  border-radius: 4px;
+}
+.glanceLink:hover {
+  color: var(--accent-ink);
+}
+.glanceLink:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.intro {
+  max-width: 62ch;
+  margin-bottom: 32px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 64px;
+  align-items: start;
+}
+.split p + p {
+  margin-top: 16px;
+}
+.splitText {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.card {
+  padding: 28px 28px 20px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-frame);
+  background: var(--surface-raised);
+}
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.cardList {
+  margin-top: 16px;
+}
+.cardList li {
+  display: flex;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.cardList svg {
+  flex: none;
+  margin-top: 4px;
+}
+.yes {
+  color: var(--evidence-support);
+}
+.no {
+  color: var(--text-tertiary);
+}
+
+.claims {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+}
+.claims > li {
+  grid-column: span 2;
+}
+/* Five statements: three over two. */
+.claims > li:nth-last-child(-n + 2):nth-child(n + 4) {
+  grid-column: span 3;
+}
+.claim {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 22px 24px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-frame);
+  background: var(--surface-raised);
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-body);
+}
+.claim svg {
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1023px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+  .claims {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .claims > li,
+  .claims > li:nth-last-child(-n + 2):nth-child(n + 4) {
+    grid-column: auto;
+  }
+}
+@media (max-width: 860px) {
+  .glance {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .glanceCol + .glanceCol {
+    border-left: 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 639px) {
+  .claims {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .card {
+    padding: 22px 18px 12px;
+  }
+  .glanceCol {
+    padding: 20px 18px;
+  }
+}

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowDown,
+  Ban,
   BookText,
   Building,
   Building2,
@@ -15,6 +16,7 @@ import {
   ListPlus,
   Lock,
   Mail,
+  Minus,
   PencilLine,
   Play,
   Quote,
@@ -27,9 +29,12 @@ import {
   UserCheck,
   UserRound,
 } from "lucide-react";
+import Link from "next/link";
 import MarketingShell from "@/components/layout/MarketingShell";
-import { PageIntro } from "@/components/marketing/PageIntro";
-import { ContactLink } from "@/components/ui/ContactLink";
+import { SiteHero } from "@/components/marketing/site/Sections";
+import { ArrowRight, CenteredClosing, ShowcaseSection } from "@/components/marketing/site/Home";
+import TintStage from "@/components/marketing/site/TintStage";
+import t from "./trust.module.css";
 import { ProductStage } from "@/components/fydell/ProductStage";
 import { DesktopStage } from "@/components/fydell/ProductDesktop";
 import {
@@ -46,9 +51,6 @@ export const metadata = {
     "The lifecycle of an evaluation, who can read each artifact, how a claim is tied to its source, and what Fydell does not have yet.",
   alternates: { canonical: "/trust" },
 };
-
-const SECTION = "border-t border-[var(--border-subtle)] mkt-section-chapter";
-const BAND = "bg-[var(--surface-band)]";
 
 /** The bordered surface every scene on this page sits inside. */
 const FRAME =
@@ -389,6 +391,84 @@ const NOT_CLAIMED = [
   "A platform failure during an attempt becomes a review state. It is never converted into a low score.",
 ];
 
+/** Short forms of the three lists further down, for the summary at the top. */
+const GLANCE: {
+  tone: "in-place" | "not-yet" | "not-claimed";
+  title: string;
+  Icon: LucideIcon;
+  lines: string[];
+  href: string;
+  link: string;
+}[] = [
+  {
+    tone: "in-place",
+    title: "In place today",
+    Icon: Check,
+    lines: [
+      "Row-level security on every table that holds candidate work",
+      "A submission snapshot the database refuses to edit",
+      "An append-only audit record of workspace actions",
+      "Human review before evidence reaches an employer in the pilot",
+    ],
+    href: "#readiness",
+    link: "Security and legal readiness",
+  },
+  {
+    tone: "not-yet",
+    title: "Not yet",
+    Icon: Minus,
+    lines: [
+      "No SOC 2 report",
+      "No third-party penetration test to share",
+      "No automatic retention window or self-serve export",
+      "No single sign-on, SCIM, or custom data residency",
+    ],
+    href: "#readiness",
+    link: "What is missing, and why",
+  },
+  {
+    tone: "not-claimed",
+    title: "Not claimed",
+    Icon: Ban,
+    lines: [
+      "No hire or reject decisions",
+      "No detection of external AI use",
+      "No biometric identity checks",
+      "Not a certified psychometric instrument",
+    ],
+    href: "#not-claimed",
+    link: "What Fydell does not claim",
+  },
+];
+
+function Glance() {
+  return (
+    <figure className={t.glance} aria-label="Trust at a glance: what is in place, what is not yet, and what Fydell does not claim.">
+      {GLANCE.map((col) => (
+        <div key={col.title} className={t.glanceCol} data-tone={col.tone}>
+          <p className={t.glanceHead}>
+            <span className={t.glanceIcon} aria-hidden>
+              <col.Icon size={13} />
+            </span>
+            {col.title}
+          </p>
+          <ul className={t.glanceList}>
+            {col.lines.map((line) => (
+              <li key={line}>
+                <col.Icon size={12} aria-hidden />
+                {line}
+              </li>
+            ))}
+          </ul>
+          <Link href={col.href} className={t.glanceLink}>
+            {col.link} <ArrowRight />
+          </Link>
+        </div>
+      ))}
+    </figure>
+  );
+}
+
 /* ------------------------------------------------------------------- parts */
 
 function StateToken({
@@ -556,30 +636,32 @@ export default function TrustPage() {
 
   return (
     <MarketingShell>
-      <PageIntro
-        title="Trust"
-        lead="What Fydell implements today, and where its limits are."
-      />
+      <SiteHero
+        title={["What is built,", "and what is not yet."]}
+        lead="The lifecycle of an evaluation, who can read each artifact, how a claim is tied to its source, and what Fydell does not have yet."
+      >
+        <TintStage tint="teal" crop={false}>
+          <Glance />
+        </TintStage>
+      </SiteHero>
 
       {/* Lifecycle. The state token is the point: it says where the record
           stops being changeable, which is the question an auditor asks. The
           rail is a visual overview of the same seven stages the list below
           carries semantically, so it is hidden from assistive technology. */}
-      <section className={SECTION}>
-        <div className="mkt-content">
-          <div className="grid gap-4 lg:grid-cols-12 lg:gap-16">
-            <h2 className="section-heading lg:col-span-5">
-              The life of one evaluation
-            </h2>
-            <p className="section-desc lg:col-span-7 lg:pt-1">
-              Seven stages, created in order. Each one carries the state of the
-              record it produces, so you can see exactly where the trail stops
-              being changeable.
-            </p>
-          </div>
-
+      <ShowcaseSection
+        id="lifecycle"
+        title="The life of one evaluation."
+        aside="Each stage shows where the record stops changing."
+      >
+        <p className={t.intro}>
+          Seven stages, created in order. Each one carries the state of the
+          record it produces, so you can see exactly where the trail stops
+          being changeable.
+        </p>
+        <TintStage tint="blue" crop={false}>
           <figure
-            className={`mt-10 m-0 ${FRAME}`}
+            className={`m-0 ${FRAME}`}
             aria-label="Run lifecycle console for one evaluation, showing seven stages in order with the state of each record."
           >
             <div className={FRAME_BAR}>
@@ -762,22 +844,23 @@ export default function TrustPage() {
               illustrative.
             </figcaption>
           </figure>
-        </div>
-      </section>
+        </TintStage>
+      </ShowcaseSection>
 
       {/* Access matrix. A real table, so a screen reader reads "Work Receipt,
           any other company, None, no access" rather than a wall of loose
           cells. */}
-      <section className={`${SECTION} ${BAND}`}>
-        <div className="mkt-content">
-          <h2 className="section-heading">Who can read what</h2>
-          <p className="section-desc mt-4">
-            There is no shared pool of candidates. A company sees the attempts it
-            invited and nothing else, and that boundary is a policy on the table
-            as well as a check in the code.
-          </p>
-
-          <div className={`mt-8 ${FRAME}`}>
+      <ShowcaseSection
+        id="access"
+        title="Who can read what."
+        aside="A company sees only the attempts it invited."
+      >
+        <p className={t.intro}>
+          There is no shared pool of candidates. That boundary is a policy on
+          the table as well as a check in the code.
+        </p>
+        <TintStage tint="violet" crop={false}>
+          <div className={FRAME}>
             <div className={FRAME_BAR}>
               <span className="flex min-w-0 items-center gap-2">
                 <ShieldCheck
@@ -965,30 +1048,33 @@ export default function TrustPage() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </TintStage>
+      </ShowcaseSection>
 
       {/* Lineage, shown rather than asserted. Six explicit nodes, the
           relationship between them written on the connector, and exactly one
           elevated surface: the claim under inspection. */}
-      <section className={SECTION}>
-        <div className="mkt-content grid items-start gap-10 lg:grid-cols-12 lg:gap-16">
-          <div className="lg:col-span-5">
-            <h2 className="section-heading">Where a claim comes from</h2>
-            <p className="section-desc mt-4">
+      <ShowcaseSection
+        id="lineage"
+        title="Where a claim comes from."
+        aside="Every claim carries its source."
+      >
+        <div className={t.split}>
+          <div className={t.splitText}>
+            <p>
               A claim in a report is not a summary of a score. It names the
               material it rests on and carries the lines the candidate was
               looking at, so you can disagree with one claim without discarding
               the report.
             </p>
-            <p className="section-desc mt-4">
+            <p>
               Alongside it, the session keeps an ordered record of what was
               opened, asked and changed. That record is what makes a limitation
               or a late revision legible instead of suspicious.
             </p>
             <GraphKey />
           </div>
-          <div className="lg:col-span-7">
+          <div>
             <DesktopStage>
               <ProductStage
                 title="Claim lineage"
@@ -1218,88 +1304,76 @@ export default function TrustPage() {
             </DesktopStage>
           </div>
         </div>
-      </section>
+      </ShowcaseSection>
 
-      <section className={`${SECTION} ${BAND}`}>
-        <div className="mkt-content">
-          <h2 className="section-heading">Security and legal readiness</h2>
-          <p className="section-desc mt-4">
-            Fydell is early. The left column is built and you can ask us to
-            demonstrate any line of it. The right column is not, and we would
-            rather you learn that here than in a security review.
-          </p>
-          <div className="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-16">
-            <div>
-              <h3 className="text-app-meta font-medium text-[var(--text-primary)]">
+      <ShowcaseSection
+        id="readiness"
+        title="Security and legal readiness."
+        aside="What is built, and what is missing."
+      >
+        <p className={t.intro}>
+          Fydell is early. The first column is built and you can ask us to
+          demonstrate any line of it. The second is not, and we would rather
+          you learn that here than in a security review.
+        </p>
+        <TintStage tint="warm" crop={false}>
+          <div className={t.pair}>
+            <div className={t.card}>
+              <h3 className={t.cardHead}>
+                <Check size={16} aria-hidden className={t.yes} />
                 In place today
               </h3>
-              <ul className="mt-4">
+              <ul className={t.cardList}>
                 {IN_PLACE.map((line) => (
-                  <li
-                    key={line}
-                    className="flex gap-2.5 border-t border-[var(--border-subtle)] py-3 text-app-body leading-[1.65] text-[var(--text-secondary)] first:border-t-0 first:pt-0"
-                  >
-                    <span
-                      aria-hidden
-                      className="mt-[9px] h-[7px] w-[7px] shrink-0 rounded-full border border-[var(--border-strong)] bg-[var(--surface-selected)]"
-                    />
+                  <li key={line}>
+                    <Check size={13} aria-hidden className={t.yes} />
                     <span>{line}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <div>
-              <h3 className="text-app-meta font-medium text-[var(--text-primary)]">
+            <div className={t.card}>
+              <h3 className={t.cardHead}>
+                <Minus size={16} aria-hidden className={t.no} />
                 Not yet
               </h3>
-              <ul className="mt-4">
+              <ul className={t.cardList}>
                 {NOT_YET.map((line) => (
-                  <li
-                    key={line}
-                    className="flex gap-2.5 border-t border-[var(--border-subtle)] py-3 text-app-body leading-[1.65] text-[var(--text-secondary)] first:border-t-0 first:pt-0"
-                  >
-                    <span
-                      aria-hidden
-                      className="mt-[12px] h-px w-3 shrink-0 bg-[var(--border-strong)]"
-                    />
+                  <li key={line}>
+                    <Minus size={13} aria-hidden className={t.no} />
                     <span>{line}</span>
                   </li>
                 ))}
               </ul>
             </div>
           </div>
-        </div>
-      </section>
+        </TintStage>
+      </ShowcaseSection>
 
-      <section className={SECTION}>
-        <div className="mkt-content">
-          <h2 className="section-heading">What Fydell does not claim</h2>
-          <ul className="mt-6 grid gap-x-12 gap-y-3 lg:grid-cols-2">
-            {NOT_CLAIMED.map((line) => (
-              <li
-                key={line}
-                className="flex gap-2.5 text-app-body leading-[1.65] text-[var(--text-secondary)]"
-              >
-                <span
-                  aria-hidden
-                  className="mt-[10px] h-px w-3 shrink-0 bg-[var(--border-strong)]"
-                />
-                <span>{line}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <ShowcaseSection
+        id="not-claimed"
+        title="What Fydell does not claim."
+        aside="The decision stays with your team."
+      >
+        <ul className={t.claims}>
+          {NOT_CLAIMED.map((line) => (
+            <li key={line} className={t.claim}>
+              <Ban size={16} aria-hidden />
+              {line}
+            </li>
+          ))}
+        </ul>
+      </ShowcaseSection>
 
-      <section className={`${SECTION} pb-24`}>
-        <div className="mkt-content max-w-[620px]">
-          <h2 className="section-heading">Questions about any of this?</h2>
-          <p className="section-desc mt-4">
-            Ask directly at <ContactLink />. If something on this page is not
-            accurate, we would rather correct it than defend it.
-          </p>
-        </div>
-      </section>
+      <CenteredClosing
+        title="Questions about any of this?"
+        lead="If something on this page is not accurate, we would rather correct it than defend it."
+        actions={
+          <Link href="/contact" className="l-btn l-btn-solid">
+            Contact us
+          </Link>
+        }
+      />
     </MarketingShell>
   );
 }
