@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ButtonLink } from "@/components/ui/Button";
 import { Panel, PanelSection } from "@/components/ui/Panel";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusTag } from "@/components/ui/StatusTag";
@@ -32,9 +33,16 @@ export default async function EngineeringRolesPage() {
       <PageHeader
         title="Assessments"
         description="Invite candidates to a published simulation. They work in their own editor, message the simulated team and submit their project. Your team reviews the evidence and releases the report."
+        action={
+          canManage && roles.length > 0 ? (
+            <ButtonLink href="#new-assessment" variant="primary" size="sm">
+              New assessment
+            </ButtonLink>
+          ) : undefined
+        }
       />
 
-      <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="mt-7 grid gap-6">
         <Panel>
           <PanelSection title="Your assessments" description="Invite from an assessment's page. Every candidate stays on the simulation version they were invited to. Openings that people apply to are under Roles." />
           {roles.length === 0 ? (
@@ -71,13 +79,15 @@ export default async function EngineeringRolesPage() {
           )}
         </Panel>
 
-        <div className="grid h-fit gap-6">
+        <div className="grid items-start gap-6 md:grid-cols-2">
           {canManage ? (
-            <Panel>
-              <PanelSection title="New assessment" description="Starts as a draft. You can edit it until you publish.">
-                <CreateRoleForm focusOptions={FOCUS_OPTIONS} />
-              </PanelSection>
-            </Panel>
+            <div id="new-assessment" tabIndex={-1} className="scroll-mt-6 outline-none">
+              <Panel>
+                <PanelSection title="New assessment" description="Starts as a draft. You can edit it until you publish.">
+                  <CreateRoleForm focusOptions={FOCUS_OPTIONS} />
+                </PanelSection>
+              </Panel>
+            </div>
           ) : null}
           <Panel>
             <PanelSection title="Simulations" description="Each assessment attaches a published simulation from Work samples.">

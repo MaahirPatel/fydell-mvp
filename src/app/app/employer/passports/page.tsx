@@ -74,7 +74,7 @@ export default async function EmployerPassportsPage() {
                   </td>
                   <td className="px-4 py-3 text-[var(--text-secondary)]">{r.roleTitle || "No role set"}</td>
                   <td className="hidden px-4 py-3 text-[var(--text-secondary)] md:table-cell">
-                    {r.shareRevoked ? "Not available" : `${r.projects} project${r.projects === 1 ? "" : "s"} · ${r.findings} findings`}
+                    {r.shareRevoked ? "Not available" : `${r.projects} project${r.projects === 1 ? "" : "s"} · ${r.findings} finding${r.findings === 1 ? "" : "s"}`}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`badge ${DECISION_BADGE[r.decision]}`}>{DECISION_LABEL[r.decision]}</span>

@@ -73,7 +73,7 @@ export function Tabs({
       aria-orientation="horizontal"
       onKeyDown={onKeyDown}
       className={cn(
-        "flex items-center gap-1 border-b border-[var(--border-subtle)]",
+        "flex items-center gap-1 overflow-x-auto shadow-[inset_0_-1px_0_var(--border-subtle)] [scrollbar-width:none]",
         className,
       )}
     >
@@ -92,7 +92,7 @@ export function Tabs({
             data-tab-value={item.value}
             onClick={() => onValueChange(item.value)}
             className={cn(
-              "relative -mb-px inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-2.5",
+              "relative inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-2.5 focus-visible:-outline-offset-2",
               "text-app-body font-medium",
               "border-b transition-colors duration-[var(--motion-fast)]",
               "disabled:pointer-events-none disabled:opacity-45",

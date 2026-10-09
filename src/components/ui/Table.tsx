@@ -41,7 +41,7 @@ export function TH({
     <th
       scope="col"
       className={cn(
-        "px-4 py-2.5 text-app-meta font-medium text-[var(--text-secondary)]",
+        "whitespace-nowrap px-4 py-2.5 text-app-meta font-medium text-[var(--text-secondary)]",
         align === "right" ? "text-right" : "text-left",
         className,
       )}
