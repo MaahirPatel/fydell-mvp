@@ -29,6 +29,7 @@ import { isUuid } from "@/lib/eng/http";
 import { roleCan } from "@/lib/eng/permissions";
 import { resolveScenarioVersion } from "@/lib/eng/scenario-versions";
 import { AuthoredAttempt } from "./authored-attempt";
+import { LocalTime } from "@/components/eng/LocalTime";
 import { OPERATIONAL_STATES } from "@/lib/eng/state";
 import type { Decision, Finding } from "@/lib/eng/types";
 
@@ -49,10 +50,6 @@ const CHANGE_EVENTS = new Set(["requirement_update_released", "upload_rejected",
 
 function isDecision(value: string): value is Decision {
   return value === "advance" || value === "hold" || value === "decline";
-}
-
-function clock(iso: string) {
-  return new Date(iso).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
 function duration(ms: number) {
@@ -112,14 +109,10 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
     { label: "Decide", value: decisionValue ? DECISION_LABEL[decisionValue] : "Decision", state: decisionValue ? "done" : view.report ? "current" : "pending" },
   ];
 
-  let lastDay = "";
   const timeline: TimelineEntry[] = [
     { id: "invited", type: "invitation_created", at: view.invitation.created_at, payload: {} as Record<string, unknown> },
     ...view.timeline,
   ].map((e) => {
-    const day = new Date(e.at).toLocaleDateString(undefined, { dateStyle: "medium" });
-    const showDay = day !== lastDay;
-    lastDay = day;
     const extra =
       e.type === "deadline_extended" && typeof e.payload.minutes === "number"
         ? `By ${e.payload.minutes} min`
@@ -128,9 +121,9 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
           : null;
     return {
       id: e.id,
-      time: <time dateTime={e.at} title={day}>{clock(e.at)}</time>,
+      time: <LocalTime iso={e.at} />,
       title: e.type === "invitation_created" ? "Invitation created" : (EVENT_LABELS[e.type] ?? e.type.replace(/_/g, " ")),
-      detail: [showDay ? day : null, extra].filter(Boolean).join(" · ") || undefined,
+      detail: extra ?? undefined,
       tone: CHANGE_EVENTS.has(e.type) ? "change" : KEY_EVENTS.has(e.type) ? "key" : "neutral",
     };
   });
@@ -243,7 +236,12 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
           {view.report && view.run?.results && view.submission ? (
             <PanelSection
               title={`Report, version ${view.report.version}`}
-              description={`Reviewed by ${view.report.reviewer_email}${view.report.released_at ? ", released " + new Date(view.report.released_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : ""}. Rubric ${view.report.rubric_version}, checks ${view.run.suite_version}, executor ${view.run.executor ?? "unknown"}.`}
+              description={
+                <>
+                  Reviewed by {view.report.reviewer_email}
+                  {view.report.released_at ? <>, released <LocalTime iso={view.report.released_at} /></> : null}. Rubric {view.report.rubric_version}, checks {view.run.suite_version}, executor {view.run.executor ?? "unknown"}.
+                </>
+              }
             >
               {view.report.change_reason ? (
                 <p className="mb-4 rounded-[var(--radius-control)] border border-[var(--border-default)] px-3 py-2 text-app-meta text-[var(--text-secondary)]">

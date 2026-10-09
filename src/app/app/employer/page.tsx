@@ -10,6 +10,7 @@ import AttentionQueue from "@/components/employer/AttentionQueue";
 import CandidatePipeline from "@/components/employer/CandidatePipeline";
 import { ExampleReviewModule } from "@/components/employer/ExampleReviewModule";
 import { describeElapsed, formatElapsed } from "@/lib/time/elapsed";
+import { LocalDate, LocalTime } from "@/components/eng/LocalTime";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
 import { engAdmin } from "@/lib/eng/context";
@@ -27,8 +28,8 @@ export const metadata = { title: "Home" };
 export const dynamic = "force-dynamic";
 
 /** A second line for roles that share a title, so each row can be told apart. */
-function distinguishRoles(roles: Array<{ id: string; title: string; stack: string[]; created_at: string }>): Map<string, string> {
-  const notes = new Map<string, string>();
+function distinguishRoles(roles: Array<{ id: string; title: string; stack: string[]; created_at: string }>): Map<string, React.ReactNode> {
+  const notes = new Map<string, React.ReactNode>();
   const byTitle = new Map<string, typeof roles>();
   for (const r of roles) {
     const key = r.title.trim().toLowerCase();
@@ -40,8 +41,13 @@ function distinguishRoles(roles: Array<{ id: string; title: string; stack: strin
     for (const r of group) {
       const at = new Date(r.created_at);
       const sameDay = days.filter((d) => d === at.toDateString()).length > 1;
-      const when = at.toLocaleString("en-US", sameDay ? { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" } : { month: "short", day: "numeric", year: "numeric" });
-      notes.set(r.id, [r.stack.slice(0, 3).join(", "), `created ${when}`].filter(Boolean).join(" · "));
+      const stack = r.stack.slice(0, 3).join(", ");
+      notes.set(
+        r.id,
+        <>
+          {stack ? `${stack} · ` : ""}created {sameDay ? <LocalTime iso={r.created_at} /> : <LocalDate iso={r.created_at} />}
+        </>,
+      );
     }
   }
   return notes;
@@ -134,7 +140,7 @@ const SETUP_STEPS = [
   {
     title: "Choose a simulation",
     detail:
-      "Start from a validated role model for Backend & API or Applied AI, use it as reviewed, or adapt it to your product.",
+      "Start from a simulation template for Backend & API or Applied AI, use it as it is, or adapt it to your product.",
     href: "/app/employer/work-samples/new",
     cta: "Create simulation",
   },

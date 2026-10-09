@@ -12,6 +12,7 @@ import { Status, type StatusKind } from "@/components/ui/report";
 import { CONTACT_EMAIL, CONTACT_MAILTO } from "@/lib/contact";
 import { getOwnerPassport } from "@/lib/passport/store";
 import type { AttemptRow, AttemptStatus, InvitationRow } from "@/lib/eng/types";
+import { LocalDate } from "@/components/eng/LocalTime";
 import s from "@/components/candidate/candidate.module.css";
 
 export const metadata = { title: "Overview" };
@@ -29,9 +30,9 @@ const ENG_STAGE: Record<AttemptStatus, { label: string; tone: Tone; stage: numbe
   expired: { label: "Expired", tone: "neutral", stage: null, action: "View" },
 };
 
-function day(iso: string | null | undefined): string {
+function day(iso: string | null | undefined): React.ReactNode {
   if (!iso) return "Not recorded";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return <LocalDate iso={iso} />;
 }
 
 const TONE_KIND: Record<Tone, StatusKind> = { blue: "pending", amber: "attention", green: "success", neutral: "neutral" };
@@ -72,7 +73,7 @@ function Row({
   tone: Tone;
   stage?: number | null;
   dateLabel: string;
-  date: string;
+  date: React.ReactNode;
   action: React.ReactNode;
 }) {
   return (

@@ -8,6 +8,7 @@ import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Tabl
 import CreateRoleForm from "@/components/eng/CreateRoleForm";
 import { InvitationActions, InviteCandidateForm, PreviewWorkSample, RoleStatusActions } from "@/components/eng/RoleControls";
 import { TaskBriefSections } from "@/components/work-samples/runtime/TaskBrief";
+import { LocalTime } from "@/components/eng/LocalTime";
 import { listAuthoredVersionOptions } from "@/lib/eng/authored/employer";
 import { candidateTask } from "@/lib/eng/authored/runtime";
 import { engAdmin } from "@/lib/eng/context";
@@ -22,8 +23,8 @@ import { OPERATIONAL_STATES } from "@/lib/eng/state";
 export const metadata = { title: "Engineering role" };
 export const dynamic = "force-dynamic";
 
-function when(iso: string | null): string {
-  return iso ? new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "";
+function when(iso: string | null): React.ReactNode {
+  return iso ? <LocalTime iso={iso} /> : "";
 }
 
 export default async function EngineeringRolePage({ params }: { params: Promise<{ roleId: string }> }) {
@@ -140,7 +141,7 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
                           <span className="block text-app-meta text-[var(--text-tertiary)]">Not emailed; share the link</span>
                         ) : null}
                       </TD>
-                      <TD>{c.dueAt ? when(c.dueAt) : c.attempt ? "Not started" : `Invite expires ${when(c.invitation.expires_at)}`}</TD>
+                      <TD>{c.dueAt ? when(c.dueAt) : c.attempt ? "Not started" : <>Invite expires {when(c.invitation.expires_at)}</>}</TD>
                       <TD className="capitalize">{c.decision ?? ""}</TD>
                       <TD align="right">
                         {canManageInvites ? (

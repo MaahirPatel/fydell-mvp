@@ -8,14 +8,11 @@ import { CandidatePageHead } from "@/components/candidate/CandidatePageHead";
 import { ButtonLink } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Status, type StatusKind } from "@/components/ui/report";
+import { LocalDate } from "@/components/eng/LocalTime";
 import s from "@/components/candidate/candidate.module.css";
 
 export const metadata = { title: "Applications" };
 export const dynamic = "force-dynamic";
-
-function day(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
 
 type Group = { key: string; title: string; kind: StatusKind; label: string; items: ApplicantView[] };
 
@@ -67,7 +64,7 @@ export default async function MyApplicationsPage() {
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[14px] font-medium text-[var(--text-primary)]">{a.roleTitle}</span>
                         <span className="mt-px block truncate text-[13px] text-[var(--text-tertiary)]">
-                          {a.organizationName} · Applied {day(a.submittedAt)}
+                          {a.organizationName} · Applied <LocalDate iso={a.submittedAt} />
                         </span>
                       </span>
                       <Status kind={g.kind} icon={false}>
