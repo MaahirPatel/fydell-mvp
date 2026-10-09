@@ -60,9 +60,9 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             ...(r.subjectVersion ? [{ label: "Version", value: r.subjectVersion }] : []),
             ...(r.analysisVersion ? [{ label: "Analysis version", value: <span className="font-mono text-[13px]">{r.analysisVersion}</span> }] : []),
             ...(manifest ? [{ label: "Manifest", value: manifest }] : []),
-            ...(m.manifestHash ? [{ label: "Manifest hash", value: <span className="break-all font-mono text-[12px]">{m.manifestHash}</span> }] : []),
-            ...(m.inputHash ? [{ label: "Input hash", value: <span className="break-all font-mono text-[12px]">{m.inputHash}</span> }] : []),
-            { label: "Content hash (SHA-256)", value: <span className="break-all font-mono text-[12px]">{r.contentHash}</span> },
+            ...(m.manifestHash ? [{ label: "Manifest hash", value: <span className="break-all font-mono text-app-meta">{m.manifestHash}</span> }] : []),
+            ...(m.inputHash ? [{ label: "Input hash", value: <span className="break-all font-mono text-app-meta">{m.inputHash}</span> }] : []),
+            { label: "Content hash (SHA-256)", value: <span className="break-all font-mono text-app-meta">{r.contentHash}</span> },
             ...(r.linkedReport ? [{ label: "Report", value: <Link href={r.linkedReport.href} className="font-medium underline underline-offset-4">{r.linkedReport.label}</Link> }] : []),
           ]}
         />
@@ -92,7 +92,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
           <ul className="space-y-1 text-[14px] text-[var(--text-secondary)]">
             {r.corrections.map((c) => (
               <li key={`${c.findingId}:${c.createdAt}`}>
-                <span className="font-mono text-[12px]">{c.findingId}</span> · {c.kind} · {formatDateTime(c.createdAt)}
+                <span className="font-mono text-app-meta">{c.findingId}</span> · {c.kind} · {formatDateTime(c.createdAt)}
               </li>
             ))}
           </ul>

@@ -56,7 +56,7 @@ export default function BuilderReportDemo() {
                   >
                     <span className="block text-[13px] text-[var(--text-tertiary)]">{CATEGORY[e.category] ?? e.category}</span>
                     <span className="mt-0.5 block text-[15px] leading-[1.4] text-[var(--text-primary)]">{e.finding}</span>
-                    <span className="mt-1 block truncate font-mono text-[12px] text-[var(--text-tertiary)]">
+                    <span className="mt-1 block truncate font-mono text-app-meta text-[var(--text-tertiary)]">
                       {e.path}:{e.startLine}-{e.endLine}
                     </span>
                   </button>

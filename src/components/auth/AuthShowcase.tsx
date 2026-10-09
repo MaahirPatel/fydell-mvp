@@ -40,7 +40,7 @@ function Window({ crumb, children }: { crumb: string; children: React.ReactNode 
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <p className="text-[12.5px] font-medium text-[var(--text-secondary)]">{children}</p>;
+  return <p className="text-app-meta font-medium text-[var(--text-secondary)]">{children}</p>;
 }
 
 function BuilderProfile() {
@@ -125,7 +125,7 @@ function ApplicantReview() {
               aria-current={i === 0 ? "true" : undefined}
             >
               <p className="text-[14px] font-medium text-[var(--text-primary)]">{row.candidate}</p>
-              <Status kind={PIPELINE_KIND[row.tone]} icon={false} className="mt-1.5 h-[20px] px-1.5 text-[12px]">
+              <Status kind={PIPELINE_KIND[row.tone]} icon={false} className="mt-1.5 h-[20px] px-1.5 text-app-meta">
                 {row.state.split(" · ")[0]}
               </Status>
             </li>
@@ -160,7 +160,7 @@ function ApplicantReview() {
               <Status kind="attention">1 test failed</Status>
             </div>
             <p className="mt-2 text-[14px] leading-[1.5] text-[var(--text-primary)]">{concern.text}</p>
-            <p className="mt-1 font-mono text-[12px] text-[var(--text-tertiary)]">{concern.source}</p>
+            <p className="mt-1 font-mono text-app-meta text-[var(--text-tertiary)]">{concern.source}</p>
           </div>
 
           <div className="mt-5 flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] pt-4 text-[13px]">

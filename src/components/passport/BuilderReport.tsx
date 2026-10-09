@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Check, ChevronDown, ChevronRight, GitBranch, GitCommitHorizontal, Link2, RotateCcw } from "lucide-react";
 import { CodeBlock } from "@/components/marketing/home/CodeBlock";
 import { Button, ButtonLink } from "@/components/ui/Button";
+import { Sheet } from "@/components/ui/Sheet";
 import { DetailList, FigureRow, Notice, SectionHeader, Status, type StatusKind } from "@/components/ui/report";
 import "./passport.css";
 import type { Correction, CorrectionKind } from "@/lib/passport/corrections";
@@ -30,6 +31,21 @@ import {
   type ReportView,
   type StateTone,
 } from "@/lib/passport/record-states";
+
+/** The source inspector sits beside the findings only when both keep a readable width. */
+const INSPECTOR_QUERY = "(min-width: 1400px)";
+
+function useInspectorBeside(): boolean {
+  return useSyncExternalStore(
+    (notify) => {
+      const mq = window.matchMedia(INSPECTOR_QUERY);
+      mq.addEventListener("change", notify);
+      return () => mq.removeEventListener("change", notify);
+    },
+    () => window.matchMedia(INSPECTOR_QUERY).matches,
+    () => false,
+  );
+}
 
 export type VersionSummary = {
   id: string;
@@ -481,6 +497,8 @@ export default function BuilderReport({
   const [notes, setNotes] = useState<Correction[]>(initialNotes);
   const [busyNote, setBusyNote] = useState<string | null>(null);
   const [copied, setCopied] = useState<"idle" | "ok" | "failed">("idle");
+  const inspectorBeside = useInspectorBeside();
+  const [drawerOpen, setDrawerOpen] = useState(() => evidence.some((e) => e.id === initialFindingId));
   const selected = evidence.find((e) => e.id === selectedId) ?? null;
   const state = reportState(project);
   const isLatest = project.id === latestId;
@@ -522,7 +540,8 @@ export default function BuilderReport({
     return () => window.removeEventListener("popstate", onPop);
   }, [evidence]);
 
-  function select(id: string, focus = false) {
+  function select(id: string, focus = false, openSource = true) {
+    if (openSource) setDrawerOpen(true);
     if (id === selectedId && view === "findings") return;
     setSelectedId(id);
     setView("findings");
@@ -565,7 +584,7 @@ export default function BuilderReport({
     e.preventDefault();
     const i = visible.findIndex((x) => x.id === selectedId);
     const next = e.key === "Home" ? 0 : e.key === "End" ? visible.length - 1 : Math.min(visible.length - 1, Math.max(0, i + (e.key === "ArrowDown" ? 1 : -1)));
-    if (visible[next]) select(visible[next].id, true);
+    if (visible[next]) select(visible[next].id, true, false);
   }
 
   async function copyLink() {
@@ -629,6 +648,57 @@ export default function BuilderReport({
   const uploaded = project.sourceKind === "upload";
   const ref = uploaded ? "the uploaded snapshot" : (project.revisionRef ?? "the default branch");
 
+  function inspector(f: PassportEvidence, inSheet = false) {
+    return (
+      <>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-app-meta text-[var(--text-secondary)]">
+          <span className="inline-flex items-center gap-1.5 font-medium">
+            <span aria-hidden className="h-2 w-2 rounded-[2px]" style={{ background: CATEGORY_TONE[f.category] ?? "var(--text-quaternary)" }} />
+            {CATEGORY_LABEL[f.category] ?? f.category}
+          </span>
+          <span aria-hidden className="text-[var(--text-quaternary)]">·</span>
+          <span>{f.basis === "repository_observation" ? "Observed in code" : "Declared dependency"}</span>
+          <button type="button" onClick={() => void copyLink()} className="ml-auto inline-flex min-h-8 items-center gap-1 font-medium hover:text-[var(--text-primary)]">
+            {copied === "ok" ? <Check className="h-3.5 w-3.5" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />}
+            {copied === "ok" ? "Copied" : copied === "failed" ? "Copy blocked; the address bar has this link" : "Copy link"}
+          </button>
+        </div>
+        {inSheet ? null : <h3 className="mt-2 text-app-finding text-[var(--text-primary)]">{f.finding}</h3>}
+        <div className="mt-4">
+          <CodeBlock path={f.path} lines={f.excerpt.map((text, i) => ({ n: f.startLine + i, text, mark: "cited" as const }))} />
+        </div>
+        {f.sourceUrl ? (
+          <a
+            href={f.sourceUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="mt-3 inline-flex items-center gap-1 text-app-control font-medium text-[var(--accent-ink)] hover:underline hover:underline-offset-4"
+          >
+            {f.endLine > f.startLine ? `Open lines ${f.startLine} to ${f.endLine}` : `Open line ${f.startLine}`} on GitHub <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+          </a>
+        ) : (
+          <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">From your uploaded files. There is no hosted copy to open.</p>
+        )}
+        {f.limitations.length ? (
+          <div className="mt-5 border-t border-[var(--border-subtle)] pt-4">
+            <p className="text-app-control font-medium text-[var(--text-primary)]">What this does not show</p>
+            <ul className="mt-2 space-y-1 pl-5 text-app-body text-[var(--text-secondary)]">
+              {f.limitations.map((l) => (
+                <li key={l} className="list-disc">
+                  {l}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        <div className="mt-5 space-y-3 border-t border-[var(--border-subtle)] pt-4">
+          <NoteList notes={notesFor(f.id)} onWithdraw={(id) => void withdraw(id)} busyId={busyNote} />
+          <NoteForm key={f.id} onSubmit={addNote} />
+        </div>
+      </>
+    );
+  }
+
   return (
     <article>
       <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[13px] text-[var(--text-tertiary)]">
@@ -642,7 +712,7 @@ export default function BuilderReport({
       <header className="mt-5 flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="break-words text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] text-[var(--text-primary)]">{name}</h1>
+            <h1 className="break-words text-app-page text-[var(--text-primary)] [overflow-wrap:anywhere]">{name}</h1>
             <Status kind={TONE_KIND[REPORT_STATE[state].tone]}>{REPORT_STATE[state].label}</Status>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-[var(--text-secondary)]">
@@ -682,7 +752,7 @@ export default function BuilderReport({
         </div>
       </header>
 
-      <p className="mt-6 max-w-[72ch] text-[16px] leading-[1.55] text-[var(--text-body)]">
+      <p className="mt-6 max-w-[72ch] text-app-prose text-[var(--text-body)]">
         {evidence.length === 0 ? (
           <>
             No findings from {analyzedFiles} of {totalFiles} files at {ref} @ <span className="font-mono text-[14.5px]">{shortSha(project.commitSha)}</span>.
@@ -757,15 +827,10 @@ export default function BuilderReport({
                 </p>
               </div>
             ) : (
-              <div className="grid overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-                <div
-                  role="group"
-                  aria-label="Findings. Use the arrow keys to move between them."
-                  onKeyDown={onListKey}
-                  className="max-h-[720px] overflow-auto border-b border-[var(--border-subtle)] lg:border-b-0 lg:border-r"
-                >
+              <div className="grid max-w-[800px] gap-6 min-[1400px]:max-w-none min-[1400px]:grid-cols-[minmax(0,1fr)_420px]">
+                <div role="group" aria-label="Findings. Use the arrow keys to move between them." onKeyDown={onListKey} className="min-w-0">
                   {area ? (
-                    <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-4 py-2 text-[13px]">
+                    <div className="mb-3 flex items-center justify-between rounded-[var(--radius-control)] bg-[var(--surface-panel)] px-4 py-2 text-app-meta">
                       <span className="text-[var(--text-secondary)]">Showing {AREA_SHORT[area] ?? area}</span>
                       <button type="button" onClick={() => setArea(null)} className="font-medium text-[var(--accent-ink)] hover:underline hover:underline-offset-4">
                         Show all
@@ -773,37 +838,46 @@ export default function BuilderReport({
                     </div>
                   ) : null}
                   {shownGroups.map((g) => (
-                    <section key={g.key} aria-label={g.label}>
-                      <h3 className="sticky top-0 z-[1] flex items-center gap-2 border-b border-[var(--border-subtle)] bg-[var(--surface-panel)] px-4 py-2 text-[13px] font-semibold text-[var(--text-primary)]">
+                    <section key={g.key} aria-label={g.label} className="mb-6 last:mb-0">
+                      <h3 className="flex items-center gap-2 pb-2 text-app-control font-semibold text-[var(--text-primary)]">
                         <span aria-hidden className="h-2 w-2 rounded-[2px]" style={{ background: CATEGORY_TONE[g.key] ?? "var(--text-quaternary)" }} />
                         {g.label}
-                        <span className="ml-auto font-normal tabular-nums text-[var(--text-tertiary)]">{g.items.length}</span>
+                        <span className="font-normal tabular-nums text-[var(--text-tertiary)]">{g.items.length}</span>
                       </h3>
-                      <ul className="divide-y divide-[var(--border-subtle)]">
+                      <ul className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)]">
                         {g.items.map((e) => {
                           const active = e.id === selected?.id;
                           const count = notesFor(e.id).filter((n) => !n.withdrawnAt).length;
                           return (
-                            <li key={e.id}>
+                            <li key={e.id} className="border-b border-[var(--border-subtle)] last:border-b-0">
                               <button
                                 id={`finding-${e.id}`}
                                 type="button"
                                 aria-pressed={active}
                                 tabIndex={active ? 0 : -1}
                                 onClick={() => select(e.id)}
-                                className={`report-row ${active ? "is-active shadow-none!" : ""}`}
+                                className={`block w-full px-5 py-4 text-left transition-colors duration-[var(--motion-fast)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)] ${
+                                  active ? "bg-[var(--surface-selected)]" : "hover:bg-[var(--surface-hover)]"
+                                }`}
                               >
-                                <span className={`block text-[14px] leading-[1.45] ${active ? "font-medium text-[var(--text-primary)]" : "text-[var(--text-body)]"}`}>{e.finding}</span>
-                                <span className="mt-1 flex min-w-0 items-center gap-2 text-[13px]">
-                                  <span className="truncate font-mono text-[var(--text-tertiary)]" title={e.path}>
-                                    {e.path.split("/").pop()}:{e.startLine}
+                                <span className="block text-app-body font-medium text-[var(--text-primary)]">{e.finding}</span>
+                                <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 text-app-meta text-[var(--text-secondary)]">
+                                  <span className="max-w-full truncate font-mono" title={e.path}>
+                                    {e.path}:{e.startLine}
                                   </span>
+                                  <span aria-hidden className="text-[var(--text-quaternary)]">·</span>
+                                  <span>{e.basis === "repository_observation" ? "Observed in code" : "Declared dependency"}</span>
                                   {count ? (
-                                    <span className="shrink-0 text-[var(--badge-attention-ink)]">
+                                    <span className="text-[var(--badge-attention-ink)]">
                                       · {count} note{count === 1 ? "" : "s"}
                                     </span>
                                   ) : null}
                                 </span>
+                                {e.limitations[0] ? (
+                                  <span className="mt-2 block text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
+                                    Limit: {e.limitations[0]}
+                                  </span>
+                                ) : null}
                               </button>
                             </li>
                           );
@@ -814,56 +888,19 @@ export default function BuilderReport({
                 </div>
 
                 {selected ? (
-                  <div aria-live="polite" className="min-w-0 p-5 sm:p-7">
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-[var(--text-secondary)]">
-                      <span className="inline-flex items-center gap-1.5 font-medium">
-                        <span aria-hidden className="h-2 w-2 rounded-[2px]" style={{ background: CATEGORY_TONE[selected.category] ?? "var(--text-quaternary)" }} />
-                        {CATEGORY_LABEL[selected.category] ?? selected.category}
-                      </span>
-                      <span aria-hidden className="text-[var(--text-quaternary)]">·</span>
-                      <span>{selected.basis === "repository_observation" ? "Observed in code" : "Declared dependency"}</span>
-                      <button type="button" onClick={() => void copyLink()} className="ml-auto inline-flex items-center gap-1 font-medium hover:text-[var(--text-primary)]">
-                        {copied === "ok" ? <Check className="h-3.5 w-3.5" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />}
-                        {copied === "ok" ? "Copied" : copied === "failed" ? "Copy blocked; the address bar has this link" : "Copy link"}
-                      </button>
+                  <aside aria-label="Source" aria-live="polite" className="hidden min-w-0 min-[1400px]:block">
+                    <div className="sticky top-6 max-h-[calc(100dvh-48px)] overflow-y-auto rounded-[var(--radius-panel)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+                      {inspector(selected)}
                     </div>
-                    <h3 className="mt-3 text-[17px] font-semibold leading-[1.35] tracking-[-0.012em]">{selected.finding}</h3>
-                    <div className="mt-4">
-                      <CodeBlock path={selected.path} lines={selected.excerpt.map((text, i) => ({ n: selected.startLine + i, text, mark: "cited" as const }))} />
-                    </div>
-                    {selected.sourceUrl ? (
-                      <a
-                        href={selected.sourceUrl}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="mt-3 inline-flex items-center gap-1 text-[14px] font-medium text-[var(--accent-ink)] hover:underline hover:underline-offset-4"
-                      >
-                        Open lines on GitHub <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-                      </a>
-                    ) : (
-                      <p className="mt-3 text-[13px] text-[var(--text-tertiary)]">From your uploaded files. There is no hosted copy to open.</p>
-                    )}
-                    <details className="group mt-6 border-t border-[var(--border-subtle)] pt-4">
-                      <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[14px] font-medium text-[var(--text-primary)]">
-                        <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)] transition-transform group-open:rotate-90" aria-hidden />
-                        What this does not show
-                      </summary>
-                      <ul className="mt-2 space-y-1 pl-6 text-[14px] leading-[1.55] text-[var(--text-secondary)]">
-                        {selected.limitations.map((l) => (
-                          <li key={l} className="list-disc">
-                            {l}
-                          </li>
-                        ))}
-                      </ul>
-                    </details>
-                    <div className="mt-4 space-y-3 border-t border-[var(--border-subtle)] pt-4">
-                      <NoteList notes={notesFor(selected.id)} onWithdraw={(id) => void withdraw(id)} busyId={busyNote} />
-                      <NoteForm key={selected.id} onSubmit={addNote} />
-                    </div>
-                  </div>
+                  </aside>
                 ) : null}
               </div>
             )}
+            {selected && !inspectorBeside ? (
+              <Sheet open={drawerOpen} title={selected.finding} description={`${selected.path}:${selected.startLine}`} onClose={() => setDrawerOpen(false)}>
+                {inspector(selected, true)}
+              </Sheet>
+            ) : null}
           </div>
         ) : null}
 

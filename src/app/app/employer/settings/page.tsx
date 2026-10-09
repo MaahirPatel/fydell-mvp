@@ -55,7 +55,7 @@ function SectionTitle({ title, description }: { title: string; description: stri
 function Group({ label, children }: { label?: string; children: React.ReactNode }) {
   return (
     <section className="mb-7">
-      {label ? <h2 className="mb-2 px-1 text-[12.5px] font-medium text-[var(--text-tertiary)]">{label}</h2> : null}
+      {label ? <h2 className="mb-2 px-1 text-app-meta font-medium text-[var(--text-tertiary)]">{label}</h2> : null}
       <div className="overflow-hidden rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">{children}</div>
     </section>
   );
@@ -244,7 +244,7 @@ export default async function EmployerSettingsPage({
                   ) : (
                     <span
                       aria-hidden
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-selected)] text-[12px] font-semibold text-[var(--text-primary)]"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-selected)] text-app-meta font-semibold text-[var(--text-primary)]"
                     >
                       {identity.initials}
                     </span>

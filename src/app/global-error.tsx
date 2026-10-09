@@ -1,5 +1,7 @@
 "use client";
 
+import { CONTACT_EMAIL } from "@/lib/contact";
+
 /**
  * Last-resort boundary when the root layout itself fails. It renders its own
  * document, so it uses inline styles rather than the app stylesheet.
@@ -11,8 +13,8 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
         <main style={{ maxWidth: "62ch", margin: "0 auto", padding: "80px 24px" }}>
           <h1 style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", margin: 0 }}>Fydell did not load</h1>
           <p style={{ marginTop: 12, fontSize: 16, lineHeight: 1.6, color: "#4b4f57" }}>
-            Something failed before the page could render. Your saved work is safe. Try again, and if it keeps happening, email
-            support@fydell.com with the reference below.
+            Something failed before the page could render. Your saved work is safe. Try again, and if it keeps happening, email{" "}
+            {CONTACT_EMAIL} with the reference below.
           </p>
           <button
             type="button"

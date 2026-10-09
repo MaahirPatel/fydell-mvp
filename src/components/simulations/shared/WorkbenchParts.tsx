@@ -34,7 +34,7 @@ export function CodeEditorSurface({
         </label>
         <select
           id="lang"
-          className="platform-select h-7 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-app-meta text-[var(--text-primary)]"
+          className="platform-select h-7 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] px-2 text-app-meta text-[var(--text-primary)]"
           value={language}
           disabled={readOnly}
           onChange={(e) => onLanguageChange?.(e.target.value as "javascript" | "typescript" | "python")}
@@ -91,7 +91,7 @@ export function ApiConsole({
     <div className="flex h-full min-h-0 flex-col gap-2 p-3">
       <div className="flex gap-2">
         <select
-          className="platform-select h-8 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-app-meta"
+          className="platform-select h-8 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] px-2 text-app-meta"
           value={method}
           disabled={readOnly}
           onChange={(e) => onChange({ method: e.target.value })}
@@ -104,7 +104,7 @@ export function ApiConsole({
           ))}
         </select>
         <input
-          className="platform-input h-8 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 font-mono text-app-meta"
+          className="platform-input h-8 flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] px-2 font-mono text-app-meta"
           value={path}
           disabled={readOnly}
           onChange={(e) => onChange({ path: e.target.value })}
@@ -116,14 +116,14 @@ export function ApiConsole({
       </div>
       <label className="text-app-caption text-[var(--text-tertiary)]">Headers</label>
       <textarea
-        className="platform-input min-h-[72px] rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 font-mono text-app-caption"
+        className="platform-input min-h-[72px] rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-2 font-mono text-app-caption"
         value={headers}
         readOnly={readOnly}
         onChange={(e) => onChange({ headers: e.target.value })}
       />
       <label className="text-app-caption text-[var(--text-tertiary)]">Body</label>
       <textarea
-        className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 font-mono text-app-caption"
+        className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-2 font-mono text-app-caption"
         value={body}
         readOnly={readOnly}
         onChange={(e) => onChange({ body: e.target.value })}
@@ -166,7 +166,7 @@ export function ResourceBrowser({
     <div className="flex h-full min-h-0 flex-col">
       <div className="border-b border-[var(--border-subtle)] p-2">
         <input
-          className="platform-input h-8 w-full rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-app-meta"
+          className="platform-input h-8 w-full rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] px-2 text-app-meta"
           placeholder="Search resources"
           value={query}
           onChange={(e) => onSearch(e.target.value)}
@@ -315,7 +315,7 @@ export function InternalChat({
       </div>
       <div className="flex gap-2 border-t border-[var(--border-default)] p-2">
         <textarea
-          className="platform-input min-h-[64px] flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-app-meta"
+          className="platform-input min-h-[64px] flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-2 text-app-meta"
           value={draft}
           disabled={readOnly || !activePersonId}
           onChange={(e) => onDraftChange(e.target.value)}
@@ -347,7 +347,7 @@ export function CustomerComposer({
         Customer-safe update. Avoid unsupported promises. Saved as a customer_message artifact.
       </p>
       <textarea
-        className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
+        className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-3 text-app-meta"
         value={value}
         readOnly={readOnly}
         onChange={(e) => onChange(e.target.value)}
@@ -390,7 +390,7 @@ export function AiAssistant({
       </div>
       <div className="flex gap-2 border-t border-[var(--border-default)] p-2">
         <textarea
-          className="platform-input min-h-[64px] flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-app-meta"
+          className="platform-input min-h-[64px] flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-2 text-app-meta"
           value={draft}
           disabled={readOnly}
           onChange={(e) => onDraftChange(e.target.value)}
@@ -436,7 +436,7 @@ export function ArtifactComposer({
       {tab === "reco" ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={technicalRecommendation}
             readOnly={readOnly}
             onChange={(e) => onChangeReco(e.target.value)}
@@ -449,7 +449,7 @@ export function ArtifactComposer({
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={executiveSummary}
             readOnly={readOnly}
             onChange={(e) => onChangeExec(e.target.value)}
@@ -597,7 +597,7 @@ export function AnalysisMemoComposer({
             Primary driver, evidence, what you ruled out, caveats, next verification.
           </p>
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={memo}
             readOnly={readOnly}
             onChange={(e) => onChangeMemo(e.target.value)}
@@ -610,7 +610,7 @@ export function AnalysisMemoComposer({
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={execSummary}
             readOnly={readOnly}
             onChange={(e) => onChangeExec(e.target.value)}
@@ -706,7 +706,7 @@ export function FieldMappingPanel({
               <div className="mb-2 text-app-caption text-[var(--text-tertiary)]">sample: {m.sampleValue}</div>
             ) : null}
             <select
-              className="platform-select h-8 w-full rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-canvas)] px-2 text-app-meta"
+              className="platform-select h-8 w-full rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-canvas)] px-2 text-app-meta"
               value={values[m.id] ?? ""}
               disabled={readOnly}
               onChange={(e) => onChange(m.id, e.target.value)}
@@ -845,7 +845,7 @@ export function CutoverPlanComposer({
       {tab === "plan" ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={plan}
             readOnly={readOnly}
             onChange={(e) => onChangePlan(e.target.value)}
@@ -858,7 +858,7 @@ export function CutoverPlanComposer({
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={customerMessage}
             readOnly={readOnly}
             onChange={(e) => onChangeCustomer(e.target.value)}
@@ -916,7 +916,7 @@ export function EscalationComposer({
             Cite log evidence, release, and requested action (e.g. skew revert).
           </p>
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={escalation}
             readOnly={readOnly}
             onChange={(e) => onChangeEscalation(e.target.value)}
@@ -934,7 +934,7 @@ export function EscalationComposer({
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
           <textarea
-            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] p-3 text-app-meta"
+            className="platform-input min-h-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] p-3 text-app-meta"
             value={customerMessage}
             readOnly={readOnly}
             onChange={(e) => onChangeCustomer(e.target.value)}

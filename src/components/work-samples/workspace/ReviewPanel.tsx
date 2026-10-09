@@ -70,7 +70,7 @@ export function ReviewPanel({
               <div className="text-[14px] leading-[1.5]">
                 <StatusText tone="warn">Changes requested by {approval.reviewerName}</StatusText>
                 {approval.notes ? <p className="mt-1 whitespace-pre-line text-[var(--text-body)]">{approval.notes}</p> : null}
-                <p className="mt-0.5 text-[12.5px] text-[var(--text-tertiary)]"><LocalTime iso={approval.createdAt} /></p>
+                <p className="mt-0.5 text-app-meta text-[var(--text-tertiary)]"><LocalTime iso={approval.createdAt} /></p>
               </div>
             ) : (
               <StatusText tone="neutral">Approved by {approval.reviewerName} for an earlier version</StatusText>
@@ -124,7 +124,7 @@ export function ReviewPanel({
                 Request changes
               </Button>
             </div>
-            {approveBlocked ? <p className="text-[12.5px] text-[var(--text-tertiary)]">{approveBlocked}</p> : null}
+            {approveBlocked ? <p className="text-app-meta text-[var(--text-tertiary)]">{approveBlocked}</p> : null}
           </div>
         </PanelSection>
       ) : null}
@@ -134,7 +134,7 @@ export function ReviewPanel({
           <Button variant="primary" className="w-full" onClick={publish} loading={busy === "publish"} disabled={state.publishGate.length > 0 || dirty || busy !== null}>
             Publish version {nextVersion}
           </Button>
-          <p className="mt-2 text-[12.5px] leading-[1.45] text-[var(--text-tertiary)]">
+          <p className="mt-2 text-app-meta leading-[1.45] text-[var(--text-tertiary)]">
             Publishing creates an immutable version. Nothing is sent to candidates.
           </p>
         </PanelSection>

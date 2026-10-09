@@ -181,7 +181,7 @@ export default function SignupForm({
                 <span className={s.radioDot} aria-hidden />
                 <span className="min-w-0">
                   <span className="block text-app-body font-medium text-[var(--text-primary)]">{choice.title}</span>
-                  <span className="mt-0.5 block text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">{choice.body}</span>
+                  <span className="mt-0.5 block text-app-meta leading-[1.5] text-[var(--text-secondary)]">{choice.body}</span>
                 </span>
               </label>
             ))}

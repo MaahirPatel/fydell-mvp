@@ -233,7 +233,7 @@ export default function CandidatesTable({
                   <TDPrimary>
                     <span className="block truncate">{r.name || r.email}</span>
                     {r.name ? (
-                      <span className="block truncate text-[12px] font-normal text-[var(--text-tertiary)]">
+                      <span className="block truncate text-app-meta font-normal text-[var(--text-tertiary)]">
                         {r.email}
                       </span>
                     ) : null}

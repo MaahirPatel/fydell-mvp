@@ -265,7 +265,7 @@ function TeamTab({
                 <span
                   aria-hidden
                   className={cn(
-                    "grid h-7 w-7 place-items-center rounded-full text-[12px] font-semibold",
+                    "grid h-7 w-7 place-items-center rounded-full text-app-meta font-semibold",
                     mine ? "bg-[var(--surface-selected)] text-[var(--text-secondary)]" : "bg-[var(--fy-accent-soft)] text-[var(--fy-accent-ink)]"
                   )}
                 >
@@ -808,7 +808,7 @@ export function AssessmentWorkspace({
                         <span className="hidden text-[13px] text-[var(--text-tertiary)] md:block">{TAB_HINT[t]}</span>
                       </span>
                       {badge ? (
-                        <span className={cn("rounded-full px-1.5 text-[11px] font-medium leading-[18px] text-white", t === "updates" ? "bg-[var(--fy-red)]" : "bg-[var(--fy-accent)]")}>
+                        <span className={cn("rounded-full px-1.5 text-app-marker font-medium leading-[18px] text-white", t === "updates" ? "bg-[var(--fy-red)]" : "bg-[var(--fy-accent)]")}>
                           {badge}
                           <span className="sr-only">{t === "team" ? " unread messages" : " update"}</span>
                         </span>

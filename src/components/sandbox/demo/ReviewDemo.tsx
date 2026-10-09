@@ -319,9 +319,9 @@ function ReviewBody({
           </div>
           <div className={cx(s.panelBody, s.stack)}>
             <ul className={s.stackSm}>
-              {report.criteria.map((o, i) => (
-                <li key={o.criterion.id} className="flex items-center justify-between gap-3">
-                  <span className={s.body}>Criterion {i + 1}</span>
+              {report.criteria.map((o) => (
+                <li key={o.criterion.id} className="flex items-start justify-between gap-3">
+                  <span className={cx(s.body, "min-w-0")}>{o.criterion.text}</span>
                   <StateBadge state={o.state} />
                 </li>
               ))}

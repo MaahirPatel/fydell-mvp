@@ -36,7 +36,7 @@ export default async function ReceiptsPage() {
               <Link href={`/app/candidate/receipts/${r.id}`} className="group flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span className="text-[15px] font-medium text-[var(--text-primary)] group-hover:underline">{r.projectKey ?? ARTIFACT_LABEL[r.artifactType]}</span>
                 <span className="text-[13px] text-[var(--text-secondary)]">{ARTIFACT_LABEL[r.artifactType]}</span>
-                {r.sourceRevision ? <span className="font-mono text-[12px] text-[var(--text-tertiary)]">{r.sourceRevision.slice(0, 7)}</span> : null}
+                {r.sourceRevision ? <span className="font-mono text-app-meta text-[var(--text-tertiary)]">{r.sourceRevision.slice(0, 7)}</span> : null}
                 <span className="ml-auto text-[13px] text-[var(--text-tertiary)]">Accepted {formatDateTime(r.acceptedAt)}</span>
               </Link>
             </li>

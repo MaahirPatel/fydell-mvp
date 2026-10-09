@@ -64,7 +64,7 @@ export default function NavDownload() {
             >
               <OsIcon os={os} size={14} />
               <span className="flex-1">{BUILDS[os].name}</span>
-              {detected === os ? <span className="text-[12px] text-[var(--text-tertiary)]">Your system</span> : null}
+              {detected === os ? <span className="text-app-meta text-[var(--text-tertiary)]">Your system</span> : null}
             </a>
           ))}
           <Link

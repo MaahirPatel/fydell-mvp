@@ -20,7 +20,7 @@ export default function WorkRecordProjects({ projects, corrections }: { projects
   }
   return (
     <div className="overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
-      <div aria-hidden className="hidden grid-cols-[minmax(0,1fr)_110px_90px_120px] gap-4 border-b border-[var(--border-subtle)] bg-[var(--surface-panel)] px-4 py-1.5 text-[12.5px] font-medium text-[var(--text-tertiary)] sm:grid">
+      <div aria-hidden className="hidden grid-cols-[minmax(0,1fr)_110px_90px_120px] gap-4 border-b border-[var(--border-subtle)] bg-[var(--surface-panel)] px-4 py-1.5 text-app-meta font-medium text-[var(--text-tertiary)] sm:grid">
         <span>Project</span>
         <span>Status</span>
         <span className="text-right">Findings</span>

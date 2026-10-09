@@ -95,7 +95,7 @@ export function SimulationPicker({
               <button key={t.track} type="button" role="radio" aria-checked={on} onClick={() => pickTrack(t)} className={choiceClass(on)}>
                 <span className="block text-[15px] font-semibold text-[var(--text-primary)]">{t.label}</span>
                 <span className="mt-0.5 block text-[13px] leading-[1.45] text-[var(--text-secondary)]">{t.roles.slice(0, 3).join(", ")}</span>
-                <span className="mt-1.5 block text-[12px] font-medium text-[var(--accent)]">
+                <span className="mt-1.5 block text-app-meta font-medium text-[var(--accent)]">
                   {t.exemplars.length} simulation {t.exemplars.length === 1 ? "template" : "templates"}
                 </span>
               </button>
@@ -155,10 +155,10 @@ export function SimulationPicker({
                 <button key={m.key} type="button" role="radio" aria-checked={on} onClick={() => track && onSelect(m, track)} className={choiceClass(on)}>
                   <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <span className="text-[15px] font-semibold text-[var(--text-primary)]">{m.title}</span>
-                    <span className="text-[12px] font-medium text-[var(--status-positive-ink)]">Reviewed by Fydell</span>
+                    <span className="text-app-meta font-medium text-[var(--status-positive-ink)]">Reviewed by Fydell</span>
                   </span>
                   <span className="mt-1 block text-[14px] leading-[1.5] text-[var(--text-body)]">{m.summary}</span>
-                  <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[var(--text-secondary)]">
+                  <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-app-meta text-[var(--text-secondary)]">
                     <span>{m.stackLabel}</span>
                     <span>{m.minutes} min</span>
                     <span>{DIFFICULTY_LABEL[m.difficulty]}</span>

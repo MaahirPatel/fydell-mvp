@@ -124,7 +124,7 @@ export default function EmployerBriefClient({
           </select>
         </label>
         <label className="flex gap-2 text-app-body"><input name="hired" type="checkbox" /> Hired</label>
-        <textarea className="w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
+        <textarea className="w-full rounded-[8px] border border-[var(--border-control)] bg-[var(--surface-panel)] p-2" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
         <Button type="submit" variant="primary" shape="pill">
           Save outcome
         </Button>

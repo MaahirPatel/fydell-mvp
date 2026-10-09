@@ -170,7 +170,7 @@ function ProjectEntry({
       {item.technologies.length ? (
         <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Technologies">
           {item.technologies.map((t) => (
-            <li key={t} className="rounded-[6px] bg-[var(--surface-selected)] px-2 py-0.5 text-[12.5px] text-[var(--text-secondary)]">
+            <li key={t} className="rounded-[6px] bg-[var(--surface-selected)] px-2 py-0.5 text-app-meta text-[var(--text-secondary)]">
               {t}
             </li>
           ))}
@@ -330,7 +330,7 @@ export default function ProfileOverview({
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer nofollow"
-                      className="inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-2 text-[12.5px] font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
+                      className="inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-2 text-app-meta font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
                       aria-label={key in SOCIAL_LABEL ? `${SOCIAL_LABEL[key as SocialKind]}: ${label}` : undefined}
                     >
                       <Icon className="h-3.5 w-3.5 text-[var(--text-secondary)]" aria-hidden />
@@ -348,7 +348,7 @@ export default function ProfileOverview({
       <dl className="mt-6 grid grid-cols-2 border-y border-[var(--border-subtle)] sm:grid-cols-4">
         {figures.map((f, i) => (
           <div key={f.label} className={`px-1 py-3 sm:px-5 ${i > 0 ? "sm:border-l sm:border-[var(--border-subtle)]" : "sm:pl-0"}`}>
-            <dt className="text-[12.5px] text-[var(--text-tertiary)]">{f.label}</dt>
+            <dt className="text-app-meta text-[var(--text-tertiary)]">{f.label}</dt>
             <dd className="mt-0.5 text-[18px] font-semibold tabular-nums tracking-[-0.015em] text-[var(--text-primary)]">{f.value}</dd>
           </div>
         ))}

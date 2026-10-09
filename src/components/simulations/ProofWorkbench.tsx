@@ -144,7 +144,7 @@ export default function ProofWorkbench({ runId, token }: { runId: string; token:
             <label key={field} className="mb-3 block">
               <span className="text-app-meta text-[var(--text-tertiary)]">{field.replace("_", " ")}</span>
               <textarea
-                className="mt-1 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-app-body"
+                className="mt-1 w-full rounded-[8px] border border-[var(--border-control)] bg-[var(--surface-panel)] p-2 text-app-body"
                 rows={field === "recommendation" ? 4 : 2}
                 value={artifact[field]}
                 onChange={(e) => {
@@ -182,7 +182,7 @@ export default function ProofWorkbench({ runId, token }: { runId: string; token:
               {defense.map((q, i) => (
                 <label key={q.id} className="block">
                   <span className="text-app-body text-[var(--text-secondary)]">{q.prompt}</span>
-                  <textarea className="mt-1 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2" rows={3} value={q.body} onChange={(e) => setDefense((prev) => prev.map((p, idx) => (idx === i ? { ...p, body: e.target.value } : p)))} />
+                  <textarea className="mt-1 w-full rounded-[8px] border border-[var(--border-control)] bg-[var(--surface-panel)] p-2" rows={3} value={q.body} onChange={(e) => setDefense((prev) => prev.map((p, idx) => (idx === i ? { ...p, body: e.target.value } : p)))} />
                 </label>
               ))}
               <button type="submit" className="rounded-full bg-[var(--surface-paper)] px-4 py-2 text-app-meta text-[#111]">
@@ -216,7 +216,7 @@ export default function ProofWorkbench({ runId, token }: { runId: string; token:
               setDraft("");
             }}
           >
-            <textarea className="w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2 text-app-meta" rows={3} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Message" />
+            <textarea className="w-full rounded-[8px] border border-[var(--border-control)] bg-[var(--surface-panel)] p-2 text-app-meta" rows={3} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Message" />
             <button type="submit" className="mt-2 text-app-meta text-[var(--action-ink)]">
               Send
             </button>

@@ -12,7 +12,7 @@ export type BottomTab = "tests" | "output" | "problems" | "terminal";
 
 function Pre({ children }: { children: ReactNode }) {
   return (
-    <pre className="sim-scroll overflow-auto whitespace-pre-wrap break-words rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-2.5 font-mono text-[12.5px] leading-[1.6] text-[var(--text-body)]">
+    <pre className="sim-scroll overflow-auto whitespace-pre-wrap break-words rounded-[6px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-2.5 font-mono text-app-meta leading-[1.6] text-[var(--text-body)]">
       {children}
     </pre>
   );
@@ -130,19 +130,19 @@ export function BottomPanel({
                 }}
                 onKeyDown={(e) => onKey(e, i)}
                 className={cn(
-                  "relative flex shrink-0 items-center gap-1.5 px-2 text-[12.5px] outline-offset-[-2px] sm:px-2.5",
+                  "relative flex shrink-0 items-center gap-1.5 px-2 text-app-meta outline-offset-[-2px] sm:px-2.5",
                   selected ? "text-[var(--text-primary)]" : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]",
                 )}
               >
                 {t.label}
-                {t.count ? <span className="rounded-full bg-[var(--surface-raised)] px-1.5 text-[11px] tabular-nums text-[var(--text-secondary)]">{t.count}</span> : null}
+                {t.count ? <span className="rounded-full bg-[var(--surface-raised)] px-1.5 text-app-marker tabular-nums text-[var(--text-secondary)]">{t.count}</span> : null}
                 {selected ? <span aria-hidden className="absolute inset-x-2 bottom-0 h-[2px] bg-[var(--accent)]" /> : null}
               </button>
             );
           })}
         </div>
         <div className="ml-auto flex shrink-0 items-center gap-2">
-          {runHint ? <span className="hidden text-[12px] tabular-nums text-[var(--text-tertiary)] md:inline">{runHint}</span> : null}
+          {runHint ? <span className="hidden text-app-meta tabular-nums text-[var(--text-tertiary)] md:inline">{runHint}</span> : null}
           {canRun ? (
             <Button size="sm" variant="secondary" onClick={onRun} loading={running} disabled={runBlocked} className="h-7">
               {running ? null : <Play aria-hidden size={13} />}
@@ -183,7 +183,7 @@ export function BottomPanel({
               ) : null}
               {run && !running ? (
                 <>
-                  <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-[12.5px]">
+                  <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-app-meta">
                     {run.command ? (
                       <>
                         <dt className="text-[var(--text-tertiary)]">Command</dt>
@@ -201,7 +201,7 @@ export function BottomPanel({
                   {run.tests.length ? <TestList tests={run.tests} onSelect={onSelectTest} /> : null}
                   {tally && (tally.failed > 0 || (run.status !== "ran" && run.output)) && run.output ? (
                     <div className="grid gap-1.5">
-                      <h3 className="text-[12.5px] font-medium text-[var(--text-secondary)]">Failure output</h3>
+                      <h3 className="text-app-meta font-medium text-[var(--text-secondary)]">Failure output</h3>
                       <Pre>{failureExcerpt(run.output)}</Pre>
                     </div>
                   ) : null}
@@ -230,7 +230,7 @@ export function BottomPanel({
                     >
                       <CircleAlert aria-hidden size={13} className="shrink-0 translate-y-[2px] text-[var(--sim-error)]" />
                       <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--text-body)]">{p.message}</span>
-                      <span className="shrink-0 font-mono text-[12px] text-[var(--text-tertiary)]">
+                      <span className="shrink-0 font-mono text-app-meta text-[var(--text-tertiary)]">
                         {p.path}:{p.line}
                       </span>
                     </button>

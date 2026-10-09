@@ -51,7 +51,7 @@ export function Breadcrumb({ path, trailing }: { path: string; trailing?: ReactN
   const parts = path.split("/");
   return (
     <div className="flex h-8 shrink-0 items-center gap-2 border-b border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3">
-      <nav aria-label="File path" className="flex min-w-0 flex-1 items-center gap-1 text-[12.5px] text-[var(--text-tertiary)]">
+      <nav aria-label="File path" className="flex min-w-0 flex-1 items-center gap-1 text-app-meta text-[var(--text-tertiary)]">
         {parts.map((p, i) => (
           <span key={`${p}-${i}`} className="flex min-w-0 items-center gap-1">
             {i > 0 ? <ChevronRight aria-hidden size={12} className="shrink-0 text-[var(--text-quaternary)]" /> : null}
@@ -165,7 +165,7 @@ export function EditorArea({
           trailing={
             <div className="flex shrink-0 items-center gap-1">
               {fileLocked || readOnly ? (
-                <span className="inline-flex items-center gap-1 text-[12px] text-[var(--text-tertiary)]">
+                <span className="inline-flex items-center gap-1 text-app-meta text-[var(--text-tertiary)]">
                   <Lock aria-hidden size={12} />
                   Read-only
                 </span>
@@ -174,7 +174,7 @@ export function EditorArea({
                 <button
                   type="button"
                   onClick={() => onOpenDiff(file.path)}
-                  className="inline-flex h-6 items-center gap-1 rounded-[4px] px-1.5 text-[12px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                  className="inline-flex h-6 items-center gap-1 rounded-[4px] px-1.5 text-app-meta text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                 >
                   <GitCompareArrows aria-hidden size={13} />
                   Compare with starter
@@ -184,12 +184,12 @@ export function EditorArea({
           }
         />
         {testFiles.has(file.path) ? (
-          <p className="shrink-0 border-b border-[var(--border-subtle)] bg-[var(--surface-band)] px-3 py-1.5 text-[12.5px] text-[var(--text-secondary)]">
+          <p className="shrink-0 border-b border-[var(--border-subtle)] bg-[var(--surface-band)] px-3 py-1.5 text-app-meta text-[var(--text-secondary)]">
             Public test file. Tests always run from the starter copy, so edits here do not change results.
           </p>
         ) : null}
         {readOnly && readOnlyReason ? (
-          <p className="shrink-0 border-b border-[var(--border-subtle)] bg-[var(--surface-band)] px-3 py-1.5 text-[12.5px] text-[var(--text-secondary)]">{readOnlyReason}</p>
+          <p className="shrink-0 border-b border-[var(--border-subtle)] bg-[var(--surface-band)] px-3 py-1.5 text-app-meta text-[var(--text-secondary)]">{readOnlyReason}</p>
         ) : null}
         <div className="min-h-0 flex-1">
           <CodeEditor
@@ -218,7 +218,7 @@ export function EditorArea({
         <Breadcrumb
           path={active.path}
           trailing={
-            <div className="flex shrink-0 items-center gap-2 text-[12px] text-[var(--text-tertiary)]">
+            <div className="flex shrink-0 items-center gap-2 text-app-meta text-[var(--text-tertiary)]">
               <span>Starter on the left, your version on the right</span>
               {fileMap.has(active.path) ? (
                 <button

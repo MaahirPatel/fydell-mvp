@@ -103,7 +103,7 @@ export default async function OpeningsPage({ searchParams }: { searchParams: Pro
                       <Link href={`/app/employer/openings/${r.id}`} className="hover:underline hover:underline-offset-4">
                         {r.title}
                       </Link>
-                      {facts.length > 0 ? <span className="block text-[12px] font-normal text-[var(--text-tertiary)]">{facts.join(" · ")}</span> : null}
+                      {facts.length > 0 ? <span className="block text-app-meta font-normal text-[var(--text-tertiary)]">{facts.join(" · ")}</span> : null}
                     </TDPrimary>
                     <TD>
                       <span className={`badge ${STATE_BADGE[r.state]}`}>{view === "archived" ? "Archived" : ROLE_STATE_LABEL[r.state]}</span>

@@ -21,7 +21,7 @@ function lines(f: SnapshotFinding): string {
 }
 
 function DraftTag() {
-  return <span className="ml-2 rounded-[6px] bg-[var(--surface-panel)] px-1.5 py-0.5 text-[12px] font-normal text-[var(--text-secondary)]">Drafted from the analysis, not confirmed</span>;
+  return <span className="ml-2 rounded-[6px] bg-[var(--surface-panel)] px-1.5 py-0.5 text-app-meta font-normal text-[var(--text-secondary)]">Drafted from the analysis, not confirmed</span>;
 }
 
 function Finding({ f, notes }: { f: SnapshotFinding; notes: EvidenceVersionContent["notes"] }) {
@@ -29,11 +29,11 @@ function Finding({ f, notes }: { f: SnapshotFinding; notes: EvidenceVersionConte
   return (
     <li className="rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] p-3">
       <p className="text-app-meta leading-[1.5] text-[var(--text-body)]">{f.finding}</p>
-      <p className="mt-1 break-all font-mono text-[12px] text-[var(--text-tertiary)]">{lines(f)}</p>
+      <p className="mt-1 break-all font-mono text-app-meta text-[var(--text-tertiary)]">{lines(f)}</p>
       {f.excerpt.length > 0 ? (
         <details className="mt-2 text-app-meta">
           <summary className="cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Source excerpt</summary>
-          <pre className="mt-2 max-h-56 overflow-auto rounded-[6px] bg-[var(--surface-code)] p-3 font-mono text-[12px] leading-[1.5] text-[var(--text-body)]">{f.excerpt.join("\n")}</pre>
+          <pre className="mt-2 max-h-56 overflow-auto rounded-[6px] bg-[var(--surface-code)] p-3 font-mono text-app-meta leading-[1.5] text-[var(--text-body)]">{f.excerpt.join("\n")}</pre>
         </details>
       ) : null}
       {f.limitations.length > 0 ? <p className="mt-1.5 text-app-meta text-[var(--text-tertiary)]">Limits: {f.limitations.join(" ")}</p> : null}
@@ -103,7 +103,7 @@ export function SimulationReport({ report }: { report: SimulationReportSummary }
             {report.evidence.map((e, i) => (
               <li key={`${i}-${e.statement.slice(0, 24)}`} className="rounded-[6px] bg-[var(--surface-canvas)] px-3 py-2 text-app-meta leading-[1.5]">
                 <p className="text-[var(--text-body)]">{e.statement}</p>
-                {e.citations.length > 0 ? <p className="mt-1 break-all font-mono text-[12px] text-[var(--text-tertiary)]">{e.citations.map((c) => c.label).join(" · ")}</p> : null}
+                {e.citations.length > 0 ? <p className="mt-1 break-all font-mono text-app-meta text-[var(--text-tertiary)]">{e.citations.map((c) => c.label).join(" · ")}</p> : null}
               </li>
             ))}
           </ul>
@@ -281,7 +281,7 @@ export default function EvidenceSnapshotView({
           </section>
         ) : null}
 
-        <p className="text-[12px] leading-[1.5] text-[var(--text-tertiary)]">
+        <p className="text-app-meta leading-[1.5] text-[var(--text-tertiary)]">
           {version ? `Version ${version}` : "Unpublished preview"}
           {publishedAt ? <>, published <LocalDate iso={publishedAt} /></> : ""}
           {content.provenance.commitSha ? `. Revision ${content.provenance.commitSha.slice(0, 7)}` : ""}

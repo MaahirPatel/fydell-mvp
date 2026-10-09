@@ -72,7 +72,7 @@ export function AnalysisEngineView({ analysis }: { analysis: AnalysisResult }) {
           {section.kind === "execution" ? (
             <div className="flex flex-wrap items-center gap-2">
               <input
-                className="platform-input h-8 rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-panel)] px-2 text-app-meta"
+                className="platform-input h-8 rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-panel)] px-2 text-app-meta"
                 placeholder="Search timeline"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}

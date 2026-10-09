@@ -98,7 +98,7 @@ export default function EmployerProofHome() {
               <input
                 type="email"
                 required
-                className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-default)] bg-[var(--surface-raised)] px-3 text-app-body text-[var(--text-primary)] outline-none transition-shadow focus:border-[var(--action-ink)] focus:ring-2 focus:ring-[var(--action-ink-ring)]"
+                className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-control)] bg-[var(--surface-raised)] px-3 text-app-body text-[var(--text-primary)] outline-none transition-shadow focus:border-[var(--action-ink)] focus:ring-2 focus:ring-[var(--action-ink-ring)]"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />

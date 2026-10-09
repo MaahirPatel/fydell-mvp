@@ -40,7 +40,7 @@ function H2({ id, children, hint }: { id: string; children: React.ReactNode; hin
 function RefLink({ r }: { r: SignalRef }) {
   const body = (
     <>
-      <span className="font-mono text-[12px] text-[var(--text-tertiary)]">{r.repo ?? "profile"}</span>
+      <span className="font-mono text-app-meta text-[var(--text-tertiary)]">{r.repo ?? "profile"}</span>
       <span className="text-[13px] text-[var(--text-secondary)]">{r.label}</span>
     </>
   );
@@ -134,7 +134,7 @@ function ActivityBars({ months }: { months: BuilderAnalysisReport["activityByMon
       </div>
       <div className="mt-1.5 flex gap-1.5">
         {months.map((m, i) => (
-          <span key={m.month} className="flex-1 text-center font-mono text-[10px] text-[var(--text-tertiary)]">{i % 3 === 0 ? m.month.slice(2) : ""}</span>
+          <span key={m.month} className="flex-1 text-center font-mono text-app-marker text-[var(--text-tertiary)]">{i % 3 === 0 ? m.month.slice(2) : ""}</span>
         ))}
       </div>
       <figcaption className="mt-2 text-[13px] text-[var(--text-secondary)]">Commits attributed to you by GitHub, sampled up to 100 per repository. Merge commits excluded.</figcaption>
@@ -177,14 +177,14 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
             <p key={i} className="text-[15px] leading-[1.65] text-[var(--text-secondary)]">
               {p.text}{" "}
               {citations(p.refs).map((ref) => (
-                <a key={ref.label} href={`#${ref.anchor}`} className="mr-1 inline-flex rounded-[4px] bg-[var(--surface-panel)] px-1.5 py-[1px] align-[1px] text-[11px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                <a key={ref.label} href={`#${ref.anchor}`} className="mr-1 inline-flex rounded-[4px] bg-[var(--surface-panel)] px-1.5 py-[1px] align-[1px] text-app-marker font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                   {ref.label}
                 </a>
               ))}
             </p>
           ))}
         </div>
-        <p className="mt-3 text-[12px] text-[var(--text-tertiary)]">
+        <p className="mt-3 text-app-meta text-[var(--text-tertiary)]">
           {report.narrative.source === "model" ? "Narrative written by a model from the evidence below; every paragraph cites it." : "Narrative assembled from the evidence below."}
         </p>
       </section>
@@ -225,7 +225,7 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
               <li key={p.id} id={anchorFor(p.id)} className="scroll-mt-24 py-3">
                 <p className="text-[14px] font-medium text-[var(--text-primary)]">{p.title}</p>
                 <p className="mt-0.5 text-[13px] text-[var(--text-secondary)]">{p.detail}</p>
-                <p className="mt-1 font-mono text-[12px] text-[var(--text-tertiary)]">{p.repos.join("  ·  ")}</p>
+                <p className="mt-1 font-mono text-app-meta text-[var(--text-tertiary)]">{p.repos.join("  ·  ")}</p>
               </li>
             ))}
           </ul>
@@ -238,7 +238,7 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
           <ol className="space-y-5">
             {report.growth.map((g, i) => (
               <li key={g.id} id={anchorFor(g.id)} className="scroll-mt-24 grid grid-cols-[28px_minmax(0,1fr)] gap-x-3">
-                <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--surface-panel)] text-[12px] font-semibold text-[var(--text-secondary)] tabular-nums">{i + 1}</span>
+                <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--surface-panel)] text-app-meta font-semibold text-[var(--text-secondary)] tabular-nums">{i + 1}</span>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-[15px] font-semibold text-[var(--text-primary)]">{g.title}</p>
@@ -260,7 +260,7 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-left text-[14px]">
             <thead>
-              <tr className="border-b border-[var(--border-default)] text-[12px] text-[var(--text-tertiary)]">
+              <tr className="border-b border-[var(--border-default)] text-app-meta text-[var(--text-tertiary)]">
                 <th className="py-2 pr-4 font-medium">Repository</th>
                 <th className="py-2 pr-4 font-medium">Depth</th>
                 <th className="py-2 pr-4 font-medium">Practices</th>
@@ -273,7 +273,7 @@ function Report({ report }: { report: BuilderAnalysisReport }) {
                 <tr key={p.repo} className="border-b border-[var(--border-subtle)] align-top">
                   <td className="py-2.5 pr-4">
                     {p.url ? <a href={p.url} target="_blank" rel="noreferrer noopener" className="font-mono text-[13px] text-[var(--text-primary)] hover:underline">{p.repo}</a> : <span className="font-mono text-[13px]">{p.repo}</span>}
-                    {p.language ? <span className="ml-2 text-[12px] text-[var(--text-tertiary)]">{p.language}</span> : null}
+                    {p.language ? <span className="ml-2 text-app-meta text-[var(--text-tertiary)]">{p.language}</span> : null}
                   </td>
                   <td className="py-2.5 pr-4 text-[var(--text-secondary)]">{p.depth === "deep" ? "Code analyzed" : "Scanned"}</td>
                   <td className="py-2.5 pr-4 text-[var(--text-secondary)]">{p.practices.length ? p.practices.slice(0, 3).join(", ") + (p.practices.length > 3 ? ` +${p.practices.length - 3}` : "") : "None observed"}</td>
@@ -406,8 +406,8 @@ function CurrentAnalysis({ initial, lastReport, hasSources }: { initial: Analysi
           {shownReport ? (
             <>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[var(--accent-soft)] px-2.5 py-[3px] text-[12px] font-semibold text-[var(--accent-ink)]">{shownReport.workingStyle.label}</span>
-                <span className="text-[12px] text-[var(--text-tertiary)]">Inference from the evidence below</span>
+                <span className="rounded-full bg-[var(--accent-soft)] px-2.5 py-[3px] text-app-meta font-semibold text-[var(--accent-ink)]">{shownReport.workingStyle.label}</span>
+                <span className="text-app-meta text-[var(--text-tertiary)]">Inference from the evidence below</span>
               </div>
               <p className="mt-3 text-[20px] font-semibold leading-[1.35] tracking-[-0.02em] text-[var(--text-primary)]">{shownReport.headline}</p>
               <p className="mt-1.5 text-[14px] text-[var(--text-secondary)]">{shownReport.workingStyle.description}</p>

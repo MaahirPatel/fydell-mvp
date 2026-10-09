@@ -35,12 +35,12 @@
 
   /* ---- Surfaces: neutral, slightly cool. Canvas < content < selected. ---- */
   --surface-canvas: #f7f8fa;
-  --surface-deep: #eceef2;
-  --surface-band: #f2f4f7;
+  --surface-deep: #e8ecf1;
+  --surface-band: #f0f3f7;
   --surface-raised: #ffffff;
-  --surface-panel: #f5f6f8;
-  --surface-hover: #f0f2f5;
-  --surface-selected: #eceefb;
+  --surface-panel: #f0f3f7;
+  --surface-hover: #eaeef3;
+  --surface-selected: #eef2ff;
   --surface-paper: #ffffff;
   --surface-0: var(--surface-raised);
   --surface-code: oklch(19% 0.02 var(--hue-signal));
@@ -52,26 +52,33 @@
   --surface-uncertain: #fbf3e4;
   --surface-counter: #fdedf0;
 
-  /* ---- Borders ---- */
-  --border-subtle: #eceef1;
-  --border-default: #e1e4e9;
-  --border-strong: #cdd2da;
+  /* ---- Borders. Hairlines group content; --border-control outlines form
+     controls and clears 3:1 against white on its own. ---- */
+  --border-subtle: #e6eaf0;
+  --border-default: #dce2ea;
+  --border-strong: #c3cbd6;
+  --border-control: #8a94a4;
+  --border-control-hover: #6b7686;
 
-  /* ---- Text. Secondary and tertiary clear 4.5:1 on the canvas. ---- */
-  --text-primary: #14161b;
-  --text-body: #2b2e35;
-  --text-secondary: #4f5562;
-  --text-tertiary: #646b78;
-  --text-quaternary: #959cab;
-  --text-disabled: #a8aebb;
+  /* ---- Text. Measured: primary 15.2:1, body 11.6:1, secondary 6.0:1 and
+     tertiary 5.3:1 on the canvas; tertiary stays 5.1:1 on --surface-panel.
+     Quaternary is decorative only (dots, separators), never text. ---- */
+  --text-primary: #18212f;
+  --text-body: #2b3544;
+  --text-secondary: #526071;
+  --text-tertiary: #5d6878;
+  --text-quaternary: #8a94a4;
+  --text-disabled: #a3acb9;
 
-  /* ---- Accent: indigo from the logo. Primary actions, selection, links, focus. ---- */
-  --accent: #5b5bd6;
-  --accent-hover: #4d4dc4;
-  --accent-active: #4242ad;
-  --accent-ink: #4040b0;
-  --accent-soft: #eeeefc;
-  --accent-line: #cfd0f5;
+  /* ---- Accent: indigo. Selection, navigation, links and focus. The primary
+     call to action stays near-black (--control-solid). Accent on white 6.3:1;
+     accent-ink on --accent-soft 7.1:1. ---- */
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-active: #3730a3;
+  --accent-ink: #4338ca;
+  --accent-soft: #eef2ff;
+  --accent-line: #c7d2fe;
 
   /* ---- Controls ---- */
   --control-solid: #111214;
@@ -82,16 +89,16 @@
   --fy-accent: var(--accent);
   --fy-accent-ink: var(--accent-ink);
   --fy-accent-soft: var(--accent-soft);
-  --fy-accent-field: #f6f6fe;
+  --fy-accent-field: #f5f7ff;
   --fy-accent-line: var(--accent-line);
-  --fy-yellow: #e2a500;
-  --fy-yellow-field: #fbf3dc;
-  --fy-red: #e5484d;
-  --fy-red-ink: #c4323a;
-  --fy-red-field: #fdf0f0;
-  --fy-red-line: #f6c9cb;
-  --fy-green-ink: #1f7a4d;
-  --fy-amber-ink: #8a5a0b;
+  --fy-yellow: #d97706;
+  --fy-yellow-field: #fffbeb;
+  --fy-red: #dc2626;
+  --fy-red-ink: #b91c1c;
+  --fy-red-field: #fef2f2;
+  --fy-red-line: #fecaca;
+  --fy-green-ink: #166534;
+  --fy-amber-ink: #92400e;
 
   /* ---- Brand ---- */
   --brand-blue: oklch(56% 0.2 var(--hue-signal));
@@ -124,12 +131,12 @@
   --fydell-action: #e8eaed;
   --fydell-evidence: var(--accent);
   --fydell-evidence-selected: var(--accent-hover);
-  --fydell-risk: #c93b55;
-  --fydell-risk-hover: #d85a70;
-  --fydell-changed: #9a6a1c;
-  --fydell-good: #2f7d54;
+  --fydell-risk: #b91c1c;
+  --fydell-risk-hover: #991b1b;
+  --fydell-changed: #92400e;
+  --fydell-good: #166534;
   --action-ink: var(--accent);
-  --action-ink-ring: rgba(91, 91, 214, 0.35);
+  --action-ink-ring: rgba(79, 70, 229, 0.32);
   --fydell-verified: #7a4fa0;
   --evidence-generated: #6d28d9;
   --evidence-observed: #0b6e67;
@@ -145,27 +152,31 @@
   --viz-attention: var(--status-attention-ink);
 
   /* ---- Status ---- */
-  --status-positive-bg: rgba(47, 122, 79, 0.1);
-  --status-positive-ink: #256b43;
-  --status-positive-line: rgba(47, 122, 79, 0.22);
-  --status-neutral-bg: rgba(15, 17, 23, 0.05);
-  --status-neutral-ink: #4b5262;
-  --status-neutral-line: rgba(15, 17, 23, 0.12);
-  --status-attention-bg: rgba(180, 120, 20, 0.1);
-  --status-attention-ink: #80520c;
-  --status-attention-line: rgba(180, 120, 20, 0.22);
+  /* Success, warning and error pairs measured at 6.8, 6.8 and 5.9:1. */
+  --status-positive-bg: #ecfdf3;
+  --status-positive-ink: #166534;
+  --status-positive-line: #bbe5cb;
+  --status-neutral-bg: #f0f3f7;
+  --status-neutral-ink: #4b5768;
+  --status-neutral-line: #d5dce5;
+  --status-attention-bg: #fffbeb;
+  --status-attention-ink: #92400e;
+  --status-attention-line: #f6dfa8;
+  --status-error-bg: #fef2f2;
+  --status-error-ink: #b91c1c;
+  --status-error-line: #fecaca;
 
   /* Status badge tints: tinted fill, strong ink, no border. */
-  --badge-success-bg: #e7f5ec;
-  --badge-success-ink: #17663a;
-  --badge-pending-bg: #eef0ff;
-  --badge-pending-ink: #3f3fb0;
-  --badge-attention-bg: #fdf3e1;
-  --badge-attention-ink: #8a5a0b;
-  --badge-failed-bg: #fdeced;
-  --badge-failed-ink: #a5243b;
-  --badge-neutral-bg: #f0f2f5;
-  --badge-neutral-ink: #4f5562;
+  --badge-success-bg: #ecfdf3;
+  --badge-success-ink: #166534;
+  --badge-pending-bg: #eef2ff;
+  --badge-pending-ink: #4338ca;
+  --badge-attention-bg: #fffbeb;
+  --badge-attention-ink: #92400e;
+  --badge-failed-bg: #fef2f2;
+  --badge-failed-ink: #b91c1c;
+  --badge-neutral-bg: #f0f3f7;
+  --badge-neutral-ink: #4b5768;
 
   /* ---- Stage ---- */
   --stage-bg: oklch(97.2% 0.004 var(--hue-signal));
@@ -174,14 +185,22 @@
   --stage-ink: var(--text-secondary);
   --page-grid: oklch(20% 0.02 var(--hue-signal) / 0.055);
 
-  /* ---- Type ---- */
-  --type-display: clamp(3rem, 2rem + 5vw, 4.5rem);
-  --type-page: clamp(2.75rem, 1.9rem + 4.2vw, 4.5rem);
-  --type-section: clamp(1.75rem, 1.35rem + 1.9vw, 2.5rem);
+  /* ---- Type. Product steps (rem, fixed): page title 30, report section 20,
+     finding 18, report prose 16, app text 15, controls 14, metadata 13,
+     code 14. Marketing: hero 34-64, section heading 26-40. Nothing
+     essential below 13px; 12px only for line numbers and similar markers. ---- */
+  --type-display: clamp(2.125rem, 1.45rem + 2.9vw, 4rem);
+  --type-page: clamp(2.125rem, 1.45rem + 2.9vw, 4rem);
+  --type-section: clamp(1.625rem, 1.3rem + 1.4vw, 2.5rem);
   --type-app-page: 1.875rem;
-  --type-app-section: 1.1875rem;
+  --type-app-section: 1.25rem;
+  --type-app-finding: 1.125rem;
+  --type-app-prose: 1rem;
   --type-app-body: 0.9375rem;
+  --type-app-control: 0.875rem;
   --type-app-meta: 0.8125rem;
+  --type-app-code: 0.875rem;
+  --type-app-marker: 0.75rem;
   --lh-app-page: 1.15;
   --lh-app-section: 1.3;
   --lh-app-body: 1.5;
@@ -206,11 +225,15 @@
   --space-11: 120px;
   --space-12: 144px;
 
-  /* ---- Radii ---- */
-  --radius-tag: 4px;
-  --radius-control: 6px;
-  --radius-panel: 10px;
-  --radius-frame: 14px;
+  /* ---- Radii. Controls 6-10px, panels 12-16px. ---- */
+  --radius-tag: 6px;
+  --radius-control: 8px;
+  --radius-panel: 12px;
+  --radius-frame: 16px;
+
+  /* ---- Rows ---- */
+  --row-height: 52px;
+  --row-height-compact: 40px;
 
   /* ---- Shadows ---- */
   --shadow-panel: 0 1px 2px rgba(40, 34, 20, 0.05);
@@ -297,14 +320,14 @@
   --ev-generated-ink: #5b21b6;
   --ev-generated-field: #efe7fb;
   --ev-attention: #a9752a;
-  --ev-attention-ink: #80520c;
-  --ev-attention-field: #fbf3e2;
-  --ev-success: #3f7d5c;
-  --ev-success-ink: #2f6b4a;
-  --ev-success-field: #e9f4ee;
-  --ev-error: #c2405a;
-  --ev-error-ink: #a83248;
-  --ev-error-field: #fbe9ed;
+  --ev-attention-ink: #92400e;
+  --ev-attention-field: #fffbeb;
+  --ev-success: #15803d;
+  --ev-success-ink: #166534;
+  --ev-success-field: #ecfdf3;
+  --ev-error: #dc2626;
+  --ev-error-ink: #b91c1c;
+  --ev-error-field: #fef2f2;
   --action: var(--accent);
   --action-hover: var(--accent-hover);
   --text-on-solid: #ffffff;
@@ -345,6 +368,11 @@
   --border-subtle: rgba(255, 255, 255, 0.065);
   --border-default: rgba(255, 255, 255, 0.1);
   --border-strong: rgba(255, 255, 255, 0.16);
+  --border-control: rgba(255, 255, 255, 0.3);
+  --border-control-hover: rgba(255, 255, 255, 0.42);
+  --status-error-bg: oklch(71% 0.16 18 / 0.13);
+  --status-error-ink: oklch(82% 0.1 18);
+  --status-error-line: oklch(71% 0.16 18 / 0.3);
   --text-primary: oklch(96.5% 0.004 268);
   --text-secondary: oklch(72% 0.012 268);
   --text-tertiary: oklch(61% 0.012 268);

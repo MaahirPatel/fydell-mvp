@@ -167,7 +167,7 @@ export default function SiteNav() {
             >
               <div className="grid grid-cols-[1fr_200px] overflow-hidden rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-raised)] shadow-[0_1px_2px_rgba(17,18,20,0.05),0_18px_40px_-18px_rgba(17,18,20,0.25)]">
                 <div className="p-2">
-                  <p className="px-3 pb-1 pt-2 text-[12.5px] font-medium text-[var(--text-tertiary)]">Product</p>
+                  <p className="px-3 pb-1 pt-2 text-app-meta font-medium text-[var(--text-tertiary)]">Product</p>
                   <ul className="grid grid-cols-2 gap-0.5">
                     {PRODUCT_ITEMS.map((item) => (
                       <li key={item.href}>
@@ -185,7 +185,7 @@ export default function SiteNav() {
                   </ul>
                 </div>
                 <div className="border-l border-[var(--border-subtle)] bg-[var(--surface-panel)] p-2">
-                  <p className="px-3 pb-1 pt-2 text-[12.5px] font-medium text-[var(--text-tertiary)]">Resources</p>
+                  <p className="px-3 pb-1 pt-2 text-app-meta font-medium text-[var(--text-tertiary)]">Resources</p>
                   <ul>
                     {RESOURCE_ITEMS.map((item) => (
                       <li key={item.href}>

@@ -44,7 +44,7 @@ export default function CalibrationPage() {
       {(Object.keys(form) as Array<keyof typeof form>).map((key) => (
         <label key={key} className="block">
           <span className="text-app-meta font-medium text-[var(--text-secondary)]">{key.replaceAll("_", " ")}</span>
-          <textarea className="mt-1 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-panel)] p-2" rows={3} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
+          <textarea className="mt-1 w-full rounded-[8px] border border-[var(--border-control)] bg-[var(--surface-panel)] p-2" rows={3} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
         </label>
       ))}
       <Button type="submit" variant="primary" shape="pill">Save</Button>

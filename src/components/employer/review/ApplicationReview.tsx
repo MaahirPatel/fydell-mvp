@@ -59,7 +59,7 @@ function EvidenceCard({ item, action }: { item: EvidenceItem; action?: React.Rea
   return (
     <div className="rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] p-3">
       <p className="text-app-meta leading-[1.5] text-[var(--text-body)]">{item.finding}</p>
-      <p className="mt-1 break-all font-mono text-[12px] text-[var(--text-tertiary)]">
+      <p className="mt-1 break-all font-mono text-app-meta text-[var(--text-tertiary)]">
         {item.repo} · {item.path}:{item.startLine}
         {item.endLine > item.startLine ? `-${item.endLine}` : ""}
       </p>
@@ -68,7 +68,7 @@ function EvidenceCard({ item, action }: { item: EvidenceItem; action?: React.Rea
         {item.excerpt.length > 0 ? (
           <details className="w-full text-app-meta">
             <summary className="cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Show source excerpt</summary>
-            <pre className="mt-2 max-h-56 overflow-auto rounded-[6px] bg-[var(--surface-code)] p-3 font-mono text-[12px] leading-[1.5] text-[var(--text-body)]">{item.excerpt.join("\n")}</pre>
+            <pre className="mt-2 max-h-56 overflow-auto rounded-[6px] bg-[var(--surface-code)] p-3 font-mono text-app-meta leading-[1.5] text-[var(--text-body)]">{item.excerpt.join("\n")}</pre>
             {item.limitations.length > 0 ? <p className="mt-1.5 text-[var(--text-tertiary)]">Limits: {item.limitations.join(" ")}</p> : null}
           </details>
         ) : null}
@@ -138,7 +138,7 @@ function ExistingEvidence({
             {data.evidence.slice(0, PREVIEW_FINDINGS).map((e) => (
               <li key={e.id} className="rounded-[6px] bg-[var(--surface-canvas)] px-2.5 py-2 text-app-meta leading-[1.45]">
                 <span className="text-[var(--text-body)]">{e.finding}</span>
-                <span className="mt-0.5 block break-all font-mono text-[12px] text-[var(--text-tertiary)]">{e.path}:{e.startLine}</span>
+                <span className="mt-0.5 block break-all font-mono text-app-meta text-[var(--text-tertiary)]">{e.path}:{e.startLine}</span>
               </li>
             ))}
           </ul>
@@ -388,7 +388,7 @@ function RequirementCard({ data, req }: { data: ReviewData; req: ReviewRequireme
     <li className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border-subtle)] px-5 py-4">
         <div className="min-w-0">
-          <p className="text-[12px] font-medium text-[var(--text-tertiary)]">{req.kind === "required" ? "Required" : "Preferred"}</p>
+          <p className="text-app-meta font-medium text-[var(--text-tertiary)]">{req.kind === "required" ? "Required" : "Preferred"}</p>
           <h3 className="mt-0.5 text-[15px] font-medium leading-[1.4] text-[var(--text-primary)]">{req.text}</h3>
         </div>
         <span className={`badge shrink-0 ${s.badge}`}>{s.label}</span>

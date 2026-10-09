@@ -107,11 +107,11 @@ export function TopBar({
       <h1 className="sr-only min-w-0 truncate text-[14px] font-medium text-[var(--text-primary)] sm:not-sr-only" title={title}>
         {title}
       </h1>
-      {preview ? <span className="shrink-0 rounded-[4px] bg-[var(--surface-raised)] px-1.5 py-0.5 text-[12px] text-[var(--text-secondary)]">Preview</span> : null}
+      {preview ? <span className="shrink-0 rounded-[4px] bg-[var(--surface-raised)] px-1.5 py-0.5 text-app-meta text-[var(--text-secondary)]">Preview</span> : null}
 
       <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
         {!submitted ? (
-          <div className="flex items-center gap-2 text-[12.5px]">
+          <div className="flex items-center gap-2 text-app-meta">
             <span
               role="status"
               aria-live="polite"
@@ -135,13 +135,13 @@ export function TopBar({
               <span className="sr-only sm:not-sr-only">{SAVE_LABEL[effective]}</span>
             </span>
             {effective === "error" ? (
-              <button type="button" onClick={onRetrySave} className="text-[12.5px] font-medium text-[var(--text-primary)] underline underline-offset-2">
+              <button type="button" onClick={onRetrySave} className="text-app-meta font-medium text-[var(--text-primary)] underline underline-offset-2">
                 Retry
               </button>
             ) : null}
           </div>
         ) : (
-          <span className="text-[12.5px] text-[var(--text-secondary)]">Submitted</span>
+          <span className="text-app-meta text-[var(--text-secondary)]">Submitted</span>
         )}
 
         {!submitted && remaining !== null ? (
