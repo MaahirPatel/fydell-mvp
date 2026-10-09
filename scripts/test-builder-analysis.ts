@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import { GithubClient, type AuthoredCommit, type PublicRepo } from "../src/lib/passport/github/client";
 import { isDescriptiveSubject, isConventionalSubject, selectRepositories, summarizeCommits, summarizeReadme, summarizeTree } from "../src/lib/builder-analysis/activity";
-import { citableIds, levelFor, synthesize, type SynthesisInput } from "../src/lib/builder-analysis/synthesize";
+import { citableIds, hasSourceChanges, levelFor, sourceChanges, synthesize, type SynthesisInput } from "../src/lib/builder-analysis/synthesize";
 import { templateNarrative, __test } from "../src/lib/builder-analysis/narrative";
 import { collectActivity } from "../src/lib/builder-analysis/run";
 import type { RepoActivity } from "../src/lib/builder-analysis/types";
@@ -200,6 +200,18 @@ async function main() {
     assert.deepEqual(out.scope.skipped, [{ repo: "sample/b", reason: "GitHub rate limit reached" }]);
     assert.equal(out.scope.commitsSampled, 7);
     assert.equal(calls, 2, "listing plus one rate-limited request");
+  });
+
+  await test("added or removed projects count as changed sources; same set does not", () => {
+    const report = synthesize(input);
+    const same = sourceChanges(report, { projects: input.projects, githubLogin: "Sample" });
+    assert.equal(hasSourceChanges(same), false);
+    const added = sourceChanges(report, { projects: [...input.projects, project("sample/new", [])], githubLogin: "sample" });
+    assert.deepEqual(added.added, ["sample/new"]);
+    assert.equal(hasSourceChanges(added), true);
+    const removed = sourceChanges(report, { projects: input.projects.slice(1), githubLogin: "sample" });
+    assert.deepEqual(removed.removed, [input.projects[0].repoFullName]);
+    assert.equal(sourceChanges(report, { projects: input.projects, githubLogin: null }).githubChanged, true);
   });
 
   await test("unknown GitHub user is reported, not thrown", async () => {

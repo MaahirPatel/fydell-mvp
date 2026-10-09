@@ -55,10 +55,11 @@ export type StartResult =
   | { started: false; reason: "running"; id: string }
   | { started: false; reason: "cooldown"; retryAfterSeconds: number };
 
-export async function beginAnalysis(ownerId: string): Promise<StartResult> {
+/** The cooldown only guards re-reading the same sources; adding or removing one allows a run at once. */
+export async function beginAnalysis(ownerId: string, opts: { sourcesChanged: boolean }): Promise<StartResult> {
   const latest = await latestAnalysis(ownerId);
   if (latest?.status === "running") return { started: false, reason: "running", id: latest.id };
-  if (latest?.status === "complete") {
+  if (latest?.status === "complete" && !opts.sourcesChanged) {
     const wait = new Date(latest.createdAt).getTime() + ANALYSIS_LIMITS.cooldownMinutes * 60_000 - Date.now();
     if (wait > 0) return { started: false, reason: "cooldown", retryAfterSeconds: Math.ceil(wait / 1000) };
   }

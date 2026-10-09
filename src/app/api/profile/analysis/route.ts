@@ -1,8 +1,10 @@
 import { NextResponse, after } from "next/server";
 import { requireUser } from "@/lib/simulations/auth";
 import { csrfGuard } from "@/lib/security/csrf";
-import { beginAnalysis, latestAnalysis } from "@/lib/builder-analysis/store";
+import { beginAnalysis, latestAnalysis, latestCompleteReport } from "@/lib/builder-analysis/store";
 import { runAnalysis } from "@/lib/builder-analysis/run";
+import { hasSourceChanges, sourceChanges } from "@/lib/builder-analysis/synthesize";
+import { getOwnerPassport } from "@/lib/passport/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,7 +28,10 @@ export async function POST(req: Request) {
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: "Sign in to run an analysis." }, { status: 401 });
   try {
-    const start = await beginAnalysis(user.id);
+    const [passport, previous] = await Promise.all([getOwnerPassport(user.id), latestCompleteReport(user.id)]);
+    const sourcesChanged =
+      !!previous && hasSourceChanges(sourceChanges(previous, { projects: passport?.projects ?? [], githubLogin: passport?.githubLogin ?? null }));
+    const start = await beginAnalysis(user.id, { sourcesChanged });
     if (start.started === false && start.reason === "cooldown") {
       const minutes = Math.ceil(start.retryAfterSeconds / 60);
       return NextResponse.json(

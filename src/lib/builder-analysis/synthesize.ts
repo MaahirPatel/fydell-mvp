@@ -528,6 +528,26 @@ export function synthesize(input: SynthesisInput): Synthesis {
   };
 }
 
+export type SourceChanges = { added: string[]; removed: string[]; githubChanged: boolean };
+
+/** What the engineer connected or removed since a report was generated. */
+export function sourceChanges(
+  report: Pick<BuilderAnalysisReport, "projects" | "subject">,
+  current: { projects: Array<Pick<PassportProject, "repoFullName">>; githubLogin: string | null },
+): SourceChanges {
+  const before = new Set(report.projects.filter((p) => p.depth === "deep").map((p) => repoKey(p.repo)));
+  const now = new Set(current.projects.map((p) => repoKey(p.repoFullName)));
+  return {
+    added: current.projects.filter((p) => !before.has(repoKey(p.repoFullName))).map((p) => p.repoFullName),
+    removed: report.projects.filter((p) => p.depth === "deep" && !now.has(repoKey(p.repo))).map((p) => p.repo),
+    githubChanged: (report.subject.githubLogin ?? "").toLowerCase() !== (current.githubLogin ?? "").toLowerCase(),
+  };
+}
+
+export function hasSourceChanges(c: SourceChanges): boolean {
+  return c.added.length > 0 || c.removed.length > 0 || c.githubChanged;
+}
+
 /** Every ref id the report can cite, used to validate model narrative. */
 export function citableIds(s: Synthesis): Set<string> {
   const ids = new Set<string>();
