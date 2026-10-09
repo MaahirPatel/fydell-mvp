@@ -25,7 +25,7 @@ type RunState = { status: "queued" | "running" | "done" | "failed"; message?: st
 
 const MAX = LIMITS.maxRepositoriesPerImport;
 const primaryCls =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[var(--control-solid)] px-5 text-app-body font-medium text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] disabled:opacity-50";
+  "inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[var(--control-solid)] px-5 text-app-body font-medium text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] disabled:opacity-50";
 
 function ScopeCard({
   name,
