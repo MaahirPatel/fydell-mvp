@@ -3,6 +3,7 @@ import Script from "next/script";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import { Inter } from "next/font/google";
+import AppWindowHome from "@/components/layout/AppWindowHome";
 import NavigationProgress from "@/components/layout/NavigationProgress";
 import StorageMigration from "@/components/layout/StorageMigration";
 import { SITE_URL } from "@/lib/seo/site";
@@ -42,6 +43,7 @@ export default function RootLayout({
           data-version="062024"
         />
         <StorageMigration />
+        <AppWindowHome />
         <NavigationProgress />
         {children}
       </body>
