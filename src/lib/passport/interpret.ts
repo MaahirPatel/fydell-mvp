@@ -50,6 +50,6 @@ export async function summariseCapabilities(evidence: PassportEvidence[], roles:
   try {
     return await modelSummary(evidence, roles, config);
   } catch {
-    return ruleSummary(evidence, roles, "AI review was unavailable, so this summary is built by rules from the verified findings.");
+    return ruleSummary(evidence, roles, "AI review was unavailable, so this summary is built by rules from the recorded findings.");
   }
 }

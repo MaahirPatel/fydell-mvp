@@ -468,7 +468,7 @@ async function listSubmissionTimeline(ownerId: string): Promise<TimelineItem[]> 
       id: `sim-${r.id}`,
       kind: "simulation" as const,
       title: `Submitted: ${title}`,
-      detail: "Completed inside a Fydell simulation and verified server-side.",
+      detail: "Completed inside a Fydell simulation. Fydell recorded the session and ran the checks on its servers.",
       occurredAt: r.submitted_at,
       provenance: "observed-simulation" as const,
       url: null,

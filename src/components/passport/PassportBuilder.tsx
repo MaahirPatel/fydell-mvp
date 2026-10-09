@@ -11,7 +11,7 @@ import "./passport.css";
 import { ruleSummary, suggestRoles } from "@/lib/passport/rules";
 import { SKIP_REASON_LABEL, shortSha } from "@/lib/passport/record-states";
 import type { ScopePreview } from "@/lib/passport/github/extract";
-import type { ExtractionResult } from "@/lib/passport/github/types";
+import { LIMITS, type ExtractionResult } from "@/lib/passport/github/types";
 import type { PassportData, PassportProject } from "@/lib/passport/view";
 
 type Repo = { name: string; fullName: string; language: string | null; fork: boolean; archived: boolean; pushedAt: string | null };
@@ -23,7 +23,7 @@ type ScopeState =
 type StartState = { status: "idle" | "starting" | "started" } | { status: "error"; message: string };
 type RunState = { status: "queued" | "running" | "done" | "failed"; message?: string; project?: PassportProject | null };
 
-const MAX = 3;
+const MAX = LIMITS.maxRepositoriesPerImport;
 const primaryCls =
   "inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[var(--control-solid)] px-5 text-app-body font-medium text-[var(--control-solid-ink)] hover:bg-[var(--control-solid-hover)] disabled:opacity-50";
 

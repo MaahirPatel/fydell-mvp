@@ -12,7 +12,7 @@ export type EvidenceProvenance = "observed-simulation" | "repository-observation
 export const PROVENANCE_LABELS: Record<EvidenceProvenance, { short: string; detail: string }> = {
   "observed-simulation": {
     short: "Observed simulation",
-    detail: "Work completed inside a Fydell simulation and verified server-side.",
+    detail: "Work completed inside a Fydell simulation. Fydell recorded the session and ran the checks on its servers.",
   },
   "repository-observation": {
     short: "Repository observation",
