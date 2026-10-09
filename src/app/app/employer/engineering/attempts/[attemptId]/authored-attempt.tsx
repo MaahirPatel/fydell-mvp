@@ -202,7 +202,7 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
           {!preview && view.report && roleCan(member.role, "record_decision") ? (
             <Panel>
               <PanelSection title="Your decision" description="Fydell provides evidence. The decision is yours.">
-                <DecisionForm attemptId={attempt.id} reportVersion={view.report.version} />
+                <DecisionForm attemptId={attempt.id} reportVersion={view.report.version} current={latestDecision?.decision ?? null} />
               </PanelSection>
               {latestDecision ? (
                 <PanelSection title="Decision history">

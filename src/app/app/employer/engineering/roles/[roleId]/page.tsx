@@ -51,6 +51,9 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
   const canInvite = roleCan(member.role, "invite_candidates") && role.status === "published";
   const canManageInvites = roleCan(member.role, "manage_invitations");
   const focusLabels = FOCUS_OPTIONS.filter((f) => role.evaluation_focus.includes(f.key)).map((f) => f.label);
+  const builtInScope = workSamples.length
+    ? ` These panels cover ${taskTitle}, Fydell’s built-in task. Candidates invited to one of your work samples see that work sample’s brief instead.`
+    : "";
 
   return (
     <div className="max-w-[1160px]">
@@ -172,7 +175,7 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
         {definition ? (
         <div className="grid gap-6 lg:grid-cols-2">
           <Panel>
-            <PanelSection title="What candidates see" description="The brief, the rules and the setup requirements, exactly as shown before they start.">
+            <PanelSection title="What candidates see" description={`The brief, the rules and the setup requirements, exactly as shown before they start.${builtInScope}`}>
               <PanelLabel>Brief</PanelLabel>
               <ul className="mt-2 grid gap-2 text-app-body leading-[1.6] text-[var(--text-secondary)]">
                 {definition.candidateBrief.map((line) => (
@@ -196,7 +199,7 @@ export default async function EngineeringRolePage({ params }: { params: Promise<
             </PanelSection>
           </Panel>
           <Panel>
-            <PanelSection title="How it is reviewed" description={`Focus for this role: ${focusLabels.join(", ")}.`}>
+            <PanelSection title="How it is reviewed" description={`Focus for this role: ${focusLabels.join(", ")}.${builtInScope}`}>
               <ul className="grid gap-4">
                 {definition.rubric.map((dimension) => (
                   <li key={dimension.key}>

@@ -14,9 +14,16 @@ const DECISIONS = [
   { key: "decline", label: "Decline" },
 ] as const;
 
-export function DecisionForm({ attemptId, reportVersion }: { attemptId: string; reportVersion: number }) {
+type DecisionKey = (typeof DECISIONS)[number]["key"];
+
+function asDecisionKey(value: string | null | undefined): DecisionKey | null {
+  return DECISIONS.find((d) => d.key === value)?.key ?? null;
+}
+
+export function DecisionForm({ attemptId, reportVersion, current = null }: { attemptId: string; reportVersion: number; current?: string | null }) {
   const router = useRouter();
-  const [decision, setDecision] = useState<(typeof DECISIONS)[number]["key"] | null>(null);
+  const recorded = asDecisionKey(current);
+  const [decision, setDecision] = useState<DecisionKey | null>(recorded);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,17 +53,22 @@ export function DecisionForm({ attemptId, reportVersion }: { attemptId: string; 
       <FormError>{error}</FormError>
       <div role="radiogroup" aria-label="Decision" className="flex flex-wrap gap-2">
         {DECISIONS.map((d) => (
-          <Button key={d.key} type="button" variant={decision === d.key ? "primary" : "secondary"} aria-pressed={decision === d.key} onClick={() => setDecision(d.key)}>
+          <Button key={d.key} type="button" variant={decision === d.key ? "primary" : "secondary"} role="radio" aria-checked={decision === d.key} onClick={() => setDecision(d.key)}>
             {d.label}
           </Button>
         ))}
       </div>
+      {recorded && !saved ? (
+        <p className="text-app-meta text-[var(--text-secondary)]">
+          Current decision: {DECISIONS.find((d) => d.key === recorded)?.label}. Recording again adds a new entry to the decision history.
+        </p>
+      ) : null}
       <Field label="Reasoning" htmlFor="decision-notes" optional help={`Recorded against report version ${reportVersion}. The candidate is not notified; telling them is a separate step.`}>
         <Textarea id="decision-notes" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={4000} rows={3} />
       </Field>
       <div className="flex items-center gap-3">
         <Button type="submit" variant="primary" loading={busy}>
-          Record decision
+          {recorded ? "Update decision" : "Record decision"}
         </Button>
         {saved ? <span className="text-app-meta text-[var(--text-secondary)]">Recorded.</span> : null}
       </div>

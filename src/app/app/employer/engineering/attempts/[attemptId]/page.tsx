@@ -342,7 +342,7 @@ export default async function EmployerAttemptPage({ params }: { params: Promise<
           {view.report && roleCan(member.role, "record_decision") ? (
             <Panel>
               <PanelSection title="Your decision" description="Fydell provides evidence. The decision is yours.">
-                <DecisionForm attemptId={attempt.id} reportVersion={view.report.version} />
+                <DecisionForm attemptId={attempt.id} reportVersion={view.report.version} current={decisionValue} />
               </PanelSection>
               {view.decisions.length ? (
                 <PanelSection title="Decision history">
