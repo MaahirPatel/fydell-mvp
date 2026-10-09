@@ -28,3 +28,7 @@ Source of truth: `docs/IMPLEMENTATION_CHECKLIST.md`. Resume by reading it, then 
 - Deferred: Stripe, code signing, GitHub App, CLI.
 - Local installer: `Downloads\Fydell_0.1.6_x64-setup.exe` (prod only, unsigned).
 - The dev watchdog runs hidden (`.scratch/dev-watchdog.ps1`); stop it when done.
+
+## After pause
+
+- Agent S finished (a1984e9, migration 094). Open: real-model chat evidence (needs Groq quota), desktop client submission id (agent F), authorization and cache templates.

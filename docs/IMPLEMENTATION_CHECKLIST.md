@@ -61,11 +61,11 @@ Invitation, simulation, submission, analysis, employer report.
 | R1 | Role intake | `/app/employer/engineering/roles/[roleId]` | Requirements with must-have or preferred, expected evidence; versioned saves | Verified | live DB |
 | R2 | Application link | role link | Interrupted signup keeps role context; one application only | Partial: apply path built; interrupted-signup journey not yet run | |
 | R3 | Invitation | `/assess/invite/[token]` | Real email in production only; expired and used links handled | Verified | live DB, real Resend to `delivered@resend.dev` |
-| R4 | Pre-start disclosure | assessment start | Scope, timing, permitted AI, what is recorded, who sees it | In progress (agent S) | |
+| R4 | Pre-start disclosure | assessment start | Scope, timing, permitted AI, what is recorded, who sees it | Verified | browser (a1984e9) |
 | R5 | Work in the editor | workbench | Editor loads or recovers within 20s; files persist; tests run in the sandbox | Partial: editor fix in prod; persistence verified by agent E; full matrix pending agent S | browser, prod |
-| R6 | Coworker chat | workbench | Grounded, no reference or hidden-test leakage, server cutoff | Partial: allowance races and cutoff verified; leakage check pending agent S | live DB |
-| R7 | Submission | workbench | Stable client id, frozen manifest with hashes, receipt, no duplicates on retry | Partial: five of six crash points recover; crash after queueing leaves no evaluation (agent S fixing) | live DB + process kill |
-| R8 | Analysis | worker | Durable job on the exact snapshot; infrastructure failure never shown as candidate failure | Partial | live DB, real sandbox |
+| R6 | Coworker chat | workbench | Grounded, no reference or hidden-test leakage, server cutoff | Partial: leakage, allowance races, cutoff and outage fallback verified; no real-model chat evidence yet (provider down during runs) | live DB, real sandbox |
+| R7 | Submission | workbench | Stable client id, frozen manifest with hashes, receipt, no duplicates on retry | Verified: all five crash points and a killed worker end with exactly one submission, evaluation and report; manifest hashes pinned to the simulation version. Desktop does not send a client id yet | live DB + process kill, real sandbox |
+| R8 | Analysis | worker | Durable job on the exact snapshot; infrastructure failure never shown as candidate failure | Verified (journeys 8 and 10) | live DB, real sandbox |
 | R9 | Employer report | applicant review | Requirement split view, executed checks, handoff, limits, follow-ups, human decision with private notes | Partial: correct vs superficial submissions differ (agent B); full walk pending | live DB, browser |
 | R10 | Decision brief and export | applicant review | Brief with evidence links; export excludes private notes | Partial | live DB |
 
@@ -99,7 +99,7 @@ this checklist.
 | S1 | Engineer workspace routes | Partial: most verified; onboarding and Passport creation not rendered |
 | S2 | Employer routes | Partial: assessments list squeezed at 1280; invitation page needs a fresh invite |
 | S3 | Settings, billing, admin, auth | Not started (agent D next) |
-| S4 | Simulation workbench | In progress (agent S) |
+| S4 | Simulation workbench | Partial: seven templates validated in the sandbox (backend, applied AI); other tracks labelled not offered; workbench screenshots at 1280 and 1440 |
 | S5 | Desktop app sign-in, sync, crash recovery | Partial. Verified (native, dev): browser sign-in through `fydell://`, refresh token in Windows Credential Manager only, sign-in survives force-kill and offline, handoff answers and unsent file edits restored after a crash, duplicate delivery creates no extra version. Pending: desktop submit with the same receipt id on desktop, web and employer views; local handoff drafts in the standard flow; live check that web and desktop sessions are independent. Every build opens www.fydell.com unless `FYDELL_PLATFORM_URL` is set |
 
 ## P2. Real users
