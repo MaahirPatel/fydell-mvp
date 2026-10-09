@@ -9,18 +9,23 @@
 -- refused instead of returning an empty list, and the helpers are no longer
 -- callable as anonymous RPCs.
 
-revoke execute on function public.is_active_organization_member(uuid) from public, anon;
-revoke execute on function public.is_org_member(uuid) from public, anon;
-revoke execute on function public.is_workspace_manager(uuid) from public, anon;
-revoke execute on function public.is_workspace_member(uuid) from public, anon;
-revoke execute on function public.receipt_visible(uuid) from public, anon;
-revoke execute on function public.relay_session_is_owner(uuid) from public, anon;
-revoke execute on function public.session_visible(uuid) from public, anon;
-
-grant execute on function public.is_active_organization_member(uuid) to authenticated, service_role;
-grant execute on function public.is_org_member(uuid) to authenticated, service_role;
-grant execute on function public.is_workspace_manager(uuid) to authenticated, service_role;
-grant execute on function public.is_workspace_member(uuid) to authenticated, service_role;
-grant execute on function public.receipt_visible(uuid) to authenticated, service_role;
-grant execute on function public.relay_session_is_owner(uuid) to authenticated, service_role;
-grant execute on function public.session_visible(uuid) to authenticated, service_role;
+-- Guarded: not every environment has every helper (production has no
+-- is_workspace_* functions).
+do $$
+declare fn text;
+begin
+  foreach fn in array array[
+    'public.is_active_organization_member(uuid)',
+    'public.is_org_member(uuid)',
+    'public.is_workspace_manager(uuid)',
+    'public.is_workspace_member(uuid)',
+    'public.receipt_visible(uuid)',
+    'public.relay_session_is_owner(uuid)',
+    'public.session_visible(uuid)'
+  ] loop
+    if to_regprocedure(fn) is not null then
+      execute format('revoke execute on function %s from public, anon', fn);
+      execute format('grant execute on function %s to authenticated, service_role', fn);
+    end if;
+  end loop;
+end $$;
