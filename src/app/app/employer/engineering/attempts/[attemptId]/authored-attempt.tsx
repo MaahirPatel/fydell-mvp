@@ -5,7 +5,14 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Status } from "@/components/ui/report";
 import { DecisionForm, NoteForm, When } from "@/components/eng/EmployerAttemptPanels";
 import { RequeueButton } from "@/components/eng/ReviewerControls";
-import { AuthoredEvaluationPanel, AuthoredSubmissionPanel } from "@/components/work-samples/runtime/AuthoredEmployerReview";
+import { LocalTime } from "@/components/eng/LocalTime";
+import {
+  AuthoredBriefPanel,
+  AuthoredEvaluationPanel,
+  AuthoredFollowUpsPanel,
+  AuthoredSubmissionPanel,
+} from "@/components/work-samples/runtime/AuthoredEmployerReview";
+import { authoredBriefText, buildAuthoredDecisionBrief, buildAuthoredFollowUps } from "@/lib/eng/authored/follow-ups";
 import { AuthoredCollaborationPanel } from "@/components/work-samples/runtime/AuthoredCollaborationPanel";
 import { ReleaseAuthoredReport } from "@/components/work-samples/runtime/ReleaseAuthoredReport";
 import { employerCollaboration } from "@/lib/eng/authored/collaboration";
@@ -29,10 +36,6 @@ function handoffAnswers(handoff: unknown): { id: string; label: string; answer: 
   });
 }
 
-function clock(iso: string) {
-  return new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
-}
-
 /** The employer attempt page for an employer-authored work sample. */
 export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; member: EngMember; view: OrgAttemptView; pkg: ScenarioPackage }) {
   const { attempt } = view;
@@ -52,13 +55,19 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
   const who = candidateIdentity(view.invitation);
   const state = OPERATIONAL_STATES[view.state];
   const latestDecision = view.decisions[0] ?? null;
+  const followUps = evaluation ? buildAuthoredFollowUps(evaluation, pkg.rubric) : null;
+  const brief = evaluation ? buildAuthoredDecisionBrief(evaluation) : null;
+  const briefText =
+    brief && followUps
+      ? authoredBriefText({ candidate: preview ? "Preview" : who.primary, role: view.role.title, task: pkg.brief.title, brief, followUps })
+      : "";
 
   const timeline: TimelineEntry[] = [
     { id: "invited", type: "invitation_created", at: view.invitation.created_at },
     ...view.timeline,
   ].map((e) => ({
     id: e.id,
-    time: <time dateTime={e.at}>{clock(e.at)}</time>,
+    time: <LocalTime iso={e.at} />,
     title: e.type === "invitation_created" ? (preview ? "Preview started" : "Invitation created") : (EVENT_LABELS[e.type] ?? e.type.replace(/_/g, " ")),
     tone: e.type === "evaluation_blocked" || e.type === "evaluation_retries_exhausted" ? "change" : e.type === "submission_accepted" || e.type === "report_released" ? "key" : "neutral",
   }));
@@ -124,12 +133,28 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
             </Panel>
           ) : null}
 
+          {evaluation && followUps ? (
+            <Panel id="follow-ups">
+              <AuthoredFollowUpsPanel followUps={followUps} />
+            </Panel>
+          ) : null}
+
           {canSeeEvidence && evaluation ? (
             <Panel id="report">
               {view.report ? (
                 <PanelSection
                   title={`Released to the candidate, version ${view.report.version}`}
-                  description={`Released by ${view.report.reviewer_email}${view.report.released_at ? `, ${clock(view.report.released_at)}` : ""}.`}
+                  description={
+                    <>
+                      Released by {view.report.reviewer_email}
+                      {view.report.released_at ? (
+                        <>
+                          , <LocalTime iso={view.report.released_at} />
+                        </>
+                      ) : null}
+                      .
+                    </>
+                  }
                 >
                   {view.report.brief.authored?.reviewerNote ? (
                     <p className="max-w-[68ch] whitespace-pre-wrap text-app-body text-[var(--text-body)]">{view.report.brief.authored.reviewerNote}</p>
@@ -169,6 +194,11 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
         </div>
 
         <div className="grid h-fit gap-6">
+          {brief ? (
+            <Panel>
+              <AuthoredBriefPanel brief={brief} text={briefText} />
+            </Panel>
+          ) : null}
           {!preview && view.report && roleCan(member.role, "record_decision") ? (
             <Panel>
               <PanelSection title="Your decision" description="Fydell provides evidence. The decision is yours.">

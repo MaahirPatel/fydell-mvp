@@ -2,7 +2,9 @@ import { Status, type StatusKind } from "@/components/ui/report";
 import { PanelLabel, PanelSection } from "@/components/ui/Panel";
 import { BulletList, Disclosure, Facts } from "@/components/eng/CandidateParts";
 import { AUTHORED_STATE_LABEL, type AuthoredFile, type CandidateAcceptanceResult, type EmployerAuthoredEvaluation } from "@/lib/eng/authored/types";
+import type { AuthoredDecisionBrief, AuthoredFollowUp } from "@/lib/eng/authored/follow-ups";
 import { STATE_KIND } from "./AuthoredReport";
+import { CopyBriefButton } from "./CopyBriefButton";
 import { OUTCOME_LABEL, outcomeKind } from "./PublicTestResults";
 
 const ACCEPTANCE_KIND: Record<CandidateAcceptanceResult["state"], { label: string; kind: StatusKind }> = {
@@ -98,6 +100,62 @@ export function AuthoredEvaluationPanel({ evaluation }: { evaluation: EmployerAu
         </PanelSection>
       ) : null}
     </>
+  );
+}
+
+export function AuthoredFollowUpsPanel({ followUps }: { followUps: AuthoredFollowUp[] }) {
+  return (
+    <PanelSection title="Follow-up questions" description="Each question comes from a finding above. Use them in the next interview; none are sent to the candidate.">
+      {followUps.length ? (
+        <ol className="grid gap-4">
+          {followUps.map((f, i) => (
+            <li key={`${f.criterionId}-${i}`} className="grid gap-1">
+              <p className="max-w-[72ch] text-app-body leading-[1.55] text-[var(--text-primary)]">{f.question}</p>
+              <p className="text-app-meta text-[var(--text-tertiary)]">
+                {f.criterionLabel}. {f.basis}
+              </p>
+              {f.tests.length ? (
+                <p className="text-app-meta text-[var(--text-tertiary)]">
+                  Tests: <span className="font-mono text-[12px]">{f.tests.join(", ")}</span>
+                </p>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="text-app-body text-[var(--text-secondary)]">The evaluation found no gaps to follow up on.</p>
+      )}
+    </PanelSection>
+  );
+}
+
+function BriefLine({ label, items }: { label: string; items: string[] }) {
+  if (!items.length) return null;
+  return (
+    <div>
+      <PanelLabel>{label}</PanelLabel>
+      <p className="mt-0.5 text-app-meta text-[var(--text-body)]">{items.join(", ")}</p>
+    </div>
+  );
+}
+
+export function AuthoredBriefPanel({ brief, text }: { brief: AuthoredDecisionBrief; text: string }) {
+  const { acceptance } = brief;
+  return (
+    <PanelSection title="Decision brief" description="What the evidence supports, in one place.">
+      <div className="grid gap-3">
+        <p className="text-app-body text-[var(--text-primary)]">
+          {acceptance.confirmed} of {acceptance.total} acceptance criteria confirmed by tests
+          {acceptance.notConfirmed ? `, ${acceptance.notConfirmed} not confirmed` : ""}
+          {acceptance.noResult ? `, ${acceptance.noResult} without a result` : ""}.
+        </p>
+        <BriefLine label="Demonstrated" items={brief.demonstrated} />
+        <BriefLine label="Partially demonstrated" items={brief.partial} />
+        <BriefLine label="Concern observed" items={brief.concerns} />
+        <BriefLine label="Left for you" items={brief.notAssessed} />
+        <CopyBriefButton text={text} />
+      </div>
+    </PanelSection>
   );
 }
 

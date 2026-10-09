@@ -109,6 +109,7 @@
     "test:builder-analysis": "tsx --conditions react-server scripts/test-builder-analysis.ts",
     "test:eng": "tsx scripts/test-eng-units.ts && tsx --conditions react-server scripts/test-eng-criteria.ts && node scripts/validate-eng-scenario.mjs",
     "test:authored-runtime": "tsx --conditions react-server scripts/test-authored-runtime.ts",
+    "test:authored-follow-ups": "tsx scripts/test-authored-follow-ups.ts",
     "test:eng:staging": "tsx --env-file=.env.local --conditions react-server scripts/test-eng-staging.ts",
     "test:engineering": "tsx --conditions react-server scripts/test-engineering-runner.ts && tsx --conditions react-server scripts/test-engineering-runs.ts && tsx scripts/test-engineering-review.ts && node --test services/engineering-runner/runner.test.mjs",
     "validate:scenario": "tsx --conditions react-server scripts/validate-engineering-scenario.ts",
