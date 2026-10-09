@@ -609,15 +609,20 @@
 /* ---------- Catalog ---------- */
 
 .catalog {
-  margin-top: 56px;
-  border-top: 1px solid var(--border-subtle);
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-frame);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-2);
 }
 .catalog li {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   gap: 32px;
-  padding: 22px 0;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 22px 28px;
+}
+.catalog li + li {
+  border-top: 1px solid var(--border-subtle);
 }
 .catalogTitle {
   font-size: 17px;
@@ -656,6 +661,7 @@
   .catalog li {
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
+    padding: 18px;
   }
   .hero {
     padding-top: 104px;

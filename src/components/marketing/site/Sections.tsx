@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import RevealObserver from "./RevealObserver";
+import TintStage, { type Tint } from "./TintStage";
 import s from "./site.module.css";
 
 export function Arrow() {
@@ -121,6 +122,8 @@ export function Feature({
   link,
   layout = "stack",
   flip = false,
+  tint,
+  crop = true,
   children,
 }: {
   id: string;
@@ -130,6 +133,9 @@ export function Feature({
   link?: Cta;
   layout?: "stack" | "split" | "text";
   flip?: boolean;
+  /** Sets a stacked product view on the tint of its area. */
+  tint?: Tint;
+  crop?: boolean;
   children?: ReactNode;
 }) {
   const heading = (
@@ -166,7 +172,17 @@ export function Feature({
                 {heading}
                 {copy}
               </div>
-              {children ? <div className={s.stackVisual}>{children}</div> : null}
+              {children ? (
+                <div className={s.stackVisual}>
+                  {tint ? (
+                    <TintStage tint={tint} crop={crop}>
+                      {children}
+                    </TintStage>
+                  ) : (
+                    children
+                  )}
+                </div>
+              ) : null}
             </>
           )}
           {points?.length ? (

@@ -1,8 +1,7 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import ProductFrame from "@/components/marketing/site/ProductFrame";
 import ApplicantReview from "@/components/marketing/site/ApplicantReview";
-import ColorStage from "@/components/marketing/site/ColorStage";
-import StoryStrip from "@/components/marketing/site/StoryStrip";
+import TintStage from "@/components/marketing/site/TintStage";
 import EmployerReview from "@/components/marketing/site/EmployerReview";
 import HiringFlow from "@/components/marketing/site/HiringFlow";
 import SimulationTemplates, { templateCatalog } from "@/components/marketing/site/SimulationTemplates";
@@ -30,12 +29,11 @@ export default function EmployersPage() {
         primary={{ href: "/signup?as=employer", label: "Create a workspace" }}
         supporting={{ href: "/sandbox", label: "Product tour" }}
       >
-        <ColorStage tone="employer">
+        <TintStage tint="violet">
           <ProductFrame size="hero" title="Fydell · Submission review" label="A hiring team's review of one submission: a criterion, the changed lines and checks behind it, the one item left open, and the next step.">
-          <EmployerReview />
-        </ProductFrame>
-        </ColorStage>
-        <StoryStrip current="employer" />
+            <EmployerReview />
+          </ProductFrame>
+        </TintStage>
       </SiteHero>
 
       <Feature
@@ -50,6 +48,8 @@ export default function EmployersPage() {
       <Feature
         id="templates"
         title="Start from a simulation that already works."
+        tint="blue"
+        crop={false}
         body={
           <>
             <p>
@@ -67,6 +67,7 @@ export default function EmployersPage() {
       <Feature
         id="applications"
         title="Applications that arrive with the work."
+        tint="violet"
         body="Publish a role with its requirements and share the link. Applicants include the projects they choose, and your team reads that evidence requirement by requirement. Invite anyone to a simulation where the evidence runs out."
         link={{ href: "/products/hiring-workspace", label: "About the Hiring Workspace" }}
       >

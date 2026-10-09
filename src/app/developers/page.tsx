@@ -1,8 +1,7 @@
 import MarketingShell from "@/components/layout/MarketingShell";
 import PassportView from "@/components/passport/PassportView";
 import ProductFrame from "@/components/marketing/site/ProductFrame";
-import ColorStage from "@/components/marketing/site/ColorStage";
-import StoryStrip from "@/components/marketing/site/StoryStrip";
+import TintStage from "@/components/marketing/site/TintStage";
 import ProfileWorkspace from "@/components/marketing/site/ProfileWorkspace";
 import SimulationWorkspace from "@/components/marketing/site/SimulationWorkspace";
 import { Feature, SiteClosing, SiteFaq, SiteHero } from "@/components/marketing/site/Sections";
@@ -24,12 +23,11 @@ export default function DevelopersPage() {
         primary={{ href: "/signup", label: "Sign up" }}
         supporting={{ href: "/download", label: "Download Fydell" }}
       >
-        <ColorStage tone="engineer">
+        <TintStage tint="teal">
           <ProductFrame size="hero" interactive title="Fydell · Passport" label="One project in an engineer's Passport: its purpose, their part, and a finding opened to the source lines it cites. Select a highlight to open it.">
-          <ProfileWorkspace />
-        </ProductFrame>
-        </ColorStage>
-        <StoryStrip current="engineer" />
+            <ProfileWorkspace />
+          </ProductFrame>
+        </TintStage>
       </SiteHero>
 
       <Feature
@@ -79,6 +77,7 @@ export default function DevelopersPage() {
       <Feature
         id="simulations"
         title="Simulations, disclosed up front."
+        tint="blue"
         body={`If you're invited to a simulation, you see the brief, the time (${SCENARIO.defaultAllowedMinutes} minutes for about ${SCENARIO.targetMinutes} of work), the AI tool policy and what is recorded before anything starts. Setup time doesn't count, and asking the team questions is optional.`}
         link={{ href: "/products/simulations", label: "About Simulations" }}
       >
