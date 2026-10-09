@@ -40,6 +40,15 @@ function when(iso: string) {
   return new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
+/** Server and browser time zones differ, so the browser's local rendering wins without a hydration error. */
+function Timestamp({ iso }: { iso: string }) {
+  return (
+    <time dateTime={iso} suppressHydrationWarning>
+      {when(iso)}
+    </time>
+  );
+}
+
 type RunState = { kind: "running" } | { kind: "done"; run: RunRecord; report: Report } | { kind: "failed"; message: string };
 
 export default function DemoApplicantReview({
@@ -341,7 +350,7 @@ function DecisionForm({ applicantKey, decisions }: { applicantKey: string; decis
                 <li key={d.id} className="text-app-body">
                   <span className="font-medium text-[var(--text-primary)]">{DECISION_LABEL[d.decision]}</span>
                   <span className="text-[var(--text-secondary)]">
-                    {" "}by {d.decidedByYou ? "you" : "another reviewer"}, {when(d.decidedAt)}
+                    {" "}by {d.decidedByYou ? "you" : "another reviewer"}, <Timestamp iso={d.decidedAt} />
                   </span>
                   {d.privateNote ? <span className="mt-0.5 block text-[var(--text-secondary)]">{d.privateNote}</span> : null}
                 </li>
@@ -396,7 +405,7 @@ function FollowUpThread({ applicantKey, messages }: { applicantKey: string; mess
             {messages.map((m) => (
               <li key={m.id} className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-3 py-2.5">
                 <p className="text-app-meta text-[var(--text-secondary)]">
-                  {m.author === "reviewer" ? "Reviewer" : "Applicant"}, {when(m.createdAt)}
+                  {m.author === "reviewer" ? "Reviewer" : "Applicant"}, <Timestamp iso={m.createdAt} />
                   {name(m.requirementId) ? `. About: ${name(m.requirementId)}` : ""}
                 </p>
                 <p className="mt-1 text-app-body text-[var(--text-primary)]">{m.body}</p>

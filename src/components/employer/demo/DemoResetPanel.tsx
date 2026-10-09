@@ -65,7 +65,13 @@ export default function DemoResetPanel({ storageScope, resetAt }: { storageScope
           </p>
         ) : null}
         {state.kind === "idle" && resetAt ? (
-          <p className="text-app-meta text-[var(--text-tertiary)]">Last reset {new Date(resetAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}.</p>
+          <p className="text-app-meta text-[var(--text-tertiary)]">
+            Last reset{" "}
+            <time dateTime={resetAt} suppressHydrationWarning>
+              {new Date(resetAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+            </time>
+            .
+          </p>
         ) : null}
       </PanelSection>
     </Panel>
