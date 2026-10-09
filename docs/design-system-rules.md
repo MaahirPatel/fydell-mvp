@@ -90,7 +90,21 @@ Marketing building blocks (`src/components/marketing/site/`):
 - Every link and button goes to a real route under `src/app`.
 - Reveal animations (`RevealObserver`, `data-reveal`) and the hero entrance are CSS only and disabled under `prefers-reduced-motion` (global rule at the end of `fydell-tokens.css`).
 
-## 9. Figma to code checklist
+## 9. Patterns from the top 50
+
+Studied from the Figma community file "TOP 50 WEBSITES" (`fK98SFK24rhgixHt3PO1LP`), frames attio.com (`1:6263`), clickup.com (`1:5680`), cal.com (`3:7268`) and raycast.com (`1:33096`). The file has no Linear, Cursor, Stripe or Vercel frames. What Fydell takes, adapted rather than copied:
+
+- **Hero:** small pill announcement, a two-line headline of 56 to 72px at weight 500 to 600 with tight tracking, one sentence of lead, two CTAs (solid dark, quiet), then a large framed product view directly under the CTAs. Every site in the set leads with a product view, not an illustration.
+- **Section head:** left-aligned. A two-line heading of 40 to 48px, then one or two lines of grey supporting text. Attio puts a small icon before it; Fydell uses the two-tone heading instead.
+- **Feature card:** one bordered card per section. Attio's version has a row of 3 or 4 short steps across the top (bold name, two lines of grey copy), and the product UI cropped by the card's bottom edge. Fydell: `TintStage` plus a `StepRow`.
+- **Bento grid:** 2x2 or 1+2 cards. Each opens with a bold lead-in sentence that runs into grey body text, and the UI crop sits at the bottom of the card. Fydell: `EvidenceGrid`.
+- **Colored section cards (ClickUp):** each feature area sits in its own large rounded card (20 to 24px radius) on a pastel tint, with the copy and visual split side by side and a "Get started" link at the bottom. Fydell uses the `--tint-*` tokens, one hue per area: teal for projects and findings, blue for simulations, violet for hiring, warm for decisions.
+- **Numbered capability cards (cal.com):** a grid of cards numbered 01 to 06, with the screenshot on top and the title and description below. Fydell uses this for the product index.
+- **Rhythm:** sections are about 120 to 160px apart, and cards about 16 to 24px apart. The content column is about 1200px wide.
+- **Closing:** a full-width colored band with a two-line question or statement and two CTAs, then a footer with four or five link columns plus a CTA column.
+- **What Fydell does not take:** customer logo strips, testimonials, star ratings and "loved by" walls, because Fydell has no real ones to show. It also skips dark gradient hero worlds (Raycast), because Fydell is light mode.
+
+## 10. Figma to code checklist
 
 1. Map Figma colors to the nearest token in section 2. If none fits, add a token, do not inline the hex.
 2. Map text styles to the scale in section 3; drop any weight above 500 on marketing.

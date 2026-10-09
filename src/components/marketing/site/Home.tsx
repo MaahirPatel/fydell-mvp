@@ -109,15 +109,18 @@ export function Tiles({ items }: { items: readonly { title: string; body: string
   );
 }
 
-export function CenteredClosing({ title, actions }: { title: string; actions: ReactNode }) {
+export function CenteredClosing({ title, lead, actions }: { title: string; lead?: string; actions: ReactNode }) {
   return (
     <section className={s.closing} aria-labelledby="closing-title">
       <RevealObserver />
-      <div className={s.container} data-reveal="group">
-        <h2 id="closing-title" className={s.closingTitle}>
-          {title}
-        </h2>
-        <div className={s.ctas}>{actions}</div>
+      <div className={s.container}>
+        <div className={s.closingBand} data-reveal="group">
+          <h2 id="closing-title" className={s.closingTitle}>
+            {title}
+          </h2>
+          {lead ? <p className={s.closingLead}>{lead}</p> : null}
+          <div className={s.ctas}>{actions}</div>
+        </div>
       </div>
     </section>
   );

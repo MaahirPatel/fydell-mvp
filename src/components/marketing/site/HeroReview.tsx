@@ -164,7 +164,7 @@ export default function HeroReview() {
           ))}
         </ul>
         <div className={s.briefFoot}>
-          <span className={s.dim}>Team decision</span>
+          <span className={s.dim}>Decision</span>
           <span className={s.choices} aria-hidden>
             <span>Advance</span>
             <span>Hold</span>

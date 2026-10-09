@@ -53,7 +53,15 @@ export default function HomePage() {
         aside="Every finding links to the code it came from."
         more={{ href: "/products/builder-profiles", label: "Builder Profiles" }}
       >
-        <TintStage tint="teal">
+        <TintStage
+          tint="teal"
+          steps={[
+            { name: "Import.", body: "Connect a public repository or upload code you're allowed to share." },
+            { name: "Read.", body: "Fydell reads the project at a fixed revision." },
+            { name: "Cite.", body: "Each finding opens the lines it came from, and says what it can't tell you." },
+            { name: "Share.", body: "Pick the projects a recipient sees, with a link you can revoke." },
+          ]}
+        >
           <ProductFrame interactive title="Fydell · Passport" label="One project in an engineer's Passport: its purpose, their part, and a finding opened to the source lines it cites. Select a highlight to open it.">
             <ProfileWorkspace />
           </ProductFrame>
@@ -66,7 +74,15 @@ export default function HomePage() {
         aside="A real codebase, a brief, and a team to ask."
         more={{ href: "/products/simulations", label: "Simulations" }}
       >
-        <TintStage tint="blue">
+        <TintStage
+          tint="blue"
+          steps={[
+            { name: "Disclosed.", body: "The brief, the time and what is recorded are shown before you start." },
+            { name: "Ask.", body: "Simulated teammates answer from the same facts for every candidate." },
+            { name: "Change.", body: "Work in a real codebase, in the browser or in Fydell Desktop." },
+            { name: "Checked.", body: "Checks run on the submitted code. Reviewers read the results with your handoff." },
+          ]}
+        >
           <ProductFrame
             chrome="none"
             title="Fydell · Simulation"
@@ -112,6 +128,7 @@ export default function HomePage() {
 
       <CenteredClosing
         title="Show your work."
+        lead="Free for engineers. Hiring teams can start with one role."
         actions={
           <>
             <Link href="/signup" className="l-btn l-btn-solid">
