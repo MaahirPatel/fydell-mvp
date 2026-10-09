@@ -1,0 +1,263 @@
+/* Attio-style 2x2: a sentence on top, a framed product detail on a soft
+   tinted field below. Tints come from the brand field tokens. */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 24px 0;
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-frame);
+  background: var(--surface-raised);
+}
+
+.copy {
+  max-width: 34em;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.cardTitle {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.field {
+  position: relative;
+  flex: 1;
+  margin: 0 -24px;
+  padding: 28px 28px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 232px;
+}
+.field[data-tone="teal"] {
+  background: var(--tint-teal);
+}
+.field[data-tone="blue"] {
+  background: var(--tint-blue);
+}
+.field[data-tone="violet"] {
+  background: var(--tint-violet);
+}
+.field[data-tone="warm"] {
+  background: var(--tint-warm);
+}
+
+.example {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px 18px;
+  border: 1px solid var(--border-default);
+  border-bottom: 0;
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-2);
+  font-size: 13px;
+  color: var(--text-body);
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--text-secondary);
+}
+.strong {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.dim {
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+.push {
+  margin-left: auto;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  border-radius: var(--radius-control);
+  background: var(--surface-panel);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-body);
+}
+.ln {
+  display: inline-block;
+  width: 2.2em;
+  color: var(--text-tertiary);
+  user-select: none;
+}
+
+.claims {
+  display: grid;
+  gap: 8px;
+}
+.claims li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  line-height: 1.45;
+}
+.chip,
+.badge {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: var(--radius-tag);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.chip[data-kind="observed"] {
+  background: var(--ev-observed-field);
+  color: var(--ev-observed-ink);
+}
+.chip[data-kind="inferred"] {
+  background: var(--ev-generated-field);
+  color: var(--ev-generated-ink);
+}
+.badge[data-kind="attention"] {
+  background: var(--badge-attention-bg);
+  color: var(--badge-attention-ink);
+}
+
+.count {
+  padding: 1px 7px;
+  border-radius: var(--radius-tag);
+  background: var(--badge-neutral-bg);
+  color: var(--badge-neutral-ink);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.tests {
+  display: grid;
+}
+.tests li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+.tests li[data-pass="false"] .dim {
+  color: var(--badge-failed-ink);
+  font-weight: 500;
+}
+.pass {
+  color: var(--status-positive-ink);
+}
+.fail {
+  color: var(--badge-failed-ink);
+}
+
+.note {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.question {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-panel);
+  background: var(--surface-selected);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+.question svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--accent-ink);
+}
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+}
+
+.brief {
+  display: grid;
+}
+.brief div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+.brief dt {
+  color: var(--text-primary);
+}
+.brief dd {
+  color: var(--text-tertiary);
+  text-align: right;
+}
+.decision {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+}
+.decision strong {
+  font-weight: 500;
+  color: var(--status-positive-ink);
+}
+
+@media (max-width: 860px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 479px) {
+  .card {
+    padding: 20px 18px 0;
+  }
+  .field {
+    margin: 0 -18px;
+    padding: 24px 14px 0;
+    min-height: 0;
+  }
+  .brief div {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .brief dd {
+    text-align: left;
+  }
+}

@@ -110,6 +110,11 @@
   --field-warm: oklch(96% 0.04 var(--hue-warm));
   --ink-warm: oklch(45% 0.13 var(--hue-warm));
   --brand-warm: oklch(70% 0.17 var(--hue-warm));
+  /* Marketing section tints: equal lightness so a row of them reads evenly. */
+  --tint-teal: oklch(93.5% 0.045 var(--hue-evidence));
+  --tint-blue: oklch(93.5% 0.04 var(--hue-signal));
+  --tint-violet: oklch(93.5% 0.045 var(--hue-brand));
+  --tint-warm: oklch(94.5% 0.05 75);
 
   /* ---- Evidence and state ---- */
   --fydell-brand-blue: var(--accent);

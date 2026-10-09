@@ -9,6 +9,7 @@ import StoryStrip from "@/components/marketing/site/StoryStrip";
 import PaintedStage from "@/components/marketing/site/PaintedStage";
 import DownloadButton from "@/components/marketing/site/DownloadButton";
 import DesktopBand from "@/components/marketing/site/DesktopBand";
+import EvidenceGrid from "@/components/marketing/site/EvidenceGrid";
 import { Announcement, CenteredClosing, CenteredHero, ShowcaseSection, Tiles } from "@/components/marketing/site/Home";
 import { LATEST } from "@/components/marketing/site/releases";
 
@@ -94,6 +95,15 @@ export default function HomePage() {
             <ApplicantReview />
           </ProductFrame>
         </PaintedStage>
+      </ShowcaseSection>
+
+      <ShowcaseSection
+        id="evidence"
+        title="Every claim has a source."
+        aside="Findings, tests and questions stay attached to the work."
+        more={{ href: "/products/builder-reports", label: "Builder Reports" }}
+      >
+        <EvidenceGrid />
       </ShowcaseSection>
 
       <DesktopBand />
