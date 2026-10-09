@@ -5,6 +5,8 @@
  * `EmployerAuthoredEvaluation`, which is built and rendered for employers.
  */
 
+import type { CandidateResponse } from "../candidate-report";
+
 export type AuthoredFile = { path: string; content: string };
 
 export type AuthoredState = "demonstrated" | "partially_demonstrated" | "concern_observed" | "not_assessed" | "insufficient_evidence";
@@ -124,6 +126,7 @@ export interface AuthoredCandidateReport {
   notAssessed: string[];
   limitations: string[];
   runner: { label: string; isolated: boolean };
+  responses: CandidateResponse[];
 }
 
 export interface EmployerAuthoredEvaluation {

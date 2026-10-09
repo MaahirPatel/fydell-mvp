@@ -41,9 +41,22 @@ function newRequestId(): string {
   return `r_${crypto.randomUUID().replace(/-/g, "")}`;
 }
 
-type Target = { kind: CandidateResponse["targetKind"]; id: string; label: string };
+export type ResponseTarget = { kind: CandidateResponse["targetKind"]; id: string; label: string };
+type Target = ResponseTarget;
 
-function RespondForm({ attemptId, target, onDone, onCancel }: { attemptId: string; target: Target; onDone: (r: CandidateResponse) => void; onCancel: () => void }) {
+export function RespondForm({
+  attemptId,
+  target,
+  onDone,
+  onCancel,
+  endpoint = `/api/eng/attempts/${attemptId}/report`,
+}: {
+  attemptId: string;
+  target: Target;
+  onDone: (r: CandidateResponse) => void;
+  onCancel: () => void;
+  endpoint?: string;
+}) {
   const [kind, setKind] = useState<CandidateResponse["kind"]>("context");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -79,7 +92,7 @@ function RespondForm({ attemptId, target, onDone, onCancel }: { attemptId: strin
           onClick={async () => {
             setBusy(true);
             setError(null);
-            const res = await engFetch<{ response: CandidateResponse }>(`/api/eng/attempts/${attemptId}/report`, {
+            const res = await engFetch<{ response: CandidateResponse }>(endpoint, {
               body: { targetKind: target.kind, targetId: target.id, kind, body: text, clientRequestId: requestId },
             });
             setBusy(false);
@@ -97,7 +110,7 @@ function RespondForm({ attemptId, target, onDone, onCancel }: { attemptId: strin
   );
 }
 
-function ResponseList({ items }: { items: CandidateResponse[] }) {
+export function ResponseList({ items }: { items: CandidateResponse[] }) {
   if (!items.length) return null;
   return (
     <ul className="mt-2 grid gap-2">

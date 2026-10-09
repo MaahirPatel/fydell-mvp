@@ -209,7 +209,10 @@ export async function addResponse(
   const known =
     input.targetKind === "report" ||
     (input.targetKind === "finding" && row.findings.some((f) => f.id === input.targetId)) ||
-    (input.targetKind === "criterion" && (row.brief.criteria ?? []).some((c) => c.id === input.targetId));
+    (input.targetKind === "criterion" &&
+      ((row.brief.criteria ?? []).some((c) => c.id === input.targetId) ||
+        (row.brief.authored?.criteria ?? []).some((c) => c.id === input.targetId) ||
+        (row.brief.authored?.acceptance ?? []).some((a) => a.id === input.targetId)));
   if (!known) throw new ReportError("That part of the report no longer exists. Reload the page.", [], 409);
   if (input.clientRequestId) {
     const { data: existing } = await db.from("eng_report_responses").select("*").eq("attempt_id", attempt.id).eq("client_request_id", input.clientRequestId).maybeSingle();

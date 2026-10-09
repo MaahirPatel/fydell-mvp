@@ -9,6 +9,7 @@ import { formatBytes } from "@/components/eng/api";
 import { LocalTime } from "@/components/eng/LocalTime";
 import type { AuthoredCandidateReport, AuthoredCandidateView } from "@/lib/eng/authored/types";
 import { AuthoredReport } from "@/components/work-samples/runtime/AuthoredReport";
+import { AuthoredReportResponses } from "@/components/work-samples/runtime/AuthoredReportResponses";
 import { SimHeader, SupportLine } from "./TicketBrief";
 
 const EVALUATION_COPY: Record<AuthoredCandidateView["evaluation"], { title: string; body: string }> = {
@@ -104,6 +105,7 @@ export function SubmissionReceipt({ view, report, onOpenFiles }: { view: Authore
         {view.evaluation === "released" && report ? (
           <Panel>
             <AuthoredReport report={report} />
+            {view.preview ? null : <AuthoredReportResponses attemptId={view.attempt.id} report={report} />}
           </Panel>
         ) : null}
 

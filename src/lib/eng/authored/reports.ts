@@ -3,6 +3,7 @@ import type { Admin, EngMember } from "../context";
 import { recordEngEvent } from "../events";
 import type { ScenarioPackage } from "../authoring/package";
 import { ReportError, listReports } from "../reports";
+import { listResponses } from "../candidate-report";
 import type { AttemptRow, ReportRow } from "../types";
 import { AUTHORED_STATE_LABEL, type AuthoredCandidateReport, type CandidateAcceptanceResult, type EmployerAuthoredEvaluation } from "./types";
 
@@ -117,5 +118,6 @@ export async function buildAuthoredCandidateReport(db: Admin, attempt: AttemptRo
     notAssessed: body.criteria.filter((c) => c.state === "not_assessed").map((c) => c.label),
     limitations: report.brief.limitations,
     runner: { label: body.runner.label, isolated: body.runner.isolated },
+    responses: await listResponses(db, attempt.id),
   };
 }

@@ -19,6 +19,8 @@ import { employerCollaboration } from "@/lib/eng/authored/collaboration";
 import type { ScenarioPackage } from "@/lib/eng/authoring/package";
 import { sealedSubmissionFiles } from "@/lib/eng/authored/employer";
 import { employerEvaluation } from "@/lib/eng/authored/reports";
+import { listResponses } from "@/lib/eng/candidate-report";
+import CandidateResponsesReview from "@/components/eng/CandidateResponsesReview";
 import { candidateIdentity } from "@/lib/eng/candidate-label";
 import type { Admin, EngMember } from "@/lib/eng/context";
 import { EVENT_LABELS, type OrgAttemptView } from "@/lib/eng/employer-view";
@@ -44,9 +46,10 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
   const preview = Boolean(attempt.is_preview ?? view.invitation.is_preview);
   const testsFinished = view.run?.status === "human_review" || view.run?.status === "ready";
   const delayed = view.run?.status === "blocked" || view.run?.status === "retryable_failure";
-  const [evaluation, files] = await Promise.all([
+  const [evaluation, files, responses] = await Promise.all([
     canSeeEvidence && testsFinished && view.run ? employerEvaluation(db, attempt.id, view.run.id) : Promise.resolve(null),
     canSeeEvidence && view.submission ? sealedSubmissionFiles(db, view.submission) : Promise.resolve(null),
+    canSeeEvidence ? listResponses(db, attempt.id) : Promise.resolve([]),
   ]);
   const handoff = view.submission ? handoffAnswers(view.submission.handoff) : null;
   const collaboration = canSeeEvidence && attempt.started_at ? await employerCollaboration(db, { attempt, pkg }, handoff, files) : null;
@@ -173,6 +176,8 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
               )}
             </Panel>
           ) : null}
+
+          {canSeeEvidence && responses.length ? <CandidateResponsesReview attemptId={attempt.id} initial={responses} canResolve={canWrite} /> : null}
 
           {canSeeEvidence && view.submission ? (
             <Panel>
