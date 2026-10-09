@@ -146,9 +146,9 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
               >
                 {brief ? (
                   <p className="max-w-[68ch] text-app-body text-[var(--text-body)]">
-                    {brief.acceptance.confirmed} of {brief.acceptance.total} acceptance criteria passed in the controlled run for this submission
-                    {brief.acceptance.notConfirmed ? `, ${brief.acceptance.notConfirmed} did not pass` : ""}
-                    {brief.acceptance.noResult ? `, ${brief.acceptance.noResult} produced no result and were not assessed` : ""}.
+                    {`${brief.acceptance.confirmed} of ${brief.acceptance.total} acceptance criteria passed in the controlled run for this submission${
+                      brief.acceptance.notConfirmed ? `, ${brief.acceptance.notConfirmed} did not pass` : ""
+                    }${brief.acceptance.noResult ? `, ${brief.acceptance.noResult} produced no result and were not assessed` : ""}.`}
                   </p>
                 ) : null}
                 {capabilities.length ? (
