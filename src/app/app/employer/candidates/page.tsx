@@ -22,6 +22,62 @@ function matches(q: string, ...values: (string | null | undefined)[]): boolean {
   return !q || values.some((v) => (v ?? "").toLowerCase().includes(q));
 }
 
+type PersonRow = { key: string; href: string; name: string; detail: string | null; context: string; state: string; iso: string };
+
+/** Stacked rows on narrow screens, a table from `lg`, so neither the email nor the context is crushed. */
+function PeopleList({ columns, rows }: { columns: [string, string, string]; rows: PersonRow[] }) {
+  const [contextLabel, stateLabel, dateLabel] = columns;
+  return (
+    <>
+      <ul className="divide-y divide-[var(--border-subtle)] border-t border-[var(--border-subtle)] lg:hidden">
+        {rows.map((r) => (
+          <li key={r.key}>
+            <Link href={r.href} className="block px-5 py-3 hover:bg-[var(--surface-hover)]">
+              <span className="block text-app-body font-medium text-[var(--text-primary)]">{r.name}</span>
+              {r.detail ? <span className="block truncate text-app-meta text-[var(--text-tertiary)]">{r.detail}</span> : null}
+              <span className="mt-1.5 block text-app-meta text-[var(--text-secondary)]">{r.context}</span>
+              <span className="mt-0.5 block text-app-meta text-[var(--text-tertiary)]">
+                {r.state} · <LocalDate iso={r.iso} />
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="hidden lg:block">
+        <Table>
+          <THead>
+            <TH>Candidate</TH>
+            <TH>{contextLabel}</TH>
+            <TH>{stateLabel}</TH>
+            <TH align="right">{dateLabel}</TH>
+          </THead>
+          <TBody>
+            {rows.map((r) => (
+              <TR key={r.key}>
+                <TDPrimary>
+                  <Link href={r.href} className="hover:underline">
+                    {r.name}
+                  </Link>
+                  {r.detail ? (
+                    <span className="block max-w-[260px] truncate text-app-meta font-normal text-[var(--text-tertiary)]" title={r.detail}>
+                      {r.detail}
+                    </span>
+                  ) : null}
+                </TDPrimary>
+                <TD>{r.context}</TD>
+                <TD>{r.state}</TD>
+                <TD align="right" className="whitespace-nowrap">
+                  <LocalDate iso={r.iso} />
+                </TD>
+              </TR>
+            ))}
+          </TBody>
+        </Table>
+      </div>
+    </>
+  );
+}
+
 export default async function EmployerCandidatesPage({
   searchParams,
 }: {
@@ -80,7 +136,7 @@ export default async function EmployerCandidatesPage({
             defaultValue={initialQuery}
             placeholder="Search by name, email or role"
             autoComplete="off"
-            className="platform-input h-9 w-full max-w-[320px] text-app-control"
+            className="platform-input h-9 min-w-0 flex-1 text-app-control sm:max-w-[320px]"
           />
           <Button type="submit" variant="secondary">
             Search
@@ -109,33 +165,18 @@ export default async function EmployerCandidatesPage({
             description={`${applicationRows.length} applied through a role page with their Passport.`}
             bodyClassName="-mx-5 -mb-4 lg:-mx-6 lg:-mb-5"
           >
-            <Table>
-              <THead>
-                <TH>Candidate</TH>
-                <TH>Role</TH>
-                <TH>Stage</TH>
-                <TH align="right">Applied</TH>
-              </THead>
-              <TBody>
-                {applicationRows.map((a) => (
-                  <TR key={a.id}>
-                    <TDPrimary>
-                      <Link href={`/app/employer/openings/${a.roleId}/applications/${a.id}`} className="hover:underline">
-                        {a.name}
-                      </Link>
-                      <span className="block max-w-[260px] truncate text-app-meta font-normal text-[var(--text-tertiary)]" title={a.email}>
-                        {a.email}
-                      </span>
-                    </TDPrimary>
-                    <TD>{a.roleTitle}</TD>
-                    <TD>{a.stageLabel}</TD>
-                    <TD align="right" className="whitespace-nowrap">
-                      <LocalDate iso={a.submittedAt} />
-                    </TD>
-                  </TR>
-                ))}
-              </TBody>
-            </Table>
+            <PeopleList
+              columns={["Role", "Stage", "Applied"]}
+              rows={applicationRows.map((a) => ({
+                key: a.id,
+                href: `/app/employer/openings/${a.roleId}/applications/${a.id}`,
+                name: a.name,
+                detail: a.email,
+                context: a.roleTitle,
+                state: a.stageLabel,
+                iso: a.submittedAt,
+              }))}
+            />
           </WorkspaceSection>
         </Panel>
       ) : null}
@@ -147,39 +188,21 @@ export default async function EmployerCandidatesPage({
             description={`${assessmentRows.length} invited to a work sample from an assessment.`}
             bodyClassName="-mx-5 -mb-4 lg:-mx-6 lg:-mb-5"
           >
-            <Table>
-              <THead>
-                <TH>Candidate</TH>
-                <TH>Assessment</TH>
-                <TH>Status</TH>
-                <TH align="right">Invited</TH>
-              </THead>
-              <TBody>
-                {assessmentRows.map(({ role, row }) => {
-                  const who = candidateIdentity(row.invitation);
-                  const href = row.attempt ? `/app/employer/engineering/attempts/${row.attempt.id}` : `/app/employer/engineering/roles/${role.id}`;
-                  return (
-                    <TR key={row.invitation.id}>
-                      <TDPrimary>
-                        <Link href={href} className="hover:underline">
-                          {who.primary}
-                        </Link>
-                        {who.secondary ? (
-                          <span className="block max-w-[260px] truncate text-app-meta font-normal text-[var(--text-tertiary)]" title={who.secondary}>
-                            {who.secondary}
-                          </span>
-                        ) : null}
-                      </TDPrimary>
-                      <TD>{role.title}</TD>
-                      <TD>{OPERATIONAL_STATES[row.state].label}</TD>
-                      <TD align="right" className="whitespace-nowrap">
-                        <LocalDate iso={row.invitation.created_at} />
-                      </TD>
-                    </TR>
-                  );
-                })}
-              </TBody>
-            </Table>
+            <PeopleList
+              columns={["Assessment", "Status", "Invited"]}
+              rows={assessmentRows.map(({ role, row }) => {
+                const who = candidateIdentity(row.invitation);
+                return {
+                  key: row.invitation.id,
+                  href: row.attempt ? `/app/employer/engineering/attempts/${row.attempt.id}` : `/app/employer/engineering/roles/${role.id}`,
+                  name: who.primary,
+                  detail: who.secondary,
+                  context: role.title,
+                  state: OPERATIONAL_STATES[row.state].label,
+                  iso: row.invitation.created_at,
+                };
+              })}
+            />
           </WorkspaceSection>
         </Panel>
       ) : null}
