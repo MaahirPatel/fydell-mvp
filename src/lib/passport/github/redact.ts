@@ -23,7 +23,7 @@ const TOKEN_SHAPES: Array<[RegExp, string]> = [
 // `password = "..."`, `api_key: '...'`, `SECRET=...` - the name stays so the
 // code still reads naturally, the value is replaced.
 const SECRET_ASSIGNMENT =
-  /\b(password|passwd|pwd|secret|api[_-]?key|apikey|auth[_-]?token|access[_-]?token|refresh[_-]?token|client[_-]?secret|db[_-]?password|private[_-]?token)\b(\s*[:=]\s*)(["']?)([^"'`\s;,)}\]]{4,}|["'][^"'`]{1,200}["'])/gi;
+  /\b(password|passwd|pwd|secret|api[_-]?key|apikey|auth[_-]?token|access[_-]?token|refresh[_-]?token|client[_-]?secret|db[_-]?password|private[_-]?token)\b(\s*[:=]\s*)(["']?)([^"'`\s;,)}\]]{4,}|["'][^"'`\r\n]{1,200}["'])/gi;
 
 function redactAssignment(match: string, name: string, sep: string, quote: string, value: string): string {
   void match;
@@ -35,8 +35,12 @@ function redactAssignment(match: string, name: string, sep: string, quote: strin
   return `${name}${sep}[REDACTED]`;
 }
 
+/**
+ * Line count is preserved: citations are line numbers in the file at the
+ * pinned revision, so a redacted file must keep every later line where it was.
+ */
 export function redactSecrets(text: string): string {
-  let out = text.replace(PEM_BLOCK, "[REDACTED PRIVATE KEY]");
+  let out = text.replace(PEM_BLOCK, (block) => `[REDACTED PRIVATE KEY]${block.replace(/[^\r\n]/g, "")}`);
   for (const [pattern, replacement] of TOKEN_SHAPES) out = out.replace(pattern, replacement);
   out = out.replace(SECRET_ASSIGNMENT, redactAssignment as (substring: string, ...args: unknown[]) => string);
   return out;

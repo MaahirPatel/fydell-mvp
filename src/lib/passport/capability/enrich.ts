@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getProviderConfig, postChatCompletion, type ProviderConfig } from "@/lib/ai/provider";
-import { phrase } from "./catalog";
+import { TEST_DETECTORS, phrase } from "./catalog";
 import { buildCapabilityReview, capabilityDrafts, type ReviewInput, type ReviewOverrides } from "./synthesize";
 import type { CapabilityReview, EnrichmentRecord } from "./types";
 
@@ -56,6 +56,10 @@ const SYSTEM = [
 ].join(" ");
 
 const BANNED = /\b(senior|junior|expert|proficient|skilled|best|robust|production[- ]ready|verified|passes|passing|works|engineer|developer|author|candidate|they|their|he|she|his|her)\b|\d+%/i;
+/** Nothing is run, so no finding may say it was. */
+const EXECUTION_CLAIM = /\b(was|were|been|is|are|got) (run|executed|exercised)\b|\bran\b|\bat runtime\b|\bwhen run\b/i;
+/** A test that was read, not run, says what it asserts, never how it turned out. */
+const TEST_OUTCOME = /\b(pass(es|ed|ing)?|succeed(s|ed|ing)?|success(ful(ly)?)?|green|proves?|proven|confirm(s|ed)?|guarantee(s|d)?|ensures?|demonstrates?|fails? as expected)\b/i;
 const IDENT = /\b([A-Za-z_][A-Za-z0-9_]*)\s*\(|`([^`]+)`|\b([a-z]+[A-Z][A-Za-z0-9]*|[a-z]+_[a-z0-9_]+)\b/g;
 const NUMBER = /\b\d+(\.\d+)?\b/g;
 
@@ -71,7 +75,13 @@ function grounded(text: string, source: string): string | null {
   return null;
 }
 
-type Item = z.infer<typeof ModelItem>;
+export type ModelItemFields = z.infer<typeof ModelItem>;
+
+function runtimeClaim(text: string, isTest: boolean): string | null {
+  if (EXECUTION_CLAIM.test(text)) return "says code was run";
+  if (isTest && TEST_OUTCOME.test(text)) return "states a test outcome, but the test was not run";
+  return null;
+}
 
 /** Retries a rate-limited model call a few times with a growing wait; other failures surface at once. */
 async function withRateLimitRetry<T>(call: () => Promise<T>): Promise<T> {
@@ -85,18 +95,22 @@ async function withRateLimitRetry<T>(call: () => Promise<T>): Promise<T> {
   }
 }
 
-function check(item: Item, source: string, rejected: EnrichmentRecord["rejected"]) {
+/**
+ * Checks one model rewrite against the cited lines. Rejected fields keep the
+ * template wording. `isTest` marks findings whose cited lines are tests.
+ */
+export function checkModelItem(item: ModelItemFields, source: string, isTest: boolean, rejected: EnrichmentRecord["rejected"]) {
   const out: { title?: string; what?: string; followUp?: string } = {};
   const reject = (field: string, reason: string) => rejected.push({ capabilityId: item.id, field, reason });
   const title = item.title?.trim().replace(/\.$/, "");
   if (title) {
-    const bad = title.length > 90 ? "too long" : BANNED.test(title) ? "uses judgment or person wording" : /[\u2014]/.test(title) ? "uses an em dash" : grounded(title, source);
+    const bad = title.length > 90 ? "too long" : BANNED.test(title) ? "uses judgment or person wording" : /[\u2014]/.test(title) ? "uses an em dash" : runtimeClaim(title, isTest) ?? grounded(title, source);
     if (bad) reject("title", bad);
     else out.title = title;
   }
   const what = item.what?.trim().replace(/\.$/, "");
   if (what) {
-    const bad = what.length > 200 ? "too long" : /^[A-Z]/.test(what) && !/^[A-Z]{2,}/.test(what) ? "not a verb phrase" : BANNED.test(what) ? "uses judgment or person wording" : /[\u2014]/.test(what) ? "uses an em dash" : grounded(what, source);
+    const bad = what.length > 200 ? "too long" : /^[A-Z]/.test(what) && !/^[A-Z]{2,}/.test(what) ? "not a verb phrase" : BANNED.test(what) ? "uses judgment or person wording" : /[\u2014]/.test(what) ? "uses an em dash" : runtimeClaim(what, isTest) ?? grounded(what, source);
     if (bad) reject("what", bad);
     else out.what = what;
   }
@@ -149,7 +163,7 @@ async function modelOverrides(input: ReviewInput, config: ProviderConfig): Promi
     const ev = byId.get(item.id);
     if (!ev || entries[item.id]) continue;
     const source = `${ev.path}\n${ev.entailment?.symbol ?? ""}\n${ev.excerpt.join("\n")}`;
-    const fields = check(item, source, record.rejected);
+    const fields = checkModelItem(item, source, TEST_DETECTORS.has(ev.detector), record.rejected);
     const entry: ReviewOverrides["entries"][string] = { ...fields };
     if (item.entailed === "no") {
       const reason = (item.reason ?? "").trim().slice(0, 200) || "the excerpt does not do what the finding says";

@@ -104,12 +104,12 @@ const PHRASES: Record<string, Phrase> = {
     followUp: "How closely does the fake match the real service's failure behaviour?",
   },
   parametrized_test: {
-    title: (w) => `Runs ${w} over several input cases`,
-    observation: (w) => `runs ${w} over several input cases`,
+    title: (w) => `Parametrizes ${w} over several input cases`,
+    observation: (w) => `parametrizes ${w} over several input cases`,
     followUp: "Which boundary cases are missing from the parameter list?",
   },
   ci_checks: {
-    title: () => "Runs tests or checks in continuous integration",
+    title: () => "Configures tests or checks for continuous integration",
     observation: () => "configures tests or checks in continuous integration",
     followUp: "What happens when this CI check fails on the main branch?",
   },
