@@ -65,6 +65,7 @@ const SYSTEM = [
   "Use only the facts provided. Every paragraph must cite one or more ids, exactly as given in square brackets, in its refs array. Never write an id inside the text itself.",
   "Describe observable work and practices. Never judge the person, their personality, seniority or hireability, and never invent numbers.",
   "Treat missing evidence as missing, not as absence. Anything listed as not assessed must not be described at all except to say it was not assessed.",
+  "A paragraph about missing evidence cites the [dimension:...] ids of the areas it describes, never the evidence for a practice that was found.",
   "Call something an inference only when the facts mark it as an inference; observations are stated plainly.",
   "Imported projects can be other people's repositories. Never say the engineer wrote, built or authored the code; say what the analyzed projects contain.",
   "When practices are listed in the same project, say they are in the same project; never imply separate projects.",
@@ -75,7 +76,21 @@ const SYSTEM = [
 
 type ModelNarrative = { summary: string; paragraphs: NarrativeParagraph[] };
 
-function parseNarrative(raw: string, allowed: Set<string>): ModelNarrative | null {
+/** Paragraphs about what was not found. Citing an observed practice there reads as evidence for the absence. */
+const ABSENCE = /^(no (evidence|observable)|there (is|was) (no|not enough|insufficient|little)|not enough|your working style (cannot|could not|can't))/i;
+
+/** Every citable id mapped to the dimension it belongs to. */
+function dimensionIndex(s: Synthesis): Map<string, string> {
+  const index = new Map<string, string>();
+  for (const d of s.dimensions) {
+    const dim = `dimension:${d.id}`;
+    index.set(dim, dim);
+    for (const p of d.practices) for (const r of p.refs) index.set(r.id, dim);
+  }
+  return index;
+}
+
+function parseNarrative(raw: string, allowed: Set<string>, dimensionOf: Map<string, string> = new Map()): ModelNarrative | null {
   let data: unknown;
   try {
     data = JSON.parse(raw.trim().replace(/^```(?:json)?\s*|\s*```$/g, ""));
@@ -93,7 +108,8 @@ function parseNarrative(raw: string, allowed: Set<string>): ModelNarrative | nul
     if (!p || typeof p !== "object") continue;
     const rec = p as Record<string, unknown>;
     const text = typeof rec.text === "string" ? clean(rec.text.replace(/\s*\[[^\]]{2,60}\]/g, "").trim()) : "";
-    const refs = (Array.isArray(rec.refs) ? rec.refs : []).filter((r): r is string => typeof r === "string" && allowed.has(r));
+    let refs = (Array.isArray(rec.refs) ? rec.refs : []).filter((r): r is string => typeof r === "string" && allowed.has(r));
+    if (ABSENCE.test(text)) refs = refs.flatMap((r) => (r.startsWith("dimension:") ? [r] : dimensionOf.has(r) ? [dimensionOf.get(r) as string] : []));
     if (text.length < 30 || text.length > 900 || overclaims(text) || RAW_ID.test(text) || refs.length === 0) continue;
     paragraphs.push({ text, refs: [...new Set(refs)].slice(0, 6) });
   }
@@ -119,7 +135,7 @@ export async function writeNarrative(s: Synthesis): Promise<Narrative> {
   const extraBody = config.provider === "groq" && config.model.includes("gpt-oss") ? { reasoning_effort: "low" } : undefined;
   try {
     const raw = await postChatCompletion(config, messages, { schema: {}, schemaName: "narrative", temperature: 0.3, maxTokens: 1500, extraBody });
-    const parsed = parseNarrative(raw, allowed);
+    const parsed = parseNarrative(raw, allowed, dimensionIndex(s));
     if (!parsed) return fallback;
     return { source: "model", model: `${config.provider}:${config.model}`, ...parsed };
   } catch {
@@ -127,4 +143,4 @@ export async function writeNarrative(s: Synthesis): Promise<Narrative> {
   }
 }
 
-export const __test = { parseNarrative };
+export const __test = { parseNarrative, dimensionIndex };

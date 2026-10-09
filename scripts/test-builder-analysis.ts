@@ -184,6 +184,20 @@ async function main() {
     assert.equal(__test.parseNarrative(JSON.stringify({ summary: "A great culture fit with strong evidence.", paragraphs: [good, good] }), ids), null);
   });
 
+  await test("model narrative: a paragraph about missing evidence cites areas, not found practices", () => {
+    const ids = citableIds(s);
+    const dim = s.dimensions.find((d) => d.practices.some((p) => p.refs.length));
+    assert.ok(dim);
+    const practiceRef = dim.practices.find((p) => p.refs.length)!.refs[0].id;
+    const good = { text: "Retries with timeouts appear in two of the analyzed service projects.", refs: ["pattern:retries"] };
+    const parsed = __test.parseNarrative(JSON.stringify({
+      summary: "Most evidence is in reliability across two projects.",
+      paragraphs: [good, { text: "No evidence was found for linting or typed contracts in the analyzed projects.", refs: [practiceRef] }],
+    }), ids, __test.dimensionIndex(s));
+    assert.deepEqual(parsed?.paragraphs[1].refs, [`dimension:${dim.id}`]);
+    assert.deepEqual(parsed?.paragraphs[0].refs, ["pattern:retries"], "paragraphs about found evidence keep their citations");
+  });
+
   await test("model narrative: authorship and trait claims are dropped", () => {
     const ids = citableIds(s);
     const good = { text: "Retries with timeouts appear in two of the analyzed service projects.", refs: ["pattern:retries"] };
