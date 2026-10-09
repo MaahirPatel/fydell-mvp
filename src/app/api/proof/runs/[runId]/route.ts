@@ -5,7 +5,11 @@ import { factTriggerSatisfied, FACT_AUTH } from "@/lib/sim-engine/proof/state-ma
 import type { ArtifactContent, EventType, ProofStage } from "@/lib/sim-engine/proof/types";
 import { isEventType } from "@/lib/sim-engine/proof/types";
 import { enqueueJob, processQueuedJobs } from "@/lib/sim-engine/proof/jobs";
-import { authorizeProofRunAccess } from "@/lib/sim-engine/proof/sandbox/access";
+import { authorizeProofRunAccess, authorizeProofRunCandidate } from "@/lib/sim-engine/proof/sandbox/access";
+
+const MAX_MESSAGE_LENGTH = 8_000;
+const MAX_ARTIFACT_BYTES = 200_000;
+const AGENT_IDS = new Set(["customer", "engineering", "sales"]);
 
 async function getRun(runId: string) {
   const admin = proofAdmin();
@@ -27,11 +31,28 @@ export async function GET(_request: Request, context: { params: Promise<{ runId:
 
 export async function POST(request: Request, context: { params: Promise<{ runId: string }> }) {
   const { runId } = await context.params;
-  const access = await authorizeProofRunAccess(runId);
+  const access = await authorizeProofRunCandidate(runId);
   if ("response" in access) return access.response;
   const run = await getRun(runId);
   if (!run) return NextResponse.json({ error: "not found" }, { status: 404 });
-  const body = (await request.json()) as {
+  const raw: unknown = await request.json().catch(() => null);
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return NextResponse.json({ error: "Send the action as a JSON object." }, { status: 400 });
+  }
+  const fields = raw as Record<string, unknown>;
+  if (fields.message !== undefined && (typeof fields.message !== "string" || fields.message.length > MAX_MESSAGE_LENGTH)) {
+    return NextResponse.json({ error: "Messages must be text under 8,000 characters." }, { status: 400 });
+  }
+  if (fields.agentId !== undefined && !AGENT_IDS.has(String(fields.agentId))) {
+    return NextResponse.json({ error: "Unknown agent." }, { status: 400 });
+  }
+  if (fields.resourceId !== undefined && (typeof fields.resourceId !== "string" || fields.resourceId.length > 200)) {
+    return NextResponse.json({ error: "Unknown resource." }, { status: 400 });
+  }
+  if (fields.artifact !== undefined && JSON.stringify(fields.artifact).length > MAX_ARTIFACT_BYTES) {
+    return NextResponse.json({ error: "That artifact is too large." }, { status: 413 });
+  }
+  const body = fields as {
     action?: string;
     artifact?: ArtifactContent;
     agentId?: "customer" | "engineering" | "sales";

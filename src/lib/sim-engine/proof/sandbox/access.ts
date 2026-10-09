@@ -6,6 +6,30 @@ import { proofAdmin } from "../db";
 import { isSandboxWorldState } from "./world-state";
 import { hashCapabilitySecret, readCapability } from "./capability";
 
+/**
+ * Candidate actions (messages, artifacts, submissions, defense answers) may
+ * only come from the run's candidate or the sandbox capability holder.
+ * Employers and operators can read a run but never act as its candidate.
+ */
+export async function authorizeProofRunCandidate(runId: string): Promise<{ ok: true } | { response: NextResponse }> {
+  const admin = proofAdmin();
+  const { data: run } = await admin.from("proof_runs").select("id, candidate_user_id, world_state").eq("id", runId).maybeSingle();
+  if (!run) return { response: NextResponse.json({ error: "not found" }, { status: 404 }) };
+
+  if (isSandboxWorldState(run.world_state)) {
+    const cap = await readCapability();
+    if (!cap || cap.runId !== runId || run.world_state.ownerCapabilityHash !== hashCapabilitySecret(cap.secret)) {
+      return { response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
+    }
+    return { ok: true };
+  }
+
+  const user = await requireUser();
+  if (!user) return { response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  if (run.candidate_user_id && run.candidate_user_id === user.id) return { ok: true };
+  return { response: NextResponse.json({ error: "Only the candidate can act on this run." }, { status: 403 }) };
+}
+
 export async function authorizeProofRunAccess(runId: string): Promise<{ ok: true } | { response: NextResponse }> {
   const admin = proofAdmin();
   const { data: run } = await admin.from("proof_runs").select("id, organization_id, candidate_user_id, world_state").eq("id", runId).maybeSingle();

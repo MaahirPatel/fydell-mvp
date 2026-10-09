@@ -1,18 +1,42 @@
 import { NextResponse } from "next/server";
 import { proofAdmin, appendEvent } from "@/lib/sim-engine/proof/db";
 import { enqueueJob, processQueuedJobs } from "@/lib/sim-engine/proof/jobs";
-import { authorizeProofRunAccess } from "@/lib/sim-engine/proof/sandbox/access";
+import { authorizeProofRunAccess, authorizeProofRunCandidate } from "@/lib/sim-engine/proof/sandbox/access";
+
+const MAX_ANSWERS = 50;
+const MAX_ANSWER_LENGTH = 20_000;
+
+function parseAnswers(raw: unknown): Array<{ questionId: string; body: string }> | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const list = (raw as Record<string, unknown>).answers ?? [];
+  if (!Array.isArray(list) || list.length > MAX_ANSWERS) return null;
+  const answers: Array<{ questionId: string; body: string }> = [];
+  for (const item of list) {
+    if (!item || typeof item !== "object") return null;
+    const { questionId, body } = item as Record<string, unknown>;
+    if (typeof questionId !== "string" || typeof body !== "string" || body.length > MAX_ANSWER_LENGTH) return null;
+    answers.push({ questionId, body });
+  }
+  return answers;
+}
 
 export async function POST(request: Request, context: { params: Promise<{ runId: string }> }) {
   const { runId } = await context.params;
-  const access = await authorizeProofRunAccess(runId);
+  const access = await authorizeProofRunCandidate(runId);
   if ("response" in access) return access.response;
-  const body = (await request.json()) as { answers?: Array<{ questionId: string; body: string }> };
+  const answers = parseAnswers(await request.json().catch(() => null));
+  if (!answers) return NextResponse.json({ error: "Send answers as [{ questionId, body }]." }, { status: 400 });
   const admin = proofAdmin();
   const { data: session } = await admin.from("proof_defense_sessions").select("id").eq("run_id", runId).maybeSingle();
   if (!session) return NextResponse.json({ error: "no defense session" }, { status: 404 });
 
-  for (const answer of body.answers ?? []) {
+  const { data: owned } = await admin.from("proof_defense_questions").select("id").eq("session_id", session.id);
+  const ownedIds = new Set((owned ?? []).map((q) => q.id as string));
+  if (answers.some((a) => !ownedIds.has(a.questionId))) {
+    return NextResponse.json({ error: "That question is not part of this defense." }, { status: 400 });
+  }
+
+  for (const answer of answers) {
     await admin.from("proof_defense_responses").upsert(
       { question_id: answer.questionId, body: answer.body },
       { onConflict: "question_id" },
