@@ -32,14 +32,14 @@ function current(key: string, now: number): Bucket | null {
   return bucket;
 }
 
-function hit(key: string, windowMs: number, now: number): Bucket {
+function hit(key: string, windowMs: number, now: number, cost = 1): Bucket {
   prune(now);
   const bucket = current(key, now);
   if (bucket) {
-    bucket.count += 1;
+    bucket.count += cost;
     return bucket;
   }
-  const fresh = { count: 1, resetAt: now + windowMs };
+  const fresh = { count: cost, resetAt: now + windowMs };
   buckets.set(key, fresh);
   return fresh;
 }
@@ -74,8 +74,21 @@ export interface LimitRule {
 
 /** Counts every call. Returns a 429 response once the caller exceeds the rule, otherwise null. */
 export function limitRequest(rule: LimitRule, identity: string, now: number = Date.now()): NextResponse | null {
-  const bucket = hit(`req:${rule.name}:${keyPart(identity)}`, rule.windowMs, now);
-  if (bucket.count > rule.limit) return tooManyRequests(retryAfter(bucket, now));
+  return limitCost(rule, identity, 1, now);
+}
+
+/**
+ * Like limitRequest, but one call consumes `cost` units, e.g. one per email
+ * in a batch invitation. A refused call does not consume anything.
+ */
+export function limitCost(rule: LimitRule, identity: string, cost: number, now: number = Date.now()): NextResponse | null {
+  const key = `req:${rule.name}:${keyPart(identity)}`;
+  const units = Math.max(1, Math.ceil(cost));
+  const existing = current(key, now);
+  if ((existing?.count ?? 0) + units > rule.limit) {
+    return tooManyRequests(existing ? retryAfter(existing, now) : Math.ceil(rule.windowMs / 1000));
+  }
+  hit(key, rule.windowMs, now, units);
   return null;
 }
 
@@ -119,6 +132,6 @@ export const ROUTE_LIMITS = {
   modelCall: { name: "model-call", limit: 120, windowMs: 60 * 60_000 },
   analysis: { name: "analysis", limit: 30, windowMs: 60 * 60_000 },
   importJob: { name: "import-job", limit: 20, windowMs: 60 * 60_000 },
-  invite: { name: "invite", limit: 60, windowMs: 60 * 60_000 },
+  invite: { name: "invite", limit: 200, windowMs: 60 * 60_000 },
   upload: { name: "upload", limit: 60, windowMs: 60 * 60_000 },
 } as const satisfies Record<string, LimitRule>;

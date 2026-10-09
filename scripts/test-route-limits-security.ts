@@ -7,6 +7,7 @@
 import assert from "node:assert/strict";
 import {
   LOGIN_FAILURES,
+  limitCost,
   limitRequest,
   loginIdentities,
   loginLockout,
@@ -70,6 +71,14 @@ check("bucket resets after the window", () => {
   assert.equal(limitRequest(rule, "ip:x", t0), null);
   assert.equal(limitRequest(rule, "ip:x", t0)?.status, 429);
   assert.equal(limitRequest(rule, "ip:x", t0 + 1_001), null);
+});
+
+check("batch cost is charged per unit and a refused batch costs nothing", () => {
+  const rule = { name: "unit-cost", limit: 10, windowMs: 60_000 };
+  assert.equal(limitCost(rule, "user:batch", 6, t0), null);
+  assert.equal(limitCost(rule, "user:batch", 5, t0)?.status, 429);
+  assert.equal(limitCost(rule, "user:batch", 4, t0), null);
+  assert.equal(limitCost(rule, "user:batch", 1, t0)?.status, 429);
 });
 
 if (failed > 0) {

@@ -12,8 +12,11 @@ import type { RoleKey } from "@/lib/simulations/types";
 import { invitationTruth } from "@/lib/contracts/lifecycle";
 import { capabilityDeniedMessage, orgCan } from "@/lib/orgs/capabilities";
 import { publicErrorMessage } from "@/lib/security/public-error";
+import { limitCost, ROUTE_LIMITS } from "@/lib/security/route-limits";
 
 export const runtime = "nodejs";
+
+const MAX_INVITES_PER_REQUEST = 100;
 
 /** GET: list this organization's invitations with session status. */
 export async function GET() {
@@ -93,12 +96,34 @@ export async function POST(req: NextRequest) {
 
   if (!templateId)
     return NextResponse.json({ error: "templateId is required" }, { status: 400 });
-  const { valid, errors } = validateInviteRows(body.candidates || []);
+  const rows: unknown = body.candidates ?? [];
+  if (
+    !Array.isArray(rows) ||
+    rows.length > MAX_INVITES_PER_REQUEST ||
+    !rows.every(
+      (r) =>
+        r !== null &&
+        typeof r === "object" &&
+        typeof (r as Record<string, unknown>).email === "string" &&
+        ((r as Record<string, unknown>).email as string).length <= 254 &&
+        ((r as Record<string, unknown>).name === undefined ||
+          (typeof (r as Record<string, unknown>).name === "string" &&
+            ((r as Record<string, unknown>).name as string).length <= 160))
+    )
+  ) {
+    return NextResponse.json(
+      { error: `Send up to ${MAX_INVITES_PER_REQUEST} candidates as { email, name? } rows.` },
+      { status: 400 }
+    );
+  }
+  const { valid, errors } = validateInviteRows(rows as { email: string; name?: string }[]);
   if (valid.length === 0)
     return NextResponse.json(
       { error: errors[0] || "At least one valid candidate email is required", errors },
       { status: 400 }
     );
+  const limited = limitCost(ROUTE_LIMITS.invite, `user:${user.id}`, valid.length);
+  if (limited) return limited;
 
   if (typeof body.expiresInDays === "number" && Number.isFinite(body.expiresInDays)) {
     expiresInDays = Math.min(60, Math.max(1, Math.round(body.expiresInDays)));
