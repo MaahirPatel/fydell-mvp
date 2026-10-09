@@ -52,7 +52,11 @@ export default function InstallAppButton() {
   if (state === "installed") {
     return (
       <p role="status" className="text-[15px] text-[var(--text-secondary)]">
-        Fydell is installed. Open it from the Start menu, taskbar or your apps.
+        Fydell is installed. Open it from the Start menu, taskbar or your apps, or{" "}
+        <a href="/app/desk" className="font-medium text-[var(--text-primary)] underline underline-offset-4">
+          go to your Fydell home
+        </a>
+        .
       </p>
     );
   }

@@ -18,12 +18,12 @@ const INSTALL = [
   {
     os: "Windows",
     icon: <WindowsIcon size={18} />,
-    requirement: "Microsoft Edge or Google Chrome",
+    requirement: "Google Chrome or Microsoft Edge",
     steps: [
-      "Open fydell.com in Edge or Chrome.",
-      "Select Install Fydell on this page, or the install icon at the right end of the address bar.",
-      "Confirm Install. Fydell opens in its own window and is added to the Start menu.",
-      "Pin it to the taskbar if you like. Log in once and it remembers you.",
+      "Open fydell.com/download in Chrome or Edge.",
+      "Select Install Fydell on this page. If no button appears: in Chrome, open the ⋮ menu, then Cast, save and share, then Install page as app. In Edge, open the ⋯ menu, then Apps, then Install this site as an app.",
+      "Confirm Install. The Fydell app opens in its own window on your Fydell home, and is added to the Start menu.",
+      "Log in with the email address your invitation was sent to. The app remembers you after that.",
     ],
   },
   {
@@ -31,12 +31,26 @@ const INSTALL = [
     icon: <AppleIcon size={18} />,
     requirement: "Chrome, Edge or Safari",
     steps: [
-      "Open fydell.com in Chrome, Edge or Safari.",
-      "In Chrome or Edge, select the install icon in the address bar. In Safari, choose File, then Add to Dock.",
-      "Fydell opens in its own window and appears in Launchpad and the Dock.",
-      "Log in once and it remembers you.",
+      "Open fydell.com/download in Chrome, Edge or Safari.",
+      "In Chrome or Edge, select the install icon at the right end of the address bar. In Safari, choose File, then Add to Dock.",
+      "The Fydell app opens in its own window on your Fydell home, and appears in Launchpad and the Dock.",
+      "Log in with the email address your invitation was sent to. The app remembers you after that.",
     ],
   },
+] as const;
+
+const TAKE = [
+  { title: "Open the inbox", body: "Invitations sent to your email appear in the inbox at the top right of the app, and on your home." },
+  { title: "Accept the invitation", body: "Read the brief and accept. The task stays on your account from then on, under Waiting on you." },
+  { title: "Do the work", body: "Creator simulations open in Fydell's editor. Engineering tasks set up a project folder on your computer that you open in VS Code or Cursor." },
+  { title: "Submit and see the report", body: "Submit from the app. Your submission and, once the hiring team releases it, your report appear under Reports." },
+] as const;
+
+const SAVES = [
+  { title: "Code in a simulation editor", body: "Saved to Fydell as you type. Close the app or switch computers and you continue where you left off." },
+  { title: "Answers and team messages", body: "Saved to Fydell as you type, with a copy kept in the app if your connection drops, sent when it is back." },
+  { title: "Engineering project files", body: "Kept in the project folder on your computer, so they are as safe as your own files. Fydell packages and uploads them when you submit." },
+  { title: "The timer", body: "Runs on Fydell's server. Closing the app or refreshing never restarts it or loses your time." },
 ] as const;
 
 export default function DownloadPage() {
@@ -44,7 +58,7 @@ export default function DownloadPage() {
     <MarketingShell>
       <CenteredHero
         title="Install Fydell"
-        lead="Fydell installs straight from your browser and opens in its own window, with its own icon in the Start menu and taskbar. There is no installer to download and no security warning to click through."
+        lead="The Fydell app installs from Chrome or Edge in a few seconds and opens in its own window: your inbox, simulations, reports and profile, with no installer to download and no security warning to click through."
         actions={<InstallAppButton />}
       />
 
@@ -80,7 +94,25 @@ export default function DownloadPage() {
         </div>
       </ShowcaseSection>
 
-      <ShowcaseSection id="app" title="Your whole workspace, in its own window." aside="Projects, reports, simulations and the team thread.">
+      <ShowcaseSection id="take" title="Take a simulation in the app." aside="From invitation to report, without leaving the window.">
+        <ol className="grid gap-4 md:grid-cols-4">
+          {TAKE.map((step, i) => (
+            <li key={step.title} className="rounded-[14px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--surface-panel)] text-[12.5px] font-semibold tabular-nums text-[var(--text-secondary)]">{i + 1}</span>
+              <h3 className="mt-3 text-[16px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">{step.title}</h3>
+              <p className="mt-1.5 text-[14.5px] leading-[1.55] text-[var(--text-body)]">{step.body}</p>
+            </li>
+          ))}
+        </ol>
+      </ShowcaseSection>
+
+      <ShowcaseSection id="saves" title="Your progress is saved." aside="What is kept, and where." after={<Tiles items={[...SAVES]} />}>
+        <p className="max-w-[68ch] text-[15.5px] leading-[1.65] text-[var(--text-body)]">
+          Nothing you have done is lost by closing the app. Open it again from the Start menu or the Dock and your tasks are on your home, exactly where you left them.
+        </p>
+      </ShowcaseSection>
+
+      <ShowcaseSection id="app" title="Your whole workspace, in its own window." aside="Inbox, tasks, reports and your profile.">
         <PaintedStage painting="field">
           <ProductFrame size="hero" chrome="none" title="Fydell · Simulation" label="Fydell with a simulation open: the incident, its activity and the team thread.">
             <SimulationHero />
