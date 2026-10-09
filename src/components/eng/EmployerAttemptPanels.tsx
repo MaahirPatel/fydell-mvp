@@ -20,7 +20,18 @@ function asDecisionKey(value: string | null | undefined): DecisionKey | null {
   return DECISIONS.find((d) => d.key === value)?.key ?? null;
 }
 
-export function DecisionForm({ attemptId, reportVersion, current = null }: { attemptId: string; reportVersion: number; current?: string | null }) {
+export function DecisionForm({
+  attemptId,
+  reportVersion,
+  current = null,
+  currentDecisionId = null,
+}: {
+  attemptId: string;
+  reportVersion: number;
+  current?: string | null;
+  /** The latest decision this page was rendered with; a teammate's newer one makes the save a conflict. */
+  currentDecisionId?: string | null;
+}) {
   const router = useRouter();
   const recorded = asDecisionKey(current);
   const [decision, setDecision] = useState<DecisionKey | null>(recorded);
@@ -37,10 +48,11 @@ export function DecisionForm({ attemptId, reportVersion, current = null }: { att
     }
     setBusy(true);
     setError(null);
-    const res = await engFetch(`/api/eng/org/attempts/${attemptId}/decision`, { body: { decision, notes } });
+    const res = await engFetch(`/api/eng/org/attempts/${attemptId}/decision`, { body: { decision, notes, expectedDecisionId: currentDecisionId } });
     setBusy(false);
     if (res.ok === false) {
-      setError(res.error);
+      setError(res.status === 409 ? `${res.error} Your reasoning is still in the box below.` : res.error);
+      if (res.status === 409) router.refresh();
       return;
     }
     setSaved(true);

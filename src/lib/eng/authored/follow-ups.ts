@@ -112,6 +112,51 @@ export function buildAuthoredDecisionBrief(evaluation: EmployerAuthoredEvaluatio
   };
 }
 
+export interface SubmissionChanges {
+  /** Starter files the candidate changed. */
+  changed: string[];
+  /** Files the candidate added that the starter did not have. */
+  added: string[];
+}
+
+function listPaths(paths: string[], max = 3): string {
+  const shown = paths.slice(0, max);
+  const rest = paths.length - shown.length;
+  const text = shown.length <= 1 ? shown.join("") : `${shown.slice(0, -1).join(", ")} and ${shown[shown.length - 1]}`;
+  return rest > 0 ? `${text} and ${rest} more` : text;
+}
+
+function shortText(text: string, max = 90): string {
+  const t = text.trim().replace(/\.$/, "");
+  return t.length > max ? `${t.slice(0, max - 1).trimEnd()}…` : t;
+}
+
+/**
+ * One line per rubric criterion, in the form "Capability: what the work
+ * changed; what the controlled run showed for this submission; what was not
+ * assessed". Built only from the evaluation and the submitted files; it never
+ * describes the person.
+ */
+export function capabilityStatements(evaluation: EmployerAuthoredEvaluation, changes: SubmissionChanges | null): Array<{ criterionId: string; text: string }> {
+  const acc = new Map(evaluation.acceptance.map((a) => [a.id, a]));
+  const work = changes
+    ? [changes.changed.length ? `changed ${listPaths(changes.changed)}` : "", changes.added.length ? `added ${listPaths(changes.added)}` : ""].filter(Boolean).join(" and ") || "submitted the starter files unchanged"
+    : "";
+  return evaluation.criteria.map((c) => {
+    if (c.judgedBy === "reviewer") return { criterionId: c.id, text: `${c.label}: not assessed by the tests; a reviewer judges it from the submission.` };
+    const linked = c.acceptanceCriterionIds.map((id) => acc.get(id)).filter((a): a is NonNullable<typeof a> => Boolean(a));
+    const confirmed = linked.filter((a) => a.state === "confirmed");
+    const notConfirmed = linked.filter((a) => a.state === "not_confirmed");
+    const noResult = linked.filter((a) => a.state === "no_result");
+    const run: string[] = [];
+    if (confirmed.length) run.push(`the controlled run passed ${confirmed.map((a) => `${a.id} (${shortText(a.text)})`).join(", ")} for this submission`);
+    if (notConfirmed.length) run.push(`it did not pass ${notConfirmed.map((a) => `${a.id} (${shortText(a.text)})`).join(", ")}`);
+    if (noResult.length) run.push(`${noResult.map((a) => a.id).join(", ")} produced no result and ${noResult.length === 1 ? "was" : "were"} not assessed`);
+    if (!linked.length) run.push("no test is linked to it, so it was not assessed");
+    return { criterionId: c.id, text: `${c.label}: ${[work, ...run].filter(Boolean).join("; ")}.` };
+  });
+}
+
 /** Plain text for pasting into an ATS or an email to the hiring panel. */
 export function authoredBriefText(input: {
   candidate: string;
@@ -119,6 +164,7 @@ export function authoredBriefText(input: {
   task: string;
   brief: AuthoredDecisionBrief;
   followUps: AuthoredFollowUp[];
+  capabilities?: Array<{ text: string }>;
 }): string {
   const { brief } = input;
   const lines: string[] = [
@@ -127,6 +173,7 @@ export function authoredBriefText(input: {
     "",
     `Acceptance criteria: ${brief.acceptance.confirmed} of ${brief.acceptance.total} confirmed by tests, ${brief.acceptance.notConfirmed} not confirmed, ${brief.acceptance.noResult} without a result.`,
   ];
+  if (input.capabilities?.length) lines.push("", "Capabilities shown in this work:", ...input.capabilities.map((c) => `- ${c.text}`));
   const list = (title: string, items: string[]) => {
     if (!items.length) return;
     lines.push("", `${title}:`, ...items.map((i) => `- ${i}`));
@@ -140,6 +187,6 @@ export function authoredBriefText(input: {
     input.followUps.forEach((f, i) => lines.push(`${i + 1}. ${f.question}`, `   Based on: ${f.basis}`));
   }
   list("Limitations", brief.limitations);
-  lines.push("", "Fydell reports what the tests and the submission show. It does not score the candidate or make the decision.");
+  lines.push("", "Fydell reports what the tests and the submission show for this one work sample. It does not score the candidate, establish overall ability or make the decision.");
   return lines.join("\n");
 }

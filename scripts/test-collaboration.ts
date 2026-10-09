@@ -208,7 +208,7 @@ function main() {
     assert.ok(same.ok && same.patch.length === 0);
   });
 
-  test("communication evidence: observed with excerpts, never penalises silence", () => {
+  test("collaboration evidence: seven task-relevant behaviours, each observation linked to its source", () => {
     const review = msg({ id: "r", seq: 3, sender: "teammate", teammateId: "lead", body: "What happens on restart?", kind: "scenario_event", eventKey: "review_question" });
     const items = buildCommunicationEvidence({
       hasTeammates: true,
@@ -219,27 +219,68 @@ function main() {
         msg({ id: "c", seq: 4, sender: "candidate", toTeammateId: "lead", body: "The insert is atomic, so a replay after restart is ignored." }),
       ],
       handoff: [
-        { id: "changed", label: "What did you change?", answer: "Record event ids in receiver.py before processing, rather than after." },
-        { id: "checked", label: "How did you check it?", answer: "Ran the public tests; the duplicate delivery test failed before and passes now." },
-        { id: "open", label: "What remains unresolved?", answer: "" },
+        { id: "what_changed", label: "What did you change?", answer: "Record event ids in receiver.py in the same transaction rather than after, because a crash between them double credits." },
+        { id: "how_checked", label: "How did you check it?", answer: "Ran the public tests; the duplicate delivery test failed before and passes now." },
+        { id: "unresolved", label: "What remains unresolved?", answer: "" },
       ],
       submitted: true,
-      filePaths: ["app/receiver.py"],
     });
     const by = Object.fromEntries(items.map((i) => [i.behavior, i]));
+    assert.deepEqual(Object.keys(by).sort(), ["blocker", "clarification", "decision", "feedback", "handoff", "new_information", "uncertainty"]);
     assert.equal(by.clarification.state, "observed");
-    assert.equal(by.evidence_explanation.state, "observed");
-    assert.equal(by.tradeoff.state, "observed");
+    assert.deepEqual(by.clarification.excerpts.map((e) => e.ref), [{ kind: "team_message", messageId: "a", seq: 1 }, { kind: "team_message", messageId: "b", seq: 2 }]);
+    assert.equal(by.decision.state, "observed");
+    assert.deepEqual(by.decision.excerpts[0].ref, { kind: "handoff", promptId: "what_changed" });
     assert.equal(by.feedback.state, "observed");
     assert.equal(by.handoff.state, "observed");
     assert.match(by.handoff.summary, /2 of 3/);
+    assert.equal(by.blocker.state, "not_assessed", "nothing blocked the work, so there was no opportunity");
+    assert.equal(by.new_information.state, "not_assessed", "the scenario introduced no new information");
+    assert.equal(by.uncertainty.state, "not_observed", "the open-risks question was asked and left empty");
+    for (const i of items) for (const e of i.excerpts) assert.ok(e.ref, `${i.behavior} excerpt has a source link`);
 
-    const quiet = buildCommunicationEvidence({ hasTeammates: true, messages: [], handoff: null, submitted: false, filePaths: [] });
+    const quiet = buildCommunicationEvidence({ hasTeammates: true, messages: [], handoff: null, submitted: false });
     const q = Object.fromEntries(quiet.map((i) => [i.behavior, i]));
-    assert.equal(q.clarification.state, "not_observed");
-    assert.equal(q.feedback.state, "no_opportunity");
-    assert.equal(q.handoff.state, "no_opportunity");
-    for (const i of quiet) assert.ok(!/\b(score|weak|poor|bad|concern)/i.test(i.summary));
+    assert.equal(q.clarification.state, "not_assessed", "not asking a question is never a negative finding");
+    assert.equal(q.feedback.state, "not_assessed");
+    assert.equal(q.handoff.state, "not_assessed");
+    for (const i of quiet) assert.notEqual(i.state, "not_observed", "an unsubmitted, silent attempt has no negative findings");
+    for (const i of [...quiet, ...items]) assert.ok(!/\b(score|weak|poor|bad|concern|personality|culture|attitude|confident)\b/i.test(`${i.summary} ${i.limits}`), i.behavior);
+  });
+
+  test("collaboration evidence: brevity and volume are not counted; platform faults are not the candidate's", () => {
+    const brief = buildCommunicationEvidence({
+      hasTeammates: true,
+      messages: [],
+      handoff: [
+        { id: "what_changed", label: "What did you change?", answer: "Keyed dedupe on event id since retries get a new delivery id." },
+        { id: "unresolved", label: "What remains unresolved?", answer: "Assumes one SQLite file." },
+      ],
+      submitted: true,
+      technicalIssues: [{ at: "2026-10-09T10:00:00Z" }],
+    });
+    const b = Object.fromEntries(brief.map((i) => [i.behavior, i]));
+    assert.equal(b.decision.state, "observed", "a one-line reason counts the same as a long one");
+    assert.equal(b.uncertainty.state, "observed");
+    assert.equal(b.clarification.state, "not_assessed");
+    assert.equal(b.blocker.state, "not_assessed", "a platform fault the candidate did not report is not held against them");
+    assert.match(b.blocker.summary, /platform fault, not a candidate result/);
+
+    const chatty = buildCommunicationEvidence({
+      hasTeammates: true,
+      messages: Array.from({ length: 12 }, (_, i) => msg({ id: `m${i}`, seq: i + 1, sender: "candidate", toTeammateId: "lead", body: `Note ${i}` })),
+      handoff: null,
+      submitted: false,
+    });
+    const c = Object.fromEntries(chatty.map((i) => [i.behavior, i]));
+    assert.equal(c.clarification.state, "not_assessed", "many messages without a question earn nothing extra");
+    const blocked = buildCommunicationEvidence({
+      hasTeammates: true,
+      messages: [msg({ id: "x", seq: 1, sender: "candidate", toTeammateId: "lead", body: "I'm blocked: the public tests keep timing out on the runner." })],
+      handoff: null,
+      submitted: false,
+    });
+    assert.equal(blocked.find((i) => i.behavior === "blocker")?.state, "observed");
   });
 
   test("assistant use summary tracks accepted patches into the submission", () => {

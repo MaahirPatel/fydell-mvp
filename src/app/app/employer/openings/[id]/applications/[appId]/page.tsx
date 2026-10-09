@@ -213,7 +213,7 @@ export default async function EmployerApplicationPage({ params }: { params: Prom
         <aside className="grid content-start gap-5">
           {review ? (
             <>
-              <PassportDecisionPanel reviewId={review.id} initialDecision={review.decision} initialNote={review.privateNote} decidedAt={review.decidedAt} />
+              <PassportDecisionPanel reviewId={review.id} initialDecision={review.decision} initialNote={review.privateNote} decidedAt={review.decidedAt} version={review.version} />
               {review.passport ? (
                 <Link
                   href={`/app/employer/passports/${review.id}/brief?role=${role.id}`}

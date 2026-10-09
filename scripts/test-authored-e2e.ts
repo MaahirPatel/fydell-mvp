@@ -166,7 +166,7 @@ async function main() {
     confirmedAssumptions: ["synthetic_data"],
     simulation: { mode: "as_is", track: "backend_api", jobTitle: "Backend Engineer", taskFamily: "backend.reliability", exemplarKey: EXEMPLAR, businessContext: "", secondaryCapability: "" },
   };
-  const created = await expectStatus(employer, "POST", "/api/eng/authoring/drafts", [201], { input });
+  const created = await expectStatus(employer, "POST", "/api/eng/authoring/drafts", [201], { input, allowDuplicate: true });
   const draftId = strField(created, "draftId");
   assert.equal(created.jobId, null, "a template copy needs no generation job");
   pass("draft created from the validated template", draftId);
@@ -277,7 +277,7 @@ async function main() {
   assert.ok(review.html.includes(testJudged[0].id) || /demonstrated/i.test(review.html), "the review page renders the evaluation");
   const engineerOnEmployerPage = await page(engineer, `/app/employer/engineering/attempts/${attemptId}`);
   assert.ok(engineerOnEmployerPage.status !== 200 || !engineerOnEmployerPage.html.includes(testJudged[0].id), "the engineer cannot open the employer review page");
-  assert.equal(await queueState(attemptId), "release");
+  assert.equal(await queueState(attemptId), "review");
   pass("employer review page renders results; queue shows waiting on release");
 
   /* ---------------------------------------------------------------- 5 */

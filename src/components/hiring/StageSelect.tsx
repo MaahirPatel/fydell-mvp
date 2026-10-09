@@ -16,11 +16,13 @@ export default function StageSelect({ applicationId, stage, applicantName }: { a
     setValue(next);
     setBusy(true);
     setError(null);
-    const result = await send<{ ok: true }>(`/api/hiring/applications/${applicationId}`, "POST", { stage: next });
+    const result = await send<{ ok: true; current?: ApplicationStage }>(`/api/hiring/applications/${applicationId}`, "POST", { stage: next, expectedStage: previous });
     setBusy(false);
-    if ("error" in result) {
-      setValue(previous);
-      return setError(result.error);
+    if (result.ok === false) {
+      setValue(result.data.current ?? previous);
+      setError(result.error);
+      if (result.data.current) router.refresh();
+      return;
     }
     router.refresh();
   }

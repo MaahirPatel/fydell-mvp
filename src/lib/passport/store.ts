@@ -271,7 +271,9 @@ export async function saveProjectVersion(
     .eq("repo_id", result.repository.id)
     .eq("commit_sha", result.commitSha)
     .single();
-  return { passport, projectId: (saved as { id: string }).id, reusedExistingVersion: false };
+  const projectId = (saved as { id: string }).id;
+  await recordSnapshotVersion(projectId);
+  return { passport, projectId, reusedExistingVersion: false };
 }
 
 export async function saveProject(
@@ -708,6 +710,7 @@ type ReviewRow = {
   decided_at: string | null;
   private_note: string;
   created_at: string;
+  updated_at: string;
   passport_shares: ShareRow | null;
 };
 
@@ -742,7 +745,7 @@ export async function getReview(organizationId: string, reviewId: string) {
   const admin = createAdminSupabaseClient();
   const { data } = await admin
     .from("employer_passport_reviews")
-    .select(`id,share_id,role_title,decision,decided_at,private_note,created_at,passport_shares(${SHARE_COLUMNS})`)
+    .select(`id,share_id,role_title,decision,decided_at,private_note,created_at,updated_at,passport_shares(${SHARE_COLUMNS})`)
     .eq("organization_id", organizationId)
     .eq("id", reviewId)
     .maybeSingle();
@@ -756,13 +759,44 @@ export async function getReview(organizationId: string, reviewId: string) {
     decision: row.decision,
     decidedAt: row.decided_at,
     privateNote: row.private_note,
+    version: row.updated_at,
     passport,
   };
 }
 
-export async function recordDecision(organizationId: string, reviewId: string, userId: string, decision: ReviewDecision, note: string) {
+export type ReviewDecisionState = { decision: ReviewDecision; privateNote: string; decidedAt: string | null; version: string };
+
+export type RecordReviewDecisionResult =
+  | { kind: "saved"; state: ReviewDecisionState }
+  | { kind: "conflict"; state: ReviewDecisionState }
+  | { kind: "not_found" };
+
+async function reviewDecisionState(organizationId: string, reviewId: string): Promise<ReviewDecisionState | null> {
+  const { data } = await createAdminSupabaseClient()
+    .from("employer_passport_reviews")
+    .select("decision,private_note,decided_at,updated_at")
+    .eq("organization_id", organizationId)
+    .eq("id", reviewId)
+    .maybeSingle();
+  if (!data) return null;
+  return { decision: data.decision as ReviewDecision, privateNote: (data.private_note as string) ?? "", decidedAt: (data.decided_at as string | null) ?? null, version: data.updated_at as string };
+}
+
+/**
+ * Compare-and-set on `updated_at`: a teammate's save in between makes this a
+ * conflict carrying their saved state, never a silent overwrite. A null
+ * `expectedVersion` (older clients) writes unconditionally.
+ */
+export async function recordDecision(
+  organizationId: string,
+  reviewId: string,
+  userId: string,
+  decision: ReviewDecision,
+  note: string,
+  expectedVersion: string | null = null,
+): Promise<RecordReviewDecisionResult> {
   const admin = createAdminSupabaseClient();
-  const { data } = await admin
+  let query = admin
     .from("employer_passport_reviews")
     .update({
       decision,
@@ -772,9 +806,18 @@ export async function recordDecision(organizationId: string, reviewId: string, u
       updated_at: new Date().toISOString(),
     })
     .eq("organization_id", organizationId)
-    .eq("id", reviewId)
-    .select("id");
-  return (data ?? []).length > 0;
+    .eq("id", reviewId);
+  if (expectedVersion) query = query.eq("updated_at", expectedVersion);
+  const { data } = await query.select("decision,private_note,decided_at,updated_at");
+  const row = (data ?? [])[0];
+  if (row) {
+    return {
+      kind: "saved",
+      state: { decision: row.decision as ReviewDecision, privateNote: (row.private_note as string) ?? "", decidedAt: (row.decided_at as string | null) ?? null, version: row.updated_at as string },
+    };
+  }
+  const current = await reviewDecisionState(organizationId, reviewId);
+  return current ? { kind: "conflict", state: current } : { kind: "not_found" };
 }
 
 /* ------------------------------------------------------------------ */

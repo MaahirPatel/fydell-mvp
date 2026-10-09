@@ -266,7 +266,7 @@ function nextActionFor(r: EmployerRow, evidenceAvailable: boolean): string {
   if (r.stage === "closed") return "None";
   if (r.stage === "awaiting_candidate") return "Waiting on the applicant";
   if (!evidenceAvailable && (r.links ?? []).length === 0 && !r.note) return "Ask for evidence";
-  if ((r.employer_passport_reviews?.decision ?? "none") === "none") return r.stage === "new" ? "Review evidence" : "Record a decision";
+  if ((r.employer_passport_reviews?.decision ?? "none") === "none") return r.stage === "new" ? "Review submission" : "Record decision";
   return "Close or follow up";
 }
 
@@ -452,17 +452,38 @@ export async function getApplicationForOrg(organizationId: string, applicationId
   return data ? toEmployerApplication(data as AppRow) : null;
 }
 
-export async function setApplicationStage(organizationId: string, applicationId: string, stage: ApplicationStage): Promise<boolean> {
-  if (!/^[0-9a-f-]{36}$/.test(applicationId)) return false;
+export type StageChange = { kind: "changed" } | { kind: "conflict"; current: ApplicationStage } | { kind: "not_found" };
+
+/**
+ * Moves the application only if it is still at `expected` (when given), so a
+ * teammate's stage change in between is reported instead of overwritten.
+ */
+export async function setApplicationStage(
+  organizationId: string,
+  applicationId: string,
+  stage: ApplicationStage,
+  expected: ApplicationStage | null = null,
+): Promise<StageChange> {
+  if (!/^[0-9a-f-]{36}$/.test(applicationId)) return { kind: "not_found" };
   const db = createAdminSupabaseClient();
-  const { data } = await db
+  let query = db
     .from("role_applications")
     .update({ stage, updated_at: new Date().toISOString() })
     .eq("id", applicationId)
     .eq("organization_id", organizationId)
+    .eq("status", "submitted");
+  if (expected && expected !== stage) query = query.eq("stage", expected);
+  const { data } = await query.select("id");
+  if ((data ?? []).length > 0) {
+    await recordEvidenceEvent("employer_next_step", { application_id: applicationId, step: `stage_${stage}` }, organizationId);
+    return { kind: "changed" };
+  }
+  const { data: row } = await db
+    .from("role_applications")
+    .select("stage")
+    .eq("id", applicationId)
+    .eq("organization_id", organizationId)
     .eq("status", "submitted")
-    .select("id");
-  const changed = (data ?? []).length > 0;
-  if (changed) await recordEvidenceEvent("employer_next_step", { application_id: applicationId, step: `stage_${stage}` }, organizationId);
-  return changed;
+    .maybeSingle();
+  return row ? { kind: "conflict", current: row.stage as ApplicationStage } : { kind: "not_found" };
 }

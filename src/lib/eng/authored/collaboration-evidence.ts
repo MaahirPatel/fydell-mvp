@@ -1,23 +1,34 @@
 /**
- * Communication evidence for an authored simulation, built from the stored
- * team thread and the handoff. Each behaviour is either observed, with the
- * excerpts that show it, not observed, or had no opportunity to occur.
+ * Collaboration evidence for an authored simulation, built from the stored
+ * team thread, the handoff and the platform's own run records. It covers only
+ * task-relevant, observable behaviours, and each observation links to the
+ * message or handoff answer that supports it.
  *
- * Deliberately not measured: message count, length, speed, tone, English
- * fluency, agreement with teammates, or whether the candidate used the
- * assistant. Not observed is never a negative finding.
+ * States:
+ *   observed      the record contains the behaviour; the excerpts show where.
+ *   not_observed  the task gave a fair opportunity and the record does not show it.
+ *   not_assessed  the task gave no fair opportunity (or did not require it), so nothing is concluded.
+ *
+ * Deliberately never measured or penalised: brevity, not asking unnecessary
+ * questions, writing style, tone, English fluency, pauses, message volume,
+ * agreement with teammates, whether the assistant was used, and behaviours
+ * the task never required. Nothing here describes personality or fit.
  */
 import type { PackageFile } from "../authoring/package";
 import type { AssistantInteractionView, ScenarioEventKey, TeamMessageView } from "./collaboration-types";
 
-export type CommunicationBehavior = "clarification" | "evidence_explanation" | "tradeoff" | "feedback" | "handoff";
-export type EvidenceState = "observed" | "not_observed" | "no_opportunity";
+export type CommunicationBehavior = "clarification" | "blocker" | "decision" | "new_information" | "uncertainty" | "handoff" | "feedback";
+export type EvidenceState = "observed" | "not_observed" | "not_assessed";
+
+/** Where an excerpt comes from, so the employer view can link to it. */
+export type EvidenceRef = { kind: "team_message"; messageId: string; seq: number } | { kind: "handoff"; promptId: string };
 
 export interface EvidenceExcerpt {
   source: "team" | "handoff";
   label: string;
   text: string;
   at: string | null;
+  ref: EvidenceRef;
 }
 
 export interface CommunicationItem {
@@ -48,15 +59,17 @@ export interface AssistantUseSummary {
   }>;
 }
 
-const LABELS: Record<CommunicationBehavior, string> = {
-  clarification: "Clarification",
-  evidence_explanation: "Evidence-based explanation",
-  tradeoff: "Tradeoff discussion",
-  feedback: "Handling feedback",
-  handoff: "Handoff",
+export const BEHAVIOR_LABELS: Record<CommunicationBehavior, string> = {
+  clarification: "Asking a necessary clarification",
+  blocker: "Reporting a blocker",
+  decision: "Explaining a decision",
+  new_information: "Responding to new information",
+  uncertainty: "Identifying uncertainty",
+  handoff: "Producing a useful handoff",
+  feedback: "Incorporating feedback",
 };
 
-const NOT_A_DEFICIT = "Not observed means this attempt holds no record of it, not that the candidate lacks the skill.";
+const NOT_A_DEFICIT = "Not observed means this attempt holds no record of it. It is not a finding about the person.";
 
 function clip(text: string, max = 320): string {
   const t = text.trim().replace(/\s+/g, " ");
@@ -64,136 +77,168 @@ function clip(text: string, max = 320): string {
 }
 
 const QUESTION = /\?|^(how|what|why|when|where|which|who|is|are|does|do|can|could|should|would|will)\b/i;
-const EVIDENCE_WORDS = /\b(test(s|ed|ing)?|pytest|jest|vitest|repro(duce|duced|duction)?|fail(s|ed|ing|ure)?|traceback|stack ?trace|log(s|ged)?|assert(ion)?|output|line \d+|ran|run(ning)?)\b/i;
-const TRADEOFF_WORDS = /\b(trade-?offs?|instead of|rather than|alternative(ly)?|downside|at the cost of|at the expense of|chose|chosen|considered|versus|vs\.?|risk(s|y)?|limitation(s)?|simpler|edge case(s)?)\b/i;
+const BLOCKER_WORDS = /\b(blocked|blocker|stuck|can(?:no|')t (?:run|start|install|open|reach|access|get)|unable to|won'?t (?:run|start|load)|doesn'?t (?:run|start|load)|keeps? (?:failing|timing out|crashing)|error when|not working|environment (?:check )?fail)/i;
+const REASON_WORDS = /\b(because|so that|so the|since|instead of|rather than|chose|chosen|choose|decided|trade-?offs?|to avoid|to prevent|which means|otherwise|alternative(?:ly)?|at the cost of)\b/i;
+const UNCERTAINTY_WORDS = /\b(assum(?:e|ed|ing|ption)s?|not sure|unsure|unclear|unknown|risks?|might|may not|could still|haven'?t (?:tested|verified|checked)|not (?:tested|verified|covered)|untested|edge cases?|would (?:next|also)|next step)\b/i;
+const EMPTY_ANSWER = /^(none|nothing|n\/a|na|no|-+)\.?$/i;
+const UNRESOLVED_PROMPT = /unresolved|risk|remain|open question|uncertain|next/i;
+
+type HandoffAnswer = { id: string; label: string; answer: string };
 
 export function buildCommunicationEvidence(input: {
   hasTeammates: boolean;
   messages: TeamMessageView[];
-  handoff: Array<{ id: string; label: string; answer: string }> | null;
+  handoff: HandoffAnswer[] | null;
   submitted: boolean;
-  filePaths: string[];
+  /** Platform faults during the attempt (for example a test run that could not start). Never counted against the candidate. */
+  technicalIssues?: Array<{ at: string }>;
 }): CommunicationItem[] {
   const { messages, handoff } = input;
-  const candidate = messages.filter((m) => m.sender === "candidate");
-  const handoffText = (handoff ?? []).filter((h) => h.answer.trim());
-  const pathPattern = input.filePaths.length
-    ? new RegExp(`(${input.filePaths.map((p) => p.split("/").pop() ?? p).filter((p) => p.length > 3).map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "i")
-    : null;
+  const candidate = messages.filter((m) => m.sender === "candidate" && m.kind === "message");
+  const prompts = handoff ?? [];
+  const answered = prompts.filter((h) => h.answer.trim());
+  const technicalIssues = input.technicalIssues ?? [];
 
-  const teamExcerpt = (m: TeamMessageView): EvidenceExcerpt => ({ source: "team", label: "Team thread", text: clip(m.body), at: m.createdAt });
-  const handoffExcerpt = (h: { label: string; answer: string }): EvidenceExcerpt => ({ source: "handoff", label: h.label, text: clip(h.answer), at: null });
+  const teamExcerpt = (m: TeamMessageView, label = "Team thread"): EvidenceExcerpt => ({
+    source: "team",
+    label: `${label}, message ${m.seq}`,
+    text: clip(m.body),
+    at: m.createdAt,
+    ref: { kind: "team_message", messageId: m.id, seq: m.seq },
+  });
+  const handoffExcerpt = (h: HandoffAnswer): EvidenceExcerpt => ({ source: "handoff", label: `Handoff: ${h.label}`, text: clip(h.answer), at: null, ref: { kind: "handoff", promptId: h.id } });
+  const item = (behavior: CommunicationBehavior, state: EvidenceState, summary: string, excerpts: EvidenceExcerpt[], limits: string): CommunicationItem => ({
+    behavior,
+    label: BEHAVIOR_LABELS[behavior],
+    state,
+    summary,
+    excerpts: excerpts.slice(0, 4),
+    limits,
+  });
 
   const items: CommunicationItem[] = [];
 
-  // Clarification
+  // Asking a necessary clarification: a question to a simulated teammate and the answer it got.
   if (!input.hasTeammates) {
-    items.push({ behavior: "clarification", label: LABELS.clarification, state: "no_opportunity", summary: "This task had no simulated teammates to ask.", excerpts: [], limits: NOT_A_DEFICIT });
+    items.push(item("clarification", "not_assessed", "This task had no simulated teammates to ask.", [], "Nothing is concluded."));
   } else {
-    const questions = candidate.filter((m) => QUESTION.test(m.body.trim()));
+    const pairs: EvidenceExcerpt[] = [];
+    let asked = 0;
+    for (const q of candidate.filter((m) => QUESTION.test(m.body.trim()))) {
+      asked += 1;
+      const reply = messages.find((m) => m.sender === "teammate" && m.seq > q.seq && m.teammateId === q.toTeammateId && m.kind === "message");
+      pairs.push(teamExcerpt(q, "Question"));
+      if (reply) pairs.push(teamExcerpt(reply, "Answer"));
+    }
     items.push(
-      questions.length
-        ? {
-            behavior: "clarification",
-            label: LABELS.clarification,
-            state: "observed",
-            summary: `Asked ${questions.length === 1 ? "a question" : `${questions.length} questions`} of the simulated teammates.`,
-            excerpts: questions.slice(0, 3).map(teamExcerpt),
-            limits: "Shows that questions were asked, not whether they were the right ones. Asking fewer questions is not a weakness when the brief was clear.",
-          }
-        : { behavior: "clarification", label: LABELS.clarification, state: "not_observed", summary: "No questions to the simulated teammates.", excerpts: [], limits: NOT_A_DEFICIT },
+      asked
+        ? item(
+            "clarification",
+            "observed",
+            `Asked ${asked === 1 ? "a question" : `${asked} questions`} of the simulated teammates. The excerpts pair each question with the answer.`,
+            pairs,
+            "Shows what was asked and what the answer said. Whether the question was necessary is a reviewer judgment; extra questions are not counted against the candidate.",
+          )
+        : item(
+            "clarification",
+            "not_assessed",
+            "No questions were asked. A question is only expected when the brief leaves something out, so this is not assessed.",
+            [],
+            "Not asking is never counted against the candidate.",
+          ),
     );
   }
 
-  // Evidence-based explanation
-  const evidenceMsgs = candidate.filter((m) => EVIDENCE_WORDS.test(m.body) || (pathPattern?.test(m.body) ?? false));
-  const evidenceHandoff = handoffText.filter((h) => EVIDENCE_WORDS.test(h.answer) || (pathPattern?.test(h.answer) ?? false));
-  const evidenceExcerpts = [...evidenceHandoff.map(handoffExcerpt), ...evidenceMsgs.map(teamExcerpt)].slice(0, 3);
-  items.push(
-    evidenceExcerpts.length
-      ? {
-          behavior: "evidence_explanation",
-          label: LABELS.evidence_explanation,
-          state: "observed",
-          summary: "Explained the work with reference to tests, failures, output or specific files.",
-          excerpts: evidenceExcerpts,
-          limits: "Excerpts were found by wording. Read them in context; whether the reasoning is correct is a reviewer judgment.",
-        }
-      : {
-          behavior: "evidence_explanation",
-          label: LABELS.evidence_explanation,
-          state: input.submitted || candidate.length ? "not_observed" : "no_opportunity",
-          summary: "No explanation referring to tests, failures or specific files was found.",
-          excerpts: [],
-          limits: NOT_A_DEFICIT,
-        },
-  );
+  // Reporting a blocker: only assessable when something actually blocked the work.
+  const reported = candidate.filter((m) => BLOCKER_WORDS.test(m.body));
+  if (reported.length) {
+    items.push(
+      item("blocker", "observed", "Told a teammate about something blocking the work.", reported.map((m) => teamExcerpt(m)), "Shows the report, not whether the blocker was real. Platform faults are recorded separately and never count against the candidate."),
+    );
+  } else {
+    items.push(
+      item(
+        "blocker",
+        "not_assessed",
+        technicalIssues.length
+          ? `A platform problem occurred ${technicalIssues.length === 1 ? "once" : `${technicalIssues.length} times`} (a test run could not start). It is recorded as a platform fault, not a candidate result, and reporting it was not required.`
+          : "Nothing blocked the work in this attempt, so there was nothing to report.",
+        [],
+        "Nothing is concluded.",
+      ),
+    );
+  }
 
-  // Tradeoff discussion
-  const tradeoffs = [...handoffText.filter((h) => TRADEOFF_WORDS.test(h.answer)).map(handoffExcerpt), ...candidate.filter((m) => TRADEOFF_WORDS.test(m.body)).map(teamExcerpt)].slice(0, 3);
-  items.push(
-    tradeoffs.length
-      ? {
-          behavior: "tradeoff",
-          label: LABELS.tradeoff,
-          state: "observed",
-          summary: "Discussed alternatives, risks or limitations of the approach.",
-          excerpts: tradeoffs,
-          limits: "Excerpts were found by wording. A different valid implementation is not a weaker one.",
-        }
-      : {
-          behavior: "tradeoff",
-          label: LABELS.tradeoff,
-          state: input.submitted || candidate.length ? "not_observed" : "no_opportunity",
-          summary: "No discussion of alternatives or limitations was found.",
-          excerpts: [],
-          limits: NOT_A_DEFICIT,
-        },
-  );
+  // Explaining a decision: reasons given for the approach, in the handoff or the thread.
+  const reasoned = [...answered.filter((h) => REASON_WORDS.test(h.answer)).map(handoffExcerpt), ...candidate.filter((m) => REASON_WORDS.test(m.body)).map((m) => teamExcerpt(m))];
+  if (reasoned.length) {
+    items.push(item("decision", "observed", "Gave reasons for the approach taken.", reasoned, "Found by wording; read the excerpts in context. Whether the reasoning is correct is a reviewer judgment, and a short explanation counts the same as a long one."));
+  } else if (input.submitted && prompts.length) {
+    items.push(item("decision", "not_observed", "The handoff and thread do not give a reason for the approach.", [], `${NOT_A_DEFICIT} Detection is by wording, so a reviewer may find reasoning the summary missed.`));
+  } else {
+    items.push(item("decision", "not_assessed", input.submitted ? "This task asked for no written explanation." : "The attempt has not been submitted.", [], "Nothing is concluded."));
+  }
 
-  // Handling feedback
+  // Responding to new information: only when the scenario introduced new information during the work.
+  const injected = messages.filter((m) => m.kind === "scenario_event" && m.eventKey !== "initial_context" && m.eventKey !== "review_question" && m.eventKey !== "final_handoff");
+  if (!injected.length) {
+    items.push(item("new_information", "not_assessed", "The task did not introduce new information while the candidate worked.", [], "Nothing is concluded."));
+  } else {
+    const first = injected[0];
+    const response = candidate.find((m) => m.seq > first.seq);
+    items.push(
+      response
+        ? item("new_information", "observed", "Responded after the scenario introduced new information.", [teamExcerpt(first, "Update"), teamExcerpt(response, "Response")], "Shows a response, not whether it was right. A reviewer judges the content.")
+        : item("new_information", "not_observed", "No response to the new information was recorded.", [teamExcerpt(first, "Update")], NOT_A_DEFICIT),
+    );
+  }
+
+  // Identifying uncertainty: an answer to the handoff's open-risks question, or explicit assumptions and risks.
+  const unresolvedPrompt = prompts.find((h) => UNRESOLVED_PROMPT.test(`${h.id} ${h.label}`));
+  const uncertain = [
+    ...(unresolvedPrompt && unresolvedPrompt.answer.trim() && !EMPTY_ANSWER.test(unresolvedPrompt.answer.trim()) ? [handoffExcerpt(unresolvedPrompt)] : []),
+    ...answered.filter((h) => h !== unresolvedPrompt && UNCERTAINTY_WORDS.test(h.answer)).map(handoffExcerpt),
+    ...candidate.filter((m) => UNCERTAINTY_WORDS.test(m.body)).map((m) => teamExcerpt(m)),
+  ];
+  if (uncertain.length) {
+    items.push(item("uncertainty", "observed", "Named assumptions, risks or what was not verified.", uncertain, "Shows what the candidate said was uncertain. Whether anything important was missed is a reviewer judgment."));
+  } else if (input.submitted && unresolvedPrompt) {
+    items.push(
+      item(
+        "uncertainty",
+        "not_observed",
+        unresolvedPrompt.answer.trim() ? "The answer to the open-risks question says nothing remains." : "The open-risks question was left empty.",
+        unresolvedPrompt.answer.trim() ? [handoffExcerpt(unresolvedPrompt)] : [],
+        `${NOT_A_DEFICIT} Saying nothing remains can be accurate; a reviewer judges it against the submitted work.`,
+      ),
+    );
+  } else {
+    items.push(item("uncertainty", "not_assessed", input.submitted ? "The task did not ask about open risks." : "The attempt has not been submitted.", [], "Nothing is concluded."));
+  }
+
+  // Producing a useful handoff.
+  if (!input.submitted || prompts.length === 0) {
+    items.push(item("handoff", "not_assessed", input.submitted ? "This task asked for no handoff." : "The attempt has not been submitted.", [], "Nothing is concluded."));
+  } else {
+    items.push(
+      answered.length
+        ? item("handoff", "observed", `Answered ${answered.length} of ${prompts.length} handoff questions.`, answered.map(handoffExcerpt), "Shows what the candidate wrote. Whether it matches the submitted code is for the reviewer to check; length is not counted.")
+        : item("handoff", "not_observed", "The handoff questions were left empty.", [], NOT_A_DEFICIT),
+    );
+  }
+
+  // Incorporating feedback: the planned review question and the reply.
   const review = messages.find((m) => m.eventKey === ("review_question" satisfies ScenarioEventKey));
   if (!review) {
-    items.push({ behavior: "feedback", label: LABELS.feedback, state: "no_opportunity", summary: "No review question was asked during this attempt.", excerpts: [], limits: NOT_A_DEFICIT });
+    items.push(item("feedback", "not_assessed", "No review feedback was given during this attempt.", [], "Nothing is concluded."));
   } else {
     const answer = candidate.find((m) => m.seq > review.seq && m.toTeammateId === review.teammateId);
-    const answerInHandoff = handoffText.length > 0;
     items.push(
       answer
-        ? {
-            behavior: "feedback",
-            label: LABELS.feedback,
-            state: "observed",
-            summary: "Responded to the reviewer's question.",
-            excerpts: [teamExcerpt(review), teamExcerpt(answer)],
-            limits: "Disagreeing with a reviewer, with reasons, is a valid response. Whether the answer is correct is a reviewer judgment.",
-          }
-        : {
-            behavior: "feedback",
-            label: LABELS.feedback,
-            state: "not_observed",
-            summary: answerInHandoff ? "The review question was not answered in the thread. The handoff may address it." : "The review question was not answered in the thread.",
-            excerpts: [teamExcerpt(review)],
-            limits: NOT_A_DEFICIT,
-          },
-    );
-  }
-
-  // Handoff
-  if (!input.submitted) {
-    items.push({ behavior: "handoff", label: LABELS.handoff, state: "no_opportunity", summary: "The attempt has not been submitted.", excerpts: [], limits: NOT_A_DEFICIT });
-  } else {
-    items.push(
-      handoffText.length
-        ? {
-            behavior: "handoff",
-            label: LABELS.handoff,
-            state: "observed",
-            summary: `Answered ${handoffText.length} of ${(handoff ?? []).length} handoff questions.`,
-            excerpts: handoffText.map(handoffExcerpt),
-            limits: "Shows what the candidate wrote. Accuracy against the submitted code is for the reviewer to check.",
-          }
-        : { behavior: "handoff", label: LABELS.handoff, state: "not_observed", summary: "The handoff questions were left empty.", excerpts: [], limits: NOT_A_DEFICIT },
+        ? item("feedback", "observed", "Responded to the reviewer's question.", [teamExcerpt(review, "Review question"), teamExcerpt(answer, "Reply")], "Disagreeing with a reviewer, with reasons, is a valid response. Whether the answer is correct is a reviewer judgment.")
+        : input.submitted
+          ? item("feedback", "not_observed", answered.length ? "The review question was not answered in the thread. The handoff may address it." : "The review question was not answered.", [teamExcerpt(review, "Review question")], NOT_A_DEFICIT)
+          : item("feedback", "not_assessed", "The review question arrived and the attempt is still open.", [teamExcerpt(review, "Review question")], "Nothing is concluded."),
     );
   }
 

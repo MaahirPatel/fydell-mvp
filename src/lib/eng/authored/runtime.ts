@@ -179,12 +179,21 @@ function toRunView(r: PublicRunRow): PublicRunView {
   };
 }
 
+const PLATFORM_FAULT_STATES = ["infrastructure_error", "runner_unavailable"];
+
+/** Runs that failed for platform reasons. They never use up the candidate's allowance. */
+async function platformFaultRuns(db: Admin, attemptId: string): Promise<number> {
+  const { count } = await db.from("eng_public_test_runs").select("id", { count: "exact", head: true }).eq("attempt_id", attemptId).in("status", PLATFORM_FAULT_STATES);
+  return count ?? 0;
+}
+
 async function publicRunSummary(db: Admin, attemptId: string): Promise<AuthoredCandidateView["publicRuns"]> {
-  const [{ count }, { data: latest }] = await Promise.all([
+  const [{ count }, faults, { data: latest }] = await Promise.all([
     db.from("eng_public_test_runs").select("id", { count: "exact", head: true }).eq("attempt_id", attemptId),
+    platformFaultRuns(db, attemptId),
     db.from("eng_public_test_runs").select("*").eq("attempt_id", attemptId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
-  return { used: count ?? 0, limit: PUBLIC_RUN_LIMIT, minGapSeconds: PUBLIC_RUN_MIN_GAP_SECONDS, latest: latest ? toRunView(latest as PublicRunRow) : null };
+  return { used: Math.max(0, (count ?? 0) - faults), limit: PUBLIC_RUN_LIMIT, minGapSeconds: PUBLIC_RUN_MIN_GAP_SECONDS, latest: latest ? toRunView(latest as PublicRunRow) : null };
 }
 
 /**
@@ -219,7 +228,7 @@ export async function runPublicTests(
     p_files_sha256: filesFingerprint(files),
     p_purpose: purpose,
     p_min_gap_seconds: PUBLIC_RUN_MIN_GAP_SECONDS,
-    p_max_runs: PUBLIC_RUN_LIMIT,
+    p_max_runs: PUBLIC_RUN_LIMIT + (await platformFaultRuns(db, attempt.id)),
   });
   if (error) throw new AttemptError("Could not start the test run. Try again.", 500);
   const row = (Array.isArray(claim) ? claim[0] : claim) as { run_id: string | null; reason: string | null; retry_after_seconds: number | null } | undefined;

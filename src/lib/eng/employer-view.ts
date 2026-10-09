@@ -5,6 +5,7 @@ import { listMessages } from "./attempts";
 import { candidateIdentity } from "./candidate-label";
 import { submissionFor } from "./evidence";
 import { listReports } from "./reports";
+import { AUTOMATED_REVIEWER } from "./authored/evaluation-run";
 import { namesByEmail, namesById } from "./people";
 import { effectiveDueAt, operationalState, type OperationalState } from "./state";
 import type { AttemptRow, InvitationRow, MessageRow, ReportRow, RoleRow, RunRow, SubmissionRow, UploadRow } from "./types";
@@ -48,14 +49,35 @@ export interface TeamQueueItem {
   attemptId: string;
   candidate: string;
   roleTitle: string;
-  waitingOn: "release" | "decision" | "hold";
+  waitingOn: TeamQueueAction;
   since: string;
 }
 
 /**
- * Submitted engineering attempts waiting on the hiring team: a report to
- * release, a decision against a released report, or a decision on hold.
- * Preview attempts are left out.
+ * What the hiring team has to do next, most urgent first:
+ * technical: the trusted test run failed for platform reasons; retry it (never the candidate's fault).
+ * response: the candidate responded to the released report and nobody has resolved it.
+ * review: results are ready and nobody has started the report.
+ * continue_review: a reviewer has started (a team note or an edited draft) but the report is not released.
+ * decision / hold: the report is released and there is no final decision.
+ */
+export type TeamQueueAction = "technical" | "response" | "review" | "continue_review" | "decision" | "hold";
+
+export const TEAM_QUEUE_ACTION_LABEL: Record<TeamQueueAction, string> = {
+  technical: "Resolve technical issue",
+  response: "Read response",
+  review: "Review submission",
+  continue_review: "Continue review",
+  decision: "Record decision",
+  hold: "On hold: record a final decision",
+};
+
+const TECHNICAL_RUN_STATES = new Set(["retryable_failure", "blocked", "failed", "permanent_failure"]);
+const REVIEWABLE_RUN_STATES = new Set(["human_review", "ready"]);
+
+/**
+ * Submitted engineering attempts waiting on the hiring team. Attempts whose
+ * tests are still running are left out (nobody can act yet), as are previews.
  */
 export async function listTeamQueue(db: Admin, organizationId: string, limit = 8): Promise<TeamQueueItem[]> {
   const { data: attempts } = await db
@@ -69,11 +91,15 @@ export async function listTeamQueue(db: Admin, organizationId: string, limit = 8
   const rows = (attempts ?? []) as { id: string; role_id: string; invitation_id: string; submitted_at: string | null }[];
   if (rows.length === 0) return [];
   const ids = rows.map((a) => a.id);
-  const [{ data: reports }, { data: decisions }, { data: invitations }, { data: roles }] = await Promise.all([
+  const [{ data: reports }, { data: drafts }, { data: notes }, { data: decisions }, { data: invitations }, { data: roles }, { data: runs }, { data: responses }] = await Promise.all([
     db.from("eng_reports").select("attempt_id, released_at").in("attempt_id", ids).eq("status", "released"),
+    db.from("eng_reports").select("attempt_id, created_at").in("attempt_id", ids).eq("status", "draft").neq("reviewer_email", AUTOMATED_REVIEWER),
+    db.from("eng_review_notes").select("attempt_id, created_at").in("attempt_id", ids).order("created_at", { ascending: true }),
     db.from("eng_decisions").select("attempt_id, decision, created_at").in("attempt_id", ids).order("created_at", { ascending: false }),
     db.from("eng_invitations").select("id, candidate_name, candidate_email, candidate_handle").in("id", rows.map((a) => a.invitation_id)),
     db.from("eng_roles").select("id, title").in("id", [...new Set(rows.map((a) => a.role_id))]),
+    db.from("eng_evaluation_runs").select("attempt_id, status, created_at").in("attempt_id", ids).neq("status", "canceled").order("created_at", { ascending: false }),
+    db.from("eng_report_responses").select("attempt_id, created_at").in("attempt_id", ids).eq("status", "open").order("created_at", { ascending: true }),
   ]);
   const releasedAt = new Map<string, string>();
   for (const r of reports ?? []) {
@@ -81,6 +107,12 @@ export async function listTeamQueue(db: Admin, organizationId: string, limit = 8
     const at = (r.released_at as string | null) ?? "";
     if (!prev || at > prev) releasedAt.set(r.attempt_id as string, at);
   }
+  const draftAt = new Map<string, string>();
+  for (const d of [...(drafts ?? []), ...(notes ?? [])]) if (!draftAt.has(d.attempt_id as string)) draftAt.set(d.attempt_id as string, d.created_at as string);
+  const latestRun = new Map<string, { status: string; at: string }>();
+  for (const r of runs ?? []) if (!latestRun.has(r.attempt_id as string)) latestRun.set(r.attempt_id as string, { status: r.status as string, at: r.created_at as string });
+  const openResponse = new Map<string, string>();
+  for (const r of responses ?? []) if (!openResponse.has(r.attempt_id as string)) openResponse.set(r.attempt_id as string, r.created_at as string);
   const latestDecision = new Map<string, { decision: string; at: string }>();
   for (const d of decisions ?? []) {
     if (!latestDecision.has(d.attempt_id as string)) latestDecision.set(d.attempt_id as string, { decision: d.decision as string, at: d.created_at as string });
@@ -90,15 +122,24 @@ export async function listTeamQueue(db: Admin, organizationId: string, limit = 8
   const out: TeamQueueItem[] = [];
   for (const a of rows) {
     const decision = latestDecision.get(a.id);
-    if (decision && decision.decision !== "hold") continue;
-    const inv = invById.get(a.invitation_id);
     const released = releasedAt.get(a.id);
+    const run = latestRun.get(a.id);
+    const response = openResponse.get(a.id);
+    let next: { waitingOn: TeamQueueAction; since: string } | null = null;
+    if (released === undefined && run && TECHNICAL_RUN_STATES.has(run.status)) next = { waitingOn: "technical", since: run.at };
+    else if (released !== undefined && response) next = { waitingOn: "response", since: response };
+    else if (released !== undefined) {
+      if (!decision) next = { waitingOn: "decision", since: released };
+      else if (decision.decision === "hold") next = { waitingOn: "hold", since: decision.at };
+    } else if (draftAt.has(a.id)) next = { waitingOn: "continue_review", since: draftAt.get(a.id) ?? a.submitted_at ?? "" };
+    else if (!run || REVIEWABLE_RUN_STATES.has(run.status)) next = { waitingOn: "review", since: a.submitted_at ?? "" };
+    if (!next) continue;
+    const inv = invById.get(a.invitation_id);
     out.push({
       attemptId: a.id,
       candidate: inv ? candidateIdentity(inv).primary : "Candidate",
       roleTitle: roleTitle.get(a.role_id) ?? "Role",
-      waitingOn: decision ? "hold" : released !== undefined ? "decision" : "release",
-      since: decision?.at || released || a.submitted_at || "",
+      ...next,
     });
   }
   return out.sort((x, y) => x.since.localeCompare(y.since)).slice(0, limit);

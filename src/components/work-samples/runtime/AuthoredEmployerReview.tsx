@@ -176,7 +176,7 @@ export function AuthoredSubmissionPanel({
         {handoff.length ? (
           <div className="grid gap-4">
             {handoff.map((h) => (
-              <div key={h.id}>
+              <div key={h.id} id={`handoff-${h.id}`} className="scroll-mt-6">
                 <PanelLabel>{h.label}</PanelLabel>
                 <p className="mt-1 max-w-[72ch] whitespace-pre-wrap text-app-body leading-[1.6] text-[var(--text-body)]">{h.answer || "No answer."}</p>
               </div>

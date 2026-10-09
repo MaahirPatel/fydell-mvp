@@ -12,7 +12,8 @@ import {
   AuthoredFollowUpsPanel,
   AuthoredSubmissionPanel,
 } from "@/components/work-samples/runtime/AuthoredEmployerReview";
-import { authoredBriefText, buildAuthoredDecisionBrief, buildAuthoredFollowUps } from "@/lib/eng/authored/follow-ups";
+import { authoredBriefText, buildAuthoredDecisionBrief, buildAuthoredFollowUps, capabilityStatements } from "@/lib/eng/authored/follow-ups";
+import { ButtonLink } from "@/components/ui/Button";
 import { AuthoredCollaborationPanel } from "@/components/work-samples/runtime/AuthoredCollaborationPanel";
 import { ReleaseAuthoredReport } from "@/components/work-samples/runtime/ReleaseAuthoredReport";
 import { employerCollaboration } from "@/lib/eng/authored/collaboration";
@@ -53,18 +54,41 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
     canSeeEvidence ? listResponses(db, attempt.id) : Promise.resolve([]),
   ]);
   const handoff = view.submission ? handoffAnswers(view.submission.handoff) : null;
-  const collaboration = canSeeEvidence && attempt.started_at ? await employerCollaboration(db, { attempt, pkg }, handoff, files) : null;
+  const [collaboration, { data: versionRow }] = await Promise.all([
+    canSeeEvidence && attempt.started_at ? employerCollaboration(db, { attempt, pkg }, handoff, files) : Promise.resolve(null),
+    db.from("eng_scenario_versions").select("version").eq("id", attempt.scenario_version_id).maybeSingle(),
+  ]);
   const starter = new Map(pkg.starterFiles.map((f) => [f.path, f.content]));
   const changedPaths = new Set<string>((files ?? []).filter((f) => starter.get(f.path) !== f.content).map((f) => f.path));
+  const changes = files
+    ? { changed: [...changedPaths].filter((p) => starter.has(p)).sort(), added: [...changedPaths].filter((p) => !starter.has(p)).sort() }
+    : null;
   const who = candidateIdentity(view.invitation);
   const state = OPERATIONAL_STATES[view.state];
   const latestDecision = view.decisions[0] ?? null;
   const followUps = evaluation ? buildAuthoredFollowUps(evaluation, pkg.rubric) : null;
   const brief = evaluation ? buildAuthoredDecisionBrief(evaluation) : null;
+  const capabilities = evaluation ? capabilityStatements(evaluation, changes) : [];
   const briefText =
     brief && followUps
-      ? authoredBriefText({ candidate: preview ? "Preview" : who.primary, role: view.role.title, task: pkg.brief.title, brief, followUps })
+      ? authoredBriefText({ candidate: preview ? "Preview" : who.primary, role: view.role.title, task: pkg.brief.title, brief, followUps, capabilities })
       : "";
+  const sampleVersion = (versionRow?.version as number | undefined) ?? null;
+  const openResponses = responses.filter((r) => r.status === "open").length;
+  const canDecide = !preview && roleCan(member.role, "record_decision");
+  const mainAction: { label: string; href: string } | null = !canSeeEvidence
+    ? null
+    : delayed
+      ? { label: "Resolve technical issue", href: "#evaluation-delayed" }
+      : !evaluation
+        ? null
+        : !view.report
+          ? { label: canWrite && view.draft ? "Review submission" : "Read the findings", href: "#findings" }
+          : openResponses
+            ? { label: "Read response", href: "#responses" }
+            : canDecide && (!latestDecision || latestDecision.decision === "hold")
+              ? { label: "Record decision", href: "#decision" }
+              : null;
 
   const timeline: TimelineEntry[] = [
     { id: "invited", type: "invitation_created", at: view.invitation.created_at },
@@ -94,20 +118,52 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
         <h1 className="mt-2 text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--text-primary)]">{preview ? "Your preview" : who.primary}</h1>
         <p className="mt-1 text-app-body text-[var(--text-secondary)]">
           {view.role.title} · {pkg.brief.title}
+          {sampleVersion !== null ? `, work sample version ${sampleVersion}` : ""}
+          {view.report ? `, report version ${view.report.version}` : view.draft ? ", report not released" : ""}
         </p>
-        <p className="mt-3 max-w-[64ch] text-app-body leading-[1.55] text-[var(--text-body)]">{pkg.brief.summary}</p>
+        <p className="mt-3 text-app-meta text-[var(--text-secondary)]">{state.meaning}</p>
         {preview ? (
-          <p className="mt-3 max-w-[64ch] text-app-meta text-[var(--text-secondary)]">
+          <p className="mt-2 max-w-[64ch] text-app-meta text-[var(--text-secondary)]">
             Preview attempts use no quota, are left out of role counts, and cannot receive a hiring decision.
           </p>
         ) : null}
-        <p className="mt-3 text-app-meta text-[var(--text-secondary)]">{state.meaning}</p>
+        {mainAction ? (
+          <div className="mt-4">
+            <ButtonLink href={mainAction.href} variant="primary" size="sm">
+              {mainAction.label}
+            </ButtonLink>
+          </div>
+        ) : null}
       </header>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="grid h-fit min-w-0 gap-6">
+          {evaluation ? (
+            <Panel id="outcome">
+              <PanelSection
+                title="Outcome and scope"
+                description="What this submission showed in one work sample. It does not establish overall ability, and criteria the tests could not reach are marked not assessed."
+              >
+                {brief ? (
+                  <p className="max-w-[68ch] text-app-body text-[var(--text-body)]">
+                    {brief.acceptance.confirmed} of {brief.acceptance.total} acceptance criteria passed in the controlled run for this submission
+                    {brief.acceptance.notConfirmed ? `, ${brief.acceptance.notConfirmed} did not pass` : ""}
+                    {brief.acceptance.noResult ? `, ${brief.acceptance.noResult} produced no result and were not assessed` : ""}.
+                  </p>
+                ) : null}
+                {capabilities.length ? (
+                  <ul className="mt-3 grid max-w-[72ch] gap-2 text-app-body text-[var(--text-body)]">
+                    {capabilities.map((c) => (
+                      <li key={c.criterionId}>{c.text}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </PanelSection>
+            </Panel>
+          ) : null}
+
           {canSeeEvidence && delayed ? (
-            <Panel>
+            <Panel id="evaluation-delayed">
               <PanelSection title="Evaluation delayed">
                 <EmptyState
                   title="The tests could not run"
@@ -119,11 +175,11 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
           ) : null}
 
           {evaluation ? (
-            <Panel>
+            <Panel id="findings">
               <AuthoredEvaluationPanel evaluation={evaluation} />
             </Panel>
           ) : canSeeEvidence && !delayed ? (
-            <Panel>
+            <Panel id="findings">
               <PanelSection title="Automated evaluation">
                 <EmptyState
                   title={view.submission || attempt.status === "submitted" ? "Waiting for the tests" : "Waiting for the submission"}
@@ -178,7 +234,7 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
             </Panel>
           ) : null}
 
-          {canSeeEvidence && responses.length ? <CandidateResponsesReview attemptId={attempt.id} initial={responses} canResolve={canWrite} targetLabels={responseTargetLabels(view.report?.brief, view.report?.findings)} /> : null}
+          {canSeeEvidence && responses.length ? <div id="responses" className="scroll-mt-6"><CandidateResponsesReview attemptId={attempt.id} initial={responses} canResolve={canWrite} targetLabels={responseTargetLabels(view.report?.brief, view.report?.findings)} /></div> : null}
 
           {canSeeEvidence && view.submission ? (
             <Panel>
@@ -192,6 +248,40 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
             </Panel>
           ) : null}
 
+          {canSeeEvidence ? (
+            <Panel id="limitations">
+              <PanelSection title="Limitations and context">
+                <ul className="grid max-w-[72ch] gap-1.5 text-app-body text-[var(--text-secondary)]">
+                  <li>This is one timed work sample. The findings describe this submission only, not the candidate&apos;s overall ability or personality.</li>
+                  <li>Collaboration observations cover only behaviours the task gave a fair chance to show. Brevity, message volume and pauses are never counted against the candidate.</li>
+                  <li>Platform faults, such as a test runner or model outage, are recorded separately and never count against the candidate.</li>
+                  {sampleVersion !== null ? <li>Evaluated against work sample version {sampleVersion}. Later edits to the work sample do not change this report.</li> : null}
+                </ul>
+              </PanelSection>
+              {view.reportHistory.length ? (
+                <PanelSection title="Report version history">
+                  <ul className="grid gap-2 text-app-meta">
+                    {view.reportHistory.map((r) => (
+                      <li key={r.id}>
+                        <span className="font-medium text-[var(--text-primary)]">Version {r.version}</span>
+                        <span className="text-[var(--text-tertiary)]">
+                          {" "}
+                          {r.status}
+                          {r.released_at ? (
+                            <>
+                              , <LocalTime iso={r.released_at} />
+                            </>
+                          ) : null}
+                        </span>
+                        {r.change_reason ? <p className="mt-0.5 text-[var(--text-secondary)]">{r.change_reason}</p> : null}
+                      </li>
+                    ))}
+                  </ul>
+                </PanelSection>
+              ) : null}
+            </Panel>
+          ) : null}
+
           <Panel>
             <PanelSection title="Timeline" description="Recorded by the server. Fydell does not watch the candidate's screen or editor.">
               <EvidenceTimeline items={timeline} />
@@ -200,15 +290,18 @@ export async function AuthoredAttempt({ db, member, view, pkg }: { db: Admin; me
         </div>
 
         <div className="grid h-fit gap-6">
+          {canSeeEvidence ? (
+            <p className="text-app-meta text-[var(--text-secondary)]">Team only. The brief, decisions and notes below are never shown to the candidate.</p>
+          ) : null}
           {brief ? (
             <Panel>
               <AuthoredBriefPanel brief={brief} text={briefText} />
             </Panel>
           ) : null}
-          {!preview && view.report && roleCan(member.role, "record_decision") ? (
-            <Panel>
+          {canDecide && view.report ? (
+            <Panel id="decision">
               <PanelSection title="Your decision" description="Fydell provides evidence. The decision is yours.">
-                <DecisionForm attemptId={attempt.id} reportVersion={view.report.version} current={latestDecision?.decision ?? null} />
+                <DecisionForm attemptId={attempt.id} reportVersion={view.report.version} current={latestDecision?.decision ?? null} currentDecisionId={latestDecision?.id ?? null} />
               </PanelSection>
               {latestDecision ? (
                 <PanelSection title="Decision history">

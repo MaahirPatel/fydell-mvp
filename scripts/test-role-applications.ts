@@ -148,7 +148,7 @@ async function main() {
     check("application share is pinned to the selected project", s.version_policy === "pinned" && s.project_repos.length === 1 && s.pinned_project_ids.length === 1);
 
     const list = await listApplicationsForRole(orgId, role.id);
-    check("employer sees the application with evidence", list.length === 1 && list[0].evidenceAvailable && list[0].projects === 1 && list[0].nextAction === "Review evidence");
+    check("employer sees the application with evidence", list.length === 1 && list[0].evidenceAvailable && list[0].projects === 1 && list[0].nextAction === "Review submission");
     check("another organization sees nothing", (await listApplicationsForRole(otherOrgId, role.id)).length === 0);
     check("role list counts it as new", (await listRoles(orgId)).find((r) => r.id === role.id)?.newApplications === 1);
     const linked = await applicationForReview(orgId, reviewId);
@@ -157,8 +157,16 @@ async function main() {
     check("requirement review opens against the role", !!scope && scope.requirements.length === 2);
     const notes = await listNotifications(reviewer.id);
     check("team member is notified", notes.items.some((n) => n.kind === "application_received" && n.href === `/app/employer/openings/${role.id}`));
-    check("stage moves to in review", await setApplicationStage(orgId, submitted.id, "in_review"));
-    check("another org can't move the stage", !(await setApplicationStage(otherOrgId, submitted.id, "closed")));
+    check("stage moves to in review", (await setApplicationStage(orgId, submitted.id, "in_review", "new")).kind === "changed");
+    check("another org can't move the stage", (await setApplicationStage(otherOrgId, submitted.id, "closed")).kind === "not_found");
+    const stale = await setApplicationStage(orgId, submitted.id, "closed", "new");
+    check("a stage change based on a stale stage is a conflict, not an overwrite", stale.kind === "conflict" && stale.current === "in_review");
+    const [first, second] = await Promise.all([
+      setApplicationStage(orgId, submitted.id, "awaiting_candidate", "in_review"),
+      setApplicationStage(orgId, submitted.id, "closed", "in_review"),
+    ]);
+    check("two reviewers moving the stage at once: exactly one wins", [first, second].filter((r) => r.kind === "changed").length === 1 && [first, second].some((r) => r.kind === "conflict"));
+    check("stage moves back to in review", (await setApplicationStage(orgId, submitted.id, "in_review")).kind === "changed");
 
     console.log("requirement versions");
     const edited = parseRoleInput({ ...input.value, required: [...input.value.required, "Owns incidents"] });

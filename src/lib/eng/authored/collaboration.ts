@@ -461,7 +461,11 @@ export async function employerCollaboration(
   submittedFiles: PackageFile[] | null,
 ): Promise<EmployerCollaboration> {
   const { attempt, pkg } = authored;
-  const [rows, interactions] = await Promise.all([listRows(db, attempt.id), listInteractions(db, attempt.id)]);
+  const [rows, interactions, { data: faults }] = await Promise.all([
+    listRows(db, attempt.id),
+    listInteractions(db, attempt.id),
+    db.from("eng_public_test_runs").select("created_at").eq("attempt_id", attempt.id).in("status", ["infrastructure_error", "runner_unavailable"]),
+  ]);
   const messages = rows.map(messageView);
   const views = interactions.map((r) => interactionView(r));
   return {
@@ -472,7 +476,7 @@ export async function employerCollaboration(
       messages,
       handoff,
       submitted: attempt.status === "submitted" || Boolean(attempt.submitted_at),
-      filePaths: pkg.starterFiles.map((f) => f.path),
+      technicalIssues: (faults ?? []).map((f) => ({ at: f.created_at as string })),
     }),
     assistant: { ...summarizeAssistantUse(views, submittedFiles), enabled: assistantEnabled(pkg.aiPolicy.id), policyText: pkg.aiPolicy.candidateText },
   };

@@ -14,7 +14,7 @@ import { LocalDate, LocalTime } from "@/components/eng/LocalTime";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { Table, TBody, TD, TDPrimary, TH, THead, TR } from "@/components/ui/Table";
 import { engAdmin } from "@/lib/eng/context";
-import { listRoleSummaries, listTeamQueue } from "@/lib/eng/employer-view";
+import { listRoleSummaries, listTeamQueue, TEAM_QUEUE_ACTION_LABEL } from "@/lib/eng/employer-view";
 import { listApplicationQueue } from "@/lib/hiring/applications";
 import { listRoles } from "@/lib/hiring/roles";
 import { ROLE_STATE_LABEL } from "@/lib/hiring/role-contract";
@@ -230,7 +230,7 @@ export default async function EmployerHomePage() {
       href: `/app/employer/engineering/attempts/${item.attemptId}`,
       candidate: item.candidate,
       context: item.roleTitle,
-      action: item.waitingOn === "decision" ? "Record a decision" : item.waitingOn === "hold" ? "On hold: make a final decision" : "Review and release",
+      action: TEAM_QUEUE_ACTION_LABEL[item.waitingOn],
       since: item.since,
     })),
     ...applicationQueue.map((item) => ({
@@ -238,7 +238,7 @@ export default async function EmployerHomePage() {
       href: `/app/employer/openings/${item.roleId}/applications/${item.applicationId}`,
       candidate: item.candidate,
       context: `Application, ${item.roleTitle}`,
-      action: item.waitingOn === "answer" ? "Read the applicant's answer" : item.waitingOn === "review" ? "Review evidence" : "Record a decision",
+      action: item.waitingOn === "answer" ? "Read response" : item.waitingOn === "review" ? "Review submission" : "Record decision",
       since: item.since,
     })),
   ].sort((a, b) => (a.since ?? "").localeCompare(b.since ?? ""));

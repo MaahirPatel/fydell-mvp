@@ -109,7 +109,7 @@ export default async function EmployerPassportReviewPage({ params }: { params: P
           )}
         </div>
         <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
-          <PassportDecisionPanel reviewId={review.id} initialDecision={review.decision} initialNote={review.privateNote} decidedAt={review.decidedAt} />
+          <PassportDecisionPanel reviewId={review.id} initialDecision={review.decision} initialNote={review.privateNote} decidedAt={review.decidedAt} version={review.version} />
           {review.passport ? (
             <Link
               href={`/app/employer/passports/${review.id}/brief`}

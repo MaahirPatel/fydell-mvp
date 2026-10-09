@@ -1,13 +1,17 @@
 import { PanelSection } from "@/components/ui/Panel";
 import { Status } from "@/components/ui/report";
 import type { EmployerCollaboration } from "@/lib/eng/authored/collaboration";
-import type { EvidenceState } from "@/lib/eng/authored/collaboration-evidence";
+import type { EvidenceRef, EvidenceState } from "@/lib/eng/authored/collaboration-evidence";
 
 const STATE_LABEL: Record<EvidenceState, string> = {
   observed: "Observed",
   not_observed: "Not observed",
-  no_opportunity: "No opportunity",
+  not_assessed: "Not assessed",
 };
+
+function sourceHref(ref: EvidenceRef): string {
+  return ref.kind === "team_message" ? `#team-msg-${ref.messageId}` : `#handoff-${ref.promptId}`;
+}
 
 const SUBMITTED_AS: Record<"unchanged" | "modified_after" | "not_submitted", string> = {
   unchanged: "Submitted unchanged",
@@ -22,12 +26,12 @@ function time(iso: string) {
 /** Employer view of the simulated-teammate thread, communication evidence and assistant use. No score. */
 export function AuthoredCollaborationPanel({ data }: { data: EmployerCollaboration }) {
   const names = new Map(data.teammates.map((t) => [t.id, t.name]));
-  const conversation = data.messages.filter((m) => m.kind === "message" || m.eventKey === "review_question");
+  const conversation = data.messages.filter((m) => m.kind === "message" || (m.eventKey !== null && m.eventKey !== "initial_context" && m.eventKey !== "final_handoff"));
   return (
     <>
       <PanelSection
-        title="Communication evidence"
-        description="What the record shows, behaviour by behaviour. Message count, length, wording style and disagreement are not scored. Not observed is not a negative finding."
+        title="Collaboration behaviours"
+        description="Task-relevant behaviours this attempt shows, each linked to the message or handoff answer behind it. Not assessed means the task gave no fair opportunity. Brevity, message count, writing style, pauses and not asking unneeded questions are never counted."
       >
         <ul className="grid gap-3">
           {data.communication.map((item) => (
@@ -48,7 +52,9 @@ export function AuthoredCollaborationPanel({ data }: { data: EmployerCollaborati
                     {item.excerpts.map((e, i) => (
                       <li key={i} className="rounded-[6px] bg-[var(--surface-panel)] px-3 py-2">
                         <p className="text-[12px] text-[var(--text-tertiary)]">
-                          {e.label}
+                          <a href={sourceHref(e.ref)} className="underline decoration-[var(--border-strong)] underline-offset-2 hover:text-[var(--text-primary)]">
+                            {e.label}
+                          </a>
                           {e.at ? `, ${time(e.at)}` : ""}
                         </p>
                         <p className="mt-0.5 whitespace-pre-wrap text-app-meta text-[var(--text-body)]">{e.text}</p>
@@ -80,7 +86,7 @@ export function AuthoredCollaborationPanel({ data }: { data: EmployerCollaborati
             </summary>
             <ol className="mt-3 grid gap-2">
               {conversation.map((m) => (
-                <li key={m.id} className="text-app-meta">
+                <li key={m.id} id={`team-msg-${m.id}`} className="scroll-mt-6 text-app-meta">
                   <p className="text-[12px] text-[var(--text-tertiary)]">
                     {m.sender === "candidate"
                       ? `Candidate to ${names.get(m.toTeammateId ?? "") ?? "the team"}`
