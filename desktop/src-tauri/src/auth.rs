@@ -2,14 +2,17 @@
 //!
 //! Flow (checklist DESK-04 — system browser, no secrets in URLs or logs):
 //!
-//! 1. `auth_sign_in` generates a random `state`, stores it, and opens the
-//!    system browser to `{platform}/login?desktop=1&state={state}`.
+//! 1. `auth_sign_in` generates a random `state` and a PKCE verifier, stores
+//!    both, and opens the system browser to
+//!    `{platform}/login?desktop=1&state={state}&code_challenge={S256}&code_challenge_method=S256`.
 //! 2. The web app signs the candidate in, then redirects to
 //!    `fydell://auth/callback?code=<one-time-code>&state=<state>`
-//!    (web addition W1 — see desktop/ARCHITECTURE.md; it does not exist yet).
+//!    (web addition W1 — see desktop/ARCHITECTURE.md).
 //! 3. The deep-link handler (main.rs) forwards the URL to
-//!    `handle_callback_url`, which validates `state`, exchanges the code for a
-//!    Supabase session, and stores the tokens in the OS keychain.
+//!    `handle_callback_url`, which validates `state`, exchanges the code plus
+//!    the PKCE verifier for a Supabase session, and stores the tokens in the
+//!    OS keychain. Another app that intercepts the deep link cannot redeem
+//!    the code without the verifier.
 //! 4. Every platform request attaches the session (see `auth_headers`).
 //!
 //! Why this shape: the platform session routes authenticate via
@@ -33,6 +36,7 @@ fn auth() -> &'static Mutex<AuthState> {
         Mutex::new(AuthState {
             session: load_keychain_session(),
             pending_state: None,
+            pending_verifier: None,
         })
     })
 }
@@ -55,6 +59,9 @@ struct StoredSession {
 struct AuthState {
     session: Option<StoredSession>,
     pending_state: Option<String>,
+    /// PKCE (RFC 7636) verifier for the pending sign-in; only its S256
+    /// challenge leaves the process before the exchange.
+    pending_verifier: Option<String>,
 }
 
 /// What the frontend may see. Raw tokens never cross the IPC boundary.
@@ -115,17 +122,21 @@ pub fn auth_sign_in(app: AppHandle) -> AppResult<()> {
     use tauri_plugin_opener::OpenerExt;
 
     let state = uuid::Uuid::new_v4().to_string();
+    let verifier = pkce_verifier();
+    let challenge = pkce_challenge(&verifier);
     {
         let mut a = auth().lock().unwrap();
         if a.session.is_some() {
             return Err(AppError::Auth("already signed in".to_string()));
         }
         a.pending_state = Some(state.clone());
+        a.pending_verifier = Some(verifier);
     }
     let url = format!(
-        "{}/login?desktop=1&state={}",
+        "{}/login?desktop=1&state={}&code_challenge={}&code_challenge_method=S256",
         platform_base(),
-        urlencoding_safe(&state)
+        urlencoding_safe(&state),
+        challenge
     );
     app.opener()
         .open_url(&url, None::<&str>)
@@ -158,6 +169,7 @@ pub fn auth_sign_out(app: AppHandle) -> AppResult<()> {
         let mut a = auth().lock().unwrap();
         a.session = None;
         a.pending_state = None;
+        a.pending_verifier = None;
     }
     clear_keychain_session();
     let _ = app.emit(
@@ -203,18 +215,21 @@ pub fn handle_callback_url(app: &AppHandle, raw: &str) {
             return;
         }
     };
-    let expected = { auth().lock().unwrap().pending_state.take() };
-    match expected {
-        Some(e) if constant_time_eq(&e, &state) => {}
+    let (expected, verifier) = {
+        let mut a = auth().lock().unwrap();
+        (a.pending_state.take(), a.pending_verifier.take())
+    };
+    let verifier = match (expected, verifier) {
+        (Some(e), Some(v)) if constant_time_eq(&e, &state) => v,
         _ => {
             emit_auth_error(app, "auth callback state mismatch; sign-in attempt expired");
             return;
         }
-    }
+    };
 
     let handle = app.clone();
     tauri::async_runtime::spawn(async move {
-        match exchange_code(&code).await {
+        match exchange_code(&code, &state, &verifier).await {
             Ok(session) => {
                 {
                     let mut a = auth().lock().unwrap();
@@ -266,15 +281,15 @@ struct ExchangeUser {
 
 /// Trade the one-time code for a Supabase session.
 ///
-/// CONTRACT (web addition W1, documented in desktop/ARCHITECTURE.md — the
-/// endpoint does not exist yet):
-///   POST {platform}/api/auth/desktop/exchange  { "code": "<one-time>" }
+/// CONTRACT (web addition W1, documented in desktop/ARCHITECTURE.md):
+///   POST {platform}/api/auth/desktop/exchange
+///     { "code": "<one-time>", "state": "<state>", "code_verifier": "<pkce>" }
 ///   → 200 { access_token, refresh_token, expires_at, user: { id, email } }
-async fn exchange_code(code: &str) -> AppResult<StoredSession> {
+async fn exchange_code(code: &str, state: &str, verifier: &str) -> AppResult<StoredSession> {
     let url = format!("{}/api/auth/desktop/exchange", platform_base());
     let res = reqwest::Client::new()
         .post(&url)
-        .json(&serde_json::json!({ "code": code }))
+        .json(&serde_json::json!({ "code": code, "state": state, "code_verifier": verifier }))
         .timeout(std::time::Duration::from_secs(30))
         .send()
         .await
@@ -485,4 +500,63 @@ fn urlencoding_safe(s: &str) -> String {
     // `state` is a UUID (hex + dashes), safe unencoded; keep the helper
     // explicit so a future non-UUID state doesn't silently break.
     s.to_string()
+}
+
+/// 64 hex chars from two v4 UUIDs (244 random bits), inside RFC 7636's
+/// 43-128 unreserved-character range.
+fn pkce_verifier() -> String {
+    let a = uuid::Uuid::new_v4();
+    let b = uuid::Uuid::new_v4();
+    format!("{}{}", hex::encode(a.as_bytes()), hex::encode(b.as_bytes()))
+}
+
+/// S256 challenge: unpadded base64url of SHA-256(verifier).
+fn pkce_challenge(verifier: &str) -> String {
+    use sha2::{Digest, Sha256};
+    base64url_nopad(&Sha256::digest(verifier.as_bytes()))
+}
+
+fn base64url_nopad(bytes: &[u8]) -> String {
+    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    let mut out = String::with_capacity((bytes.len() * 4).div_ceil(3));
+    for chunk in bytes.chunks(3) {
+        let n = (u32::from(chunk[0]) << 16)
+            | (u32::from(*chunk.get(1).unwrap_or(&0)) << 8)
+            | u32::from(*chunk.get(2).unwrap_or(&0));
+        let sextets = chunk.len() + 1;
+        for i in 0..sextets {
+            out.push(ALPHABET[((n >> (18 - 6 * i)) & 63) as usize] as char);
+        }
+    }
+    out
+}
+
+#[cfg(test)]
+mod pkce_tests {
+    use super::*;
+
+    #[test]
+    fn rfc7636_appendix_b_vector() {
+        assert_eq!(
+            pkce_challenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"),
+            "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
+        );
+    }
+
+    #[test]
+    fn verifier_is_valid_and_unique() {
+        let v = pkce_verifier();
+        assert_eq!(v.len(), 64);
+        assert!(v.chars().all(|c| c.is_ascii_hexdigit()));
+        assert_ne!(v, pkce_verifier());
+        assert_eq!(pkce_challenge(&v).len(), 43);
+    }
+
+    #[test]
+    fn base64url_partial_chunks() {
+        assert_eq!(base64url_nopad(b"f"), "Zg");
+        assert_eq!(base64url_nopad(b"fo"), "Zm8");
+        assert_eq!(base64url_nopad(b"foo"), "Zm9v");
+        assert_eq!(base64url_nopad(&[0xfb, 0xff]), "-_8");
+    }
 }
